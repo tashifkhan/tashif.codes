@@ -3,145 +3,85 @@ import { InteractiveResume } from "./InteractiveResume";
 
 const experiences = [
 	{
-		company: "SITG",
-		role: "SDE I",
-		period: "November 2025 - Present",
+		company: "SITG France",
+		role: "Software Development Intern",
+		period: "Nov 2025 – Current",
 		color: "purple",
 		points: [
-			"Developed and maintained a GenAI-powered Django, Next.js App for CA which reduced auditing cost by 80%.",
+			"Developed an AI-driven pipeline using <strong>Django</strong> and <strong>Python</strong> to automate hierarchical PDF-to-Markdown conversion and extract structured compliance statements from governing documents.",
+			"Implemented <strong>Kafka</strong> for real-time data streaming and <strong>Celery</strong> with <strong>Redis</strong> to manage asynchronous LLM workloads, ensuring non-blocking execution of high-latency document processing.",
+			"Integrated <strong>OpenSearch</strong> and <strong>PostgreSQL</strong> to build a semantic search engine, using custom logic to align conformance statements with regulatory standards and certificate scopes.",
+			"Developed a <strong>Next.js</strong> dashboard with <strong>Auth0</strong> to visualize compliance radar metrics analysis.",
 		],
 	},
 	{
 		company: "UNICLOUD",
 		role: "Software Development Intern",
-		period: "June - July 2026",
+		period: "May 2025 – July 2025",
 		certificate: "https://drive.tashif.codes/s/RsaiDWGCEoXjt2K",
 		color: "blue",
 		points: [
-			'Engineered and deployed 3 critical React modules for a <a href="https://irgvap.ircep.gov.in" target="_blank" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">high-profile IRCTC project</a>, enhancing vendor progress monitoring & data visualization.',
-			"Developed robust NestJS REST APIs with JWT authentication and optimized PostgreSQL CRUD operations.",
-			"Automated Database Migration cron jobs dispatching real-time Block Change Alerts via SMTP and web push notifications.",
+			'Engineered and deployed 3 critical <strong>React</strong> modules for a <a href="https://example.com/irctc-project" target="_blank" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">high-profile IRCTC project</a>, significantly enhancing vendor progress monitoring and data visualization capabilities.',
+			"Developed robust <strong>FastAPI</strong> REST APIs, securing data transactions with <strong>JWT authentication</strong> and <strong>PostgreSQL</strong>.",
+			"Automated and improved Database Migration Cron jobs to dispatch real-time Block Change Alerts to approvers via <strong>SMTP mail server</strong> and browser <strong>webpush notifications</strong>.",
 		],
 	},
 ];
 
 const projects = [
 	{
-		title: "FindexAI — AI-Powered Browser Discovery Engine",
+		title: "Agentic Browser",
 		stack:
-			"Next.js, React, FastAPI, LangChain, LangGraph, FAISS, ChromaDB, Docker, WebExtension APIs",
+			"FastAPI, LangChain, LangGraph, React, TypeScript, MCP, Docker, WebExtension APIs",
 		color: "green",
 		links: [
 			{ label: "Live", url: "https://findex.tashif.codes" },
-			{ label: "GitHub", url: "https://github.com/tashifkhan/findex" },
+			{ label: "GitHub", url: "https://github.com/tashifkhan/agentic-browser" },
 		],
 		points: [
-			"Pioneered FindexAI, an <strong>AI-powered browser extension</strong> transforming search into a contextual discovery engine for web + YouTube.",
-			"Built <strong>multi-agent architecture</strong> with LangChain & LangGraph for web search, transcript analysis & HTML querying.",
-			"Implemented <strong>vector similarity search</strong> with FAISS & ChromaDB enabling fast semantic retrieval.",
-			"Engineered a <strong>model-agnostic FastAPI backend</strong> + responsive cross-browser extension (Chrome & Firefox).",
-			"Integrated a <strong>customizable theme engine</strong> (MacOS Classic, Windows XP, Neobrutal etc.).",
+			"Architected a <strong>model-agnostic web automation platform</strong> combining AI reasoning with browser interaction capabilities via <strong>FastAPI</strong> and <strong>MCP</strong>.",
+			"Implemented <strong>LangGraph-based multi-agent orchestration</strong> with specialized tools for web search, content extraction, and Google Workspace integration.",
+			"Developed a <strong>dual-mode server</strong> supporting both REST API endpoints and <strong>Model Context Protocol</strong> for seamless agent inter-communication.",
+			"Built a <strong>TypeScript browser extension</strong> with a Python backend for direct DOM manipulation and execution of AI-generated script plans.",
+			"Designed a <strong>Bring Your Own Keys (BYOKeys)</strong> architecture supporting Gemini, OpenAI, and Anthropic models without vendor lock-in.",
 		],
 	},
 	{
-		title: "TalentSync AI",
-		stack:
-			"Next.js, TypeScript, FastAPI, LangChain, LangGraph, PostgreSQL, Docker",
+		title: "Coding Platform Stats APIs Suite",
+		stack: "Python, FastAPI, Flask, Web Scraping, React, Docker",
 		color: "blue",
 		links: [
-			{ label: "Live", url: "https://talentsync.tashif.codes/" },
+			{ label: "Live", url: "https://stats-api-demo.tashif.codes" },
 			{
 				label: "GitHub",
-				url: "https://github.com/harleenkaur28/AI-Resume-Parser",
+				url: "https://github.com/stars/tashifkhan/lists/jiit-tool-suite",
 			},
 		],
 		points: [
-			"AI-driven platform for resume analysis, job category prediction & talent management dashboard.",
-			"Advanced <strong>LangChain RAG + LangGraph</strong> flows for cold email drafting, interview question generation & answer frameworks.",
-			"Intelligent parsing for structured candidate profiling & accurate categorization.",
-			"Scalable FastAPI + PostgreSQL backend, containerized with Docker.",
+			"Developed a unified suite of REST APIs and interactive dashboards for analyzing developer profiles across major platforms.",
+			"Key components include:",
+			'<a href="https://github-stats.tashif.codes" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">GitHub Stats</a> (FastAPI): Profile stalker, contribution graphs, and repository insights.',
+			'<a href="https://leetcode-stats.tashif.codes" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">LeetCode Stats</a> (Flask): Solved problem counts, contest rankings, and badges.',
+			'<a href="https://codeforces-stats.tashif.codes" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">CodeForces Stats</a> (FastAPI): Rating history, contest performance, and comparisons.',
+			'<a href="https://gfg-stats.tashif.codes" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">GeeksForGeeks Stats</a> (FastAPI): Problem difficulty breakdown and coding scores.',
 		],
 	},
 	{
 		title: "JIIT Tool Suite",
-		stack: "React, Python, WASM (Pyodide), MongoDB (14.5k+ users)",
+		stack: "React, Next.js, Python, Flask, Pyodide, MongoDB",
 		color: "purple",
 		links: [
-			{ label: "Live", url: "https://jiit-tools.tashif.codes" },
+			{ label: "Live", url: "https://jiit-tools.tashif.codes/" },
 			{ label: "GitHub", url: "https://github.com/tashifkhan/JIIT-tools-docs" },
 		],
 		points: [
-			`A comprehensive suite of web applications and automation tools designed to enhance the JIIT student experience.`,
-			`Developed <a href="https://jportal.tashif.codes" class="text-purple-400 hover:text-purple-300 underline decoration-dotted">JPortal</a>, a React PWA for the JIIT WebKiosk with Pyodide PDF parsing.`,
-			`Created the <a href="https://jiit-timetable.tashif.codes" class="text-purple-400 hover:text-purple-300 underline decoration-dotted">JIIT Timetable Website</a>, providing real-time access and dynamic display.`,
-			`Implemented a <a href="https://jiit-timetable.tashif.codes/mess-menu" class="text-purple-400 hover:text-purple-300 underline decoration-dotted">JIIT Mess Menu</a> offering daily and weekly meal plans.`,
-			`Engineered the <a href="https://jiit-placement-updates.tashif.codes" class="text-purple-400 hover:text-purple-300 underline decoration-dotted">JIIT Placement Portal</a> delivering timely opportunities.`,
-		],
-	},
-	{
-		title: "SolarHelper",
-		stack:
-			"React, TypeScript, FastAPI, PWA, RAG (LangChain), Vector DB, LightGBM",
-		color: "yellow",
-		links: [
-			{ label: "Live", url: "https://solar-helper.tashif.codes/" },
-			{ label: "GitHub", url: "https://github.com/tashifkhan/SolarHelper" },
-		],
-		points: [
-			"React PWA for personalized solar sizing, cost & savings forecasting.",
-			"RAG chatbot (LangChain + Gemini) for subsidy & policy guidance.",
-			"Monthly solar yield forecasting with LightGBM (weather-informed).",
-			"FastAPI backend for scraping, embeddings, LLM orchestration & live tariff feeds.",
-		],
-	},
-	{
-		title: "BiasDetector",
-		stack: "Next.js, TypeScript, Flask, MongoDB, JWT, XgBoost",
-		color: "red",
-		links: [
-			{ label: "Live", url: "https://bias-detector.tashif.codes/" },
-			{
-				label: "GitHub",
-				url: "https://github.com/tashifkhan/News-Bias-Detector",
-			},
-		],
-		points: [
-			"Bias detection for news articles with real-time ingestion & MongoDB persistence.",
-			"Automated scraping pipeline across diverse sources.",
-			"XgBoost model surfaces bias patterns & insight summaries.",
-		],
-	},
-	{
-		title: "Designique",
-		stack:
-			"Next.js, TypeScript, Node.js, MongoDB, JWT, WebSockets, Gemini Gen AI API",
-		color: "indigo",
-		links: [
-			{ label: "Live", url: "https://designique.tashif.codes/" },
-			{
-				label: "GitHub",
-				url: "https://github.com/tashifkhan/Designique-rideHack24",
-			},
-		],
-		points: [
-			"Marketplace connecting designers, manufacturers & consumers.",
-			"Full e‑commerce stack + MongoDB data layer.",
-			"Anonymous real-time designer ↔ manufacturer chats (WebSockets).",
-		],
-	},
-	{
-		title: "CropMate",
-		stack:
-			"Next.js, TypeScript, Flask, JWT, Gemini Gen AI API, Random Forest, KNN",
-		color: "emerald",
-		links: [
-			{ label: "Live", url: "https://cropmate.tashif.codes/" },
-			{ label: "GitHub", url: "https://github.com/tashifkhan/crop- mate" },
-		],
-		points: [
-			"AI-driven crop recommendation, yield prediction & insurance advisory.",
-			"Gemini chatbot for instant agronomic support.",
-			"Random Forest + KNN ensemble for accurate yield outputs.",
+			"Developed a comprehensive suite of web applications and automation tools to enhance the JIIT student experience.",
+			'Developed <a href="https://jportal.tashif.codes/" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">JPortal</a> (<strong>React</strong> PWA for JIIT WebKiosk, 18k+ users) with <strong>Pyodide</strong> PDF parsing.',
+			'Created <a href="https://jiit-timetable.tashif.codes/" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Timetable Website</a> providing real-time schedules for 6.5k+ students.',
+			'Implemented <a href="https://jiit-timetable.tashif.codes/mess-menu" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Mess Menu</a> offering daily/weekly meal plans for 5.2k+ students.',
+			'Engineered <a href="https://jiit-placement-updates.tashif.codes/?shh" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Placement & Campus Updates portal</a> for opportunities/news for 4k+/2k+ users.',
+			'Created <a href="https://sophos-autologin.tashif.codes/" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Sophos Auto-Login</a> scripts (one-click access for ~100 individuals).',
+			'Developed <strong>Telegram</strong>-based <a href="https://tashif.codes/projects/jiit-placement-alerts" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Notification Bot</a> for real-time updates.',
 		],
 	},
 	{
@@ -175,7 +115,7 @@ const education = [
 
 const positions = [
 	{
-		title: "Treasurer | Senior Advisor",
+		title: "Treasurer & Senior Advisor",
 		org: "Optica Student Chapter JIIT",
 		period: "2024 - Present",
 		color: "green",
@@ -194,7 +134,7 @@ const positions = [
 		],
 	},
 	{
-		title: "Organizing Secretary",
+		title: "Organising Secretary & Cofounder",
 		org: "Jaypee Parliamentary Debate",
 		period: "2023 - 2024",
 		color: "purple",
