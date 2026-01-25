@@ -15,6 +15,7 @@ import {
 	Layout,
 	BookOpen,
 	MapPin,
+	Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -109,7 +110,7 @@ const GlowCard = ({
 			className={cn(
 				`group relative overflow-hidden rounded-xl border bg-gradient-to-br backdrop-blur-sm transition-all duration-500`,
 				colorMap[color] || colorMap.gray,
-				className
+				className,
 			)}
 		>
 			{/* Noise texture overlay */}
@@ -308,6 +309,16 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 												<span className="font-semibold">Email</span>
 											</a>
 										</Button>
+										<Button asChild variant="outline" className="gap-2">
+											<a
+												href="https://drive.tashif.codes/s/wQJtDaSs5kjkY2p"
+												target="_blank"
+												rel="noreferrer"
+											>
+												<Download size={18} />
+												<span className="font-semibold">Resume</span>
+											</a>
+										</Button>
 									</div>
 								</div>
 							</div>
@@ -333,14 +344,14 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 										<div className="flex items-center gap-3 mb-4 border-b border-border pb-3">
 											<div
 												className={cn(
-													"p-1.5 rounded-md bg-muted text-muted-foreground"
+													"p-1.5 rounded-md bg-muted text-muted-foreground",
 												)}
 											>
 												<Icon size={16} />
 											</div>
 											<h3
 												className={cn(
-													"text-xs font-bold uppercase tracking-widest text-muted-foreground"
+													"text-xs font-bold uppercase tracking-widest text-muted-foreground",
 												)}
 											>
 												{cat.label}
@@ -371,7 +382,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 									<div
 										className={cn(
 											"absolute -left-[9px] top-2 w-4 h-4 rounded-full bg-background border-4 border-muted-foreground/30",
-											`border-${exp.color}-500/50` // Dynamic border color if possible, else standard
+											`border-${exp.color}-500/50`, // Dynamic border color if possible, else standard
 										)}
 									></div>
 
@@ -386,7 +397,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 									<div
 										className={cn(
 											"text-lg font-medium mb-4",
-											`text-${exp.color}-600 dark:text-${exp.color}-400`
+											`text-${exp.color}-600 dark:text-${exp.color}-400`,
 										)}
 									>
 										{exp.company}
@@ -471,7 +482,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 													size={14}
 													className={cn(
 														"shrink-0 mt-1",
-														`text-${project.color}-500`
+														`text-${project.color}-500`,
 													)}
 												/>
 												<span dangerouslySetInnerHTML={{ __html: pt }} />
@@ -583,7 +594,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 												"group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-300",
 												isActive
 													? "bg-primary text-primary-foreground font-bold shadow-md"
-													: "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+													: "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
 											)}
 										>
 											<Icon
