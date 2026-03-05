@@ -44,6 +44,7 @@ const starredLists = starLists || [];
 				>
 					<a
 						href="/"
+						data-haptic-back
 						class="flex items-center gap-2 hover:text-primary transition-colors duration-300"
 					>
 						<ArrowLeft size={20} className="mr-2" />
@@ -114,6 +115,7 @@ const starredLists = starLists || [];
 								<a
 									href="https://github.com/tashifkhan"
 									target="_blank"
+									data-haptic-external
 									rel="noopener noreferrer"
 								>
 									Visit Profile
@@ -148,6 +150,7 @@ const starredLists = starLists || [];
 								<a
 									href="https://github.com/tashifkhan?tab=activity"
 									target="_blank"
+									data-haptic-external
 									rel="noopener noreferrer"
 								>
 									View Activity
@@ -182,6 +185,7 @@ const starredLists = starLists || [];
 								<a
 									href="https://github.com/tashifkhan?tab=repositories"
 									target="_blank"
+									data-haptic-external
 									rel="noopener noreferrer"
 								>
 									Browse Repos
@@ -198,3 +202,12 @@ const starredLists = starLists || [];
 		</div>
 	</div>
 </Layout>
+
+<script>
+	import { WebHaptics } from "web-haptics";
+	const haptics = new WebHaptics();
+	document.querySelector('[data-haptic-back]')?.addEventListener("click", () => haptics.trigger("light"));
+	document.querySelectorAll('[data-haptic-external]').forEach(el =>
+		el.addEventListener("click", () => haptics.trigger("light"))
+	);
+</script>

@@ -178,6 +178,7 @@ const socials = [
 										target="_blank"
 										rel="noopener noreferrer"
 										aria-label={social.label}
+										data-haptic-social
 									>
 										<social.icon size={20} />
 									</a>
@@ -335,7 +336,7 @@ const socials = [
 								className="h-8 w-8 bg-primary/10 dark:bg-primary/10 border-primary/20 dark:border-primary/20 hover:bg-primary/20 dark:hover:bg-primary/20 text-primary dark:text-primary"
 								asChild
 							>
-								<a href="/resume" aria-label="View resume">
+								<a href="/resume" aria-label="View resume" data-haptic-nav>
 									<FileText size={16} />
 								</a>
 							</Button>
@@ -372,6 +373,7 @@ const socials = [
 								</Badge>
 								<a
 									href="/projects/stats"
+									data-haptic-nav
 									class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-chart-1/15 text-chart-1 border border-chart-1/30 hover:bg-chart-1/25 hover:border-chart-1/50 transition-all"
 								>
 									<BarChart3 className="w-3.5 h-3.5" />
@@ -404,6 +406,7 @@ const socials = [
 								</Badge>
 								<a
 									href="/projects/stats"
+									data-haptic-nav
 									class="ml-2 inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-lg bg-chart-1/15 text-chart-1 border border-chart-1/30 hover:bg-chart-1/25 hover:border-chart-1/50 shadow-sm hover:shadow-chart-1/20 transition-all"
 								>
 									<BarChart3 className="w-3.5 h-3.5" />
@@ -503,6 +506,7 @@ const socials = [
 											>
 												<a
 													href="https://blog.tashif.codes"
+													data-haptic-external
 													target="_blank"
 													rel="noopener noreferrer"
 													class="flex items-center gap-2 text-primary-foreground opacity-70 hover:text-primary transition-colors"
@@ -536,6 +540,7 @@ const socials = [
 								>
 									<a
 										href="https://blog.tashif.codes"
+										data-haptic-external
 										target="_blank"
 										rel="noopener noreferrer"
 									>
@@ -571,6 +576,7 @@ const socials = [
 								</Badge>
 								<a
 									href="https://github.com/tashifkhan"
+									data-haptic-external
 									target="_blank"
 									rel="noopener noreferrer"
 									class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
@@ -580,6 +586,7 @@ const socials = [
 								</a>
 								<a
 									href="/github"
+									data-haptic-nav
 									class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-chart-3/15 text-chart-3 border border-chart-3/30 hover:bg-chart-3/25 hover:border-chart-3/50 transition-all"
 								>
 									<ChevronRight className="w-3.5 h-3.5" />
@@ -608,6 +615,7 @@ const socials = [
 								</Badge>
 								<a
 									href="https://github.com/tashifkhan"
+									data-haptic-external
 									target="_blank"
 									rel="noopener noreferrer"
 									class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
@@ -616,6 +624,7 @@ const socials = [
 								</a>
 								<a
 									href="/github"
+									data-haptic-nav
 									class="ml-2 inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-lg bg-chart-3/15 text-chart-3 border border-chart-3/30 hover:bg-chart-3/25 hover:border-chart-3/50 shadow-sm hover:shadow-chart-3/20 transition-all"
 								>
 									<ChevronRight className="w-3.5 h-3.5" />
@@ -684,6 +693,7 @@ const socials = [
 								</Badge>
 								<a
 									href="https://leetcode.com/u/khan_tashif/"
+									data-haptic-external
 									target="_blank"
 									rel="noopener noreferrer"
 									class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
@@ -693,6 +703,7 @@ const socials = [
 								</a>
 								<a
 									href="/leetcode"
+									data-haptic-nav
 									class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-chart-2/15 text-chart-2 border border-chart-2/30 hover:bg-chart-2/25 hover:border-chart-2/50 transition-all"
 								>
 									<ChevronRight className="w-3.5 h-3.5" />
@@ -721,6 +732,7 @@ const socials = [
 								</Badge>
 								<a
 									href="https://leetcode.com/u/khan_tashif/"
+									data-haptic-external
 									target="_blank"
 									rel="noopener noreferrer"
 									class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
@@ -729,6 +741,7 @@ const socials = [
 								</a>
 								<a
 									href="/leetcode"
+									data-haptic-nav
 									class="ml-2 inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-lg bg-chart-2/15 text-chart-2 border border-chart-2/30 hover:bg-chart-2/25 hover:border-chart-2/50 shadow-sm hover:shadow-chart-2/20 transition-all"
 								>
 									<ChevronRight className="w-3.5 h-3.5" />
@@ -770,6 +783,7 @@ const socials = [
 					<!-- GitHub -->
 					<a
 						href="https://github.com/tashifkhan"
+						data-haptic-social
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group relative overflow-hidden rounded-3xl bg-gray-900 p-8 transition-all hover:scale-[1.02] hover:shadow-xl lg:col-span-2 aspect-[2/1] md:aspect-auto"
@@ -799,6 +813,7 @@ const socials = [
 					<!-- Twitter -->
 					<a
 						href="https://twitter.com/khan_tashif_"
+						data-haptic-social
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group relative overflow-hidden rounded-3xl bg-sky-500 p-8 transition-all hover:scale-[1.02] hover:shadow-xl lg:col-span-1"
@@ -824,6 +839,7 @@ const socials = [
 					<!-- LinkedIn -->
 					<a
 						href="https://www.linkedin.com/in/tashif-ahmad-khan-982304244/"
+						data-haptic-social
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group relative overflow-hidden rounded-3xl bg-[#0077b5] p-8 transition-all hover:scale-[1.02] hover:shadow-xl lg:col-span-1"
@@ -867,6 +883,7 @@ const socials = [
 							</p>
 							<a
 								href="mailto:tashif@duck.com"
+								data-haptic-external
 								class="inline-flex items-center justify-center w-full px-6 py-3 bg-white text-orange-600 font-bold rounded-xl hover:bg-orange-50 transition-colors"
 							>
 								Send Email
@@ -980,6 +997,9 @@ const socials = [
 </Button>
 
 <script>
+	import { WebHaptics } from "web-haptics";
+	const haptics = new WebHaptics();
+
 	// Tab switching logic
 	const tabs = {
 		projects: document.getElementById("projects-tab"),
@@ -1023,12 +1043,12 @@ const socials = [
 		}
 	}
 
-	tabs.projects?.addEventListener("click", () => activateTab("projects"));
-	tabs.blog?.addEventListener("click", () => activateTab("blog"));
-	tabs.leetcode?.addEventListener("click", () => activateTab("leetcode"));
-	tabs.github?.addEventListener("click", () => activateTab("github"));
-	tabs.resume?.addEventListener("click", () => activateTab("resume"));
-	tabs.community?.addEventListener("click", () => activateTab("community"));
+	tabs.projects?.addEventListener("click", () => { haptics.trigger("selection"); activateTab("projects"); });
+	tabs.blog?.addEventListener("click", () => { haptics.trigger("selection"); activateTab("blog"); });
+	tabs.leetcode?.addEventListener("click", () => { haptics.trigger("selection"); activateTab("leetcode"); });
+	tabs.github?.addEventListener("click", () => { haptics.trigger("selection"); activateTab("github"); });
+	tabs.resume?.addEventListener("click", () => { haptics.trigger("selection"); activateTab("resume"); });
+	tabs.community?.addEventListener("click", () => { haptics.trigger("selection"); activateTab("community"); });
 
 	// Enhanced search functions
 	function fuzzySearch(text: string, query: string): boolean {
@@ -1314,14 +1334,34 @@ const socials = [
 		});
 
 		welcomeDismiss?.addEventListener("click", () => {
+			haptics.trigger("light");
 			localStorage.setItem(WELCOME_KEY, "1");
 			applyWelcomeState(true);
 		});
 
 		welcomeRestoreBtn?.addEventListener("click", () => {
+			haptics.trigger("light");
 			localStorage.removeItem(WELCOME_KEY);
 			applyWelcomeState(false);
 		});
+
+		// Open Projects button (in GitHub Star Lists callout)
+		document.querySelector('[data-open-projects]')?.addEventListener('click', () => {
+			haptics.trigger('light');
+			activateTab('projects');
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		});
+
+		// Haptic feedback for navigation and external links added in HTML
+		document.querySelectorAll('[data-haptic-nav]').forEach(el =>
+			el.addEventListener('click', () => haptics.trigger('light'))
+		);
+		document.querySelectorAll('[data-haptic-external]').forEach(el =>
+			el.addEventListener('click', () => haptics.trigger('light'))
+		);
+		document.querySelectorAll('[data-haptic-social]').forEach(el =>
+			el.addEventListener('click', () => haptics.trigger('medium'))
+		);
 
 		// Default to projects tab on load
 		activateTab("projects");
@@ -1339,6 +1379,7 @@ const socials = [
 			window.addEventListener("scroll", onScroll, { passive: true });
 			onScroll();
 			scrollBtn.addEventListener("click", () => {
+				haptics.trigger("light");
 				window.scrollTo({ top: 0, behavior: "smooth" });
 			});
 		}
@@ -1372,15 +1413,17 @@ const socials = [
 					)?.value.trim() || "";
 				const statusEl = document.getElementById("contact-status");
 
-				if (!email || !messageRaw) {
-					if (statusEl) statusEl.textContent = "Email & message are required.";
+			if (!email || !messageRaw) {
+				if (statusEl) statusEl.textContent = "Email & message are required.";
+					haptics.trigger("error");
 					return;
 				}
 
-				// Basic email heuristic
-				if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-					if (statusEl)
-						statusEl.textContent = "Please provide a valid email address.";
+			// Basic email heuristic
+			if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+				if (statusEl)
+					statusEl.textContent = "Please provide a valid email address.";
+					haptics.trigger("error");
 					return;
 				}
 
@@ -1399,6 +1442,7 @@ const socials = [
 				const mailto = `mailto:tashif@duck.com?subject=${encodeURIComponent(subject)}&body=${body}`;
 
 				if (statusEl) statusEl.textContent = "Opening your email client...";
+				haptics.trigger("success");
 				window.location.href = mailto;
 			});
 		}

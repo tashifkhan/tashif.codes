@@ -26,6 +26,7 @@ const moreLanguages = Math.max(0, project.languages.length - 3);
 	href={`/projects/${project.slug}`}
 	class="block h-full group focus:outline-none"
 	data-project-card
+	data-haptic-card
 	data-pinned={project.pinned ? "true" : "false"}
 >
 	<Card
@@ -152,6 +153,9 @@ const moreLanguages = Math.max(0, project.languages.length - 3);
 </a>
 
 <script>
+	import { WebHaptics } from "web-haptics";
+	const haptics = new WebHaptics();
+
 	function initProjectCardHandlers() {
 		// Use event delegation on the document to handle all project card buttons
 		document.addEventListener("click", (e) => {
@@ -163,6 +167,7 @@ const moreLanguages = Math.max(0, project.languages.length - 3);
 			if (button) {
 				e.preventDefault();
 				e.stopPropagation();
+				haptics.trigger("light");
 
 				const url = button.getAttribute("data-url");
 				if (!url) return;
@@ -185,6 +190,14 @@ const moreLanguages = Math.max(0, project.languages.length - 3);
 			if (button && (e.key === "Enter" || e.key === " ")) {
 				e.preventDefault();
 				button.click();
+			}
+		});
+
+		// Haptic feedback on project card navigation clicks
+		document.addEventListener("click", (e) => {
+			const card = (e.target as HTMLElement).closest("[data-haptic-card]");
+			if (card && !(e.target as HTMLElement).closest("[data-live-link], [data-docs-link], [data-github-link]")) {
+				haptics.trigger("light");
 			}
 		});
 	}

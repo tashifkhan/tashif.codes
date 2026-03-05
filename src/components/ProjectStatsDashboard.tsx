@@ -40,6 +40,7 @@ import {
 	Bar,
 	Legend,
 } from "recharts";
+import { useWebHaptics } from "web-haptics/react";
 
 // --- Shared Tooltip Styles (avoid recreating objects on each render) ---
 const TOOLTIP_STYLES = {
@@ -518,6 +519,7 @@ export default function ProjectStatsDashboard() {
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
 	const [period, setPeriod] = useState<string>("0");
+	const { trigger } = useWebHaptics();
 
 	const API_BASE = import.meta.env.PUBLIC_API_BASE;
 
@@ -678,7 +680,7 @@ export default function ProjectStatsDashboard() {
 		<div className="w-full max-w-7xl mx-auto space-y-6 md:space-y-8 pb-10">
 			{/* Project & Period Controls */}
 			<div className="flex flex-col sm:flex-row gap-3 w-full">
-				<Select value={selectedSlug} onValueChange={setSelectedSlug}>
+				<Select value={selectedSlug} onValueChange={(v) => { trigger("selection"); setSelectedSlug(v); }}>
 					<SelectTrigger className="w-full sm:w-[240px] bg-background/50 border-border/60 hover:border-border/80 focus:ring-primary/20 ring-offset-0 transition-colors">
 						<SelectValue placeholder="Select Project" />
 					</SelectTrigger>
@@ -695,7 +697,7 @@ export default function ProjectStatsDashboard() {
 					</SelectContent>
 				</Select>
 
-				<Select value={period} onValueChange={setPeriod}>
+				<Select value={period} onValueChange={(v) => { trigger("selection"); setPeriod(v); }}>
 					<SelectTrigger className="w-full sm:w-[160px] bg-background/50 border-border/60 hover:border-border/80 focus:ring-primary/20 ring-offset-0 transition-colors">
 						<Calendar className="w-4 h-4 mr-2 text-primary" />
 						<SelectValue placeholder="Period" />
@@ -777,7 +779,7 @@ export default function ProjectStatsDashboard() {
 					</div>
 
 					{/* Main Chart Area */}
-					<Tabs defaultValue="traffic" className="w-full">
+					<Tabs defaultValue="traffic" className="w-full" onValueChange={() => trigger("selection")}>
 						<div className="flex items-center justify-between mb-4 px-1">
 							<TabsList className="bg-muted/50 p-1 border border-border/20">
 								<TabsTrigger

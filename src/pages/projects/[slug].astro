@@ -52,10 +52,11 @@ export async function getStaticPaths() {
 			class="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200/60 dark:border-gray-800/60 transition-colors duration-300"
 		>
 			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-				<a
-					href="/projects"
-					class="flex items-center text-primary dark:text-primary hover:text-primary/80 hover:underline mb-4 sm:mb-6 text-sm sm:text-base font-medium"
-				>
+			<a
+				href="/projects"
+				data-haptic-back
+				class="flex items-center text-primary dark:text-primary hover:text-primary/80 hover:underline mb-4 sm:mb-6 text-sm sm:text-base font-medium"
+			>
 					<ArrowLeft className="w-4 h-4 mr-2" /> Back to Projects
 				</a>
 				<h1
@@ -70,11 +71,12 @@ export async function getStaticPaths() {
 				</p>
 				{
 					project.parentRepo && (
-						<a
-							href={`https://github.com/${project.parentRepo}`}
-							target="_blank"
-							rel="noopener noreferrer"
-						>
+					<a
+						href={`https://github.com/${project.parentRepo}`}
+						target="_blank"
+						rel="noopener noreferrer"
+						data-haptic-external
+					>
 							<div class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-6 -mt-4 bg-gray-100/50 dark:bg-gray-800/50 w-fit px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700">
 								<GitFork className="w-4 h-4" />
 								<span>
@@ -132,12 +134,13 @@ export async function getStaticPaths() {
 								data-live-link
 								data-url={project.live_website_url}
 							>
-								<a
-									class="flex items-center gap-1"
-									href={project.live_website_url}
-									target="_blank"
-									rel="noopener noreferrer"
-								>
+							<a
+								class="flex items-center gap-1"
+								href={project.live_website_url}
+								target="_blank"
+								rel="noopener noreferrer"
+								data-haptic-external
+							>
 									<ExternalLink className="w-3.5 h-3.5" />
 									Live Demo
 								</a>
@@ -156,6 +159,7 @@ export async function getStaticPaths() {
 							href={project.github_link}
 							target="_blank"
 							rel="noopener noreferrer"
+							data-haptic-external
 						>
 							<Github className="w-3.5 h-3.5" />
 							Source
@@ -169,10 +173,11 @@ export async function getStaticPaths() {
 								className="h-8 text-xs gap-1.5 shadow-sm hover:bg-secondary/70 transition-colors"
 								asChild
 							>
-								<a
-									href={`/docs/${project.docs_slug}`}
-									class="flex items-center gap-1"
-								>
+							<a
+								href={`/docs/${project.docs_slug}`}
+								class="flex items-center gap-1"
+								data-haptic-nav
+							>
 									<FileText className="w-3.5 h-3.5" />
 									Docs
 								</a>
@@ -187,10 +192,11 @@ export async function getStaticPaths() {
 								className="h-8 text-xs gap-1.5 shadow-sm hover:bg-blue-500/10 hover:border-blue-500/30 transition-colors"
 								asChild
 							>
-								<a
-									href={`/projects/stats?project=${analyticsSlug}`}
-									class="flex items-center gap-1"
-								>
+							<a
+								href={`/projects/stats?project=${analyticsSlug}`}
+								class="flex items-center gap-1"
+								data-haptic-nav
+							>
 									<BarChart3 className="w-3.5 h-3.5" />
 									Stats
 								</a>
@@ -226,3 +232,20 @@ export async function getStaticPaths() {
 		</main>
 	</div>
 </Layout>
+
+<script>
+	import { WebHaptics } from "web-haptics";
+	const haptics = new WebHaptics();
+
+	document.addEventListener("DOMContentLoaded", () => {
+		document.querySelectorAll("[data-haptic-back]").forEach((el) =>
+			el.addEventListener("click", () => haptics.trigger("light"))
+		);
+		document.querySelectorAll("[data-haptic-nav]").forEach((el) =>
+			el.addEventListener("click", () => haptics.trigger("light"))
+		);
+		document.querySelectorAll("[data-haptic-external]").forEach((el) =>
+			el.addEventListener("click", () => haptics.trigger("light"))
+		);
+	});
+</script>

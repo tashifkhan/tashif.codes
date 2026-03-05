@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useWebHaptics } from "web-haptics/react";
 
 // --- INTERFACES ---
 
@@ -166,6 +167,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 }) => {
 	const [activeSection, setActiveSection] = useState("about");
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
+	const { trigger } = useWebHaptics();
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -184,6 +186,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 	}, []);
 
 	const scrollTo = (id: string) => {
+		trigger("selection");
 		const el = document.getElementById(id);
 		if (el) {
 			el.scrollIntoView({ behavior: "smooth" });
@@ -203,7 +206,10 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 				<Button
 					variant="outline"
 					size="icon"
-					onClick={() => setIsMenuOpen(!isMenuOpen)}
+					onClick={() => {
+						trigger(isMenuOpen ? "light" : "medium");
+						setIsMenuOpen(!isMenuOpen);
+					}}
 					className="rounded-full shadow-xl bg-background/80 backdrop-blur-md"
 				>
 					{isMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -282,6 +288,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 									<div className="flex flex-wrap gap-3 pt-2">
 										<Button
 											asChild
+											onClick={() => trigger("light")}
 											className="gap-2 bg-primary hover:bg-primary/90"
 										>
 											<a
@@ -293,7 +300,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 												<span className="font-semibold">GitHub</span>
 											</a>
 										</Button>
-										<Button asChild variant="outline" className="gap-2">
+										<Button asChild variant="outline" onClick={() => trigger("light")} className="gap-2">
 											<a
 												href="https://linkedin.com/in/tashifkhan"
 												target="_blank"
@@ -303,13 +310,13 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 												<span className="font-semibold">LinkedIn</span>
 											</a>
 										</Button>
-										<Button asChild variant="outline" className="gap-2">
+										<Button asChild variant="outline" onClick={() => trigger("light")} className="gap-2">
 											<a href="mailto:me@tashif.codes">
 												<Mail size={18} />
 												<span className="font-semibold">Email</span>
 											</a>
 										</Button>
-										<Button asChild variant="outline" className="gap-2">
+										<Button asChild variant="outline" onClick={() => trigger("light")} className="gap-2">
 											<a
 												href="https://drive.tashif.codes/s/wQJtDaSs5kjkY2p"
 												target="_blank"
@@ -418,6 +425,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 										<a
 											href={exp.certificate}
 											target="_blank"
+											onClick={() => trigger("light")}
 											className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors border-b border-transparent hover:border-foreground pb-0.5"
 										>
 											<Award size={14} /> Certificate
@@ -455,6 +463,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 													variant="ghost"
 													size="icon"
 													className="h-8 w-8 text-muted-foreground hover:text-foreground"
+													onClick={() => trigger("light")}
 													asChild
 												>
 													<a
@@ -636,14 +645,14 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 			{/* Mobile Menu Overlay */}
 			{isMenuOpen && (
 				<div className="fixed inset-0 z-40 bg-background/95 backdrop-blur-xl p-8 flex flex-col justify-center animate-in fade-in duration-200">
-					<Button
-						variant="ghost"
-						size="icon"
-						className="absolute top-4 right-4"
-						onClick={() => setIsMenuOpen(false)}
-					>
-						<X size={24} />
-					</Button>
+				<Button
+					variant="ghost"
+					size="icon"
+					className="absolute top-4 right-4"
+					onClick={() => { trigger("light"); setIsMenuOpen(false); }}
+				>
+					<X size={24} />
+				</Button>
 					<nav className="space-y-6">
 						{tocMain.map((item) => (
 							<button

@@ -370,6 +370,9 @@ const starredLists = starLists || [];
 
 <script>
 	// Year selector functionality and tooltip management
+	import { WebHaptics as WebHapticsContrib } from 'web-haptics';
+	const hapticsDays = new WebHapticsContrib();
+
 	document.addEventListener('DOMContentLoaded', function() {
 		const yearSelector = document.getElementById('year-selector') as HTMLSelectElement;
 		const contributionGrid = document.getElementById('contribution-grid');
@@ -391,6 +394,7 @@ const starredLists = starLists || [];
 				day.addEventListener('mouseenter', handleMouseEnter);
 				day.addEventListener('mouseleave', handleMouseLeave);
 				day.addEventListener('mousemove', handleMouseMove);
+				day.addEventListener('click', () => hapticsDays.trigger('selection'));
 			});
 		}
 		
@@ -610,10 +614,14 @@ const starredLists = starLists || [];
 
 <script>
 // Star list buttons -> switch to Projects tab & apply list filter
+import { WebHaptics } from 'web-haptics';
+const haptics = new WebHaptics();
+
 document.addEventListener('DOMContentLoaded', () => {
 	const buttons = document.querySelectorAll('[data-star-list-select]');
 	buttons.forEach(btn => {
 		btn.addEventListener('click', () => {
+			haptics.trigger('selection');
 			const name = (btn as HTMLElement).getAttribute('data-star-list-select');
 			if (!name) return;
 			localStorage.setItem('pending_star_list_select', name);

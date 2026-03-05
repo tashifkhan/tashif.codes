@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 				>
 					<a
 						href="/"
+						data-haptic-back
 						class="flex items-center gap-2 hover:text-primary transition-colors duration-300"
 					>
 						<ArrowLeft size={20} className="mr-2" />
@@ -130,3 +131,9 @@ import { Button } from "@/components/ui/button";
 		</div>
 	</div>
 </Layout>
+
+<script>
+	import { WebHaptics } from "web-haptics";
+	const haptics = new WebHaptics();
+	document.querySelector('[data-haptic-back]')?.addEventListener("click", () => haptics.trigger("light"));
+</script>

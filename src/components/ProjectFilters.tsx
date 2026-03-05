@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { StarList } from "../data/starLists";
+import { useWebHaptics } from "web-haptics/react";
 
 interface StarListOption {
 	key: string; // identifier
@@ -26,6 +27,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 	const [showLiveOnly, setShowLiveOnly] = useState(false);
 	const [selectedList, setSelectedList] = useState<string>("all-projects");
 	const [lists, setLists] = useState<StarListOption[]>([]);
+	const { trigger } = useWebHaptics();
 
 	// Initialize from pre-fetched build-time starLists module
 	useEffect(() => {
@@ -83,6 +85,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 	}, []); // run once
 
 	const handleSearch = (value: string) => {
+		trigger("light");
 		setSearchTerm(value);
 
 		// Dispatch custom event with current state
@@ -93,6 +96,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 	};
 
 	const handleLiveFilter = () => {
+		trigger("light");
 		const newShowLiveOnly = !showLiveOnly;
 		setShowLiveOnly(newShowLiveOnly);
 
@@ -108,6 +112,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 	};
 
 	const handleListChange = (value: string) => {
+		trigger("selection");
 		setSelectedList(value);
 		const searchEvent = new CustomEvent("project-search", {
 			detail: { term: searchTerm, showLiveOnly, list: value },

@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useWebHaptics } from "web-haptics/react";
 
 interface Props {
 	categories: string[];
@@ -13,8 +14,10 @@ export default function BlogFilters({ categories }: Props) {
 	const [selectedCategories, setSelectedCategories] = useState<string[]>([
 		"all",
 	]);
+	const { trigger } = useWebHaptics();
 
 	const handleSearch = (value: string) => {
+		trigger("light");
 		setSearchTerm(value);
 		const searchEvent = new CustomEvent("blog-search", {
 			detail: { term: value },
@@ -23,6 +26,7 @@ export default function BlogFilters({ categories }: Props) {
 	};
 
 	const handleCategoryChange = (category: string) => {
+		trigger("selection");
 		let newCategories: string[];
 
 		if (category === "all") {

@@ -29,6 +29,7 @@ const projects: Project[] = allProjects;
 			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 				<a
 					href="/"
+					data-haptic-nav
 					class="flex items-center text-primary dark:text-primary hover:text-primary/80 hover:underline mb-4 sm:mb-6 text-sm sm:text-base font-medium"
 				>
 					<ArrowLeft className="w-4 h-4 mr-2" /> Home
@@ -45,7 +46,7 @@ const projects: Project[] = allProjects;
 						className="w-full sm:w-auto h-10 sm:h-9 px-4 sm:px-5 gap-2 rounded-xl font-semibold tracking-wide bg-chart-1/15 text-chart-1 border border-chart-1/30 hover:bg-chart-1/25 hover:border-chart-1/50 shadow-sm hover:shadow-chart-1/20 focus-visible:ring-2 focus-visible:ring-chart-1/40 transition-all"
 						asChild
 					>
-						<a href="/projects/stats" class="flex items-center gap-2">
+						<a href="/projects/stats" data-haptic-nav class="flex items-center gap-2">
 							<BarChart3 className="w-4 h-4" />
 							<span class="uppercase">View Stats</span>
 						</a>
@@ -200,4 +201,12 @@ const projects: Project[] = allProjects;
 		});
 		document.dispatchEvent(initialSearchEvent);
 	});
+</script>
+
+<script>
+	import { WebHaptics } from "web-haptics";
+	const haptics = new WebHaptics();
+	document.querySelectorAll('[data-haptic-nav]').forEach(el =>
+		el.addEventListener("click", () => haptics.trigger("light"))
+	);
 </script>

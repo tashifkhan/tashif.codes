@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { useWebHaptics } from "web-haptics/react";
 import {
 	motion,
 	useTransform,
@@ -33,6 +34,7 @@ export const AnimatedTooltip = ({
 		useTransform(x, [-100, 100], [-50, 50]),
 		springConfig
 	);
+	const { trigger } = useWebHaptics();
 
 	const handleMouseMove = (event: any) => {
 		if (animationFrameRef.current) {
@@ -54,6 +56,7 @@ export const AnimatedTooltip = ({
 					rel="noopener noreferrer"
 					className="group relative -mr-2 last:mr-0 block cursor-pointer"
 					key={item.name}
+					onClick={() => trigger("light")}
 					onMouseEnter={() => setHoveredIndex(item.id)}
 					onMouseLeave={() => setHoveredIndex(null)}
 				>

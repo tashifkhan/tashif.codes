@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useWebHaptics } from "web-haptics/react";
 
 const themes = ["dark", "light", "cream"];
 
 export default function ThemeToggle() {
 	const [theme, setTheme] = useState("dark");
+	const { trigger } = useWebHaptics();
 
 	useEffect(() => {
 		const saved = localStorage.getItem("theme");
@@ -21,6 +23,7 @@ export default function ThemeToggle() {
 	}, []);
 
 	const toggleTheme = () => {
+		trigger("medium");
 		const idx = themes.indexOf(theme);
 		const next = themes[(idx + 1) % themes.length];
 		setTheme(next);

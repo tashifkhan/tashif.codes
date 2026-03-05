@@ -6,6 +6,7 @@ import {
 	SelectContent,
 	SelectItem,
 } from "./ui/select";
+import { useWebHaptics } from "web-haptics/react";
 
 interface Props {
 	availableYears: number[];
@@ -14,6 +15,7 @@ interface Props {
 
 export default function YearSelect({ availableYears, defaultValue }: Props) {
 	const [value, setValue] = useState<string>(defaultValue);
+	const { trigger } = useWebHaptics();
 
 	useEffect(() => {
 		// Ensure hidden native select reflects initial value
@@ -26,6 +28,7 @@ export default function YearSelect({ availableYears, defaultValue }: Props) {
 	}, []);
 
 	const handleChange = (v: string) => {
+		trigger("selection");
 		setValue(v);
 		// Keep the hidden native select in sync for existing scripts
 		const hidden = document.getElementById(
