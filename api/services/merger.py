@@ -60,9 +60,37 @@ def merge_timeseries(
     Returns:
         Merged and sorted timeseries list starting from first non-zero pageviews
     """
-    # Combine and sort by date
-    combined = list_a + list_b
-    sorted_data = sorted(combined, key=lambda x: x.date)
+    # Combine entries by UTC day to avoid duplicate dates and incorrect totals.
+    # Vercel migration exports can contain multiple entries per day.
+    aggregated: dict[str, TimeseriesEntry] = {}
+
+    for entry in list_a + list_b:
+        day_key = entry.date.date().isoformat()
+        if day_key in aggregated:
+            existing = aggregated[day_key]
+            existing.pageviews += entry.pageviews
+            existing.visitors += entry.visitors
+
+            if entry.pageviews > 0:
+                total_pageviews = existing.pageviews
+                previous_pageviews = total_pageviews - entry.pageviews
+                if previous_pageviews > 0:
+                    existing.bounce_rate = (
+                        (existing.bounce_rate * previous_pageviews)
+                        + (entry.bounce_rate * entry.pageviews)
+                    ) / total_pageviews
+                else:
+                    existing.bounce_rate = entry.bounce_rate
+        else:
+            aggregated[day_key] = TimeseriesEntry(
+                date=entry.date,
+                pageviews=entry.pageviews,
+                visitors=entry.visitors,
+                bounce_rate=entry.bounce_rate,
+                migration_date=entry.migration_date,
+            )
+
+    sorted_data = sorted(aggregated.values(), key=lambda x: x.date)
 
     # Find first non-zero pageview entry
     first_nonzero_idx = next(

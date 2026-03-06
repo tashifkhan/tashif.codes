@@ -6,7 +6,7 @@ combining Vercel migration data with PostHog live data.
 """
 
 from datetime import datetime, date
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Metadata(BaseModel):
@@ -38,11 +38,11 @@ class StatEntry(BaseModel):
 class Stats(BaseModel):
     """Aggregated breakdown statistics."""
 
-    path: list[StatEntry] = []
-    device_type: list[StatEntry] = []
-    referrer: list[StatEntry] = []
-    os_name: list[StatEntry] = []
-    country: list[StatEntry] = []
+    path: list[StatEntry] = Field(default_factory=list)
+    device_type: list[StatEntry] = Field(default_factory=list)
+    referrer: list[StatEntry] = Field(default_factory=list)
+    os_name: list[StatEntry] = Field(default_factory=list)
+    country: list[StatEntry] = Field(default_factory=list)
 
 
 class AllStats(BaseModel):

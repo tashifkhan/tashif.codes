@@ -521,7 +521,10 @@ export default function ProjectStatsDashboard() {
 	const [period, setPeriod] = useState<string>("0");
 	const { trigger } = useWebHaptics();
 
-	const API_BASE = import.meta.env.PUBLIC_API_BASE;
+	const API_BASE = useMemo(() => {
+		const configured = import.meta.env.PUBLIC_API_BASE || "https://tashif-project-stats.vercel.app";
+		return configured.replace(/\/+$/, "");
+	}, []);
 
 	// Get initial project from URL parameter - memoized
 	const getInitialProject = useCallback(() => {
@@ -541,7 +544,9 @@ export default function ProjectStatsDashboard() {
 				const res = await fetch(`${API_BASE}/api/v1/projects`, {
 					signal: controller.signal
 				});
-				if (!res.ok) throw new Error("Failed to fetch projects");
+				if (!res.ok) {
+					throw new Error(`Failed to fetch projects (${res.status})`);
+				}
 				const data: ProjectListResponse = await res.json();
 				setProjects(data.projects);
 
@@ -556,7 +561,7 @@ export default function ProjectStatsDashboard() {
 				if (err instanceof Error && err.name === 'AbortError') return;
 				console.error(err);
 				setError(
-					"Could not load projects. Ensure API is running at " + API_BASE
+					"Could not load projects from " + API_BASE
 				);
 			}
 		}
@@ -584,17 +589,27 @@ export default function ProjectStatsDashboard() {
 			setLoading(true);
 			setError(null);
 			try {
+				const encodedSlug = encodeURIComponent(selectedSlug);
 				const res = await fetch(
-					`${API_BASE}/api/v1/${selectedSlug}/stats?days=${period}`,
+					`${API_BASE}/api/v1/${encodedSlug}/stats?days=${period}`,
 					{ signal: controller.signal }
 				);
-				if (!res.ok) throw new Error("Failed to fetch stats");
+				if (!res.ok) {
+					let detail = "Failed to fetch stats";
+					try {
+						const body = await res.json();
+						if (body?.detail) detail = body.detail;
+					} catch {
+						// Ignore JSON parse errors and keep generic detail
+					}
+					throw new Error(`${detail} (${res.status})`);
+				}
 				const data: AllStats = await res.json();
 				setStats(data);
 			} catch (err) {
 				if (err instanceof Error && err.name === 'AbortError') return;
 				console.error(err);
-				setError("Failed to load stats for this project.");
+				setError(err instanceof Error ? err.message : "Failed to load stats for this project.");
 				setStats(null);
 			} finally {
 				setLoading(false);
