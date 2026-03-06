@@ -415,7 +415,7 @@ const MetricCard = memo(({
 			</div>
 		</CardHeader>
 		<CardContent className="relative">
-			<div className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">{value}</div>
+			<div className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent pb-0.5">{value}</div>
 			{trend && (
 				<p className="text-xs text-muted-foreground mt-2 flex items-center gap-1.5">
 					<span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/60"></span>

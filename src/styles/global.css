@@ -101,7 +101,7 @@ code, pre, .font-mono {
 }
 
 /* Prevent horizontal scrolling globally */
-body, html, #__next, header, section, div {
+body, html, #__next, header, section {
   overflow-x: hidden;
   max-width: 100vw;
 }

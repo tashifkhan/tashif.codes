@@ -28,7 +28,7 @@ export default {
 	theme: {
 		extend: {
 			fontFamily: {
-				sans: ["Comfortaa", "sans-serif"],
+				sans: ["Lexend", "sans-serif"],
 				mono: ["JetBrains Mono", "monospace"],
 			},
 		},
