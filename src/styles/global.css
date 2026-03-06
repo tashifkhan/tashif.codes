@@ -97,15 +97,12 @@ code, pre, .font-mono {
 /* Mobile-first responsive design */
 * {
   box-sizing: border-box;
-  max-width: 100%;
 }
 
-/* SVG elements must not be constrained by the max-width reset above — 
-   Recharts ResponsiveContainer measures its parent and then sets explicit
-   pixel widths on the SVG; max-width: 100% causes that calculation to fail
-   and charts render as blank/zero-width. */
-svg {
-  max-width: none;
+/* Prevent content from overflowing horizontally — scope to
+   elements that actually carry user-facing content, not SVG/chart internals */
+img, video, canvas, iframe, embed, object {
+  max-width: 100%;
 }
 
 /* Prevent horizontal scrolling globally */

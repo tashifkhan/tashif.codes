@@ -458,7 +458,7 @@ const BreakdownList = memo(({
 				{title}
 			</CardTitle>
 		</CardHeader>
-		<CardContent className="space-y-3 flex-1 overflow-auto custom-scrollbar p-4">
+		<CardContent className="space-y-3 flex-1 overflow-auto no-scrollbar p-4">
 			{items.length === 0 ? (
 				<div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs text-center">
 					<Activity className="w-4 h-4 mb-1 opacity-20" />
@@ -621,13 +621,6 @@ export default function ProjectStatsDashboard() {
 		return () => controller.abort();
 	}, [selectedSlug, period, API_BASE]);
 
-	// Effect to reset period for jportal if > 90 days
-	useEffect(() => {
-		if (selectedSlug === "jportal" && (period === "365" || period === "0")) {
-			setPeriod("90");
-		}
-	}, [selectedSlug, period]);
-
 	// Derived metrics - memoized
 	const totals = useMemo(() => {
 		if (!stats) return { views: 0, visitors: 0, bounce: 0 };
@@ -695,7 +688,14 @@ export default function ProjectStatsDashboard() {
 		<div className="w-full max-w-7xl mx-auto space-y-6 md:space-y-8 pb-10">
 			{/* Project & Period Controls */}
 			<div className="flex flex-col sm:flex-row gap-3 w-full">
-				<Select value={selectedSlug} onValueChange={(v) => { trigger("selection"); setSelectedSlug(v); }}>
+				<Select
+					value={selectedSlug}
+					onValueChange={(v) => {
+						trigger("selection");
+						setLoading(true);
+						setSelectedSlug(v);
+					}}
+				>
 					<SelectTrigger className="w-full sm:w-[240px] bg-background/50 border-border/60 hover:border-border/80 focus:ring-primary/20 ring-offset-0 transition-colors">
 						<SelectValue placeholder="Select Project" />
 					</SelectTrigger>
@@ -712,7 +712,14 @@ export default function ProjectStatsDashboard() {
 					</SelectContent>
 				</Select>
 
-				<Select value={period} onValueChange={(v) => { trigger("selection"); setPeriod(v); }}>
+				<Select
+					value={period}
+					onValueChange={(v) => {
+						trigger("selection");
+						setLoading(true);
+						setPeriod(v);
+					}}
+				>
 					<SelectTrigger className="w-full sm:w-[160px] bg-background/50 border-border/60 hover:border-border/80 focus:ring-primary/20 ring-offset-0 transition-colors">
 						<Calendar className="w-4 h-4 mr-2 text-primary" />
 						<SelectValue placeholder="Period" />
@@ -721,12 +728,8 @@ export default function ProjectStatsDashboard() {
 						<SelectItem value="7">Last 7 days</SelectItem>
 						<SelectItem value="30">Last 30 days</SelectItem>
 						<SelectItem value="90">Last 90 days</SelectItem>
-						{selectedSlug !== "jportal" && (
-							<>
-								<SelectItem value="365">Last 365 days</SelectItem>
-								<SelectItem value="0">Lifetime</SelectItem>
-							</>
-						)}
+						<SelectItem value="365">Last 365 days</SelectItem>
+						<SelectItem value="0">Lifetime</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>

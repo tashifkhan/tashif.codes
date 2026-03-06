@@ -3,6 +3,7 @@
 from .posthog import (
     query_posthog,
     fetch_timeseries,
+    fetch_timeseries_batched,
     fetch_breakdown,
     fetch_all_breakdowns,
 )
@@ -21,6 +22,7 @@ from .merger import merge_stat_lists, merge_timeseries, merge_stats
 __all__ = [
     "query_posthog",
     "fetch_timeseries",
+    "fetch_timeseries_batched",
     "fetch_breakdown",
     "fetch_all_breakdowns",
     "fetch_cf_timeseries",

@@ -23,6 +23,7 @@ from config import PROJECT_REGISTRY, get_project_config, list_available_projects
 from models import AllStats, Metadata, ProjectInfo, ProjectListResponse
 from services import (
     fetch_timeseries,
+    fetch_timeseries_batched,
     fetch_all_breakdowns,
     fetch_cf_timeseries,
     fetch_cf_all_breakdowns,
@@ -33,6 +34,10 @@ from services import (
     filter_timeseries_by_date,
     filter_stats_by_date,
 )
+
+
+POSTHOG_FALLBACK_DAYS = 90
+CLOUDFLARE_EFFECTIVE_LOOKBACK_DAYS = 184
 
 # --- APP SETUP ---
 app = FastAPI(
@@ -112,13 +117,19 @@ async def get_project_stats(
     vercel_file = config["vercel_file"]
     analytics_provider = config.get("analytics_provider", "posthog")
 
+    effective_days = (
+        CLOUDFLARE_EFFECTIVE_LOOKBACK_DAYS
+        if analytics_provider == "cloudflare" and days == 0
+        else days
+    )
+
     # 1. Load Vercel migration data and filter by days
     vercel_data = load_vercel_data(vercel_file)
     if vercel_data is None:
         vercel_data = get_empty_stats()
 
     # Filter Vercel data to match the requested day range (days=0 means lifetime/no filter)
-    filter_days = days if days > 0 else None
+    filter_days = effective_days if effective_days > 0 else None
     filtered_vercel_timeseries = filter_timeseries_by_date(
         vercel_data.timeseries, filter_days
     )
@@ -128,8 +139,9 @@ async def get_project_stats(
     live_timeseries = []
     live_breakdowns = {}
 
-    # For lifetime (days=0), use a large value for queries
-    query_days = days if days > 0 else 3650  # ~10 years for lifetime
+    # For lifetime (days=0), use a large target range.
+    # PostHog timeseries is fetched in batches for reliability.
+    query_days = effective_days if effective_days > 0 else 3650
 
     if analytics_provider == "cloudflare" and cf_site_tag:
         # Fetch from Cloudflare Web Analytics
@@ -139,12 +151,24 @@ async def get_project_stats(
             ts_task, breakdowns_task
         )
     elif ph_id:
-        # Fetch from PostHog
-        ts_task = fetch_timeseries(ph_id, query_days)
+        # Fetch from PostHog.
+        # For lifetime, fetch in 90-day batches and merge.
+        ts_task = (
+            fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=90)
+            if effective_days == 0
+            else fetch_timeseries(ph_id, query_days)
+        )
         breakdowns_task = fetch_all_breakdowns(ph_id, query_days)
         live_timeseries, live_breakdowns = await asyncio.gather(
             ts_task, breakdowns_task
         )
+
+        if query_days > POSTHOG_FALLBACK_DAYS and not live_timeseries:
+            ts_task = fetch_timeseries(ph_id, POSTHOG_FALLBACK_DAYS)
+            breakdowns_task = fetch_all_breakdowns(ph_id, POSTHOG_FALLBACK_DAYS)
+            live_timeseries, live_breakdowns = await asyncio.gather(
+                ts_task, breakdowns_task
+            )
 
     # 3. Merge Vercel and live data
     merged_timeseries = merge_timeseries(filtered_vercel_timeseries, live_timeseries)
@@ -186,8 +210,14 @@ async def get_project_timeseries(
     vercel_file = config["vercel_file"]
     analytics_provider = config.get("analytics_provider", "posthog")
 
+    effective_days = (
+        CLOUDFLARE_EFFECTIVE_LOOKBACK_DAYS
+        if analytics_provider == "cloudflare" and days == 0
+        else days
+    )
+
     # Load Vercel data and filter by days (days=0 means lifetime/no filter)
-    filter_days = days if days > 0 else None
+    filter_days = effective_days if effective_days > 0 else None
     vercel_data = load_vercel_data(vercel_file)
     vercel_ts = (
         filter_timeseries_by_date(vercel_data.timeseries, filter_days)
@@ -197,12 +227,19 @@ async def get_project_timeseries(
 
     # Fetch live timeseries based on provider
     live_ts = []
-    query_days = days if days > 0 else 3650  # ~10 years for lifetime
+    query_days = effective_days if effective_days > 0 else 3650
 
     if analytics_provider == "cloudflare" and cf_site_tag:
         live_ts = await fetch_cf_timeseries(cf_site_tag, query_days)
     elif ph_id:
-        live_ts = await fetch_timeseries(ph_id, query_days)
+        live_ts = (
+            await fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=90)
+            if effective_days == 0
+            else await fetch_timeseries(ph_id, query_days)
+        )
+
+        if query_days > POSTHOG_FALLBACK_DAYS and not live_ts:
+            live_ts = await fetch_timeseries(ph_id, POSTHOG_FALLBACK_DAYS)
 
     # Merge and return
     merged = merge_timeseries(vercel_ts, live_ts)
