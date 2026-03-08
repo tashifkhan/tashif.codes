@@ -59,6 +59,10 @@ PROJECT_REGISTRY = {
         "vercel_file": DATA_DIR / "portfolio.json",
         "display_name": "Portfolio Website",
     },
+    "mooc-utils": {
+        "ph_id": os.getenv("PH_MOOC_UTILS_ID", ""),
+        "display_name": "MOOC Utils",
+    },
 }
 
 
