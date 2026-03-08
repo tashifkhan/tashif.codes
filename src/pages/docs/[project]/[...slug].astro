@@ -397,7 +397,7 @@ const isActive = (itemSlug: string) => {
 				<MarkdownRenderer
 					content={content}
 					project={project}
-					githubBaseUrl={`https://github.com/tashifkhan/${project}`}
+					githubBaseUrl={currentProject?.github_link || `https://github.com/tashifkhan/${project}`}
 				/>
 
 				<div

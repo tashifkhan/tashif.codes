@@ -1,295 +1,580 @@
 ---
-import { renderMarkdownToHtml } from "../lib/renderMarkdown";
+import MarkdownIt from "markdown-it";
+import taskLists from "markdown-it-task-lists";
 
-const { content, githubBaseUrl, project } = Astro.props;
+interface Props {
+  content: string;
+  githubBaseUrl?: string;
+  project?: string;
+  class?: string;
+}
 
-let html = "";
+const { content, githubBaseUrl, project, class: className = "" } = Astro.props;
+
+const slugify = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
 
 function convertRelativeUrl(url: string): string {
-	if (!githubBaseUrl) return url;
-	if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (!githubBaseUrl) return url;
+  if (!url) return url;
+  if (url.startsWith("//")) return url;
 
-	// Convert GitHub URL to raw.githubusercontent.com for images
-	let baseUrl = githubBaseUrl;
-	if (
-		baseUrl &&
-		baseUrl.includes("github.com") &&
-		!baseUrl.includes("raw.githubusercontent.com")
-	) {
-		baseUrl =
-			baseUrl.replace("github.com", "raw.githubusercontent.com") + "/main";
-	}
+  // Keep standard URI schemes unchanged (except file:// handled below)
+  if (/^[a-z][a-z0-9+.-]*:/i.test(url) && !url.startsWith("file://")) {
+    return url;
+  }
 
-	let convertedUrl = url;
+  // Convert file:// protocol links to GitHub blob URLs
+  if (url.startsWith("file://")) {
+    const filePath = url.replace("file://", "");
+    return `${githubBaseUrl}/blob/HEAD/${filePath}`;
+  }
 
-	// Check if it's a local image path that we've moved to public/docs-assets
-	if (
-		Astro.props.project &&
-		(url.startsWith("images/") || url.startsWith("./images/"))
-	) {
-		const imagePath = url.replace(/^\.\//, ""); // Remove ./ if present
-		return `/docs-assets/${Astro.props.project}/${imagePath}`;
-	}
+  let baseUrl = githubBaseUrl;
+  if (
+    baseUrl &&
+    baseUrl.includes("github.com") &&
+    !baseUrl.includes("raw.githubusercontent.com")
+  ) {
+    baseUrl =
+      baseUrl.replace("github.com", "raw.githubusercontent.com") + "/HEAD";
+  }
 
-	if (url.startsWith("./")) {
-		convertedUrl = baseUrl ? baseUrl + "/" + url.substring(2) : url;
-	} else if (url.startsWith("../")) {
-		convertedUrl = baseUrl ? baseUrl + "/" + url.replace(/^\.\.\//, "") : url;
-	} else if (url.startsWith("/")) {
-		convertedUrl = baseUrl ? baseUrl + url : url;
-	} else if (!url.includes("://") && !url.startsWith("#")) {
-		convertedUrl = baseUrl ? baseUrl + "/" + url : url;
-	}
-	return convertedUrl;
+  if (
+    project &&
+    (url.startsWith("images/") || url.startsWith("./images/"))
+  ) {
+    const imagePath = url.replace(/^\.\//, "");
+    return `/docs-assets/${project}/${imagePath}`;
+  }
+
+  if (url.startsWith("./")) {
+    return baseUrl ? baseUrl + "/" + url.substring(2) : url;
+  } else if (url.startsWith("../")) {
+    return baseUrl ? baseUrl + "/" + url.replace(/^\.\.\//, "") : url;
+  } else if (url.startsWith("/")) {
+    return baseUrl ? baseUrl + url : url;
+  } else if (!url.includes("://") && !url.startsWith("#")) {
+    return baseUrl ? baseUrl + "/" + url : url;
+  }
+  return url;
 }
 
-function enhanceHtml(rawHtml: string): string {
-	let html = rawHtml;
+function convertSrcset(srcset: string): string {
+  return srcset
+    .split(",")
+    .map((entry) => {
+      const trimmed = entry.trim();
+      if (!trimmed) return trimmed;
 
-	// Inline code - Enhanced styling using Shadcn variables
-	// Note: rehype-pretty-code might have already styled inline code if configured,
-	// but we aren't using it for inline code yet, so we keep this basic styling.
-	// We strictly avoid matching <pre> content by ensuring we are targeting isolated <code> tags.
-	// Using a negative lookbehind/lookahead is hard in JS regex, but we can rely on
-	// the fact that rehype-pretty-code outputs <pre><code>...</code></pre>.
-	// Simplified approach: Only replace <code> that isn't inside a pre.
-	// Since we are doing regex on string, this is flaky.
-	// Better: Rely on browser CSS or let this run and hope it doesn't break pre blocks.
-	// Using the existing regex `<code>([^<\n]+)</code>` usually avoids multiline pre blocks
-	// but might catch single line ones.
-	html = html.replace(
-		/(?<!<pre[^>]*>)<code>([^<\n]+)<\/code>(?!<\/pre>)/g,
-		'<code class="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold text-foreground border border-border">$1</code>'
-	);
-
-	// Headers - Enhanced with better typography and spacing
-	html = html.replace(
-		/<h1>(.*?)<\/h1>/g,
-		'<h1 class="scroll-m-20 text-3xl sm:text-4xl font-extrabold tracking-tight lg:text-5xl mb-6 mt-8 first:mt-0 text-foreground border-b border-border pb-3">$1</h1>'
-	);
-	html = html.replace(
-		/<h2>(.*?)<\/h2>/g,
-		'<h2 class="scroll-m-20 border-b border-border pb-2 text-2xl sm:text-3xl font-semibold tracking-tight first:mt-0 mb-4 mt-8 text-foreground flex items-center"><span class="w-1 h-6 bg-primary rounded-full mr-3"></span>$1</h2>'
-	);
-	html = html.replace(
-		/<h3>(.*?)<\/h3>/g,
-		'<h3 class="scroll-m-20 text-xl sm:text-2xl font-semibold tracking-tight mb-3 mt-6 text-foreground flex items-center"><span class="w-1 h-5 bg-blue-500 rounded-full mr-2"></span>$1</h3>'
-	);
-	html = html.replace(
-		/<h4>(.*?)<\/h4>/g,
-		'<h4 class="scroll-m-20 text-lg sm:text-xl font-semibold tracking-tight mb-2 mt-5 text-foreground flex items-center"><span class="w-1 h-4 bg-green-500 rounded-full mr-2"></span>$1</h4>'
-	);
-
-	// Bold/italic
-	html = html.replace(
-		/<strong>(.*?)<\/strong>/g,
-		'<strong class="font-bold text-foreground">$1</strong>'
-	);
-	html = html.replace(
-		/<em>(.*?)<\/em>/g,
-		'<em class="italic text-muted-foreground font-medium">$1</em>'
-	);
-
-	// Images
-	html = html.replace(
-		/<img([^>]*)src="([^"]+)"([^>]*)>/g,
-		(match: string, before: string, src: string, after: string) => {
-			const fullSrc = convertRelativeUrl(src);
-			return (
-				"<div class='my-6 group'><img" +
-				before +
-				'src="' +
-				fullSrc +
-				'"' +
-				after +
-				' class="max-w-full h-auto rounded-lg border border-border shadow-md transition-all duration-300 group-hover:shadow-lg mx-auto block" /></div>'
-			);
-		}
-	);
-
-	// Links
-	html = html.replace(
-		/<a href="([^"]+)"([^>]*)>(.*?)<\/a>/g,
-		(match: string, url: string, rest: string, text: string) => {
-			const fullUrl = convertRelativeUrl(url);
-			return (
-				'<a href="' +
-				fullUrl +
-				'" target="_blank" class="font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"' +
-				rest +
-				">" +
-				text +
-				"</a>"
-			);
-		}
-	);
-
-	// Lists
-	html = html.replace(/<ul>/g, '<ul class="my-6 ml-6 list-none space-y-2">');
-	html = html.replace(
-		/<ol>/g,
-		'<ol class="my-6 ml-6 list-decimal space-y-2 marker:text-muted-foreground">'
-	);
-	html = html.replace(
-		/<li>/g,
-		'<li class="text-foreground/90 leading-relaxed flex items-start"><span class="mt-2 mr-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span><span>'
-	);
-	html = html.replace(/<\/li>/g, "</span></li>");
-
-	// Todo checkboxes
-	html = html.replace(
-		/<input type="checkbox"([^>]*)>/g,
-		'<input type="checkbox" class="mr-3 h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"$1>'
-	);
-
-	// Enhanced code blocks - adapted for rehype-pretty-code
-	// rehype-pretty-code outputs <figure><pre>...</pre></figure> or just <pre>...</pre>
-	// We want to add only the wrapper div and copy button, letting shiki handle the highlighting.
-	html = html.replace(
-		/(<pre[^>]*>[\s\S]*?<\/pre>)/g,
-		(match: string, preContent: string) => {
-			// Check if we can extract a language label from data attributes if present (optional)
-			// But usually shiki styles are enough. We'll just add the copy button.
-
-			const copyButton =
-				'<button class="copy-button absolute right-4 top-4 p-2 rounded-md hover:bg-muted/50 text-muted-foreground transition-all duration-200 hover:text-primary z-20" onclick="copyCode(this)" title="Copy code">' +
-				'<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>' +
-				"</button>";
-
-			return (
-				'<div class="relative my-6 rounded-lg border border-border bg-muted/30 group overflow-hidden">' +
-				copyButton +
-				// We don't need to add language class or manually style pre as much,
-				// but we can ensure it has some base scrolling.
-				// Note: shiki adds its own style="background-color:..." so we should be careful not to override it too aggressively often.
-				// We'll wrapper it.
-				preContent +
-				"</div>"
-			);
-		}
-	);
-
-	// Tables
-	html = html.replace(
-		/<table>/g,
-		'<div class="my-6 w-full overflow-y-auto"><table class="w-full caption-bottom text-sm">'
-	);
-	html = html.replace(/<\/table>/g, "</table></div>");
-	html = html.replace(/<thead>/g, '<thead class="[&_tr]:border-b">');
-	html = html.replace(
-		/<th>/g,
-		'<th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">'
-	);
-	html = html.replace(
-		/<td>/g,
-		'<td class="p-4 align-middle [&:has([role=checkbox])]:pr-0">'
-	);
-	html = html.replace(
-		/<tr>/g,
-		'<tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">'
-	);
-
-	// Paragraphs
-	html = html.replace(
-		/<p>/g,
-		'<p class="leading-7 [&:not(:first-child)]:mt-6 text-foreground/90">'
-	);
-
-	// Blockquotes
-	html = html.replace(
-		/<blockquote>/g,
-		'<blockquote class="mt-6 border-l-2 border-primary pl-6 italic text-muted-foreground">'
-	);
-	html = html.replace(/<\/blockquote>/g, "</blockquote>");
-
-	return html;
+      const parts = trimmed.split(/\s+/);
+      const src = parts.shift() || "";
+      const descriptor = parts.join(" ");
+      const converted = convertRelativeUrl(src);
+      return descriptor ? `${converted} ${descriptor}` : converted;
+    })
+    .join(", ");
 }
 
-if (content) {
-	const processed = await renderMarkdownToHtml(content);
-	html = enhanceHtml(processed);
-} else {
-	html = "<p>No content provided.</p>";
+function updateTagAttribute(
+  tag: string,
+  attribute: string,
+  transform: (value: string) => string
+): string {
+  const attrPattern = new RegExp(
+    `\\b${attribute}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`,
+    "i"
+  );
+
+  return tag.replace(
+    attrPattern,
+    (_match: string, _raw: string, doubleQuoted: string, singleQuoted: string, bare: string) => {
+      const value = doubleQuoted ?? singleQuoted ?? bare ?? "";
+      const converted = transform(value);
+
+      if (doubleQuoted !== undefined) {
+        return `${attribute}="${converted}"`;
+      }
+      if (singleQuoted !== undefined) {
+        return `${attribute}='${converted}'`;
+      }
+      return `${attribute}=${converted}`;
+    }
+  );
+}
+
+// ============================================
+// MARKDOWN-IT SETUP
+// ============================================
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true,
+}).use(taskLists, { label: true });
+
+// ---- GFM CALLOUTS (> [!NOTE], > [!WARNING], etc.) ----
+md.core.ruler.after("block", "gfm_alerts", (state: any) => {
+  const tokens = state.tokens;
+  for (let i = 0; i < tokens.length; i++) {
+    if (tokens[i].type === "blockquote_open") {
+      const pOpen = tokens[i + 1];
+      const inline = tokens[i + 2];
+      if (
+        pOpen?.type === "paragraph_open" &&
+        inline?.type === "inline"
+      ) {
+        const match = inline.content.match(
+          /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION|DANGER)\]/i
+        );
+        if (match) {
+          const type = match[1].toLowerCase();
+          tokens[i].attrJoin("class", `gfm-alert gfm-alert-${type}`);
+          inline.content = inline.content.replace(/^\[!.*?\]\s*/, "");
+          if (inline.children?.[0]) {
+            inline.children[0].content =
+              inline.children[0].content.replace(/^\[!.*?\]\s*/, "");
+          }
+          const titleHtml = new state.Token("html_inline", "", 0);
+          const icons: Record<string, string> = {
+            note: '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
+            tip: '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>',
+            warning: '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>',
+            danger: '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
+            caution: '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
+            important: '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>',
+          };
+          const titleMap: Record<string, string> = {
+            note: "Note",
+            tip: "Tip",
+            warning: "Warning",
+            important: "Important",
+            danger: "Danger",
+            caution: "Caution",
+          };
+          titleHtml.content = `<div class="flex items-center gap-2 font-bold mb-2 uppercase tracking-wide text-sm alert-title leading-none">${icons[type] || icons.note} ${titleMap[type] || "Note"}</div>`;
+          inline.children.unshift(titleHtml);
+        }
+      }
+    }
+  }
+});
+
+// ---- CODE BLOCKS ----
+md.renderer.rules.fence = (tokens: any[], idx: number) => {
+  const lang = tokens[idx].info.trim() || "text";
+  const rawCode = tokens[idx].content;
+  const escapedCode = md.utils.escapeHtml(rawCode);
+
+  if (lang === "mermaid") {
+    const normalizedMermaidCode = rawCode
+      .replace(/\|\s*"([^"\n]+)"\s*\|/g, "|$1|")
+      .trim();
+    return `<div class="mermaid-container my-6 overflow-x-auto rounded-xl border border-border bg-card p-6 shadow-sm"><div class="mermaid" style="min-width: fit-content;">${normalizedMermaidCode}</div></div>`;
+  }
+
+  const terminalIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>`;
+  const copyIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="copy-icon"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+  const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-icon hidden text-green-400"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+
+  return `
+    <div class="code-block-container relative group my-6 overflow-hidden rounded-xl border border-border bg-card shadow-md">
+      <div class="flex items-center justify-between px-4 py-2 bg-muted/50 border-b border-border">
+        <div class="flex items-center gap-2">${terminalIcon}<span class="text-xs font-medium text-muted-foreground uppercase tracking-wider font-mono">${lang}</span></div>
+        <button class="copy-btn p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" data-code="${escapedCode}">${copyIcon}${checkIcon}</button>
+      </div>
+      <pre class="m-0 p-6 bg-transparent text-[0.9rem] leading-[1.6] overflow-x-auto"><code class="language-${lang} font-mono text-foreground/90">${escapedCode}</code></pre>
+    </div>
+  `;
+};
+
+// ---- HEADINGS ----
+md.renderer.rules.heading_open = (tokens: any[], idx: number) => {
+  const tag = tokens[idx].tag;
+  const id = slugify(tokens[idx + 1].content);
+
+  if (tag === "h1") {
+    return `<div class="group relative mt-10 mb-6 first:mt-0"><div class="absolute -left-6 top-1.5 opacity-0 group-hover:opacity-100 transition-opacity"><a href="#${id}" class="text-primary hover:text-primary/80">#</a></div><h1 id="${id}" class="scroll-mt-24 text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground border-b border-border pb-4">`;
+  }
+  if (tag === "h2") {
+    return `<div class="group relative mt-10 mb-4"><div class="absolute -left-5 top-1 opacity-0 group-hover:opacity-100 transition-opacity"><a href="#${id}" class="text-primary hover:text-primary/80">#</a></div><h2 id="${id}" class="scroll-mt-24 text-2xl sm:text-3xl font-semibold tracking-tight text-foreground flex items-center gap-2"><span class="w-1 h-6 bg-primary rounded-full shrink-0"></span>`;
+  }
+
+  const sizeMap: Record<string, string> = {
+    h3: "text-xl sm:text-2xl font-semibold",
+    h4: "text-lg sm:text-xl font-medium",
+    h5: "text-base font-medium",
+    h6: "text-sm font-semibold uppercase tracking-wide text-muted-foreground",
+  };
+  const colorBar: Record<string, string> = {
+    h3: "bg-[#20B2AA]",
+    h4: "bg-[#A1C9D9]",
+  };
+  const barHtml = colorBar[tag]
+    ? `<span class="w-1 h-5 ${colorBar[tag]} rounded-full shrink-0"></span>`
+    : "";
+
+  return `<${tag} id="${id}" class="group scroll-mt-24 ${sizeMap[tag] || ""} mt-8 mb-3 text-foreground flex items-center gap-2">${barHtml}`;
+};
+
+md.renderer.rules.heading_close = (tokens: any[], idx: number) => {
+  const tag = tokens[idx].tag;
+  const id = slugify(tokens[idx - 1].content);
+  const link = `<a href="#${id}" class="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary transition-all ml-2 text-sm">#</a>`;
+  return tag === "h1" || tag === "h2"
+    ? `${link}</${tag}></div>`
+    : `${link}</${tag}>`;
+};
+
+let insideOrderedList = false;
+let listItemDepth = 0;
+
+// ---- PARAGRAPHS ----
+md.renderer.rules.paragraph_open = () => {
+  if (listItemDepth > 0) {
+    return `<p class="leading-7 text-foreground/90 my-0">`;
+  }
+  return `<p class="leading-7 text-foreground/90 mb-6 last:mb-0 [&:not(:first-child)]:mt-0">`;
+};
+
+// ---- INLINE CODE ----
+md.renderer.rules.code_inline = (tokens: any[], idx: number) =>
+  `<code class="inline-flex items-center rounded-lg border border-slate-600/40 bg-slate-800/90 px-2.5 py-1 font-mono text-[0.92em] font-semibold text-slate-100 shadow-sm">${md.utils.escapeHtml(tokens[idx].content)}</code>`;
+
+// ---- BLOCKQUOTES (non-callout) ----
+md.renderer.rules.blockquote_open = (
+  tokens: any[],
+  idx: number,
+  options: any,
+  env: any,
+  self: any
+) => {
+  if (tokens[idx].attrGet("class")?.includes("gfm-alert")) {
+    return self.renderToken(tokens, idx, options);
+  }
+  return `<blockquote class="relative my-8 pl-6 pr-4 py-4 border-l-4 border-primary/40 bg-muted/30 rounded-r-xl italic text-muted-foreground shadow-sm ring-1 ring-inset ring-border">`;
+};
+
+// ---- TABLES ----
+md.renderer.rules.table_open = () =>
+  `<div class="my-8 overflow-hidden rounded-xl border border-border shadow-sm bg-card"><div class="overflow-x-auto"><table class="min-w-full border-collapse">`;
+md.renderer.rules.table_close = () => `</table></div></div>`;
+md.renderer.rules.thead_open = () => `<thead class="[&_tr]:border-b">`;
+md.renderer.rules.th_open = () =>
+  `<th class="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border bg-muted/50 backdrop-blur-sm sticky top-0 z-10">`;
+md.renderer.rules.td_open = () =>
+  `<td class="px-6 py-4 text-sm text-foreground/90 border-b border-border/50 whitespace-pre-wrap">`;
+md.renderer.rules.tr_open = () =>
+  `<tr class="border-b border-border/50 transition-colors hover:bg-muted/30">`;
+
+// ---- LISTS ----
+md.renderer.rules.bullet_list_open = () =>
+  `<ul class="my-6 ml-6 list-none space-y-2">`;
+md.renderer.rules.ordered_list_open = (tokens: any[], idx: number) => {
+  insideOrderedList = true;
+  const start = tokens[idx].attrGet("start");
+  const startAttr = start && start !== "1" ? ` start="${start}"` : "";
+  return `<ol class="my-6 ml-6 list-decimal space-y-2 marker:text-primary/70 marker:font-semibold"${startAttr}>`;
+};
+md.renderer.rules.ordered_list_close = () => {
+  insideOrderedList = false;
+  return `</ol>`;
+};
+md.renderer.rules.list_item_open = () => {
+  listItemDepth += 1;
+  if (insideOrderedList) {
+    return `<li class="text-foreground/90 leading-relaxed pl-1">`;
+  }
+  return `<li class="text-foreground/90 leading-relaxed flex items-baseline gap-2.5"><span class="h-2 w-2 shrink-0 rounded-full bg-primary"></span><span class="min-w-0 flex-1">`;
+};
+md.renderer.rules.list_item_close = () => {
+  listItemDepth = Math.max(0, listItemDepth - 1);
+  if (insideOrderedList) {
+    return `</li>`;
+  }
+  return `</span></li>`;
+};
+
+// ---- BOLD / ITALIC ----
+md.renderer.rules.strong_open = () =>
+  `<strong class="font-bold text-foreground">`;
+md.renderer.rules.em_open = () =>
+  `<em class="italic text-muted-foreground font-medium">`;
+
+// ---- HORIZONTAL RULE ----
+md.renderer.rules.hr = () =>
+  `<hr class="my-10 border-t border-border" />`;
+
+// ---- IMAGES ----
+const defaultImageRender =
+  md.renderer.rules.image ||
+  function (tokens: any[], idx: number, options: any, env: any, self: any) {
+    return self.renderToken(tokens, idx, options);
+  };
+md.renderer.rules.image = (
+  tokens: any[],
+  idx: number,
+  options: any,
+  env: any,
+  self: any
+) => {
+  const token = tokens[idx];
+  const src = token.attrGet("src") || "";
+  const alt = token.content || "";
+  const fullSrc = convertRelativeUrl(src);
+  token.attrSet("src", fullSrc);
+  return `<div class="my-6 group"><img src="${fullSrc}" alt="${md.utils.escapeHtml(alt)}" class="max-w-full h-auto rounded-lg border border-border shadow-md transition-all duration-300 group-hover:shadow-lg mx-auto block" /></div>`;
+};
+
+// ---- LINKS ----
+const defaultLinkOpen =
+  md.renderer.rules.link_open ||
+  function (tokens: any[], idx: number, options: any, env: any, self: any) {
+    return self.renderToken(tokens, idx, options);
+  };
+md.renderer.rules.link_open = (
+  tokens: any[],
+  idx: number,
+  options: any,
+  env: any,
+  self: any
+) => {
+  const href = tokens[idx].attrGet("href") || "";
+  const fullHref = convertRelativeUrl(href);
+  tokens[idx].attrSet("href", fullHref);
+  
+  // External links open in new tab
+  if (fullHref.startsWith("http://") || fullHref.startsWith("https://")) {
+    tokens[idx].attrSet("target", "_blank");
+    tokens[idx].attrSet("rel", "noopener noreferrer");
+  }
+  
+  // Add classes
+  const existingClass = tokens[idx].attrGet("class") || "";
+  tokens[idx].attrSet(
+    "class",
+    `${existingClass} font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors`.trim()
+  );
+  
+  return self.renderToken(tokens, idx, options);
+};
+
+// ============================================
+// PRE-PROCESS: Convert file:// links before rendering
+// ============================================
+// markdown-it does not recognize file:// as a valid link protocol,
+// so [text](file://path) is left as raw text. We convert these to
+// GitHub blob URLs before rendering so they become proper links.
+let processedContent = content || "";
+if (githubBaseUrl && processedContent) {
+  // Convert [label](file://path) → [label](https://github.com/.../blob/HEAD/path)
+  // but NOT inside <cite> blocks (those are handled in post-processing)
+  processedContent = processedContent.replace(
+    /(<cite>[\s\S]*?<\/cite>)|(\[([^\]]+)\]\(file:\/\/([^)]+)\))/g,
+    (match: string, citeBlock: string, _fullLink: string, label: string, filePath: string) => {
+      // Preserve <cite> blocks as-is for post-processing
+      if (citeBlock) return citeBlock;
+      const githubUrl = `${githubBaseUrl}/blob/HEAD/${filePath}`;
+      return `[${label}](${githubUrl})`;
+    }
+  );
+}
+
+// ============================================
+// RENDER
+// ============================================
+let renderedHtml = processedContent
+  ? md.render(processedContent)
+  : "<p>No content provided.</p>";
+
+// ---- POST-PROCESSING: Style <cite> blocks with file references ----
+if (githubBaseUrl) {
+  // Convert raw HTML image/source URLs from README markdown
+  renderedHtml = renderedHtml.replace(/<img\b[^>]*>/gi, (imgTag: string) => {
+    let updatedTag = updateTagAttribute(imgTag, "src", convertRelativeUrl);
+    updatedTag = updateTagAttribute(updatedTag, "srcset", convertSrcset);
+    return updateTagAttribute(updatedTag, "data-src", convertRelativeUrl);
+  });
+
+  renderedHtml = renderedHtml.replace(
+    /<source\b[^>]*\bsrcset=(["'])([^"']+)\1[^>]*>/gi,
+    (sourceTag: string) => {
+      return updateTagAttribute(sourceTag, "srcset", convertSrcset);
+    }
+  );
+
+  renderedHtml = renderedHtml.replace(/<video\b[^>]*>/gi, (videoTag: string) => {
+    let updatedTag = updateTagAttribute(videoTag, "src", convertRelativeUrl);
+    return updateTagAttribute(updatedTag, "poster", convertRelativeUrl);
+  });
+
+  renderedHtml = renderedHtml.replace(/<audio\b[^>]*>/gi, (audioTag: string) => {
+    return updateTagAttribute(audioTag, "src", convertRelativeUrl);
+  });
+
+  renderedHtml = renderedHtml.replace(/<a\b[^>]*>/gi, (anchorTag: string) => {
+    return updateTagAttribute(anchorTag, "href", convertRelativeUrl);
+  });
+
+  // Convert <cite> blocks into styled reference cards
+  renderedHtml = renderedHtml.replace(
+    /<cite>([\s\S]*?)<\/cite>/g,
+    (_match: string, inner: string) => {
+      // Parse markdown links [text](file://path) within the cite block
+      const fileIcon = `<svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`;
+      const linkPattern = /\[([^\]]+)\]\(file:\/\/([^)]+)\)/g;
+      const links: string[] = [];
+      let linkMatch;
+      while ((linkMatch = linkPattern.exec(inner)) !== null) {
+        const [, label, filePath] = linkMatch;
+        const githubUrl = `${githubBaseUrl}/blob/HEAD/${filePath}`;
+        links.push(
+          `<a href="${githubUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 border border-border text-xs font-mono text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all duration-200">${fileIcon}<span class="truncate">${label}</span></a>`
+        );
+      }
+      if (links.length === 0) return `<cite>${inner}</cite>`;
+
+      const folderIcon = `<svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>`;
+      return `<div class="my-6 rounded-xl border border-border bg-card/50 overflow-hidden">
+        <div class="flex items-center gap-2 px-4 py-2.5 bg-muted/30 border-b border-border text-sm font-semibold text-foreground">
+          ${folderIcon} Referenced Files
+        </div>
+        <div class="px-4 py-3 flex flex-wrap gap-2">${links.join("")}</div>
+      </div>`;
+    }
+  );
+
+  // Also convert any remaining file:// links outside cite blocks (Diagram sources, Section sources, inline)
+  // These are already handled by convertRelativeUrl in the link renderer,
+  // but catch any that markdown-it passed through as raw HTML
+  renderedHtml = renderedHtml.replace(
+    /href="file:\/\/([^"]+)"/g,
+    (_match: string, filePath: string) => {
+      return `href="${githubBaseUrl}/blob/HEAD/${filePath}" target="_blank" rel="noopener noreferrer"`;
+    }
+  );
+
+  // Catch any remaining raw [text](file://path) that wasn't parsed as a link
+  renderedHtml = renderedHtml.replace(
+    /\[([^\]]+)\]\(file:\/\/([^)]+)\)/g,
+    (_match: string, label: string, filePath: string) => {
+      const githubUrl = `${githubBaseUrl}/blob/HEAD/${filePath}`;
+      return `<a href="${githubUrl}" target="_blank" rel="noopener noreferrer" class="font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors">${label}</a>`;
+    }
+  );
 }
 ---
 
-<div class="prose prose-neutral dark:prose-invert max-w-none" set:html={html} />
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/prism-themes/1.9.0/prism-one-dark.min.css"
+  rel="stylesheet"
+/>
 
-<script is:inline>
-	function copyCode(button) {
-		const pre = button.parentElement.querySelector("pre");
-		const code = pre.textContent || pre.innerText;
-
-		// Create a temporary textarea for older browsers
-		const textarea = document.createElement("textarea");
-		textarea.value = code;
-		textarea.style.position = "fixed";
-		textarea.style.opacity = "0";
-		document.body.appendChild(textarea);
-
-		try {
-			// Try modern clipboard API first
-			if (navigator.clipboard && window.isSecureContext) {
-				navigator.clipboard
-					.writeText(code)
-					.then(() => {
-						showCopyFeedback(button, true);
-					})
-					.catch(() => {
-						// Fallback to selection method
-						fallbackCopy();
-					});
-			} else {
-				// Fallback for older browsers
-				fallbackCopy();
-			}
-		} catch (err) {
-			fallbackCopy();
-		}
-
-		function fallbackCopy() {
-			textarea.select();
-			textarea.setSelectionRange(0, 99999); // For mobile devices
-			try {
-				document.execCommand("copy");
-				showCopyFeedback(button, true);
-			} catch (err) {
-				console.error("Failed to copy: ", err);
-				showCopyFeedback(button, false);
-			}
-		}
-
-		// Clean up
-		document.body.removeChild(textarea);
-	}
-
-	function showCopyFeedback(button, success) {
-		const originalHTML = button.innerHTML;
-
-		if (success) {
-			button.classList.add("text-green-500");
-			button.innerHTML =
-				'<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-			button.title = "Copied!";
-		} else {
-			button.classList.add("text-red-500");
-			button.innerHTML =
-				'<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
-			button.title = "Failed to copy";
-		}
-
-		setTimeout(() => {
-			button.classList.remove("text-green-500", "text-red-500");
-			button.innerHTML = originalHTML;
-			button.title = "Copy code";
-		}, 2000);
-	}
-</script>
+<div
+  class:list={[
+    "max-w-none text-base font-sans antialiased",
+    // Details / Summary accordions
+    "[&_details]:my-8 [&_details]:overflow-hidden [&_details]:rounded-xl [&_details]:border [&_details]:border-border [&_details]:bg-card [&_details]:shadow-sm",
+    "[&_summary]:cursor-pointer [&_summary]:px-6 [&_summary]:py-4 [&_summary]:font-semibold [&_summary]:text-foreground hover:[&_summary]:bg-muted/50 [&_summary]:transition-colors [&_summary]:outline-none",
+    "[&_details[open]_summary]:border-b [&_details[open]_summary]:border-border [&_details[open]_summary]:bg-muted/30",
+    "[&_details_>_*:not(summary)]:px-6 [&_details_>_p:first-of-type]:mt-6 [&_details_>_*:last-child]:mb-6",
+    // GFM Callouts
+    "[&_.gfm-alert]:my-8 [&_.gfm-alert]:border-l-4 [&_.gfm-alert]:px-6 [&_.gfm-alert]:py-4 [&_.gfm-alert]:rounded-xl [&_.gfm-alert]:shadow-sm",
+    "[&_.gfm-alert-note]:border-blue-500 [&_.gfm-alert-note]:bg-[#0a101f] [&_.gfm-alert-note_.alert-title]:text-blue-500",
+    "[&_.gfm-alert-tip]:border-green-500 [&_.gfm-alert-tip]:bg-[#0a1510] [&_.gfm-alert-tip_.alert-title]:text-green-500",
+    "[&_.gfm-alert-important]:border-purple-500 [&_.gfm-alert-important]:bg-[#120a1f] [&_.gfm-alert-important_.alert-title]:text-purple-500",
+    "[&_.gfm-alert-warning]:border-yellow-500 [&_.gfm-alert-warning]:bg-[#1a160a] [&_.gfm-alert-warning_.alert-title]:text-yellow-500",
+    "[&_.gfm-alert-danger]:border-red-600 [&_.gfm-alert-danger]:bg-[#1a0a0a] [&_.gfm-alert-danger_.alert-title]:text-red-500",
+    "[&_.gfm-alert-caution]:border-red-600 [&_.gfm-alert-caution]:bg-[#1a0a0a] [&_.gfm-alert-caution_.alert-title]:text-red-500",
+    // Task list checkboxes
+    "[&_.task-list-item]:list-none [&_.task-list-item]:flex [&_.task-list-item]:items-start [&_.task-list-item]:gap-2",
+    "[&_.task-list-item_input]:mt-1.5 [&_.task-list-item_input]:h-4 [&_.task-list-item_input]:w-4 [&_.task-list-item_input]:shrink-0 [&_.task-list-item_input]:rounded-sm [&_.task-list-item_input]:border [&_.task-list-item_input]:border-primary [&_.task-list-item_input]:accent-primary",
+    // Cite blocks (reference file lists)
+    "[&_cite]:block [&_cite]:my-6 [&_cite]:p-4 [&_cite]:rounded-lg [&_cite]:border [&_cite]:border-border [&_cite]:bg-muted/30 [&_cite]:text-sm [&_cite]:text-muted-foreground [&_cite]:not-italic",
+    className,
+  ]}
+  set:html={renderedHtml}
+/>
 
 <script>
-	import mermaid from "mermaid";
-	mermaid.initialize({
-		startOnLoad: true,
-		theme: "dark",
-	});
+  import mermaid from "mermaid";
+  import Prism from "prismjs";
+  import "prismjs/plugins/autoloader/prism-autoloader";
+
+  // @ts-ignore - autoloader plugin adds this property
+  if (Prism.plugins.autoloader) {
+    // @ts-ignore
+    Prism.plugins.autoloader.languages_path =
+      "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    // Mermaid
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "dark",
+      sequence: { useMaxWidth: false, diagramMarginX: 16, diagramMarginY: 16 },
+      flowchart: { useMaxWidth: true },
+    });
+    if (document.querySelectorAll(".mermaid").length > 0) {
+      mermaid.run({ querySelector: ".mermaid" });
+    }
+
+    // PrismJS syntax highlighting
+    Prism.highlightAll();
+
+    // Copy buttons
+    document.querySelectorAll(".copy-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const code = btn.getAttribute("data-code");
+        if (!code) return;
+
+        // Unescape HTML entities
+        const textarea = document.createElement("textarea");
+        textarea.innerHTML = code;
+        const decoded = textarea.value;
+
+        try {
+          await navigator.clipboard.writeText(decoded);
+        } catch {
+          // Fallback
+          const ta = document.createElement("textarea");
+          ta.value = decoded;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+        }
+
+        const copyIcon = btn.querySelector(".copy-icon") as HTMLElement;
+        const checkIcon = btn.querySelector(".check-icon") as HTMLElement;
+        if (copyIcon && checkIcon) {
+          copyIcon.classList.add("hidden");
+          checkIcon.classList.remove("hidden");
+          setTimeout(() => {
+            copyIcon.classList.remove("hidden");
+            checkIcon.classList.add("hidden");
+          }, 2000);
+        }
+      });
+    });
+  });
+
+  // Also run on initial load (non-SPA navigation)
+  document.addEventListener("DOMContentLoaded", () => {
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "dark",
+      sequence: { useMaxWidth: false, diagramMarginX: 16, diagramMarginY: 16 },
+      flowchart: { useMaxWidth: true },
+    });
+    if (document.querySelectorAll(".mermaid").length > 0) {
+      mermaid.run({ querySelector: ".mermaid" });
+    }
+    Prism.highlightAll();
+  });
 </script>

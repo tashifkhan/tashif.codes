@@ -8,9 +8,7 @@ const DOCS_DIR = path.join(process.cwd(), 'src/data/docs');
 function resolveProjectDir(projectSlug: string): string | null {
   if (!fs.existsSync(DOCS_DIR)) return null;
   const entries = fs.readdirSync(DOCS_DIR);
-  // Try exact match first
   if (entries.includes(projectSlug)) return projectSlug;
-  // Try case-insensitive match
   const match = entries.find(e => e.toLowerCase() === projectSlug.toLowerCase());
   return match || null;
 }
@@ -25,14 +23,14 @@ export interface DocPage {
     slug: string;
     content: string;
     title: string;
-    headings: any[]; // we can parse headings if needed, or let MarkdownRenderer handle it
+    headings: any[];
   };
 }
 
 export interface SidebarItem {
   title: string;
-  slug: string; // full slug including project/subdirectory
-  path: string; // relative path for matching
+  slug: string;
+  path: string;
   order: number;
   children?: SidebarItem[];
   depth: number;
@@ -75,17 +73,16 @@ export function getAllDocs(): DocPage[] {
 
     for (const file of files) {
       const content = fs.readFileSync(path.join(projectDir, file), 'utf-8');
-      // Create slug from file path, remove extension
       const slug = file.replace(/\.md$/, '');
-      const title = formatTitle(path.basename(slug)); // Simple title extraction implementation
+      const title = formatTitle(path.basename(slug));
 
       pages.push({
         params: {
-          project: project.toLowerCase(), // Normalize URL to lowercase
+          project: project.toLowerCase(),
           slug, 
         },
         props: {
-          project, // Keep original directory name for internal use
+          project,
           slug,
           content,
           title,
@@ -97,120 +94,92 @@ export function getAllDocs(): DocPage[] {
   return pages;
 }
 
-// Helper to parse filename ordering "1.2.3-title" -> [1, 2, 3]
+// ============================================================
+// SIDEBAR BUILDING
+// ============================================================
+
+// Detect if a project uses numbered prefix naming (e.g., "1-overview.md", "3.1-title.md")
+function usesNumberedPrefixes(projectDir: string): boolean {
+  const entries = fs.readdirSync(projectDir);
+  const mdFiles = entries.filter(e => e.endsWith('.md'));
+  if (mdFiles.length === 0) return false;
+  
+  // If more than half the top-level .md files start with a number, it's numbered
+  const numbered = mdFiles.filter(f => /^\d+/.test(f));
+  return numbered.length > mdFiles.length / 2;
+}
+
+// ---- NUMBERED PREFIX APPROACH (existing logic for jportal, etc.) ----
+
 function parseOrder(filename: string): number[] {
   const match = filename.match(/^(\d+(\.\d+)*)/);
   if (!match) return [999];
   return match[0].split('.').map(Number);
 }
 
-// Helper to compare two order arrays
 function compareOrders(a: number[], b: number[]): number {
   for (let i = 0; i < Math.max(a.length, b.length); i++) {
     const valA = a[i] ?? -1;
-    const valB = b[i] ?? -1; 
-    // If one is shorter (parent), it comes first? 
-    // e.g. [1] vs [1, 1]. valA=1, valB=1. Next: valA=-1, valB=1.
-    // -1 means "end of segments". Parent [1] should come before child [1, 1].
+    const valB = b[i] ?? -1;
     if (valA !== valB) {
-        if (valA === -1) return -1; // a is shorter, goes first
-        if (valB === -1) return 1;  // b is shorter, goes first
-        return valA - valB;
+      if (valA === -1) return -1;
+      if (valB === -1) return 1;
+      return valA - valB;
     }
   }
   return 0;
 }
 
-// Generate sidebar structure for a project
-export function getSidebar(projectSlug: string): SidebarItem[] {
-  const realProjectDirName = resolveProjectDir(projectSlug);
-  if (!realProjectDirName) return [];
-
-  const projectDir = path.join(DOCS_DIR, realProjectDirName);
-  if (!fs.existsSync(projectDir)) return [];
-
+function buildNumberedSidebar(projectSlug: string, projectDir: string): SidebarItem[] {
   const files = getMarkdownFiles(projectDir);
   
-  // 1. Map files to nodes with parsed order details
   interface Node extends SidebarItem {
     orderPath: number[];
   }
   
   const nodes: Node[] = files.map(file => {
     const filename = path.basename(file, '.md');
-    // If file is in subdirectory, handle that? 
-    // For now assuming the numbering "3.1.2-..." is globally unique or relative to flat list
-    // The previous listing showed flattened numbered files. 
-    // We'll use the filename itself for numbering/hierarchy.
-    
     const orderPath = parseOrder(filename);
-    const title = formatTitle(filename.replace(/^(\d+(\.\d+)*)-?/, '')); // Remove numbering from title
+    const title = formatTitle(filename.replace(/^(\d+(\.\d+)*)-?/, ''));
 
     return {
       title: title || formatTitle(filename),
       slug: `${projectSlug.toLowerCase()}/${file.replace(/\.md$/, '')}`,
       path: file,
-      order: orderPath[0], // Top level order for basic sorting
+      order: orderPath[0],
       orderPath: orderPath,
       children: [],
       depth: orderPath.length - 1
     };
   });
 
-  // 2. Sort nodes logic
   nodes.sort((a, b) => compareOrders(a.orderPath, b.orderPath));
 
-  // 3. Build Tree
-  // We can rebuild tree by iterating sorted list and finding parents
   const root: SidebarItem[] = [];
-  const stack: Node[] = []; // Stack to keep track of potential parents
+  const stack: Node[] = [];
 
   for (const node of nodes) {
     if (stack.length === 0) {
-      if (node.orderPath.length > 1) {
-          // It's a child but we haven't seen parent? 
-          // Just put at root or find best fit?
-          // If strict hierarchy [1] -> [1,1], then [1,1] shouldn't be root.
-          // flexible: put at root if no parent found.
-          root.push(node);
-          stack.push(node);
-      } else {
-          root.push(node);
-          stack.push(node);
-      }
+      root.push(node);
+      stack.push(node);
       continue;
     }
 
-    // Check if stack top is parent
-    // Parent [1] is parent of [1, 1], [1, 2]
-    // Parent [1, 1] is parent of [1, 1, 1]
-    
-    // Check if 'node' is a direct child of 'last'
-    // A direct child must extend the parent's path by 1 segment, 
-    // AND match the parent's path prefix.
-    
-    // Pop from stack until we find a parent or stack empty
     while (stack.length > 0) {
       const parent = stack[stack.length - 1];
-      
       const isPrefix = parent.orderPath.every((val, i) => val === node.orderPath[i]);
       const isDirectChild = isPrefix && node.orderPath.length === parent.orderPath.length + 1;
       
       if (isDirectChild) {
         if (!parent.children) parent.children = [];
         parent.children.push(node);
-        // This node might be a parent to subsequent nodes
         stack.push(node); 
         break;
       } else {
-        // Current stack top is not parent.
-        // It could be a sibling ([1, 1] vs [1, 2]) -> pop [1, 1] to see [1].
-        // Or completely unrelated ([1] vs [2]) -> pop [1]
         stack.pop();
         if (stack.length === 0) {
-          // No parent found in stack, add to root
           root.push(node);
-          stack.push(node); // Track this new root
+          stack.push(node);
           break;
         }
       }
@@ -220,62 +189,198 @@ export function getSidebar(projectSlug: string): SidebarItem[] {
   return root;
 }
 
-export function getProjectEntry(project: string): string | null {
-    const sidebar = getSidebar(project);
-    if (sidebar.length === 0) return null;
+// ---- FOLDER-BASED APPROACH (for talentsync and similar) ----
+
+// Predefined section order for folder-based projects.
+// Items not listed here will be appended at the end in filesystem order.
+const SECTION_ORDER: Record<string, string[]> = {
+  talentsync: [
+    'Getting Started',
+    'Project Overview',
+    'Architecture Overview',
+    'Backend API Reference',
+    'Feature Implementation',
+    'Frontend Application',
+    'AI_ML Integration',
+    'Database Design',
+    'Authentication & Authorization',
+    'Deployment & DevOps',
+    'API Client Libraries',
+    'Testing Strategy',
+    'Troubleshooting & FAQ',
+  ],
+};
+
+function sortByDefinedOrder(items: SidebarItem[], projectSlug: string): SidebarItem[] {
+  const order = SECTION_ORDER[projectSlug.toLowerCase()];
+  if (!order) return items; // no predefined order, keep filesystem order
+
+  return [...items].sort((a, b) => {
+    const aIdx = order.findIndex(name => name.toLowerCase() === a.title.toLowerCase());
+    const bIdx = order.findIndex(name => name.toLowerCase() === b.title.toLowerCase());
+    // Items in the order list come first; unlisted items go to the end
+    const aPos = aIdx === -1 ? order.length + items.indexOf(a) : aIdx;
+    const bPos = bIdx === -1 ? order.length + items.indexOf(b) : bIdx;
+    return aPos - bPos;
+  });
+}
+
+function buildFolderSidebar(projectSlug: string, projectDir: string): SidebarItem[] {
+  const normalizedSlug = projectSlug.toLowerCase();
+
+  function buildTreeFromDir(dir: string, depth: number): SidebarItem[] {
+    const entries = fs.readdirSync(dir);
+    const items: SidebarItem[] = [];
     
-    // Find first leaf
-    function findFirstLeaf(items: SidebarItem[]): string | null {
-        for (const item of items) {
-            if (item.slug !== '#') return item.slug;
-            if (item.children) {
-                const childSlug = findFirstLeaf(item.children);
-                if (childSlug) return childSlug;
-            }
-        }
-        return null;
+    // Separate files and directories
+    const mdFiles: string[] = [];
+    const subDirs: string[] = [];
+    
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry);
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory() && entry !== 'images') {
+        subDirs.push(entry);
+      } else if (entry.endsWith('.md')) {
+        mdFiles.push(entry);
+      }
     }
-    
-    return findFirstLeaf(sidebar);
+
+    // Determine the parent directory name for matching "index" files
+    const dirName = path.basename(dir);
+
+    // Process subdirectories first (they become section groups)
+    for (const subDir of subDirs) {
+      const subDirPath = path.join(dir, subDir);
+      const children = buildTreeFromDir(subDirPath, depth + 1);
+      
+      // Look for an "index" file in the subdirectory:
+      // A file whose name matches the directory name (e.g., "Architecture Overview/Architecture Overview.md")
+      const subDirEntries = fs.readdirSync(subDirPath).filter(f => f.endsWith('.md'));
+      const indexFileName = subDirEntries.find(f => {
+        const baseName = f.replace(/\.md$/, '');
+        return baseName.toLowerCase() === subDir.toLowerCase();
+      });
+      
+      if (indexFileName) {
+        // The index file becomes the section header link
+        const relativePath = path.relative(projectDir, path.join(subDirPath, indexFileName));
+        const slug = relativePath.replace(/\.md$/, '');
+        
+        // Filter out the index file from children (it's now the parent link)
+        const filteredChildren = children.filter(c => {
+          const childBasename = path.basename(c.path, '.md');
+          return childBasename.toLowerCase() !== subDir.toLowerCase();
+        });
+
+        items.push({
+          title: formatTitle(subDir),
+          slug: `${normalizedSlug}/${slug}`,
+          path: relativePath,
+          order: 0,
+          children: filteredChildren.length > 0 ? filteredChildren : undefined,
+          depth,
+        });
+      } else {
+        // No index file found - create a non-linkable section header
+        // Use the first child's slug as a fallback, or '#'
+        const firstChild = children[0];
+        items.push({
+          title: formatTitle(subDir),
+          slug: firstChild ? firstChild.slug : '#',
+          path: subDir,
+          order: 0,
+          children: children.length > 0 ? children : undefined,
+          depth,
+        });
+      }
+    }
+
+    // Process standalone .md files (not the index file for this directory)
+    for (const file of mdFiles) {
+      const baseName = file.replace(/\.md$/, '');
+      
+      // Skip the index file if we're in a subdirectory (it was already used as the section header)
+      if (depth > 0 && baseName.toLowerCase() === dirName.toLowerCase()) {
+        continue;
+      }
+      
+      const relativePath = path.relative(projectDir, path.join(dir, file));
+      const slug = relativePath.replace(/\.md$/, '');
+
+      items.push({
+        title: formatTitle(baseName),
+        slug: `${normalizedSlug}/${slug}`,
+        path: relativePath,
+        order: 0,
+        depth,
+      });
+    }
+
+    return items;
+  }
+
+  const items = buildTreeFromDir(projectDir, 0);
+  // Apply predefined section ordering at the top level
+  return sortByDefinedOrder(items, normalizedSlug);
+}
+
+// ---- UNIFIED getSidebar ----
+
+export function getSidebar(projectSlug: string): SidebarItem[] {
+  const realProjectDirName = resolveProjectDir(projectSlug);
+  if (!realProjectDirName) return [];
+
+  const projectDir = path.join(DOCS_DIR, realProjectDirName);
+  if (!fs.existsSync(projectDir)) return [];
+
+  // Detect structure type and dispatch
+  if (usesNumberedPrefixes(projectDir)) {
+    return buildNumberedSidebar(projectSlug, projectDir);
+  } else {
+    return buildFolderSidebar(projectSlug, projectDir);
+  }
+}
+
+export function getProjectEntry(project: string): string | null {
+  const sidebar = getSidebar(project);
+  if (sidebar.length === 0) return null;
+  
+  function findFirstLeaf(items: SidebarItem[]): string | null {
+    for (const item of items) {
+      if (item.slug !== '#') return item.slug;
+      if (item.children) {
+        const childSlug = findFirstLeaf(item.children);
+        if (childSlug) return childSlug;
+      }
+    }
+    return null;
+  }
+  
+  return findFirstLeaf(sidebar);
 }
 
 export function getDocPagination(project: string, currentSlug: string): { prev: SidebarItem | null, next: SidebarItem | null } {
-    const sidebar = getSidebar(project);
-    
-    // Flatten the sidebar to get linear order
-    const flat: SidebarItem[] = [];
-    function traverse(items: SidebarItem[]) {
-        for (const item of items) {
-            if (item.slug !== '#') flat.push(item);
-            if (item.children) traverse(item.children);
-        }
+  const sidebar = getSidebar(project);
+  
+  const flat: SidebarItem[] = [];
+  function traverse(items: SidebarItem[]) {
+    for (const item of items) {
+      if (item.slug !== '#') flat.push(item);
+      if (item.children) traverse(item.children);
     }
-    traverse(sidebar);
-    
-    // Match logic:
-    // currentSlug from params might be "1-overview" (partial) or full "project/1-overview"
-    // The sidebar slugs are "project/1-overview".
-    // Let's normalize by checking suffix or exact match.
-    
-    const currentIndex = flat.findIndex(item => {
-        // Ensure robust matching. item.slug is "project/path". currentSlug is usually just "path" from Astro params?
-        // Wait, currentSlug from Astro `[...slug]` param matches the path *inside* the project.
-        // But our sidebar item.slug includes the project prefix?
-        // Let's check getSidebar impl above: 
-        // slug: `${projectSlug.toLowerCase()}/${file.replace(/\.md$/, '')}`
-        // So item.slug is "project/folder/file".
-        // currentSlug passed from page is likely "folder/file" or "file".
-        // Let's try to match strict if possible, or contains.
-        
-        // Actually best is to construct full slug from project + currentSlug
-        const fullFn = `${project.toLowerCase()}/${currentSlug}`;
-        return item.slug === fullFn;
-    });
-    
-    if (currentIndex === -1) return { prev: null, next: null };
-    
-    return {
-        prev: currentIndex > 0 ? flat[currentIndex - 1] : null,
-        next: currentIndex < flat.length - 1 ? flat[currentIndex + 1] : null
-    };
+  }
+  traverse(sidebar);
+  
+  const currentIndex = flat.findIndex(item => {
+    const fullFn = `${project.toLowerCase()}/${currentSlug}`;
+    return item.slug === fullFn;
+  });
+  
+  if (currentIndex === -1) return { prev: null, next: null };
+  
+  return {
+    prev: currentIndex > 0 ? flat[currentIndex - 1] : null,
+    next: currentIndex < flat.length - 1 ? flat[currentIndex + 1] : null
+  };
 }
