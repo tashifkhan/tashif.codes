@@ -325,6 +325,35 @@ function buildFolderSidebar(projectSlug: string, projectDir: string): SidebarIte
   return sortByDefinedOrder(items, normalizedSlug);
 }
 
+// ---- PINNED TOP SECTIONS ----
+
+// Titles that should always appear first and second in the sidebar, in this order.
+// Matching is case-insensitive and exact.
+const PINNED_OVERVIEW_KEYWORDS = ['project overview', 'overview', 'home'];
+const PINNED_GETTING_STARTED_KEYWORDS = ['getting started', 'introduction'];
+
+function pinTopSections(items: SidebarItem[]): SidebarItem[] {
+  let overviewItem: SidebarItem | undefined;
+  let gettingStartedItem: SidebarItem | undefined;
+  const rest: SidebarItem[] = [];
+
+  for (const item of items) {
+    const t = item.title.toLowerCase().trim();
+    if (!overviewItem && PINNED_OVERVIEW_KEYWORDS.includes(t)) {
+      overviewItem = item;
+    } else if (!gettingStartedItem && PINNED_GETTING_STARTED_KEYWORDS.includes(t)) {
+      gettingStartedItem = item;
+    } else {
+      rest.push(item);
+    }
+  }
+
+  const pinned: SidebarItem[] = [];
+  if (overviewItem) pinned.push(overviewItem);
+  if (gettingStartedItem) pinned.push(gettingStartedItem);
+  return [...pinned, ...rest];
+}
+
 // ---- UNIFIED getSidebar ----
 
 export function getSidebar(projectSlug: string): SidebarItem[] {
@@ -335,11 +364,15 @@ export function getSidebar(projectSlug: string): SidebarItem[] {
   if (!fs.existsSync(projectDir)) return [];
 
   // Detect structure type and dispatch
+  let sidebar: SidebarItem[];
   if (usesNumberedPrefixes(projectDir)) {
-    return buildNumberedSidebar(projectSlug, projectDir);
+    sidebar = buildNumberedSidebar(projectSlug, projectDir);
   } else {
-    return buildFolderSidebar(projectSlug, projectDir);
+    sidebar = buildFolderSidebar(projectSlug, projectDir);
   }
+
+  // Always float "Project Overview" and "Getting Started" to the top
+  return pinTopSections(sidebar);
 }
 
 export function getProjectEntry(project: string): string | null {

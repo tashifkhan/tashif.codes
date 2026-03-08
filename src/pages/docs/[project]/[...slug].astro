@@ -16,6 +16,7 @@ import {
 	FileText,
 	Github,
 	ExternalLink,
+	ArrowLeft,
 } from "lucide-react";
 import { allProjects, type Project } from "../../../data/projects";
 
@@ -54,15 +55,27 @@ const isActive = (itemSlug: string) => {
 				<div
 					class="p-4 border-b border-border sticky top-0 bg-muted/10 z-10 backdrop-blur-sm"
 				>
-					<h2
-						class="font-semibold text-lg tracking-tight capitalize flex items-center gap-2"
-					>
-						<FileText className="w-5 h-5 text-muted-foreground" />
-						{currentProject?.title || project.replace(/-/g, " ")}
-					</h2>
-					<p class="text-xs text-muted-foreground mt-1 ml-7">Documentation</p>
+				<h2
+					class="font-semibold text-lg tracking-tight capitalize flex items-center gap-2"
+				>
+					<FileText className="w-5 h-5 text-muted-foreground" />
+					{currentProject?.title || project.replace(/-/g, " ")}
+				</h2>
+				<p class="text-xs text-muted-foreground mt-1 ml-7">Documentation</p>
 
-					<div class="flex gap-2 mt-4">
+				<a
+					href="/"
+					class={buttonVariants({
+						variant: "ghost",
+						size: "sm",
+						className: "w-full h-8 text-xs justify-start gap-1.5 text-muted-foreground mt-3",
+					})}
+				>
+					<ArrowLeft className="w-3.5 h-3.5" />
+					Back to Home
+				</a>
+
+				<div class="flex gap-2 mt-2">
 						{
 							currentProject?.live_website_url && (
 								<a
@@ -202,6 +215,18 @@ const isActive = (itemSlug: string) => {
 						<X className="h-4 w-4" />
 					</Button>
 				</div>
+
+				<a
+					href="/"
+					class={buttonVariants({
+						variant: "ghost",
+						size: "sm",
+						className: "w-full h-8 text-xs justify-start gap-1.5 text-muted-foreground mb-2",
+					})}
+				>
+					<ArrowLeft className="w-3.5 h-3.5" />
+					Back to Home
+				</a>
 
 				<div class="flex gap-2">
 					{

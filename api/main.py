@@ -114,7 +114,7 @@ async def get_project_stats(
 
     ph_id = config["ph_id"]
     cf_site_tag = config.get("cf_site_tag", "")
-    vercel_file = config["vercel_file"]
+    vercel_file = config.get("vercel_file")
     analytics_provider = config.get("analytics_provider", "posthog")
 
     effective_days = (
@@ -124,8 +124,11 @@ async def get_project_stats(
     )
 
     # 1. Load Vercel migration data and filter by days
-    vercel_data = load_vercel_data(vercel_file)
-    if vercel_data is None:
+    if vercel_file:
+        vercel_data = load_vercel_data(vercel_file)
+        if vercel_data is None:
+            vercel_data = get_empty_stats()
+    else:
         vercel_data = get_empty_stats()
 
     # Filter Vercel data to match the requested day range (days=0 means lifetime/no filter)
@@ -207,7 +210,7 @@ async def get_project_timeseries(
 
     ph_id = config["ph_id"]
     cf_site_tag = config.get("cf_site_tag", "")
-    vercel_file = config["vercel_file"]
+    vercel_file = config.get("vercel_file")
     analytics_provider = config.get("analytics_provider", "posthog")
 
     effective_days = (
@@ -218,7 +221,7 @@ async def get_project_timeseries(
 
     # Load Vercel data and filter by days (days=0 means lifetime/no filter)
     filter_days = effective_days if effective_days > 0 else None
-    vercel_data = load_vercel_data(vercel_file)
+    vercel_data = load_vercel_data(vercel_file) if vercel_file else None
     vercel_ts = (
         filter_timeseries_by_date(vercel_data.timeseries, filter_days)
         if vercel_data
