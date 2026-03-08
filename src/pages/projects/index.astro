@@ -118,6 +118,18 @@ const projects: Project[] = allProjects;
 		return fuzzySearch(textLower, queryLower);
 	}
 
+	function normalizeRepoName(value?: string | null): string {
+		if (!value) return "";
+		const cleaned = value
+			.toLowerCase()
+			.trim()
+			.replace(/[?#].*$/, "")
+			.replace(/\.git$/, "")
+			.replace(/\/+$/, "");
+		const parts = cleaned.split("/").filter(Boolean);
+		return parts[parts.length - 1] || "";
+	}
+
 	// Listen for filter events: exact matches first then fuzzy; reorders DOM
 	document.addEventListener("project-search", (e: Event) => {
 		const { term: searchTerm, showLiveOnly, list } = (e as CustomEvent).detail;
@@ -147,20 +159,22 @@ const projects: Project[] = allProjects;
 			// Star list filtering
 			let listFilter = true;
 			if (list && list !== "all-projects") {
-				const repoName = card
+				const repoName = normalizeRepoName(
+					card
 					.querySelector("[data-github-link]")
 					?.getAttribute("data-url")
-					?.split("/")
-					?.pop();
+				);
 				// @ts-ignore
 				const starLists = window.__STAR_LISTS__ as
 					| { name: string; repositories?: string[] }[]
 					| undefined;
 				const selected = starLists?.find((l) => l.name === list);
-				const repoNames = (selected?.repositories || []).map((r) =>
-					r.split("/").pop()
+				const repoNames = new Set(
+					(selected?.repositories || [])
+						.map((r) => normalizeRepoName(r))
+						.filter(Boolean)
 				);
-				listFilter = repoName ? repoNames.includes(repoName) : false;
+				listFilter = repoName ? repoNames.has(repoName) : false;
 			}
 
 			let isExact = false;
