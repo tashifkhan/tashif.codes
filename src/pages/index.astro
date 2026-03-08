@@ -253,7 +253,7 @@ const socials = [
 		</nav>
 
 		<!-- Main Content -->
-		<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+		<main transition:animate="fade" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 			<!-- Welcome restore pill (shown when banner is hidden) -->
 			<div id="welcome-restore" class="mb-4 hidden">
 				<Button
@@ -1286,7 +1286,7 @@ const socials = [
 	});
 
 	// Initialize filters and handle link clicks
-	document.addEventListener("DOMContentLoaded", () => {
+	document.addEventListener("astro:page-load", () => {
 		const theme = localStorage.getItem("theme") || "dark";
 		document.documentElement.classList.toggle("dark", theme === "dark");
 

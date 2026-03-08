@@ -563,18 +563,4 @@ if (githubBaseUrl) {
       });
     });
   });
-
-  // Also run on initial load (non-SPA navigation)
-  document.addEventListener("DOMContentLoaded", () => {
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: "dark",
-      sequence: { useMaxWidth: false, diagramMarginX: 16, diagramMarginY: 16 },
-      flowchart: { useMaxWidth: true },
-    });
-    if (document.querySelectorAll(".mermaid").length > 0) {
-      mermaid.run({ querySelector: ".mermaid" });
-    }
-    Prism.highlightAll();
-  });
 </script>

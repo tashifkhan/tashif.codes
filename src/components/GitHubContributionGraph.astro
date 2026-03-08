@@ -373,7 +373,7 @@ const starredLists = starLists || [];
 	import { WebHaptics as WebHapticsContrib } from 'web-haptics';
 	const hapticsDays = new WebHapticsContrib();
 
-	document.addEventListener('DOMContentLoaded', function() {
+	document.addEventListener('astro:page-load', function() {
 		const yearSelector = document.getElementById('year-selector') as HTMLSelectElement;
 		const contributionGrid = document.getElementById('contribution-grid');
 		const tooltip = document.getElementById('contribution-tooltip');
@@ -617,7 +617,7 @@ const starredLists = starLists || [];
 import { WebHaptics } from 'web-haptics';
 const haptics = new WebHaptics();
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('astro:page-load', () => {
 	const buttons = document.querySelectorAll('[data-star-list-select]');
 	buttons.forEach(btn => {
 		btn.addEventListener('click', () => {

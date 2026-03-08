@@ -338,7 +338,7 @@ function getFallbackIcon(): string {
 
 <script>
 	// Handle language icon loading and styling
-	document.addEventListener("DOMContentLoaded", function () {
+	document.addEventListener("astro:page-load", function () {
 		const languageIcons = document.querySelectorAll(".language-icon");
 
 		languageIcons.forEach((icon) => {

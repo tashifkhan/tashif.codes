@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import PostHog from "../components/posthog.astro";
+import { ClientRouter } from "astro:transitions";
 
 interface Props {
 	title: string;
@@ -20,39 +21,40 @@ const { title } = Astro.props;
 		<link rel="icon" type="image/png" href="/favicon.png" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
+		<ClientRouter />
 	</head>
 	<body>
 		<slot />
 		<PostHog />
 		<Analytics />
-		<script>
-			// Check for saved theme or use system preference
-			const getTheme = () => {
-				if (typeof localStorage !== "undefined") {
-					const storedTheme = localStorage.getItem("theme");
-					if (storedTheme) {
-						return storedTheme;
-					}
-				}
-				if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-					return "dark";
-				}
-				return "light";
-			};
+		<script is:inline>
+			// Apply theme before paint to avoid flash — runs on initial load and after every swap
+			function applyTheme() {
+				const storedTheme = localStorage.getItem("theme");
+				const theme =
+					storedTheme ||
+					(window.matchMedia("(prefers-color-scheme: dark)").matches
+						? "dark"
+						: "light");
 
-			const theme = getTheme();
-			if (theme === "light") {
-				document.documentElement.classList.remove("dark");
-				document.documentElement.classList.remove("cream");
-			} else if (theme === "cream") {
-				document.documentElement.classList.remove("dark");
-				document.documentElement.classList.add("cream");
-			} else {
-				document.documentElement.classList.add("dark");
-				document.documentElement.classList.remove("cream");
+				if (theme === "cream") {
+					document.documentElement.classList.remove("dark");
+					document.documentElement.classList.add("cream");
+				} else if (theme === "dark") {
+					document.documentElement.classList.add("dark");
+					document.documentElement.classList.remove("cream");
+				} else {
+					document.documentElement.classList.remove("dark");
+					document.documentElement.classList.remove("cream");
+				}
+
+				if (!storedTheme) {
+					localStorage.setItem("theme", theme);
+				}
 			}
 
-			window.localStorage.setItem("theme", theme);
+			applyTheme();
+			document.addEventListener("astro:after-swap", applyTheme);
 		</script>
 	</body>
 </html>

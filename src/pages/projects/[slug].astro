@@ -207,7 +207,7 @@ export async function getStaticPaths() {
 			</div>
 		</header>
 
-		<main class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+		<main transition:animate="fade" class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
 			<div
 				class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-6 sm:p-8 lg:p-10 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg"
 			>
@@ -237,7 +237,7 @@ export async function getStaticPaths() {
 	import { WebHaptics } from "web-haptics";
 	const haptics = new WebHaptics();
 
-	document.addEventListener("DOMContentLoaded", () => {
+	document.addEventListener("astro:page-load", () => {
 		document.querySelectorAll("[data-haptic-back]").forEach((el) =>
 			el.addEventListener("click", () => haptics.trigger("light"))
 		);
