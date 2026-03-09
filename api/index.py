@@ -19,6 +19,12 @@ from dotenv import load_dotenv
 # Load environment variables BEFORE importing modules that depend on them
 load_dotenv()
 
+import os
+import sys
+
+# Add the current directory to sys.path so Vercel can find local modules
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from config import PROJECT_REGISTRY, get_project_config, list_available_projects
 from models import AllStats, Metadata, ProjectInfo, ProjectListResponse
 from services import (
