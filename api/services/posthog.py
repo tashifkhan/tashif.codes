@@ -5,17 +5,14 @@ Handles all interactions with the PostHog API using HogQL queries.
 Supports dynamic project ID for multi-project analytics.
 """
 
-import os
-from datetime import datetime
-import asyncio
 import httpx
+import asyncio
+from datetime import datetime
 
+from core.config import settings
+from .client import http_client
 from models import StatEntry, TimeseriesEntry
 
-
-# PostHog API Configuration
-PH_API_KEY = os.getenv("POSTHOG_API_KEY", "")
-PH_BASE_URL = os.getenv("POSTHOG_BASE_URL", "https://us.posthog.com")
 
 # Field mapping for PostHog internal property names
 PH_FIELDS = {
@@ -38,25 +35,29 @@ async def query_posthog(project_id: str, hogql: str) -> list:
     Returns:
         List of result rows from the query
     """
-    if not PH_API_KEY:
+    if not settings.posthog_api_key:
         return []
 
-    url = f"{PH_BASE_URL}/api/projects/{project_id}/query/"
-    headers = {"Authorization": f"Bearer {PH_API_KEY}"}
+    url = f"{settings.posthog_base_url}/api/projects/{project_id}/query/"
+    headers = {"Authorization": f"Bearer {settings.posthog_api_key}"}
 
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(
-                url,
-                headers=headers,
-                json={"query": {"kind": "HogQLQuery", "query": hogql}},
-                timeout=20.0,
-            )
-            response.raise_for_status()
-            return response.json().get("results", [])
-        except httpx.HTTPError as e:
-            print(f"PostHog API error: {e}")
-            return []
+    try:
+        response = await http_client.post(
+            url,
+            headers=headers,
+            json={
+                "query": {
+                    "kind": "HogQLQuery",
+                    "query": hogql,
+                }
+            },
+        )
+        response.raise_for_status()
+        return response.json().get("results", [])
+
+    except httpx.HTTPError as e:
+        print(f"PostHog API error: {e}")
+        return []
 
 
 async def fetch_timeseries(project_id: str, days: int = 30) -> list[TimeseriesEntry]:
@@ -232,7 +233,13 @@ async def fetch_all_breakdowns(
     Returns:
         Dictionary mapping field names to lists of StatEntry objects
     """
-    fields = ["path", "device_type", "referrer", "os_name", "country"]
+    fields = [
+        "path",
+        "device_type",
+        "referrer",
+        "os_name",
+        "country",
+    ]
 
     # Execute all breakdown queries in parallel
     tasks = [fetch_breakdown(project_id, field, days) for field in fields]

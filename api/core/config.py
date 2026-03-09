@@ -14,6 +14,10 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 class Settings(BaseSettings):
     """Application Settings using environment variables."""
 
+    # PostHog Configuration
+    posthog_api_key: str = Field(default="", validation_alias="POSTHOG_API_KEY")
+    posthog_base_url: str = Field(default="https://eu.posthog.com", validation_alias="POSTHOG_BASE_URL")
+
     # PostHog IDs
     ph_jiit_timetable_id: str = Field(default="", validation_alias="PH_JIIT_TIMETABLE_ID")
     ph_jiit_campus_updates_id: str = Field(default="", validation_alias="PH_JIIT_CAMPUS_UPDATES_ID")
@@ -22,6 +26,10 @@ class Settings(BaseSettings):
     ph_blog_id: str = Field(default="", validation_alias="PH_BLOG_ID")
     ph_portfolio_id: str = Field(default="", validation_alias="PH_PORTFOLIO_ID")
     ph_mooc_utils_id: str = Field(default="", validation_alias="PH_MOOC_UTILS_ID")
+
+    # Cloudflare Configuration
+    cloudflare_api_token: str = Field(default="", validation_alias="CLOUDFLARE_API_TOKEN")
+    cloudflare_account_tag: str = Field(default="", validation_alias="CLOUDFLARE_ACCOUNT_TAG")
 
     # Cloudflare Tags
     cf_jportal_site_tag: str = Field(default="", validation_alias="CF_JPORTAL_SITE_TAG")

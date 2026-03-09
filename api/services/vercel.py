@@ -25,8 +25,10 @@ def load_vercel_data(file_path: Path) -> AllStats | None:
         with open(file_path, "r") as f:
             data = json.load(f)
             return AllStats(**data)
+    
     except FileNotFoundError:
         return None
+    
     except json.JSONDecodeError as e:
         print(f"Error parsing JSON file {file_path}: {e}")
         return None

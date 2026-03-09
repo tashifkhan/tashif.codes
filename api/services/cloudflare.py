@@ -4,16 +4,14 @@ Cloudflare Web Analytics Service Layer
 Handles all interactions with Cloudflare's GraphQL API for RUM (Real User Monitoring) data.
 """
 
-import os
-from datetime import datetime, timezone, timedelta
 import httpx
-
+from .client import http_client
+from core.config import settings
 from models import StatEntry, TimeseriesEntry
+from datetime import datetime, timezone, timedelta
 
 
 # Cloudflare API Configuration
-CF_API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN", "")
-CF_ACCOUNT_TAG = os.getenv("CLOUDFLARE_ACCOUNT_TAG", "")
 CF_API_URL = "https://api.cloudflare.com/client/v4/graphql"
 CF_MAX_QUERY_DAYS = 90
 CF_MAX_LOOKBACK_DAYS = 184
@@ -134,7 +132,7 @@ async def _fetch_cf_timeseries_range(
     """
 
     variables = {
-        "accountTag": CF_ACCOUNT_TAG,
+        "accountTag": settings.cloudflare_account_tag,
         "filter": {
             "AND": [
                 {"datetime_geq": from_date, "datetime_leq": to_date},
@@ -183,6 +181,7 @@ async def _fetch_cf_timeseries_range(
                 )
 
         return sorted(daily_data.values(), key=lambda x: x.date)
+    
     except Exception as e:
         print(f"Error parsing Cloudflare timeseries: {e!r}")
         return []
@@ -219,7 +218,7 @@ async def _fetch_cf_breakdown_range(
     """
 
     variables = {
-        "accountTag": CF_ACCOUNT_TAG,
+        "accountTag": settings.cloudflare_account_tag,
         "siteTag": site_tag,
         "from": from_date,
         "to": to_date,
@@ -270,38 +269,41 @@ async def query_cloudflare(query: str, variables: dict) -> dict:
     Returns:
         The response data or empty dict on error
     """
-    if not CF_API_TOKEN or not CF_ACCOUNT_TAG:
+    if not settings.cloudflare_api_token or not settings.cloudflare_account_tag:
         return {}
 
     headers = {
-        "Authorization": f"Bearer {CF_API_TOKEN}",
+        "Authorization": f"Bearer {settings.cloudflare_api_token}",
         "Content-Type": "application/json",
     }
 
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(
-                CF_API_URL,
-                headers=headers,
-                json={"query": query, "variables": variables},
-                timeout=20.0,
+    try:
+        response = await http_client.post(
+            CF_API_URL,
+            headers=headers,
+            json={"query": query, "variables": variables},
+        )
+        response.raise_for_status()
+        payload = response.json()
+        
+        if not isinstance(payload, dict):
+            print(
+                f"Cloudflare API returned non-dict payload: {type(payload).__name__}"
             )
-            response.raise_for_status()
-            payload = response.json()
-            if not isinstance(payload, dict):
-                print(
-                    f"Cloudflare API returned non-dict payload: {type(payload).__name__}"
-                )
-                return {}
-            if payload.get("errors"):
-                print(f"Cloudflare GraphQL errors: {payload['errors']}")
-            return payload
-        except httpx.HTTPError as e:
-            print(f"Cloudflare API error: {e}")
             return {}
-        except Exception as e:
-            print(f"Cloudflare unexpected error: {e}")
-            return {}
+        
+        if payload.get("errors"):
+            print(f"Cloudflare GraphQL errors: {payload['errors']}")
+        
+        return payload
+        
+    except httpx.HTTPError as e:
+        print(f"Cloudflare API error: {e}")
+        return {}
+        
+    except Exception as e:
+        print(f"Cloudflare unexpected error: {e}")
+        return {}
 
 
 async def fetch_cf_timeseries(site_tag: str, days: int = 30) -> list[TimeseriesEntry]:

@@ -4,9 +4,9 @@ Data Merging Service
 Handles the unification of Vercel migration data and PostHog live data.
 """
 
-from models import StatEntry, TimeseriesEntry, Stats
 import sys
 from pathlib import Path
+from models import StatEntry, TimeseriesEntry, Stats
 
 # Add parent directory to path to import utils
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -130,7 +130,9 @@ def merge_stats(
     ]
 
     return Stats(
-        path=merge_stat_lists(vercel_stats.path, posthog_stats.get("path", [])),
+        path=merge_stat_lists(
+            vercel_stats.path, posthog_stats.get("path", [])
+        ),
         device_type=merge_stat_lists(
             vercel_stats.device_type, posthog_stats.get("device_type", [])
         ),
