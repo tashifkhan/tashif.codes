@@ -591,7 +591,7 @@ export default function ProjectStatsDashboard() {
 			try {
 				const encodedSlug = encodeURIComponent(selectedSlug);
 				const res = await fetch(
-					`${API_BASE}/api/v1/${encodedSlug}/stats?days=${period}`,
+					`${API_BASE}/api/v1/stats?slugs=${encodedSlug}&days=${period}`,
 					{ signal: controller.signal }
 				);
 				if (!res.ok) {
@@ -604,8 +604,14 @@ export default function ProjectStatsDashboard() {
 					}
 					throw new Error(`${detail} (${res.status})`);
 				}
-				const data: AllStats = await res.json();
-				setStats(data);
+				const body = await res.json();
+				const result = body?.results?.[0];
+				
+				if (result?.error) {
+					throw new Error(result.error);
+				}
+				
+				setStats(result?.data || null);
 			} catch (err) {
 				if (err instanceof Error && err.name === 'AbortError') return;
 				console.error(err);
