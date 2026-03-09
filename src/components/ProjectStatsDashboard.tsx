@@ -183,8 +183,11 @@ const RechartsAreaChart = memo(({
 		}));
 	}, [data, dataKey]);
 
-	// Unique gradient ID to prevent conflicts with multiple charts
-	const gradientId = useMemo(() => `gradient-${dataKey}-${color.replace('#', '')}`, [dataKey, color]);
+	// Unique gradient ID to prevent conflicts with multiple charts, making it safe for SVG on iOS Safari
+	const gradientId = useMemo(() => {
+		const safeColor = color.replace(/[^a-zA-Z0-9]/g, '-');
+		return `gradient-${dataKey}-${safeColor}`;
+	}, [dataKey, color]);
 
 	// Memoize tooltip formatter
 	const tooltipFormatter = useCallback((value: number | undefined) => {
@@ -206,10 +209,11 @@ const RechartsAreaChart = memo(({
 		);
 
 	return (
-		<ResponsiveContainer width="100%" height={height}>
-			<AreaChart
-				data={formattedData}
-				margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+		<div style={{ width: "100%", height, minWidth: 0 }}>
+			<ResponsiveContainer width="99%" height="100%">
+				<AreaChart
+					data={formattedData}
+					margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
 				>
 					<defs>
 						<linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -242,6 +246,7 @@ const RechartsAreaChart = memo(({
 						stroke="currentColor"
 						tick={{ fill: "currentColor" }}
 						className="text-muted-foreground"
+						width={45}
 					/>
 					<Tooltip
 						contentStyle={TOOLTIP_STYLES.contentStyle}
@@ -253,13 +258,14 @@ const RechartsAreaChart = memo(({
 						type="monotone"
 						dataKey={dataKey === "bounce_rate" ? "displayValue" : dataKey}
 						stroke={oklchToRgb(color)}
-						fill="none"
+						fill={`url(#${gradientId})`}
 						strokeWidth={2}
 						connectNulls
 						isAnimationActive={false}
 					/>
 				</AreaChart>
 			</ResponsiveContainer>
+		</div>
 	);
 });
 RechartsAreaChart.displayName = "RechartsAreaChart";
