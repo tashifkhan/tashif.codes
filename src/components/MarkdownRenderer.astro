@@ -514,7 +514,22 @@ if (githubBaseUrl) {
     // Mermaid
     mermaid.initialize({
       startOnLoad: false,
-      theme: "dark",
+      theme: "base",
+      look: "handDrawn",
+      themeVariables: {
+        darkMode: true,
+        background: "#121212",        // Deep dark background
+        primaryColor: "#1e1e1e",      // Slightly elevated card background
+        primaryTextColor: "#e0e0e0",  // Soft off-white text
+        primaryBorderColor: "#707070",// Neutral gray borders
+        lineColor: "#888888",         // Neutral gray lines
+        secondaryColor: "#2a2a2a",    // Dark secondary background
+        tertiaryColor: "#333333",     // Slightly lighter tertiary background
+        clusterBkg: "#1a1a1a",        // Cluster background
+        clusterBorder: "#555555",     // Cluster border
+        defaultLinkColor: "#aaaaaa",  // Link color
+        fontFamily: "var(--font-sans, 'Lexend', sans-serif)", // Match app font
+      },
       sequence: { useMaxWidth: false, diagramMarginX: 16, diagramMarginY: 16 },
       flowchart: { useMaxWidth: true },
     });
