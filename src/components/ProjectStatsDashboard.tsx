@@ -170,24 +170,27 @@ const RechartsAreaChart = memo(({
 		if (!data || data.length === 0) return [];
 		
 		// Use full data range to show strict period boundaries
-		return data.map((d) => ({
-			...d,
-			formattedDate: new Date(d.date).toLocaleDateString(undefined, {
-				month: "short",
-				day: "numeric",
-			}),
-			displayValue:
-				dataKey === "bounce_rate"
-					? Math.round(d[dataKey] * 100) / 100
-					: d[dataKey],
-		}));
-	}, [data, dataKey]);
+		return data.map((d) => {
+			const parsedDate = new Date(d.date);
+			const safeDate = isNaN(parsedDate.getTime()) 
+				? String(d.date).split("T")[0] // fallback if invalid date on mobile safari
+				: parsedDate.toLocaleDateString(undefined, {
+						month: "short",
+						day: "numeric",
+				  });
 
-	// Unique gradient ID to prevent conflicts with multiple charts, making it safe for SVG on iOS Safari
-	const gradientId = useMemo(() => {
-		const safeColor = color.replace(/[^a-zA-Z0-9]/g, '-');
-		return `gradient-${dataKey}-${safeColor}`;
-	}, [dataKey, color]);
+			return {
+				...d,
+				// Include the raw date for standard Recharts processing just in case
+				rawDate: d.date,
+				formattedDate: safeDate,
+				displayValue:
+					dataKey === "bounce_rate"
+						? Math.round(d[dataKey] * 100) / 100
+						: d[dataKey],
+			};
+		});
+	}, [data, dataKey]);
 
 	// Memoize tooltip formatter
 	const tooltipFormatter = useCallback((value: number | undefined) => {
@@ -209,62 +212,60 @@ const RechartsAreaChart = memo(({
 		);
 
 	return (
-		<div style={{ width: "100%", height, minWidth: 0 }}>
-			<ResponsiveContainer width="99%" height="100%">
-				<AreaChart
-					data={formattedData}
-					margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-				>
-					<defs>
-						<linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-							<stop offset="5%" stopColor={oklchToRgb(color)} stopOpacity={0.7} />
-							<stop offset="95%" stopColor={oklchToRgb(color)} stopOpacity={0.1} />
-						</linearGradient>
-					</defs>
-					<CartesianGrid
-						strokeDasharray="3 3"
-						vertical={false}
-						stroke="currentColor"
-						opacity={0.1}
-						className="text-muted-foreground"
-					/>
-					<XAxis
-						dataKey="formattedDate"
-						fontSize={12}
-						tickLine={false}
-						axisLine={false}
-						stroke="currentColor"
-						tick={{ fill: "currentColor" }}
-						className="text-muted-foreground"
-						interval={Math.ceil((formattedData.length - 1) / 6) || 0}
-					/>
-					<YAxis
-						fontSize={12}
-						tickLine={false}
-						axisLine={false}
-						tickFormatter={(value) => `${value.toLocaleString()}${unit}`}
-						stroke="currentColor"
-						tick={{ fill: "currentColor" }}
-						className="text-muted-foreground"
-						width={45}
-					/>
-					<Tooltip
-						contentStyle={TOOLTIP_STYLES.contentStyle}
-						itemStyle={TOOLTIP_STYLES.itemStyle}
-						labelStyle={TOOLTIP_STYLES.labelStyle}
-						formatter={tooltipFormatter}
-					/>
-					<Area
-						type="monotone"
-						dataKey={dataKey === "bounce_rate" ? "displayValue" : dataKey}
-						stroke={oklchToRgb(color)}
-						fill={`url(#${gradientId})`}
-						strokeWidth={2}
-						connectNulls
-						isAnimationActive={false}
-					/>
-				</AreaChart>
-			</ResponsiveContainer>
+		<div style={{ width: "100%", height: height || 300, position: "relative" }}>
+			<div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
+				<ResponsiveContainer width="100%" height="100%">
+					<AreaChart
+						data={formattedData}
+						margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+					>
+						<CartesianGrid
+							strokeDasharray="3 3"
+							vertical={false}
+							stroke="currentColor"
+							opacity={0.1}
+							className="text-muted-foreground"
+						/>
+						<XAxis
+							dataKey="formattedDate"
+							fontSize={12}
+							tickLine={false}
+							axisLine={false}
+							stroke="currentColor"
+							tick={{ fill: "currentColor" }}
+							className="text-muted-foreground"
+							interval="preserveStartEnd"
+							minTickGap={20}
+						/>
+						<YAxis
+							fontSize={12}
+							tickLine={false}
+							axisLine={false}
+							tickFormatter={(value) => `${value.toLocaleString()}${unit}`}
+							stroke="currentColor"
+							tick={{ fill: "currentColor" }}
+							className="text-muted-foreground"
+							width={40}
+						/>
+						<Tooltip
+							contentStyle={TOOLTIP_STYLES.contentStyle}
+							itemStyle={TOOLTIP_STYLES.itemStyle}
+							labelStyle={TOOLTIP_STYLES.labelStyle}
+							formatter={tooltipFormatter}
+						/>
+						<Area
+							type="monotone"
+							dataKey={dataKey === "bounce_rate" ? "displayValue" : dataKey}
+							stroke={oklchToRgb(color)}
+							fill={oklchToRgb(color)}
+							fillOpacity={0.15}
+							strokeWidth={2}
+							connectNulls
+							isAnimationActive={false}
+						/>
+					</AreaChart>
+				</ResponsiveContainer>
+			</div>
 		</div>
 	);
 });
