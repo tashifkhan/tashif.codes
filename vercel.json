@@ -29,10 +29,5 @@
 			"destination": "https://blog.tashif.codes/blog/:slug",
 			"permanent": true
 		}
-	],
-	"functions": {
-		"api/index.py": {
-			"runtime": "@vercel/python"
-		}
-	}
+	]
 }
