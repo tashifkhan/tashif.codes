@@ -212,9 +212,8 @@ const RechartsAreaChart = memo(({
 		);
 
 	return (
-		<div style={{ width: "100%", height: height || 300, position: "relative" }}>
-			<div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
-				<ResponsiveContainer width="100%" height="100%">
+		<div style={{ width: "100%", height: height || 300 }}>
+			<ResponsiveContainer width="100%" height={height || 300}>
 					<AreaChart
 						data={formattedData}
 						margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
@@ -266,7 +265,6 @@ const RechartsAreaChart = memo(({
 					</AreaChart>
 				</ResponsiveContainer>
 			</div>
-		</div>
 	);
 });
 RechartsAreaChart.displayName = "RechartsAreaChart";
