@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, memo, useRef, useLayoutEffect } from "react";
 import {
 	Card,
 	CardContent,
@@ -32,13 +32,13 @@ import {
 	YAxis,
 	CartesianGrid,
 	Tooltip,
-	ResponsiveContainer,
 	PieChart,
 	Pie,
 	Cell,
 	BarChart,
 	Bar,
 	Legend,
+	ResponsiveContainer,
 } from "recharts";
 import { useWebHaptics } from "web-haptics/react";
 
@@ -165,14 +165,41 @@ const RechartsAreaChart = memo(({
 	height?: number;
 	unit?: string;
 }) => {
+	const containerRef = useRef<HTMLDivElement | null>(null);
+	const [chartWidth, setChartWidth] = useState<number>(0);
+
+	useLayoutEffect(() => {
+		const el = containerRef.current;
+		if (!el) return;
+
+		const updateWidth = () => {
+			const nextWidth = Math.floor(el.getBoundingClientRect().width);
+			setChartWidth((prev) => (prev !== nextWidth ? nextWidth : prev));
+		};
+
+		updateWidth();
+
+		const ro = new ResizeObserver(() => updateWidth());
+		ro.observe(el);
+
+		window.addEventListener("orientationchange", updateWidth);
+		window.addEventListener("resize", updateWidth);
+
+		return () => {
+			ro.disconnect();
+			window.removeEventListener("orientationchange", updateWidth);
+			window.removeEventListener("resize", updateWidth);
+		};
+	}, []);
+
 	// Memoize formatted data to prevent recalculation on every render
 	const formattedData = useMemo(() => {
 		if (!data || data.length === 0) return [];
-		
+
 		// Use full data range to show strict period boundaries
 		return data.map((d) => {
 			const parsedDate = new Date(d.date);
-			const safeDate = isNaN(parsedDate.getTime()) 
+			const safeDate = isNaN(parsedDate.getTime())
 				? String(d.date).split("T")[0] // fallback if invalid date on mobile safari
 				: parsedDate.toLocaleDateString(undefined, {
 						month: "short",
@@ -212,59 +239,68 @@ const RechartsAreaChart = memo(({
 		);
 
 	return (
-		<div style={{ width: "100%", height: height || 300 }}>
-			<ResponsiveContainer width="100%" height={height || 300}>
-					<AreaChart
-						data={formattedData}
-						margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-					>
-						<CartesianGrid
-							strokeDasharray="3 3"
-							vertical={false}
-							stroke="currentColor"
-							opacity={0.1}
-							className="text-muted-foreground"
-						/>
-						<XAxis
-							dataKey="formattedDate"
-							fontSize={12}
-							tickLine={false}
-							axisLine={false}
-							stroke="currentColor"
-							tick={{ fill: "currentColor" }}
-							className="text-muted-foreground"
-							interval="preserveStartEnd"
-							minTickGap={20}
-						/>
-						<YAxis
-							fontSize={12}
-							tickLine={false}
-							axisLine={false}
-							tickFormatter={(value) => `${value.toLocaleString()}${unit}`}
-							stroke="currentColor"
-							tick={{ fill: "currentColor" }}
-							className="text-muted-foreground"
-							width={40}
-						/>
-						<Tooltip
-							contentStyle={TOOLTIP_STYLES.contentStyle}
-							itemStyle={TOOLTIP_STYLES.itemStyle}
-							labelStyle={TOOLTIP_STYLES.labelStyle}
-							formatter={tooltipFormatter}
-						/>
-						<Area
-							type="monotone"
-							dataKey={dataKey === "bounce_rate" ? "displayValue" : dataKey}
-							stroke={oklchToRgb(color)}
-							fill={oklchToRgb(color)}
-							fillOpacity={0.15}
-							strokeWidth={2}
-							connectNulls
-							isAnimationActive={false}
-						/>
-					</AreaChart>
-				</ResponsiveContainer>
-			</div>
+		<div ref={containerRef} style={{ width: "100%", height: height || 300 }}>
+			{chartWidth > 0 ? (
+				<AreaChart
+					width={chartWidth}
+					height={height || 300}
+					data={formattedData}
+					margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+				>
+					<CartesianGrid
+						strokeDasharray="3 3"
+						vertical={false}
+						stroke="currentColor"
+						opacity={0.1}
+						className="text-muted-foreground"
+					/>
+					<XAxis
+						dataKey="formattedDate"
+						fontSize={12}
+						tickLine={false}
+						axisLine={false}
+						stroke="currentColor"
+						tick={{ fill: "currentColor" }}
+						className="text-muted-foreground"
+						interval="preserveStartEnd"
+						minTickGap={20}
+					/>
+					<YAxis
+						fontSize={12}
+						tickLine={false}
+						axisLine={false}
+						tickFormatter={(value) => `${value.toLocaleString()}${unit}`}
+						stroke="currentColor"
+						tick={{ fill: "currentColor" }}
+						className="text-muted-foreground"
+						width={40}
+					/>
+					<Tooltip
+						contentStyle={TOOLTIP_STYLES.contentStyle}
+						itemStyle={TOOLTIP_STYLES.itemStyle}
+						labelStyle={TOOLTIP_STYLES.labelStyle}
+						formatter={tooltipFormatter}
+					/>
+					<Area
+						type="monotone"
+						dataKey={dataKey === "bounce_rate" ? "displayValue" : dataKey}
+						stroke={oklchToRgb(color)}
+						fill={oklchToRgb(color)}
+						fillOpacity={0.15}
+						strokeWidth={2}
+						connectNulls
+						isAnimationActive={false}
+					/>
+				</AreaChart>
+			) : (
+				<div
+					className="flex items-center justify-center text-muted-foreground text-sm"
+					style={{ height }}
+				>
+					Loading chart...
+				</div>
+			)}
+		</div>
 	);
 });
 RechartsAreaChart.displayName = "RechartsAreaChart";
