@@ -118,54 +118,110 @@ async function fetchExtraParentStars(): Promise<number> {
 }
 
 async function fetchGitHubStats(): Promise<GitHubStats> {
-	const endpoints = [
-		"https://github-stats.tashif.codes/tashifkhan/stats?exclude=HTML,CSS,Jupyter Notebook,SCSS",
-		"https://github-stats.tashif.codes/tashifkhan/prs",
-		"https://github-stats.tashif.codes/tashifkhan/stars",
-		"https://github-stats.tashif.codes/tashifkhan/commits",
-		"https://github-stats.tashif.codes/tashifkhan/me/pulls",
-		"https://github-stats.tashif.codes/tashifkhan/org-contributions"
-	];
+	const USERNAMES = ['tashifkhan', 'tashifkhansitg'];
 
 	try {
-        // Start fetching extra stars in parallel
+        // Start fetching extra stars in parallel (assumed to cover all mapped parents)
         const extraStarsPromise = fetchExtraParentStars();
 
-		const responses = await Promise.all(
-			endpoints.map(endpoint => fetch(endpoint))
-		);
+		const allResponses = await Promise.all(USERNAMES.map(async (username) => {
+			const endpoints = [
+				`https://github-stats.tashif.codes/${username}/stats?exclude=HTML,CSS,Jupyter Notebook,SCSS`,
+				`https://github-stats.tashif.codes/${username}/prs`,
+				`https://github-stats.tashif.codes/${username}/stars`,
+				`https://github-stats.tashif.codes/${username}/commits`,
+				`https://github-stats.tashif.codes/${username}/me/pulls`,
+				`https://github-stats.tashif.codes/${username}/org-contributions`
+			];
 
-		const [stats, prs, stars, commits, pulls, orgContributions] = await Promise.all(
-			responses.map(response => {
-				if (!response.ok) {
-					console.error(`Failed to fetch from ${response.url}:`, response.statusText);
-					return null;
+			const responses = await Promise.all(endpoints.map(endpoint => fetch(endpoint)));
+			
+			const results = await Promise.all(
+				responses.map(response => {
+					if (!response.ok) {
+						console.error(`Failed to fetch from ${response.url}:`, response.statusText);
+						return null;
+					}
+					return response.json();
+				})
+			);
+			
+			return { username, results };
+		}));
+
+		// Aggregate data
+		let aggStats: GitHubStatsData = {
+			status: "success",
+			message: "",
+			topLanguages: [], // we will aggregate percentages naively later if needed, left to single default for now
+			totalCommits: 0,
+			longestStreak: 0,
+			currentStreak: 0,
+			profile_visitors: 0,
+			contributions: {}
+		};
+		let aggPrs: PullRequest[] = [];
+		let aggStars: StarsData = { total_stars: 0, repositories: [] };
+		let aggCommits: Commit[] = [];
+		let aggPulls: Pull[] = [];
+		let aggOrgContributions: OrgContribution[] = [];
+
+		allResponses.forEach(({ username, results }) => {
+			const [stats, prs, stars, commits, pulls, orgContributions] = results;
+
+			if (stats) {
+				aggStats.totalCommits += stats.totalCommits || 0;
+				// Naive streak aggregation - take the max streak across accounts
+				aggStats.longestStreak = Math.max(aggStats.longestStreak, (stats.longestStreak || 0));
+				aggStats.currentStreak = Math.max(aggStats.currentStreak, (stats.currentStreak || 0));
+				
+				// Keep languages from first account or merge if needed (simple approximation)
+				if (aggStats.topLanguages.length === 0 && stats.topLanguages) {
+					aggStats.topLanguages = stats.topLanguages;
 				}
-				return response.json();
-			})
-		);
+
+				// Merge contributions object
+				if (stats.contributions) {
+					Object.entries(stats.contributions).forEach(([year, yearlyData]: [string, any]) => {
+						if (!aggStats.contributions[year]) aggStats.contributions[year] = {};
+						Object.entries(yearlyData).forEach(([date, count]: [string, any]) => {
+							aggStats.contributions[year][date] = (aggStats.contributions[year][date] || 0) + (count as number);
+						});
+					});
+				}
+			}
+
+			if (prs) aggPrs.push(...prs);
+			
+			if (stars) {
+				aggStars.total_stars += stars.total_stars || 0;
+				if (stars.repositories) aggStars.repositories.push(...stars.repositories);
+			}
+
+			if (commits) aggCommits.push(...commits);
+			if (pulls) aggPulls.push(...pulls);
+			if (orgContributions) aggOrgContributions.push(...orgContributions);
+		});
+
+		// Deduplicate repos, PRs, etc if needed by ID/URL
+		const uniquePrs = Array.from(new Map(aggPrs.map(pr => [pr.url, pr])).values());
+		const uniqueStars = Array.from(new Map(aggStars.repositories.map(repo => [repo.url, repo])).values());
+		const uniqueCommits = Array.from(new Map(aggCommits.map(c => [c.sha, c])).values());
+		const uniquePulls = Array.from(new Map(aggPulls.map(p => [p.url, p])).values());
+		const uniqueOrgs = Array.from(new Map(aggOrgContributions.map(o => [o.org_id, o])).values());
 
         const extraStars = await extraStarsPromise;
 
 		return {
-			stats: stats || {
-				status: "",
-				message: "",
-				topLanguages: [],
-				totalCommits: 0,
-				longestStreak: 0,
-				currentStreak: 0,
-				profile_visitors: 0,
-				contributions: {}
-			},
-			prs: prs || [],
+			stats: aggStats,
+			prs: uniquePrs,
 			stars: { 
-                total_stars: (stars?.total_stars || 0) + extraStars, 
-                repositories: stars?.repositories || [] 
+                total_stars: aggStars.total_stars + extraStars, 
+                repositories: uniqueStars 
             },
-			commits: commits || [],
-			pulls: pulls || [],
-			orgContributions: orgContributions || []
+			commits: uniqueCommits,
+			pulls: uniquePulls,
+			orgContributions: uniqueOrgs
 		};
 	} catch (error) {
 		console.error("Error fetching GitHub stats:", error);
@@ -190,23 +246,32 @@ async function fetchGitHubStats(): Promise<GitHubStats> {
 }
 
 async function getViews(githubstats: GitHubStats): Promise<GitHubStats> {
-	const viewsResponse = await fetch("https://komarev.com/ghpvc/?username=tashifkhan&style=for-the-badge&color=orange");
-	if (viewsResponse.ok) {
-		const viewsData = await viewsResponse.text();
-		const titleMatch = viewsData.match(/<title>(.*?)<\/title>/);
-		const matches = titleMatch ? titleMatch[1].match(/(\d[\d,]*)/) : null;
-		if (matches && matches[0]) {
-			const profile_visitors = parseInt(matches[0].replace(/,/g, ""), 10);
-			return {
-				...githubstats,
-				stats: {
-					...githubstats.stats,
-					profile_visitors
+	const USERNAMES = ['tashifkhan', 'tashifkhansitg'];
+	let totalViews = 0;
+
+	for (const username of USERNAMES) {
+		try {
+			const viewsResponse = await fetch(`https://komarev.com/ghpvc/?username=${username}&style=for-the-badge&color=orange`);
+			if (viewsResponse.ok) {
+				const viewsData = await viewsResponse.text();
+				const titleMatch = viewsData.match(/<title>(.*?)<\/title>/);
+				const matches = titleMatch ? titleMatch[1].match(/(\d[\d,]*)/) : null;
+				if (matches && matches[0]) {
+					totalViews += parseInt(matches[0].replace(/,/g, ""), 10);
 				}
-			};
+			}
+		} catch (e) {
+			console.error(`Failed to fetch views for ${username}:`, e);
 		}
 	}
-	return githubstats;
+
+	return {
+		...githubstats,
+		stats: {
+			...githubstats.stats,
+			profile_visitors: totalViews
+		}
+	};
 }
 
 export const githubStats: GitHubStats = await getViews(await fetchGitHubStats());

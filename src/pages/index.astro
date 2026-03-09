@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import ProjectFilters from "../components/ProjectFilters.tsx";
+import ProfileDropdown from "../components/ProfileDropdown";
 import { starLists } from "../data/starLists";
 import BlogFilters from "../components/BlogFilters";
 import BlogCard from "../components/BlogCard.astro";
@@ -574,16 +575,7 @@ const socials = [
 								<Badge variant="secondary" className="text-xs">
 									{totalCommits} Commits
 								</Badge>
-								<a
-									href="https://github.com/tashifkhan"
-									data-haptic-external
-									target="_blank"
-									rel="noopener noreferrer"
-									class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-								>
-									<ExternalLink className="w-3 h-3" />
-									Profile
-								</a>
+								<ProfileDropdown client:load isMobile={true} />
 								<a
 									href="/github"
 									data-haptic-nav
@@ -613,15 +605,7 @@ const socials = [
 								<Badge variant="secondary" className="text-xs">
 									{totalCommits} Commits
 								</Badge>
-								<a
-									href="https://github.com/tashifkhan"
-									data-haptic-external
-									target="_blank"
-									rel="noopener noreferrer"
-									class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-								>
-									External Profile <ExternalLink size={12} />
-								</a>
+								<ProfileDropdown client:load />
 								<a
 									href="/github"
 									data-haptic-nav
