@@ -32,6 +32,10 @@ const { project, slug, content, title, headings } = Astro.props;
 const sidebar = getSidebar(project);
 const { prev, next } = getDocPagination(project, slug);
 
+// Remove leading h1 from content if it matches the title or if it's the first thing in the file
+// This prevents double headers since we render one manually
+const processedContent = content.trim().replace(/^#\s+.+[\n\r]*/, "");
+
 // Find current project metadata
 const currentProject = allProjects.find((p) => p.slug === project);
 
@@ -139,6 +143,7 @@ const isActive = (itemSlug: string) => {
 																			? "bg-muted font-medium text-foreground border-primary/50"
 																			: "hover:border-foreground/20",
 																	]}
+																	data-sidebar-active={isActive(grandChild.slug) ? "true" : undefined}
 																>
 																	{grandChild.title}
 																</a>
@@ -153,6 +158,7 @@ const isActive = (itemSlug: string) => {
 																	? "bg-muted font-medium text-foreground"
 																	: "",
 															]}
+															data-sidebar-active={isActive(child.slug) ? "true" : undefined}
 														>
 															{child.title}
 														</a>
@@ -170,6 +176,7 @@ const isActive = (itemSlug: string) => {
 													? "bg-muted font-medium text-foreground"
 													: "",
 											]}
+											data-sidebar-active={isActive(item.slug) ? "true" : undefined}
 										>
 											{item.title}
 										</a>
@@ -292,6 +299,7 @@ const isActive = (itemSlug: string) => {
 																		? "bg-muted font-medium text-foreground border-primary/50"
 																		: "hover:border-foreground/20",
 																]}
+																data-sidebar-active={isActive(grandChild.slug) ? "true" : undefined}
 															>
 																{grandChild.title}
 															</a>
@@ -306,6 +314,7 @@ const isActive = (itemSlug: string) => {
 																? "bg-muted font-medium text-foreground"
 																: "",
 														]}
+														data-sidebar-active={isActive(child.slug) ? "true" : undefined}
 													>
 														{child.title}
 													</a>
@@ -322,6 +331,7 @@ const isActive = (itemSlug: string) => {
 												? "bg-muted font-medium text-foreground"
 												: "",
 										]}
+										data-sidebar-active={isActive(item.slug) ? "true" : undefined}
 									>
 										{item.title}
 									</a>
@@ -375,16 +385,27 @@ const isActive = (itemSlug: string) => {
 							await navigator.clipboard.writeText(content);
 							activeIcon.classList.add("hidden");
 							successIcon.classList.remove("hidden");
+							successIcon.classList.add("flex");
 							copyBtn.classList.add("border-green-500/50", "bg-green-500/5");
 							
 							setTimeout(() => {
 								activeIcon.classList.remove("hidden");
 								successIcon.classList.add("hidden");
+								successIcon.classList.remove("flex");
 								copyBtn.classList.remove("border-green-500/50", "bg-green-500/5");
 							}, 2000);
 						} catch (err) {
 							console.error("Failed to copy markdown: ", err);
 						}
+					});
+				}
+
+				// Sidebar auto-scroll
+				const activeLink = document.querySelector('[data-sidebar-active="true"]');
+				if (activeLink) {
+					activeLink.scrollIntoView({
+						behavior: 'auto',
+						block: 'center'
 					});
 				}
 			});
@@ -471,7 +492,7 @@ const isActive = (itemSlug: string) => {
 										<Copy className="w-3.5 h-3.5" />
 										Copy MD
 									</span>
-									<span id="copy-icon-success" class="hidden flex items-center gap-1.5 text-green-500">
+									<span id="copy-icon-success" class="hidden items-center gap-1.5 text-green-500">
 										<Check className="w-3.5 h-3.5" />
 										Copied!
 									</span>
@@ -480,7 +501,7 @@ const isActive = (itemSlug: string) => {
 						</div>
 
 						<MarkdownRenderer
-							content={content}
+							content={processedContent}
 							project={project}
 							githubBaseUrl={currentProject?.github_link || `https://github.com/tashifkhan/${project}`}
 						/>
