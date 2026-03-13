@@ -1,0 +1,89 @@
+---
+interface Props {
+  headings: { depth: number; text: string; slug: string }[];
+}
+
+const { headings } = Astro.props;
+
+// Filter to only include h2 and h3
+const filteredHeadings = headings.filter(h => h.depth === 2 || h.depth === 3);
+
+if (filteredHeadings.length === 0) return null;
+---
+
+<nav class="toc hidden lg:block w-64 shrink-0 h-fit sticky top-24 self-start max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 pb-10">
+  <div class="flex items-center gap-2 mb-4 px-2">
+    <div class="w-1 h-4 bg-primary rounded-full"></div>
+    <h3 class="font-semibold text-sm tracking-tight text-foreground/80 uppercase">On This Page</h3>
+  </div>
+  
+  <ul class="space-y-1 text-sm">
+    {filteredHeadings.map((heading) => (
+      <li>
+        <a
+          href={`#${heading.slug}`}
+          class:list={[
+            "block py-1.5 transition-colors hover:text-primary leading-snug",
+            heading.depth === 2 
+              ? "text-muted-foreground font-medium" 
+              : "text-muted-foreground/70 pl-4 border-l border-border/50 ml-1"
+          ]}
+          data-toc-link
+        >
+          {heading.text}
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<script>
+  // Simple active link highlighting based on scroll
+  function updateActiveLink() {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          const links = document.querySelectorAll('[data-toc-link]');
+          links.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href === `#${id}`) {
+              link.classList.add('text-primary', 'font-semibold');
+              link.classList.remove('text-muted-foreground', 'text-muted-foreground/70');
+            } else {
+              link.classList.remove('text-primary', 'font-semibold');
+              // Restore original classes based on data attribute or simple logic
+              // Since we use class:list, it's easier to just manage the active state
+            }
+          });
+        }
+      });
+    }, {
+      rootMargin: '-100px 0px -70% 0px',
+      threshold: 0
+    });
+
+    document.querySelectorAll('h2[id], h3[id]').forEach((section) => {
+      observer.observe(section);
+    });
+  }
+
+  document.addEventListener('astro:page-load', updateActiveLink);
+</script>
+
+<style>
+  .toc::-webkit-scrollbar {
+    width: 4px;
+  }
+  .toc::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .toc::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+  }
+  .toc:hover::-webkit-scrollbar-thumb {
+    background: var(--muted-foreground);
+    opacity: 0.3;
+  }
+</style>

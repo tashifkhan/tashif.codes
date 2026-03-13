@@ -17,15 +17,18 @@ import {
 	Github,
 	ExternalLink,
 	ArrowLeft,
+	Copy,
+	Check,
 } from "lucide-react";
 import { allProjects, type Project } from "../../../data/projects";
+import TableOfContents from "../../../components/docs/TableOfContents.astro";
 
 export async function getStaticPaths() {
 	const docs = getAllDocs();
 	return docs;
 }
 
-const { project, slug, content, title } = Astro.props;
+const { project, slug, content, title, headings } = Astro.props;
 const sidebar = getSidebar(project);
 const { prev, next } = getDocPagination(project, slug);
 
@@ -358,122 +361,185 @@ const isActive = (itemSlug: string) => {
 			openBtn?.addEventListener("click", () => toggleSidebar(true));
 			closeBtn?.addEventListener("click", () => toggleSidebar(false));
 			overlay?.addEventListener("click", () => toggleSidebar(false));
+
+			// Copy Markdown functionality
+			document.addEventListener("astro:page-load", () => {
+				const copyBtn = document.getElementById("copy-markdown");
+				const activeIcon = document.getElementById("copy-icon-active");
+				const successIcon = document.getElementById("copy-icon-success");
+
+				if (copyBtn && activeIcon && successIcon) {
+					copyBtn.addEventListener("click", async () => {
+						const content = copyBtn.getAttribute("data-content") || "";
+						try {
+							await navigator.clipboard.writeText(content);
+							activeIcon.classList.add("hidden");
+							successIcon.classList.remove("hidden");
+							copyBtn.classList.add("border-green-500/50", "bg-green-500/5");
+							
+							setTimeout(() => {
+								activeIcon.classList.remove("hidden");
+								successIcon.classList.add("hidden");
+								copyBtn.classList.remove("border-green-500/50", "bg-green-500/5");
+							}, 2000);
+						} catch (err) {
+							console.error("Failed to copy markdown: ", err);
+						}
+					});
+				}
+			});
 		</script>
 
 		<main
 			transition:animate="fade"
 			class="flex-1 min-w-0 h-full overflow-y-auto py-10 lg:py-12 px-4 sm:px-6 lg:px-8"
 		>
-			<div class="mx-auto max-w-4xl">
-				<div
-					class="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground"
-				>
-					<a
-						href="/"
-						class="hover:text-foreground hover:underline transition-colors"
-						>Home</a
-					>
-					<ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
-					<a
-						href="/projects"
-						class="hover:text-foreground hover:underline transition-colors"
-						>Projects</a
-					>
-					<ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
-					<span class="font-medium text-foreground/80 capitalize"
-						>{currentProject?.title || project.replace(/-/g, " ")}</span
-					>
-					{
-						(() => {
-							// Find path to current item
-							const currentPath = `${project.toLowerCase()}/${slug}`;
-							const findPath = (
-								items: SidebarItem[],
-								target: string
-							): SidebarItem[] | null => {
-								for (const item of items) {
-									if (item.slug === target) return [item];
-									if (item.children) {
-										const found = findPath(item.children, target);
-										if (found) return [item, ...found];
+			<div class="mx-auto max-w-7xl">
+				<div class="flex flex-col xl:flex-row gap-12">
+					<div class="flex-1 min-w-0 max-w-4xl">
+						<div
+							class="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground"
+						>
+							<a
+								href="/"
+								class="hover:text-foreground hover:underline transition-colors"
+								>Home</a
+							>
+							<ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
+							<a
+								href="/projects"
+								class="hover:text-foreground hover:underline transition-colors"
+								>Projects</a
+							>
+							<ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
+							<span class="font-medium text-foreground/80 capitalize"
+								>{currentProject?.title || project.replace(/-/g, " ")}</span
+							>
+							{
+								(() => {
+									// Find path to current item
+									const currentPath = `${project.toLowerCase()}/${slug}`;
+									const findPath = (
+										items: SidebarItem[],
+										target: string
+									): SidebarItem[] | null => {
+										for (const item of items) {
+											if (item.slug === target) return [item];
+											if (item.children) {
+												const found = findPath(item.children, target);
+												if (found) return [item, ...found];
+											}
+										}
+										return null;
+									};
+
+									const breadcrumbs = findPath(sidebar, currentPath);
+
+									if (breadcrumbs) {
+										return breadcrumbs.map((item, index) => (
+											<>
+												<ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
+												<span
+													class={`capitalize truncate max-w-[150px] ${index === breadcrumbs.length - 1 ? "text-foreground font-semibold" : "text-foreground/80"}`}
+												>
+													{item.title}
+												</span>
+											</>
+										));
 									}
-								}
-								return null;
-							};
-
-							const breadcrumbs = findPath(sidebar, currentPath);
-
-							if (breadcrumbs) {
-								return breadcrumbs.map((item, index) => (
-									<>
-										<ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
-										<span
-											class={`capitalize truncate max-w-[150px] ${index === breadcrumbs.length - 1 ? "text-foreground font-semibold" : "text-foreground/80"}`}
-										>
-											{item.title}
-										</span>
-									</>
-								));
+									return null;
+								})()
 							}
-							return null;
-						})()
-					}
-				</div>
+						</div>
 
-				<MarkdownRenderer
-					content={content}
-					project={project}
-					githubBaseUrl={currentProject?.github_link || `https://github.com/tashifkhan/${project}`}
-				/>
+						<div class="flex items-center justify-between mb-8 pb-4 border-b border-border/50">
+							<h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+								{title.replace(/^[\d.\s]+/, "")}
+							</h1>
+							
+							<div class="flex items-center gap-2">
+								<button
+									id="copy-markdown"
+									class={buttonVariants({
+										variant: "outline",
+										size: "sm",
+										className: "h-8 px-3 text-xs gap-1.5 bg-background/50 backdrop-blur-sm hover:bg-muted transition-all"
+									})}
+									data-content={content}
+								>
+									<span id="copy-icon-active" class="flex items-center gap-1.5">
+										<Copy className="w-3.5 h-3.5" />
+										Copy MD
+									</span>
+									<span id="copy-icon-success" class="hidden flex items-center gap-1.5 text-green-500">
+										<Check className="w-3.5 h-3.5" />
+										Copied!
+									</span>
+								</button>
+							</div>
+						</div>
 
-				<div
-					class="mt-16 pt-8 border-t border-border flex justify-between gap-4"
-				>
-					{
-						prev ? (
-							<Button
-								variant="outline"
-								className="flex-1 justify-start h-auto py-4 px-4 whitespace-normal text-left"
-								asChild
-							>
-								<a href={`/docs/${prev.slug}`}>
-									<div class="flex flex-col gap-1 items-start">
-										<span class="text-xs text-muted-foreground flex items-center gap-1">
-											<ChevronLeft className="w-3 h-3" /> Previous
-										</span>
-										<span class="font-medium text-base truncate w-full">
-											{prev.title}
-										</span>
-									</div>
-								</a>
-							</Button>
-						) : (
-							<div class="flex-1" />
-						)
-					}
+						<MarkdownRenderer
+							content={content}
+							project={project}
+							githubBaseUrl={currentProject?.github_link || `https://github.com/tashifkhan/${project}`}
+						/>
 
-					{
-						next && (
-							<Button
-								variant="outline"
-								className="flex-1 justify-end h-auto py-4 px-4 whitespace-normal text-right"
-								asChild
-							>
-								<a href={`/docs/${next.slug}`}>
-									<div class="flex flex-col gap-1 items-end">
-										<span class="text-xs text-muted-foreground flex items-center gap-1">
-											Next <ChevronRight className="w-3 h-3" />
-										</span>
-										<span class="font-medium text-base truncate w-full">
-											{next.title}
-										</span>
-									</div>
-								</a>
-							</Button>
-						)
-					}
+						<div
+							class="mt-16 pt-8 border-t border-border flex justify-between gap-4"
+						>
+							{
+								prev ? (
+									<Button
+										variant="outline"
+										className="flex-1 justify-start h-auto py-4 px-4 whitespace-normal text-left"
+										asChild
+									>
+										<a href={`/docs/${prev.slug}`}>
+											<div class="flex flex-col gap-1 items-start">
+												<span class="text-xs text-muted-foreground flex items-center gap-1">
+													<ChevronLeft className="w-3 h-3" /> Previous
+												</span>
+												<span class="font-medium text-base truncate w-full">
+													{prev.title}
+												</span>
+											</div>
+										</a>
+									</Button>
+								) : (
+									<div class="flex-1" />
+								)
+							}
+
+							{
+								next && (
+									<Button
+										variant="outline"
+										className="flex-1 justify-end h-auto py-4 px-4 whitespace-normal text-right"
+										asChild
+									>
+										<a href={`/docs/${next.slug}`}>
+											<div class="flex flex-col gap-1 items-end">
+												<span class="text-xs text-muted-foreground flex items-center gap-1">
+													Next <ChevronRight className="w-3 h-3" />
+												</span>
+												<span class="font-medium text-base truncate w-full">
+													{next.title}
+												</span>
+											</div>
+										</a>
+									</Button>
+								)
+							}
+						</div>
+					</div>
+
+					<aside class="hidden xl:block w-72 shrink-0">
+						<TableOfContents headings={headings || []} />
+					</aside>
 				</div>
 			</div>
 		</main>
+
 	</div>
 </Layout>

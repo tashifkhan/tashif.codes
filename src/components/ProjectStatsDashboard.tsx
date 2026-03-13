@@ -53,7 +53,7 @@ const TOOLTIP_STYLES = {
 		boxShadow: "0 10px 40px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.1) inset",
 		padding: "12px 16px",
 	},
-	itemStyle: { 
+	itemStyle: {
 		color: "hsl(var(--foreground))",
 		fontSize: "13px",
 		fontWeight: "500",
@@ -125,8 +125,8 @@ const oklchToRgb = (oklchColor: string): string => {
 		"oklch(0.7156 0.0605 248.6845)": "rgb(180, 190, 240)", // chart-1 - blue
 		"oklch(0.7875 0.0917 35.9616)": "rgb(255, 200, 120)",  // chart-2 - orange
 		"oklch(0.5778 0.0759 254.1573)": "rgb(160, 100, 220)", // chart-3 - purple
-		"oklch(0.5016 0.0849 259.4902)": "rgb(130, 80, 200)",   // chart-4 - dark purple
-		"oklch(0.4241 0.0952 264.0306)": "rgb(100, 50, 180)",   // chart-5 - darker purple
+		"oklch(0.5016 0.0849 259.4902)": "rgb(130, 80, 200)",  // chart-4 - dark purple
+		"oklch(0.4241 0.0952 264.0306)": "rgb(100, 50, 180)",  // chart-5 - darker purple
 	};
 	return oklchMap[oklchColor] || oklchColor;
 };
@@ -314,7 +314,7 @@ const DonutChart = memo(({
 	title: string;
 	height?: number;
 }) => {
-	const chartData = useMemo(() => 
+	const chartData = useMemo(() =>
 		data.slice(0, 5).map((item) => ({
 			name: item.key,
 			value: item.pageviews,
@@ -579,7 +579,7 @@ export default function ProjectStatsDashboard() {
 	// Fetch Projects List
 	useEffect(() => {
 		const controller = new AbortController();
-		
+
 		async function fetchProjects() {
 			try {
 				const res = await fetch(`${API_BASE}/api/v1/projects`, {
@@ -607,7 +607,7 @@ export default function ProjectStatsDashboard() {
 			}
 		}
 		fetchProjects();
-		
+
 		return () => controller.abort();
 	}, [API_BASE, getInitialProject]);
 
@@ -623,7 +623,7 @@ export default function ProjectStatsDashboard() {
 	// Fetch Stats when selection changes
 	useEffect(() => {
 		if (!selectedSlug) return;
-		
+
 		const controller = new AbortController();
 
 		async function fetchStats() {
@@ -647,11 +647,11 @@ export default function ProjectStatsDashboard() {
 				}
 				const body = await res.json();
 				const result = body?.results?.[0];
-				
+
 				if (result?.error) {
 					throw new Error(result.error);
 				}
-				
+
 				setStats(result?.data || null);
 			} catch (err) {
 				if (err instanceof Error && err.name === 'AbortError') return;
@@ -664,19 +664,19 @@ export default function ProjectStatsDashboard() {
 		}
 
 		fetchStats();
-		
+
 		return () => controller.abort();
 	}, [selectedSlug, period, API_BASE]);
 
 	// Derived metrics - memoized
 	const totals = useMemo(() => {
 		if (!stats) return { views: 0, visitors: 0, bounce: 0 };
-		
+
 		let views = 0;
 		let visitors = 0;
 		let bounceWeightedSum = 0;
 		let totalPageviewsWithBounce = 0;
-		
+
 		// Single loop instead of multiple reduces
 		for (const entry of stats.timeseries) {
 			views += entry.pageviews;
@@ -686,11 +686,11 @@ export default function ProjectStatsDashboard() {
 				totalPageviewsWithBounce += entry.pageviews;
 			}
 		}
-		
-		const bounce = totalPageviewsWithBounce > 0 
-			? bounceWeightedSum / totalPageviewsWithBounce 
+
+		const bounce = totalPageviewsWithBounce > 0
+			? bounceWeightedSum / totalPageviewsWithBounce
 			: 0;
-			
+
 		return { views, visitors, bounce };
 	}, [stats]);
 
@@ -702,17 +702,17 @@ export default function ProjectStatsDashboard() {
 	}, [stats]);
 
 	// Memoize max values for breakdown lists
-	const maxPathPageviews = useMemo(() => 
+	const maxPathPageviews = useMemo(() =>
 		stats ? Math.max(...stats.stats.path.map((s) => s.pageviews), 1) : 1,
 		[stats]
 	);
-	
-	const maxReferrerPageviews = useMemo(() => 
+
+	const maxReferrerPageviews = useMemo(() =>
 		stats ? Math.max(...stats.stats.referrer.map((s) => s.pageviews), 1) : 1,
 		[stats]
 	);
 
-	const maxCountryPageviews = useMemo(() => 
+	const maxCountryPageviews = useMemo(() =>
 		stats ? Math.max(...stats.stats.country.map((s) => s.pageviews), 1) : 1,
 		[stats]
 	);

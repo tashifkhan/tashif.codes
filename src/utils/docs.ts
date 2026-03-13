@@ -23,7 +23,7 @@ export interface DocPage {
     slug: string;
     content: string;
     title: string;
-    headings: any[];
+    headings: { depth: number; text: string; slug: string }[];
   };
 }
 
@@ -34,6 +34,38 @@ export interface SidebarItem {
   order: number;
   children?: SidebarItem[];
   depth: number;
+}
+
+// Helper to slugify text (matching MarkdownRenderer.astro)
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
+}
+
+// Helper to extract h2 and h3 headings from markdown
+function extractHeadings(content: string): { depth: number; text: string; slug: string }[] {
+  const headings: { depth: number; text: string; slug: string }[] = [];
+  const lines = content.split('\n');
+  
+  // Basic regex to match lines starting with ## or ###
+  // Also handle headings that might have a number prefix like "## 1. Introduction"
+  const headingRegex = /^(#{2,3})\s+(.+)$/;
+
+  for (const line of lines) {
+    const match = line.match(headingRegex);
+    if (match) {
+      const depth = match[1].length;
+      const text = match[2].trim().replace(/\{#.*\}$/, ''); // Remove any custom IDs like {#my-id}
+      headings.push({
+        depth,
+        text,
+        slug: slugify(text)
+      });
+    }
+  }
+  return headings;
 }
 
 // Helper to get all projects (directories in src/data/docs)
@@ -75,6 +107,7 @@ export function getAllDocs(): DocPage[] {
       const content = fs.readFileSync(path.join(projectDir, file), 'utf-8');
       const slug = file.replace(/\.md$/, '');
       const title = formatTitle(path.basename(slug));
+      const headings = extractHeadings(content);
 
       pages.push({
         params: {
@@ -86,7 +119,7 @@ export function getAllDocs(): DocPage[] {
           slug,
           content,
           title,
-          headings: [],
+          headings,
         }
       });
     }
