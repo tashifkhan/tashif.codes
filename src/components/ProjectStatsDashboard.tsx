@@ -37,7 +37,6 @@ import {
 	Cell,
 	BarChart,
 	Bar,
-	Legend,
 	ResponsiveContainer,
 } from "recharts";
 import { useWebHaptics } from "web-haptics/react";
@@ -314,6 +313,33 @@ const DonutChart = memo(({
 	title: string;
 	height?: number;
 }) => {
+	const containerRef = useRef<HTMLDivElement | null>(null);
+	const [chartWidth, setChartWidth] = useState<number>(0);
+
+	useLayoutEffect(() => {
+		const el = containerRef.current;
+		if (!el) return;
+
+		const updateWidth = () => {
+			const nextWidth = Math.floor(el.getBoundingClientRect().width);
+			setChartWidth((prev) => (prev !== nextWidth ? nextWidth : prev));
+		};
+
+		updateWidth();
+
+		const ro = new ResizeObserver(() => updateWidth());
+		ro.observe(el);
+
+		window.addEventListener("orientationchange", updateWidth);
+		window.addEventListener("resize", updateWidth);
+
+		return () => {
+			ro.disconnect();
+			window.removeEventListener("orientationchange", updateWidth);
+			window.removeEventListener("resize", updateWidth);
+		};
+	}, []);
+
 	const chartData = useMemo(() =>
 		data.slice(0, 5).map((item) => ({
 			name: item.key,
@@ -322,12 +348,25 @@ const DonutChart = memo(({
 		[data]
 	);
 
-	// Memoize cell colors to prevent recreation
+	const chartHeight = useMemo(() => {
+		const legendRows = Math.max(1, Math.ceil(chartData.length / 3));
+		const legendHeight = legendRows * 28;
+		return Math.max(170, height - legendHeight - 16);
+	}, [chartData.length, height]);
+
+	const outerRadius = useMemo(() => {
+		if (chartWidth === 0) return 72;
+		return Math.max(44, Math.min(82, Math.floor(chartWidth * 0.24)));
+	}, [chartWidth]);
+
+	const innerRadius = useMemo(() => Math.max(30, Math.floor(outerRadius * 0.68)), [outerRadius]);
+
+	// Memoize cell colors to prevent recreation and keep SVG colors mobile-safe
 	const cells = useMemo(() =>
 		chartData.map((_, index) => (
 			<Cell
 				key={index}
-				fill={COLORS[index % COLORS.length]}
+				fill={oklchToRgb(COLORS[index % COLORS.length])}
 			/>
 		)),
 		[chartData]
@@ -343,31 +382,46 @@ const DonutChart = memo(({
 	}
 
 	return (
-		<ResponsiveContainer width="100%" height={height}>
-			<PieChart>
-				<Pie
-					data={chartData}
-					cx="50%"
-					cy="50%"
-					innerRadius={60}
-					outerRadius={80}
-					paddingAngle={5}
-					dataKey="value"
-					isAnimationActive={false}
-				>
-					{cells}
-				</Pie>
-				<Tooltip
-					contentStyle={TOOLTIP_STYLES.contentStyle}
-					itemStyle={TOOLTIP_STYLES.itemStyle}
-				/>
-				<Legend
-					verticalAlign="bottom"
-					height={36}
-					wrapperStyle={{ fontSize: "12px" }}
-				/>
-			</PieChart>
-		</ResponsiveContainer>
+		<div className="w-full h-full flex flex-col justify-center">
+			<div ref={containerRef} style={{ width: "100%", height: chartHeight }}>
+				{chartWidth > 0 ? (
+					<PieChart width={chartWidth} height={chartHeight}>
+						<Pie
+							data={chartData}
+							cx="50%"
+							cy="50%"
+							innerRadius={innerRadius}
+							outerRadius={outerRadius}
+							paddingAngle={5}
+							dataKey="value"
+							isAnimationActive={false}
+						>
+							{cells}
+						</Pie>
+						<Tooltip
+							contentStyle={TOOLTIP_STYLES.contentStyle}
+							itemStyle={TOOLTIP_STYLES.itemStyle}
+						/>
+					</PieChart>
+				) : (
+					<div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+						Loading chart...
+					</div>
+				)}
+			</div>
+
+			<div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs sm:text-sm">
+				{chartData.map((entry, index) => (
+					<div key={`${title}-${entry.name}`} className="inline-flex items-center gap-2 text-muted-foreground">
+						<span
+							className="h-2.5 w-2.5 rounded-[2px]"
+							style={{ backgroundColor: oklchToRgb(COLORS[index % COLORS.length]) }}
+						/>
+						<span className="font-medium">{entry.name}</span>
+					</div>
+				))}
+			</div>
+		</div>
 	);
 });
 DonutChart.displayName = "DonutChart";
