@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, memo, useRef, useLayoutEffect } from "react";
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
 	Select,
 	SelectContent,
 	SelectItem,
@@ -41,36 +34,38 @@ import {
 } from "recharts";
 import { useWebHaptics } from "web-haptics/react";
 
-// --- Shared Tooltip Styles (avoid recreating objects on each render) ---
+// --- Shared Tooltip Styles ---
 const TOOLTIP_STYLES = {
 	contentStyle: {
-		backgroundColor: "rgba(15, 23, 42, 0.95)",
-		borderColor: "hsl(var(--primary) / 0.4)",
-		borderRadius: "12px",
-		borderWidth: "0px",
-		color: "hsl(var(--foreground))",
-		boxShadow: "0 10px 40px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.1) inset",
-		padding: "12px 16px",
+		backgroundColor: "rgba(8, 10, 15, 0.98)",
+		borderColor: "rgba(245, 158, 11, 0.2)",
+		borderRadius: "8px",
+		borderWidth: "1px",
+		color: "#e2e8f0",
+		boxShadow: "0 16px 48px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.03) inset",
+		padding: "10px 14px",
 	},
 	itemStyle: {
-		color: "hsl(var(--foreground))",
-		fontSize: "13px",
+		color: "#94a3b8",
+		fontSize: "12px",
 		fontWeight: "500",
 		lineHeight: "1.6",
+		fontFamily: "ui-monospace, SFMono-Regular, monospace",
 	},
 	labelStyle: {
-		color: "hsl(var(--primary))",
-		marginBottom: "8px",
-		fontSize: "14px",
-		fontWeight: "600",
-		letterSpacing: "0.5px",
+		color: "#f59e0b",
+		marginBottom: "6px",
+		fontSize: "10px",
+		fontWeight: "700",
+		letterSpacing: "0.1em",
+		textTransform: "uppercase" as const,
 	},
 } as const;
 
 // --- Types ---
 
 type TimeseriesEntry = {
-	date: string; // ISO datetime string
+	date: string;
 	pageviews: number;
 	visitors: number;
 	bounce_rate: number;
@@ -111,43 +106,18 @@ type ProjectListResponse = {
 // --- Constants ---
 
 const COLORS = [
-	"oklch(0.7156 0.0605 248.6845)", // chart-1
-	"oklch(0.7875 0.0917 35.9616)",  // chart-2
-	"oklch(0.5778 0.0759 254.1573)", // chart-3
-	"oklch(0.5016 0.0849 259.4902)", // chart-4
-	"oklch(0.4241 0.0952 264.0306)", // chart-5
+	"#f59e0b", // amber
+	"#60a5fa", // blue
+	"#34d399", // emerald
+	"#f472b6", // pink
+	"#a78bfa", // violet
 ];
 
-// Color conversion utility for SVG compatibility
-const oklchToRgb = (oklchColor: string): string => {
-	const oklchMap: { [key: string]: string } = {
-		"oklch(0.7156 0.0605 248.6845)": "rgb(180, 190, 240)", // chart-1 - blue
-		"oklch(0.7875 0.0917 35.9616)": "rgb(255, 200, 120)",  // chart-2 - orange
-		"oklch(0.5778 0.0759 254.1573)": "rgb(160, 100, 220)", // chart-3 - purple
-		"oklch(0.5016 0.0849 259.4902)": "rgb(130, 80, 200)",  // chart-4 - dark purple
-		"oklch(0.4241 0.0952 264.0306)": "rgb(100, 50, 180)",  // chart-5 - darker purple
-	};
-	return oklchMap[oklchColor] || oklchColor;
-};
+// Colors are already SVG-compatible hex
+const oklchToRgb = (color: string): string => color;
 
-// --- Helper Components ---
-
-const GlassCard = memo(({
-	className,
-	children,
-	...props
-}: React.ComponentProps<typeof Card>) => (
-	<Card
-		className={cn(
-			"border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 shadow-sm",
-			className
-		)}
-		{...props}
-	>
-		{children}
-	</Card>
-));
-GlassCard.displayName = "GlassCard";
+// Base card class — flat dark surface with hairline border
+const CARD = "rounded-xl border border-[#1c1f27] bg-[#0d0f14] transition-colors hover:border-[#252b38]";
 
 // --- Chart Components ---
 
@@ -191,15 +161,13 @@ const RechartsAreaChart = memo(({
 		};
 	}, []);
 
-	// Memoize formatted data to prevent recalculation on every render
 	const formattedData = useMemo(() => {
 		if (!data || data.length === 0) return [];
 
-		// Use full data range to show strict period boundaries
 		return data.map((d) => {
 			const parsedDate = new Date(d.date);
 			const safeDate = isNaN(parsedDate.getTime())
-				? String(d.date).split("T")[0] // fallback if invalid date on mobile safari
+				? String(d.date).split("T")[0]
 				: parsedDate.toLocaleDateString(undefined, {
 						month: "short",
 						day: "numeric",
@@ -207,7 +175,6 @@ const RechartsAreaChart = memo(({
 
 			return {
 				...d,
-				// Include the raw date for standard Recharts processing just in case
 				rawDate: d.date,
 				formattedDate: safeDate,
 				displayValue:
@@ -218,7 +185,6 @@ const RechartsAreaChart = memo(({
 		});
 	}, [data, dataKey]);
 
-	// Memoize tooltip formatter
 	const tooltipFormatter = useCallback((value: number | undefined) => {
 		const numValue = value ?? 0;
 		return [
@@ -229,10 +195,7 @@ const RechartsAreaChart = memo(({
 
 	if (formattedData.length === 0)
 		return (
-			<div
-				className="flex items-center justify-center text-muted-foreground text-sm"
-				style={{ height }}
-			>
+			<div className="flex items-center justify-center text-slate-600 text-sm" style={{ height }}>
 				No data available
 			</div>
 		);
@@ -246,33 +209,29 @@ const RechartsAreaChart = memo(({
 					data={formattedData}
 					margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
 				>
-					<CartesianGrid
-						strokeDasharray="3 3"
-						vertical={false}
-						stroke="currentColor"
-						opacity={0.1}
-						className="text-muted-foreground"
-					/>
+					<defs>
+						<linearGradient id={`grad-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
+							<stop offset="0%" stopColor={color} stopOpacity={0.18} />
+							<stop offset="100%" stopColor={color} stopOpacity={0} />
+						</linearGradient>
+					</defs>
+					<CartesianGrid strokeDasharray="0" vertical={false} stroke="#1c1f27" opacity={1} />
 					<XAxis
 						dataKey="formattedDate"
-						fontSize={12}
+						fontSize={11}
 						tickLine={false}
 						axisLine={false}
-						stroke="currentColor"
-						tick={{ fill: "currentColor" }}
-						className="text-muted-foreground"
+						tick={{ fill: "#475569" }}
 						interval="preserveStartEnd"
 						minTickGap={20}
 					/>
 					<YAxis
-						fontSize={12}
+						fontSize={11}
 						tickLine={false}
 						axisLine={false}
 						tickFormatter={(value) => `${value.toLocaleString()}${unit}`}
-						stroke="currentColor"
-						tick={{ fill: "currentColor" }}
-						className="text-muted-foreground"
-						width={40}
+						tick={{ fill: "#475569" }}
+						width={44}
 					/>
 					<Tooltip
 						contentStyle={TOOLTIP_STYLES.contentStyle}
@@ -283,19 +242,15 @@ const RechartsAreaChart = memo(({
 					<Area
 						type="monotone"
 						dataKey={dataKey === "bounce_rate" ? "displayValue" : dataKey}
-						stroke={oklchToRgb(color)}
-						fill={oklchToRgb(color)}
-						fillOpacity={0.15}
-						strokeWidth={2}
+						stroke={color}
+						fill={`url(#grad-${dataKey})`}
+						strokeWidth={1.5}
 						connectNulls
 						isAnimationActive={false}
 					/>
 				</AreaChart>
 			) : (
-				<div
-					className="flex items-center justify-center text-muted-foreground text-sm"
-					style={{ height }}
-				>
+				<div className="flex items-center justify-center text-slate-600 text-sm" style={{ height }}>
 					Loading chart...
 				</div>
 			)}
@@ -361,20 +316,16 @@ const DonutChart = memo(({
 
 	const innerRadius = useMemo(() => Math.max(30, Math.floor(outerRadius * 0.68)), [outerRadius]);
 
-	// Memoize cell colors to prevent recreation and keep SVG colors mobile-safe
 	const cells = useMemo(() =>
 		chartData.map((_, index) => (
-			<Cell
-				key={index}
-				fill={oklchToRgb(COLORS[index % COLORS.length])}
-			/>
+			<Cell key={index} fill={COLORS[index % COLORS.length]} stroke="transparent" />
 		)),
 		[chartData]
 	);
 
 	if (chartData.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs">
+			<div className="flex flex-col items-center justify-center h-full text-slate-600 text-xs">
 				<Activity className="w-4 h-4 mb-1 opacity-20" />
 				No data
 			</div>
@@ -392,7 +343,7 @@ const DonutChart = memo(({
 							cy="50%"
 							innerRadius={innerRadius}
 							outerRadius={outerRadius}
-							paddingAngle={5}
+							paddingAngle={3}
 							dataKey="value"
 							isAnimationActive={false}
 						>
@@ -404,20 +355,20 @@ const DonutChart = memo(({
 						/>
 					</PieChart>
 				) : (
-					<div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+					<div className="flex items-center justify-center h-full text-slate-600 text-sm">
 						Loading chart...
 					</div>
 				)}
 			</div>
 
-			<div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs sm:text-sm">
+			<div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2">
 				{chartData.map((entry, index) => (
-					<div key={`${title}-${entry.name}`} className="inline-flex items-center gap-2 text-muted-foreground">
+					<div key={`${title}-${entry.name}`} className="inline-flex items-center gap-1.5">
 						<span
-							className="h-2.5 w-2.5 rounded-[2px]"
-							style={{ backgroundColor: oklchToRgb(COLORS[index % COLORS.length]) }}
+							className="h-2 w-2 rounded-sm shrink-0"
+							style={{ backgroundColor: COLORS[index % COLORS.length] }}
 						/>
-						<span className="font-medium">{entry.name}</span>
+						<span className="text-[11px] text-slate-400 font-medium">{entry.name}</span>
 					</div>
 				))}
 			</div>
@@ -441,17 +392,16 @@ const HorizontalBarChart = memo(({
 		[data]
 	);
 
-	// Memoize bar cells
 	const cells = useMemo(() =>
 		chartData.map((_, index) => (
-			<Cell key={index} fill={COLORS[index % COLORS.length]} />
+			<Cell key={index} fill={oklchToRgb(COLORS[index % COLORS.length])} />
 		)),
 		[chartData]
 	);
 
 	if (chartData.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs">
+			<div className="flex flex-col items-center justify-center h-full text-slate-600 text-xs">
 				<Activity className="w-4 h-4 mb-1 opacity-20" />
 				No data
 			</div>
@@ -465,22 +415,22 @@ const HorizontalBarChart = memo(({
 				data={chartData}
 				margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
 			>
-				<CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.1} />
+				<CartesianGrid strokeDasharray="0" horizontal={false} stroke="#1c1f27" opacity={1} />
 				<XAxis type="number" hide />
 				<YAxis
 					dataKey="name"
 					type="category"
 					width={100}
-					tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+					tick={{ fontSize: 11, fill: "#475569" }}
 					interval={0}
 				/>
 				<Tooltip
-					cursor={{ fill: "hsl(var(--muted)/0.2)" }}
+					cursor={{ fill: "rgba(255,255,255,0.03)" }}
 					contentStyle={TOOLTIP_STYLES.contentStyle}
 					itemStyle={TOOLTIP_STYLES.itemStyle}
 				/>
-			<Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} isAnimationActive={false}>
-				{cells}
+				<Bar dataKey="value" radius={[0, 3, 3, 0]} isAnimationActive={false}>
+					{cells}
 				</Bar>
 			</BarChart>
 		</ResponsiveContainer>
@@ -488,53 +438,60 @@ const HorizontalBarChart = memo(({
 });
 HorizontalBarChart.displayName = "HorizontalBarChart";
 
+// --- MetricCard ---
 const MetricCard = memo(({
 	title,
 	value,
 	icon: Icon,
 	trend,
+	accentColor = "#f59e0b",
 }: {
 	title: string;
 	value: string | number;
 	icon: React.ComponentType<{ className?: string }>;
 	trend?: string;
+	accentColor?: string;
 }) => (
-	<GlassCard className="relative overflow-hidden hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
-		<div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-		<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
-			<CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-				{title}
-			</CardTitle>
-			<div className="p-2.5 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg border border-primary/20">
-				<Icon className="h-5 w-5 text-primary" />
-			</div>
-		</CardHeader>
-		<CardContent className="relative">
-			<div className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent pb-0.5">{value}</div>
-			{trend && (
-				<p className="text-xs text-muted-foreground mt-2 flex items-center gap-1.5">
-					<span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/60"></span>
-					{trend}
-				</p>
-			)}
-		</CardContent>
-	</GlassCard>
+	<motion.div
+		className={cn(CARD, "relative overflow-hidden p-6 flex flex-col gap-3")}
+		initial={{ opacity: 0, y: 10 }}
+		animate={{ opacity: 1, y: 0 }}
+		transition={{ duration: 0.35 }}
+	>
+		{/* Accent bar */}
+		<div
+			className="absolute left-0 top-5 bottom-5 w-[2px] rounded-r-full"
+			style={{ backgroundColor: accentColor }}
+		/>
+		<p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 pl-4 flex items-center gap-2">
+			<Icon className="w-3 h-3" />
+			{title}
+		</p>
+		<div className="text-[2.6rem] leading-none font-mono font-bold text-slate-100 pl-4 tracking-tight tabular-nums">
+			{value}
+		</div>
+		{trend && (
+			<p className="text-[11px] text-slate-600 pl-4">{trend}</p>
+		)}
+	</motion.div>
 ));
 MetricCard.displayName = "MetricCard";
 
-// Memoized progress bar to avoid motion recalculations
+// --- ProgressBar ---
 const ProgressBar = memo(({ value, maxVal, index }: { value: number; maxVal: number; index: number }) => (
-	<div className="h-1.5 w-full bg-secondary/50 rounded-full overflow-hidden">
+	<div className="h-[2px] w-full bg-white/[0.04] rounded-full overflow-hidden">
 		<motion.div
-			className="h-full bg-primary/80 group-hover:bg-primary transition-colors"
+			className="h-full rounded-full"
+			style={{ backgroundColor: "#f59e0b", opacity: 0.55 }}
 			initial={{ width: 0 }}
 			animate={{ width: `${(value / maxVal) * 100}%` }}
-			transition={{ duration: 0.5, delay: index * 0.05 }}
+			transition={{ duration: 0.6, delay: index * 0.04, ease: "easeOut" }}
 		/>
 	</div>
 ));
 ProgressBar.displayName = "ProgressBar";
 
+// --- BreakdownList ---
 const BreakdownList = memo(({
 	title,
 	items,
@@ -546,42 +503,45 @@ const BreakdownList = memo(({
 	maxVal: number;
 	icon?: React.ComponentType<{ className?: string }>;
 }) => (
-	<GlassCard className="max-h-[300px] sm:max-h-[400px] md:h-[400px] flex flex-col hover:border-primary/20 transition-colors">
-		<CardHeader className="pb-3 border-b border-border/40 bg-gradient-to-r from-transparent to-primary/5">
-			<CardTitle className="text-sm font-medium uppercase tracking-wider flex items-center gap-2">
-				{Icon && <Icon className="w-4 h-4 text-primary/60" />}
+	<div className={cn(CARD, "max-h-[300px] sm:max-h-[400px] md:h-[400px] flex flex-col")}>
+		<div className="px-5 py-3.5 border-b border-[#1c1f27] flex items-center gap-2 shrink-0">
+			{Icon && <Icon className="w-3.5 h-3.5 text-slate-600" />}
+			<span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
 				{title}
-			</CardTitle>
-		</CardHeader>
-		<CardContent className="space-y-3 flex-1 overflow-auto no-scrollbar p-4">
+			</span>
+		</div>
+		<div className="flex-1 overflow-auto no-scrollbar">
 			{items.length === 0 ? (
-				<div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs text-center">
-					<Activity className="w-4 h-4 mb-1 opacity-20" />
+				<div className="flex flex-col items-center justify-center h-full text-slate-600 text-xs py-12">
+					<Activity className="w-4 h-4 mb-2 opacity-20" />
 					No data available
 				</div>
 			) : (
-				items.map((item, i) => (
-					<div key={item.key} className="group flex flex-col space-y-1.5 shrink-0 p-2 rounded-lg hover:bg-primary/5 transition-colors">
-						<div className="flex justify-between text-xs sm:text-sm">
-							<span
-								className="truncate max-w-[70%] text-foreground/90 font-medium group-hover:text-primary transition-colors"
-								title={item.key}
-							>
-								{item.key.replace(/^https?:\/\/[^/]+/, "") || "/"}
-							</span>
-							<span className="font-mono text-muted-foreground font-semibold">
-								{item.pageviews.toLocaleString()}
-							</span>
+				<div className="divide-y divide-[#131620]">
+					{items.map((item, i) => (
+						<div key={item.key} className="group px-5 py-3 hover:bg-white/[0.015] transition-colors">
+							<div className="flex justify-between items-baseline gap-3 mb-2">
+								<span
+									className="text-sm text-slate-300 truncate font-medium group-hover:text-white transition-colors"
+									title={item.key}
+								>
+									{item.key.replace(/^https?:\/\/[^/]+/, "") || "/"}
+								</span>
+								<span className="text-xs font-mono text-slate-500 shrink-0 tabular-nums">
+									{item.pageviews.toLocaleString()}
+								</span>
+							</div>
+							<ProgressBar value={item.pageviews} maxVal={maxVal} index={i} />
 						</div>
-						<ProgressBar value={item.pageviews} maxVal={maxVal} index={i} />
-					</div>
-				))
+					))}
+				</div>
 			)}
-		</CardContent>
-	</GlassCard>
+		</div>
+	</div>
 ));
 BreakdownList.displayName = "BreakdownList";
 
+// --- BreakdownChartCard ---
 const BreakdownChartCard = memo(({
 	title,
 	children,
@@ -591,21 +551,21 @@ const BreakdownChartCard = memo(({
 	children: React.ReactNode;
 	icon?: React.ComponentType<{ className?: string }>;
 }) => (
-	<GlassCard className="h-[400px] flex flex-col hover:border-primary/20 transition-colors">
-		<CardHeader className="pb-2 border-b border-border/40 bg-gradient-to-r from-transparent to-primary/5">
-			<CardTitle className="text-sm font-medium uppercase tracking-wider text-foreground/80 flex items-center gap-2">
-				{Icon && <Icon className="w-4 h-4 text-primary/60" />}
+	<div className={cn(CARD, "h-[400px] flex flex-col")}>
+		<div className="px-5 py-3.5 border-b border-[#1c1f27] flex items-center gap-2 shrink-0">
+			{Icon && <Icon className="w-3.5 h-3.5 text-slate-600" />}
+			<span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
 				{title}
-			</CardTitle>
-		</CardHeader>
-		<CardContent className="flex-1 p-4 flex items-center justify-center">
+			</span>
+		</div>
+		<div className="flex-1 p-4 flex items-center justify-center overflow-hidden">
 			{children}
-		</CardContent>
-	</GlassCard>
+		</div>
+	</div>
 ));
 BreakdownChartCard.displayName = "BreakdownChartCard";
 
-// --- Main Dashboard Component ---
+// --- Main Dashboard ---
 
 export default function ProjectStatsDashboard() {
 	const [projects, setProjects] = useState<ProjectInfo[]>([]);
@@ -621,7 +581,6 @@ export default function ProjectStatsDashboard() {
 		return configured.replace(/\/+$/, "");
 	}, []);
 
-	// Get initial project from URL parameter - memoized
 	const getInitialProject = useCallback(() => {
 		if (typeof window !== "undefined") {
 			const params = new URLSearchParams(window.location.search);
@@ -645,7 +604,6 @@ export default function ProjectStatsDashboard() {
 				const data: ProjectListResponse = await res.json();
 				setProjects(data.projects);
 
-				// Check for URL parameter first
 				const urlProject = getInitialProject();
 				if (urlProject && data.projects.some((p) => p.slug === urlProject)) {
 					setSelectedSlug(urlProject);
@@ -655,9 +613,7 @@ export default function ProjectStatsDashboard() {
 			} catch (err) {
 				if (err instanceof Error && err.name === 'AbortError') return;
 				console.error(err);
-				setError(
-					"Could not load projects from " + API_BASE
-				);
+				setError("Could not load projects from " + API_BASE);
 			}
 		}
 		fetchProjects();
@@ -722,7 +678,7 @@ export default function ProjectStatsDashboard() {
 		return () => controller.abort();
 	}, [selectedSlug, period, API_BASE]);
 
-	// Derived metrics - memoized
+	// Derived metrics
 	const totals = useMemo(() => {
 		if (!stats) return { views: 0, visitors: 0, bounce: 0 };
 
@@ -731,7 +687,6 @@ export default function ProjectStatsDashboard() {
 		let bounceWeightedSum = 0;
 		let totalPageviewsWithBounce = 0;
 
-		// Single loop instead of multiple reduces
 		for (const entry of stats.timeseries) {
 			views += entry.pageviews;
 			visitors += entry.visitors;
@@ -748,14 +703,11 @@ export default function ProjectStatsDashboard() {
 		return { views, visitors, bounce };
 	}, [stats]);
 
-	// Memoize timeseries data for charts to prevent recalculation
 	const chartData = useMemo(() => {
 		if (!stats) return [];
-		// API already filters by period, so use data as-is
 		return stats.timeseries;
 	}, [stats]);
 
-	// Memoize max values for breakdown lists
 	const maxPathPageviews = useMemo(() =>
 		stats ? Math.max(...stats.stats.path.map((s) => s.pageviews), 1) : 1,
 		[stats]
@@ -771,24 +723,23 @@ export default function ProjectStatsDashboard() {
 		[stats]
 	);
 
+	// Initial project load
 	if (projects.length === 0 && !error) {
 		return (
-			<div className="flex flex-col items-center justify-center py-20 space-y-4">
-				<div className="relative w-12 h-12">
-					<div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
-					<div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+			<div className="flex flex-col items-center justify-center py-24 gap-4">
+				<div className="relative w-8 h-8">
+					<div className="absolute inset-0 border-[1.5px] border-amber-500/20 rounded-full" />
+					<div className="absolute inset-0 border-[1.5px] border-amber-500 border-t-transparent rounded-full animate-spin" />
 				</div>
-				<p className="text-muted-foreground animate-pulse">
-					Connecting to internal analytics...
-				</p>
+				<p className="text-slate-500 text-sm font-medium tracking-wide">Loading analytics...</p>
 			</div>
 		);
 	}
 
 	return (
-		<div className="w-full max-w-7xl mx-auto space-y-6 md:space-y-8 pb-10">
-			{/* Project & Period Controls */}
-			<div className="flex flex-col sm:flex-row gap-3 w-full">
+		<div className="w-full max-w-7xl mx-auto pb-12 space-y-8">
+			{/* Controls */}
+			<div className="flex flex-col sm:flex-row gap-3">
 				<Select
 					value={selectedSlug}
 					onValueChange={(v) => {
@@ -797,15 +748,15 @@ export default function ProjectStatsDashboard() {
 						setSelectedSlug(v);
 					}}
 				>
-					<SelectTrigger className="w-full sm:w-[240px] bg-background/50 border-border/60 hover:border-border/80 focus:ring-primary/20 ring-offset-0 transition-colors">
+					<SelectTrigger className="w-full sm:w-[240px] bg-[#0d0f14] border-[#1c1f27] hover:border-[#2a2f3a] focus:ring-amber-500/20 ring-offset-0 text-slate-200 transition-colors">
 						<SelectValue placeholder="Select Project" />
 					</SelectTrigger>
-					<SelectContent>
+					<SelectContent className="bg-[#0d0f14] border-[#1c1f27]">
 						{projects.map((p) => (
 							<SelectItem
 								key={p.slug}
 								value={p.slug}
-								className="cursor-pointer"
+								className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer"
 							>
 								{p.name}
 							</SelectItem>
@@ -821,226 +772,195 @@ export default function ProjectStatsDashboard() {
 						setPeriod(v);
 					}}
 				>
-					<SelectTrigger className="w-full sm:w-[160px] bg-background/50 border-border/60 hover:border-border/80 focus:ring-primary/20 ring-offset-0 transition-colors">
-						<Calendar className="w-4 h-4 mr-2 text-primary" />
+					<SelectTrigger className="w-full sm:w-[160px] bg-[#0d0f14] border-[#1c1f27] hover:border-[#2a2f3a] focus:ring-amber-500/20 ring-offset-0 text-slate-200 transition-colors">
+						<Calendar className="w-3.5 h-3.5 mr-2 text-amber-500/60" />
 						<SelectValue placeholder="Period" />
 					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="7">Last 7 days</SelectItem>
-						<SelectItem value="30">Last 30 days</SelectItem>
-						<SelectItem value="90">Last 90 days</SelectItem>
-						<SelectItem value="365">Last 365 days</SelectItem>
-						<SelectItem value="0">Lifetime</SelectItem>
+					<SelectContent className="bg-[#0d0f14] border-[#1c1f27]">
+						<SelectItem value="7" className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer">Last 7 days</SelectItem>
+						<SelectItem value="30" className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer">Last 30 days</SelectItem>
+						<SelectItem value="90" className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer">Last 90 days</SelectItem>
+						<SelectItem value="365" className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer">Last 365 days</SelectItem>
+						<SelectItem value="0" className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer">Lifetime</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
 
+			{/* Error */}
 			{error ? (
-				<GlassCard className="border-destructive/30 bg-destructive/5">
-					<CardHeader>
-						<CardTitle className="text-destructive flex items-center gap-2">
-							<Activity className="w-5 h-5" />
-							Connection Error
-						</CardTitle>
-						<CardDescription className="text-destructive/80">
-							{error}
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="p-4 bg-background/50 rounded-lg text-sm font-mono border border-border/50">
-							Troubleshooting:
-							<ul className="list-disc list-inside mt-2 space-y-1 text-muted-foreground">
-								<li>Ensure the Python API is running on port 8000</li>
-								<li>
-									Check if{" "}
-									<code className="bg-muted px-1 rounded">api/main.py</code> is
-									executing without errors
-								</li>
-								<li>Verify network connectivity</li>
-							</ul>
-						</div>
-					</CardContent>
-				</GlassCard>
+				<div className="rounded-xl border border-red-900/40 bg-red-950/20 p-6">
+					<div className="flex items-center gap-3 mb-3">
+						<Activity className="w-4 h-4 text-red-400" />
+						<span className="text-red-400 font-semibold text-sm tracking-wide">Connection Error</span>
+					</div>
+					<p className="text-slate-400 text-sm mb-4">{error}</p>
+					<div className="rounded-lg bg-[#0d0f14] border border-[#1c1f27] p-4 text-sm font-mono text-slate-500">
+						Troubleshooting:
+						<ul className="list-disc list-inside mt-2 space-y-1">
+							<li>Ensure the Python API is running on port 8000</li>
+							<li>
+								Check if{" "}
+								<code className="text-amber-500/80 bg-amber-500/10 px-1 rounded">api/main.py</code>{" "}
+								is executing without errors
+							</li>
+							<li>Verify network connectivity</li>
+						</ul>
+					</div>
+				</div>
 			) : loading || !stats ? (
+				/* Skeleton */
 				<div className="space-y-6">
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 						{[1, 2, 3].map((i) => (
-							<div
-								key={i}
-								className="h-32 rounded-xl bg-muted/40 animate-pulse border border-border/30"
-							/>
+							<div key={i} className="h-32 rounded-xl bg-[#0d0f14] border border-[#1c1f27] animate-pulse" />
 						))}
 					</div>
-					<div className="h-[400px] rounded-xl bg-muted/40 animate-pulse border border-border/30" />
+					<div className="h-[380px] rounded-xl bg-[#0d0f14] border border-[#1c1f27] animate-pulse" />
 				</div>
 			) : (
-				<div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-					{/* Summary Cards */}
-					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+				<div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+					{/* Metric Cards */}
+					<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 						<MetricCard
-							title="Total Pageviews"
+							title="Pageviews"
 							value={totals.views.toLocaleString()}
 							icon={Eye}
 							trend={period === "0" ? "Lifetime" : `Last ${period} days`}
+							accentColor="#60a5fa"
 						/>
 						<MetricCard
-							title="Total Visitors"
+							title="Visitors"
 							value={totals.visitors.toLocaleString()}
 							icon={Users}
-							trend={`Unique sessions`}
+							trend="Unique sessions"
+							accentColor="#34d399"
 						/>
 						<MetricCard
-							title="Avg. Bounce Rate"
+							title="Bounce Rate"
 							value={`${totals.bounce.toFixed(1)}%`}
 							icon={Activity}
-							trend={`Average`}
+							trend="Weighted average"
+							accentColor="#f59e0b"
 						/>
 					</div>
 
-					{/* Main Chart Area */}
+					{/* Main Chart Tabs */}
 					<Tabs defaultValue="traffic" className="w-full" onValueChange={() => trigger("selection")}>
-						<div className="flex items-center justify-between mb-4 px-1">
-							<TabsList className="bg-muted/50 p-1 border border-border/20">
-								<TabsTrigger
-									value="traffic"
-									className="data-[state=active]:bg-background data-[state=active]:shadow-sm"
-								>
-									Traffic
-								</TabsTrigger>
-								<TabsTrigger
-									value="visitors"
-									className="data-[state=active]:bg-background data-[state=active]:shadow-sm"
-								>
-									Visitors
-								</TabsTrigger>
-								<TabsTrigger
-									value="bounce"
-									className="data-[state=active]:bg-background data-[state=active]:shadow-sm"
-								>
-									Bounce Rate
-								</TabsTrigger>
-							</TabsList>
-						</div>
+						<div className={cn(CARD, "overflow-hidden")}>
+							{/* Tab bar */}
+							<div className="border-b border-[#1c1f27] px-6 pt-5 pb-0 flex items-end justify-between">
+								<TabsList className="bg-transparent p-0 gap-0 h-auto rounded-none border-0">
+									<TabsTrigger
+										value="traffic"
+										className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-blue-400 data-[state=active]:text-slate-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-slate-500 hover:text-slate-300 px-4 pb-3 pt-0 text-sm font-medium transition-colors bg-transparent shadow-none"
+									>
+										Traffic
+									</TabsTrigger>
+									<TabsTrigger
+										value="visitors"
+										className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-400 data-[state=active]:text-slate-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-slate-500 hover:text-slate-300 px-4 pb-3 pt-0 text-sm font-medium transition-colors bg-transparent shadow-none"
+									>
+										Visitors
+									</TabsTrigger>
+									<TabsTrigger
+										value="bounce"
+										className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-amber-400 data-[state=active]:text-slate-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-slate-500 hover:text-slate-300 px-4 pb-3 pt-0 text-sm font-medium transition-colors bg-transparent shadow-none"
+									>
+										Bounce Rate
+									</TabsTrigger>
+								</TabsList>
+								<div className="pb-3">
+									<span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600 bg-white/[0.03] border border-[#1c1f27] px-2.5 py-1 rounded-md">
+										{period === "0" ? "Lifetime" : `${period}d`}
+									</span>
+								</div>
+							</div>
 
-						<GlassCard className="p-1">
-							<CardContent className="p-4 sm:p-6">
+							{/* Chart content */}
+							<div className="p-6">
 								<TabsContent value="traffic" className="mt-0 space-y-4">
-									<div className="flex items-center justify-between">
-										<div>
-											<h3 className="text-lg font-semibold tracking-tight">
-												Pageviews Over Time
-											</h3>
-											<p className="text-sm text-muted-foreground">
-												Daily pageviews for the selected period
-											</p>
-										</div>
-										<div className="bg-primary/10 text-primary text-xs font-medium px-2.5 py-0.5 rounded-full hidden sm:block">
-											{period === "0" ? "Lifetime" : `${period} Day Trend`}
-										</div>
+									<div>
+										<h3 className="text-slate-200 font-semibold text-base">Pageviews Over Time</h3>
+										<p className="text-slate-600 text-xs mt-0.5">Daily pageview count for the selected period</p>
 									</div>
-									<div className="w-full pt-4">
-										<RechartsAreaChart
-											data={chartData}
-											dataKey="pageviews"
-											color="oklch(0.7156 0.0605 248.6845)"
-											height={280}
-										/>
-									</div>
+									<RechartsAreaChart
+										data={chartData}
+										dataKey="pageviews"
+										color="#60a5fa"
+										height={260}
+									/>
 								</TabsContent>
 
 								<TabsContent value="visitors" className="mt-0 space-y-4">
-									<div className="flex items-center justify-between">
-										<div>
-											<h3 className="text-lg font-semibold tracking-tight">
-												Visitors Over Time
-											</h3>
-											<p className="text-sm text-muted-foreground">
-												Daily unique visitors for the selected period
-											</p>
-										</div>
-										<div className="bg-emerald-500/10 text-emerald-600 text-xs font-medium px-2.5 py-0.5 rounded-full hidden sm:block">
-											{period === "0" ? "Lifetime" : `${period} Day Trend`}
-										</div>
+									<div>
+										<h3 className="text-slate-200 font-semibold text-base">Visitors Over Time</h3>
+										<p className="text-slate-600 text-xs mt-0.5">Daily unique visitor count for the selected period</p>
 									</div>
-									<div className="w-full pt-4">
-										<RechartsAreaChart
-											data={chartData}
-											dataKey="visitors"
-											color="oklch(0.7875 0.0917 35.9616)"
-											height={280}
-										/>
-									</div>
+									<RechartsAreaChart
+										data={chartData}
+										dataKey="visitors"
+										color="#34d399"
+										height={260}
+									/>
 								</TabsContent>
 
 								<TabsContent value="bounce" className="mt-0 space-y-4">
-									<div className="flex items-center justify-between">
-										<div>
-											<h3 className="text-lg font-semibold tracking-tight">
-												Bounce Rate
-											</h3>
-											<p className="text-sm text-muted-foreground">
-												Percentage of single-page sessions
-											</p>
-										</div>
-										<div className="bg-red-500/10 text-red-600 text-xs font-medium px-2.5 py-0.5 rounded-full hidden sm:block">
-											{period === "0" ? "Lifetime" : `${period} Day Trend`}
-										</div>
+									<div>
+										<h3 className="text-slate-200 font-semibold text-base">Bounce Rate</h3>
+										<p className="text-slate-600 text-xs mt-0.5">Percentage of single-page sessions per day</p>
 									</div>
-									<div className="w-full pt-4">
-										<RechartsAreaChart
-											data={chartData}
-											dataKey="bounce_rate"
-											color="oklch(0.5778 0.0759 254.1573)"
-											height={280}
-											unit="%"
-										/>
-									</div>
+									<RechartsAreaChart
+										data={chartData}
+										dataKey="bounce_rate"
+										color="#f59e0b"
+										height={260}
+										unit="%"
+									/>
 								</TabsContent>
-							</CardContent>
-						</GlassCard>
-					</Tabs>
-
-					{/* Breakdowns Grid */}
-					<div className="space-y-6">
-						<div>
-							<h2 className="text-xl font-semibold tracking-tight mb-4">Traffic Breakdown</h2>
-							<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-								{/* Top Paths - List */}
-								<BreakdownList
-									title="Top Paths"
-									items={stats.stats.path}
-									maxVal={maxPathPageviews}
-									icon={Eye}
-								/>
-
-								{/* Top Referrers - List */}
-								<BreakdownList
-									title="Top Referrers"
-									items={stats.stats.referrer}
-									maxVal={maxReferrerPageviews}
-									icon={Globe}
-								/>
-
-								{/* Top Countries - List */}
-								<BreakdownList
-									title="Top Countries"
-									items={stats.stats.country}
-									maxVal={maxCountryPageviews}
-									icon={Globe}
-								/>
 							</div>
 						</div>
+					</Tabs>
 
-						{/* Device & OS Charts */}
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-							{/* Device Types - Donut Chart */}
+					{/* Breakdowns */}
+					<div className="space-y-6">
+						{/* Section divider */}
+						<div className="flex items-center gap-4">
+							<div className="h-px flex-1 bg-[#1c1f27]" />
+							<span className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-600">
+								Traffic Breakdown
+							</span>
+							<div className="h-px flex-1 bg-[#1c1f27]" />
+						</div>
+
+						{/* List breakdowns */}
+						<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+							<BreakdownList
+								title="Top Paths"
+								items={stats.stats.path}
+								maxVal={maxPathPageviews}
+								icon={Eye}
+							/>
+							<BreakdownList
+								title="Top Referrers"
+								items={stats.stats.referrer}
+								maxVal={maxReferrerPageviews}
+								icon={Globe}
+							/>
+							<BreakdownList
+								title="Top Countries"
+								items={stats.stats.country}
+								maxVal={maxCountryPageviews}
+								icon={Globe}
+							/>
+						</div>
+
+						{/* Device & OS */}
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 							{stats.stats.device_type.length > 0 && (
 								<BreakdownChartCard title="Device Types" icon={Smartphone}>
 									<DonutChart data={stats.stats.device_type} title="Device Types" />
 								</BreakdownChartCard>
 							)}
-
-							{/* Operating Systems - Donut Chart */}
 							{stats.stats.os_name.length > 0 && (
 								<BreakdownChartCard title="Operating Systems" icon={Monitor}>
 									<DonutChart data={stats.stats.os_name} title="OS" />
