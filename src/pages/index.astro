@@ -125,11 +125,10 @@ const socials = [
 		<header
 			class="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:supports-[backdrop-filter]:bg-card/60 bg-card/80 dark:bg-card/70 border-b border-border/60 dark:border-border/60 shadow-sm"
 		>
-			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-				<div
-					class="flex flex-col sm:flex-row justify-between items-center gap-4"
-				>
-					<div class="flex items-center space-x-4 overflow-visible">
+			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 relative">
+				<div class="flex flex-col sm:flex-row items-center sm:justify-between gap-4 w-full">
+					<!-- Left: Profile Info -->
+					<div class="flex items-center space-x-4 overflow-visible w-full sm:w-auto justify-start">
 						<div class="relative shrink-0">
 							<span class="block p-[2.5px] rounded-full bg-primary/80">
 								<img
@@ -141,27 +140,29 @@ const socials = [
 						</div>
 						<div class="flex flex-col gap-0.5">
 							<h1
-								class="text-2xl sm:text-[1.75rem] font-bold text-foreground leading-tight tracking-tight"
+								class="text-2xl sm:text-[1.75rem] font-bold text-foreground leading-tight tracking-tight text-left"
 								style="font-family: 'Lexend', sans-serif; letter-spacing: -0.02em;"
 							>
 								Tashif Ahmad Khan
 							</h1>
-							<div class="flex items-center gap-2">
+							<div class="flex items-center gap-2 justify-start">
 								<span class="block w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
-								<p class="text-muted-foreground text-sm font-medium" style="font-family: 'Lexend', sans-serif;">
+								<p class="text-muted-foreground text-sm font-medium text-left" style="font-family: 'Lexend', sans-serif;">
 									{profile.realName || "Software Developer"}
 								</p>
 							</div>
 						</div>
 					</div>
-					<div class="flex items-center gap-0.5 sm:gap-1">
+
+					<!-- Center: Social Links -->
+					<div class="flex items-center justify-center gap-0.5 sm:gap-1 w-full sm:w-auto sm:absolute sm:left-1/2 sm:-translate-x-1/2 z-10">
 						{
 							socials.map((social) => (
 								<Button
 									variant="ghost"
 									size="icon"
 									asChild
-									className="rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent"
+									className="rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
 								>
 									<a
 										href={social.link}
@@ -175,7 +176,12 @@ const socials = [
 								</Button>
 							))
 						}
-						<div class="w-px h-5 bg-border/60 mx-1 hidden sm:block"></div>
+					</div>
+				</div>
+
+				<!-- Right: Theme Button -->
+				<div class="absolute right-4 sm:right-6 lg:right-8 top-[60%] -translate-y-1/2 sm:top-1/2 z-20">
+					<div class="rounded-full bg-secondary/40 ring-1 ring-border/60 hover:ring-border transition-all">
 						<ThemeToggle client:load />
 					</div>
 				</div>
