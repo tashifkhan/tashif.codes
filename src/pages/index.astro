@@ -53,11 +53,12 @@ type RemotePost = {
 	slug: string;
 	wordCount?: number;
 	readingTimeMinutes?: number;
+	metadata?: Record<string, any>;
 };
 
 let blogPosts: RemotePost[] = [];
 try {
-	const res = await fetch("https://blog.tashif.codes/api/posts.json");
+	const res = await fetch("https://blog-backend-delta-ten.vercel.app/posts.json");
 	if (res.ok) {
 		blogPosts = (await res.json()) as RemotePost[];
 		// Sort posts by date desc to ensure the latest is featured first
@@ -93,12 +94,12 @@ const blogCategories = [
 
 // Aggregate metrics from the remote posts (new API includes wordCount & readingTimeMinutes)
 const totalBlogWords = blogPosts.reduce(
-	(sum, p) => sum + (p.wordCount || 0),
+	(sum, p) => sum + (p.wordCount || p.metadata?.wordCount || 0),
 	0
 );
 const avgReadingMinutes = blogPosts.length
 	? Math.round(
-			blogPosts.reduce((s, p) => s + (p.readingTimeMinutes || 0), 0) /
+			blogPosts.reduce((s, p) => s + (p.readingTimeMinutes || p.metadata?.readingTimeMinutes || 0), 0) /
 				blogPosts.length
 		)
 	: 0;

@@ -23,11 +23,6 @@
 			"source": "/blogs",
 			"destination": "https://blog.tashif.codes",
 			"permanent": true
-		},
-		{
-			"source": "/blog/:slug",
-			"destination": "https://blog.tashif.codes/blog/:slug",
-			"permanent": true
 		}
 	]
 }

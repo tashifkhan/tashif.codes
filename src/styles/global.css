@@ -104,7 +104,7 @@ html, body, * {
 html.dark,
 html.dark body,
 html.dark * {
-  scrollbar-color: rgba(255, 152, 0, 0.3) transparent;
+  scrollbar-color: oklch(0.6397 0.1720 36.4421 / 0.3) transparent;
 }
 
 html.dark::-webkit-scrollbar-track,
@@ -116,13 +116,13 @@ html.dark *::-webkit-scrollbar-track {
 html.dark::-webkit-scrollbar-thumb,
 html.dark body::-webkit-scrollbar-thumb,
 html.dark *::-webkit-scrollbar-thumb {
-  background: rgba(255, 152, 0, 0.3);
+  background: oklch(0.6397 0.1720 36.4421 / 0.3);
 }
 
 html.dark::-webkit-scrollbar-thumb:hover,
 html.dark body::-webkit-scrollbar-thumb:hover,
 html.dark *::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 152, 0, 0.6);
+  background: oklch(0.6397 0.1720 36.4421 / 0.6);
 }
 
 .cream {
@@ -264,20 +264,20 @@ nav::-webkit-scrollbar-thumb:hover {
   border-radius: 12px;
   overflow: hidden;
   background: linear-gradient(135deg, #09090f 0%, #0d0e15 50%, #11131c 100%);
-  border: 1px solid rgba(255, 152, 0, 0.2);
+  border: 1px solid oklch(0.6397 0.1720 36.4421 / 0.2);
   box-shadow:
     0 4px 16px -2px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 152, 0, 0.08),
+    0 0 0 1px oklch(0.6397 0.1720 36.4421 / 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
   transition: all 0.25s ease;
   max-width: 100%;
 }
 
 .code-block-wrapper:hover {
-  border-color: rgba(255, 152, 0, 0.4);
+  border-color: oklch(0.6397 0.1720 36.4421 / 0.4);
   box-shadow:
     0 12px 32px -4px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 152, 0, 0.15),
+    0 0 0 1px oklch(0.6397 0.1720 36.4421 / 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
   transform: translateY(-1px);
 }
@@ -315,7 +315,7 @@ nav::-webkit-scrollbar-thumb:hover {
   position: absolute;
   top: 0;
   right: 0;
-  background: linear-gradient(135deg, #ff9800, #ff5722);
+  background: linear-gradient(135deg, oklch(0.6397 0.1720 36.4421), oklch(0.5778 0.2000 30.00));
   color: white;
   padding: 0.4rem 0.9rem;
   font-size: 0.7rem;
@@ -343,9 +343,9 @@ nav::-webkit-scrollbar-thumb:hover {
 }
 
 .copy-button:hover {
-  background: rgba(255, 152, 0, 0.2);
-  border-color: rgba(255, 152, 0, 0.4);
-  color: #ff9800;
+  background: oklch(0.6397 0.1720 36.4421 / 0.2);
+  border-color: oklch(0.6397 0.1720 36.4421 / 0.4);
+  color: oklch(0.6397 0.1720 36.4421);
   transform: scale(1.05);
 }
 
@@ -513,12 +513,12 @@ nav::-webkit-scrollbar-thumb:hover {
 }
 
 .code-block-wrapper pre::-webkit-scrollbar-thumb {
-  background: rgba(255, 152, 0, 0.3);
+  background: oklch(0.6397 0.1720 36.4421 / 0.3);
   border-radius: 4px;
 }
 
 .code-block-wrapper pre::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 152, 0, 0.5);
+  background: oklch(0.6397 0.1720 36.4421 / 0.5);
 }
 
 /* Dark mode adjustments — keep consistent with class-based .dark theme */
@@ -742,8 +742,8 @@ nav::-webkit-scrollbar-thumb:hover {
   --popover-foreground: #dce1ec;
 
   /* Primary — signature orange */
-  --primary: #ff9800;
-  --primary-foreground: #09090f;
+  --primary: oklch(0.6397 0.1720 36.4421);
+  --primary-foreground: oklch(1.0000 0 0);
 
   /* Secondary / Muted — elevated surfaces */
   --secondary: #11131c;
@@ -762,10 +762,10 @@ nav::-webkit-scrollbar-thumb:hover {
   /* Structure */
   --border: #1a1d2a;
   --input: #11131c;
-  --ring: #ff9800;
+  --ring: oklch(0.6397 0.1720 36.4421);
 
   /* Chart palette — orange leads */
-  --chart-1: #ff9800;
+  --chart-1: oklch(0.6397 0.1720 36.4421);
   --chart-2: #60a5fa;
   --chart-3: #34d399;
   --chart-4: #f472b6;
@@ -774,12 +774,12 @@ nav::-webkit-scrollbar-thumb:hover {
   /* Sidebar */
   --sidebar: #0d0e15;
   --sidebar-foreground: #dce1ec;
-  --sidebar-primary: #ff9800;
-  --sidebar-primary-foreground: #09090f;
+  --sidebar-primary: oklch(0.6397 0.1720 36.4421);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
   --sidebar-accent: #1a1d2a;
   --sidebar-accent-foreground: #9ea5b8;
   --sidebar-border: #1a1d2a;
-  --sidebar-ring: #ff9800;
+  --sidebar-ring: oklch(0.6397 0.1720 36.4421);
 
   /* Typography & spacing */
   --radius: 0.75rem;
@@ -832,11 +832,11 @@ nav::-webkit-scrollbar-thumb:hover {
 
   /* ── Selection highlight — signature orange ── */
   ::selection {
-    background: rgba(255, 152, 0, 0.25);
+    background: oklch(0.6397 0.1720 36.4421 / 0.25);
     color: inherit;
   }
   .dark ::selection {
-    background: rgba(255, 152, 0, 0.3);
+    background: oklch(0.6397 0.1720 36.4421 / 0.3);
   }
 }
 
