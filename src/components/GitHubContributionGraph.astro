@@ -111,7 +111,7 @@ function getContributionLevel(count: number): number {
 // Helper function to get color class based on contribution level
 function getContributionColor(level: number): string {
 	const colors = [
-		"bg-gray-200 dark:bg-gray-800/60", // 0 contributions
+		"bg-muted dark:bg-secondary/60", // 0 contributions
 		"bg-primary/40 dark:bg-primary/40", // 1-3 contributions
 		"bg-primary/60 dark:bg-primary/60", // 4-6 contributions
 		"bg-primary/80 dark:bg-primary/80", // 7-9 contributions
@@ -143,7 +143,7 @@ const starredLists = starLists || [];
 ---
 
 <div
-	class="relative group bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl p-6 rounded-2xl border border-primary/20 dark:border-primary/20 shadow-sm hover:shadow-md transition-shadow mb-6 sm:mb-8"
+	class="relative group bg-card/70 dark:bg-card/60 backdrop-blur-xl p-6 rounded-2xl border border-primary/20 dark:border-primary/20 shadow-sm hover:shadow-md transition-shadow mb-6 sm:mb-8"
 >
 	
 	<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
@@ -152,8 +152,8 @@ const starredLists = starLists || [];
 				<Calendar className="w-5 h-5 text-primary dark:text-primary" />
 			</div>
 			<div>
-				<h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 tracking-tight">Contribution Activity</h3>
-				<p data-contribution-range class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{formatDateRange()} • {totalContributions.toLocaleString()} contributions</p>
+				<h3 class="text-base font-semibold text-foreground dark:text-foreground tracking-tight">Contribution Activity</h3>
+				<p data-contribution-range class="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">{formatDateRange()} • {totalContributions.toLocaleString()} contributions</p>
 			</div>
 		</div>
 		
@@ -164,10 +164,10 @@ const starredLists = starLists || [];
 			</div>
 			
 			<!-- Legend -->
-			<div class="flex items-center space-x-2 text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
+			<div class="flex items-center space-x-2 text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground">
 				<span class="uppercase tracking-wide">Less</span>
 				<div class="flex space-x-1">
-					<div class="w-3 h-3 rounded-sm bg-gray-200 dark:bg-gray-800/60"></div>
+					<div class="w-3 h-3 rounded-sm bg-muted dark:bg-secondary/60"></div>
 					<div class="w-3 h-3 rounded-sm bg-primary/40 dark:bg-primary/40"></div>
 					<div class="w-3 h-3 rounded-sm bg-primary/60 dark:bg-primary/60"></div>
 					<div class="w-3 h-3 rounded-sm bg-primary/80 dark:bg-primary/80"></div>
@@ -183,17 +183,17 @@ const starredLists = starLists || [];
 			<!-- Custom Tooltip -->
 			<div 
 				id="contribution-tooltip" 
-				class="absolute z-50 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg border border-gray-700 pointer-events-none opacity-0 transition-opacity duration-200"
+				class="absolute z-50 bg-foreground dark:bg-secondary text-white text-xs rounded-lg px-3 py-2 shadow-lg border border-border pointer-events-none opacity-0 transition-opacity duration-200"
 			>
 				<div id="tooltip-content"></div>
-				<div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
+				<div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground dark:border-t-secondary"></div>
 			</div>
 
 			<div class="contribution-container pt-5">
 				<div class="contribution-content">
 					<div class="contribution-grid-wrapper relative">
 						<!-- Month labels container (absolutely positioned above the grid) -->
-						<div class="absolute -top-[18px] left-0 w-full flex h-4 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400" id="month-labels-wrapper">
+						<div class="absolute -top-[18px] left-0 w-full flex h-4 text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground" id="month-labels-wrapper">
 							<div class="w-[56px] shrink-0"></div> <!-- Offset for day labels -->
 							<div class="relative flex-1" id="month-labels-container">
 								{weeks.reduce((acc: any, week: any, i: number) => {
@@ -208,13 +208,13 @@ const starredLists = starLists || [];
 									}
 									return acc;
 								}, { currentMonth: -1, labels: [] }).labels.map((label: any) => (
-									<span class="absolute top-0 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium tracking-wide" style={`left: calc(${label.index} * 18px)`}>{label.month}</span>
+									<span class="absolute top-0 text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground font-medium tracking-wide" style={`left: calc(${label.index} * 18px)`}>{label.month}</span>
 								))}
 							</div>
 						</div>
 
 						<!-- Day labels -->
-						<div class="day-labels flex flex-col space-y-1 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-[2px]">
+						<div class="day-labels flex flex-col space-y-1 text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground mt-[2px]">
 							<span class="h-3 flex items-center justify-start leading-none">Sun</span>
 							<span class="h-3 flex items-center justify-start leading-none">Mon</span>
 							<span class="h-3 flex items-center justify-start leading-none">Tue</span>
@@ -253,10 +253,10 @@ const starredLists = starLists || [];
 		</div>
 	) : (
 		<div class="text-center py-8">
-			<div class="p-3 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit mx-auto mb-4">
-				<Calendar className="w-8 h-8 text-gray-400 mx-auto" />
+			<div class="p-3 bg-muted dark:bg-secondary rounded-xl w-fit mx-auto mb-4">
+				<Calendar className="w-8 h-8 text-muted-foreground mx-auto" />
 			</div>
-			<p class="text-gray-500 dark:text-gray-400">
+			<p class="text-muted-foreground dark:text-muted-foreground">
 				Unable to load contribution data
 			</p>
 		</div>
@@ -264,30 +264,30 @@ const starredLists = starLists || [];
 </div>
 
 {starredLists.length > 0 && (
-	<div class="mt-6 bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl p-6 rounded-2xl border border-primary/20 dark:border-primary/20 shadow-sm hover:shadow-md transition-shadow">
+	<div class="mt-6 bg-card/70 dark:bg-card/60 backdrop-blur-xl p-6 rounded-2xl border border-primary/20 dark:border-primary/20 shadow-sm hover:shadow-md transition-shadow">
 		<div class="flex items-center gap-3 mb-5">
 			<div class="p-2 rounded-xl bg-primary/10 dark:bg-primary/10 ring-1 ring-inset ring-primary/20 dark:ring-primary/20">
 				<Star className="w-5 h-5 text-primary dark:text-primary" />
 			</div>
 			<div>
-				<h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 tracking-tight">Starred Lists</h3>
-				<p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Click a list to view matching projects</p>
+				<h3 class="text-base font-semibold text-foreground dark:text-foreground tracking-tight">Starred Lists</h3>
+				<p class="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Click a list to view matching projects</p>
 			</div>
 		</div>
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{starredLists.map(list => (
-				<button type="button" data-star-list-select={list.name} class="group text-left flex flex-col h-full rounded-xl border border-primary/20 dark:border-primary/20 bg-white/60 dark:bg-gray-900/50 p-4 hover:border-primary/40 dark:hover:border-primary/40 hover:bg-white/80 dark:hover:bg-gray-900/70 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50">
+				<button type="button" data-star-list-select={list.name} class="group text-left flex flex-col h-full rounded-xl border border-primary/20 dark:border-primary/20 bg-card/60 dark:bg-card/50 p-4 hover:border-primary/40 dark:hover:border-primary/40 hover:bg-card/80 dark:hover:bg-card/70 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50">
 					<div class="flex items-start justify-between gap-3 mb-2">
-						<h4 class="font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-primary line-clamp-1">{list.name}</h4>
+						<h4 class="font-medium text-foreground dark:text-foreground group-hover:text-primary dark:group-hover:text-primary line-clamp-1">{list.name}</h4>
 						<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 dark:bg-primary/10 text-primary dark:text-primary border border-primary/20 dark:border-primary/20">
 							<ListIcon className="w-3.5 h-3.5" />
 							{(list.num_repos ?? list.repositories?.length ?? 0)}
 						</span>
 					</div>
 					{list.description && (
-						<p class="text-xs text-gray-600 dark:text-gray-400 line-clamp-3 mb-3">{list.description}</p>
+						<p class="text-xs text-muted-foreground dark:text-muted-foreground line-clamp-3 mb-3">{list.description}</p>
 					)}
-					<div class="mt-auto flex items-center justify-between pt-2 text-[11px] text-gray-500 dark:text-gray-500">
+					<div class="mt-auto flex items-center justify-between pt-2 text-[11px] text-muted-foreground dark:text-muted-foreground">
 						<span class="inline-flex items-center gap-1">
 							<Star className="w-3.5 h-3.5 text-primary" />
 							{(list.repositories?.length ?? list.num_repos ?? 0)} repos
@@ -471,7 +471,7 @@ const starredLists = starLists || [];
 			
 			tooltipContent.innerHTML = `
 				<div class="font-medium">${count} ${contributionText}</div>
-				<div class="text-gray-300 dark:text-gray-400">${formattedDate}</div>
+				<div class="text-foreground/60 dark:text-muted-foreground">${formattedDate}</div>
 			`;
 			
 			tooltip.style.opacity = '1';
@@ -519,7 +519,7 @@ const starredLists = starLists || [];
 				// Update arrow to point up (for bottom tooltip)
 				const arrow = tooltip.querySelector('.absolute.top-full');
 				if (arrow) {
-					arrow.className = 'absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900 dark:border-b-gray-800';
+					arrow.className = 'absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-foreground dark:border-b-secondary';
 				}
 			} else {
 				// Position tooltip above the day cell (original behavior)
@@ -531,7 +531,7 @@ const starredLists = starLists || [];
 				// Update arrow to point down (for top tooltip)
 				const arrow = tooltip.querySelector('.absolute.bottom-full, .absolute.top-full');
 				if (arrow) {
-					arrow.className = 'absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-800';
+					arrow.className = 'absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground dark:border-t-secondary';
 				}
 			}
 			
@@ -552,7 +552,7 @@ const starredLists = starLists || [];
 			const selectedValue = this.value;
 			
 			// Show loading state
-			contributionGrid.innerHTML = '<div class="flex items-center justify-center h-28 text-gray-500 dark:text-gray-400">Loading...</div>';
+			contributionGrid.innerHTML = '<div class="flex items-center justify-center h-28 text-muted-foreground dark:text-muted-foreground">Loading...</div>';
 			
 			try {
 				// Calculate date range based on selection
@@ -642,7 +642,7 @@ const starredLists = starLists || [];
 				
 			} catch (error) {
 				console.error('Error fetching contribution data:', error);
-				contributionGrid.innerHTML = '<div class="flex items-center justify-center h-28 text-gray-500 dark:text-gray-400">Error loading data</div>';
+				contributionGrid.innerHTML = '<div class="flex items-center justify-center h-28 text-muted-foreground dark:text-muted-foreground">Error loading data</div>';
 			}
 		});
 		
@@ -656,7 +656,7 @@ const starredLists = starLists || [];
 		
 		function getContributionColor(level: number): string {
 			const colors = [
-				"bg-gray-200 dark:bg-gray-800/60",
+				"bg-muted dark:bg-secondary/60",
 				"bg-primary/40 dark:bg-primary/40",
 				"bg-primary/60 dark:bg-primary/60",
 				"bg-primary/80 dark:bg-primary/80",
@@ -697,7 +697,7 @@ const starredLists = starLists || [];
 			});
 			
 			container.innerHTML = labels.map(label => 
-				`<span class="absolute top-0 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium tracking-wide" style="left: calc(${label.index} * 18px)">${label.month}</span>`
+				`<span class="absolute top-0 text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground font-medium tracking-wide" style="left: calc(${label.index} * 18px)">${label.month}</span>`
 			).join('');
 		}
 

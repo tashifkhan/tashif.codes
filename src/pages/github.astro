@@ -25,13 +25,13 @@ const starredLists = starLists || [];
 
 <Layout title="GitHub - Tashif Ahmad Khan">
 	<div
-		class="relative min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 py-8 text-gray-900 dark:text-gray-100"
+		class="relative min-h-screen bg-gradient-to-b from-muted to-background dark:from-background dark:to-card py-8 text-foreground dark:text-foreground"
 	>
 		<div
 			class="pointer-events-none absolute inset-0 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]"
 		>
 			<div
-				class="h-40 bg-gradient-to-b from-gray-300/30 to-transparent dark:from-gray-800/20"
+				class="h-40 bg-gradient-to-b from-border/30 to-transparent dark:from-muted/20"
 			>
 			</div>
 		</div>
@@ -53,7 +53,7 @@ const starredLists = starLists || [];
 				</Button>
 
 				<Card
-					className="bg-white/70 dark:bg-gray-900/50 backdrop-blur border-gray-200/60 dark:border-gray-800/60"
+					className="bg-card/70 dark:bg-card/50 backdrop-blur border-border/60 dark:border-border/60"
 				>
 					<CardContent className="p-5 flex items-center gap-4">
 						<div
@@ -63,11 +63,11 @@ const starredLists = starLists || [];
 						</div>
 						<div class="flex-1">
 							<h1
-								class="text-xl font-semibold text-gray-900 dark:text-white mb-1"
+								class="text-xl font-semibold text-foreground dark:text-white mb-1"
 							>
 								GitHub Profile
 							</h1>
-							<p class="text-sm text-gray-600 dark:text-gray-400">
+							<p class="text-sm text-muted-foreground dark:text-muted-foreground">
 								Open source contributions and development activity
 							</p>
 						</div>
@@ -78,7 +78,7 @@ const starredLists = starLists || [];
 			<div class="space-y-8">
 				<!-- Stats Section -->
 				<Card
-					className="bg-white/70 dark:bg-gray-900/50 backdrop-blur border-gray-200/60 dark:border-gray-800/60"
+					className="bg-card/70 dark:bg-card/50 backdrop-blur border-border/60 dark:border-border/60"
 				>
 					<CardHeader>
 						<div class="flex items-center space-x-3">
@@ -95,7 +95,7 @@ const starredLists = starLists || [];
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 					<!-- Profile Card -->
 					<Card
-						className="bg-white/70 dark:bg-gray-900/50 backdrop-blur border-gray-200/60 dark:border-gray-700/60 hover:shadow-lg transition-all duration-300"
+						className="bg-card/70 dark:bg-card/50 backdrop-blur border-border/60 dark:border-border/60 hover:shadow-lg transition-all duration-300"
 					>
 						<CardHeader>
 							<div class="flex items-center space-x-3">
@@ -130,7 +130,7 @@ const starredLists = starLists || [];
 
 					<!-- Activity Card -->
 					<Card
-						className="bg-white/70 dark:bg-gray-900/50 backdrop-blur border-gray-200/60 dark:border-gray-700/60 hover:shadow-lg transition-all duration-300"
+						className="bg-card/70 dark:bg-card/50 backdrop-blur border-border/60 dark:border-border/60 hover:shadow-lg transition-all duration-300"
 					>
 						<CardHeader>
 							<div class="flex items-center space-x-3">
@@ -165,7 +165,7 @@ const starredLists = starLists || [];
 
 					<!-- Repositories Card -->
 					<Card
-						className="bg-white/70 dark:bg-gray-900/50 backdrop-blur border-gray-200/60 dark:border-gray-700/60 hover:shadow-lg transition-all duration-300"
+						className="bg-card/70 dark:bg-card/50 backdrop-blur border-border/60 dark:border-border/60 hover:shadow-lg transition-all duration-300"
 					>
 						<CardHeader>
 							<div class="flex items-center space-x-3">

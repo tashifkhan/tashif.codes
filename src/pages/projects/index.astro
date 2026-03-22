@@ -5,14 +5,15 @@ import { starLists } from "../../data/starLists";
 import { ArrowLeft, BarChart3 } from "lucide-react";
 import ProjectCard from "../../components/ProjectCard.astro";
 import { allProjects, type Project } from "../../data/projects";
-import { Button } from "@/components/ui/button";
+import { fetchAnalyticsProjects, hasAnalytics, getAnalyticsSlug } from "../../data/analyticsProjects";
 
 const projects: Project[] = allProjects;
+const analyticsProjects = await fetchAnalyticsProjects();
 ---
 
 <Layout title="Projects">
 	<div
-		class="relative min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300 font-sans"
+		class="relative min-h-screen bg-gradient-to-b from-muted to-background dark:from-background dark:to-card text-foreground transition-colors duration-300 font-sans"
 	>
 		<div
 			class="pointer-events-none absolute inset-0 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]"
@@ -24,33 +25,30 @@ const projects: Project[] = allProjects;
 		</div>
 
 		<header
-			class="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200/60 dark:border-gray-800/60 transition-colors duration-300"
+			class="relative bg-card/80 dark:bg-card/80 backdrop-blur border-b border-border/60 transition-colors duration-300"
 		>
 			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 				<a
 					href="/"
 					data-haptic-nav
-					class="flex items-center text-primary dark:text-primary hover:text-primary/80 hover:underline mb-4 sm:mb-6 text-sm sm:text-base font-medium"
+					class="flex items-center text-primary hover:text-primary/80 hover:underline mb-4 sm:mb-6 text-sm font-medium font-mono tracking-wide"
 				>
 					<ArrowLeft className="w-4 h-4 mr-2" /> Home
 				</a>
 				<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
-				<h1
-					class="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent pb-1"
-				>
+					<h1
+						class="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent pb-1"
+					>
 						Projects
 					</h1>
-					<Button
-						variant="default"
-						size="sm"
-						className="w-full sm:w-auto h-10 sm:h-9 px-4 sm:px-5 gap-2 rounded-xl font-semibold tracking-wide bg-chart-1/15 text-chart-1 border border-chart-1/30 hover:bg-chart-1/25 hover:border-chart-1/50 shadow-sm hover:shadow-chart-1/20 focus-visible:ring-2 focus-visible:ring-chart-1/40 transition-all"
-						asChild
+					<a
+						href="/projects/stats"
+						data-haptic-nav
+						class="inline-flex items-center gap-2 px-4 py-2 text-xs font-mono font-semibold uppercase tracking-wider text-primary border border-primary/30 rounded-lg hover:bg-primary/10 hover:border-primary/50 transition-all"
 					>
-						<a href="/projects/stats" data-haptic-nav class="flex items-center gap-2">
-							<BarChart3 className="w-4 h-4" />
-							<span class="uppercase">View Stats</span>
-						</a>
-					</Button>
+						<BarChart3 className="w-4 h-4" />
+						View Stats
+					</a>
 				</div>
 				<p
 					class="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-3xl"
@@ -61,33 +59,32 @@ const projects: Project[] = allProjects;
 		</header>
 
 		<main transition:animate="fade" class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-			<div
-				class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-6 sm:p-8 lg:p-10 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg"
-			>
-				<ProjectFilters client:load starLists={starLists} />
+			<ProjectFilters client:load starLists={starLists} />
 
-				<div
-					class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 auto-rows-fr"
-				>
-					{
-						projects.map((project) => (
-							<div
-								class="h-full"
-								data-project-item-card
-								data-has-live-link={Boolean(project.live_website_url)}
-							>
-								<ProjectCard project={project} />
-							</div>
-						))
-					}
-				</div>
+			<div
+				class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+			>
+				{
+					projects.map((project) => (
+						<div
+							class="h-full"
+							data-project-item-card
+							data-has-live-link={Boolean(project.live_website_url)}
+						>
+							<ProjectCard
+								project={project}
+								hasAnalytics={hasAnalytics(project.slug, analyticsProjects)}
+								analyticsSlug={getAnalyticsSlug(project.slug)}
+							/>
+						</div>
+					))
+				}
 			</div>
 		</main>
 	</div>
 </Layout>
 
 <script>
-	// Fuzzy and enhanced search copied to provide consistent filtering behavior
 	function fuzzySearch(text: string, query: string): boolean {
 		if (!query.trim()) return true;
 		const textLower = text.toLowerCase();
@@ -104,20 +101,6 @@ const projects: Project[] = allProjects;
 		return queryIndex === queryLower.length;
 	}
 
-	function enhancedSearch(text: string, query: string): boolean {
-		if (!query.trim()) return true;
-		const textLower = text.toLowerCase();
-		const queryLower = query.toLowerCase();
-		if (textLower.includes(queryLower)) return true;
-		const words = textLower.split(/\s+/);
-		const queryWords = queryLower.split(/\s+/);
-		const allWordsFound = queryWords.every((qw: string) =>
-			words.some((w: string) => w.includes(qw))
-		);
-		if (allWordsFound) return true;
-		return fuzzySearch(textLower, queryLower);
-	}
-
 	function normalizeRepoName(value?: string | null): string {
 		if (!value) return "";
 		const cleaned = value
@@ -130,7 +113,6 @@ const projects: Project[] = allProjects;
 		return parts[parts.length - 1] || "";
 	}
 
-	// Listen for filter events: exact matches first then fuzzy; reorders DOM
 	document.addEventListener("project-search", (e: Event) => {
 		const { term: searchTerm, showLiveOnly, list } = (e as CustomEvent).detail;
 		const query = (searchTerm || "").trim().toLowerCase();
@@ -156,7 +138,6 @@ const projects: Project[] = allProjects;
 				card.querySelector("[data-live-link]") !== null ||
 				card.getAttribute("data-has-live-link") === "true";
 
-			// Star list filtering
 			let listFilter = true;
 			if (list && list !== "all-projects") {
 				const repoName = normalizeRepoName(
@@ -180,7 +161,7 @@ const projects: Project[] = allProjects;
 			let isExact = false;
 			let isFuzzy = false;
 			if (!query) {
-				isExact = true; // keep original order when no query
+				isExact = true;
 			} else {
 				isExact = fields.some((f) => f.includes(query));
 				if (!isExact) {
@@ -209,7 +190,6 @@ const projects: Project[] = allProjects;
 	});
 
 	document.addEventListener("astro:page-load", () => {
-		// Apply initial filter state (show all projects by default)
 		const initialSearchEvent = new CustomEvent("project-search", {
 			detail: { term: "", showLiveOnly: false },
 		});

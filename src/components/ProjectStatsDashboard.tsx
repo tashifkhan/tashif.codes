@@ -38,7 +38,7 @@ import { useWebHaptics } from "web-haptics/react";
 const TOOLTIP_STYLES = {
 	contentStyle: {
 		backgroundColor: "rgba(8, 10, 15, 0.98)",
-		borderColor: "rgba(245, 158, 11, 0.2)",
+		borderColor: "rgba(255, 152, 0, 0.2)",
 		borderRadius: "8px",
 		borderWidth: "1px",
 		color: "#e2e8f0",
@@ -53,7 +53,7 @@ const TOOLTIP_STYLES = {
 		fontFamily: "ui-monospace, SFMono-Regular, monospace",
 	},
 	labelStyle: {
-		color: "#f59e0b",
+		color: "#ff9800",
 		marginBottom: "6px",
 		fontSize: "10px",
 		fontWeight: "700",
@@ -106,7 +106,7 @@ type ProjectListResponse = {
 // --- Constants ---
 
 const COLORS = [
-	"#f59e0b", // amber
+	"#ff9800", // amber
 	"#60a5fa", // blue
 	"#34d399", // emerald
 	"#f472b6", // pink
@@ -117,7 +117,7 @@ const COLORS = [
 const oklchToRgb = (color: string): string => color;
 
 // Base card class — flat dark surface with hairline border
-const CARD = "rounded-xl border border-[#1c1f27] bg-[#0d0f14] transition-colors hover:border-[#252b38]";
+const CARD = "rounded-xl border border-[#1a1d2a] bg-[#0d0e15] transition-colors hover:border-[#252a3a]";
 
 // --- Chart Components ---
 
@@ -215,7 +215,7 @@ const RechartsAreaChart = memo(({
 							<stop offset="100%" stopColor={color} stopOpacity={0} />
 						</linearGradient>
 					</defs>
-					<CartesianGrid strokeDasharray="0" vertical={false} stroke="#1c1f27" opacity={1} />
+					<CartesianGrid strokeDasharray="0" vertical={false} stroke="#1a1d2a" opacity={1} />
 					<XAxis
 						dataKey="formattedDate"
 						fontSize={11}
@@ -415,7 +415,7 @@ const HorizontalBarChart = memo(({
 				data={chartData}
 				margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
 			>
-				<CartesianGrid strokeDasharray="0" horizontal={false} stroke="#1c1f27" opacity={1} />
+				<CartesianGrid strokeDasharray="0" horizontal={false} stroke="#1a1d2a" opacity={1} />
 				<XAxis type="number" hide />
 				<YAxis
 					dataKey="name"
@@ -444,7 +444,7 @@ const MetricCard = memo(({
 	value,
 	icon: Icon,
 	trend,
-	accentColor = "#f59e0b",
+	accentColor = "#ff9800",
 }: {
 	title: string;
 	value: string | number;
@@ -482,7 +482,7 @@ const ProgressBar = memo(({ value, maxVal, index }: { value: number; maxVal: num
 	<div className="h-[2px] w-full bg-white/[0.04] rounded-full overflow-hidden">
 		<motion.div
 			className="h-full rounded-full"
-			style={{ backgroundColor: "#f59e0b", opacity: 0.55 }}
+			style={{ backgroundColor: "#ff9800", opacity: 0.55 }}
 			initial={{ width: 0 }}
 			animate={{ width: `${(value / maxVal) * 100}%` }}
 			transition={{ duration: 0.6, delay: index * 0.04, ease: "easeOut" }}
@@ -504,7 +504,7 @@ const BreakdownList = memo(({
 	icon?: React.ComponentType<{ className?: string }>;
 }) => (
 	<div className={cn(CARD, "max-h-[300px] sm:max-h-[400px] md:h-[400px] flex flex-col")}>
-		<div className="px-5 py-3.5 border-b border-[#1c1f27] flex items-center gap-2 shrink-0">
+		<div className="px-5 py-3.5 border-b border-[#1a1d2a] flex items-center gap-2 shrink-0">
 			{Icon && <Icon className="w-3.5 h-3.5 text-slate-600" />}
 			<span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
 				{title}
@@ -517,7 +517,7 @@ const BreakdownList = memo(({
 					No data available
 				</div>
 			) : (
-				<div className="divide-y divide-[#131620]">
+				<div className="divide-y divide-[#12141e]">
 					{items.map((item, i) => (
 						<div key={item.key} className="group px-5 py-3 hover:bg-white/[0.015] transition-colors">
 							<div className="flex justify-between items-baseline gap-3 mb-2">
@@ -552,7 +552,7 @@ const BreakdownChartCard = memo(({
 	icon?: React.ComponentType<{ className?: string }>;
 }) => (
 	<div className={cn(CARD, "h-[400px] flex flex-col")}>
-		<div className="px-5 py-3.5 border-b border-[#1c1f27] flex items-center gap-2 shrink-0">
+		<div className="px-5 py-3.5 border-b border-[#1a1d2a] flex items-center gap-2 shrink-0">
 			{Icon && <Icon className="w-3.5 h-3.5 text-slate-600" />}
 			<span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
 				{title}
@@ -728,8 +728,8 @@ export default function ProjectStatsDashboard() {
 		return (
 			<div className="flex flex-col items-center justify-center py-24 gap-4">
 				<div className="relative w-8 h-8">
-					<div className="absolute inset-0 border-[1.5px] border-amber-500/20 rounded-full" />
-					<div className="absolute inset-0 border-[1.5px] border-amber-500 border-t-transparent rounded-full animate-spin" />
+					<div className="absolute inset-0 border-[1.5px] border-orange-500/20 rounded-full" />
+					<div className="absolute inset-0 border-[1.5px] border-orange-500 border-t-transparent rounded-full animate-spin" />
 				</div>
 				<p className="text-slate-500 text-sm font-medium tracking-wide">Loading analytics...</p>
 			</div>
@@ -748,10 +748,10 @@ export default function ProjectStatsDashboard() {
 						setSelectedSlug(v);
 					}}
 				>
-					<SelectTrigger className="w-full sm:w-[240px] bg-[#0d0f14] border-[#1c1f27] hover:border-[#2a2f3a] focus:ring-amber-500/20 ring-offset-0 text-slate-200 transition-colors">
+					<SelectTrigger className="w-full sm:w-[240px] bg-[#0d0e15] border-[#1a1d2a] hover:border-[#2a2f3a] focus:ring-orange-500/20 ring-offset-0 text-slate-200 transition-colors">
 						<SelectValue placeholder="Select Project" />
 					</SelectTrigger>
-					<SelectContent className="bg-[#0d0f14] border-[#1c1f27]">
+					<SelectContent className="bg-[#0d0e15] border-[#1a1d2a]">
 						{projects.map((p) => (
 							<SelectItem
 								key={p.slug}
@@ -772,11 +772,11 @@ export default function ProjectStatsDashboard() {
 						setPeriod(v);
 					}}
 				>
-					<SelectTrigger className="w-full sm:w-[160px] bg-[#0d0f14] border-[#1c1f27] hover:border-[#2a2f3a] focus:ring-amber-500/20 ring-offset-0 text-slate-200 transition-colors">
-						<Calendar className="w-3.5 h-3.5 mr-2 text-amber-500/60" />
+					<SelectTrigger className="w-full sm:w-[160px] bg-[#0d0e15] border-[#1a1d2a] hover:border-[#2a2f3a] focus:ring-orange-500/20 ring-offset-0 text-slate-200 transition-colors">
+						<Calendar className="w-3.5 h-3.5 mr-2 text-orange-500/60" />
 						<SelectValue placeholder="Period" />
 					</SelectTrigger>
-					<SelectContent className="bg-[#0d0f14] border-[#1c1f27]">
+					<SelectContent className="bg-[#0d0e15] border-[#1a1d2a]">
 						<SelectItem value="7" className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer">Last 7 days</SelectItem>
 						<SelectItem value="30" className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer">Last 30 days</SelectItem>
 						<SelectItem value="90" className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer">Last 90 days</SelectItem>
@@ -794,13 +794,13 @@ export default function ProjectStatsDashboard() {
 						<span className="text-red-400 font-semibold text-sm tracking-wide">Connection Error</span>
 					</div>
 					<p className="text-slate-400 text-sm mb-4">{error}</p>
-					<div className="rounded-lg bg-[#0d0f14] border border-[#1c1f27] p-4 text-sm font-mono text-slate-500">
+					<div className="rounded-lg bg-[#0d0e15] border border-[#1a1d2a] p-4 text-sm font-mono text-slate-500">
 						Troubleshooting:
 						<ul className="list-disc list-inside mt-2 space-y-1">
 							<li>Ensure the Python API is running on port 8000</li>
 							<li>
 								Check if{" "}
-								<code className="text-amber-500/80 bg-amber-500/10 px-1 rounded">api/main.py</code>{" "}
+								<code className="text-orange-500/80 bg-orange-500/10 px-1 rounded">api/main.py</code>{" "}
 								is executing without errors
 							</li>
 							<li>Verify network connectivity</li>
@@ -812,10 +812,10 @@ export default function ProjectStatsDashboard() {
 				<div className="space-y-6">
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 						{[1, 2, 3].map((i) => (
-							<div key={i} className="h-32 rounded-xl bg-[#0d0f14] border border-[#1c1f27] animate-pulse" />
+							<div key={i} className="h-32 rounded-xl bg-[#0d0e15] border border-[#1a1d2a] animate-pulse" />
 						))}
 					</div>
-					<div className="h-[380px] rounded-xl bg-[#0d0f14] border border-[#1c1f27] animate-pulse" />
+					<div className="h-[380px] rounded-xl bg-[#0d0e15] border border-[#1a1d2a] animate-pulse" />
 				</div>
 			) : (
 				<div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -840,7 +840,7 @@ export default function ProjectStatsDashboard() {
 							value={`${totals.bounce.toFixed(1)}%`}
 							icon={Activity}
 							trend="Weighted average"
-							accentColor="#f59e0b"
+							accentColor="#ff9800"
 						/>
 					</div>
 
@@ -848,7 +848,7 @@ export default function ProjectStatsDashboard() {
 					<Tabs defaultValue="traffic" className="w-full" onValueChange={() => trigger("selection")}>
 						<div className={cn(CARD, "overflow-hidden")}>
 							{/* Tab bar */}
-							<div className="border-b border-[#1c1f27] px-6 pt-5 pb-0 flex items-end justify-between">
+							<div className="border-b border-[#1a1d2a] px-6 pt-5 pb-0 flex items-end justify-between">
 								<TabsList className="bg-transparent p-0 gap-0 h-auto rounded-none border-0">
 									<TabsTrigger
 										value="traffic"
@@ -864,13 +864,13 @@ export default function ProjectStatsDashboard() {
 									</TabsTrigger>
 									<TabsTrigger
 										value="bounce"
-										className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-amber-400 data-[state=active]:text-slate-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-slate-500 hover:text-slate-300 px-4 pb-3 pt-0 text-sm font-medium transition-colors bg-transparent shadow-none"
+										className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-orange-400 data-[state=active]:text-slate-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-slate-500 hover:text-slate-300 px-4 pb-3 pt-0 text-sm font-medium transition-colors bg-transparent shadow-none"
 									>
 										Bounce Rate
 									</TabsTrigger>
 								</TabsList>
 								<div className="pb-3">
-									<span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600 bg-white/[0.03] border border-[#1c1f27] px-2.5 py-1 rounded-md">
+									<span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600 bg-white/[0.03] border border-[#1a1d2a] px-2.5 py-1 rounded-md">
 										{period === "0" ? "Lifetime" : `${period}d`}
 									</span>
 								</div>
@@ -912,7 +912,7 @@ export default function ProjectStatsDashboard() {
 									<RechartsAreaChart
 										data={chartData}
 										dataKey="bounce_rate"
-										color="#f59e0b"
+										color="#ff9800"
 										height={260}
 										unit="%"
 									/>
@@ -925,11 +925,11 @@ export default function ProjectStatsDashboard() {
 					<div className="space-y-6">
 						{/* Section divider */}
 						<div className="flex items-center gap-4">
-							<div className="h-px flex-1 bg-[#1c1f27]" />
+							<div className="h-px flex-1 bg-[#1a1d2a]" />
 							<span className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-600">
 								Traffic Breakdown
 							</span>
-							<div className="h-px flex-1 bg-[#1c1f27]" />
+							<div className="h-px flex-1 bg-[#1a1d2a]" />
 						</div>
 
 						{/* List breakdowns */}

@@ -34,11 +34,11 @@ export default function ProfileDropdown({ isMobile }: ProfileDropdownProps) {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				align="end"
-				className="w-48 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md"
+				className="w-48 bg-card/95 dark:bg-card/95 backdrop-blur-md"
 			>
 				<DropdownMenuItem
 					asChild
-					className="cursor-pointer font-medium hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800"
+					className="cursor-pointer font-medium hover:bg-muted dark:hover:bg-secondary focus:bg-muted dark:focus:bg-secondary"
 				>
 					<a
 						href="https://github.com/tashifkhan"
@@ -53,7 +53,7 @@ export default function ProfileDropdown({ isMobile }: ProfileDropdownProps) {
 				</DropdownMenuItem>
 				<DropdownMenuItem
 					asChild
-					className="cursor-pointer font-medium hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800"
+					className="cursor-pointer font-medium hover:bg-muted dark:hover:bg-secondary focus:bg-muted dark:focus:bg-secondary"
 				>
 					<a
 						href="https://github.com/tashifkhansitg"

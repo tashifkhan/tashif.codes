@@ -28,7 +28,7 @@ if (downloadUrl) {
 ---
 
 <Layout title="Download Redirect">
-	<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+	<div class="min-h-screen bg-muted dark:bg-card py-8">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="mb-8">
 				<a
@@ -43,10 +43,10 @@ if (downloadUrl) {
 						<AlertCircle className="w-6 h-6 text-white" />
 					</div>
 					<div>
-						<h1 class="text-4xl font-bold text-gray-900 dark:text-white">
+						<h1 class="text-4xl font-bold text-foreground dark:text-white">
 							Download Not Found
 						</h1>
-						<p class="text-gray-600 dark:text-gray-300">
+						<p class="text-muted-foreground dark:text-muted-foreground">
 							The requested project download could not be located
 						</p>
 					</div>
@@ -54,20 +54,20 @@ if (downloadUrl) {
 			</div>
 
 			<div
-				class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8"
+				class="bg-card dark:bg-secondary rounded-xl shadow-sm border border-border dark:border-border p-6 sm:p-8"
 			>
 				<div class="text-center">
 					<div class="flex justify-center mb-6">
-						<div class="p-4 bg-gray-100 dark:bg-gray-700 rounded-full">
+						<div class="p-4 bg-muted dark:bg-secondary rounded-full">
 							<Download
-								className="w-12 h-12 text-gray-400 dark:text-gray-500"
+								className="w-12 h-12 text-muted-foreground dark:text-muted-foreground"
 							/>
 						</div>
 					</div>
-					<h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+					<h2 class="text-2xl font-bold text-foreground dark:text-white mb-4">
 						Project Not Found
 					</h2>
-					<p class="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
+					<p class="text-muted-foreground dark:text-muted-foreground mb-6 max-w-md mx-auto">
 						The download link you're looking for doesn't exist or may have been
 						moved. Please check the project name or browse available projects.
 					</p>
@@ -81,7 +81,7 @@ if (downloadUrl) {
 						</a>
 						<a
 							href="/"
-							class="inline-flex items-center px-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-medium rounded-lg transition-colors"
+							class="inline-flex items-center px-6 py-3 bg-muted dark:bg-secondary hover:bg-muted dark:hover:bg-accent text-foreground dark:text-foreground font-medium rounded-lg transition-colors"
 						>
 							Go to Dashboard
 						</a>
