@@ -1,35 +1,95 @@
 ---
-// Fetch blog posts from external API to generate static paths
-type RemotePost = {
-	title: string;
-	date: string;
-	author: string;
-	socials: string[];
-	tags: string[];
-	excerpt: string;
-	slug: string;
-};
+import Layout from "../../layouts/Layout.astro";
+import MarkdownIt from "markdown-it";
+import { ExternalLink, ArrowLeft } from "lucide-react";
+import { fetchBlogPosts, fetchFullPost, type BlogPost } from "../../data/blog";
 
 export async function getStaticPaths() {
 	try {
-		const res = await fetch("https://blog.tashif.codes/api/posts.json");
-		if (res.ok) {
-			const posts = (await res.json()) as RemotePost[];
-			return posts.map((post) => ({
-				params: { slug: post.slug },
-				props: { post },
-			}));
-		}
+		const posts = await fetchBlogPosts();
+		return posts.map((post) => ({
+			params: { slug: post.slug },
+			props: { post },
+		}));
 	} catch (err) {
 		console.error("Error fetching remote blog posts for static paths:", err);
 	}
-
-	// Return empty array if fetch fails
 	return [];
 }
 
-const { post } = Astro.props as { post: RemotePost };
+const { post } = Astro.props as { post: BlogPost };
 
-// Redirect to external blog
-return Astro.redirect(`https://blog.tashif.codes/blog/${post.slug}`, 301);
+// Fetch full post to get markdown content
+let markdown = "";
+try {
+	const fullPost = await fetchFullPost(post.slug);
+	markdown = fullPost.markdown;
+} catch (err) {
+	console.error("Error fetching full post markdown:", err);
+}
+
+// Initialize markdown renderer
+const md = new MarkdownIt({
+	html: true,
+	linkify: true,
+	typographer: true,
+});
+
+const htmlContent = md.render(markdown || "");
 ---
+
+<Layout title={`${post.title} | Tashif's Blog`}>
+	<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 animate-in fade-in slide-in-from-bottom-4 duration-500">
+		<a href="/#blog-section" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
+			<ArrowLeft size={16} />
+			Back to Dashboard
+		</a>
+
+		<div class="mb-8 p-4 bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+			<div class="text-sm text-foreground">
+				<span class="font-medium text-primary">External Post:</span> This article is mirrored from my main blog.
+			</div>
+			<a
+				href={`https://blog.tashif.codes/blog/${post.slug}`}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="inline-flex shrink-0 items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm"
+			>
+				Read Original <ExternalLink size={16} />
+			</a>
+		</div>
+
+		<article class="prose prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-primary hover:prose-a:text-primary/80 prose-img:rounded-xl">
+			{markdown ? (
+				<>
+					<h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">{post.title}</h1>
+					<div class="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-10 pb-6 border-b border-border/60">
+						<span>{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+						{post.author && (
+							<>
+								<span>•</span>
+								<span>{post.author}</span>
+							</>
+						)}
+						{post.tags && post.tags.length > 0 && (
+							<>
+								<span>•</span>
+								<div class="flex gap-2">
+									{post.tags.map(tag => (
+										<span class="bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full text-xs font-medium">{tag}</span>
+									))}
+								</div>
+							</>
+						)}
+					</div>
+					<div set:html={htmlContent} />
+				</>
+			) : (
+				<div class="text-center py-20 text-muted-foreground bg-card/60 rounded-xl border border-border/60">
+					<p>The content for this post couldn't be loaded at the moment.</p>
+					<a href={`https://blog.tashif.codes/blog/${post.slug}`} class="text-primary hover:underline mt-4 inline-block">Please view it on the original blog.</a>
+				</div>
+			)}
+		</article>
+	</main>
+</Layout>

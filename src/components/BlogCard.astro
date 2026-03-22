@@ -1,5 +1,5 @@
 ---
-import { Calendar, Clock, ExternalLink, ArrowRight } from "lucide-react";
+import { Calendar, Clock, ArrowRight } from "lucide-react";
 import {
 	Card,
 	CardContent,
@@ -9,28 +9,17 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-type RemotePost = {
-	title: string;
-	date: string; // ISO date
-	author: string;
-	socials: string[];
-	tags: string[];
-	excerpt: string;
-	slug: string;
-	wordCount?: number;
-	readingTimeMinutes?: number;
-};
+import type { BlogPost } from "../data/blog";
 
 type Props = {
-	post: RemotePost;
+	post: BlogPost;
 	variant?: "default" | "featured" | "compact" | "spotlight";
 	index?: number;
 };
 
 const { post, variant = "default", index = 0 } = Astro.props as Props;
 
-const url = `https://blog.tashif.codes/blog/${post.slug}`;
+const url = `/blog/${post.slug}`;
 const dateObj = new Date(post.date);
 const dateText = dateObj.toLocaleDateString("en-US", {
 	month: "short",
@@ -52,8 +41,6 @@ const wordCountText = wordCount
 	variant === "featured" ? (
 		<a
 			href={url}
-			target="_blank"
-			rel="noopener noreferrer"
 			class="block h-full group focus:outline-none"
 			data-blog-card
 			data-blog-tags={post.tags?.join(",")}
@@ -115,8 +102,6 @@ const wordCountText = wordCount
 	) : (
 		<a
 			href={url}
-			target="_blank"
-			rel="noopener noreferrer"
 			class="block h-full group focus:outline-none"
 			data-haptic-blog
 		>
@@ -165,7 +150,7 @@ const wordCountText = wordCount
 						</span>
 					</div>
 					<span class="flex items-center gap-1.5 text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-2 group-hover:translate-x-0">
-						Read <ExternalLink className="w-3 h-3" />
+						Read <ArrowRight className="w-3 h-3" />
 					</span>
 				</CardFooter>
 			</Card>

@@ -28,6 +28,8 @@ import {
 	ChevronRight,
 } from "lucide-react";
 import { allProjects, type Project } from "../data/projects";
+import { fetchAnalyticsProjects, hasAnalytics, getAnalyticsSlug } from "../data/analyticsProjects";
+import { fetchBlogPosts, type BlogPost } from "../data/blog";
 import { leetCodeData } from "../data/leetcode";
 import { githubStats } from "../data/github";
 import ProjectCard from "../components/ProjectCard.astro";
@@ -41,37 +43,16 @@ import { Badge } from "@/components/ui/badge";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const projects: Project[] = allProjects;
+const analyticsProjects = await fetchAnalyticsProjects();
 
-// Fetch blog posts from external API
-type RemotePost = {
-	title: string;
-	date: string; // ISO date
-	author: string;
-	socials: string[];
-	tags: string[];
-	excerpt: string;
-	slug: string;
-	wordCount?: number;
-	readingTimeMinutes?: number;
-	metadata?: Record<string, any>;
-};
-
-let blogPosts: RemotePost[] = [];
+// Fetch blog posts from blog service
+let blogPosts: BlogPost[] = [];
 try {
-	const res = await fetch("https://blog-backend-delta-ten.vercel.app/posts.json");
-	if (res.ok) {
-		blogPosts = (await res.json()) as RemotePost[];
-		// Sort posts by date desc to ensure the latest is featured first
-		blogPosts.sort(
-			(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-		);
-	} else {
-		console.error(
-			"Failed to fetch remote blog posts:",
-			res.status,
-			res.statusText
-		);
-	}
+	blogPosts = await fetchBlogPosts();
+	// Sort posts by date desc to ensure the latest is featured first
+	blogPosts.sort(
+		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+	);
 } catch (err) {
 	console.error("Error fetching remote blog posts:", err);
 }
@@ -430,7 +411,11 @@ const socials = [
 								data-project-item-card
 								data-has-live-link={Boolean(project.live_website_url)}
 							>
-								<ProjectCard project={project} />
+								<ProjectCard 
+									project={project}
+									hasAnalytics={hasAnalytics(project.slug, analyticsProjects)}
+									analyticsSlug={getAnalyticsSlug(project.slug)}
+								/>
 							</div>
 						))
 					}
