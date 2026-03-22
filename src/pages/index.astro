@@ -129,39 +129,39 @@ const socials = [
 				<div
 					class="flex flex-col sm:flex-row justify-between items-center gap-4"
 				>
-					<div class="flex items-center space-x-5 overflow-visible">
-						<span
-							class="p-[2px] rounded-full bg-gradient-to-tr from-primary via-primary/80 to-primary/60"
-						>
-							<span
-								class="block rounded-full bg-card dark:bg-card p-[2px]"
-							>
+					<div class="flex items-center space-x-4 overflow-visible">
+						<div class="relative shrink-0">
+							<span class="block p-[2.5px] rounded-full bg-primary/80">
 								<img
 									src="https://avatars.githubusercontent.com/u/75897907?v=4"
 									alt="Tashif Ahmad Khan"
-									class="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover block"
+									class="w-14 h-14 sm:w-[60px] sm:h-[60px] rounded-full object-cover block ring-2 ring-card"
 								/>
 							</span>
-						</span>
-						<div>
-						<h1
-							class="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 dark:from-foreground dark:to-muted-foreground bg-clip-text text-transparent pb-1"
-						>
+						</div>
+						<div class="flex flex-col gap-0.5">
+							<h1
+								class="text-2xl sm:text-[1.75rem] font-bold text-foreground leading-tight tracking-tight"
+								style="font-family: 'Lexend', sans-serif; letter-spacing: -0.02em;"
+							>
 								Tashif Ahmad Khan
 							</h1>
-							<p class="text-muted-foreground dark:text-muted-foreground text-sm">
-								{profile.realName || "Software Developer"}
-							</p>
+							<div class="flex items-center gap-2">
+								<span class="block w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+								<p class="text-muted-foreground text-sm font-medium" style="font-family: 'Lexend', sans-serif;">
+									{profile.realName || "Software Developer"}
+								</p>
+							</div>
 						</div>
 					</div>
-					<div class="flex items-center space-x-1.5 sm:space-x-2">
+					<div class="flex items-center gap-0.5 sm:gap-1">
 						{
 							socials.map((social) => (
 								<Button
 									variant="ghost"
 									size="icon"
 									asChild
-									className="rounded-full"
+									className="rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent"
 								>
 									<a
 										href={social.link}
@@ -170,11 +170,12 @@ const socials = [
 										aria-label={social.label}
 										data-haptic-social
 									>
-										<social.icon size={20} />
+										<social.icon size={18} />
 									</a>
 								</Button>
 							))
 						}
+						<div class="w-px h-5 bg-border/60 mx-1 hidden sm:block"></div>
 						<ThemeToggle client:load />
 					</div>
 				</div>
