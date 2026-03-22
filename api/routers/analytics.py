@@ -20,7 +20,7 @@ from services import (
     filter_stats_by_date,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["analytics"])
+router = APIRouter(prefix="/v1", tags=["analytics"])
 
 POSTHOG_FALLBACK_DAYS = 90
 CLOUDFLARE_EFFECTIVE_LOOKBACK_DAYS = 184
@@ -80,16 +80,16 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
         live_timeseries, live_breakdowns = await asyncio.gather(
             ts_task, breakdowns_task
         )
-    
+
     elif ph_id:
         ts_task = (
             fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=90)
             if effective_days == 0
             else fetch_timeseries(ph_id, query_days)
         )
-        
+
         breakdowns_task = fetch_all_breakdowns(ph_id, query_days)
-        
+
         live_timeseries, live_breakdowns = await asyncio.gather(
             ts_task, breakdowns_task
         )

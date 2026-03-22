@@ -154,35 +154,41 @@ const socials = [
 						</div>
 					</div>
 
-					<!-- Center: Social Links -->
-					<div class="flex items-center justify-center gap-0.5 sm:gap-1 w-full sm:w-auto sm:absolute sm:left-1/2 sm:-translate-x-1/2 z-10">
-						{
-							socials.map((social) => (
-								<Button
-									variant="ghost"
-									size="icon"
-									asChild
-									className="rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-								>
-									<a
-										href={social.link}
-										target="_blank"
-										rel="noopener noreferrer"
-										aria-label={social.label}
-										data-haptic-social
+					<!-- Right/Center: Social Links and Theme Button -->
+					<div class="flex items-center justify-center sm:justify-end w-full sm:w-auto mt-1 sm:mt-0">
+						<!-- Social Links -->
+						<div class="flex items-center gap-0.5 sm:gap-1 z-10">
+							{
+								socials.map((social) => (
+									<Button
+										variant="ghost"
+										size="icon"
+										asChild
+										className="rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
 									>
-										<social.icon size={18} />
-									</a>
-								</Button>
-							))
-						}
-					</div>
-				</div>
+										<a
+											href={social.link}
+											target="_blank"
+											rel="noopener noreferrer"
+											aria-label={social.label}
+											data-haptic-social
+										>
+											<social.icon size={18} />
+										</a>
+									</Button>
+								))
+							}
+						</div>
 
-				<!-- Right: Theme Button -->
-				<div class="absolute right-4 sm:right-6 lg:right-8 top-[60%] -translate-y-1/2 sm:top-1/2 z-20">
-					<div class="rounded-full bg-secondary/40 ring-1 ring-border/60 hover:ring-border transition-all">
-						<ThemeToggle client:load />
+						<!-- Desktop Divider -->
+						<div class="hidden sm:block w-px h-5 bg-border/60 mx-3 sm:mx-4 z-10"></div>
+
+						<!-- Theme Button (Inline on Desktop, Absolute on Mobile) -->
+						<div class="absolute right-4 top-[60%] -translate-y-1/2 sm:static sm:translate-y-0 z-20">
+							<div class="rounded-full bg-secondary/40 ring-1 ring-border/60 hover:ring-border transition-all">
+								<ThemeToggle client:load />
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

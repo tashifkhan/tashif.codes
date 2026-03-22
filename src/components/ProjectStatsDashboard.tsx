@@ -642,7 +642,7 @@ export default function ProjectStatsDashboard() {
 			try {
 				const encodedSlug = encodeURIComponent(selectedSlug);
 				const res = await fetch(
-					`${API_BASE}/api/v1/stats?slugs=${encodedSlug}&days=${period}`,
+					`${API_BASE}/projects/stats/api/v1/stats?slugs=${encodedSlug}&days=${period}`,
 					{ signal: controller.signal }
 				);
 				if (!res.ok) {

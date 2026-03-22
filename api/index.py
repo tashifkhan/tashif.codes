@@ -16,6 +16,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from routers.analytics import router as analytics_router
 
+API_PREFIX = "/projects/stats/api"
+
 # --- APP SETUP ---
 app = FastAPI(
     title="Multi-Project Analytics API",
@@ -34,6 +36,7 @@ app.add_middleware(
 
 # --- ROUTES ---
 
+
 @app.get("/")
 async def root():
     """Health check endpoint."""
@@ -43,15 +46,19 @@ async def root():
         "version": "1.0.0",
     }
 
+
 # Include modular routers
-app.include_router(analytics_router)
+app.include_router(analytics_router, prefix=API_PREFIX)
 
 # --- MAIN ENTRY POINT ---
+
 
 def main():
     """Run the API server (for development)."""
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
 
 if __name__ == "__main__":
     main()
