@@ -16,13 +16,13 @@ const analyticsProjects = await fetchAnalyticsProjects();
 		class="relative min-h-screen bg-gradient-to-b from-muted to-background dark:from-background dark:to-card text-foreground transition-colors duration-300 font-sans"
 	>
 		<header
-			class="relative bg-background border-b border-border/40 pt-20 pb-12 transition-colors duration-300"
+			class="relative bg-card/80 dark:bg-card/80 backdrop-blur border-b border-border/60 dark:border-border/60 transition-colors duration-300"
 		>
-			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
 				<a
 					href="/"
 					data-haptic-nav
-					class="inline-flex items-center text-muted-foreground hover:text-foreground mb-8 text-sm font-medium transition-colors"
+					class="inline-flex items-center text-primary hover:text-primary/80 hover:underline mb-4 sm:mb-6 text-sm sm:text-base font-medium transition-colors"
 				>
 					<ArrowLeft className="w-4 h-4 mr-2" /> Back
 				</a>
