@@ -37,23 +37,23 @@ import { useWebHaptics } from "web-haptics/react";
 // --- Shared Tooltip Styles ---
 const TOOLTIP_STYLES = {
 	contentStyle: {
-		backgroundColor: "rgba(8, 10, 15, 0.98)",
-		borderColor: "rgba(255, 152, 0, 0.2)",
+		backgroundColor: "var(--color-popover)",
+		borderColor: "var(--color-border)",
 		borderRadius: "8px",
 		borderWidth: "1px",
-		color: "#e2e8f0",
-		boxShadow: "0 16px 48px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.03) inset",
+		color: "var(--color-popover-foreground)",
+		boxShadow: "var(--shadow-lg)",
 		padding: "10px 14px",
 	},
 	itemStyle: {
-		color: "#94a3b8",
+		color: "var(--color-muted-foreground)",
 		fontSize: "12px",
 		fontWeight: "500",
 		lineHeight: "1.6",
-		fontFamily: "ui-monospace, SFMono-Regular, monospace",
+		fontFamily: "var(--font-mono)",
 	},
 	labelStyle: {
-		color: "#ff9800",
+		color: "var(--color-primary)",
 		marginBottom: "6px",
 		fontSize: "10px",
 		fontWeight: "700",
@@ -106,18 +106,18 @@ type ProjectListResponse = {
 // --- Constants ---
 
 const COLORS = [
-	"#ff9800", // amber
-	"#60a5fa", // blue
-	"#34d399", // emerald
-	"#f472b6", // pink
-	"#a78bfa", // violet
+	"var(--color-chart-1)",
+	"var(--color-chart-2)",
+	"var(--color-chart-3)",
+	"var(--color-chart-4)",
+	"var(--color-chart-5)",
 ];
 
 // Colors are already SVG-compatible hex
 const oklchToRgb = (color: string): string => color;
 
 // Base card class — flat dark surface with hairline border
-const CARD = "rounded-xl border border-[#1a1d2a] bg-[#0d0e15] transition-colors hover:border-[#252a3a]";
+const CARD = "rounded-xl border border-border bg-card transition-colors hover:border-accent";
 
 // --- Chart Components ---
 
@@ -171,7 +171,7 @@ const RechartsAreaChart = memo(({
 				: parsedDate.toLocaleDateString(undefined, {
 						month: "short",
 						day: "numeric",
-				  });
+				 });
 
 			return {
 				...d,
@@ -195,7 +195,7 @@ const RechartsAreaChart = memo(({
 
 	if (formattedData.length === 0)
 		return (
-			<div className="flex items-center justify-center text-slate-600 text-sm" style={{ height }}>
+			<div className="flex items-center justify-center text-muted-foreground text-sm" style={{ height }}>
 				No data available
 			</div>
 		);
@@ -215,13 +215,13 @@ const RechartsAreaChart = memo(({
 							<stop offset="100%" stopColor={color} stopOpacity={0} />
 						</linearGradient>
 					</defs>
-					<CartesianGrid strokeDasharray="0" vertical={false} stroke="#1a1d2a" opacity={1} />
+					<CartesianGrid strokeDasharray="0" vertical={false} stroke="var(--color-border)" opacity={1} />
 					<XAxis
 						dataKey="formattedDate"
 						fontSize={11}
 						tickLine={false}
 						axisLine={false}
-						tick={{ fill: "#475569" }}
+						tick={{ fill: "var(--color-muted-foreground)" }}
 						interval="preserveStartEnd"
 						minTickGap={20}
 					/>
@@ -230,7 +230,7 @@ const RechartsAreaChart = memo(({
 						tickLine={false}
 						axisLine={false}
 						tickFormatter={(value) => `${value.toLocaleString()}${unit}`}
-						tick={{ fill: "#475569" }}
+						tick={{ fill: "var(--color-muted-foreground)" }}
 						width={44}
 					/>
 					<Tooltip
@@ -250,7 +250,7 @@ const RechartsAreaChart = memo(({
 					/>
 				</AreaChart>
 			) : (
-				<div className="flex items-center justify-center text-slate-600 text-sm" style={{ height }}>
+				<div className="flex items-center justify-center text-muted-foreground text-sm" style={{ height }}>
 					Loading chart...
 				</div>
 			)}
@@ -325,7 +325,7 @@ const DonutChart = memo(({
 
 	if (chartData.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center h-full text-slate-600 text-xs">
+			<div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs">
 				<Activity className="w-4 h-4 mb-1 opacity-20" />
 				No data
 			</div>
@@ -355,7 +355,7 @@ const DonutChart = memo(({
 						/>
 					</PieChart>
 				) : (
-					<div className="flex items-center justify-center h-full text-slate-600 text-sm">
+					<div className="flex items-center justify-center h-full text-muted-foreground text-sm">
 						Loading chart...
 					</div>
 				)}
@@ -368,7 +368,7 @@ const DonutChart = memo(({
 							className="h-2 w-2 rounded-sm shrink-0"
 							style={{ backgroundColor: COLORS[index % COLORS.length] }}
 						/>
-						<span className="text-[11px] text-slate-400 font-medium">{entry.name}</span>
+						<span className="text-[11px] text-muted-foreground font-medium">{entry.name}</span>
 					</div>
 				))}
 			</div>
@@ -401,7 +401,7 @@ const HorizontalBarChart = memo(({
 
 	if (chartData.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center h-full text-slate-600 text-xs">
+			<div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs">
 				<Activity className="w-4 h-4 mb-1 opacity-20" />
 				No data
 			</div>
@@ -415,7 +415,7 @@ const HorizontalBarChart = memo(({
 				data={chartData}
 				margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
 			>
-				<CartesianGrid strokeDasharray="0" horizontal={false} stroke="#1a1d2a" opacity={1} />
+				<CartesianGrid strokeDasharray="0" horizontal={false} stroke="var(--color-border)" opacity={1} />
 				<XAxis type="number" hide />
 				<YAxis
 					dataKey="name"
@@ -463,15 +463,15 @@ const MetricCard = memo(({
 			className="absolute left-0 top-5 bottom-5 w-[2px] rounded-r-full"
 			style={{ backgroundColor: accentColor }}
 		/>
-		<p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 pl-4 flex items-center gap-2">
+		<p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground pl-4 flex items-center gap-2">
 			<Icon className="w-3 h-3" />
 			{title}
 		</p>
-		<div className="text-[2.6rem] leading-none font-mono font-bold text-slate-100 pl-4 tracking-tight tabular-nums">
+		<div className="text-[2.6rem] leading-none font-mono font-bold text-foreground pl-4 tracking-tight tabular-nums">
 			{value}
 		</div>
 		{trend && (
-			<p className="text-[11px] text-slate-600 pl-4">{trend}</p>
+			<p className="text-[11px] text-muted-foreground pl-4">{trend}</p>
 		)}
 	</motion.div>
 ));
@@ -479,10 +479,10 @@ MetricCard.displayName = "MetricCard";
 
 // --- ProgressBar ---
 const ProgressBar = memo(({ value, maxVal, index }: { value: number; maxVal: number; index: number }) => (
-	<div className="h-[2px] w-full bg-white/[0.04] rounded-full overflow-hidden">
+	<div className="h-[2px] w-full bg-secondary rounded-full overflow-hidden">
 		<motion.div
 			className="h-full rounded-full"
-			style={{ backgroundColor: "#ff9800", opacity: 0.55 }}
+			style={{ backgroundColor: "var(--color-primary)", opacity: 0.55 }}
 			initial={{ width: 0 }}
 			animate={{ width: `${(value / maxVal) * 100}%` }}
 			transition={{ duration: 0.6, delay: index * 0.04, ease: "easeOut" }}
@@ -504,30 +504,30 @@ const BreakdownList = memo(({
 	icon?: React.ComponentType<{ className?: string }>;
 }) => (
 	<div className={cn(CARD, "max-h-[300px] sm:max-h-[400px] md:h-[400px] flex flex-col")}>
-		<div className="px-5 py-3.5 border-b border-[#1a1d2a] flex items-center gap-2 shrink-0">
-			{Icon && <Icon className="w-3.5 h-3.5 text-slate-600" />}
-			<span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+		<div className="px-5 py-3.5 border-b border-border flex items-center gap-2 shrink-0">
+			{Icon && <Icon className="w-3.5 h-3.5 text-muted-foreground" />}
+			<span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
 				{title}
 			</span>
 		</div>
 		<div className="flex-1 overflow-auto no-scrollbar">
 			{items.length === 0 ? (
-				<div className="flex flex-col items-center justify-center h-full text-slate-600 text-xs py-12">
+				<div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs py-12">
 					<Activity className="w-4 h-4 mb-2 opacity-20" />
 					No data available
 				</div>
 			) : (
-				<div className="divide-y divide-[#12141e]">
+				<div className="divide-y divide-border">
 					{items.map((item, i) => (
-						<div key={item.key} className="group px-5 py-3 hover:bg-white/[0.015] transition-colors">
+						<div key={item.key} className="group px-5 py-3 hover:bg-muted/50 transition-colors">
 							<div className="flex justify-between items-baseline gap-3 mb-2">
 								<span
-									className="text-sm text-slate-300 truncate font-medium group-hover:text-white transition-colors"
+									className="text-sm text-foreground truncate font-medium group-hover:text-white transition-colors"
 									title={item.key}
 								>
 									{item.key.replace(/^https?:\/\/[^/]+/, "") || "/"}
 								</span>
-								<span className="text-xs font-mono text-slate-500 shrink-0 tabular-nums">
+								<span className="text-xs font-mono text-muted-foreground shrink-0 tabular-nums">
 									{item.pageviews.toLocaleString()}
 								</span>
 							</div>
@@ -552,9 +552,9 @@ const BreakdownChartCard = memo(({
 	icon?: React.ComponentType<{ className?: string }>;
 }) => (
 	<div className={cn(CARD, "h-[400px] flex flex-col")}>
-		<div className="px-5 py-3.5 border-b border-[#1a1d2a] flex items-center gap-2 shrink-0">
-			{Icon && <Icon className="w-3.5 h-3.5 text-slate-600" />}
-			<span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+		<div className="px-5 py-3.5 border-b border-border flex items-center gap-2 shrink-0">
+			{Icon && <Icon className="w-3.5 h-3.5 text-muted-foreground" />}
+			<span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
 				{title}
 			</span>
 		</div>
@@ -728,10 +728,10 @@ export default function ProjectStatsDashboard() {
 		return (
 			<div className="flex flex-col items-center justify-center py-24 gap-4">
 				<div className="relative w-8 h-8">
-					<div className="absolute inset-0 border-[1.5px] border-orange-500/20 rounded-full" />
-					<div className="absolute inset-0 border-[1.5px] border-orange-500 border-t-transparent rounded-full animate-spin" />
+					<div className="absolute inset-0 border-[1.5px] border-primary/20 rounded-full" />
+					<div className="absolute inset-0 border-[1.5px] border-primary border-t-transparent rounded-full animate-spin" />
 				</div>
-				<p className="text-slate-500 text-sm font-medium tracking-wide">Loading analytics...</p>
+				<p className="text-muted-foreground text-sm font-medium tracking-wide">Loading analytics...</p>
 			</div>
 		);
 	}
@@ -748,15 +748,15 @@ export default function ProjectStatsDashboard() {
 						setSelectedSlug(v);
 					}}
 				>
-					<SelectTrigger className="w-full sm:w-[240px] bg-[#0d0e15] border-[#1a1d2a] hover:border-[#2a2f3a] focus:ring-orange-500/20 ring-offset-0 text-slate-200 transition-colors">
+					<SelectTrigger className="w-full sm:w-[240px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
 						<SelectValue placeholder="Select Project" />
 					</SelectTrigger>
-					<SelectContent className="bg-[#0d0e15] border-[#1a1d2a]">
+					<SelectContent className="bg-card border-border">
 						{projects.map((p) => (
 							<SelectItem
 								key={p.slug}
 								value={p.slug}
-								className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer"
+								className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
 							>
 								{p.name}
 							</SelectItem>
@@ -772,35 +772,35 @@ export default function ProjectStatsDashboard() {
 						setPeriod(v);
 					}}
 				>
-					<SelectTrigger className="w-full sm:w-[160px] bg-[#0d0e15] border-[#1a1d2a] hover:border-[#2a2f3a] focus:ring-orange-500/20 ring-offset-0 text-slate-200 transition-colors">
-						<Calendar className="w-3.5 h-3.5 mr-2 text-orange-500/60" />
+					<SelectTrigger className="w-full sm:w-[160px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
+						<Calendar className="w-3.5 h-3.5 mr-2 text-primary/60" />
 						<SelectValue placeholder="Period" />
 					</SelectTrigger>
-					<SelectContent className="bg-[#0d0e15] border-[#1a1d2a]">
-						<SelectItem value="7" className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer">Last 7 days</SelectItem>
-						<SelectItem value="30" className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer">Last 30 days</SelectItem>
-						<SelectItem value="90" className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer">Last 90 days</SelectItem>
-						<SelectItem value="365" className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer">Last 365 days</SelectItem>
-						<SelectItem value="0" className="text-slate-300 focus:bg-white/5 focus:text-white cursor-pointer">Lifetime</SelectItem>
+					<SelectContent className="bg-card border-border">
+						<SelectItem value="7" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Last 7 days</SelectItem>
+						<SelectItem value="30" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Last 30 days</SelectItem>
+						<SelectItem value="90" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Last 90 days</SelectItem>
+						<SelectItem value="365" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Last 365 days</SelectItem>
+						<SelectItem value="0" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Lifetime</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
 
 			{/* Error */}
 			{error ? (
-				<div className="rounded-xl border border-red-900/40 bg-red-950/20 p-6">
+				<div className="rounded-xl border border-destructive/40 bg-destructive/10 p-6">
 					<div className="flex items-center gap-3 mb-3">
-						<Activity className="w-4 h-4 text-red-400" />
-						<span className="text-red-400 font-semibold text-sm tracking-wide">Connection Error</span>
+						<Activity className="w-4 h-4 text-destructive" />
+						<span className="text-destructive font-semibold text-sm tracking-wide">Connection Error</span>
 					</div>
-					<p className="text-slate-400 text-sm mb-4">{error}</p>
-					<div className="rounded-lg bg-[#0d0e15] border border-[#1a1d2a] p-4 text-sm font-mono text-slate-500">
+					<p className="text-muted-foreground text-sm mb-4">{error}</p>
+					<div className="rounded-lg bg-card border border-border p-4 text-sm font-mono text-muted-foreground">
 						Troubleshooting:
 						<ul className="list-disc list-inside mt-2 space-y-1">
 							<li>Ensure the Python API is running on port 8000</li>
 							<li>
 								Check if{" "}
-								<code className="text-orange-500/80 bg-orange-500/10 px-1 rounded">api/main.py</code>{" "}
+								<code className="text-primary/80 bg-primary/10 px-1 rounded">api/main.py</code>{" "}
 								is executing without errors
 							</li>
 							<li>Verify network connectivity</li>
@@ -812,10 +812,10 @@ export default function ProjectStatsDashboard() {
 				<div className="space-y-6">
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 						{[1, 2, 3].map((i) => (
-							<div key={i} className="h-32 rounded-xl bg-[#0d0e15] border border-[#1a1d2a] animate-pulse" />
+							<div key={i} className="h-32 rounded-xl bg-card border border-border animate-pulse" />
 						))}
 					</div>
-					<div className="h-[380px] rounded-xl bg-[#0d0e15] border border-[#1a1d2a] animate-pulse" />
+					<div className="h-[380px] rounded-xl bg-card border border-border animate-pulse" />
 				</div>
 			) : (
 				<div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -826,21 +826,21 @@ export default function ProjectStatsDashboard() {
 							value={totals.views.toLocaleString()}
 							icon={Eye}
 							trend={period === "0" ? "Lifetime" : `Last ${period} days`}
-							accentColor="#60a5fa"
+							accentColor="var(--color-chart-2)"
 						/>
 						<MetricCard
 							title="Visitors"
 							value={totals.visitors.toLocaleString()}
 							icon={Users}
 							trend="Unique sessions"
-							accentColor="#34d399"
+							accentColor="var(--color-chart-3)"
 						/>
 						<MetricCard
 							title="Bounce Rate"
 							value={`${totals.bounce.toFixed(1)}%`}
 							icon={Activity}
 							trend="Weighted average"
-							accentColor="#ff9800"
+							accentColor="var(--color-chart-1)"
 						/>
 					</div>
 
@@ -848,29 +848,29 @@ export default function ProjectStatsDashboard() {
 					<Tabs defaultValue="traffic" className="w-full" onValueChange={() => trigger("selection")}>
 						<div className={cn(CARD, "overflow-hidden")}>
 							{/* Tab bar */}
-							<div className="border-b border-[#1a1d2a] px-6 pt-5 pb-0 flex items-end justify-between">
+							<div className="border-b border-border px-6 pt-5 pb-0 flex items-end justify-between">
 								<TabsList className="bg-transparent p-0 gap-0 h-auto rounded-none border-0">
 									<TabsTrigger
 										value="traffic"
-										className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-blue-400 data-[state=active]:text-slate-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-slate-500 hover:text-slate-300 px-4 pb-3 pt-0 text-sm font-medium transition-colors bg-transparent shadow-none"
+										className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-chart-2 data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-muted-foreground hover:text-foreground px-4 pb-3 pt-0 text-sm font-medium transition-colors bg-transparent shadow-none"
 									>
 										Traffic
 									</TabsTrigger>
 									<TabsTrigger
 										value="visitors"
-										className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-400 data-[state=active]:text-slate-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-slate-500 hover:text-slate-300 px-4 pb-3 pt-0 text-sm font-medium transition-colors bg-transparent shadow-none"
+										className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-chart-3 data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-muted-foreground hover:text-foreground px-4 pb-3 pt-0 text-sm font-medium transition-colors bg-transparent shadow-none"
 									>
 										Visitors
 									</TabsTrigger>
 									<TabsTrigger
 										value="bounce"
-										className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-orange-400 data-[state=active]:text-slate-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-slate-500 hover:text-slate-300 px-4 pb-3 pt-0 text-sm font-medium transition-colors bg-transparent shadow-none"
+										className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-chart-1 data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-muted-foreground hover:text-foreground px-4 pb-3 pt-0 text-sm font-medium transition-colors bg-transparent shadow-none"
 									>
 										Bounce Rate
 									</TabsTrigger>
 								</TabsList>
 								<div className="pb-3">
-									<span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600 bg-white/[0.03] border border-[#1a1d2a] px-2.5 py-1 rounded-md">
+									<span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground bg-muted border border-border px-2.5 py-1 rounded-md">
 										{period === "0" ? "Lifetime" : `${period}d`}
 									</span>
 								</div>
@@ -880,39 +880,39 @@ export default function ProjectStatsDashboard() {
 							<div className="p-6">
 								<TabsContent value="traffic" className="mt-0 space-y-4">
 									<div>
-										<h3 className="text-slate-200 font-semibold text-base">Pageviews Over Time</h3>
-										<p className="text-slate-600 text-xs mt-0.5">Daily pageview count for the selected period</p>
+										<h3 className="text-foreground font-semibold text-base">Pageviews Over Time</h3>
+										<p className="text-muted-foreground text-xs mt-0.5">Daily pageview count for the selected period</p>
 									</div>
 									<RechartsAreaChart
 										data={chartData}
 										dataKey="pageviews"
-										color="#60a5fa"
+										color="var(--color-chart-2)"
 										height={260}
 									/>
 								</TabsContent>
 
 								<TabsContent value="visitors" className="mt-0 space-y-4">
 									<div>
-										<h3 className="text-slate-200 font-semibold text-base">Visitors Over Time</h3>
-										<p className="text-slate-600 text-xs mt-0.5">Daily unique visitor count for the selected period</p>
+										<h3 className="text-foreground font-semibold text-base">Visitors Over Time</h3>
+										<p className="text-muted-foreground text-xs mt-0.5">Daily unique visitor count for the selected period</p>
 									</div>
 									<RechartsAreaChart
 										data={chartData}
 										dataKey="visitors"
-										color="#34d399"
+										color="var(--color-chart-3)"
 										height={260}
 									/>
 								</TabsContent>
 
 								<TabsContent value="bounce" className="mt-0 space-y-4">
 									<div>
-										<h3 className="text-slate-200 font-semibold text-base">Bounce Rate</h3>
-										<p className="text-slate-600 text-xs mt-0.5">Percentage of single-page sessions per day</p>
+										<h3 className="text-foreground font-semibold text-base">Bounce Rate</h3>
+										<p className="text-muted-foreground text-xs mt-0.5">Percentage of single-page sessions per day</p>
 									</div>
 									<RechartsAreaChart
 										data={chartData}
 										dataKey="bounce_rate"
-										color="#ff9800"
+										color="var(--color-chart-1)"
 										height={260}
 										unit="%"
 									/>
@@ -926,7 +926,7 @@ export default function ProjectStatsDashboard() {
 						{/* Section divider */}
 						<div className="flex items-center gap-4">
 							<div className="h-px flex-1 bg-[#1a1d2a]" />
-							<span className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-600">
+							<span className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
 								Traffic Breakdown
 							</span>
 							<div className="h-px flex-1 bg-[#1a1d2a]" />

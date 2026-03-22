@@ -9,6 +9,7 @@
 		"astro": "astro"
 	},
 	"dependencies": {
+		"@astrojs/check": "^0.9.8",
 		"@astrojs/react": "^4.2.3",
 		"@astrojs/sitemap": "^3.4.1",
 		"@astrojs/vercel": "^8.2.4",
@@ -40,6 +41,7 @@
 		"tailwind-merge": "^3.4.0",
 		"tailwindcss": "^4.1.3",
 		"tailwindcss-animate": "^1.0.7",
+		"typescript": "^5.9.3",
 		"web-haptics": "^0.0.6"
 	},
 	"devDependencies": {
