@@ -66,6 +66,9 @@ const totalSolved = leetCodeData?.stats?.totalSolved ?? 0;
 const liveProjectCount = projects.filter((p) => p.live_website_url).length;
 const latestBlogDate = blogPosts[0]?.date ? new Date(blogPosts[0].date) : null;
 
+const toFiniteNumber = (value: unknown): number =>
+	typeof value === "number" && Number.isFinite(value) ? value : 0;
+
 // Use tags from remote posts as categories for filtering
 const blogCategories = [
 	...new Set(
@@ -75,12 +78,16 @@ const blogCategories = [
 
 // Aggregate metrics from the remote posts (new API includes wordCount & readingTimeMinutes)
 const totalBlogWords = blogPosts.reduce(
-	(sum, p) => sum + (p.wordCount || p.metadata?.wordCount || 0),
+	(sum, p) => sum + toFiniteNumber(p.wordCount) + toFiniteNumber(p.metadata?.wordCount),
 	0
 );
 const avgReadingMinutes = blogPosts.length
 	? Math.round(
-			blogPosts.reduce((s, p) => s + (p.readingTimeMinutes || p.metadata?.readingTimeMinutes || 0), 0) /
+			blogPosts.reduce(
+				(s, p) =>
+					s + toFiniteNumber(p.readingTimeMinutes) + toFiniteNumber(p.metadata?.readingTimeMinutes),
+				0
+			) /
 				blogPosts.length
 		)
 	: 0;
@@ -989,9 +996,36 @@ const socials = [
 		community: document.getElementById("community-section"),
 	};
 
-	function activateTab(
-		tabId: "projects" | "blog" | "leetcode" | "github" | "resume" | "community"
-	) {
+	type TabId =
+		| "projects"
+		| "blog"
+		| "leetcode"
+		| "github"
+		| "resume"
+		| "community";
+
+	function getTabFromQuery(): TabId {
+		const params = new URLSearchParams(window.location.search);
+
+		if (params.has("blog")) return "blog";
+		if (params.has("github") || params.has("gtihub")) return "github";
+		if (params.has("leetcode")) return "leetcode";
+		if (params.has("about") || params.has("resume")) return "resume";
+		if (params.has("connect") || params.has("community")) return "community";
+		if (params.has("projects")) return "projects";
+
+		const tab = (params.get("tab") || "").toLowerCase();
+		if (tab === "blog") return "blog";
+		if (tab === "github" || tab === "gtihub") return "github";
+		if (tab === "leetcode") return "leetcode";
+		if (tab === "about" || tab === "resume") return "resume";
+		if (tab === "connect" || tab === "community") return "community";
+		if (tab === "projects") return "projects";
+
+		return "projects";
+	}
+
+	function activateTab(tabId: TabId) {
 		Object.entries(tabs).forEach(([key, tab]) => {
 			if (!tab) return;
 			tab.setAttribute("data-state", "inactive");
@@ -1347,8 +1381,8 @@ const socials = [
 			el.addEventListener('click', () => haptics.trigger('medium'))
 		);
 
-		// Default to projects tab on load
-		activateTab("projects");
+		// Support deep-link tabs like /?blog, /?about, /?github, /?leetcode, /?connect
+		activateTab(getTabFromQuery());
 
 		// Scroll-to-top button visibility
 		const scrollBtn = document.getElementById("scroll-top-btn");
