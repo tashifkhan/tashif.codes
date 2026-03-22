@@ -1,8 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import MarkdownIt from "markdown-it";
-import { ExternalLink, ArrowLeft } from "lucide-react";
-import { fetchBlogPosts, fetchFullPost, type BlogPost } from "../../data/blog";
+import MarkdownRenderer from "../../components/MarkdownRenderer.astro";
+import { ArrowLeft, ExternalLink, Eye, Heart, MessageCircle, Clock, Calendar, User, Send } from "lucide-react";
+import { fetchBlogPosts, fetchFullPost, type BlogPost, type BlogComment, BLOG_API_BASE } from "../../data/blog";
 
 export async function getStaticPaths() {
 	try {
@@ -19,77 +19,807 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props as { post: BlogPost };
 
-// Fetch full post to get markdown content
 let markdown = "";
+let initialViews = 0;
+let initialLikes = 0;
+let initialComments: BlogComment[] = [];
+
 try {
 	const fullPost = await fetchFullPost(post.slug);
 	markdown = fullPost.markdown;
+	initialViews = fullPost.metrics.views;
+	initialLikes = fullPost.metrics.likes;
+	initialComments = fullPost.comments;
 } catch (err) {
-	console.error("Error fetching full post markdown:", err);
+	console.error("Error fetching full post:", err);
 }
 
-// Initialize markdown renderer
-const md = new MarkdownIt({
-	html: true,
-	linkify: true,
-	typographer: true,
+const wordCount = markdown.split(/\s+/).filter(Boolean).length;
+const readingTime = Math.max(1, Math.round(wordCount / 200));
+const dateText = new Date(post.date).toLocaleDateString("en-US", {
+	year: "numeric",
+	month: "long",
+	day: "numeric",
 });
-
-const htmlContent = md.render(markdown || "");
+const originalUrl = `https://blog.tashif.codes/blog/${post.slug}`;
+const totalComments = initialComments.reduce(
+	(acc: number, c: BlogComment) => acc + 1 + (c.replies?.length ?? 0),
+	0
+);
 ---
 
 <Layout title={`${post.title} | Tashif's Blog`}>
-	<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 animate-in fade-in slide-in-from-bottom-4 duration-500">
-		<a href="/#blog-section" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
-			<ArrowLeft size={16} />
-			Back to Dashboard
-		</a>
+	<!-- Reading Progress Bar -->
+	<div
+		id="reading-progress"
+		class="fixed top-0 left-0 h-[3px] bg-primary z-[60]"
+		style="width:0;transition:width 80ms linear"
+	></div>
 
-		<div class="mb-8 p-4 bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-			<div class="text-sm text-foreground">
-				<span class="font-medium text-primary">External Post:</span> This article is mirrored from my main blog.
-			</div>
-			<a
-				href={`https://blog.tashif.codes/blog/${post.slug}`}
-				target="_blank"
-				rel="noopener noreferrer"
-				class="inline-flex shrink-0 items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm"
+	<div class="min-h-screen bg-background">
+		<!-- Sticky Top Nav (matches dashboard pattern) -->
+		<header
+			class="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/70"
+		>
+			<div
+				class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4"
 			>
-				Read Original <ExternalLink size={16} />
-			</a>
-		</div>
+				<a
+					href="/#blog-section"
+					class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group shrink-0"
+				>
+					<ArrowLeft
+						size={15}
+						className="group-hover:-translate-x-0.5 transition-transform duration-200"
+					/>
+					<span class="font-medium">Dashboard</span>
+				</a>
 
-		<article class="prose prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-primary hover:prose-a:text-primary/80 prose-img:rounded-xl">
-			{markdown ? (
-				<>
-					<h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">{post.title}</h1>
-					<div class="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-10 pb-6 border-b border-border/60">
-						<span>{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-						{post.author && (
-							<>
-								<span>•</span>
-								<span>{post.author}</span>
-							</>
-						)}
-						{post.tags && post.tags.length > 0 && (
-							<>
-								<span>•</span>
-								<div class="flex gap-2">
-									{post.tags.map(tag => (
-										<span class="bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full text-xs font-medium">{tag}</span>
-									))}
-								</div>
-							</>
-						)}
-					</div>
-					<div set:html={htmlContent} />
-				</>
-			) : (
-				<div class="text-center py-20 text-muted-foreground bg-card/60 rounded-xl border border-border/60">
-					<p>The content for this post couldn't be loaded at the moment.</p>
-					<a href={`https://blog.tashif.codes/blog/${post.slug}`} class="text-primary hover:underline mt-4 inline-block">Please view it on the original blog.</a>
+				<p
+					class="text-xs text-muted-foreground font-mono truncate hidden sm:block flex-1 text-center"
+				>
+					{post.title}
+				</p>
+
+				<div class="flex items-center gap-2 shrink-0">
+					<span
+						class="text-xs text-muted-foreground font-mono hidden md:flex items-center gap-1.5"
+					>
+						<Clock size={12} />{readingTime} min
+					</span>
+					<a
+						href={originalUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary/15 transition-all"
+					>
+						blog.tashif.codes <ExternalLink size={11} />
+					</a>
 				</div>
-			)}
-		</article>
-	</main>
+			</div>
+		</header>
+
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+			<!-- Post Header -->
+			<div
+				class="mb-10 max-w-4xl animate-in fade-in slide-in-from-bottom duration-500"
+			>
+				{
+					post.tags && post.tags.length > 0 && (
+						<div class="flex flex-wrap gap-2 mb-5">
+							{post.tags.map((tag) => (
+								<span class="px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-primary/10 text-primary border border-primary/20 font-mono tracking-wider uppercase">
+									{tag}
+								</span>
+							))}
+						</div>
+					)
+				}
+
+				<h1
+					class="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight leading-[1.15] mb-6 font-mono"
+				>
+					{post.title}
+				</h1>
+
+				<div
+					class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground"
+				>
+					{
+						post.author && (
+							<span class="flex items-center gap-1.5 font-medium text-foreground/80">
+								<User size={13} className="text-primary" />
+								{post.author}
+							</span>
+						)
+					}
+					<span class="flex items-center gap-1.5">
+						<Calendar size={13} className="text-primary" />
+						{dateText}
+					</span>
+					<span class="flex items-center gap-1.5">
+						<Clock size={13} className="text-primary" />
+						{readingTime} min read
+					</span>
+					<span class="flex items-center gap-1.5">
+						<Eye size={13} className="text-primary" />
+						<span id="views-header" class="tabular-nums">{initialViews}</span>&thinsp;views
+					</span>
+					<span class="flex items-center gap-1.5">
+						<Heart size={13} className="text-primary" />
+						<span id="likes-header" class="tabular-nums">{initialLikes}</span>&thinsp;likes
+					</span>
+				</div>
+
+				<!-- Mobile engagement row -->
+				<div class="lg:hidden mt-5 flex items-center gap-2 flex-wrap">
+					<button
+						id="like-btn-mobile"
+						class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-border/60 bg-card/60 text-sm font-medium transition-all duration-200 hover:border-primary/40 hover:text-primary"
+					>
+						<Heart size={14} id="like-icon-mobile" />
+						<span id="likes-mobile" class="tabular-nums font-mono"
+							>{initialLikes}</span
+						>
+					</button>
+					<button
+						id="scroll-comments-mobile"
+						class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-border/60 bg-card/60 text-sm text-muted-foreground transition-all hover:border-border hover:bg-muted/40"
+					>
+						<MessageCircle size={14} />
+						<span id="comments-mobile" class="tabular-nums font-mono"
+							>{totalComments}</span
+						>
+					</button>
+					<a
+						href={originalUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="ml-auto flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
+					>
+						Original <ExternalLink size={12} />
+					</a>
+				</div>
+
+				<div
+					class="mt-6 h-px bg-gradient-to-r from-primary/50 via-border/50 to-transparent"
+				>
+				</div>
+			</div>
+
+			<!-- Two-column layout -->
+			<div class="flex gap-10 xl:gap-14 items-start">
+				<!-- Article — uses the shared MarkdownRenderer -->
+				<div
+					id="article-content"
+					class="flex-1 min-w-0 animate-in fade-in slide-in-from-bottom duration-700"
+				>
+					{
+						markdown ? (
+							<MarkdownRenderer content={markdown} />
+						) : (
+							<div class="text-center py-20 text-muted-foreground rounded-xl border border-border/60 bg-card/50">
+								<MessageCircle
+									size={40}
+									className="mx-auto mb-4 opacity-20"
+								/>
+								<p class="text-base mb-3">Content couldn't be loaded.</p>
+								<a
+									href={originalUrl}
+									class="text-primary hover:underline text-sm"
+								>
+									View on blog.tashif.codes →
+								</a>
+							</div>
+						)
+					}
+				</div>
+
+				<!-- Desktop Sticky Sidebar -->
+				<aside
+					class="hidden lg:flex flex-col gap-3 w-52 xl:w-56 shrink-0 animate-in fade-in slide-in-from-right duration-700"
+				>
+					<div class="sticky top-20 flex flex-col gap-3">
+						<!-- Engagement Card -->
+						<div
+							class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-4"
+						>
+							<p
+								class="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest mb-3.5"
+							>
+								Engagement
+							</p>
+
+							<div class="flex flex-col gap-2.5">
+								<div class="flex items-center justify-between text-sm">
+									<span
+										class="flex items-center gap-2 text-muted-foreground"
+									>
+										<Eye size={14} />Views
+									</span>
+									<span
+										id="views-sidebar"
+										class="font-mono font-semibold tabular-nums"
+										>{initialViews}</span
+									>
+								</div>
+								<div class="flex items-center justify-between text-sm">
+									<span
+										class="flex items-center gap-2 text-muted-foreground"
+									>
+										<Heart size={14} />Likes
+									</span>
+									<span
+										id="likes-sidebar"
+										class="font-mono font-semibold tabular-nums"
+										>{initialLikes}</span
+									>
+								</div>
+								<div class="flex items-center justify-between text-sm">
+									<span
+										class="flex items-center gap-2 text-muted-foreground"
+									>
+										<MessageCircle size={14} />Comments
+									</span>
+									<span
+										id="comments-sidebar"
+										class="font-mono font-semibold tabular-nums"
+										>{totalComments}</span
+									>
+								</div>
+							</div>
+
+							<div
+								class="mt-4 pt-3 border-t border-border/50 flex flex-col gap-2"
+							>
+								<button
+									id="like-btn"
+									class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-border/60 text-sm font-medium transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
+								>
+									<Heart size={14} id="like-icon" />
+									<span id="like-btn-label">Like</span>
+								</button>
+								<button
+									id="scroll-comments"
+									class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-border/60 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground"
+								>
+									<MessageCircle size={14} />
+									<span>Discussion</span>
+								</button>
+								<a
+									href={originalUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
+								>
+									Read Original <ExternalLink size={12} />
+								</a>
+							</div>
+						</div>
+
+						<!-- Table of Contents (JS-populated) -->
+						<div
+							id="toc-widget"
+							class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-4 hidden"
+						>
+							<p
+								class="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest mb-3"
+							>
+								On this page
+							</p>
+							<nav id="toc-list" class="flex flex-col gap-0.5"></nav>
+						</div>
+					</div>
+				</aside>
+			</div>
+
+			<!-- Comments Section -->
+			<section
+				id="comments-section"
+				class="mt-16 lg:mt-20 max-w-3xl animate-in fade-in slide-in-from-bottom duration-700"
+				style="animation-delay:150ms"
+			>
+				<div class="flex items-center gap-3 mb-8">
+					<div
+						class="h-px flex-1 bg-gradient-to-r from-transparent via-border/60 to-transparent"
+					>
+					</div>
+					<div class="flex items-center gap-2.5 px-2 shrink-0">
+						<MessageCircle size={17} className="text-primary" />
+						<h2 class="text-base font-bold font-mono tracking-tight">
+							Discussion
+						</h2>
+						<span
+							id="comments-badge"
+							class="px-2 py-0.5 text-[11px] font-mono rounded-full bg-primary/10 text-primary border border-primary/20"
+							>{totalComments}</span
+						>
+					</div>
+					<div
+						class="h-px flex-1 bg-gradient-to-r from-transparent via-border/60 to-transparent"
+					>
+					</div>
+				</div>
+
+				<!-- Comment Form -->
+				<div
+					class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-5 mb-8"
+				>
+					<p class="text-sm font-mono font-semibold mb-4">Leave a comment</p>
+					<div class="flex flex-col gap-3">
+						<input
+							id="comment-name"
+							type="text"
+							placeholder="Your name"
+							maxlength="120"
+							class="w-full px-3 py-2.5 text-sm rounded-lg border border-border/60 bg-background/70 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/50 transition-all"
+						/>
+						<textarea
+							id="comment-text"
+							placeholder="What are your thoughts?"
+							maxlength="5000"
+							rows="4"
+							class="w-full px-3 py-2.5 text-sm rounded-lg border border-border/60 bg-background/70 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/50 transition-all resize-none"
+						></textarea>
+						<div class="flex items-center gap-3">
+							<p
+								id="comment-error"
+								class="text-xs text-destructive hidden flex-1"
+							>
+							</p>
+							<button
+								id="submit-comment-btn"
+								class="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+							>
+								<Send size={13} />
+								Post
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Comments list (JS-rendered) -->
+				<div id="comments-list" class="flex flex-col gap-4"></div>
+			</section>
+		</div>
+	</div>
+
+	<script
+		define:vars={{
+			slug: post.slug,
+			initialViews,
+			initialLikes,
+			initialComments,
+			totalComments,
+			apiBase: BLOG_API_BASE,
+		}}
+	>
+		const LIKED_KEY = `liked-${slug}`;
+		let viewCount = initialViews;
+		let likeCount = initialLikes;
+		let commentList = initialComments;
+		let isLiked = false;
+		let isSubmitting = false;
+
+		// ── Reading progress ───────────────────────────────────────────────────────
+		function updateProgress() {
+			const article = document.getElementById("article-content");
+			const bar = document.getElementById("reading-progress");
+			if (!article || !bar) return;
+			const rect = article.getBoundingClientRect();
+			const articleH = article.offsetHeight;
+			const windowH = window.innerHeight;
+			const pct = Math.min(
+				100,
+				Math.max(0, (-rect.top / (articleH - windowH)) * 100)
+			);
+			bar.style.width = pct + "%";
+		}
+		window.addEventListener("scroll", updateProgress, { passive: true });
+
+		// ── UI update helpers ──────────────────────────────────────────────────────
+		function setText(ids, value) {
+			ids.forEach((id) => {
+				const el = document.getElementById(id);
+				if (el) el.textContent = String(value);
+			});
+		}
+
+		function updateViewsUI() {
+			setText(["views-header", "views-sidebar"], viewCount.toLocaleString());
+		}
+
+		function updateLikesUI() {
+			setText(
+				["likes-header", "likes-sidebar", "likes-mobile"],
+				likeCount.toLocaleString()
+			);
+			const icons = ["like-icon", "like-icon-mobile"];
+			const btns = ["like-btn", "like-btn-mobile"];
+			icons.forEach((id) => {
+				const el = document.getElementById(id);
+				if (!el) return;
+				el.style.fill = isLiked ? "currentColor" : "none";
+				el.style.transform = isLiked ? "scale(1.2)" : "scale(1)";
+				el.style.transition = "all 0.2s ease";
+			});
+			btns.forEach((id) => {
+				const el = document.getElementById(id);
+				if (!el) return;
+				el.classList.toggle("border-primary/50", isLiked);
+				el.classList.toggle("bg-primary/10", isLiked);
+				el.classList.toggle("text-primary", isLiked);
+			});
+			const label = document.getElementById("like-btn-label");
+			if (label) label.textContent = isLiked ? "Liked!" : "Like";
+		}
+
+		function countAllComments(list) {
+			return list.reduce(
+				(acc, c) => acc + 1 + (c.replies ? c.replies.length : 0),
+				0
+			);
+		}
+
+		function updateCommentsUI() {
+			const count = countAllComments(commentList);
+			setText(
+				["comments-sidebar", "comments-mobile", "comments-badge"],
+				count
+			);
+		}
+
+		// ── Table of Contents ──────────────────────────────────────────────────────
+		function buildToC() {
+			const article = document.getElementById("article-content");
+			const widget = document.getElementById("toc-widget");
+			const list = document.getElementById("toc-list");
+			if (!article || !widget || !list) return;
+
+			const headings = Array.from(article.querySelectorAll("h2, h3"));
+			if (headings.length < 2) return;
+
+			widget.classList.remove("hidden");
+			list.innerHTML = "";
+
+			headings.forEach((h, i) => {
+				if (!h.id) h.id = `h-${i}`;
+				const a = document.createElement("a");
+				a.href = "#" + h.id;
+				a.textContent = h.textContent || "";
+				const isH3 = h.tagName === "H3";
+				a.className = [
+					"block py-1 text-muted-foreground hover:text-primary transition-colors truncate leading-snug",
+					isH3 ? "pl-3 text-[11px]" : "text-xs font-medium",
+				].join(" ");
+				a.addEventListener("click", (e) => {
+					e.preventDefault();
+					h.scrollIntoView({ behavior: "smooth", block: "start" });
+				});
+				list.appendChild(a);
+			});
+
+			// Highlight active heading
+			const links = Array.from(list.querySelectorAll("a"));
+			const observer = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						if (entry.isIntersecting) {
+							const target = "#" + entry.target.id;
+							links.forEach((a) => {
+								const active = a.getAttribute("href") === target;
+								a.classList.toggle("text-primary", active);
+								a.classList.toggle("font-semibold", active);
+								a.classList.toggle("text-muted-foreground", !active);
+							});
+						}
+					});
+				},
+				{ rootMargin: "-15% 0% -70% 0%", threshold: 0 }
+			);
+			headings.forEach((h) => observer.observe(h));
+		}
+
+		// ── Views (auto-increments server-side) ───────────────────────────────────
+		async function loadViews() {
+			try {
+				const res = await fetch(`${apiBase}/views/${slug}`);
+				if (res.ok) {
+					const data = await res.json();
+					viewCount = data.views;
+					updateViewsUI();
+				}
+			} catch (_) {}
+		}
+
+		// ── Like toggle ───────────────────────────────────────────────────────────
+		async function toggleLike() {
+			const prevLiked = isLiked;
+			const prevCount = likeCount;
+			isLiked = !isLiked;
+			likeCount += isLiked ? 1 : -1;
+			updateLikesUI();
+			try {
+				const res = await fetch(`${apiBase}/likes/${slug}`, {
+					method: isLiked ? "POST" : "DELETE",
+				});
+				if (res.ok) {
+					const data = await res.json();
+					likeCount = data.likes;
+					isLiked
+						? localStorage.setItem(LIKED_KEY, "1")
+						: localStorage.removeItem(LIKED_KEY);
+					updateLikesUI();
+				} else {
+					isLiked = prevLiked;
+					likeCount = prevCount;
+					updateLikesUI();
+				}
+			} catch (_) {
+				isLiked = prevLiked;
+				likeCount = prevCount;
+				updateLikesUI();
+			}
+		}
+
+		// ── Comment rendering ─────────────────────────────────────────────────────
+		function fmtDate(str) {
+			return new Date(str).toLocaleDateString("en-US", {
+				year: "numeric",
+				month: "short",
+				day: "numeric",
+			});
+		}
+
+		function makeCommentEl(comment, depth) {
+			const wrap = document.createElement("div");
+			if (depth > 0)
+				wrap.className =
+					"pl-4 border-l-2 border-primary/20 ml-3 mt-3 flex flex-col gap-3";
+
+			const card = document.createElement("div");
+			card.id = "comment-" + comment.id;
+			card.className =
+				depth === 0
+					? "rounded-xl border border-border/60 bg-card/50 p-5"
+					: "rounded-lg border border-border/50 bg-background/60 p-4";
+
+			const header = document.createElement("div");
+			header.className = "flex items-center justify-between gap-2 mb-2";
+
+			const name = document.createElement("span");
+			name.className = "text-sm font-semibold font-mono";
+			name.textContent = comment.name;
+
+			const date = document.createElement("span");
+			date.className = "text-xs text-muted-foreground font-mono";
+			date.textContent = fmtDate(comment.date);
+
+			header.append(name, date);
+
+			const body = document.createElement("p");
+			body.className =
+				"text-sm text-foreground/85 leading-relaxed mt-1 mb-3 whitespace-pre-wrap";
+			body.textContent = comment.text;
+
+			const replyBtn = document.createElement("button");
+			replyBtn.className =
+				"text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-medium";
+			replyBtn.innerHTML =
+				'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg> Reply';
+
+			const replyForm = document.createElement("div");
+			replyForm.className = "mt-3 hidden";
+
+			const replyInner = document.createElement("div");
+			replyInner.className =
+				"flex flex-col gap-2 p-3 rounded-lg bg-muted/30 border border-border/40";
+
+			const rName = document.createElement("input");
+			rName.type = "text";
+			rName.placeholder = "Your name";
+			rName.maxLength = 120;
+			rName.className =
+				"w-full px-3 py-2 text-xs rounded-md border border-border/60 bg-background/80 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/50 transition-all";
+
+			const rText = document.createElement("textarea");
+			rText.placeholder = "Write a reply…";
+			rText.maxLength = 5000;
+			rText.rows = 2;
+			rText.className =
+				"w-full px-3 py-2 text-xs rounded-md border border-border/60 bg-background/80 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/50 transition-all resize-none";
+
+			const rActions = document.createElement("div");
+			rActions.className = "flex gap-2 justify-end";
+
+			const cancelBtn = document.createElement("button");
+			cancelBtn.textContent = "Cancel";
+			cancelBtn.className =
+				"text-xs px-3 py-1.5 rounded-md border border-border/60 text-muted-foreground hover:bg-muted/60 transition-all";
+
+			const submitReplyBtn = document.createElement("button");
+			submitReplyBtn.className =
+				"text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all font-semibold flex items-center gap-1.5 disabled:opacity-50";
+			submitReplyBtn.innerHTML =
+				'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Reply';
+
+			rActions.append(cancelBtn, submitReplyBtn);
+			replyInner.append(rName, rText, rActions);
+			replyForm.appendChild(replyInner);
+
+			replyBtn.addEventListener("click", () => {
+				const hidden = replyForm.classList.toggle("hidden");
+				if (!hidden) rName.focus();
+			});
+			cancelBtn.addEventListener("click", () =>
+				replyForm.classList.add("hidden")
+			);
+			submitReplyBtn.addEventListener("click", async () => {
+				const n = rName.value.trim();
+				const t = rText.value.trim();
+				if (!n || !t) return;
+				submitReplyBtn.disabled = true;
+				submitReplyBtn.textContent = "…";
+				try {
+					const res = await fetch(`${apiBase}/comments/${slug}`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ name: n, text: t, parentId: comment.id }),
+					});
+					if (res.ok) {
+						rName.value = "";
+						rText.value = "";
+						replyForm.classList.add("hidden");
+						await refreshComments();
+					}
+				} catch (_) {
+				} finally {
+					submitReplyBtn.disabled = false;
+					submitReplyBtn.innerHTML =
+						'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Reply';
+				}
+			});
+
+			card.append(header, body, replyBtn, replyForm);
+			wrap.appendChild(card);
+
+			if (comment.replies && comment.replies.length > 0) {
+				comment.replies.forEach((r) =>
+					wrap.appendChild(makeCommentEl(r, depth + 1))
+				);
+			}
+			return wrap;
+		}
+
+		function renderComments() {
+			const list = document.getElementById("comments-list");
+			if (!list) return;
+			list.innerHTML = "";
+			if (commentList.length === 0) {
+				list.innerHTML =
+					'<div class="text-center py-12 text-muted-foreground"><svg class="mx-auto mb-3 opacity-25" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><p class="text-sm">No comments yet — be the first!</p></div>';
+				return;
+			}
+			commentList.forEach((c) =>
+				list.appendChild(makeCommentEl(c, 0))
+			);
+		}
+
+		async function refreshComments() {
+			try {
+				const res = await fetch(`${apiBase}/comments/${slug}`);
+				if (res.ok) {
+					const data = await res.json();
+					commentList = data.comments;
+					updateCommentsUI();
+					renderComments();
+				}
+			} catch (_) {}
+		}
+
+		// ── Comment form ──────────────────────────────────────────────────────────
+		function setupCommentForm() {
+			const btn = document.getElementById("submit-comment-btn");
+			const errEl = document.getElementById("comment-error");
+			if (!btn) return;
+
+			btn.addEventListener("click", async () => {
+				if (isSubmitting) return;
+				const name = document.getElementById("comment-name")?.value?.trim();
+				const text = document.getElementById("comment-text")?.value?.trim();
+				if (errEl) errEl.classList.add("hidden");
+
+				if (!name) {
+					if (errEl) {
+						errEl.textContent = "Please enter your name.";
+						errEl.classList.remove("hidden");
+					}
+					document.getElementById("comment-name")?.focus();
+					return;
+				}
+				if (!text) {
+					if (errEl) {
+						errEl.textContent = "Please write something.";
+						errEl.classList.remove("hidden");
+					}
+					document.getElementById("comment-text")?.focus();
+					return;
+				}
+
+				isSubmitting = true;
+				btn.disabled = true;
+				btn.textContent = "Posting…";
+
+				try {
+					const res = await fetch(`${apiBase}/comments/${slug}`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ name, text }),
+					});
+					if (res.ok) {
+						document.getElementById("comment-name").value = "";
+						document.getElementById("comment-text").value = "";
+						await refreshComments();
+						document
+							.getElementById("comments-list")
+							?.scrollIntoView({ behavior: "smooth", block: "start" });
+					} else {
+						if (errEl) {
+							errEl.textContent = "Failed to post. Please try again.";
+							errEl.classList.remove("hidden");
+						}
+					}
+				} catch (_) {
+					if (errEl) {
+						errEl.textContent = "Network error.";
+						errEl.classList.remove("hidden");
+					}
+				} finally {
+					isSubmitting = false;
+					btn.disabled = false;
+					btn.innerHTML =
+						'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Post';
+				}
+			});
+		}
+
+		// ── Init ──────────────────────────────────────────────────────────────────
+		function scrollToComments() {
+			document
+				.getElementById("comments-section")
+				?.scrollIntoView({ behavior: "smooth" });
+		}
+
+		function init() {
+			isLiked = localStorage.getItem(LIKED_KEY) === "1";
+			updateViewsUI();
+			updateLikesUI();
+			updateCommentsUI();
+			renderComments();
+			buildToC();
+			setupCommentForm();
+
+			document
+				.getElementById("like-btn")
+				?.addEventListener("click", toggleLike);
+			document
+				.getElementById("like-btn-mobile")
+				?.addEventListener("click", toggleLike);
+			document
+				.getElementById("scroll-comments")
+				?.addEventListener("click", scrollToComments);
+			document
+				.getElementById("scroll-comments-mobile")
+				?.addEventListener("click", scrollToComments);
+
+			loadViews();
+		}
+
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", init);
+		} else {
+			init();
+		}
+		document.addEventListener("astro:page-load", init);
+	</script>
 </Layout>
