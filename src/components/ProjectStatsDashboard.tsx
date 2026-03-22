@@ -577,7 +577,7 @@ export default function ProjectStatsDashboard() {
 	const { trigger } = useWebHaptics();
 
 	const API_BASE = useMemo(() => {
-		const configured = import.meta.env.PUBLIC_API_BASE || "https://tashif-project-stats.vercel.app";
+		const configured = import.meta.env.PUBLIC_API_BASE || "";
 		return configured.replace(/\/+$/, "");
 	}, []);
 
@@ -595,7 +595,7 @@ export default function ProjectStatsDashboard() {
 
 		async function fetchProjects() {
 			try {
-				const res = await fetch(`${API_BASE}/api/v1/projects`, {
+				const res = await fetch(`${API_BASE}/projects/stats/api/v1/projects`, {
 					signal: controller.signal
 				});
 				if (!res.ok) {

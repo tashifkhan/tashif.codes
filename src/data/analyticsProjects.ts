@@ -15,7 +15,8 @@ export async function fetchAnalyticsProjects(): Promise<AnalyticsProject[]> {
 	if (cachedProjects) return cachedProjects;
 
 	try {
-		const res = await fetch("https://tashif-project-stats.vercel.app/api/v1/projects");
+		const base = (import.meta.env.SITE || "https://tashif.codes").replace(/\/+$/, "");
+		const res = await fetch(`${base}/projects/stats/api/v1/projects`);
 		if (!res.ok) {
 			console.error("Failed to fetch analytics projects:", res.status, res.statusText);
 			return [];
