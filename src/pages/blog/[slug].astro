@@ -117,7 +117,7 @@ const totalComments = initialComments.reduce(
 				}
 
 				<h1
-					class="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight leading-[1.15] mb-6 font-mono"
+					class="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight leading-[1.15] mb-6 font-mono text-foreground"
 				>
 					{post.title}
 				</h1>
@@ -215,11 +215,15 @@ const totalComments = initialComments.reduce(
 					}
 				</div>
 
-				<!-- Desktop Sticky Sidebar -->
+				<!-- Desktop Fixed Sidebar -->
 				<aside
-					class="hidden lg:flex flex-col gap-3 w-52 xl:w-56 shrink-0 animate-in fade-in slide-in-from-right duration-700"
+					class="hidden lg:block w-52 xl:w-56 shrink-0 animate-in fade-in slide-in-from-right duration-700"
 				>
-					<div class="sticky top-20 flex flex-col gap-3">
+					<div
+						class="fixed top-20 z-30 w-52 xl:w-56 max-h-[calc(100vh-6rem)] overflow-y-auto"
+						style="scrollbar-width: none; right: max(2rem, calc((100vw - 80rem) / 2 + 2rem));"
+					>
+						<div class="flex flex-col gap-4">
 						<!-- Engagement Card -->
 						<div
 							class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-4"
@@ -230,40 +234,40 @@ const totalComments = initialComments.reduce(
 								Engagement
 							</p>
 
-							<div class="flex flex-col gap-2.5">
+							<div class="flex flex-col gap-3">
 								<div class="flex items-center justify-between text-sm">
 									<span
-										class="flex items-center gap-2 text-muted-foreground"
+										class="flex items-center gap-2 text-foreground/80 font-medium"
 									>
-										<Eye size={14} />Views
+										<Eye size={14} className="text-muted-foreground" />Views
 									</span>
 									<span
 										id="views-sidebar"
-										class="font-mono font-semibold tabular-nums"
+										class="font-mono font-semibold tabular-nums text-foreground/90"
 										>{initialViews}</span
 									>
 								</div>
 								<div class="flex items-center justify-between text-sm">
 									<span
-										class="flex items-center gap-2 text-muted-foreground"
+										class="flex items-center gap-2 text-foreground/80 font-medium"
 									>
-										<Heart size={14} />Likes
+										<Heart size={14} className="text-muted-foreground" />Likes
 									</span>
 									<span
 										id="likes-sidebar"
-										class="font-mono font-semibold tabular-nums"
+										class="font-mono font-semibold tabular-nums text-foreground/90"
 										>{initialLikes}</span
 									>
 								</div>
 								<div class="flex items-center justify-between text-sm">
 									<span
-										class="flex items-center gap-2 text-muted-foreground"
+										class="flex items-center gap-2 text-foreground/80 font-medium"
 									>
-										<MessageCircle size={14} />Comments
+										<MessageCircle size={14} className="text-muted-foreground" />Comments
 									</span>
 									<span
 										id="comments-sidebar"
-										class="font-mono font-semibold tabular-nums"
+										class="font-mono font-semibold tabular-nums text-foreground/90"
 										>{totalComments}</span
 									>
 								</div>
@@ -307,7 +311,8 @@ const totalComments = initialComments.reduce(
 							>
 								On this page
 							</p>
-							<nav id="toc-list" class="flex flex-col gap-0.5"></nav>
+							<nav id="toc-list" class="flex flex-col gap-0.5 overflow-y-auto max-h-96 pr-0.5" style="scrollbar-width:thin"></nav>
+						</div>
 						</div>
 					</div>
 				</aside>
@@ -400,6 +405,7 @@ const totalComments = initialComments.reduce(
 		let commentList = initialComments;
 		let isLiked = false;
 		let isSubmitting = false;
+		let cleanupToC = null;
 
 		// ── Reading progress ───────────────────────────────────────────────────────
 		function updateProgress() {
@@ -470,7 +476,19 @@ const totalComments = initialComments.reduce(
 		}
 
 		// ── Table of Contents ──────────────────────────────────────────────────────
+		function getHeadingText(h) {
+			// Clone the heading and remove anchor links + decorative spans
+			// so we only get the plain label text
+			const clone = h.cloneNode(true);
+			clone.querySelectorAll("a").forEach((el) => el.remove());
+			clone.querySelectorAll("span.shrink-0").forEach((el) => el.remove());
+			return clone.textContent?.trim() || "";
+		}
+
 		function buildToC() {
+			if (cleanupToC) cleanupToC();
+			cleanupToC = null;
+
 			const article = document.getElementById("article-content");
 			const widget = document.getElementById("toc-widget");
 			const list = document.getElementById("toc-list");
@@ -481,17 +499,20 @@ const totalComments = initialComments.reduce(
 
 			widget.classList.remove("hidden");
 			list.innerHTML = "";
+			list.scrollTop = 0;
 
 			headings.forEach((h, i) => {
 				if (!h.id) h.id = `h-${i}`;
 				const a = document.createElement("a");
 				a.href = "#" + h.id;
-				a.textContent = h.textContent || "";
+				a.textContent = getHeadingText(h);
 				const isH3 = h.tagName === "H3";
 				a.className = [
-					"block py-1 text-muted-foreground hover:text-primary transition-colors truncate leading-snug",
+					"block py-1 transition-colors duration-150 leading-snug break-words no-underline",
+					"text-muted-foreground hover:text-foreground",
 					isH3 ? "pl-3 text-[11px]" : "text-xs font-medium",
 				].join(" ");
+				a.style.textDecoration = "none";
 				a.addEventListener("click", (e) => {
 					e.preventDefault();
 					h.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -499,25 +520,73 @@ const totalComments = initialComments.reduce(
 				list.appendChild(a);
 			});
 
-			// Highlight active heading
+			// Track active heading and highlight the matching ToC link
 			const links = Array.from(list.querySelectorAll("a"));
-			const observer = new IntersectionObserver(
-				(entries) => {
-					entries.forEach((entry) => {
-						if (entry.isIntersecting) {
-							const target = "#" + entry.target.id;
-							links.forEach((a) => {
-								const active = a.getAttribute("href") === target;
-								a.classList.toggle("text-primary", active);
-								a.classList.toggle("font-semibold", active);
-								a.classList.toggle("text-muted-foreground", !active);
-							});
-						}
-					});
-				},
-				{ rootMargin: "-15% 0% -70% 0%", threshold: 0 }
-			);
-			headings.forEach((h) => observer.observe(h));
+			let activeLink = null;
+			let rafId = 0;
+
+			function setActive(link) {
+				if (activeLink === link) return;
+				if (activeLink) {
+					activeLink.classList.remove("text-primary", "font-semibold");
+					activeLink.classList.add("text-muted-foreground");
+					activeLink.style.textDecoration = "none";
+				}
+				activeLink = link;
+				if (link) {
+					link.classList.add("text-primary", "font-semibold");
+					link.classList.remove("text-muted-foreground");
+					link.style.textDecoration = "none";
+				}
+			}
+
+			function updateActiveHeading() {
+				const scrollTop = window.scrollY || document.documentElement.scrollTop;
+				if (scrollTop <= 8) {
+					setActive(links[0] || null);
+					return;
+				}
+
+				const offset = 140; // sticky header + top breathing room
+				let activeIndex = 0;
+
+				for (let i = 0; i < headings.length; i++) {
+					if (headings[i].getBoundingClientRect().top <= offset) {
+						activeIndex = i;
+					} else {
+						break;
+					}
+				}
+
+				const nearBottom =
+					window.innerHeight + scrollTop >=
+					document.documentElement.scrollHeight - 4;
+				if (nearBottom) activeIndex = headings.length - 1;
+
+				const targetId = headings[activeIndex]?.id;
+				const link = targetId
+					? links.find((a) => a.getAttribute("href") === `#${targetId}`) || null
+					: null;
+				setActive(link);
+			}
+
+			function onScrollOrResize() {
+				if (rafId) cancelAnimationFrame(rafId);
+				rafId = requestAnimationFrame(updateActiveHeading);
+			}
+
+			window.addEventListener("scroll", onScrollOrResize, { passive: true });
+			window.addEventListener("resize", onScrollOrResize);
+
+			setActive(links[0] || null);
+			list.scrollTop = 0;
+			onScrollOrResize();
+
+			cleanupToC = () => {
+				if (rafId) cancelAnimationFrame(rafId);
+				window.removeEventListener("scroll", onScrollOrResize);
+				window.removeEventListener("resize", onScrollOrResize);
+			};
 		}
 
 		// ── Views (auto-increments server-side) ───────────────────────────────────

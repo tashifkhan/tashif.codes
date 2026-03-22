@@ -29,6 +29,8 @@ if (filteredHeadings.length === 0) return null;
               : "text-muted-foreground/70 pl-4 border-l border-border/50 ml-1"
           ]}
           data-toc-link
+          data-toc-target={heading.slug}
+          data-toc-depth={heading.depth}
         >
           {heading.text}
         </a>
@@ -38,37 +40,119 @@ if (filteredHeadings.length === 0) return null;
 </nav>
 
 <script>
-  // Simple active link highlighting based on scroll
-  function updateActiveLink() {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.getAttribute('id');
-          const links = document.querySelectorAll('[data-toc-link]');
-          links.forEach(link => {
-            const href = link.getAttribute('href');
-            if (href === `#${id}`) {
-              link.classList.add('text-primary', 'font-semibold');
-              link.classList.remove('text-muted-foreground', 'text-muted-foreground/70');
-            } else {
-              link.classList.remove('text-primary', 'font-semibold');
-              // Restore original classes based on data attribute or simple logic
-              // Since we use class:list, it's easier to just manage the active state
-            }
-          });
-        }
-      });
-    }, {
-      rootMargin: '-100px 0px -70% 0px',
-      threshold: 0
-    });
+  let cleanupToc: (() => void) | null = null;
 
-    document.querySelectorAll('h2[id], h3[id]').forEach((section) => {
-      observer.observe(section);
-    });
+  function getScrollContainer(element: HTMLElement): HTMLElement | Window {
+    let parent = element.parentElement;
+
+    while (parent) {
+      const style = window.getComputedStyle(parent);
+      const overflowY = style.overflowY;
+      const canScroll = overflowY === 'auto' || overflowY === 'scroll';
+      if (canScroll && parent.scrollHeight > parent.clientHeight) {
+        return parent;
+      }
+      parent = parent.parentElement;
+    }
+
+    return window;
   }
 
-  document.addEventListener('astro:page-load', updateActiveLink);
+  function initActiveTocLink() {
+    if (cleanupToc) cleanupToc();
+
+    const toc = document.querySelector<HTMLElement>('.toc');
+    if (!toc) return;
+
+    const links = Array.from(toc.querySelectorAll<HTMLAnchorElement>('[data-toc-link]'));
+    if (!links.length) return;
+
+    const sections = links.reduce<{ id: string; section: HTMLElement }[]>((acc, link) => {
+        const target = link.getAttribute('data-toc-target') || link.getAttribute('href')?.replace('#', '');
+        if (!target) return acc;
+        const section = document.getElementById(target);
+        if (!section) return acc;
+        acc.push({ id: target, section });
+        return acc;
+      }, []);
+
+    if (!sections.length) return;
+
+    const scrollContainer = getScrollContainer(toc);
+    const containerTop =
+      scrollContainer === window
+        ? 0
+        : (scrollContainer as HTMLElement).getBoundingClientRect().top;
+
+    const setActive = (id: string) => {
+      links.forEach((link) => {
+        const isActive = link.getAttribute('data-toc-target') === id;
+        link.classList.toggle('text-primary', isActive);
+        link.classList.toggle('font-semibold', isActive);
+      });
+    };
+
+    let rafId = 0;
+
+    const updateActiveByScroll = () => {
+      const offset = scrollContainer === window ? 140 : containerTop + 120;
+      const firstSection = sections[0];
+      if (!firstSection) return;
+      let activeId = firstSection.id;
+
+      for (const item of sections) {
+        if (item.section.getBoundingClientRect().top <= offset) {
+          activeId = item.id;
+        } else {
+          break;
+        }
+      }
+
+      setActive(activeId);
+    };
+
+    const onScroll = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(updateActiveByScroll);
+    };
+
+    const onLinkClick = (event: Event) => {
+      const link = event.currentTarget as HTMLAnchorElement | null;
+      const id = link?.getAttribute('data-toc-target');
+      if (id) setActive(id);
+    };
+
+    links.forEach((link) => link.addEventListener('click', onLinkClick));
+    if (scrollContainer === window) {
+      window.addEventListener('scroll', onScroll, { passive: true });
+    } else {
+      (scrollContainer as HTMLElement).addEventListener('scroll', onScroll, {
+        passive: true,
+      });
+    }
+    window.addEventListener('resize', onScroll);
+
+    setActive(sections[0].id);
+    onScroll();
+
+    cleanupToc = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      links.forEach((link) => link.removeEventListener('click', onLinkClick));
+      if (scrollContainer === window) {
+        window.removeEventListener('scroll', onScroll);
+      } else {
+        (scrollContainer as HTMLElement).removeEventListener('scroll', onScroll);
+      }
+      window.removeEventListener('resize', onScroll);
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initActiveTocLink, { once: true });
+  } else {
+    initActiveTocLink();
+  }
+  document.addEventListener('astro:page-load', initActiveTocLink);
 </script>
 
 <style>
