@@ -525,6 +525,20 @@ const totalComments = initialComments.reduce(
 			let activeLink = null;
 			let rafId = 0;
 
+			function keepActiveLinkVisible(link) {
+				if (!link) return;
+				const listRect = list.getBoundingClientRect();
+				const linkRect = link.getBoundingClientRect();
+				const padding = 10;
+
+				const isAbove = linkRect.top < listRect.top + padding;
+				const isBelow = linkRect.bottom > listRect.bottom - padding;
+
+				if (isAbove || isBelow) {
+					link.scrollIntoView({ block: "nearest", inline: "nearest" });
+				}
+			}
+
 			function setActive(link) {
 				if (activeLink === link) return;
 				if (activeLink) {
@@ -537,6 +551,7 @@ const totalComments = initialComments.reduce(
 					link.classList.add("text-primary", "font-semibold");
 					link.classList.remove("text-muted-foreground");
 					link.style.textDecoration = "none";
+					keepActiveLinkVisible(link);
 				}
 			}
 
