@@ -9,10 +9,6 @@
 			"destination": "/api/index.py"
 		},
 		{
-			"source": "/api/:path*",
-			"destination": "/api/index.py"
-		},
-		{
 			"source": "/ph/static/:path*",
 			"destination": "https://eu-assets.i.posthog.com/static/:path*"
 		},
