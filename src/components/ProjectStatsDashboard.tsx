@@ -575,10 +575,13 @@ export default function ProjectStatsDashboard() {
 	const [error, setError] = useState<string | null>(null);
 	const [period, setPeriod] = useState<string>("0");
 	const { trigger } = useWebHaptics();
+	const API_PREFIX = "/projects/stats/api";
 
 	const API_BASE = useMemo(() => {
-		const configured = import.meta.env.PUBLIC_API_BASE || "";
-		return configured.replace(/\/+$/, "");
+		const configured = (import.meta.env.PUBLIC_API_BASE || "").trim().replace(/\/+$/, "");
+		if (!configured) return API_PREFIX;
+		if (configured.endsWith(API_PREFIX)) return configured;
+		return `${configured}${API_PREFIX}`;
 	}, []);
 
 	const getInitialProject = useCallback(() => {
@@ -595,7 +598,7 @@ export default function ProjectStatsDashboard() {
 
 		async function fetchProjects() {
 			try {
-				const res = await fetch(`${API_BASE}/projects/stats/api/v1/projects`, {
+				const res = await fetch(`${API_BASE}/v1/projects`, {
 					signal: controller.signal
 				});
 				if (!res.ok) {
@@ -642,7 +645,7 @@ export default function ProjectStatsDashboard() {
 			try {
 				const encodedSlug = encodeURIComponent(selectedSlug);
 				const res = await fetch(
-					`${API_BASE}/projects/stats/api/v1/stats?slugs=${encodedSlug}&days=${period}`,
+					`${API_BASE}/v1/stats?slugs=${encodedSlug}&days=${period}`,
 					{ signal: controller.signal }
 				);
 				if (!res.ok) {

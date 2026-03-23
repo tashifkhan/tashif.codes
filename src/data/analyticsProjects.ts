@@ -10,13 +10,21 @@ export interface AnalyticsProjectsResponse {
 }
 
 let cachedProjects: AnalyticsProject[] | null = null;
+const API_PREFIX = "/projects/stats/api";
 
 export async function fetchAnalyticsProjects(): Promise<AnalyticsProject[]> {
 	if (cachedProjects) return cachedProjects;
 
 	try {
-		const base = (import.meta.env.SITE || "https://tashif.codes").replace(/\/+$/, "");
-		const res = await fetch(`${base}/projects/stats/api/v1/projects`);
+		const siteBase = (import.meta.env.SITE || "https://tashif.codes").replace(/\/+$/, "");
+		const configuredBase = (import.meta.env.PUBLIC_API_BASE || "").trim().replace(/\/+$/, "");
+		const apiBase = configuredBase
+			? configuredBase.endsWith(API_PREFIX)
+				? configuredBase
+				: `${configuredBase}${API_PREFIX}`
+			: `${siteBase}${API_PREFIX}`;
+
+		const res = await fetch(`${apiBase}/v1/projects`);
 		if (!res.ok) {
 			console.error("Failed to fetch analytics projects:", res.status, res.statusText);
 			return [];
