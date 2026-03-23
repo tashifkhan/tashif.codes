@@ -13,8 +13,8 @@
 			"destination": "https://eu-assets.i.posthog.com/static/:path*"
 		},
 		{
-			"source": "/ph/f/:path*",
-			"destination": "https://eu.i.posthog.com/i/:path*"
+			"source": "/ph/:path*/",
+			"destination": "https://eu.i.posthog.com/:path*"
 		},
 		{
 			"source": "/ph/:path*",
