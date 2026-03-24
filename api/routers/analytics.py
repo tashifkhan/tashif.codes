@@ -8,7 +8,6 @@ from core.config import list_available_projects
 from core.dependencies import get_project
 from models import AllStats, Metadata, ProjectInfo, ProjectListResponse
 from services import (
-    fetch_timeseries,
     fetch_timeseries_batched,
     fetch_all_breakdowns,
     fetch_cf_timeseries,
@@ -96,12 +95,7 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
         )
 
     elif ph_id:
-        ts_task = (
-            fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=90)
-            if effective_days == 0
-            else fetch_timeseries(ph_id, query_days)
-        )
-
+        ts_task = fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=30)
         breakdowns_task = fetch_all_breakdowns(ph_id, query_days)
 
         live_timeseries, live_breakdowns = await asyncio.gather(
@@ -109,7 +103,7 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
         )
 
         if query_days > POSTHOG_FALLBACK_DAYS and not live_timeseries:
-            ts_task = fetch_timeseries(ph_id, POSTHOG_FALLBACK_DAYS)
+            ts_task = fetch_timeseries_batched(ph_id, total_days=POSTHOG_FALLBACK_DAYS, batch_days=30)
             breakdowns_task = fetch_all_breakdowns(ph_id, POSTHOG_FALLBACK_DAYS)
             live_timeseries, live_breakdowns = await asyncio.gather(
                 ts_task, breakdowns_task
@@ -161,14 +155,10 @@ async def _get_project_timeseries_internal(project: dict, days: int) -> dict:
         live_ts = await fetch_cf_timeseries(cf_site_tag, query_days)
 
     elif ph_id:
-        live_ts = (
-            await fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=90)
-            if effective_days == 0
-            else await fetch_timeseries(ph_id, query_days)
-        )
+        live_ts = await fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=30)
 
         if query_days > POSTHOG_FALLBACK_DAYS and not live_ts:
-            live_ts = await fetch_timeseries(ph_id, POSTHOG_FALLBACK_DAYS)
+            live_ts = await fetch_timeseries_batched(ph_id, total_days=POSTHOG_FALLBACK_DAYS, batch_days=30)
 
     merged = merge_timeseries(vercel_ts, live_ts)
 
