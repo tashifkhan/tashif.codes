@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Query
+from fastapi.responses import Response
 
 from core.config import list_available_projects
 from core.dependencies import get_project
@@ -18,20 +19,33 @@ from services import (
     merge_stats,
     filter_timeseries_by_date,
     filter_stats_by_date,
+    cached,
 )
 
 router = APIRouter(prefix="/v1", tags=["analytics"])
 
 POSTHOG_FALLBACK_DAYS = 90
 CLOUDFLARE_EFFECTIVE_LOOKBACK_DAYS = 184
+IN_PROCESS_CACHE_TTL = 300  # 5 minutes
+
+
+def _cache_control(days: int) -> str:
+    """Return Cache-Control header value based on data freshness needs."""
+    if days == 0:
+        return "public, s-maxage=14400, stale-while-revalidate=3600"
+    elif days <= 7:
+        return "public, s-maxage=1800, stale-while-revalidate=900"
+    else:
+        return "public, s-maxage=3600, stale-while-revalidate=1800"
 
 
 @router.get("/projects", response_model=ProjectListResponse)
-async def get_projects():
+async def get_projects(response: Response):
     """
     List all projects available on this dashboard.
     Returns a list of projects with their slugs and display names.
     """
+    response.headers["Cache-Control"] = "public, s-maxage=86400, stale-while-revalidate=3600"
     projects = list_available_projects()
     return ProjectListResponse(
         projects=[ProjectInfo(**p) for p in projects], total=len(projects)
@@ -72,7 +86,7 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
     live_timeseries = []
     live_breakdowns = {}
 
-    query_days = effective_days if effective_days > 0 else 3650
+    query_days = effective_days if effective_days > 0 else 912
 
     if analytics_provider == "cloudflare" and cf_site_tag:
         ts_task = fetch_cf_timeseries(cf_site_tag, query_days)
@@ -141,7 +155,7 @@ async def _get_project_timeseries_internal(project: dict, days: int) -> dict:
     )
 
     live_ts = []
-    query_days = effective_days if effective_days > 0 else 3650
+    query_days = effective_days if effective_days > 0 else 912
 
     if analytics_provider == "cloudflare" and cf_site_tag:
         live_ts = await fetch_cf_timeseries(cf_site_tag, query_days)
@@ -163,6 +177,7 @@ async def _get_project_timeseries_internal(project: dict, days: int) -> dict:
 
 @router.get("/stats")
 async def get_project_stats(
+    response: Response,
     slugs: list[str] = Query(..., description="List of project slugs to fetch"),
     days: int = Query(
         default=30,
@@ -174,11 +189,16 @@ async def get_project_stats(
     """
     Get unified analytics stats for one or multiple projects concurrently.
     """
+    response.headers["Cache-Control"] = _cache_control(days)
 
     async def fetch_one(slug: str):
         try:
             project = get_project(slug)
-            stats = await _get_project_stats_internal(project=project, days=days)
+            stats = await cached(
+                f"stats:{slug}:{days}",
+                IN_PROCESS_CACHE_TTL,
+                lambda p=project: _get_project_stats_internal(project=p, days=days),
+            )
             return {
                 "slug": slug,
                 "data": stats,
@@ -199,6 +219,7 @@ async def get_project_stats(
 
 @router.get("/timeseries")
 async def get_project_timeseries(
+    response: Response,
     slugs: list[str] = Query(..., description="List of project slugs to fetch"),
     days: int = Query(
         default=30,
@@ -210,11 +231,16 @@ async def get_project_timeseries(
     """
     Get only timeseries data for one or multiple projects concurrently.
     """
+    response.headers["Cache-Control"] = _cache_control(days)
 
     async def fetch_one(slug: str):
         try:
             project = get_project(slug)
-            ts = await _get_project_timeseries_internal(project=project, days=days)
+            ts = await cached(
+                f"timeseries:{slug}:{days}",
+                IN_PROCESS_CACHE_TTL,
+                lambda p=project: _get_project_timeseries_internal(project=p, days=days),
+            )
             return {
                 "slug": slug,
                 "data": ts,

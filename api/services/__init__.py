@@ -18,6 +18,7 @@ from .vercel import (
     filter_stats_by_date,
 )
 from .merger import merge_stat_lists, merge_timeseries, merge_stats
+from .cache import cached
 
 __all__ = [
     "query_posthog",
@@ -34,4 +35,5 @@ __all__ = [
     "merge_stat_lists",
     "merge_timeseries",
     "merge_stats",
+    "cached",
 ]
