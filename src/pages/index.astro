@@ -991,24 +991,6 @@ const socials = [
 	const haptics = new WebHaptics();
 
 	// Tab switching logic
-	const tabs = {
-		projects: document.getElementById("projects-tab"),
-		resume: document.getElementById("resume-tab"),
-		blog: document.getElementById("blog-tab"),
-		github: document.getElementById("github-tab"),
-		leetcode: document.getElementById("leetcode-tab"),
-		community: document.getElementById("community-tab"),
-	};
-
-	const sections = {
-		projects: document.getElementById("projects-section"),
-		resume: document.getElementById("resume-section"),
-		blog: document.getElementById("blog-section"),
-		github: document.getElementById("github-section"),
-		leetcode: document.getElementById("leetcode-section"),
-		community: document.getElementById("community-section"),
-	};
-
 	type TabId =
 		| "projects"
 		| "blog"
@@ -1016,6 +998,25 @@ const socials = [
 		| "github"
 		| "resume"
 		| "community";
+
+	const tabIds: TabId[] = ["projects", "blog", "leetcode", "github", "resume", "community"];
+	// Alias "resume" tab element as "resume-tab" in the DOM
+	const tabIdToAlias: Record<TabId, string> = {
+		projects: "projects", resume: "resume", blog: "blog",
+		github: "github", leetcode: "leetcode", community: "community",
+	};
+
+	function getTabs() {
+		return Object.fromEntries(
+			tabIds.map((id) => [id, document.getElementById(`${tabIdToAlias[id]}-tab`)])
+		) as Record<TabId, HTMLElement | null>;
+	}
+
+	function getSections() {
+		return Object.fromEntries(
+			tabIds.map((id) => [id, document.getElementById(`${tabIdToAlias[id]}-section`)])
+		) as Record<TabId, HTMLElement | null>;
+	}
 
 	function getTabFromQuery(): TabId {
 		const params = new URLSearchParams(window.location.search);
@@ -1039,6 +1040,9 @@ const socials = [
 	}
 
 	function activateTab(tabId: TabId) {
+		const tabs = getTabs();
+		const sections = getSections();
+
 		Object.entries(tabs).forEach(([key, tab]) => {
 			if (!tab) return;
 			tab.setAttribute("data-state", "inactive");
@@ -1060,12 +1064,14 @@ const socials = [
 		}
 	}
 
-	tabs.projects?.addEventListener("click", () => { haptics.trigger("selection"); activateTab("projects"); });
-	tabs.blog?.addEventListener("click", () => { haptics.trigger("selection"); activateTab("blog"); });
-	tabs.leetcode?.addEventListener("click", () => { haptics.trigger("selection"); activateTab("leetcode"); });
-	tabs.github?.addEventListener("click", () => { haptics.trigger("selection"); activateTab("github"); });
-	tabs.resume?.addEventListener("click", () => { haptics.trigger("selection"); activateTab("resume"); });
-	tabs.community?.addEventListener("click", () => { haptics.trigger("selection"); activateTab("community"); });
+	function setupTabClickHandlers() {
+		const tabs = getTabs();
+		tabIds.forEach((id) => {
+			tabs[id]?.addEventListener("click", () => { haptics.trigger("selection"); activateTab(id); });
+		});
+	}
+
+	setupTabClickHandlers();
 
 	// Enhanced search functions
 	function fuzzySearch(text: string, query: string): boolean {
@@ -1393,6 +1399,9 @@ const socials = [
 		document.querySelectorAll('[data-haptic-social]').forEach(el =>
 			el.addEventListener('click', () => haptics.trigger('medium'))
 		);
+
+		// Re-attach tab click handlers after client-side navigation (Astro view transitions)
+		setupTabClickHandlers();
 
 		// Support deep-link tabs like /?blog, /?about, /?github, /?leetcode, /?connect
 		activateTab(getTabFromQuery());
