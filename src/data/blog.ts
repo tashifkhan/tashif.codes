@@ -96,6 +96,14 @@ export async function fetchComments(slug: string): Promise<BlogComment[]> {
 	return data.comments;
 }
 
+/** Fetch all posts with full content, metrics, and comments (bulk). */
+export async function fetchAllPostsFull(): Promise<FullBlogPost[]> {
+	const res = await fetch(`${BLOG_API_BASE}/posts/full`);
+	if (!res.ok) throw new Error(`Failed to fetch all posts: ${res.status}`);
+	const data = await res.json();
+	return data.posts ?? [];
+}
+
 /** Post a new top-level comment or reply. */
 export async function postComment(
 	slug: string,

@@ -1,5 +1,5 @@
 ---
-import { Calendar, Clock, ArrowRight } from "lucide-react";
+import { Calendar, Clock, ArrowRight, Eye, Heart, MessageCircle } from "lucide-react";
 import {
 	Card,
 	CardContent,
@@ -44,6 +44,7 @@ const wordCountText = wordCount
 			class="block h-full group focus:outline-none"
 			data-blog-card
 			data-blog-tags={post.tags?.join(",")}
+			data-blog-slug={post.slug}
 			data-haptic-blog
 		>
 			<Card
@@ -82,14 +83,31 @@ const wordCountText = wordCount
 								</p>
 							)}
 						</div>
-						<div class="mt-auto pt-4 flex items-center gap-4 text-sm text-muted-foreground">
+						<div class="mt-auto pt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
 							<span class="flex items-center gap-1.5">
 								<Calendar className="w-4 h-4" />
 								{dateText}
 							</span>
-							<span class="flex items-center gap-1.5">
+							<span class="flex items-center gap-1.5" data-reading-time>
 								<Clock className="w-4 h-4" />
-								{readTime} min read
+								<span>{readTime}</span> min read
+							</span>
+							<span
+								class="blog-metrics hidden items-center gap-3 text-xs font-mono"
+								data-blog-slug={post.slug}
+							>
+								<span class="flex items-center gap-1">
+									<Eye className="w-3.5 h-3.5" />
+									<span data-metric="views">—</span>
+								</span>
+								<span class="flex items-center gap-1">
+									<Heart className="w-3.5 h-3.5" />
+									<span data-metric="likes">—</span>
+								</span>
+								<span class="flex items-center gap-1">
+									<MessageCircle className="w-3.5 h-3.5" />
+									<span data-metric="comments">—</span>
+								</span>
 							</span>
 							<span class="ml-auto flex items-center gap-1.5 text-primary font-medium group-hover:translate-x-1 transition-transform">
 								Read Article <ArrowRight className="w-4 h-4" />
@@ -103,6 +121,7 @@ const wordCountText = wordCount
 		<a
 			href={url}
 			class="block h-full group focus:outline-none"
+			data-blog-slug={post.slug}
 			data-haptic-blog
 		>
 			<Card
@@ -138,19 +157,38 @@ const wordCountText = wordCount
 						</p>
 					)}
 				</CardContent>
-				<CardFooter className="p-5 pt-2 text-xs text-muted-foreground flex items-center justify-between border-t border-border/30 mt-auto bg-muted/20">
-					<div class="flex items-center gap-3">
-						<span class="flex items-center gap-1.5">
-							<Calendar className="w-3.5 h-3.5" />
-							{dateText}
-						</span>
-						<span class="flex items-center gap-1.5">
-							<Clock className="w-3.5 h-3.5" />
-							{readTime}m
+				<CardFooter className="p-5 pt-2 text-xs text-muted-foreground flex flex-col gap-2 border-t border-border/30 mt-auto bg-muted/20">
+					<div class="flex items-center justify-between w-full">
+						<div class="flex items-center gap-3">
+							<span class="flex items-center gap-1.5">
+								<Calendar className="w-3.5 h-3.5" />
+								{dateText}
+							</span>
+							<span class="flex items-center gap-1.5" data-reading-time>
+								<Clock className="w-3.5 h-3.5" />
+								<span>{readTime}</span>m
+							</span>
+						</div>
+						<span class="flex items-center gap-1.5 text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-2 group-hover:translate-x-0">
+							Read <ArrowRight className="w-3 h-3" />
 						</span>
 					</div>
-					<span class="flex items-center gap-1.5 text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-2 group-hover:translate-x-0">
-						Read <ArrowRight className="w-3 h-3" />
+					<span
+						class="blog-metrics hidden items-center gap-3 font-mono w-full"
+						data-blog-slug={post.slug}
+					>
+						<span class="flex items-center gap-1">
+							<Eye className="w-3 h-3" />
+							<span data-metric="views">—</span>
+						</span>
+						<span class="flex items-center gap-1">
+							<Heart className="w-3 h-3" />
+							<span data-metric="likes">—</span>
+						</span>
+						<span class="flex items-center gap-1">
+							<MessageCircle className="w-3 h-3" />
+							<span data-metric="comments">—</span>
+						</span>
 					</span>
 				</CardFooter>
 			</Card>

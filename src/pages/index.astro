@@ -477,6 +477,12 @@ const socials = [
 							<Badge variant="secondary" className="text-xs">
 								{avgReadingMinutes} min read
 							</Badge>
+							<Badge id="blog-total-views-badge" variant="outline" className="text-xs hidden">
+								<span id="blog-total-views">0</span> views
+							</Badge>
+							<Badge id="blog-total-likes-badge" variant="outline" className="text-xs hidden">
+								<span id="blog-total-likes">0</span> likes
+							</Badge>
 						</div>
 					</CardContent>
 				</Card>
@@ -1073,6 +1079,70 @@ const socials = [
 
 	setupTabClickHandlers();
 
+	// ── Blog metrics loading ───────────────────────────────────────────────────
+	const BLOG_API = "https://blog.tashif.codes/api";
+	let blogMetricsLoaded = false;
+
+	async function loadBlogMetrics() {
+		if (blogMetricsLoaded) return;
+		try {
+			const res = await fetch(`${BLOG_API}/posts/full`);
+			if (!res.ok) return;
+			const data = await res.json();
+			const posts: Array<{ slug: string; metrics: { views: number; likes: number; commentsCount: number } }> = data.posts ?? [];
+
+			let totalViews = 0;
+			let totalLikes = 0;
+
+			posts.forEach((post) => {
+				const { slug, metrics, markdown } = post as any;
+				if (!metrics) return;
+				totalViews += metrics.views ?? 0;
+				totalLikes += metrics.likes ?? 0;
+
+				// Calculate reading time from full markdown (200 wpm)
+				if (markdown) {
+					const words = markdown.trim().split(/\s+/).filter(Boolean).length;
+					const mins = Math.max(1, Math.round(words / 200));
+					document.querySelectorAll<HTMLElement>(`[data-blog-slug="${slug}"] [data-reading-time] span`).forEach((el) => {
+						el.textContent = String(mins);
+					});
+				}
+
+				// Update metric spans inside each card with this slug
+				document.querySelectorAll<HTMLElement>(`[data-blog-slug="${slug}"] .blog-metrics`).forEach((el) => {
+					const viewsEl = el.querySelector<HTMLElement>('[data-metric="views"]');
+					const likesEl = el.querySelector<HTMLElement>('[data-metric="likes"]');
+					const commentsEl = el.querySelector<HTMLElement>('[data-metric="comments"]');
+					if (viewsEl) viewsEl.textContent = (metrics.views ?? 0).toLocaleString();
+					if (likesEl) likesEl.textContent = (metrics.likes ?? 0).toLocaleString();
+					if (commentsEl) commentsEl.textContent = (metrics.commentsCount ?? 0).toLocaleString();
+					el.classList.remove("hidden");
+					el.classList.add("flex");
+				});
+			});
+
+			// Update header totals
+			const viewsEl = document.getElementById("blog-total-views");
+			const likesEl = document.getElementById("blog-total-likes");
+			const viewsBadge = document.getElementById("blog-total-views-badge");
+			const likesBadge = document.getElementById("blog-total-likes-badge");
+			if (viewsEl) viewsEl.textContent = totalViews.toLocaleString();
+			if (likesEl) likesEl.textContent = totalLikes.toLocaleString();
+			viewsBadge?.classList.remove("hidden");
+			likesBadge?.classList.remove("hidden");
+
+			blogMetricsLoaded = true;
+		} catch (_) {}
+	}
+
+	// Hook into blog tab activation
+	document.getElementById("blog-tab")?.addEventListener("click", loadBlogMetrics);
+	// Also load if blog section is visible on page init
+	if (!document.getElementById("blog-section")?.classList.contains("hidden")) {
+		loadBlogMetrics();
+	}
+
 	// Enhanced search functions
 	function fuzzySearch(text: string, query: string): boolean {
 		if (!query.trim()) return true;
@@ -1310,6 +1380,7 @@ const socials = [
 
 	// Initialize filters and handle link clicks
 	document.addEventListener("astro:page-load", () => {
+		blogMetricsLoaded = false;
 		const theme = localStorage.getItem("theme") || "dark";
 		document.documentElement.classList.toggle("dark", theme === "dark");
 
@@ -1404,7 +1475,12 @@ const socials = [
 		setupTabClickHandlers();
 
 		// Support deep-link tabs like /?blog, /?about, /?github, /?leetcode, /?connect
-		activateTab(getTabFromQuery());
+		const initialTab = getTabFromQuery();
+		activateTab(initialTab);
+		if (initialTab === "blog") loadBlogMetrics();
+
+		// Re-attach blog metrics click handler after navigation
+		document.getElementById("blog-tab")?.addEventListener("click", loadBlogMetrics);
 
 		// Scroll-to-top button visibility
 		const scrollBtn = document.getElementById("scroll-top-btn");
