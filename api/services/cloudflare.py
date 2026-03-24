@@ -4,6 +4,7 @@ Cloudflare Web Analytics Service Layer
 Handles all interactions with Cloudflare's GraphQL API for RUM (Real User Monitoring) data.
 """
 
+import asyncio
 import httpx
 from .client import http_client
 from core.config import settings
@@ -13,9 +14,9 @@ from datetime import datetime, timezone, timedelta
 
 # Cloudflare API Configuration
 CF_API_URL = "https://api.cloudflare.com/client/v4/graphql"
-CF_MAX_QUERY_DAYS = 90
+CF_MAX_QUERY_DAYS = 90       # Cloudflare hard limit per query
+CF_PARALLEL_WINDOW_DAYS = 30  # Chunk size for parallel fetching
 CF_MAX_LOOKBACK_DAYS = 184
-CF_EMPTY_WINDOW_STOP_THRESHOLD = 3
 
 
 def _as_dict(value: object) -> dict:
@@ -309,6 +310,7 @@ async def query_cloudflare(query: str, variables: dict) -> dict:
 async def fetch_cf_timeseries(site_tag: str, days: int = 30) -> list[TimeseriesEntry]:
     """
     Fetch timeseries pageview/visit data from Cloudflare Web Analytics.
+    Uses parallel 30-day windows for all ranges to stay within the 10s function timeout.
 
     Args:
         site_tag: The Cloudflare site tag
@@ -322,32 +324,20 @@ async def fetch_cf_timeseries(site_tag: str, days: int = 30) -> list[TimeseriesE
 
     effective_days = min(days, CF_MAX_LOOKBACK_DAYS)
 
-    if effective_days <= CF_MAX_QUERY_DAYS:
+    if effective_days <= CF_PARALLEL_WINDOW_DAYS:
         now = datetime.now(timezone.utc)
         from_date = (now - timedelta(days=effective_days)).isoformat()
         to_date = now.isoformat()
         return await _fetch_cf_timeseries_range(site_tag, from_date, to_date)
 
-    windowed_entries: list[TimeseriesEntry] = []
-    empty_windows = 0
-    windows = _iter_time_windows(effective_days, CF_MAX_QUERY_DAYS)
+    windows = _iter_time_windows(effective_days, CF_PARALLEL_WINDOW_DAYS)
+    results = await asyncio.gather(*(
+        _fetch_cf_timeseries_range(site_tag, ws.isoformat(), we.isoformat())
+        for ws, we in windows
+    ))
 
-    for window_start, window_end in windows:
-        window_result = await _fetch_cf_timeseries_range(
-            site_tag,
-            window_start.isoformat(),
-            window_end.isoformat(),
-        )
-
-        if window_result:
-            empty_windows = 0
-            windowed_entries.extend(window_result)
-        else:
-            empty_windows += 1
-            if empty_windows >= CF_EMPTY_WINDOW_STOP_THRESHOLD:
-                break
-
-    return _merge_timeseries_entries(windowed_entries)
+    all_entries = [entry for chunk in results for entry in chunk]
+    return _merge_timeseries_entries(all_entries)
 
 
 async def fetch_cf_breakdown(
@@ -370,7 +360,7 @@ async def fetch_cf_breakdown(
 
     effective_days = min(days, CF_MAX_LOOKBACK_DAYS)
 
-    if effective_days <= CF_MAX_QUERY_DAYS:
+    if effective_days <= CF_PARALLEL_WINDOW_DAYS:
         now = datetime.now(timezone.utc)
         from_date = (now - timedelta(days=effective_days)).isoformat()
         to_date = now.isoformat()
@@ -379,28 +369,16 @@ async def fetch_cf_breakdown(
         )
 
     per_window_limit = max(limit * 5, 100)
-    windowed_entries: list[StatEntry] = []
-    empty_windows = 0
-    windows = _iter_time_windows(effective_days, CF_MAX_QUERY_DAYS)
-
-    for window_start, window_end in windows:
-        window_result = await _fetch_cf_breakdown_range(
-            site_tag,
-            dimension,
-            window_start.isoformat(),
-            window_end.isoformat(),
-            per_window_limit,
+    windows = _iter_time_windows(effective_days, CF_PARALLEL_WINDOW_DAYS)
+    results = await asyncio.gather(*(
+        _fetch_cf_breakdown_range(
+            site_tag, dimension, ws.isoformat(), we.isoformat(), per_window_limit
         )
+        for ws, we in windows
+    ))
 
-        if window_result:
-            empty_windows = 0
-            windowed_entries.extend(window_result)
-        else:
-            empty_windows += 1
-            if empty_windows >= CF_EMPTY_WINDOW_STOP_THRESHOLD:
-                break
-
-    return _merge_breakdown_entries(windowed_entries, limit)
+    all_entries = [entry for chunk in results for entry in chunk]
+    return _merge_breakdown_entries(all_entries, limit)
 
 
 async def fetch_cf_all_breakdowns(
@@ -416,8 +394,6 @@ async def fetch_cf_all_breakdowns(
     Returns:
         Dictionary mapping field names to lists of StatEntry objects
     """
-    import asyncio
-
     # Map our standard field names to Cloudflare dimensions
     dimension_map = {
         "path": "requestPath",

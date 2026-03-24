@@ -10,7 +10,7 @@ import httpx
 # The timeouts and limits can be tuned as needed.
 http_client = httpx.AsyncClient(
     limits=httpx.Limits(max_keepalive_connections=50, max_connections=100),
-    timeout=httpx.Timeout(20.0),
+    timeout=httpx.Timeout(8.0),  # Vercel Hobby hard limit is 10s; 8s leaves headroom for Python overhead
 )
 
 async def get_client() -> httpx.AsyncClient:
