@@ -1308,17 +1308,13 @@ const socials = [
 		const name = (e as CustomEvent).detail?.name as string | undefined;
 		if (!name) return;
 		activateTab("projects");
-		// store temporarily for ProjectFilters hydration listener
+		// store temporarily in case ProjectFilters hasn't mounted yet
 		localStorage.setItem("pending_star_list_select", name);
-		// Attempt to update select if already mounted
+		// Dispatch project-list-select for already-mounted ProjectFilters
 		setTimeout(() => {
-			const select = document.querySelector(
-				"[data-project-list-select]"
-			) as HTMLSelectElement | null;
-			if (select) {
-				select.value = name;
-				select.dispatchEvent(new Event("change", { bubbles: true }));
-			}
+			document.dispatchEvent(
+				new CustomEvent("project-list-select", { detail: { list: name } })
+			);
 		}, 80);
 	});
 
