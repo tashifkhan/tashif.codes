@@ -164,7 +164,7 @@ const socials = [
 										variant="ghost"
 										size="icon"
 										asChild
-										className="rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+										clas    sName="rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
 									>
 										<a
 											href={social.link}
@@ -431,7 +431,7 @@ const socials = [
 								data-project-item-card
 								data-has-live-link={Boolean(project.live_website_url)}
 							>
-								<ProjectCard 
+								<ProjectCard
 									project={project}
 									hasAnalytics={hasAnalytics(project.slug, analyticsProjects)}
 									analyticsSlug={getAnalyticsSlug(project.slug)}
