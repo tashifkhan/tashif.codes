@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, ExternalLink, ListFilter } from "lucide-react";
+import { Search, ExternalLink, Tag, ListFilter } from "lucide-react";
 import {
 	Select,
 	SelectTrigger,
@@ -25,6 +25,7 @@ interface ProjectFiltersProps {
 export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [showLiveOnly, setShowLiveOnly] = useState(false);
+	const [showReleasesOnly, setShowReleasesOnly] = useState(false);
 	const [selectedList, setSelectedList] = useState<string>("all-projects");
 	const [lists, setLists] = useState<StarListOption[]>([]);
 	const { trigger } = useWebHaptics();
@@ -52,7 +53,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 			if (!lists.some((l) => l.key === listName)) return; // ensure exists
 			setSelectedList(listName);
 			const searchEvent = new CustomEvent("project-search", {
-				detail: { term: searchTerm, showLiveOnly, list: listName },
+				detail: { term: searchTerm, showLiveOnly, showReleasesOnly, list: listName },
 			});
 			document.dispatchEvent(searchEvent);
 		}
@@ -76,7 +77,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 		// Small delay to ensure component is fully hydrated
 		const timer = setTimeout(() => {
 			const searchEvent = new CustomEvent("project-search", {
-				detail: { term: searchTerm, showLiveOnly, list: selectedList },
+				detail: { term: searchTerm, showLiveOnly, showReleasesOnly, list: selectedList },
 			});
 			document.dispatchEvent(searchEvent);
 		}, 100);
@@ -87,10 +88,8 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 	const handleSearch = (value: string) => {
 		trigger("light");
 		setSearchTerm(value);
-
-		// Dispatch custom event with current state
 		const searchEvent = new CustomEvent("project-search", {
-			detail: { term: value, showLiveOnly, list: selectedList },
+			detail: { term: value, showLiveOnly, showReleasesOnly, list: selectedList },
 		});
 		document.dispatchEvent(searchEvent);
 	};
@@ -99,12 +98,26 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 		trigger("light");
 		const newShowLiveOnly = !showLiveOnly;
 		setShowLiveOnly(newShowLiveOnly);
-
-		// Dispatch custom event with both search term and live filter
 		const searchEvent = new CustomEvent("project-search", {
 			detail: {
 				term: searchTerm,
 				showLiveOnly: newShowLiveOnly,
+				showReleasesOnly,
+				list: selectedList,
+			},
+		});
+		document.dispatchEvent(searchEvent);
+	};
+
+	const handleReleasesFilter = () => {
+		trigger("light");
+		const newShowReleasesOnly = !showReleasesOnly;
+		setShowReleasesOnly(newShowReleasesOnly);
+		const searchEvent = new CustomEvent("project-search", {
+			detail: {
+				term: searchTerm,
+				showLiveOnly,
+				showReleasesOnly: newShowReleasesOnly,
 				list: selectedList,
 			},
 		});
@@ -115,7 +128,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 		trigger("selection");
 		setSelectedList(value);
 		const searchEvent = new CustomEvent("project-search", {
-			detail: { term: searchTerm, showLiveOnly, list: value },
+			detail: { term: searchTerm, showLiveOnly, showReleasesOnly, list: value },
 		});
 		document.dispatchEvent(searchEvent);
 	};
@@ -162,6 +175,16 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 					>
 						<ExternalLink size={14} />
 						<span>Live Only</span>
+					</Button>
+					<Button
+						variant={showReleasesOnly ? "default" : "outline"}
+						onClick={handleReleasesFilter}
+						className={`gap-2 whitespace-nowrap ${
+							!showReleasesOnly ? "bg-background/50 backdrop-blur-sm" : ""
+						}`}
+					>
+						<Tag size={14} />
+						<span>Releases</span>
 					</Button>
 				</div>
 			</div>

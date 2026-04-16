@@ -4,6 +4,28 @@ import { slugify } from "../utils/slugify";
 import fs from 'fs';
 import path from 'path';
 
+export interface ReleaseAsset {
+    name: string;
+    download_url: string;
+    size: number;
+    download_count: number;
+    content_type: string | null;
+    updated_at: string | null;
+}
+
+export interface RepoRelease {
+    id: number;
+    tag_name: string;
+    name: string | null;
+    body: string | null;
+    url: string;
+    draft: boolean;
+    prerelease: boolean;
+    created_at: string | null;
+    published_at: string | null;
+    assets: ReleaseAsset[];
+}
+
 export interface Project {
 	title: string;
 	description: string;
@@ -20,6 +42,7 @@ export interface Project {
     parentRepo?: string;
     isFork?: boolean;
     contributors?: Contributor[];
+    releases?: RepoRelease[];
 }
 
 export interface Contributor {
@@ -155,7 +178,8 @@ async function fetchAllProjects(): Promise<Project[]> {
             docs_slug: getProjectEntry(projectSlug),
             parentRepo,
             isFork: project.fork,
-            contributors: project.contributors
+            contributors: project.contributors,
+            releases: project.releases || [],
 		};
 	});
 
