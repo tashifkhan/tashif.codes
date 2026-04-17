@@ -5,6 +5,17 @@
 			"destination": "https://u.tashif.codes/:path*"
 		},
 		{
+			"source": "/api/:path*",
+			"has": [
+				{
+					"type": "header",
+					"key": "referer",
+					"value": "https://tashif.codes/u.*"
+				}
+			],
+			"destination": "https://u.tashif.codes/api/:path*"
+		},
+		{
 			"source": "/static/:path*",
 			"has": [
 				{
