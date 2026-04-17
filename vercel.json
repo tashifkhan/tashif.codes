@@ -1,14 +1,6 @@
 {
 	"rewrites": [
 		{
-			"source": "/u",
-			"destination": "https://u.tashif.codes/"
-		},
-		{
-			"source": "/u/",
-			"destination": "https://u.tashif.codes/"
-		},
-		{
 			"source": "/u/:path*",
 			"destination": "https://u.tashif.codes/:path*"
 		},
@@ -18,7 +10,7 @@
 				{
 					"type": "header",
 					"key": "referer",
-					"value": "https://tashif\.codes/u(/.*)?"
+					"value": "https://tashif.codes/u.*"
 				}
 			],
 			"destination": "https://u.tashif.codes/static/:path*"
