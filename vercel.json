@@ -1,12 +1,19 @@
 {
 	"rewrites": [
 		{
-			"source": "/u",
-			"destination": "https://u.tashif.codes/"
-		},
-		{
 			"source": "/u/:path*",
 			"destination": "https://u.tashif.codes/:path*"
+		},
+		{
+			"source": "/static/:path*",
+			"has": [
+				{
+					"type": "header",
+					"key": "referer",
+					"value": "https://tashif\.codes/u(/.*)?"
+				}
+			],
+			"destination": "https://u.tashif.codes/static/:path*"
 		},
 		{
 			"source": "/projects/stats/api",
