@@ -1,6 +1,14 @@
 {
 	"rewrites": [
 		{
+			"source": "/u",
+			"destination": "https://u.tashif.codes/"
+		},
+		{
+			"source": "/u/",
+			"destination": "https://u.tashif.codes/"
+		},
+		{
 			"source": "/u/:path*",
 			"destination": "https://u.tashif.codes/:path*"
 		},
