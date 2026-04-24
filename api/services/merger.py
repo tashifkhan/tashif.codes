@@ -13,6 +13,16 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils import get_country_display
 
 
+_MAC_VARIANTS = {"mac", "macos", "mac os x", "macos x", "os x"}
+
+
+def _normalize_os_name(key: str) -> str:
+    """Normalize OS name variants so mac/macos/macos x all collapse to 'Mac'."""
+    if key and key.lower() in _MAC_VARIANTS:
+        return "Mac"
+    return key
+
+
 def merge_stat_lists(
     list_a: list[StatEntry], list_b: list[StatEntry]
 ) -> list[StatEntry]:
@@ -140,7 +150,8 @@ def merge_stats(
             vercel_stats.referrer, posthog_stats.get("referrer", [])
         ),
         os_name=merge_stat_lists(
-            vercel_stats.os_name, posthog_stats.get("os_name", [])
+            [StatEntry(key=_normalize_os_name(e.key), pageviews=e.pageviews, visitors=e.visitors) for e in vercel_stats.os_name],
+            [StatEntry(key=_normalize_os_name(e.key), pageviews=e.pageviews, visitors=e.visitors) for e in posthog_stats.get("os_name", [])],
         ),
         country=formatted_countries,
     )
