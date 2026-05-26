@@ -27,3 +27,9 @@ pnpm-debug.log*
 
 .vercel/
 .vercel
+
+
+.claude/
+.opencode/
+.codex/
+.antigravity
