@@ -3,13 +3,21 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Github } from "lucide-react";
 
 interface ProfileDropdownProps {
 	isMobile?: boolean;
 }
+
+const GITHUB_PROFILES = [
+	{ handle: "tashifkhan", url: "https://github.com/tashifkhan" },
+	{ handle: "tashifkhansitg", url: "https://github.com/tashifkhansitg" },
+	{ handle: "tashifkhanSR", url: "https://github.com/tashifkhanSR" },
+];
+
 
 export default function ProfileDropdown({ isMobile }: ProfileDropdownProps) {
 	return (
@@ -34,39 +42,31 @@ export default function ProfileDropdown({ isMobile }: ProfileDropdownProps) {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				align="end"
-				className="w-48 bg-card/95 dark:bg-card/95 backdrop-blur-md"
+				className="w-52 bg-card/95 dark:bg-card/95 backdrop-blur-md"
 			>
-				<DropdownMenuItem
-					asChild
-					className="cursor-pointer font-medium hover:bg-muted dark:hover:bg-secondary focus:bg-muted dark:focus:bg-secondary"
-				>
-					<a
-						href="https://github.com/tashifkhan"
-						target="_blank"
-						rel="noopener noreferrer"
-						data-haptic-external="true"
-						className="w-full flex items-center justify-between"
+				<DropdownMenuLabel className="flex items-center gap-1.5 text-xs text-muted-foreground font-normal py-1.5">
+					<Github size={12} /> GitHub
+				</DropdownMenuLabel>
+				{GITHUB_PROFILES.map(({ handle, url }) => (
+					<DropdownMenuItem
+						key={handle}
+						asChild
+						className="cursor-pointer font-medium hover:bg-muted dark:hover:bg-secondary focus:bg-muted dark:focus:bg-secondary"
 					>
-						tashifkhan
-						<ExternalLink size={14} className="opacity-50" />
-					</a>
-				</DropdownMenuItem>
-				<DropdownMenuItem
-					asChild
-					className="cursor-pointer font-medium hover:bg-muted dark:hover:bg-secondary focus:bg-muted dark:focus:bg-secondary"
-				>
-					<a
-						href="https://github.com/tashifkhansitg"
-						target="_blank"
-						rel="noopener noreferrer"
-						data-haptic-external="true"
-						className="w-full flex items-center justify-between"
-					>
-						tashifkhansitg
-						<ExternalLink size={14} className="opacity-50" />
-					</a>
-				</DropdownMenuItem>
-			</DropdownMenuContent>
+						<a
+							href={url}
+							target="_blank"
+							rel="noopener noreferrer"
+							data-haptic-external="true"
+							className="w-full flex items-center justify-between"
+						>
+							{handle}
+							<ExternalLink size={14} className="opacity-50" />
+						</a>
+					</DropdownMenuItem>
+				))}
+
+				</DropdownMenuContent>
 		</DropdownMenu>
 	);
 }
