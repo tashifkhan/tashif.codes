@@ -1,32 +1,6 @@
 ---
 import { InteractiveResume } from "./InteractiveResume";
-
-const experiences = [
-	{
-		company: "SITG France",
-		role: "Software Development Intern",
-		period: "Nov 2025 – Current",
-		color: "purple",
-		points: [
-			"Developed an AI-driven pipeline using <strong>Django</strong> and <strong>Python</strong> to automate hierarchical PDF-to-Markdown conversion and extract structured compliance statements from governing documents.",
-			"Implemented <strong>Kafka</strong> for real-time data streaming and <strong>Celery</strong> with <strong>Redis</strong> to manage asynchronous LLM workloads, ensuring non-blocking execution of high-latency document processing.",
-			"Integrated <strong>OpenSearch</strong> and <strong>PostgreSQL</strong> to build a semantic search engine, using custom logic to align conformance statements with regulatory standards and certificate scopes.",
-			"Developed a <strong>Next.js</strong> dashboard with <strong>Auth0</strong> to visualize compliance radar metrics analysis.",
-		],
-	},
-	{
-		company: "UNICLOUD",
-		role: "Software Development Intern",
-		period: "May 2025 – July 2025",
-		certificate: "https://drive.tashif.codes/s/RsaiDWGCEoXjt2K",
-		color: "blue",
-		points: [
-			'Engineered and deployed 3 critical <strong>React</strong> modules for a <a href="https://example.com/irctc-project" target="_blank" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">high-profile IRCTC project</a>, significantly enhancing vendor progress monitoring and data visualization capabilities.',
-			"Developed robust <strong>FastAPI</strong> REST APIs, securing data transactions with <strong>JWT authentication</strong> and <strong>PostgreSQL</strong>.",
-			"Automated and improved Database Migration Cron jobs to dispatch real-time Block Change Alerts to approvers via <strong>SMTP mail server</strong> and browser <strong>webpush notifications</strong>.",
-		],
-	},
-];
+import { experiences } from "../data/experiences";
 
 const projects = [
 	{
