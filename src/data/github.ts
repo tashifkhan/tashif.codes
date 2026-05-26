@@ -118,7 +118,7 @@ async function fetchExtraParentStars(): Promise<number> {
 }
 
 async function fetchGitHubStats(): Promise<GitHubStats> {
-	const USERNAMES = ['tashifkhan', 'tashifkhansitg'];
+	const USERNAMES = ['tashifkhan', 'tashifkhansitg', 'tashifkhanSR'];
 
 	try {
         // Start fetching extra stars in parallel (assumed to cover all mapped parents)
@@ -246,7 +246,7 @@ async function fetchGitHubStats(): Promise<GitHubStats> {
 }
 
 async function getViews(githubstats: GitHubStats): Promise<GitHubStats> {
-	const USERNAMES = ['tashifkhan', 'tashifkhansitg'];
+	const USERNAMES = ['tashifkhan', 'tashifkhansitg', 'tashifkhanSR'];
 	let totalViews = 0;
 
 	for (const username of USERNAMES) {
