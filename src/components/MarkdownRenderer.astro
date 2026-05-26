@@ -168,7 +168,19 @@ md.renderer.rules.fence = (tokens: any[], idx: number) => {
   const rawCode = tokens[idx].content;
   const escapedCode = md.utils.escapeHtml(rawCode);
 
-  if (lang === "mermaid") {
+  const MERMAID_STARTERS = [
+    "graph ", "graph\n", "flowchart ", "flowchart\n",
+    "sequencediagram", "classDiagram", "stateDiagram",
+    "erdiagram", "gantt", "pie", "gitgraph", "journey",
+    "mindmap", "timeline", "sankey", "quadrantchart",
+    "requirementdiagram", "c4context", "block-beta",
+    "xychart-beta", "packet-beta",
+  ];
+  const isMermaidLang = lang === "mermaid";
+  const trimmedLower = rawCode.trimStart().toLowerCase();
+  const isMermaidContent = MERMAID_STARTERS.some((kw) => trimmedLower.startsWith(kw.toLowerCase()));
+
+  if (isMermaidLang || isMermaidContent) {
     const normalizedMermaidCode = rawCode
       .replace(/\|\s*"([^"\n]+)"\s*\|/g, "|$1|")
       .trim();
@@ -532,6 +544,7 @@ if (githubBaseUrl) {
       },
       sequence: { useMaxWidth: false, diagramMarginX: 16, diagramMarginY: 16 },
       flowchart: { useMaxWidth: true },
+      er: { useMaxWidth: true, diagramPadding: 20 },
     });
     if (document.querySelectorAll(".mermaid").length > 0) {
       mermaid.run({ querySelector: ".mermaid" });
