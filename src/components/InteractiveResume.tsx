@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import type { ExperienceEntry } from "../data/experiences";
 import {
 	Github,
 	Linkedin,
@@ -24,14 +25,7 @@ import { useWebHaptics } from "web-haptics/react";
 
 // --- INTERFACES ---
 
-export interface Experience {
-	company: string;
-	role: string;
-	period: string;
-	color: string;
-	points: string[];
-	certificate?: string;
-}
+export type Experience = ExperienceEntry;
 
 export interface Project {
 	title: string;
@@ -72,6 +66,41 @@ interface InteractiveResumeProps {
 	education: Education[];
 	positions: Position[];
 	skillCategories: SkillCategory[];
+}
+
+// --- HELPERS ---
+
+function parsePeriodDuration(period: string): string {
+	const monthMap: Record<string, number> = {
+		jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
+		jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
+		january: 1, february: 2, march: 3, april: 4, june: 6,
+		july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+	};
+	const now = new Date();
+	const parts = period.split(/\s*[–-]\s*/);
+	if (parts.length < 2) return "";
+	const parseDate = (s: string): Date | null => {
+		const t = s.trim().toLowerCase();
+		if (t === "present" || t === "current") return now;
+		const tokens = t.split(/\s+/);
+		if (tokens.length >= 2) {
+			const month = monthMap[tokens[0]];
+			const year = parseInt(tokens[1]);
+			if (month && !isNaN(year)) return new Date(year, month - 1);
+		}
+		return null;
+	};
+	const start = parseDate(parts[0]);
+	const end = parseDate(parts[1]);
+	if (!start || !end) return "";
+	let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+	if (months < 1) months = 1;
+	const years = Math.floor(months / 12);
+	const rem = months % 12;
+	if (years === 0) return `${months} mo`;
+	if (rem === 0) return `${years} yr`;
+	return `${years} yr ${rem} mo`;
 }
 
 // --- COMPONENTS ---
@@ -380,59 +409,148 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 							})}
 						</div>
 
-						{/* Experience Timeline Style */}
+						{/* Experience Timeline */}
 						<SectionHeader id="experience" title="Experience" icon={Zap} />
 						<div className="relative border-l-2 border-border ml-3 md:ml-6 space-y-12 mb-20">
-							{experiences.map((exp, idx) => (
-								<div key={idx} className="relative pl-8 md:pl-12">
-									{/* Node */}
-									<div
-										className={cn(
-											"absolute -left-[9px] top-2 w-4 h-4 rounded-full bg-background border-4 border-muted-foreground/30",
-											`border-${exp.color}-500/50`, // Dynamic border color if possible, else standard
-										)}
-									></div>
+							{(() => {
+								const order: string[] = [];
+								const groups: Record<string, Experience[]> = {};
+								experiences.forEach((exp) => {
+									if (!groups[exp.company]) {
+										groups[exp.company] = [];
+										order.push(exp.company);
+									}
+									groups[exp.company].push(exp);
+								});
 
-									<div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2">
-										<h3 className="text-2xl font-bold text-foreground">
-											{exp.role}
-										</h3>
-										<span className="font-mono text-sm text-muted-foreground">
-											{exp.period}
-										</span>
-									</div>
-									<div
-										className={cn(
-											"text-lg font-medium mb-4",
-											`text-${exp.color}-600 dark:text-${exp.color}-400`,
+								const CompanyHeading = ({ exp }: { exp: Experience }) => (
+									<div className="flex items-center gap-2 mb-3">
+										{exp.logo && (
+											<img
+												src={exp.logo}
+												alt=""
+												width={18}
+												height={18}
+												className="w-[18px] h-[18px] rounded-sm object-contain shrink-0"
+												onError={(e) => { e.currentTarget.style.display = "none"; }}
+											/>
 										)}
-									>
-										{exp.company}
-									</div>
-
-									<ul className="space-y-3 mb-4">
-										{exp.points.map((pt, i) => (
-											<li
-												key={i}
-												className="text-muted-foreground leading-relaxed text-sm sm:text-base flex items-start gap-3"
+										{exp.website ? (
+											<a
+												href={exp.website}
+												target="_blank"
+												rel="noopener noreferrer"
+												onClick={() => trigger("light")}
+												className={cn(
+													"text-lg font-semibold inline-flex items-center gap-1 underline underline-offset-4 decoration-dotted hover:decoration-solid transition-all",
+													`text-${exp.color}-500 dark:text-${exp.color}-400`,
+												)}
 											>
-												<span className="mt-2 w-1.5 h-1.5 bg-muted-foreground/50 rounded-full shrink-0"></span>
+												{exp.company}
+												<ExternalLink size={13} className="opacity-50" />
+											</a>
+										) : (
+											<span className={cn(
+												"text-lg font-semibold",
+												`text-${exp.color}-500 dark:text-${exp.color}-400`,
+											)}>
+												{exp.company}
+											</span>
+										)}
+									</div>
+								);
+
+								const BulletList = ({ points }: { points: string[] }) => (
+									<ul className="space-y-3 mb-4">
+										{points.map((pt, i) => (
+											<li key={i} className="text-muted-foreground leading-relaxed text-sm sm:text-base flex items-start gap-3">
+												<span className="mt-2 w-1.5 h-1.5 bg-muted-foreground/50 rounded-full shrink-0" />
 												<span dangerouslySetInnerHTML={{ __html: pt }} />
 											</li>
 										))}
 									</ul>
-									{exp.certificate && (
-										<a
-											href={exp.certificate}
-											target="_blank"
-											onClick={() => trigger("light")}
-											className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors border-b border-transparent hover:border-foreground pb-0.5"
-										>
-											<Award size={14} /> Certificate
-										</a>
-									)}
-								</div>
-							))}
+								);
+
+								return order.map((company) => {
+									const exps = groups[company];
+									const first = exps[0];
+									const isGrouped = exps.length > 1;
+
+									return (
+										<div key={company} className="relative pl-8 md:pl-12">
+											{/* Timeline node */}
+											<div className={cn(
+												"absolute -left-[9px] top-2 w-4 h-4 rounded-full bg-background border-4 border-muted-foreground/30",
+												`border-${first.color}-500/50`,
+											)} />
+
+											{/* Company name always at top */}
+											<CompanyHeading exp={first} />
+
+											{isGrouped ? (
+												/* ── Grouped: inner role timeline ── */
+												<div className={cn(
+													"relative border-l-2 space-y-8 pl-6",
+													`border-${first.color}-500/20`,
+												)}>
+													{exps.map((exp, i) => (
+														<div key={i} className="relative">
+															<div className={cn(
+																"absolute -left-[31px] top-[7px] w-3 h-3 rounded-full bg-background border-2",
+																`border-${exp.color}-500/50`,
+															)} />
+															<div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-3">
+																<h4 className="text-xl font-bold text-foreground">{exp.role}</h4>
+																<span className="font-mono text-sm text-muted-foreground shrink-0">
+																	{exp.period}
+																	{parsePeriodDuration(exp.period) && (
+																		<span className="opacity-60"> · {parsePeriodDuration(exp.period)}</span>
+																	)}
+																</span>
+															</div>
+															<BulletList points={exp.points} />
+															{exp.certificate && (
+																<a
+																	href={exp.certificate}
+																	target="_blank"
+																	onClick={() => trigger("light")}
+																	className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors border-b border-transparent hover:border-foreground pb-0.5"
+																>
+																	<Award size={14} /> Certificate
+																</a>
+															)}
+														</div>
+													))}
+												</div>
+											) : (
+												/* ── Single role ── */
+												<>
+													<div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-3">
+														<h3 className="text-xl font-bold text-foreground">{first.role}</h3>
+														<span className="font-mono text-sm text-muted-foreground shrink-0">
+															{first.period}
+															{parsePeriodDuration(first.period) && (
+																<span className="opacity-60"> · {parsePeriodDuration(first.period)}</span>
+															)}
+														</span>
+													</div>
+													<BulletList points={first.points} />
+													{first.certificate && (
+														<a
+															href={first.certificate}
+															target="_blank"
+															onClick={() => trigger("light")}
+															className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors border-b border-transparent hover:border-foreground pb-0.5"
+														>
+															<Award size={14} /> Certificate
+														</a>
+													)}
+												</>
+											)}
+										</div>
+									);
+								});
+							})()}
 						</div>
 
 						{/* Projects Masonry */}
