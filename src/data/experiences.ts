@@ -29,7 +29,7 @@ export const experiences: ExperienceEntry[] = [
 		period: "April 2026 – Present",
 		color: "purple",
 		website: "https://sitg.dev",
-		logo: "https://35.86.142.168/icon.svg?icon.46fd8538.svg",
+		logo: "https://35.86.142.168:3000/icon.svg?icon.46fd8538.svg",
 		points: [
       "Led ownership and ongoing expansion of the compliance AI pipeline, extending coverage to new regulatory frameworks and certificate scopes.",
 			"Shipped <strong>Monitoring</strong> and <strong>Alerting</strong> infrastructure to track bugzilla and google groups to detect and respond to compliance issues in real-time.",
