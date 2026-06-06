@@ -14,9 +14,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
 	try {
 		// Ask the shortener whether this code exists, without following its redirect.
-		const probe = await fetch(target, { method: "HEAD", redirect: "manual" });
+		// Must be GET: the shortener only answers GET (it returns 404 to HEAD), and
+		// `redirect: "manual"` keeps us from downloading the final destination.
+		const probe = await fetch(target, { method: "GET", redirect: "manual" });
 		if (probe.status !== 404) {
-			// Short code exists -> hand off to u.tashif.codes (it does the final redirect).
+			// Short code exists (3xx/200) -> hand off to u.tashif.codes, which does
+			// the final redirect to the destination.
 			return context.redirect(target, 302);
 		}
 	} catch {
