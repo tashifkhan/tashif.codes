@@ -1,13 +1,8 @@
 ---
-import { Calendar, ChevronDown, Star, List as ListIcon } from "lucide-react";
+import { Calendar } from "lucide-react";
+import EmptyState from "./EmptyState.astro";
 import { starLists } from "../data/starLists";
-import {
-	Select,
-	SelectTrigger,
-	SelectValue,
-	SelectContent,
-	SelectItem,
-} from "./ui/select";
+import { githubUsernames, githubStatsApiBase } from "../data/profile";
 import YearSelect from "./YearSelect";
 
 // Calculate date range (last 365 days from today)
@@ -30,7 +25,6 @@ const countMap = new Map<string, number>();
 let fetchOk = false;
 
 try {
-	const USERNAMES = ['tashifkhan', 'tashifkhansitg', 'tashifkhanSR'];
 	const yearsToFetch = Array.from(new Set([
 		oneYearAgo.getFullYear() - 1,
 		oneYearAgo.getFullYear(),
@@ -38,9 +32,9 @@ try {
 		today.getFullYear() + 1,
 	]));
 
-	await Promise.all(USERNAMES.map(async (username) => {
+	await Promise.all(githubUsernames.map(async (username) => {
 		try {
-			const res = await fetch(`https://github-stats.tashif.codes/${username}/contributions`);
+			const res = await fetch(`${githubStatsApiBase}/${username}/contributions`);
 			if (!res.ok) return;
 			const data = await res.json();
 			for (const year of yearsToFetch) {
@@ -104,13 +98,26 @@ gridWeeks.forEach((week, i) => {
 	}
 });
 
-// Helper function to get contribution level (0-4) based on count
+// Quantile-based intensity thresholds so the heatmap shows texture even in
+// high-activity years (fixed cutoffs like ">9 = max" render a wall of solid
+// orange when the daily average is already above them).
+const inRangeCounts = Array.from(countMap.entries())
+	.filter(([d]) => d >= rangeStart && d <= rangeEnd)
+	.map(([, c]) => c)
+	.filter((c) => c > 0)
+	.sort((a, b) => a - b);
+const quantile = (p: number) =>
+	inRangeCounts.length
+		? inRangeCounts[Math.min(inRangeCounts.length - 1, Math.floor(p * inRangeCounts.length))]
+		: 0;
+const thresholds = [quantile(0.25), quantile(0.5), quantile(0.75)];
+
 function getContributionLevel(count: number): number {
 	if (count === 0) return 0;
-	if (count <= 3) return 1;
-	if (count <= 6) return 2;
-	if (count <= 9) return 3;
-	return 4;
+	if (count >= thresholds[2] && thresholds[2] > 0) return 4;
+	if (count >= thresholds[1] && thresholds[1] > 0) return 3;
+	if (count >= thresholds[0] && thresholds[0] > 0) return 2;
+	return 1;
 }
 
 // Helper function to get color class based on contribution level
@@ -145,281 +152,232 @@ function formatDateRange(): string {
 const starredLists = starLists || [];
 ---
 
-<div
-	class="relative group bg-card/70 dark:bg-card/60 backdrop-blur-xl p-6 rounded-2xl border border-primary/20 dark:border-primary/20 shadow-sm hover:shadow-md transition-shadow mb-6 sm:mb-8"
+<section
+	class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden"
 >
-	
-	<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-		<div class="flex items-center space-x-3">
-			<div class="p-2 bg-primary/10 dark:bg-primary/10 rounded-xl ring-1 ring-inset ring-primary/20 dark:ring-primary/20">
-				<Calendar className="w-5 h-5 text-primary dark:text-primary" />
-			</div>
-			<div>
-				<h3 class="text-base font-semibold text-foreground dark:text-foreground tracking-tight">Contribution Activity</h3>
-				<p data-contribution-range class="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">{formatDateRange()} • {totalContributions.toLocaleString()} contributions</p>
-			</div>
-		</div>
-		
-		<div class="flex items-center space-x-4">
+	<div
+		class="px-5 py-3.5 border-b border-border/60 flex flex-wrap items-center gap-x-3 gap-y-2"
+	>
+		<Calendar className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+		<span
+			class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
+		>
+			Contribution Activity
+		</span>
+		<span
+			data-contribution-range
+			class="font-mono text-[10px] text-muted-foreground/70 tabular-nums"
+		>
+			{formatDateRange()} • {totalContributions.toLocaleString()} contributions
+		</span>
+
+		<div class="ml-auto flex items-center gap-3 sm:gap-4">
 			<!-- Year Selector -->
 			<div class="relative">
 				<YearSelect client:load availableYears={availableYears} defaultValue={String(availableYears[0])} />
 			</div>
-			
+
 			<!-- Legend -->
-			<div class="flex items-center space-x-2 text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground">
+			<div class="hidden sm:flex items-center space-x-2 text-[10px] text-muted-foreground dark:text-muted-foreground">
 				<span class="uppercase tracking-wide">Less</span>
-				<div class="flex space-x-1">
-					<div class="w-3 h-3 rounded-sm bg-muted/80 dark:bg-muted/40"></div>
-					<div class="w-3 h-3 rounded-sm bg-primary/40 dark:bg-primary/40"></div>
-					<div class="w-3 h-3 rounded-sm bg-primary/60 dark:bg-primary/60"></div>
-					<div class="w-3 h-3 rounded-sm bg-primary/80 dark:bg-primary/80"></div>
-					<div class="w-3 h-3 rounded-sm bg-primary dark:bg-primary"></div>
+				<div class="flex gap-[3px]">
+					<div class="legend-cell bg-muted/80 dark:bg-muted/40"></div>
+					<div class="legend-cell bg-primary/40 dark:bg-primary/40"></div>
+					<div class="legend-cell bg-primary/60 dark:bg-primary/60"></div>
+					<div class="legend-cell bg-primary/80 dark:bg-primary/80"></div>
+					<div class="legend-cell bg-primary dark:bg-primary"></div>
 				</div>
 				<span class="uppercase tracking-wide">More</span>
 			</div>
 		</div>
 	</div>
 
+	<div class="p-5">
 	{(fetchOk || gridWeeks.some(w => w.some(d => d.count > 0))) ? (
 		<div class="relative">
 			<!-- Custom Tooltip -->
-			<div 
-				id="contribution-tooltip" 
+			<div
+				id="contribution-tooltip"
 				class="absolute z-50 bg-foreground dark:bg-secondary text-white text-xs rounded-lg px-3 py-2 shadow-lg border border-border pointer-events-none opacity-0 transition-opacity duration-200"
 			>
 				<div id="tooltip-content"></div>
 				<div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground dark:border-t-secondary"></div>
 			</div>
 
-			<div class="contribution-container pt-5">
-				<div class="contribution-content">
-					<div class="contribution-grid-wrapper relative">
-						<!-- Month labels container (absolutely positioned above the grid) -->
-						<div class="absolute -top-[18px] left-0 w-full flex h-4 text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground" id="month-labels-wrapper">
-							<div class="w-[56px] shrink-0"></div> <!-- Offset for day labels -->
-							<div class="relative flex-1" id="month-labels-container">
-								{monthLabelsList.map((label) => (
-									<span class="absolute top-0 text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground font-medium tracking-wide" style={`left: calc(${label.index} * 18px)`}>{label.month}</span>
-								))}
-							</div>
-						</div>
+			<div class="contribution-container">
+				<div class="contribution-grid-wrapper" style={`--weeks: ${gridWeeks.length}`}>
+					<!-- Month labels: same column tracks as the weeks grid, so they can't drift -->
+					<div
+						class="cal-months text-[10px] sm:text-[11px] text-muted-foreground dark:text-muted-foreground font-medium tracking-wide"
+						id="month-labels-container"
+					>
+						{monthLabelsList.map((label) => (
+							<span style={`grid-column: ${label.index + 1}`}>{label.month}</span>
+						))}
+					</div>
 
-						<!-- Day labels -->
-						<div class="day-labels flex flex-col space-y-1 text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground mt-[2px]">
-							<span class="h-3 flex items-center justify-start leading-none">Sun</span>
-							<span class="h-3 flex items-center justify-start leading-none">Mon</span>
-							<span class="h-3 flex items-center justify-start leading-none">Tue</span>
-							<span class="h-3 flex items-center justify-start leading-none">Wed</span>
-							<span class="h-3 flex items-center justify-start leading-none">Thu</span>
-							<span class="h-3 flex items-center justify-start leading-none">Fri</span>
-							<span class="h-3 flex items-center justify-start leading-none">Sat</span>
-						</div>
-						
-						<!-- Contribution grid -->
-						<div class="contribution-weeks flex space-x-1" id="contribution-grid">
-							{gridWeeks.map((week) => (
-								<div class="contribution-week flex flex-col space-y-1 relative">
-									{week.map((day) => {
-										if (!day.inRange) return <div class="w-3 h-3 pointer-events-none" />;
-										const level = getContributionLevel(day.count);
-										const colorClass = getContributionColor(level);
-										return (
-											<div
-												class={`contribution-day w-3 h-3 rounded-sm ${colorClass} hover:ring-2 hover:ring-primary/60 dark:hover:ring-primary/60 transition-all duration-200 cursor-pointer hover:scale-110`}
-												data-date={day.date}
-												data-count={day.count}
-											></div>
-										);
-									})}
-								</div>
-							))}
-						</div>
+					<!-- Day labels (sparse, GitHub-style) -->
+					<div
+						class="day-labels text-[9px] sm:text-[10px] text-muted-foreground dark:text-muted-foreground"
+						aria-hidden="true"
+					>
+						<span style="grid-row: 2">Mon</span>
+						<span style="grid-row: 4">Wed</span>
+						<span style="grid-row: 6">Fri</span>
+					</div>
+
+					<!-- Contribution grid -->
+					<div class="contribution-weeks" id="contribution-grid">
+						{gridWeeks.map((week) => (
+							<div class="contribution-week">
+								{week.map((day) => {
+									if (!day.inRange) return <div class="contribution-day is-empty" />;
+									const level = getContributionLevel(day.count);
+									const colorClass = getContributionColor(level);
+									return (
+										<div
+											class={`contribution-day ${colorClass}`}
+											data-date={day.date}
+											data-count={day.count}
+										></div>
+									);
+								})}
+							</div>
+						))}
 					</div>
 				</div>
 			</div>
 		</div>
 	) : (
-		<div class="text-center py-8">
-			<div class="p-3 bg-muted dark:bg-secondary rounded-xl w-fit mx-auto mb-4">
-				<Calendar className="w-8 h-8 text-muted-foreground mx-auto" />
-			</div>
-			<p class="text-muted-foreground dark:text-muted-foreground">
-				Unable to load contribution data
-			</p>
+		<div class="py-8">
+			<EmptyState
+				command="git log --graph --all"
+				title="unable to load contribution data"
+			/>
 		</div>
 	)}
-</div>
-
-{starredLists.length > 0 && (
-	<div class="mt-6 bg-card/70 dark:bg-card/60 backdrop-blur-xl p-6 rounded-2xl border border-primary/20 dark:border-primary/20 shadow-sm hover:shadow-md transition-shadow">
-		<div class="flex items-center gap-3 mb-5">
-			<div class="p-2 rounded-xl bg-primary/10 dark:bg-primary/10 ring-1 ring-inset ring-primary/20 dark:ring-primary/20">
-				<Star className="w-5 h-5 text-primary dark:text-primary" />
-			</div>
-			<div>
-				<h3 class="text-base font-semibold text-foreground dark:text-foreground tracking-tight">Starred Lists</h3>
-				<p class="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Click a list to view matching projects</p>
-			</div>
-		</div>
-		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-			{starredLists.map(list => (
-				<button type="button" data-star-list-select={list.name} class="group text-left flex flex-col h-full rounded-xl border border-primary/20 dark:border-primary/20 bg-card/60 dark:bg-card/50 p-4 hover:border-primary/40 dark:hover:border-primary/40 hover:bg-card/80 dark:hover:bg-card/70 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50">
-					<div class="flex items-start justify-between gap-3 mb-2">
-						<h4 class="font-medium text-foreground dark:text-foreground group-hover:text-primary dark:group-hover:text-primary line-clamp-1">{list.name}</h4>
-						<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 dark:bg-primary/10 text-primary dark:text-primary border border-primary/20 dark:border-primary/20">
-							<ListIcon className="w-3.5 h-3.5" />
-							{(list.num_repos ?? list.repositories?.length ?? 0)}
-						</span>
-					</div>
-					{list.description && (
-						<p class="text-xs text-muted-foreground dark:text-muted-foreground line-clamp-3 mb-3">{list.description}</p>
-					)}
-					<div class="mt-auto flex items-center justify-between pt-2 text-[11px] text-muted-foreground dark:text-muted-foreground">
-						<span class="inline-flex items-center gap-1">
-							<Star className="w-3.5 h-3.5 text-primary" />
-							{(list.repositories?.length ?? list.num_repos ?? 0)} repos
-						</span>
-						<span class="opacity-0 group-hover:opacity-100 transition-opacity text-primary dark:text-primary">Filter →</span>
-					</div>
-				</button>
-			))}
-		</div>
 	</div>
-)}
+</section>
 
-<style>
-	/* Contribution container styles with proper overflow and min-width */
+<style is:global>
+	/* Global (not Astro-scoped): the year selector re-renders cells via
+	   innerHTML, and injected elements don't carry Astro's scope attribute. */
+	/* Horizontal scroll only when the card is narrower than the minimum grid */
 	.contribution-container {
 		width: 100%;
 		overflow-x: auto;
 		overflow-y: hidden;
-		/* Ensure smooth scrolling on all browsers */
 		scroll-behavior: smooth;
 		-webkit-overflow-scrolling: touch;
+		scrollbar-width: thin;
+		scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
 	}
 
-	.contribution-content {
-		/* Minimum width to ensure all 52 weeks are visible */
-		min-width: 900px;
-		width: max-content;
-		/* Prevent content from shrinking */
-		flex-shrink: 0;
-	}
-
-	.month-label {
-		width: 66px;
-		text-align: center;
-		flex-shrink: 0;
-		display: inline-block;
-	}
-
-	/* Grid container with proper spacing */
-	.contribution-grid-wrapper {
-		min-width: 900px;
-		display: flex;
-		align-items: flex-start;
-	}
-
-	/* Day labels container */
-	.day-labels {
-		width: 48px;
-		flex-shrink: 0;
-		margin-right: 8px;
-	}
-
-	/* Contribution weeks container */
-	.contribution-weeks {
-		flex: 1;
-		min-width: calc(900px - 56px); /* Account for day labels width */
-	}
-
-	/* Custom scrollbar for the contribution grid */
 	.contribution-container::-webkit-scrollbar {
 		height: 8px;
 	}
-	
+
 	.contribution-container::-webkit-scrollbar-track {
-		background: rgba(156, 163, 175, 0.1);
-		border-radius: 4px;
-		margin: 0 4px;
+		background: transparent;
 	}
-	
+
 	.contribution-container::-webkit-scrollbar-thumb {
-		background: rgba(156, 163, 175, 0.4);
+		background: rgba(156, 163, 175, 0.35);
 		border-radius: 4px;
-		transition: background-color 0.2s ease;
-		min-width: 20px;
 	}
-	
+
 	.contribution-container::-webkit-scrollbar-thumb:hover {
 		background: rgba(156, 163, 175, 0.6);
 	}
 
-	.contribution-container::-webkit-scrollbar-thumb:active {
-		background: rgba(156, 163, 175, 0.8);
+	/*
+	 * Single grid: day-label column + one 1fr column per week (--weeks).
+	 * Month labels and week columns live in the same tracks, so they stay
+	 * aligned at any width — the grid stretches to fill the card.
+	 */
+	.contribution-grid-wrapper {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		grid-template-rows: auto 1fr;
+		column-gap: 8px;
+		row-gap: 6px;
+		min-width: 760px;
 	}
 
-	/* Dark mode scrollbar */
-	.dark .contribution-container::-webkit-scrollbar-track {
-		background: rgba(75, 85, 99, 0.2);
-	}
-	
-	.dark .contribution-container::-webkit-scrollbar-thumb {
-		background: rgba(156, 163, 175, 0.3);
-	}
-	
-	.dark .contribution-container::-webkit-scrollbar-thumb:hover {
-		background: rgba(156, 163, 175, 0.5);
+	.cal-months,
+	.contribution-weeks {
+		display: grid;
+		grid-template-columns: repeat(var(--weeks, 53), 1fr);
+		gap: 3px;
+		grid-column: 2;
 	}
 
-	.dark .contribution-container::-webkit-scrollbar-thumb:active {
-		background: rgba(156, 163, 175, 0.7);
+	.cal-months span {
+		min-width: 0;
+		white-space: nowrap;
+		overflow: visible;
+		line-height: 1;
 	}
 
-	/* Smooth scrolling for Firefox */
-	.contribution-container {
-		scrollbar-width: thin;
-		scrollbar-color: rgba(156, 163, 175, 0.4) rgba(156, 163, 175, 0.1);
+	.day-labels {
+		grid-row: 2;
+		grid-column: 1;
+		display: grid;
+		grid-template-rows: repeat(7, 1fr);
+		gap: 3px;
+		align-items: center;
+		line-height: 1;
 	}
 
-	/* Ensure proper spacing for mobile */
-	@media (max-width: 640px) {
-		.contribution-content {
-			min-width: 900px; /* Maintain minimum width even on mobile */
-		}
-		
-		.contribution-container {
-			/* Show scrollbar on mobile for better UX */
-			scrollbar-width: auto;
-		}
-		
-		.contribution-container::-webkit-scrollbar {
-			height: 10px;
-		}
+	.contribution-weeks {
+		grid-row: 2;
 	}
 
-	/* Contribution day hover effects */
+	.contribution-week {
+		display: grid;
+		grid-template-rows: repeat(7, 1fr);
+		gap: 3px;
+		min-width: 0;
+	}
+
+	/* Explicit radius: the Tailwind theme remaps rounded-sm to ~8px, which
+	   turns 12px cells into circles. */
 	.contribution-day {
 		position: relative;
-		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-		flex-shrink: 0;
+		width: 100%;
+		aspect-ratio: 1 / 1;
+		border-radius: 2px;
+		transition:
+			transform 0.15s ease,
+			box-shadow 0.15s ease;
 	}
 
-	.contribution-day:hover {
+	.contribution-day.is-empty {
+		pointer-events: none;
+		background: transparent;
+	}
+
+	.contribution-day:not(.is-empty) {
+		cursor: pointer;
+	}
+
+	.contribution-day:not(.is-empty):hover {
+		transform: scale(1.3);
+		box-shadow: 0 0 0 1.5px var(--primary);
 		z-index: 10;
 	}
 
-	/* Ensure week columns don't compress */
-	.contribution-week {
-		flex-shrink: 0;
-		width: 14px; /* Fixed width for each week column */
+	.legend-cell {
+		width: 10px;
+		height: 10px;
+		border-radius: 2px;
 	}
 </style>
 
 <script>
 	// Year selector functionality and tooltip management
 	import { WebHaptics as WebHapticsContrib } from 'web-haptics';
+	import { githubUsernames, githubStatsApiBase } from '../data/profile';
 	const hapticsDays = new WebHapticsContrib();
 
 	document.addEventListener('astro:page-load', function() {
@@ -427,18 +385,18 @@ const starredLists = starLists || [];
 		const contributionGrid = document.getElementById('contribution-grid');
 		const tooltip = document.getElementById('contribution-tooltip');
 		const tooltipContent = document.getElementById('tooltip-content');
-		
+
 		// Initialize tooltip functionality
 		initializeTooltip();
-		
+
 		if (!yearSelector || !contributionGrid) return;
-		
+
 		function initializeTooltip() {
 			if (!tooltip || !tooltipContent) return;
-			
+
 			// Add event listeners to all contribution days
 			const contributionDays = document.querySelectorAll('.contribution-day');
-			
+
 			contributionDays.forEach(day => {
 				day.addEventListener('mouseenter', handleMouseEnter);
 				day.addEventListener('mouseleave', handleMouseLeave);
@@ -446,64 +404,64 @@ const starredLists = starLists || [];
 				day.addEventListener('click', () => hapticsDays.trigger('selection'));
 			});
 		}
-		
+
 		function handleMouseEnter(event: Event) {
 			const target = event.target as HTMLElement;
 			const date = target.getAttribute('data-date');
 			const count = target.getAttribute('data-count');
-			
+
 			if (!date || !count || !tooltip || !tooltipContent) return;
-			
+
 			const formattedDate = formatDate(date);
 			const contributionText = count === '1' ? 'contribution' : 'contributions';
-			
+
 			tooltipContent.innerHTML = `
 				<div class="font-medium">${count} ${contributionText}</div>
 				<div class="text-foreground/60 dark:text-muted-foreground">${formattedDate}</div>
 			`;
-			
+
 			tooltip.style.opacity = '1';
 			positionTooltip(event as MouseEvent);
 		}
-		
+
 		function handleMouseLeave() {
 			if (!tooltip) return;
 			tooltip.style.opacity = '0';
 		}
-		
+
 		function handleMouseMove(event: Event) {
 			positionTooltip(event as MouseEvent);
 		}
-		
+
 		function positionTooltip(event: MouseEvent) {
 			if (!tooltip) return;
-			
+
 			const container = document.querySelector('.contribution-container');
 			if (!container) return;
-			
+
 			const containerRect = container.getBoundingClientRect();
 			const targetRect = (event.target as HTMLElement).getBoundingClientRect();
-			
+
 			// Get the day of week from the target element's position
 			const target = event.target as HTMLElement;
 			const weekColumn = target.closest('.contribution-week');
 			if (!weekColumn) return;
-			
+
 			const dayElements = weekColumn.querySelectorAll('.contribution-day');
 			const dayIndex = Array.from(dayElements).indexOf(target);
-			
+
 			// Position tooltip above or below based on day of week
 			// Top 3 days (Sun=0, Mon=1, Tue=2) show tooltip below, others show above
 			const showBelow = dayIndex <= 2;
-			
+
 			const left = targetRect.left - containerRect.left + (targetRect.width / 2);
-			
+
 			if (showBelow) {
 				// Position tooltip below the day cell
 				const top = targetRect.bottom - containerRect.top + 8;
 				tooltip.style.top = `${top}px`;
 				tooltip.style.transform = 'translate(-50%, 0)';
-				
+
 				// Update arrow to point up (for bottom tooltip)
 				const arrow = tooltip.querySelector('.absolute.top-full');
 				if (arrow) {
@@ -515,37 +473,37 @@ const starredLists = starLists || [];
 				tooltip.style.top = `${top}px`;
 				tooltip.style.transform = 'translate(-50%, -100%)';
 				tooltip.style.marginTop = '-8px';
-				
+
 				// Update arrow to point down (for top tooltip)
 				const arrow = tooltip.querySelector('.absolute.bottom-full, .absolute.top-full');
 				if (arrow) {
 					arrow.className = 'absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground dark:border-t-secondary';
 				}
 			}
-			
+
 			tooltip.style.left = `${left}px`;
-			
+
 			// Ensure tooltip doesn't go outside container bounds horizontally
 			const tooltipRect = tooltip.getBoundingClientRect();
 			const maxLeft = containerRect.width - tooltipRect.width;
-			
+
 			if (left < 0) {
 				tooltip.style.left = '0px';
 			} else if (left > maxLeft) {
 				tooltip.style.left = `${maxLeft}px`;
 			}
 		}
-		
+
 		yearSelector.addEventListener('change', async function() {
 			const selectedValue = this.value;
-			
-			// Show loading state
-			contributionGrid.innerHTML = '<div class="flex items-center justify-center h-28 text-muted-foreground dark:text-muted-foreground">Loading...</div>';
-			
+
+			// Show loading state (span all week columns of the grid)
+			contributionGrid.innerHTML = '<div class="flex items-center justify-center h-28 text-muted-foreground dark:text-muted-foreground" style="grid-column: 1 / -1">Loading...</div>';
+
 			try {
 				// Calculate date range based on selection
 				let fromDate: Date, toDate: Date;
-				
+
 				if (selectedValue === 'last-year') {
 					toDate = new Date();
 					fromDate = new Date(toDate);
@@ -556,18 +514,17 @@ const starredLists = starLists || [];
 					fromDate = new Date(year, 0, 1);
 					toDate = new Date(year, 11, 31);
 				}
-				
+
 				// Build flat date→count map (same approach as SSR)
-				const USERNAMES = ['tashifkhan', 'tashifkhansitg', 'tashifkhanSR'];
 				const countMap = new Map<string, number>();
 				// Fetch adjacent years too — the last weeks of year N are often cached
 				// under year N+1 in the stats server, causing December to appear empty.
 				const y = fromDate.getFullYear();
 				const yearsToFetch = Array.from(new Set([y - 1, y, toDate.getFullYear(), toDate.getFullYear() + 1]));
 
-				await Promise.all(USERNAMES.map(async (username) => {
+				await Promise.all(githubUsernames.map(async (username) => {
 					try {
-						const res = await fetch(`https://github-stats.tashif.codes/${username}/contributions`);
+						const res = await fetch(`${githubStatsApiBase}/${username}/contributions`);
 						if (!res.ok) return;
 						const data = await res.json();
 						for (const year of yearsToFetch) {
@@ -601,27 +558,42 @@ const starredLists = starLists || [];
 					gridWeeks.push(week);
 				}
 
+				updateThresholds(countMap, rangeStart, rangeEnd);
 				updateContributionGrid(gridWeeks);
 				updateMonthLabels(gridWeeks);
 				updateHeaderInfo(countMap, rangeStart, rangeEnd, fromDate, toDate);
-				
+
 				// Re-initialize tooltip for new elements
 				setTimeout(initializeTooltip, 100);
-				
+
 			} catch (error) {
 				console.error('Error fetching contribution data:', error);
-				contributionGrid.innerHTML = '<div class="flex items-center justify-center h-28 text-muted-foreground dark:text-muted-foreground">Error loading data</div>';
+				contributionGrid.innerHTML = '<div class="flex items-center justify-center h-28 text-muted-foreground dark:text-muted-foreground" style="grid-column: 1 / -1">Error loading data</div>';
 			}
 		});
-		
+
+		// Quantile-based thresholds, mirroring the SSR logic
+		let thresholds = [0, 0, 0];
+
+		function updateThresholds(countMap: Map<string, number>, rangeStart: string, rangeEnd: string) {
+			const counts = Array.from(countMap.entries())
+				.filter(([d]) => d >= rangeStart && d <= rangeEnd)
+				.map(([, c]) => c)
+				.filter((c) => c > 0)
+				.sort((a, b) => a - b);
+			const q = (p: number) =>
+				counts.length ? counts[Math.min(counts.length - 1, Math.floor(p * counts.length))] : 0;
+			thresholds = [q(0.25), q(0.5), q(0.75)];
+		}
+
 		function getContributionLevel(count: number): number {
 			if (count === 0) return 0;
-			if (count <= 3) return 1;
-			if (count <= 6) return 2;
-			if (count <= 9) return 3;
-			return 4;
+			if (count >= thresholds[2] && thresholds[2] > 0) return 4;
+			if (count >= thresholds[1] && thresholds[1] > 0) return 3;
+			if (count >= thresholds[0] && thresholds[0] > 0) return 2;
+			return 1;
 		}
-		
+
 		function getContributionColor(level: number): string {
 			const colors = [
 				"bg-muted/80 dark:bg-muted/40",
@@ -632,7 +604,7 @@ const starredLists = starLists || [];
 			];
 			return colors[level] || colors[0];
 		}
-		
+
 		function formatDate(dateString: string): string {
 			return new Date(dateString).toLocaleDateString('en-US', {
 				weekday: 'long',
@@ -641,7 +613,7 @@ const starredLists = starLists || [];
 				day: 'numeric'
 			});
 		}
-		
+
 		function updateMonthLabels(gridWeeks: { date: string; count: number; inRange: boolean }[][]) {
 			const container = document.getElementById('month-labels-container');
 			if (!container) return;
@@ -658,20 +630,23 @@ const starredLists = starLists || [];
 				}
 			});
 			container.innerHTML = labels.map(l =>
-				`<span class="absolute top-0 text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground font-medium tracking-wide" style="left: calc(${l.index} * 18px)">${l.month}</span>`
+				`<span style="grid-column: ${l.index + 1}">${l.month}</span>`
 			).join('');
 		}
 
 		function updateContributionGrid(gridWeeks: { date: string; count: number; inRange: boolean }[][]) {
 			const grid = document.getElementById('contribution-grid');
 			if (!grid) return;
+			// Keep month-label and week tracks in sync with the new week count
+			document.querySelector<HTMLElement>('.contribution-grid-wrapper')
+				?.style.setProperty('--weeks', String(gridWeeks.length));
 			grid.innerHTML = gridWeeks.map(week => `
-				<div class="contribution-week flex flex-col space-y-1 relative">
+				<div class="contribution-week">
 					${week.map(day => {
-						if (!day.inRange) return '<div class="w-3 h-3 pointer-events-none"></div>';
+						if (!day.inRange) return '<div class="contribution-day is-empty"></div>';
 						const level = getContributionLevel(day.count);
 						const colorClass = getContributionColor(level);
-						return `<div class="contribution-day ${colorClass} w-3 h-3 rounded-sm hover:ring-2 hover:ring-primary/60 dark:hover:ring-primary/60 transition-all duration-200 cursor-pointer hover:scale-110" data-date="${day.date}" data-count="${day.count}"></div>`;
+						return `<div class="contribution-day ${colorClass}" data-date="${day.date}" data-count="${day.count}"></div>`;
 					}).join('')}
 				</div>
 			`).join('');
