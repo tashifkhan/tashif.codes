@@ -24,49 +24,34 @@ import { cn } from "@/lib/utils";
 import { useWebHaptics } from "web-haptics/react";
 
 // --- INTERFACES ---
+// Data shapes live alongside the content in src/data/resume.ts;
+// re-exported here so existing imports keep working.
+import {
+	resumeAbout,
+	type ResumeProject,
+	type Education,
+	type Position,
+	type SkillCategory,
+} from "../data/resume";
 
 export type Experience = ExperienceEntry;
-
-export interface Project {
-	title: string;
-	stack: string;
-	color: string;
-	links: { label: string; url: string }[];
-	points: string[];
-}
-
-export interface Education {
-	institute: string;
-	period: string;
-	degree?: string;
-	details: string[];
-	color: string;
-}
-
-export interface Position {
-	title: string;
-	org: string;
-	period: string;
-	color: string;
-	points: string[];
-}
-
-export interface SkillCategory {
-	label: string;
-	color: string;
-	items: string[];
-	// Icon is passed as a component or we map it internally if needed,
-	// but for simplicity in props we might just pass the list and handle icons internally
-	// or pass lucide icon names. For now, we'll map internally based on label or use a generic one.
-}
+export type Project = ResumeProject;
+export type { Education, Position, SkillCategory };
 
 interface InteractiveResumeProps {
 	experiences: Experience[];
-	projects: Project[];
+	projects: ResumeProject[];
 	education: Education[];
 	positions: Position[];
 	skillCategories: SkillCategory[];
 }
+
+const actionIcons = {
+	github: Github,
+	linkedin: Linkedin,
+	mail: Mail,
+	download: Download,
+} as const;
 
 // --- HELPERS ---
 
@@ -261,39 +246,14 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 									{/* Intro text */}
 									<div className="space-y-4">
 										<h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-											Holaaaa! 👋
+											{resumeAbout.greeting}
 										</h2>
-										<p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-											I'm an engineering undergraduate based in{" "}
-											<span className="text-foreground font-medium">
-												Delhi, India
-											</span>
-											, working at the intersection of{" "}
-											<span className="text-foreground font-medium">
-												Full-stack Development
-											</span>{" "}
-											and{" "}
-											<span className="text-foreground font-medium">
-												Generative AI
-											</span>
-											. I’ve always been driven by the idea that software should
-											bridge the gap between complex systems and the end-user.
-											This philosophy led me to build the{" "}
-											<span className="text-foreground font-medium">
-												JIIT Tools Suite
-											</span>
-											. What started as a simple React PWA has now evolved into
-											a platform serving{" "}
-											<span className="text-foreground font-medium">
-												18,000+ daily users
-											</span>{" "}
-											. In essence I'm an Engineering student by day,{" "}
-											<span className="text-foreground font-medium">
-												developer and debater
-											</span>{" "}
-											by night, with a pation to solve real world problems
-											(mostly my laziness) via code.
-										</p>
+										<p
+											className="text-base md:text-lg text-muted-foreground leading-relaxed"
+											dangerouslySetInnerHTML={{
+												__html: resumeAbout.introHtml,
+											}}
+										/>
 									</div>
 
 									{/* Quick highlights */}
@@ -303,58 +263,46 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 											className="gap-1.5 font-mono bg-background/50"
 										>
 											<MapPin size={12} className="text-primary" />
-											Delhi, India
+											{resumeAbout.location}
 										</Badge>
-										<Badge variant="secondary" className="font-mono">
-											Full Stack Engineer
-										</Badge>
-										<Badge variant="secondary" className="font-mono">
-											Open Source
-										</Badge>
+										{resumeAbout.highlights.map((highlight) => (
+											<Badge
+												key={highlight}
+												variant="secondary"
+												className="font-mono"
+											>
+												{highlight}
+											</Badge>
+										))}
 									</div>
 
 									{/* Action Buttons */}
 									<div className="flex flex-wrap gap-3 pt-2">
-										<Button
-											asChild
-											onClick={() => trigger("light")}
-											className="gap-2 bg-primary hover:bg-primary/90"
-										>
-											<a
-												href="https://github.com/tashifkhan"
-												target="_blank"
-												rel="noreferrer"
-											>
-												<Github size={18} />
-												<span className="font-semibold">GitHub</span>
-											</a>
-										</Button>
-										<Button asChild variant="outline" onClick={() => trigger("light")} className="gap-2">
-											<a
-												href="https://linkedin.com/in/tashifkhan"
-												target="_blank"
-												rel="noreferrer"
-											>
-												<Linkedin size={18} />
-												<span className="font-semibold">LinkedIn</span>
-											</a>
-										</Button>
-										<Button asChild variant="outline" onClick={() => trigger("light")} className="gap-2">
-											<a href="mailto:me@tashif.codes">
-												<Mail size={18} />
-												<span className="font-semibold">Email</span>
-											</a>
-										</Button>
-										<Button asChild variant="outline" onClick={() => trigger("light")} className="gap-2">
-											<a
-												href="https://drive.tashif.codes/s/wQJtDaSs5kjkY2p"
-												target="_blank"
-												rel="noreferrer"
-											>
-												<Download size={18} />
-												<span className="font-semibold">Resume</span>
-											</a>
-										</Button>
+										{resumeAbout.actions.map((action) => {
+											const Icon = actionIcons[action.icon];
+											return (
+												<Button
+													key={action.label}
+													asChild
+													variant={action.primary ? "default" : "outline"}
+													onClick={() => trigger("light")}
+													className={cn(
+														"gap-2",
+														action.primary && "bg-primary hover:bg-primary/90",
+													)}
+												>
+													<a
+														href={action.url}
+														{...(action.url.startsWith("mailto:")
+															? {}
+															: { target: "_blank", rel: "noreferrer" })}
+													>
+														<Icon size={18} />
+														<span className="font-semibold">{action.label}</span>
+													</a>
+												</Button>
+											);
+										})}
 									</div>
 								</div>
 							</div>
