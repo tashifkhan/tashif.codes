@@ -7,6 +7,52 @@ A modern, responsive personal dashboard built with **Astro** that showcases proj
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1.3-38B2AC?logo=tailwind-css)
 
+## F-Droid Repository Hosting
+
+This site also hosts a self-contained F-Droid-compatible repository for Android APK releases.
+
+Public URLs:
+
+- Install/instructions page: `https://tashif.codes/fdroid`
+- F-Droid repository URL: `https://tashif.codes/fdroid/repo`
+- Patchwork APK source releases: `https://github.com/tashifkhan/Patchwork/releases/latest`
+
+How publishing works:
+
+1. `tashifkhan/Patchwork` publishes an APK to GitHub Releases.
+2. `.github/workflows/publish-fdroid.yml` downloads the APK from that release.
+3. The workflow runs `fdroid update` inside `public/fdroid`.
+4. Generated F-Droid index files are committed back to this repo.
+5. Vercel deploys the static repo files from `public/fdroid/repo`.
+
+Required GitHub Actions secrets in this repo:
+
+- `FDROID_KEYSTORE_BASE64`: base64-encoded PKCS12 signing keystore.
+- `FDROID_KEYSTORE_PASS`: keystore password.
+- `FDROID_KEY_ALIAS`: signing key alias, usually `fdroid`.
+- `FDROID_KEY_PASS`: signing key password.
+
+Create the signing keystore locally:
+
+```bash
+keytool -genkeypair \
+  -v \
+  -keystore fdroid-repo.p12 \
+  -storetype PKCS12 \
+  -alias fdroid \
+  -keyalg RSA \
+  -keysize 4096 \
+  -validity 10000
+
+base64 -i fdroid-repo.p12 | pbcopy
+```
+
+Keep `fdroid-repo.p12` backed up securely. If it is lost, existing F-Droid clients will not trust a replacement signing key.
+
+Optional cross-repo automation:
+
+- Add `TASHIF_CODES_WORKFLOW_TOKEN` to `tashifkhan/Patchwork` so its APK release workflow can dispatch this repo's F-Droid publishing workflow automatically.
+
 ## Features
 
 ### Multi-Section Dashboard
