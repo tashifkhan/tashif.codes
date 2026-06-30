@@ -8,12 +8,68 @@ import {
 	Users,
 	TrendingUp,
 	Calendar,
+	Code2,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 
 const { stats, prs, stars, commits } = githubStats;
+
+const metricCards = [
+	{
+		label: "Commits",
+		value: stats.totalCommits.toLocaleString(),
+		sub: "lifetime",
+		icon: GitCommit,
+	},
+	{
+		label: "Streak",
+		value: stats.currentStreak.toString(),
+		sub: "current",
+		icon: TrendingUp,
+	},
+	{
+		label: "Longest",
+		value: stats.longestStreak.toString(),
+		sub: "streak",
+		icon: Calendar,
+	},
+	{
+		label: "Stars",
+		value: stars.total_stars.toLocaleString(),
+		sub: "total",
+		icon: Star,
+	},
+	{
+		label: "PRs",
+		value: prs.length.toString(),
+		sub: "opened",
+		icon: GitPullRequest,
+	},
+	{
+		label: "Views",
+		value: stats.profile_visitors.toLocaleString(),
+		sub: "profile",
+		icon: Users,
+	},
+];
+
+const topLanguages = stats.topLanguages.slice(0, 6).map((lang) => ({
+	...lang,
+	color: lang.color || "var(--color-primary)",
+	pct: Math.max(0, Math.min(100, Number(lang.percentage) || 0)),
+}));
+
+function prStateColor(state: string): string {
+	switch (state.toLowerCase()) {
+		case "open":
+			return "bg-emerald-500";
+		case "merged":
+			return "bg-purple-500";
+		case "closed":
+			return "bg-rose-500";
+		default:
+			return "bg-muted-foreground/50";
+	}
+}
 
 // Function to get language icon URL from Simple Icons
 function getLanguageIcon(languageName: string): string {
@@ -102,67 +158,22 @@ function getFallbackIcon(): string {
 }
 ---
 
-<!-- Metrics Grid (Compact) -->
-<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-8">
+<div class="space-y-8">
+<!-- Metrics Grid -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
 	{
-		[
-			{
-				label: "Commits",
-				value: stats.totalCommits.toLocaleString(),
-				sub: "lifetime",
-				icon: GitCommit,
-			},
-			{
-				label: "Streak",
-				value: stats.currentStreak.toString(),
-				sub: "current",
-				icon: TrendingUp,
-			},
-			{
-				label: "Longest",
-				value: stats.longestStreak.toString(),
-				sub: "streak",
-				icon: Calendar,
-			},
-			{
-				label: "Stars",
-				value: stars.total_stars.toLocaleString(),
-				sub: "total",
-				icon: Star,
-			},
-			{
-				label: "PRs",
-				value: prs.length.toString(),
-				sub: "opened",
-				icon: GitPullRequest,
-			},
-			{
-				label: "Views",
-				value: stats.profile_visitors.toLocaleString(),
-				sub: "profile",
-				icon: Users,
-			},
-		].map((card) => (
-			<Card className="group relative overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/20 hover:shadow-sm transition-colors">
-				<CardContent className="p-3 flex items-center gap-3">
-					<div class="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center text-primary text-[13px] shadow-sm">
-						<card.icon className="w-4 h-4" />
-					</div>
-					<div class="min-w-0 flex-1">
-						<p class="text-[10px] uppercase tracking-wide font-medium text-muted-foreground truncate">
-							{card.label}
-						</p>
-						<div class="flex items-baseline gap-1">
-						<p class="text-lg font-semibold text-foreground tabular-nums leading-tight">
-							{card.value}
-						</p>
-						<span class="text-[10px] text-muted-foreground/70 leading-tight">
-								{card.sub}
-							</span>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
+		metricCards.map((card) => (
+			<div class="relative overflow-hidden rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-4 hover:border-primary/30 transition-colors">
+				<div class="absolute left-0 top-3.5 bottom-3.5 w-[2px] rounded-r-full bg-primary/70" />
+				<p class="pl-3 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground flex items-center gap-1.5 truncate">
+					<card.icon className="w-3 h-3 shrink-0" />
+					{card.label}
+				</p>
+				<p class="pl-3 mt-2 font-mono text-2xl font-bold text-foreground tabular-nums leading-none">
+					{card.value}
+				</p>
+				<p class="pl-3 mt-1.5 text-[10px] text-muted-foreground">{card.sub}</p>
+			</div>
 		))
 	}
 </div>
@@ -170,170 +181,160 @@ function getFallbackIcon(): string {
 <!-- GitHub Contribution Graph -->
 <GitHubContributionGraph />
 
-<!-- Top Languages (Minimalist) -->
-<Card
-	className="group relative overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm mb-8 hover:border-primary/20 hover:shadow-sm"
+<!-- Optional content placed directly below the contribution graph (e.g. Star Lists) -->
+<slot name="after-graph" />
+
+<!-- Top Languages -->
+<section
+	class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden"
 >
-	<CardHeader className="pb-2">
-		<div class="flex items-center gap-3">
-			<div
-				class="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shadow-sm"
-			>
-				<svg
-					class="w-4 h-4"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					><path d="M3 3h7v7H3z"></path><path d="M14 3h7v7h-7z"></path><path
-						d="M14 14h7v7h-7z"></path><path d="M3 14h7v7H3z"></path></svg
-				>
-			</div>
-			<div>
-				<CardTitle
-					className="text-base font-semibold text-foreground tracking-tight"
-				>
-					Top Languages
-				</CardTitle>
-				<p class="text-xs text-muted-foreground">
-					Most used across public repos
-				</p>
-			</div>
-		</div>
-	</CardHeader>
-	<CardContent>
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+	<div class="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
+		<Code2 className="w-3.5 h-3.5 text-muted-foreground" />
+		<span
+			class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
+		>
+			Top Languages
+		</span>
+		<span class="ml-auto text-[10px] text-muted-foreground/70">
+			across public repos
+		</span>
+	</div>
+	<div class="p-5">
+		<!-- Stacked distribution bar -->
+		<div
+			class="flex h-2 w-full rounded-full overflow-hidden bg-secondary mb-5"
+			role="img"
+			aria-label="Language distribution"
+		>
 			{
-				stats.topLanguages.slice(0, 6).map((lang) => (
-					<div class="group/lng relative flex items-center justify-between gap-4 rounded-xl border border-border/40 bg-background/40 px-3 py-3 hover:border-primary/20 transition-colors">
-						<div class="flex items-center gap-3 min-w-0">
-							<div class="relative flex items-center justify-center w-9 h-9 rounded-lg bg-background/60 shadow-sm border border-border/30 overflow-hidden">
-								<img
-									src={getLanguageIcon(lang.name)}
-									alt={`${lang.name} icon`}
-									class="w-5 h-5 object-contain language-icon dark:text-muted-foreground"
-									data-fallback={getFallbackIcon()}
-								/>
-								<div
-									class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full shadow-sm border border-background"
-									style={`background-color: ${lang.color}`}
-								/>
-							</div>
-							<div class="space-y-0.5 min-w-0">
+				topLanguages.map((lang) => (
+					<div
+						class="h-full first:rounded-l-full last:rounded-r-full"
+						style={`width:${lang.pct}%; background-color:${lang.color};`}
+						title={`${lang.name} ${Math.round(lang.pct)}%`}
+					/>
+				))
+			}
+		</div>
+
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
+			{
+				topLanguages.map((lang) => (
+					<div class="flex items-center gap-3 min-w-0">
+						<div class="relative flex items-center justify-center w-8 h-8 rounded-lg bg-background/60 border border-border/40 overflow-hidden shrink-0">
+							<img
+								src={getLanguageIcon(lang.name)}
+								alt={`${lang.name} icon`}
+								class="w-4.5 h-4.5 object-contain language-icon"
+								data-fallback={getFallbackIcon()}
+							/>
+						</div>
+						<div class="flex-1 min-w-0">
+							<div class="flex items-baseline justify-between gap-2">
 								<p class="text-sm font-medium text-foreground truncate">
 									{lang.name}
 								</p>
+								<span class="font-mono text-xs font-semibold tabular-nums text-muted-foreground shrink-0">
+									{Math.round(lang.pct)}%
+								</span>
+							</div>
+							<div class="mt-1 h-1 w-full bg-secondary rounded-full overflow-hidden">
 								<div
-									class="w-24 h-1 bg-secondary rounded-full overflow-hidden"
-									role="progressbar"
-									aria-valuemin="0"
-									aria-valuemax="100"
-									aria-valuenow={String(
-										Math.max(0, Math.min(100, Number(lang.percentage) || 0))
-									)}
-									aria-label={`${lang.name} usage`}
-								>
-									<div
-										class="h-full bg-[color:var(--c)] rounded-full transition-all duration-500"
-										style={`--c: ${lang.color}; width: ${Math.max(0, Math.min(100, Number(lang.percentage) || 0))}%;`}
-									/>
-								</div>
+									class="h-full rounded-full"
+									style={`background-color:${lang.color}; width:${lang.pct}%;`}
+								/>
 							</div>
 						</div>
-						<span class="text-xs font-semibold tabular-nums text-muted-foreground">
-							{Math.round(
-								Math.max(0, Math.min(100, Number(lang.percentage) || 0))
-							)}
-							%
-						</span>
 					</div>
 				))
 			}
 		</div>
-	</CardContent>
-</Card>
+	</div>
+</section>
 
-<!-- Recent Activity (Minimalist) -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-2">
-	{
-		(
-			[
-				{
-					title: "Recent Commits",
-					icon: GitCommit,
-					items: commits
-						.slice(0, 5)
-						.map((c) => ({ type: "commit" as const, data: c })),
-					kind: "commit" as const,
-				},
-				{
-					title: "Recent Pull Requests",
-					icon: GitPullRequest,
-					items: prs.slice(0, 5).map((p) => ({ type: "pr" as const, data: p })),
-					kind: "pr" as const,
-				},
-			] as const
-		).map((panel) => (
-			<Card className="group relative overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
-				<CardHeader className="pb-2">
-					<div class="flex items-center gap-3">
-						<div class="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shadow-sm">
-							<panel.icon className="w-4 h-4" />
+<!-- Recent Activity -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+	<!-- Recent Commits -->
+	<section
+		class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden"
+	>
+		<div class="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
+			<GitCommit className="w-3.5 h-3.5 text-muted-foreground" />
+			<span
+				class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
+			>
+				Recent Commits
+			</span>
+		</div>
+		<div class="divide-y divide-border/40">
+			{
+				commits.slice(0, 5).map((commit) => (
+					<a
+						href={commit.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						data-haptic-external
+						class="group flex items-start gap-3 px-5 py-3 hover:bg-muted/30 transition-colors"
+					>
+						<span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary/60 shrink-0 group-hover:bg-primary transition-colors" />
+						<div class="flex-1 min-w-0">
+							<p class="text-[13px] font-medium text-foreground truncate group-hover:text-primary transition-colors">
+								{commit.message}
+							</p>
+							<p class="mt-0.5 font-mono text-[11px] text-muted-foreground truncate">
+								{commit.repo} · {new Date(commit.timestamp).toLocaleDateString()}
+							</p>
 						</div>
-						<CardTitle className="text-base font-semibold text-foreground tracking-tight">
-							{panel.title}
-						</CardTitle>
-					</div>
-				</CardHeader>
-				<CardContent>
-					<div class="space-y-2.5">
-						{panel.items.map((entry) => {
-							const isCommit = entry.type === "commit";
-							// @ts-ignore - dynamic shape awareness
-							const commit = isCommit ? entry.data : null;
-							// @ts-ignore
-							const pr = !isCommit ? entry.data : null;
-							return (
-								<div class="group/item flex items-start gap-3 rounded-xl border border-border/40 bg-background/40 px-3 py-2.5 hover:border-primary/20 transition-colors">
-									<div class="mt-0.5 h-2.5 w-2.5 rounded-sm bg-primary/20 ring-1 ring-inset ring-primary/30" />
-									<div class="flex-1 min-w-0">
-										<p class="text-[13px] font-medium text-foreground truncate">
-											{isCommit ? commit!.message : pr!.title}
-										</p>
-										<p class="text-[11px] text-muted-foreground mt-0.5 flex flex-wrap gap-x-1">
-											{isCommit ? (
-												<>
-													<span class="truncate max-w-[120px]">
-														{commit!.repo}
-													</span>
-													<span>•</span>
-													<span>
-														{new Date(commit!.timestamp).toLocaleDateString()}
-													</span>
-												</>
-											) : (
-												<>
-													<span class="truncate max-w-[120px]">{pr!.repo}</span>
-													<span>•</span>
-													<span class="capitalize">{pr!.state}</span>
-													<span>•</span>
-													<span>
-														{new Date(pr!.created_at).toLocaleDateString()}
-													</span>
-												</>
-											)}
-										</p>
-									</div>
-								</div>
-							);
-						})}
-					</div>
-				</CardContent>
-			</Card>
-		))
-	}
+					</a>
+				))
+			}
+		</div>
+	</section>
+
+	<!-- Recent Pull Requests -->
+	<section
+		class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden"
+	>
+		<div class="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
+			<GitPullRequest className="w-3.5 h-3.5 text-muted-foreground" />
+			<span
+				class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
+			>
+				Recent Pull Requests
+			</span>
+		</div>
+		<div class="divide-y divide-border/40">
+			{
+				prs.slice(0, 5).map((pr) => (
+					<a
+						href={pr.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						data-haptic-external
+						class="group flex items-start gap-3 px-5 py-3 hover:bg-muted/30 transition-colors"
+					>
+						<span
+							class:list={[
+								"mt-1.5 h-1.5 w-1.5 rounded-full shrink-0",
+								prStateColor(pr.state),
+							]}
+							title={pr.state}
+						/>
+						<div class="flex-1 min-w-0">
+							<p class="text-[13px] font-medium text-foreground truncate group-hover:text-primary transition-colors">
+								{pr.title}
+							</p>
+							<p class="mt-0.5 font-mono text-[11px] text-muted-foreground truncate">
+								{pr.repo} · <span class="capitalize">{pr.state}</span> ·{" "}
+								{new Date(pr.created_at).toLocaleDateString()}
+							</p>
+						</div>
+					</a>
+				))
+			}
+		</div>
+	</section>
+</div>
 </div>
 
 <script>
