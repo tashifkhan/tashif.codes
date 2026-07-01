@@ -1,0 +1,25 @@
+---
+// Shared haptic feedback wiring. Drop this once per page; every element
+// carrying a data-haptic-* attribute gets a light tap on click.
+---
+
+<script>
+	import { WebHaptics } from "web-haptics";
+
+	const haptics = new WebHaptics();
+
+	function wire() {
+		document
+			.querySelectorAll<HTMLElement>(
+				"[data-haptic-back], [data-haptic-nav], [data-haptic-external]"
+			)
+			.forEach((el) => {
+				if (el.dataset.hapticWired) return;
+				el.dataset.hapticWired = "true";
+				el.addEventListener("click", () => haptics.trigger("light"));
+			});
+	}
+
+	wire();
+	document.addEventListener("astro:page-load", wire);
+</script>
