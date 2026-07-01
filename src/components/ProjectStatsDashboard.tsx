@@ -113,11 +113,25 @@ const COLORS = [
 	"var(--color-chart-5)",
 ];
 
-// Colors are already SVG-compatible hex
-const oklchToRgb = (color: string): string => color;
-
 // Base card class — flat dark surface with hairline border
 const CARD = "rounded-xl border border-border bg-card transition-colors hover:border-accent";
+
+// Compact terminal-prompt empty state for chart areas, matching the
+// site's `➜ tashif.codes %` aesthetic.
+const ChartEmpty = memo(({ label = "no data" }: { label?: string }) => (
+	<div className="flex h-full w-full items-center justify-center py-8">
+		<div className="flex items-baseline gap-1.5 font-mono text-xs">
+			<span className="select-none font-bold text-primary" aria-hidden="true">
+				➜
+			</span>
+			<span className="font-semibold text-muted-foreground">tashif.codes</span>
+			<span className="select-none text-muted-foreground/60" aria-hidden="true">
+				%
+			</span>
+			<span className="text-muted-foreground/80">{label}</span>
+		</div>
+	</div>
+));
 
 // --- Chart Components ---
 
@@ -195,8 +209,8 @@ const RechartsAreaChart = memo(({
 
 	if (formattedData.length === 0)
 		return (
-			<div className="flex items-center justify-center text-muted-foreground text-sm" style={{ height }}>
-				No data available
+			<div style={{ height }}>
+				<ChartEmpty label="no data available" />
 			</div>
 		);
 
@@ -325,10 +339,7 @@ const DonutChart = memo(({
 
 	if (chartData.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs">
-				<Activity className="w-4 h-4 mb-1 opacity-20" />
-				No data
-			</div>
+			<ChartEmpty />
 		);
 	}
 
@@ -394,17 +405,14 @@ const HorizontalBarChart = memo(({
 
 	const cells = useMemo(() =>
 		chartData.map((_, index) => (
-			<Cell key={index} fill={oklchToRgb(COLORS[index % COLORS.length])} />
+			<Cell key={index} fill={COLORS[index % COLORS.length]} />
 		)),
 		[chartData]
 	);
 
 	if (chartData.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs">
-				<Activity className="w-4 h-4 mb-1 opacity-20" />
-				No data
-			</div>
+			<ChartEmpty />
 		);
 	}
 
@@ -421,11 +429,11 @@ const HorizontalBarChart = memo(({
 					dataKey="name"
 					type="category"
 					width={100}
-					tick={{ fontSize: 11, fill: "#475569" }}
+					tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }}
 					interval={0}
 				/>
 				<Tooltip
-					cursor={{ fill: "rgba(255,255,255,0.03)" }}
+					cursor={{ fill: "var(--color-muted)" }}
 					contentStyle={TOOLTIP_STYLES.contentStyle}
 					itemStyle={TOOLTIP_STYLES.itemStyle}
 				/>
@@ -438,19 +446,62 @@ const HorizontalBarChart = memo(({
 });
 HorizontalBarChart.displayName = "HorizontalBarChart";
 
+// --- Sparkline — lightweight inline SVG, no chart lib overhead ---
+const Sparkline = memo(({ data, color }: { data: number[]; color: string }) => {
+	const path = useMemo(() => {
+		if (data.length < 2) return null;
+		const w = 120;
+		const h = 36;
+		const min = Math.min(...data);
+		const range = Math.max(...data) - min || 1;
+		const pts = data.map((v, i) => [
+			(i / (data.length - 1)) * w,
+			h - 3 - ((v - min) / range) * (h - 6),
+		]);
+		const line = pts
+			.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`)
+			.join(" ");
+		return { line, area: `${line} L${w},${h} L0,${h} Z` };
+	}, [data]);
+
+	if (!path) return null;
+
+	return (
+		<svg
+			viewBox="0 0 120 36"
+			preserveAspectRatio="none"
+			aria-hidden="true"
+			className="pointer-events-none absolute bottom-0 right-0 h-10 w-[55%]"
+		>
+			<path d={path.area} fill={color} opacity={0.08} />
+			<path
+				d={path.line}
+				fill="none"
+				stroke={color}
+				strokeWidth={1.5}
+				opacity={0.5}
+				vectorEffect="non-scaling-stroke"
+			/>
+		</svg>
+	);
+});
+Sparkline.displayName = "Sparkline";
+
 // --- MetricCard ---
 const MetricCard = memo(({
 	title,
 	value,
 	icon: Icon,
 	trend,
-	accentColor = "#ff9800",
+	accentColor = "var(--color-primary)",
+	spark,
 }: {
 	title: string;
 	value: string | number;
 	icon: React.ComponentType<{ className?: string }>;
 	trend?: string;
 	accentColor?: string;
+	spark?: number[];
 }) => (
 	<motion.div
 		className={cn(CARD, "relative overflow-hidden p-6 flex flex-col gap-3")}
@@ -463,19 +514,33 @@ const MetricCard = memo(({
 			className="absolute left-0 top-5 bottom-5 w-[2px] rounded-r-full"
 			style={{ backgroundColor: accentColor }}
 		/>
+		{spark && <Sparkline data={spark} color={accentColor} />}
 		<p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground pl-4 flex items-center gap-2">
 			<Icon className="w-3 h-3" />
 			{title}
 		</p>
-		<div className="text-[2.6rem] leading-none font-mono font-bold text-foreground pl-4 tracking-tight tabular-nums">
+		<div className="relative text-[2.6rem] leading-none font-mono font-bold text-foreground pl-4 tracking-tight tabular-nums">
 			{value}
 		</div>
 		{trend && (
-			<p className="text-[11px] text-muted-foreground pl-4">{trend}</p>
+			<p className="relative text-[11px] text-muted-foreground pl-4">{trend}</p>
 		)}
 	</motion.div>
 ));
 MetricCard.displayName = "MetricCard";
+
+// Downsample a series to at most `points` values so sparklines stay light
+function downsample(values: number[], points = 40): number[] {
+	if (values.length <= points) return values;
+	const bucket = values.length / points;
+	return Array.from({ length: points }, (_, i) => {
+		const start = Math.floor(i * bucket);
+		const end = Math.max(start + 1, Math.floor((i + 1) * bucket));
+		let sum = 0;
+		for (let j = start; j < end; j++) sum += values[j];
+		return sum / (end - start);
+	});
+}
 
 // --- ProgressBar ---
 const ProgressBar = memo(({ value, maxVal, index }: { value: number; maxVal: number; index: number }) => (
@@ -512,17 +577,14 @@ const BreakdownList = memo(({
 		</div>
 		<div className="flex-1 overflow-auto no-scrollbar">
 			{items.length === 0 ? (
-				<div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs py-12">
-					<Activity className="w-4 h-4 mb-2 opacity-20" />
-					No data available
-				</div>
+				<ChartEmpty label="no data available" />
 			) : (
 				<div className="divide-y divide-border">
 					{items.map((item, i) => (
 						<div key={item.key} className="group px-5 py-3 hover:bg-muted/50 transition-colors">
 							<div className="flex justify-between items-baseline gap-3 mb-2">
 								<span
-									className="text-sm text-foreground truncate font-medium group-hover:text-white transition-colors"
+									className="text-sm text-foreground truncate font-medium group-hover:text-primary transition-colors"
 									title={item.key}
 								>
 									{item.key.replace(/^https?:\/\/[^/]+/, "") || "/"}
@@ -574,6 +636,7 @@ export default function ProjectStatsDashboard() {
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
 	const [period, setPeriod] = useState<string>("0");
+	const [retryToken, setRetryToken] = useState<number>(0);
 	const { trigger } = useWebHaptics();
 	const API_PREFIX = "/projects/stats/api";
 
@@ -622,7 +685,7 @@ export default function ProjectStatsDashboard() {
 		fetchProjects();
 
 		return () => controller.abort();
-	}, [API_BASE, getInitialProject]);
+	}, [API_BASE, getInitialProject, retryToken]);
 
 	// Update URL when project changes
 	useEffect(() => {
@@ -679,7 +742,7 @@ export default function ProjectStatsDashboard() {
 		fetchStats();
 
 		return () => controller.abort();
-	}, [selectedSlug, period, API_BASE]);
+	}, [selectedSlug, period, API_BASE, retryToken]);
 
 	// Derived metrics
 	const totals = useMemo(() => {
@@ -709,6 +772,15 @@ export default function ProjectStatsDashboard() {
 	const chartData = useMemo(() => {
 		if (!stats) return [];
 		return stats.timeseries;
+	}, [stats]);
+
+	const sparks = useMemo(() => {
+		if (!stats) return { views: [], visitors: [], bounce: [] };
+		return {
+			views: downsample(stats.timeseries.map((d) => d.pageviews)),
+			visitors: downsample(stats.timeseries.map((d) => d.visitors)),
+			bounce: downsample(stats.timeseries.map((d) => d.bounce_rate)),
+		};
 	}, [stats]);
 
 	const maxPathPageviews = useMemo(() =>
@@ -791,24 +863,23 @@ export default function ProjectStatsDashboard() {
 
 			{/* Error */}
 			{error ? (
-				<div className="rounded-xl border border-destructive/40 bg-destructive/10 p-6">
-					<div className="flex items-center gap-3 mb-3">
-						<Activity className="w-4 h-4 text-destructive" />
-						<span className="text-destructive font-semibold text-sm tracking-wide">Connection Error</span>
-					</div>
-					<p className="text-muted-foreground text-sm mb-4">{error}</p>
-					<div className="rounded-lg bg-card border border-border p-4 text-sm font-mono text-muted-foreground">
-						Troubleshooting:
-						<ul className="list-disc list-inside mt-2 space-y-1">
-							<li>Ensure the Python API is running on port 8000</li>
-							<li>
-								Check if{" "}
-								<code className="text-primary/80 bg-primary/10 px-1 rounded">api/main.py</code>{" "}
-								is executing without errors
-							</li>
-							<li>Verify network connectivity</li>
-						</ul>
-					</div>
+				<div className="rounded-xl border border-destructive/40 bg-destructive/10 p-8 text-center">
+					<Activity className="w-5 h-5 text-destructive mx-auto mb-3" />
+					<p className="text-destructive font-semibold text-sm tracking-wide mb-1.5">
+						Couldn't load analytics
+					</p>
+					<p className="text-muted-foreground text-sm mb-5 max-w-md mx-auto">{error}</p>
+					<button
+						type="button"
+						onClick={() => {
+							trigger("selection");
+							setError(null);
+							setRetryToken((t) => t + 1);
+						}}
+						className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:border-accent hover:bg-muted/50 transition-colors"
+					>
+						Try again
+					</button>
 				</div>
 			) : loading || !stats ? (
 				/* Skeleton */
@@ -830,6 +901,7 @@ export default function ProjectStatsDashboard() {
 							icon={Eye}
 							trend={period === "0" ? "Lifetime" : `Last ${period} days`}
 							accentColor="var(--color-chart-2)"
+							spark={sparks.views}
 						/>
 						<MetricCard
 							title="Visitors"
@@ -837,6 +909,7 @@ export default function ProjectStatsDashboard() {
 							icon={Users}
 							trend="Unique sessions"
 							accentColor="var(--color-chart-3)"
+							spark={sparks.visitors}
 						/>
 						<MetricCard
 							title="Bounce Rate"
@@ -844,6 +917,7 @@ export default function ProjectStatsDashboard() {
 							icon={Activity}
 							trend="Weighted average"
 							accentColor="var(--color-chart-1)"
+							spark={sparks.bounce}
 						/>
 					</div>
 
@@ -928,11 +1002,11 @@ export default function ProjectStatsDashboard() {
 					<div className="space-y-6">
 						{/* Section divider */}
 						<div className="flex items-center gap-4">
-							<div className="h-px flex-1 bg-[#1a1d2a]" />
+							<div className="h-px flex-1 bg-border" />
 							<span className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
 								Traffic Breakdown
 							</span>
-							<div className="h-px flex-1 bg-[#1a1d2a]" />
+							<div className="h-px flex-1 bg-border" />
 						</div>
 
 						{/* List breakdowns */}
