@@ -7,16 +7,11 @@ import {
 	DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { ExternalLink, Github } from "lucide-react";
+import { githubProfiles } from "../data/profile";
 
 interface ProfileDropdownProps {
 	isMobile?: boolean;
 }
-
-const GITHUB_PROFILES = [
-	{ handle: "tashifkhan", url: "https://github.com/tashifkhan" },
-	{ handle: "tashifkhansitg", url: "https://github.com/tashifkhansitg" },
-	{ handle: "tashifkhanSR", url: "https://github.com/tashifkhanSR" },
-];
 
 
 export default function ProfileDropdown({ isMobile }: ProfileDropdownProps) {
@@ -47,7 +42,7 @@ export default function ProfileDropdown({ isMobile }: ProfileDropdownProps) {
 				<DropdownMenuLabel className="flex items-center gap-1.5 text-xs text-muted-foreground font-normal py-1.5">
 					<Github size={12} /> GitHub
 				</DropdownMenuLabel>
-				{GITHUB_PROFILES.map(({ handle, url }) => (
+				{githubProfiles.map(({ handle, url }) => (
 					<DropdownMenuItem
 						key={handle}
 						asChild
