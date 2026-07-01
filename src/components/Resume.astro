@@ -1,171 +1,19 @@
 ---
 import { InteractiveResume } from "./InteractiveResume";
 import { experiences } from "../data/experiences";
-
-const projects = [
-	{
-		title: "Agentic Browser",
-		stack:
-			"FastAPI, LangChain, LangGraph, React, TypeScript, MCP, Docker, WebExtension APIs",
-		color: "green",
-		links: [
-			{ label: "Live", url: "https://findex.tashif.codes" },
-			{ label: "GitHub", url: "https://github.com/tashifkhan/agentic-browser" },
-		],
-		points: [
-			"Architected a <strong>model-agnostic web automation platform</strong> combining AI reasoning with browser interaction capabilities via <strong>FastAPI</strong> and <strong>MCP</strong>.",
-			"Implemented <strong>LangGraph-based multi-agent orchestration</strong> with specialized tools for web search, content extraction, and Google Workspace integration.",
-			"Developed a <strong>dual-mode server</strong> supporting both REST API endpoints and <strong>Model Context Protocol</strong> for seamless agent inter-communication.",
-			"Built a <strong>TypeScript browser extension</strong> with a Python backend for direct DOM manipulation and execution of AI-generated script plans.",
-			"Designed a <strong>Bring Your Own Keys (BYOKeys)</strong> architecture supporting Gemini, OpenAI, and Anthropic models without vendor lock-in.",
-		],
-	},
-	{
-		title: "Coding Platform Stats APIs Suite",
-		stack: "Python, FastAPI, Flask, Web Scraping, React, Docker",
-		color: "blue",
-		links: [
-			{ label: "Live", url: "https://stats-api-demo.tashif.codes" },
-			{
-				label: "GitHub",
-				url: "https://github.com/stars/tashifkhan/lists/jiit-tool-suite",
-			},
-		],
-		points: [
-			"Developed a unified suite of REST APIs and interactive dashboards for analyzing developer profiles across major platforms.",
-			"Key components include:",
-			'<a href="https://github-stats.tashif.codes" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">GitHub Stats</a> (FastAPI): Profile stalker, contribution graphs, and repository insights.',
-			'<a href="https://leetcode-stats.tashif.codes" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">LeetCode Stats</a> (Flask): Solved problem counts, contest rankings, and badges.',
-			'<a href="https://codeforces-stats.tashif.codes" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">CodeForces Stats</a> (FastAPI): Rating history, contest performance, and comparisons.',
-			'<a href="https://gfg-stats.tashif.codes" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">GeeksForGeeks Stats</a> (FastAPI): Problem difficulty breakdown and coding scores.',
-		],
-	},
-	{
-		title: "JIIT Tool Suite",
-		stack: "React, Next.js, Python, Flask, Pyodide, MongoDB",
-		color: "purple",
-		links: [
-			{ label: "Live", url: "https://jiit-tools.tashif.codes/" },
-			{ label: "GitHub", url: "https://github.com/tashifkhan/JIIT-tools-docs" },
-		],
-		points: [
-			"Developed a comprehensive suite of web applications and automation tools to enhance the JIIT student experience.",
-			'Developed <a href="https://jportal.tashif.codes/" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">JPortal</a> (<strong>React</strong> PWA for JIIT WebKiosk, 18k+ users) with <strong>Pyodide</strong> PDF parsing.',
-			'Created <a href="https://jiit-timetable.tashif.codes/" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Timetable Website</a> providing real-time schedules for 6.5k+ students.',
-			'Implemented <a href="https://jiit-timetable.tashif.codes/mess-menu" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Mess Menu</a> offering daily/weekly meal plans for 5.2k+ students.',
-			'Engineered <a href="https://jiit-placement-updates.tashif.codes/?shh" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Placement & Campus Updates portal</a> for opportunities/news for 4k+/2k+ users.',
-			'Created <a href="https://sophos-autologin.tashif.codes/" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Sophos Auto-Login</a> scripts (one-click access for ~100 individuals).',
-			'Developed <strong>Telegram</strong>-based <a href="https://tashif.codes/projects/jiit-placement-alerts" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Notification Bot</a> for real-time updates.',
-		],
-	},
-	{
-		title: "Home Lab",
-		stack: "Docker, Docker Compose, Linux, Bash",
-		color: "gray",
-		links: [{ label: "GitHub", url: "https://github.com/tashifkhan/home-lab" }],
-		points: [
-			"Self-hosted lab of 10+ Dockerized services (Nextcloud, Jellyfin, Arr stack).",
-			"Secure remote access via Tailscale VPN + Nginx Proxy Manager.",
-			"Automated media acquisition and container orchestration.",
-		],
-	},
-];
-
-const education = [
-	{
-		institute: "Jaypee Institute of Information Technology",
-		period: "2022 - 2026",
-		degree: "B. Tech Electronics & Communication",
-		details: ["CGPA: 7.3/10.0"],
-		color: "orange",
-	},
-	{
-		institute: "Delhi Public School, R. K. Puram",
-		period: "2018 - 2022",
-		details: ["CBSE XII – 94.6%", "CBSE X – 94%"],
-		color: "orange",
-	},
-];
-
-const positions = [
-	{
-		title: "Treasurer & Senior Advisor",
-		org: "Optica Student Chapter JIIT",
-		period: "2024 - Present",
-		color: "green",
-		points: [
-			"Orchestrated flagship HC Verma talk with ~4,000 participants (on + off campus).",
-			"Coordinated high-engagement comedy talent open mic (~3,000 participants).",
-		],
-	},
-	{
-		title: "Mentor",
-		org: "The Jaypee Debating Society",
-		period: "2023 - Present",
-		color: "blue",
-		points: [
-			"Guided junior cohort in advanced debate strategy elevating competitive performance.",
-		],
-	},
-	{
-		title: "Organising Secretary & Cofounder",
-		org: "Jaypee Parliamentary Debate",
-		period: "2023 - 2024",
-		color: "purple",
-		points: [
-			"Launched inaugural inter‑college debate (JPD 1.0) with 52 external teams; established recurring flagship.",
-		],
-	},
-	{
-		title: "Core Executive",
-		org: "JOUST'23 | Parola Literary Hub",
-		period: "2019 - 2020",
-		color: "orange",
-		points: [
-			"Executed one of India's largest literary festivals (500+ paid participants; ₹700k revenue).",
-		],
-	},
-];
-
-const skillCategories = [
-	{
-		label: "Languages",
-		color: "orange",
-		items: ["Python", "JavaScript", "Go"],
-	},
-	{
-		label: "Frameworks",
-		color: "blue",
-		items: [
-			"Next.js",
-			"React.js",
-			"React Native",
-			"Node.js",
-			"Astro",
-			"FastAPI",
-			"Redux",
-			"LangChain",
-			"Framer Motion",
-		],
-	},
-	{
-		label: "Databases",
-		color: "green",
-		items: ["PostgreSQL", "MongoDB", "FAISS", "ChromaDB", "SQLite"],
-	},
-	{
-		label: "Tools",
-		color: "purple",
-		items: ["Git", "Docker", "Vercel", "Pyodide", "Tailscale", "Nginx"],
-	},
-];
+import {
+	resumeProjects,
+	education,
+	positions,
+	skillCategories,
+} from "../data/resume";
 ---
 
 <div class="resume-container w-full">
 	<InteractiveResume
 		client:load
 		experiences={experiences}
-		projects={projects}
+		projects={resumeProjects}
 		education={education}
 		positions={positions}
 		skillCategories={skillCategories}
