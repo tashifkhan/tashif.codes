@@ -1,0 +1,85 @@
+name: Publish F-Droid Repo
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_repository:
+        description: 'GitHub repository containing the APK release'
+        required: true
+        default: 'tashifkhan/Patchwork'
+        type: string
+      release_tag:
+        description: 'Release tag to import, for example v1.0.0'
+        required: true
+        type: string
+      apk_pattern:
+        description: 'APK asset pattern in the release'
+        required: true
+        default: '*.apk'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Import APK and update F-Droid index
+    runs-on: ubuntu-latest
+    env:
+      REPO_URL: https://tashif.codes/fdroid/repo
+      REPO_NAME: Tashif Codes
+      REPO_DESCRIPTION: Android apps published by Tashif Khan.
+      FDROID_KEYSTORE_BASE64: ${{ secrets.FDROID_KEYSTORE_BASE64 }}
+      FDROID_KEYSTORE_PASS: ${{ secrets.FDROID_KEYSTORE_PASS }}
+      FDROID_KEY_ALIAS: ${{ secrets.FDROID_KEY_ALIAS }}
+      FDROID_KEY_PASS: ${{ secrets.FDROID_KEY_PASS }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout website
+        uses: actions/checkout@v4
+
+      - name: Validate signing secrets
+        run: |
+          test -n "$FDROID_KEYSTORE_BASE64"
+          test -n "$FDROID_KEYSTORE_PASS"
+          test -n "$FDROID_KEY_ALIAS"
+          test -n "$FDROID_KEY_PASS"
+
+      - name: Install fdroidserver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fdroidserver
+
+      - name: Download APK from release
+        run: |
+          mkdir -p fdroid-input public/fdroid/repo
+          gh release download "${{ inputs.release_tag }}" \
+            --repo "${{ inputs.source_repository }}" \
+            --pattern "${{ inputs.apk_pattern }}" \
+            --dir fdroid-input
+          test -n "$(ls fdroid-input/*.apk 2>/dev/null)"
+          cp fdroid-input/*.apk public/fdroid/repo/
+
+      - name: Generate signed F-Droid index
+        working-directory: public/fdroid
+        run: |
+          printf '%s' "$FDROID_KEYSTORE_BASE64" | base64 --decode > fdroid-repo.p12
+          cat > config.yml <<EOF
+          repo_url: $REPO_URL
+          repo_name: $REPO_NAME
+          repo_description: $REPO_DESCRIPTION
+          archive_older: 3
+          keystore: fdroid-repo.p12
+          keystorepass: $FDROID_KEYSTORE_PASS
+          repo_keyalias: $FDROID_KEY_ALIAS
+          keypass: $FDROID_KEY_PASS
+          keydname: CN=Tashif Codes, OU=F-Droid Repo, O=Tashif Codes, L=Delhi, C=IN
+          EOF
+          fdroid update --create-metadata --verbose
+          rm -f config.yml fdroid-repo.p12
+
+      - name: Commit F-Droid repo files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore(fdroid): publish ${{ inputs.release_tag }}'
+          file_pattern: public/fdroid
