@@ -164,7 +164,7 @@ img, video, canvas, iframe, embed, object {
 }
 
 /* Prevent horizontal scrolling globally */
-body, html, #__next, header, section {
+body, html, #__next, header {
   overflow-x: hidden;
   max-width: 100vw;
 }
@@ -847,5 +847,35 @@ nav::-webkit-scrollbar-thumb:hover {
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+}
+
+/* ── Page transitions (Astro ClientRouter) — gentle rise & fade ── */
+@keyframes page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+::view-transition-old(root) {
+  animation: page-out 0.16s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+::view-transition-new(root) {
+  animation: page-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.04s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
   }
 }
