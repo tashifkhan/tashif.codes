@@ -1,8 +1,8 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import PageShell from "../../layouts/PageShell.astro";
 import ProjectFilters from "../../components/ProjectFilters.tsx";
 import { starLists } from "../../data/starLists";
-import { ArrowLeft, BarChart3 } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import ProjectCard from "../../components/ProjectCard.astro";
 import { allProjects, type Project } from "../../data/projects";
 import { fetchAnalyticsProjects, hasAnalytics, getAnalyticsSlug } from "../../data/analyticsProjects";
@@ -11,67 +11,53 @@ const projects: Project[] = allProjects;
 const analyticsProjects = await fetchAnalyticsProjects();
 ---
 
-<Layout title="Projects | Tashif Ahmad Khan">
-	<div
-		class="relative min-h-screen bg-gradient-to-b from-muted to-background dark:from-background dark:to-card text-foreground transition-colors duration-300 font-sans"
-	>
-		<header
-			class="relative bg-card/80 dark:bg-card/80 backdrop-blur border-b border-border/60 dark:border-border/60 transition-colors duration-300"
-		>
-			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
-				<a
-					href="/"
-					data-haptic-nav
-					class="inline-flex items-center text-primary hover:text-primary/80 hover:underline mb-4 sm:mb-6 text-sm sm:text-base font-medium transition-colors"
-				>
-					<ArrowLeft className="w-4 h-4 mr-2" /> Back
-				</a>
-				<div class="flex items-center justify-between gap-4 mb-4">
-					<h1
-						class="text-4xl sm:text-5xl font-semibold tracking-tight text-foreground"
-					>
-						Projects
-					</h1>
-					<a
-						href="/projects/stats"
-						data-haptic-nav
-						class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-secondary/50 hover:bg-secondary border border-border/50 rounded-lg transition-colors shrink-0"
-					>
-						<BarChart3 className="w-4 h-4" />
-						Analytics
-					</a>
-				</div>
-			</div>
-		</header>
-
-		<main transition:animate="fade" class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-			<div class="mb-10">
-				<ProjectFilters client:load starLists={starLists} />
-			</div>
-
-			<div
-				class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+<PageShell
+	title="Projects | Tashif Ahmad Khan"
+	breadcrumbs={[{ label: "Home", href: "/" }, { label: "Projects" }]}
+>
+	<Fragment slot="header">
+		<div class="flex items-center justify-between gap-4 mb-4">
+			<h1
+				class="font-sans text-4xl sm:text-5xl font-semibold tracking-tight text-foreground"
 			>
-				{
-					projects.map((project) => (
-						<div
-							class="h-full"
-							data-project-item-card
-							data-has-live-link={Boolean(project.live_website_url)}
-							data-has-releases={Boolean(project.releases && project.releases.length > 0)}
-						>
-							<ProjectCard
-								project={project}
-								hasAnalytics={hasAnalytics(project.slug, analyticsProjects)}
-								analyticsSlug={getAnalyticsSlug(project.slug)}
-							/>
-						</div>
-					))
-				}
-			</div>
-		</main>
+				Projects
+			</h1>
+			<a
+				href="/projects/stats"
+				data-haptic-nav
+				class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-secondary/50 hover:bg-secondary border border-border/50 rounded-lg transition-colors shrink-0"
+			>
+				<BarChart3 className="w-4 h-4" />
+				Analytics
+			</a>
+		</div>
+	</Fragment>
+
+	<div class="mb-10">
+		<ProjectFilters client:load starLists={starLists} />
 	</div>
-</Layout>
+
+	<div
+		class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+	>
+		{
+			projects.map((project) => (
+				<div
+					class="h-full"
+					data-project-item-card
+					data-has-live-link={Boolean(project.live_website_url)}
+					data-has-releases={Boolean(project.releases && project.releases.length > 0)}
+				>
+					<ProjectCard
+						project={project}
+						hasAnalytics={hasAnalytics(project.slug, analyticsProjects)}
+						analyticsSlug={getAnalyticsSlug(project.slug)}
+					/>
+				</div>
+			))
+		}
+	</div>
+</PageShell>
 
 <script>
 	function fuzzySearch(text: string, query: string): boolean {
@@ -187,15 +173,5 @@ const analyticsProjects = await fetchAnalyticsProjects();
 			detail: { term: "", showLiveOnly: false },
 		});
 		document.dispatchEvent(initialSearchEvent);
-	});
-</script>
-
-<script>
-	import { WebHaptics } from "web-haptics";
-	const haptics = new WebHaptics();
-	document.addEventListener("astro:page-load", () => {
-		document.querySelectorAll('[data-haptic-nav]').forEach(el =>
-			el.addEventListener("click", () => haptics.trigger("light"))
-		);
 	});
 </script>
