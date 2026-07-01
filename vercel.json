@@ -47,7 +47,7 @@
 			"destination": "https://eu.i.posthog.com/:path*"
 		},
 		{
-			"source": "/:slug((?!api|static|projects|docs|download|blog|blogs|github|leetcode|print-resume|resume|ph|u|_astro|404$)[A-Za-z0-9_-]+)",
+			"source": "/:slug((?!api|static|projects|docs|download|blog|blogs|github|leetcode|print-resume|resume|fdroid|ph|u|_astro|404$)[A-Za-z0-9_-]+)",
 			"destination": "https://u.tashif.codes/:slug"
 		}
 	],
