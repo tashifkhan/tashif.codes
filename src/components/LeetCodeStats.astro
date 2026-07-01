@@ -1,138 +1,118 @@
 ---
 import { leetCodeData } from "../data/leetcode";
 import { Trophy, Target, Calendar, Award } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 
-const { stats, profile } = leetCodeData;
+const { stats } = leetCodeData;
+
+const metricCards = [
+	{
+		label: "Total Solved",
+		value: stats.totalSolved.toString(),
+		sub: `of ${stats.totalQuestions} problems`,
+		icon: Trophy,
+	},
+	{
+		label: "Global Ranking",
+		value: `#${stats.ranking.toLocaleString()}`,
+		sub: "out of millions",
+		icon: Target,
+	},
+	{
+		label: "Reputation",
+		value: stats.reputation.toString(),
+		sub: "contribution points",
+		icon: Award,
+	},
+	{
+		label: "Contribution",
+		value: stats.contributionPoints.toString(),
+		sub: "points earned",
+		icon: Calendar,
+	},
+];
+
+// LeetCode's own difficulty palette
+const difficulties = [
+	{
+		label: "Easy",
+		solved: stats.easySolved,
+		total: stats.totalEasy,
+		text: "text-emerald-500",
+		bar: "bg-emerald-500",
+	},
+	{
+		label: "Medium",
+		solved: stats.mediumSolved,
+		total: stats.totalMedium,
+		text: "text-amber-500",
+		bar: "bg-amber-500",
+	},
+	{
+		label: "Hard",
+		solved: stats.hardSolved,
+		total: stats.totalHard,
+		text: "text-rose-500",
+		bar: "bg-rose-500",
+	},
+];
 ---
 
-<!-- Top Metric Grid (Redesigned) -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8">
+<!-- Metric Grid -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
 	{
-		[
-			{
-				label: "Total Solved",
-				value: stats.totalSolved.toString(),
-				sub: `of ${stats.totalQuestions} problems`,
-				icon: Trophy,
-			},
-			{
-				label: "Global Ranking",
-				value: `#${stats.ranking.toLocaleString()}`,
-				sub: "out of millions",
-				icon: Target,
-			},
-			{
-				label: "Reputation",
-				value: stats.reputation.toString(),
-				sub: "contribution points",
-				icon: Award,
-			},
-			{
-				label: "Contribution",
-				value: stats.contributionPoints.toString(),
-				sub: "points earned",
-				icon: Calendar,
-			},
-		].map((card) => (
-			<Card className="group relative overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
-				<CardContent className="p-5 flex items-start justify-between gap-4">
-					<div class="space-y-2 min-w-0">
-						<p class="text-[11px] uppercase tracking-wide font-medium text-muted-foreground">
-							{card.label}
-						</p>
-						<p class="text-2xl font-semibold text-foreground tabular-nums">
-							{card.value}
-						</p>
-						<p class="text-xs text-muted-foreground/70 truncate">{card.sub}</p>
-					</div>
-					<div class="shrink-0">
-						<div class="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shadow-sm">
-							<card.icon className="w-5 h-5" />
-						</div>
-					</div>
-				</CardContent>
-			</Card>
+		metricCards.map((card) => (
+			<div class="relative overflow-hidden rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-4 sm:p-5 hover:border-primary/30 transition-colors">
+				<div class="absolute left-0 top-4 bottom-4 w-[2px] rounded-r-full bg-primary/70" />
+				<p class="pl-3 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground flex items-center gap-1.5 truncate">
+					<card.icon className="w-3 h-3 shrink-0" />
+					{card.label}
+				</p>
+				<p class="pl-3 mt-2.5 font-mono text-2xl sm:text-[1.7rem] font-bold text-foreground tabular-nums leading-none">
+					{card.value}
+				</p>
+				<p class="pl-3 mt-1.5 text-[10px] text-muted-foreground truncate">
+					{card.sub}
+				</p>
+			</div>
 		))
 	}
 </div>
 
-<!-- Difficulty Breakdown (Redesigned) -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 mb-4">
+<!-- Difficulty Breakdown -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-8">
 	{
-		[
-			{
-				label: "Easy",
-				solved: stats.easySolved,
-				total: stats.totalEasy,
-				hue: "from-primary/60 to-primary/70",
-			},
-			{
-				label: "Medium",
-				solved: stats.mediumSolved,
-				total: stats.totalMedium,
-				hue: "from-primary/70 to-primary/80",
-			},
-			{
-				label: "Hard",
-				solved: stats.hardSolved,
-				total: stats.totalHard,
-				hue: "from-primary/80 to-primary",
-			},
-		].map((diff) => {
-			const pct = Math.round((diff.solved / diff.total) * 100);
+		difficulties.map((diff) => {
+			const pct =
+				diff.total > 0 ? Math.round((diff.solved / diff.total) * 100) : 0;
 			return (
-				<Card className="relative overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm group transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
-					<CardContent className="p-5">
-						<div class="flex items-center justify-between mb-3">
-							<h3 class="text-sm font-medium text-foreground tracking-wide">
-								{diff.label}
-							</h3>
-							<span class="text-base font-semibold text-foreground tabular-nums">
-								{diff.solved}/{diff.total}
+				<div class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-5 hover:border-primary/30 transition-colors">
+					<div class="flex items-baseline justify-between mb-3">
+						<span
+							class:list={[
+								"text-[10px] font-bold uppercase tracking-[0.15em]",
+								diff.text,
+							]}
+						>
+							{diff.label}
+						</span>
+						<span class="font-mono text-lg font-bold text-foreground tabular-nums">
+							{diff.solved}
+							<span class="text-xs font-medium text-muted-foreground">
+								/{diff.total}
 							</span>
-						</div>
-						<div class="h-2.5 relative rounded-full bg-secondary overflow-hidden">
-							<div
-								class={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${diff.hue}`}
-								style={`width:${(diff.solved / diff.total) * 100}%`}
-							/>
-						</div>
-						<div class="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
-							<span>{pct}% completed</span>
-							<span class="inline-flex items-center gap-1">
-								<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-								progress
-							</span>
-						</div>
-					</CardContent>
-				</Card>
+						</span>
+					</div>
+					<div class="h-1.5 rounded-full bg-secondary overflow-hidden">
+						<div
+							class:list={["h-full rounded-full", diff.bar]}
+							style={`width:${pct}%`}
+						/>
+					</div>
+					<p class="mt-2 font-mono text-[11px] text-muted-foreground tabular-nums">
+						{pct}% solved
+					</p>
+				</div>
 			);
 		})
 	}
-</div>
-
-<!-- Legend / Meta -->
-<div class="mb-8 text-[11px] text-muted-foreground flex items-center gap-3">
-	<div class="flex items-center gap-1.5">
-		<span
-			class="w-3 h-3 rounded-full bg-gradient-to-br from-primary/60 to-primary/70"
-		></span>
-		<span>Easy</span>
-	</div>
-	<div class="flex items-center gap-1.5">
-		<span
-			class="w-3 h-3 rounded-full bg-gradient-to-br from-primary/70 to-primary/80"
-		></span>
-		<span>Medium</span>
-	</div>
-	<div class="flex items-center gap-1.5">
-		<span
-			class="w-3 h-3 rounded-full bg-gradient-to-br from-primary/80 to-primary"
-		></span>
-		<span>Hard</span>
-	</div>
-	<span class="ml-auto italic opacity-70"
-		>Updated from cached LeetCode snapshot</span
-	>
 </div>
