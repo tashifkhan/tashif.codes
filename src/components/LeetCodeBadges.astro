@@ -1,50 +1,52 @@
 ---
 import { leetCodeData } from "../data/leetcode";
-import { Award, Star } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Award, Medal } from "lucide-react";
 
 const { badges } = leetCodeData;
 ---
 
-<Card className="bg-card/50 backdrop-blur-xl border-border/50 shadow-lg">
-	<CardHeader>
-		<CardTitle className="text-lg font-semibold text-foreground">
+<section
+	class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden h-fit"
+>
+	<div class="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
+		<Medal className="w-3.5 h-3.5 text-muted-foreground" />
+		<span
+			class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
+		>
 			Achievement Badges
-		</CardTitle>
-	</CardHeader>
-	<CardContent>
+		</span>
 		{
-			badges.length > 0 ? (
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-					{badges.slice(0, 6).map((badge) => (
-						<div class="flex items-center space-x-3 p-4 bg-card/60 backdrop-blur rounded-xl border border-border/50 hover:bg-card/80 transition-all duration-300">
-							<div class="flex-shrink-0">
-								<div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shadow-lg">
-									<Award className="w-5 h-5 text-primary" />
-								</div>
-							</div>
-							<div class="flex-1 min-w-0">
-								<h4 class="font-medium text-foreground truncate mb-1">
-									{badge.displayName}
-								</h4>
-								<p class="text-sm text-muted-foreground truncate mb-1">
-									{badge.description}
-								</p>
-								<p class="text-xs text-muted-foreground/70">
-									{new Date(badge.createdDate).toLocaleDateString()}
-								</p>
-							</div>
-						</div>
-					))}
-				</div>
-			) : (
-				<div class="text-center py-8">
-					<div class="p-3 bg-muted dark:bg-secondary rounded-xl w-fit mx-auto mb-4">
-						<Award className="w-8 h-8 text-muted-foreground mx-auto" />
-					</div>
-					<p class="text-muted-foreground dark:text-muted-foreground">No badges earned yet</p>
-				</div>
+			badges.length > 0 && (
+				<span class="ml-auto font-mono text-[10px] text-muted-foreground bg-muted/50 border border-border/40 px-2 py-0.5 rounded-full tabular-nums">
+					{badges.length}
+				</span>
 			)
 		}
-	</CardContent>
-</Card>
+	</div>
+	{
+		badges.length > 0 ? (
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-border/40">
+				{badges.slice(0, 6).map((badge) => (
+					<div class="flex items-center gap-3 bg-card px-4 py-3.5 hover:bg-muted/30 transition-colors">
+						<div class="h-9 w-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+							<Award className="w-4 h-4 text-amber-500" />
+						</div>
+						<div class="flex-1 min-w-0">
+							<p class="text-[13px] font-medium text-foreground truncate">
+								{badge.displayName}
+							</p>
+							<p class="mt-0.5 font-mono text-[11px] text-muted-foreground truncate">
+								{new Date(badge.createdDate).toLocaleDateString()}
+							</p>
+						</div>
+					</div>
+				))}
+			</div>
+		) : (
+			<div class="flex flex-col items-center justify-center py-12 text-muted-foreground">
+				<Award className="w-6 h-6 mb-3 opacity-30" />
+				<p class="text-sm">No badges earned yet</p>
+			</div>
+		)
+	}
+</section>
