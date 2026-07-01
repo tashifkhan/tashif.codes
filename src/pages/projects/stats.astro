@@ -1,58 +1,27 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import { ArrowLeft, BarChart3, Calendar } from "lucide-react";
+import PageShell from "../../layouts/PageShell.astro";
 import ProjectStatsDashboard from "../../components/ProjectStatsDashboard";
 ---
 
-<Layout title="Project Stats | Tashif Ahmad Khan">
-	<div
-		class="relative min-h-screen bg-gradient-to-b from-muted to-background dark:from-background dark:to-card text-foreground dark:text-foreground transition-colors duration-300 font-sans"
-	>
-		<div
-			class="pointer-events-none absolute inset-0 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]"
+<PageShell
+	title="Project Stats | Tashif Ahmad Khan"
+	tint="blue"
+	breadcrumbs={[
+		{ label: "Home", href: "/" },
+		{ label: "Projects", href: "/projects" },
+		{ label: "Stats" },
+	]}
+>
+	<Fragment slot="header">
+		<h1
+			class="font-sans text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 dark:from-foreground dark:to-muted-foreground bg-clip-text text-transparent mb-2 pb-1"
 		>
-			<div
-				class="h-40 bg-gradient-to-b from-blue-200/40 to-transparent dark:from-blue-900/20"
-			>
-			</div>
-		</div>
+			Project Stats
+		</h1>
+		<p class="text-muted-foreground text-base sm:text-lg leading-relaxed">
+			Live traffic and engagement metrics across deployed projects
+		</p>
+	</Fragment>
 
-		<header
-			class="relative bg-card/80 dark:bg-card/80 backdrop-blur border-b border-border/60 dark:border-border/60 transition-colors duration-300"
-		>
-			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-				<a
-					href="/projects"
-					data-haptic-back
-					class="flex items-center text-primary dark:text-primary hover:text-primary/80 hover:underline mb-4 sm:mb-6 text-sm sm:text-base font-medium"
-				>
-					<ArrowLeft className="w-4 h-4 mr-2" /> Back to Projects
-				</a>
-				<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-					<div>
-					<h1
-						class="text-3xl sm:text-4xl lg:text-5xl bg-gradient-to-r from-foreground to-foreground/60 dark:from-foreground dark:to-muted-foreground bg-clip-text text-transparent font-bold mb-2 pb-1"
-					>
-							Project Stats
-						</h1>
-						<p
-							class="text-muted-foreground dark:text-muted-foreground text-base sm:text-lg leading-relaxed"
-						>
-							Real-time performance metrics and analytics
-						</p>
-					</div>
-				</div>
-			</div>
-		</header>
-
-		<main class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-			<ProjectStatsDashboard client:only="react" />
-		</main>
-	</div>
-</Layout>
-
-<script>
-	import { WebHaptics } from "web-haptics";
-	const haptics = new WebHaptics();
-	document.querySelector('[data-haptic-back]')?.addEventListener("click", () => haptics.trigger("light"));
-</script>
+	<ProjectStatsDashboard client:only="react" />
+</PageShell>
