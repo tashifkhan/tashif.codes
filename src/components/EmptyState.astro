@@ -1,0 +1,98 @@
+---
+import { ExternalLink, ArrowRight } from "lucide-react";
+
+interface Props {
+	/** The command shown after the prompt, e.g. "ls ./blog" */
+	command: string;
+	/** Short status line, rendered as terminal output, e.g. "no posts available" */
+	title: string;
+	/** Optional longer explanation, rendered in sans below the output */
+	description?: string;
+	/** Optional call-to-action link label */
+	ctaLabel?: string;
+	ctaHref?: string;
+	/** When true, opens in a new tab and uses an external-link icon */
+	ctaExternal?: boolean;
+	/** "md" (default) full-width card, "sm" for compact sections */
+	size?: "sm" | "md";
+	class?: string;
+}
+
+const {
+	command,
+	title,
+	description,
+	ctaLabel,
+	ctaHref,
+	ctaExternal = false,
+	size = "md",
+	class: className = "",
+} = Astro.props;
+
+const maxW = size === "sm" ? "max-w-sm" : "max-w-md";
+---
+
+<div class={`mx-auto w-full ${maxW} ${className}`}>
+	<div
+		class="overflow-hidden rounded-xl border border-border/60 bg-card/60 backdrop-blur shadow-sm"
+	>
+		<!-- Title bar -->
+		<div
+			class="flex items-center gap-2 border-b border-border/50 bg-muted/40 px-3.5 py-2"
+		>
+			<span class="flex gap-1.5" aria-hidden="true">
+				<span class="h-2.5 w-2.5 rounded-full bg-rose-400/70"></span>
+				<span class="h-2.5 w-2.5 rounded-full bg-amber-400/70"></span>
+				<span class="h-2.5 w-2.5 rounded-full bg-emerald-400/70"></span>
+			</span>
+			<span class="ml-1 font-mono text-[11px] text-muted-foreground/60">zsh</span>
+		</div>
+
+		<!-- Body -->
+		<div class="space-y-1.5 px-4 py-5 text-left font-mono text-sm">
+			<div class="flex items-baseline gap-1.5">
+				<span class="select-none font-bold text-primary" aria-hidden="true"
+					>➜</span
+				>
+				<span class="font-semibold text-foreground">tashif.codes</span>
+				<span class="select-none text-muted-foreground/70" aria-hidden="true"
+					>%</span
+				>
+				<span class="truncate text-muted-foreground">{command}</span>
+			</div>
+
+			<p class="text-foreground">
+				<span class="text-rose-400/80">zsh:</span>
+				{title}
+			</p>
+
+			{
+				description && (
+					<p class="pt-1 font-sans text-xs leading-relaxed text-muted-foreground/80">
+						{description}
+					</p>
+				)
+			}
+
+			{
+				ctaLabel && ctaHref && (
+					<a
+						href={ctaHref}
+						data-haptic-external={ctaExternal ? "" : undefined}
+						target={ctaExternal ? "_blank" : undefined}
+						rel={ctaExternal ? "noopener noreferrer" : undefined}
+						class="group mt-3 inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/50 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
+					>
+						<span class="text-primary">→</span>
+						{ctaLabel}
+						{ctaExternal ? (
+							<ExternalLink className="h-3 w-3 opacity-70 transition-transform group-hover:translate-x-0.5" />
+						) : (
+							<ArrowRight className="h-3 w-3 opacity-70 transition-transform group-hover:translate-x-0.5" />
+						)}
+					</a>
+				)
+			}
+		</div>
+	</div>
+</div>
