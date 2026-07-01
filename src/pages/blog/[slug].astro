@@ -217,13 +217,13 @@ const totalComments = initialComments.reduce(
 
 				<!-- Desktop Fixed Sidebar -->
 				<aside
-					class="hidden lg:block w-52 xl:w-56 shrink-0 animate-in fade-in slide-in-from-right duration-700"
+					class="hidden lg:block w-52 xl:w-56 shrink-0"
 				>
 					<div
 						class="fixed top-20 z-30 w-52 xl:w-56 max-h-[calc(100vh-6rem)] overflow-y-auto"
 						style="scrollbar-width: none; right: max(2rem, calc((100vw - 80rem) / 2 + 2rem));"
 					>
-						<div class="flex flex-col gap-4">
+						<div class="flex flex-col gap-4 sidebar-enter">
 						<!-- Engagement Card -->
 						<div
 							class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-4"
@@ -906,4 +906,28 @@ const totalComments = initialComments.reduce(
 		}
 		document.addEventListener("astro:page-load", init);
 	</script>
+
+	<style>
+		.sidebar-enter {
+			animation: sidebar-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+			will-change: transform, opacity;
+		}
+
+		@keyframes sidebar-enter {
+			from {
+				opacity: 0;
+				transform: translateY(10px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.sidebar-enter {
+				animation: none;
+			}
+		}
+	</style>
 </Layout>
