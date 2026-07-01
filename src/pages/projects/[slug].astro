@@ -1,26 +1,38 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import PageShell from "../../layouts/PageShell.astro";
 import {
 	Github,
 	ExternalLink,
-	ArrowLeft,
 	FileText,
 	GitFork,
 	BarChart3,
 	Tag,
 	Download,
-	Package,
 	Calendar,
+	Star,
+	Users,
+	ChevronRight,
+	X,
 } from "lucide-react";
 import { allProjects, type Project } from "../../data/projects";
 import MarkdownRenderer from "../../components/MarkdownRenderer.astro";
-import { fetchAnalyticsProjects, hasAnalytics, getAnalyticsSlug } from "../../data/analyticsProjects";
+import EmptyState from "../../components/EmptyState.astro";
+import {
+	fetchAnalyticsProjects,
+	hasAnalytics,
+	getAnalyticsSlug,
+} from "../../data/analyticsProjects";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
 
-const { project, projectHasAnalytics, analyticsSlug } = Astro.props as { project: Project; projectHasAnalytics: boolean; analyticsSlug: string };
+const { project, projectHasAnalytics, analyticsSlug } = Astro.props as {
+	project: Project;
+	projectHasAnalytics: boolean;
+	analyticsSlug: string;
+};
 
 // Readme is now plain markdown (not Base64). Graceful fallback: if the content
 // looks like Base64 (all base64 chars, no markdown markers), decode it.
@@ -44,6 +56,19 @@ if (readmeContent) {
 }
 
 const releases = project.releases ?? [];
+const latestRelease = releases[0];
+const contributors = project.contributors ?? [];
+
+const repoFacts = [
+	{ icon: Star, label: "Stars", value: project.stars },
+	{ icon: GitFork, label: "Forks", value: project.forks },
+	{ icon: Tag, label: "Releases", value: releases.length || undefined },
+	{
+		icon: Users,
+		label: "Contributors",
+		value: contributors.length > 1 ? contributors.length : undefined,
+	},
+].filter((f) => f.value !== undefined && f.value !== null);
 
 function formatBytes(bytes: number): string {
 	if (bytes < 1024) return `${bytes} B`;
@@ -64,356 +89,532 @@ export async function getStaticPaths() {
 	const analyticsProjects = await fetchAnalyticsProjects();
 	return allProjects.map((project: Project) => ({
 		params: { slug: project.slug },
-		props: { 
+		props: {
 			project,
 			projectHasAnalytics: hasAnalytics(project.slug, analyticsProjects),
-			analyticsSlug: getAnalyticsSlug(project.slug)
+			analyticsSlug: getAnalyticsSlug(project.slug),
 		},
 	}));
 }
 ---
 
-<Layout title={`${project.title} | Projects | Tashif Ahmad Khan`}>
-	<div
-		class="relative min-h-screen bg-gradient-to-b from-muted to-background dark:from-background dark:to-card text-foreground dark:text-foreground transition-colors duration-300 font-sans"
-	>
-		<div
-			class="pointer-events-none absolute inset-0 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]"
+<PageShell
+	title={`${project.title} | Projects | Tashif Ahmad Khan`}
+	tint="orange"
+	breadcrumbs={[
+		{ label: "Home", href: "/" },
+		{ label: "Projects", href: "/projects" },
+		{ label: project.title },
+	]}
+>
+	<Fragment slot="header">
+		<h1
+			class="font-sans text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent mb-4 pb-1"
 		>
-			<div
-				class="h-40 bg-gradient-to-b from-orange-200/40 to-transparent dark:from-orange-900/20"
-			>
-			</div>
-		</div>
-		<header
-			class="relative bg-card/80 dark:bg-card/80 backdrop-blur border-b border-border/60 dark:border-border/60 transition-colors duration-300"
+			{project.title}
+		</h1>
+		<p
+			class="text-muted-foreground mb-5 text-base sm:text-lg leading-relaxed max-w-3xl"
 		>
-			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-			<a
-				href="/projects"
-				data-haptic-back
-				class="flex items-center text-primary dark:text-primary hover:text-primary/80 hover:underline mb-4 sm:mb-6 text-sm sm:text-base font-medium"
-			>
-					<ArrowLeft className="w-4 h-4 mr-2" /> Back to Projects
-				</a>
-			<h1
-				class="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-primary/80 dark:from-foreground dark:to-muted-foreground bg-clip-text text-transparent mb-4 pb-1"
-			>
-					{project.title}
-				</h1>
-				<p
-					class="text-muted-foreground dark:text-muted-foreground mb-6 text-base sm:text-lg leading-relaxed max-w-3xl"
+			{project.description}
+		</p>
+
+		{
+			project.parentRepo && (
+				<a
+					href={`https://github.com/${project.parentRepo}`}
+					target="_blank"
+					rel="noopener noreferrer"
+					data-haptic-external
+					class="inline-flex items-center gap-1.5 text-sm text-muted-foreground mb-5 bg-muted/50 dark:bg-secondary/50 w-fit px-3 py-1 rounded-full border border-border hover:border-primary/40 transition-colors"
 				>
-					{project.description}
-				</p>
-				{
-					project.parentRepo && (
+					<GitFork className="w-4 h-4" />
+					<span>
+						Forked from <strong class="font-medium">{project.parentRepo}</strong>
+					</span>
+				</a>
+			)
+		}
+
+		{
+			repoFacts.length > 0 && (
+				<div class="flex flex-wrap items-center gap-x-5 gap-y-2 mb-6 font-mono text-xs text-muted-foreground">
+					{repoFacts.map(({ icon: Icon, label, value }) => (
+						<span class="inline-flex items-center gap-1.5">
+							<Icon className="w-3.5 h-3.5" />
+							<span class="text-foreground font-semibold tabular-nums">
+								{value}
+							</span>
+							{label.toLowerCase()}
+						</span>
+					))}
+				</div>
+			)
+		}
+
+		<div class="flex flex-row flex-wrap items-center gap-2.5 sm:gap-3">
+			{
+				project.live_website_url && (
 					<a
-						href={`https://github.com/${project.parentRepo}`}
+						href={project.live_website_url}
 						target="_blank"
 						rel="noopener noreferrer"
 						data-haptic-external
+						class={cn(
+							buttonVariants({ variant: "default", size: "sm" }),
+							"h-8 text-xs gap-1.5 shadow-sm"
+						)}
 					>
-							<div class="flex items-center gap-1.5 text-sm text-muted-foreground dark:text-muted-foreground mb-6 -mt-4 bg-muted/50 dark:bg-secondary/50 w-fit px-3 py-1 rounded-full border border-border dark:border-border">
-								<GitFork className="w-4 h-4" />
-								<span>
-									Forked from{" "}
-									<strong class="font-medium text-muted-foreground dark:text-muted-foreground">
-										{project.parentRepo}
-									</strong>
-								</span>
-							</div>
-						</a>
-					)
-				}
-				<div class="flex flex-wrap gap-2 mb-6">
-					{
-						project.languages.map((lang: string) => (
-							<Badge
-								variant="secondary"
-								className="text-[10px] font-medium bg-secondary/50 hover:bg-secondary/70 transition-colors"
-							>
-								{lang}
-							</Badge>
-						))
-					}
-				</div>
+						<ExternalLink className="w-3.5 h-3.5" />
+						Live Demo
+					</a>
+				)
+			}
+			<a
+				href={project.github_link}
+				target="_blank"
+				rel="noopener noreferrer"
+				data-haptic-external
+				class={cn(
+					buttonVariants({ variant: "outline", size: "sm" }),
+					"h-8 text-xs gap-1.5 bg-background/50 backdrop-blur-sm"
+				)}
+			>
+				<Github className="w-3.5 h-3.5" />
+				Source
+			</a>
+			{
+				project.docs_slug && (
+					<a
+						href={`/docs/${project.docs_slug}`}
+						data-haptic-nav
+						class={cn(
+							buttonVariants({ variant: "outline", size: "sm" }),
+							"h-8 text-xs gap-1.5 shadow-sm hover:bg-secondary/70 transition-colors"
+						)}
+					>
+						<FileText className="w-3.5 h-3.5" />
+						Docs
+					</a>
+				)
+			}
+			{
+				projectHasAnalytics && (
+					<a
+						href={`/projects/stats?project=${analyticsSlug}`}
+						data-haptic-nav
+						class={cn(
+							buttonVariants({ variant: "outline", size: "sm" }),
+							"h-8 text-xs gap-1.5 shadow-sm hover:bg-blue-500/10 hover:border-blue-500/30 transition-colors"
+						)}
+					>
+						<BarChart3 className="w-3.5 h-3.5" />
+						Stats
+					</a>
+				)
+			}
+			{
+				releases.length > 0 && (
+					<a
+						href="#releases"
+						data-haptic-nav
+						class={cn(
+							buttonVariants({ variant: "outline", size: "sm" }),
+							"h-8 text-xs gap-1.5 shadow-sm hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-colors"
+						)}
+					>
+						<Tag className="w-3.5 h-3.5" />
+						{releases.length} {releases.length === 1 ? "Release" : "Releases"}
+					</a>
+				)
+			}
+		</div>
+	</Fragment>
 
-				{
-					project.contributors && project.contributors.length > 1 && (
-						<div class="flex items-center gap-4 mb-6">
-							<span class="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
-								Contributors
-							</span>
-							<div class="flex flex-row items-center justify-start">
-								<AnimatedTooltip
-									client:load
-									items={project.contributors.map((c) => ({
-										id: c.login === "tashifkhan" ? 1 : Math.random(), // Ensure stable ID for main user if needed, or just unique
-										name: c.login,
-										designation: `${c.contributions} contributions`,
-										image: c.avatar_url,
-										url: c.html_url,
-									}))}
-								/>
-							</div>
+	<div
+		class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6 lg:gap-8 items-start"
+	>
+		<!-- README -->
+		<article
+			class="bg-card/80 backdrop-blur-xl p-6 sm:p-8 lg:p-10 rounded-2xl border border-border/50 shadow-lg min-w-0"
+		>
+			{
+				readmeContent ? (
+					<MarkdownRenderer
+						content={readmeContent}
+						githubBaseUrl={project.github_link}
+					/>
+				) : (
+					<div class="py-16">
+						<EmptyState
+							command="cat README.md"
+							title="no such file or directory"
+							description="No documentation is available for this project yet. Check the GitHub repository for more details."
+							ctaLabel="view on github"
+							ctaHref={project.github_link}
+							ctaExternal
+						/>
+					</div>
+				)
+			}
+		</article>
+
+		<!-- Metadata sidebar -->
+		<aside class="space-y-5 lg:sticky lg:top-8 min-w-0">
+			{
+				project.languages.length > 0 && (
+					<section class="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
+						<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3.5">
+							Built With
+						</h2>
+						<div class="flex flex-wrap gap-1.5">
+							{project.languages.map((lang: string) => (
+								<Badge
+									variant="secondary"
+									className="text-[10px] font-medium bg-secondary/50 hover:bg-secondary/70 transition-colors"
+								>
+									{lang}
+								</Badge>
+							))}
 						</div>
-					)
-				}
+					</section>
+				)
+			}
 
-				<div class="flex flex-row flex-wrap items-center gap-3 sm:gap-6">
-					{
-						project.live_website_url && (
-							<Button
-								variant="default"
-								size="sm"
-								className="h-8 text-xs gap-1.5 shadow-sm"
-								data-live-link
-								data-url={project.live_website_url}
+			{
+				contributors.length > 1 && (
+					<section class="relative z-30 rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
+						<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-4">
+							Contributors
+						</h2>
+						<div class="flex flex-row items-center justify-start">
+							<AnimatedTooltip
+								client:load
+								items={contributors.map((c, i) => ({
+									id: i + 1,
+									name: c.login,
+									designation: `${c.contributions} contributions`,
+									image: c.avatar_url,
+									url: c.html_url,
+								}))}
+							/>
+						</div>
+					</section>
+				)
+			}
+
+			{
+				latestRelease && (
+					<section
+						id="releases"
+						class="scroll-mt-8 rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5"
+					>
+						<div class="flex items-center justify-between mb-3.5">
+							<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+								Releases
+							</h2>
+							<span class="font-mono text-[10px] text-muted-foreground bg-muted/50 border border-border/40 px-2 py-0.5 rounded-full tabular-nums">
+								{releases.length}
+							</span>
+						</div>
+
+						<!-- Latest release, always expanded -->
+						<div class="flex items-center gap-2 mb-1.5">
+							<button
+								type="button"
+								data-release-open={latestRelease.id}
+								data-haptic-nav
+								title="View release details"
+								class="group/rel flex items-center gap-2 flex-1 min-w-0 text-left cursor-pointer"
 							>
+								<span class="font-mono text-sm font-semibold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full shrink-0 group-hover/rel:bg-emerald-500/20 transition-colors">
+									{latestRelease.tag_name}
+								</span>
+								{latestRelease.prerelease && (
+									<span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-500 border border-orange-500/20 shrink-0">
+										Pre-release
+									</span>
+								)}
+								<ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover/rel:text-primary group-hover/rel:translate-x-0.5 transition-all shrink-0" />
+							</button>
 							<a
-								class="flex items-center gap-1"
-								href={project.live_website_url}
+								href={latestRelease.url}
 								target="_blank"
 								rel="noopener noreferrer"
 								data-haptic-external
+								aria-label="View release on GitHub"
+								class="ml-auto text-muted-foreground hover:text-primary transition-colors"
 							>
-									<ExternalLink className="w-3.5 h-3.5" />
-									Live Demo
-								</a>
-							</Button>
-						)
-					}
-					<Button
-						variant="outline"
-						size="sm"
-						className="h-8 text-xs gap-1.5 bg-background/50 backdrop-blur-sm"
-						data-github-link
-						data-url={project.github_link}
-					>
-						<a
-							class="flex items-center gap-1"
-							href={project.github_link}
-							target="_blank"
-							rel="noopener noreferrer"
-							data-haptic-external
-						>
-							<Github className="w-3.5 h-3.5" />
-							Source
-						</a>
-					</Button>
-					{
-						project.docs_slug && (
-							<Button
-								variant="outline"
-								size="sm"
-								className="h-8 text-xs gap-1.5 shadow-sm hover:bg-secondary/70 transition-colors"
-								asChild
-							>
-							<a
-								href={`/docs/${project.docs_slug}`}
-								class="flex items-center gap-1"
-								data-haptic-nav
-							>
-									<FileText className="w-3.5 h-3.5" />
-									Docs
-								</a>
-							</Button>
-						)
-					}
-					{
-						projectHasAnalytics && (
-							<Button
-								variant="outline"
-								size="sm"
-								className="h-8 text-xs gap-1.5 shadow-sm hover:bg-blue-500/10 hover:border-blue-500/30 transition-colors"
-								asChild
-							>
-							<a
-								href={`/projects/stats?project=${analyticsSlug}`}
-								class="flex items-center gap-1"
-								data-haptic-nav
-							>
-									<BarChart3 className="w-3.5 h-3.5" />
-									Stats
-								</a>
-							</Button>
-						)
-					}
-					{
-						releases.length > 0 && (
-							<Button
-								variant="outline"
-								size="sm"
-								className="h-8 text-xs gap-1.5 shadow-sm hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-colors"
-								asChild
-							>
-								<a
-									href="#releases"
-									class="flex items-center gap-1"
-									data-haptic-nav
-								>
-									<Tag className="w-3.5 h-3.5" />
-									{releases.length} {releases.length === 1 ? "Release" : "Releases"}
-								</a>
-							</Button>
-						)
-					}
-				</div>
-			</div>
-		</header>
-
-		<main transition:animate="fade" class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
-			<!-- README -->
-			<div
-				class="bg-card/80 dark:bg-card/80 backdrop-blur-xl p-6 sm:p-8 lg:p-10 rounded-2xl border border-border/50 dark:border-border/50 shadow-lg"
-			>
-				{
-					readmeContent ? (
-						<MarkdownRenderer
-							content={readmeContent}
-							githubBaseUrl={project.github_link}
-						/>
-					) : (
-						<div class="text-center py-12">
-							<p class="text-muted-foreground dark:text-muted-foreground text-lg">
-								No documentation available for this project.
+								<ExternalLink className="w-3.5 h-3.5" />
+							</a>
+						</div>
+						{latestRelease.published_at && (
+							<p class="flex items-center gap-1.5 text-xs text-muted-foreground mb-4">
+								<Calendar className="w-3 h-3" />
+								{formatDate(latestRelease.published_at)}
 							</p>
-							<p class="text-muted-foreground dark:text-muted-foreground text-sm mt-2">
-								Check the GitHub repository for more details.
-							</p>
-						</div>
-					)
-				}
-			</div>
+						)}
+						{latestRelease.assets.length > 0 && (
+							<div class="space-y-2">
+								{latestRelease.assets.map((asset) => (
+									<a
+										href={asset.download_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										data-haptic-external
+										class="group/asset flex items-center gap-2.5 px-3 py-2 rounded-xl border border-border/40 bg-background/50 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all duration-200"
+									>
+										<Download className="w-3.5 h-3.5 shrink-0 text-muted-foreground group-hover/asset:text-emerald-500 transition-colors" />
+										<div class="flex-1 min-w-0">
+											<p class="text-xs font-medium text-foreground truncate group-hover/asset:text-emerald-500 transition-colors">
+												{asset.name}
+											</p>
+											<p class="text-[10px] text-muted-foreground">
+												{formatBytes(asset.size)} ·{" "}
+												{asset.download_count.toLocaleString()} downloads
+											</p>
+										</div>
+									</a>
+								))}
+							</div>
+						)}
 
-			<!-- Releases -->
-			{releases.length > 0 && (
-				<section id="releases" class="scroll-mt-8">
-					<div class="flex items-center gap-3 mb-5">
-						<div class="h-9 w-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 ring-1 ring-emerald-500/20">
-							<Tag className="w-4 h-4" />
-						</div>
-						<div>
-							<h2 class="text-xl font-semibold text-foreground tracking-tight">Releases</h2>
-							<p class="text-xs text-muted-foreground">{releases.length} published {releases.length === 1 ? "release" : "releases"}</p>
-						</div>
-					</div>
-
-					<div class="space-y-4">
-						{releases.map((release) => (
-							<details class="group rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl shadow-sm overflow-hidden open:shadow-md transition-shadow duration-300">
-								<summary class="flex items-center gap-3 px-5 py-4 cursor-pointer list-none select-none hover:bg-muted/30 transition-colors">
-									<div class="flex items-center gap-2.5 flex-1 min-w-0">
-										<span class="font-mono text-sm font-semibold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full shrink-0">
-											{release.tag_name}
-										</span>
-										<span class="text-sm font-medium text-foreground truncate">
-											{release.name ?? release.tag_name}
-										</span>
-										{release.draft && (
-											<span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 border border-yellow-500/20 shrink-0">Draft</span>
-										)}
-										{release.prerelease && (
-											<span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-500 border border-orange-500/20 shrink-0">Pre-release</span>
-										)}
-									</div>
-									<div class="flex items-center gap-3 shrink-0">
-										{release.published_at && (
-											<span class="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground">
-												<Calendar className="w-3.5 h-3.5" />
-												{formatDate(release.published_at)}
-											</span>
-										)}
-										{release.assets.length > 0 && (
-											<span class="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full border border-border/40">
-												<Download className="w-3 h-3" />
-												{release.assets.length}
-											</span>
-										)}
-										<a
-											href={release.url}
-											target="_blank"
-											rel="noopener noreferrer"
-											data-haptic-external
-											class="text-xs text-muted-foreground hover:text-primary transition-colors hover:underline"
-											onclick="event.stopPropagation()"
-										>
-											<ExternalLink className="w-3.5 h-3.5" />
-										</a>
-										<svg class="w-4 h-4 text-muted-foreground transition-transform duration-300 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-										</svg>
-									</div>
+						<!-- Older releases expand in place -->
+						{releases.length > 1 && (
+							<details class="group/more mt-4">
+								<summary class="flex items-center justify-between cursor-pointer list-none select-none -mx-2 px-2 py-1.5 rounded-lg hover:bg-muted/30 text-xs font-medium text-primary transition-colors">
+									<span>
+										All releases ({releases.length - 1} more)
+									</span>
+									<svg
+										class="w-3.5 h-3.5 transition-transform duration-300 group-open/more:rotate-180"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+										stroke-width="2"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="M19 9l-7 7-7-7"
+										/>
+									</svg>
 								</summary>
-
-								<div class="border-t border-border/50 px-5 py-5 space-y-5">
-									<!-- Release notes -->
-									{release.body ? (
-										<div class="prose-sm max-w-none">
-											<MarkdownRenderer content={release.body} />
-										</div>
-									) : (
-										<p class="text-sm text-muted-foreground italic">No release notes provided.</p>
-									)}
-
-									<!-- Assets -->
-									<div>
-										<div class="flex items-center gap-2 mb-3">
-											<Package className="w-4 h-4 text-muted-foreground" />
-											<span class="text-sm font-semibold text-foreground">Assets</span>
-										</div>
-										{release.assets.length > 0 ? (
-											<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-												{release.assets.map((asset) => (
-													<a
-														href={asset.download_url}
-														target="_blank"
-														rel="noopener noreferrer"
-														data-haptic-external
-														class="group/asset flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-border/40 bg-background/50 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all duration-200"
-													>
-														<div class="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0 group-hover/asset:bg-emerald-500/10 transition-colors">
-															<Download className="w-3.5 h-3.5 text-muted-foreground group-hover/asset:text-emerald-500 transition-colors" />
-														</div>
-														<div class="flex-1 min-w-0">
-															<p class="text-sm font-medium text-foreground truncate group-hover/asset:text-emerald-500 transition-colors">{asset.name}</p>
-															<div class="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
-																<span>{formatBytes(asset.size)}</span>
-																<span>·</span>
-																<span>{asset.download_count.toLocaleString()} downloads</span>
-															</div>
-														</div>
-													</a>
-												))}
+								<div class="mt-1 space-y-4">
+									{releases.slice(1).map((release) => (
+										<div class="pt-3.5 border-t border-border/40">
+											<div class="flex items-center gap-2 mb-1">
+												<button
+													type="button"
+													data-release-open={release.id}
+													data-haptic-nav
+													title="View release details"
+													class="group/rel flex items-center gap-2 flex-1 min-w-0 text-left cursor-pointer"
+												>
+													<span class="font-mono text-xs font-semibold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full shrink-0 group-hover/rel:bg-emerald-500/20 transition-colors">
+														{release.tag_name}
+													</span>
+													{release.draft && (
+														<span class="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 border border-yellow-500/20 shrink-0">
+															Draft
+														</span>
+													)}
+													{release.prerelease && (
+														<span class="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-orange-500/15 text-orange-500 border border-orange-500/20 shrink-0">
+															Pre
+														</span>
+													)}
+													<ChevronRight className="w-3 h-3 text-muted-foreground group-hover/rel:text-primary group-hover/rel:translate-x-0.5 transition-all shrink-0" />
+												</button>
+												<a
+													href={release.url}
+													target="_blank"
+													rel="noopener noreferrer"
+													data-haptic-external
+													aria-label={`View ${release.tag_name} on GitHub`}
+													class="ml-auto text-muted-foreground hover:text-primary transition-colors"
+												>
+													<ExternalLink className="w-3 h-3" />
+												</a>
 											</div>
-										) : (
-											<p class="text-sm text-muted-foreground italic">No release assets available.</p>
-										)}
-									</div>
+											{release.published_at && (
+												<p class="text-[10px] text-muted-foreground mb-2">
+													{formatDate(release.published_at)}
+												</p>
+											)}
+											{release.assets.length > 0 && (
+												<div class="space-y-1.5">
+													{release.assets.map((asset) => (
+														<a
+															href={asset.download_url}
+															target="_blank"
+															rel="noopener noreferrer"
+															data-haptic-external
+															class="group/asset flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border/40 bg-background/50 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all duration-200"
+														>
+															<Download className="w-3 h-3 shrink-0 text-muted-foreground group-hover/asset:text-emerald-500 transition-colors" />
+															<div class="flex-1 min-w-0">
+																<p class="text-[11px] font-medium text-foreground truncate group-hover/asset:text-emerald-500 transition-colors">
+																	{asset.name}
+																</p>
+																<p class="text-[10px] text-muted-foreground">
+																	{formatBytes(asset.size)} ·{" "}
+																	{asset.download_count.toLocaleString()}{" "}
+																	downloads
+																</p>
+															</div>
+														</a>
+													))}
+												</div>
+											)}
+										</div>
+									))}
 								</div>
 							</details>
-						))}
-					</div>
-				</section>
-			)}
-		</main>
+						)}
+					</section>
+				)
+			}
+		</aside>
 	</div>
-</Layout>
+
+	<!-- Release detail dialogs -->
+	{
+		releases.map((release) => (
+			<dialog
+				data-release-dialog
+				id={`release-dialog-${release.id}`}
+				aria-label={`Release ${release.tag_name} details`}
+				class="m-auto w-[calc(100vw-2rem)] max-w-2xl max-h-[85vh] flex-col rounded-2xl border border-border bg-card text-foreground p-0 shadow-2xl backdrop:bg-black/60 backdrop:backdrop-blur-sm open:flex"
+			>
+				<div class="flex items-center gap-3 px-5 sm:px-6 py-4 border-b border-border/60 shrink-0">
+					<span class="font-mono text-sm font-semibold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full shrink-0">
+						{release.tag_name}
+					</span>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-semibold text-foreground truncate">
+							{release.name ?? release.tag_name}
+						</p>
+						{release.published_at && (
+							<p class="text-[11px] text-muted-foreground">
+								{formatDate(release.published_at)}
+							</p>
+						)}
+					</div>
+					{release.draft && (
+						<span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 border border-yellow-500/20 shrink-0">
+							Draft
+						</span>
+					)}
+					{release.prerelease && (
+						<span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-500 border border-orange-500/20 shrink-0">
+							Pre-release
+						</span>
+					)}
+					<a
+						href={release.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						data-haptic-external
+						aria-label="View release on GitHub"
+						class="text-muted-foreground hover:text-primary transition-colors shrink-0"
+					>
+						<ExternalLink className="w-4 h-4" />
+					</a>
+					<button
+						type="button"
+						data-release-close
+						aria-label="Close"
+						class="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors shrink-0 cursor-pointer"
+					>
+						<X className="w-4 h-4" />
+					</button>
+				</div>
+
+				<div class="overflow-y-auto px-5 sm:px-6 py-5 space-y-6">
+					{release.body ? (
+						<div class="prose-sm max-w-none">
+							<MarkdownRenderer content={release.body} />
+						</div>
+					) : (
+						<p class="text-sm text-muted-foreground italic">
+							No release notes provided.
+						</p>
+					)}
+
+					{release.assets.length > 0 && (
+						<div>
+							<div class="flex items-center gap-2 mb-3">
+								<Download className="w-4 h-4 text-muted-foreground" />
+								<span class="text-sm font-semibold text-foreground">
+									Assets
+								</span>
+							</div>
+							<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+								{release.assets.map((asset) => (
+									<a
+										href={asset.download_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										data-haptic-external
+										class="group/asset flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-border/40 bg-background/50 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all duration-200"
+									>
+										<div class="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0 group-hover/asset:bg-emerald-500/10 transition-colors">
+											<Download className="w-3.5 h-3.5 text-muted-foreground group-hover/asset:text-emerald-500 transition-colors" />
+										</div>
+										<div class="flex-1 min-w-0">
+											<p class="text-sm font-medium text-foreground truncate group-hover/asset:text-emerald-500 transition-colors">
+												{asset.name}
+											</p>
+											<div class="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+												<span>{formatBytes(asset.size)}</span>
+												<span>·</span>
+												<span>
+													{asset.download_count.toLocaleString()} downloads
+												</span>
+											</div>
+										</div>
+									</a>
+								))}
+							</div>
+						</div>
+					)}
+				</div>
+			</dialog>
+		))
+	}
+</PageShell>
 
 <script>
-	import { WebHaptics } from "web-haptics";
-	const haptics = new WebHaptics();
+	function wireReleaseDialogs() {
+		document
+			.querySelectorAll<HTMLElement>("[data-release-open]")
+			.forEach((btn) => {
+				if (btn.dataset.dialogWired) return;
+				btn.dataset.dialogWired = "true";
+				btn.addEventListener("click", () => {
+					const dialog = document.getElementById(
+						`release-dialog-${btn.dataset.releaseOpen}`
+					) as HTMLDialogElement | null;
+					dialog?.showModal();
+				});
+			});
 
-	document.addEventListener("astro:page-load", () => {
-		document.querySelectorAll("[data-haptic-back]").forEach((el) =>
-			el.addEventListener("click", () => haptics.trigger("light"))
-		);
-		document.querySelectorAll("[data-haptic-nav]").forEach((el) =>
-			el.addEventListener("click", () => haptics.trigger("light"))
-		);
-		document.querySelectorAll("[data-haptic-external]").forEach((el) =>
-			el.addEventListener("click", () => haptics.trigger("light"))
-		);
-	});
+		document
+			.querySelectorAll<HTMLDialogElement>("dialog[data-release-dialog]")
+			.forEach((dialog) => {
+				if (dialog.dataset.dialogWired) return;
+				dialog.dataset.dialogWired = "true";
+				// Click on the backdrop (the dialog element itself) closes it
+				dialog.addEventListener("click", (e) => {
+					if (e.target === dialog) dialog.close();
+				});
+				dialog
+					.querySelector("[data-release-close]")
+					?.addEventListener("click", () => dialog.close());
+			});
+	}
+
+	wireReleaseDialogs();
+	document.addEventListener("astro:page-load", wireReleaseDialogs);
 </script>
