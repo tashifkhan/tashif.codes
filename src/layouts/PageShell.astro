@@ -1,0 +1,125 @@
+---
+import Layout from "./Layout.astro";
+import Haptics from "../components/Haptics.astro";
+import { ArrowLeft } from "lucide-react";
+
+export interface Breadcrumb {
+	label: string;
+	href?: string;
+}
+
+interface Props {
+	title: string;
+	/** Top-of-page atmospheric wash behind the header */
+	tint?: "orange" | "blue" | "none";
+	/** Terminal-style breadcrumb trail; takes precedence over backHref */
+	breadcrumbs?: Breadcrumb[];
+	backHref?: string;
+	backLabel?: string;
+	/** Max-width class applied to both header and main containers */
+	containerClass?: string;
+	/** Extra classes for the <main> container */
+	mainClass?: string;
+}
+
+const {
+	title,
+	tint = "none",
+	breadcrumbs,
+	backHref,
+	backLabel = "Back",
+	containerClass = "max-w-7xl",
+	mainClass = "",
+} = Astro.props;
+
+const tintClass = {
+	orange:
+		"h-40 bg-gradient-to-b from-orange-200/40 to-transparent dark:from-orange-900/20",
+	blue: "h-40 bg-gradient-to-b from-blue-200/40 to-transparent dark:from-blue-900/20",
+	none: "",
+}[tint];
+---
+
+<Layout title={title}>
+	<div
+		class="relative min-h-screen bg-gradient-to-b from-muted to-background dark:from-background dark:to-card text-foreground transition-colors duration-300 font-sans"
+	>
+		{
+			tint !== "none" && (
+				<div class="pointer-events-none absolute inset-0 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]">
+					<div class={tintClass} />
+				</div>
+			)
+		}
+
+		<header
+			class="relative bg-card/80 backdrop-blur border-b border-border/60 transition-colors duration-300"
+		>
+			<div
+				class:list={[containerClass, "mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8"]}
+			>
+				{
+					breadcrumbs && breadcrumbs.length > 0 ? (
+						<nav aria-label="Breadcrumb" class="mb-4 sm:mb-6">
+							<ol class="flex flex-wrap items-center gap-x-2 gap-y-1 font-sans text-sm">
+								{breadcrumbs.map((crumb, i) => (
+									<li class="flex items-center gap-x-2 min-w-0">
+										{i > 0 && (
+											<span
+												class="text-muted-foreground/40 select-none"
+												aria-hidden="true"
+											>
+												/
+											</span>
+										)}
+										{crumb.href ? (
+											<a
+												href={crumb.href}
+												data-haptic-nav
+												class="text-muted-foreground hover:text-primary transition-colors"
+											>
+												{crumb.label}
+											</a>
+										) : (
+											<span
+												class="text-foreground font-medium truncate"
+												aria-current="page"
+											>
+												{crumb.label}
+											</span>
+										)}
+									</li>
+								))}
+							</ol>
+						</nav>
+					) : (
+						backHref && (
+							<a
+								href={backHref}
+								data-haptic-back
+								class="inline-flex items-center text-primary hover:text-primary/80 hover:underline mb-4 sm:mb-6 text-sm sm:text-base font-medium transition-colors"
+							>
+								<ArrowLeft className="w-4 h-4 mr-2" />
+								{backLabel}
+							</a>
+						)
+					)
+				}
+				<slot name="header" />
+			</div>
+		</header>
+
+		<main class="relative">
+			<div
+				class:list={[
+					containerClass,
+					"mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12",
+					mainClass,
+				]}
+			>
+				<slot />
+			</div>
+		</main>
+	</div>
+	<Haptics />
+</Layout>
