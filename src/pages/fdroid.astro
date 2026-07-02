@@ -1,0 +1,422 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+import PageShell from "../layouts/PageShell.astro";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+	Copy,
+	Download,
+	ExternalLink,
+	Github,
+	Globe,
+	Package,
+	RefreshCw,
+	ShieldCheck,
+	Smartphone,
+} from "lucide-react";
+
+const repoUrl = "https://tashif.codes/fdroid/repo";
+
+interface RepoApp {
+	name: string;
+	packageName: string;
+	summary?: string;
+	versionName?: string;
+	license?: string;
+	icon?: string;
+}
+
+// The F-Droid index is generated and committed by the Publish F-Droid Repo
+// workflow, so it may not exist on fresh checkouts.
+let apps: RepoApp[] = [];
+try {
+	const indexPath = path.resolve("public/fdroid/repo/index-v1.json");
+	if (fs.existsSync(indexPath)) {
+		const index = JSON.parse(fs.readFileSync(indexPath, "utf-8"));
+		apps = (index.apps ?? []).map((app: any) => {
+			const packages = index.packages?.[app.packageName] ?? [];
+			const suggested =
+				packages.find(
+					(p: any) => String(p.versionCode) === String(app.suggestedVersionCode)
+				) ?? packages[0];
+			return {
+				name: app.name ?? app.localized?.["en-US"]?.name ?? app.packageName,
+				packageName: app.packageName,
+				summary: app.summary ?? app.localized?.["en-US"]?.summary,
+				versionName: suggested?.versionName,
+				license: app.license,
+				icon: app.icon ? `/fdroid/repo/icons/${app.icon}` : undefined,
+			};
+		});
+	}
+} catch {
+	apps = [];
+}
+
+const repoSteps = [
+	"Open the F-Droid app on your phone.",
+	"Go to Settings, then Repositories.",
+	"Add the repo URL below.",
+	"Refresh repositories and install the app.",
+];
+
+const apkSteps = [
+	"Open the latest GitHub Release.",
+	"Download the attached .apk file.",
+	"Install it from Android Downloads.",
+	"Switch to F-Droid for smoother updates later.",
+];
+
+const pipeline = [
+	{
+		icon: Github,
+		title: "Release",
+		description: "APK is published to GitHub Releases.",
+	},
+	{
+		icon: RefreshCw,
+		title: "Import",
+		description: "The website workflow pulls in the APK.",
+	},
+	{
+		icon: ShieldCheck,
+		title: "Sign",
+		description: "fdroidserver signs and updates the index.",
+	},
+	{
+		icon: Globe,
+		title: "Serve",
+		description: "Vercel serves the repo from this site.",
+	},
+];
+---
+
+<PageShell
+	title="F-Droid Repo | Tashif Ahmad Khan"
+	tint="orange"
+	breadcrumbs={[{ label: "Home", href: "/" }, { label: "F-Droid" }]}
+>
+	<Fragment slot="header">
+		<div class="flex items-start gap-4">
+			<div>
+				<p class="text-sm font-medium text-primary mb-2">
+					Android distribution
+				</p>
+				<h1
+					class="font-sans text-4xl sm:text-5xl font-semibold tracking-tight bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent pb-1"
+				>
+					F-Droid Repo
+				</h1>
+				<p class="mt-3 text-muted-foreground max-w-2xl">
+					A self-hosted F-Droid-compatible repository for Android APK releases
+					published by Tashif Khan.
+				</p>
+				<div class="mt-5 flex flex-wrap gap-3">
+					<a
+						href={repoUrl}
+						data-haptic-external
+						class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 transition-colors"
+					>
+						Add F-Droid repo
+						<ExternalLink className="w-4 h-4" />
+					</a>
+					<a
+						href="https://github.com/tashifkhan/Patchwork/releases/latest"
+						target="_blank"
+						rel="noopener noreferrer"
+						data-haptic-external
+						class="group inline-flex items-center justify-center gap-2 rounded-lg border border-border/70 bg-secondary/50 px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
+					>
+						Download APK
+						<Github
+							className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+						/>
+					</a>
+				</div>
+			</div>
+		</div>
+	</Fragment>
+
+	<div class="space-y-8">
+		<!-- Repo URL -->
+		<Card
+			className="relative overflow-hidden bg-card/70 dark:bg-card/50 backdrop-blur border-border/60 shadow-lg"
+		>
+			<div
+				class="absolute -top-20 -right-16 h-48 w-48 sm:h-64 sm:w-64 rounded-full bg-primary/5 blur-3xl pointer-events-none"
+			>
+			</div>
+			<CardHeader className="relative z-10">
+				<div class="flex items-center space-x-3">
+					<div class="p-2 bg-primary/10 rounded-xl">
+						<Download className="w-6 h-6 text-primary" />
+					</div>
+					<CardTitle className="text-2xl sm:text-3xl">Add the repo</CardTitle>
+				</div>
+				<CardDescription>
+					Open F-Droid, go to repositories, and add this URL:
+				</CardDescription>
+			</CardHeader>
+			<CardContent className="relative z-10">
+				<div
+					class="flex items-center gap-2 rounded-xl border border-border/70 bg-background/80 pl-4 pr-2 py-2"
+				>
+					<a
+						href={repoUrl}
+						data-haptic-external
+						class="flex-1 font-mono text-sm text-primary break-all hover:underline underline-offset-4"
+					>
+						{repoUrl}
+					</a>
+					<button
+						type="button"
+						data-copy-repo-url
+						data-url={repoUrl}
+						aria-label="Copy repo URL"
+						class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent transition-colors shrink-0"
+					>
+						<Copy className="w-4 h-4" />
+					</button>
+				</div>
+				<p
+					data-copy-feedback
+					class="mt-2 text-xs text-primary opacity-0 transition-opacity"
+					aria-live="polite"
+				>
+					Copied to clipboard
+				</p>
+				<div class="mt-4 flex flex-wrap gap-3">
+					<a
+						href={repoUrl}
+						data-haptic-external
+						class="group inline-flex items-center justify-center gap-2 rounded-lg border border-border/70 bg-secondary/50 px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
+					>
+						Open repo
+						<ExternalLink
+							className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+						/>
+					</a>
+					<a
+						href="https://github.com/tashifkhan/Patchwork/releases"
+						target="_blank"
+						rel="noopener noreferrer"
+						data-haptic-external
+						class="group inline-flex items-center justify-center gap-2 rounded-lg border border-border/70 bg-secondary/50 px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
+					>
+						GitHub releases
+						<ExternalLink
+							className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+						/>
+					</a>
+				</div>
+			</CardContent>
+		</Card>
+
+		<!-- Install options -->
+		<div class="grid gap-6 md:grid-cols-2">
+			<Card
+				className="relative overflow-hidden bg-card/70 dark:bg-card/50 backdrop-blur border-border/60 hover:shadow-lg transition-all duration-300"
+			>
+				<div
+					class="absolute -top-20 -left-16 h-48 w-48 rounded-full bg-primary/5 blur-3xl pointer-events-none"
+				>
+				</div>
+				<CardHeader className="relative z-10">
+					<div class="flex items-center justify-between gap-3">
+						<div class="flex items-center space-x-3">
+							<div class="p-2 bg-primary/10 rounded-xl">
+								<Smartphone className="w-5 h-5 text-primary" />
+							</div>
+							<CardTitle className="text-lg">F-Droid repo</CardTitle>
+						</div>
+						<Badge>Recommended</Badge>
+					</div>
+					<CardDescription>
+						Installs through the F-Droid client with automatic updates.
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="relative z-10">
+					<ol class="space-y-3">
+						{
+							repoSteps.map((step, i) => (
+								<li class="flex items-start gap-3 text-sm text-muted-foreground">
+									<span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
+										{i + 1}
+									</span>
+									<span class="pt-0.5">{step}</span>
+								</li>
+							))
+						}
+					</ol>
+				</CardContent>
+			</Card>
+
+			<Card
+				className="relative overflow-hidden bg-card/70 dark:bg-card/50 backdrop-blur border-border/60 hover:shadow-lg transition-all duration-300"
+			>
+				<div
+					class="absolute -top-20 -right-16 h-48 w-48 rounded-full bg-primary/5 blur-3xl pointer-events-none"
+				>
+				</div>
+				<CardHeader className="relative z-10">
+					<div class="flex items-center space-x-3">
+						<div class="p-2 bg-primary/10 rounded-xl">
+							<Download className="w-5 h-5 text-primary" />
+						</div>
+						<CardTitle className="text-lg">Direct APK</CardTitle>
+					</div>
+					<CardDescription>
+						Grab the APK straight from GitHub if you don't use F-Droid.
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="relative z-10">
+					<ol class="space-y-3">
+						{
+							apkSteps.map((step, i) => (
+								<li class="flex items-start gap-3 text-sm text-muted-foreground">
+									<span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
+										{i + 1}
+									</span>
+									<span class="pt-0.5">{step}</span>
+								</li>
+							))
+						}
+					</ol>
+				</CardContent>
+			</Card>
+		</div>
+
+		<!-- Apps in the repo (rendered once the CI-generated index exists) -->
+		{
+			apps.length > 0 && (
+				<Card className="relative overflow-hidden bg-card/70 dark:bg-card/50 backdrop-blur border-border/60 shadow-lg">
+					<div class="absolute -top-20 -left-16 h-48 w-48 sm:h-64 sm:w-64 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+					<CardHeader className="relative z-10">
+						<div class="flex items-center space-x-3">
+							<div class="p-2 bg-primary/10 rounded-xl">
+								<Package className="w-6 h-6 text-primary" />
+							</div>
+							<CardTitle className="text-2xl sm:text-3xl">
+								Apps in this repo
+							</CardTitle>
+						</div>
+					</CardHeader>
+					<CardContent className="relative z-10">
+						<div class="grid gap-4 sm:grid-cols-2">
+							{apps.map((app) => (
+								<div class="flex items-start gap-4 rounded-xl border border-border/60 bg-background/60 p-4">
+									{app.icon ? (
+										<img
+											src={app.icon}
+											alt=""
+											loading="lazy"
+											class="h-12 w-12 rounded-xl border border-border/60 bg-card object-cover shrink-0"
+										/>
+									) : (
+										<div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+											<Smartphone className="w-6 h-6" />
+										</div>
+									)}
+									<div class="min-w-0">
+										<div class="flex flex-wrap items-center gap-2">
+											<h3 class="font-sans font-semibold truncate">
+												{app.name}
+											</h3>
+											{app.versionName && (
+												<Badge variant="secondary">v{app.versionName}</Badge>
+											)}
+										</div>
+										{app.summary && (
+											<p class="mt-1 text-sm text-muted-foreground">
+												{app.summary}
+											</p>
+										)}
+										<p class="mt-1 font-mono text-xs text-muted-foreground/70 break-all">
+											{app.packageName}
+										</p>
+									</div>
+								</div>
+							))}
+						</div>
+					</CardContent>
+				</Card>
+			)
+		}
+
+		<!-- How updates work -->
+		<Card
+			className="relative overflow-hidden bg-card/70 dark:bg-card/50 backdrop-blur border-border/60 shadow-lg"
+		>
+			<div
+				class="absolute -top-20 -right-16 h-48 w-48 sm:h-64 sm:w-64 rounded-full bg-primary/5 blur-3xl pointer-events-none"
+			>
+			</div>
+			<CardHeader className="relative z-10">
+				<div class="flex items-center space-x-3">
+					<div class="p-2 bg-primary/10 rounded-xl">
+						<RefreshCw className="w-6 h-6 text-primary" />
+					</div>
+					<CardTitle className="text-2xl sm:text-3xl">
+						How updates work
+					</CardTitle>
+				</div>
+			</CardHeader>
+			<CardContent className="relative z-10">
+				<ol class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+					{
+						pipeline.map((step, i) => (
+							<li class="relative flex flex-col gap-3">
+								<div class="flex items-center gap-3">
+									<div class="p-2 bg-primary/10 rounded-xl text-primary">
+										<step.icon className="w-5 h-5" />
+									</div>
+									<span class="font-mono text-xs text-muted-foreground/70">
+										0{i + 1}
+									</span>
+								</div>
+								<div>
+									<h3 class="font-sans font-semibold">{step.title}</h3>
+									<p class="mt-1 text-sm text-muted-foreground">
+										{step.description}
+									</p>
+								</div>
+							</li>
+						))
+					}
+				</ol>
+			</CardContent>
+		</Card>
+	</div>
+</PageShell>
+
+<script>
+	document.addEventListener("astro:page-load", () => {
+		const button = document.querySelector<HTMLButtonElement>(
+			"[data-copy-repo-url]"
+		);
+		const feedback = document.querySelector<HTMLElement>(
+			"[data-copy-feedback]"
+		);
+		if (!button) return;
+		let timer: ReturnType<typeof setTimeout>;
+		button.addEventListener("click", async () => {
+			const url = button.dataset.url;
+			if (!url) return;
+			try {
+				await navigator.clipboard.writeText(url);
+				feedback?.classList.remove("opacity-0");
+				clearTimeout(timer);
+				timer = setTimeout(() => feedback?.classList.add("opacity-0"), 2000);
+			} catch {
+				// Clipboard unavailable (insecure context); leave the link as fallback.
+			}
+		});
+	});
+</script>
