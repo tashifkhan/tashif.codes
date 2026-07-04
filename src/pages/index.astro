@@ -121,9 +121,9 @@ const avgReadingMinutes = blogPosts.length
 			>
 			</div>
 		</div>
-		<!-- Header -->
+		<!-- Header — scrolls away; only the tab nav below stays sticky -->
 		<header
-			class="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:supports-[backdrop-filter]:bg-card/60 bg-card/80 dark:bg-card/70 border-b border-border/60 dark:border-border/60 shadow-sm"
+			class="relative backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:supports-[backdrop-filter]:bg-card/60 bg-card/80 dark:bg-card/70 border-b border-border/60 dark:border-border/60 shadow-sm"
 		>
 			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 relative">
 				<div class="flex flex-col sm:flex-row items-center sm:justify-between gap-4 w-full">
@@ -196,7 +196,7 @@ const avgReadingMinutes = blogPosts.length
 
 		<!-- Navigation (Styled as Shadcn Tabs) -->
 		<nav
-			class="sticky top-[56px] sm:top-[64px] z-30 backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:supports-[backdrop-filter]:bg-card/60 bg-card/80 dark:bg-card/70 border-b border-border/60 dark:border-border/60 transition-colors duration-300 overflow-x-auto font-sans no-scrollbar"
+			class="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:supports-[backdrop-filter]:bg-card/60 bg-card/80 dark:bg-card/70 border-b border-border/60 dark:border-border/60 transition-colors duration-300 overflow-x-auto font-sans no-scrollbar"
 		>
 			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
 				<div
@@ -1011,7 +1011,20 @@ const avgReadingMinutes = blogPosts.length
 	function setupTabClickHandlers() {
 		const tabs = getTabs();
 		tabIds.forEach((id) => {
-			tabs[id]?.addEventListener("click", () => { haptics.trigger("selection"); activateTab(id); });
+			const tab = tabs[id];
+			// Guard: this runs both at script load and on astro:page-load, so
+			// without the flag each button ends up with two click listeners.
+			if (!tab || tab.dataset.tabWired) return;
+			tab.dataset.tabWired = "true";
+			tab.addEventListener("click", () => {
+				haptics.trigger("selection");
+				activateTab(id);
+				// If already scrolled past the profile header, land just below it
+				// (tab nav stuck at top); otherwise go to the very top.
+				const header = document.querySelector("header");
+				const threshold = header ? header.offsetHeight : 0;
+				window.scrollTo(0, window.scrollY >= threshold ? threshold : 0);
+			});
 		});
 	}
 

@@ -54,6 +54,14 @@ const breadcrumbs = [
 ---
 
 <Layout title={`${pageTitle} | ${projectTitle} Docs | Tashif Ahmad Khan`}>
+	<!-- Reading Progress Bar -->
+	<div
+		id="reading-progress"
+		class="fixed top-0 left-0 h-[3px] bg-primary z-[60]"
+		style="width:0;transition:width 80ms linear"
+	>
+	</div>
+
 	<div
 		class="flex h-screen overflow-hidden bg-gradient-to-b from-muted to-background dark:from-background dark:to-card text-foreground transition-colors duration-300 font-sans"
 	>
@@ -316,6 +324,27 @@ const breadcrumbs = [
 		// Scroll the active sidebar link into view
 		const activeLink = document.querySelector('[data-sidebar-active="true"]');
 		activeLink?.scrollIntoView({ behavior: "auto", block: "center" });
+
+		// Reading progress — the docs page scrolls inside <main>, not the window
+		const bar = document.getElementById("reading-progress");
+		const scroller = document.querySelector("main");
+		if (bar && scroller && !bar.dataset.wired) {
+			bar.dataset.wired = "true";
+			const updateProgress = () => {
+				const denom = Math.max(
+					1,
+					scroller.scrollHeight - scroller.clientHeight
+				);
+				const pct = Math.min(
+					100,
+					Math.max(0, (scroller.scrollTop / denom) * 100)
+				);
+				bar.style.width = pct + "%";
+			};
+			scroller.addEventListener("scroll", updateProgress, { passive: true });
+			window.addEventListener("resize", updateProgress, { passive: true });
+			updateProgress();
+		}
 	}
 
 	initDocsPage();
