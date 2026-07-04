@@ -3,7 +3,7 @@ import PageShell from "../../layouts/PageShell.astro";
 import { allProjects } from "../../data/projects";
 import { getSidebar, type SidebarItem } from "../../utils/docs";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import EmptyState from "../../components/EmptyState.astro";
 
 // Count unique doc pages in a sidebar tree (group headers may reuse a
@@ -56,9 +56,6 @@ const docProjects = allProjects
 					<div class="flex h-full flex-col overflow-hidden rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md">
 						<div class="flex items-start justify-between gap-3 p-5 pb-0">
 							<div class="flex min-w-0 items-center gap-3">
-								<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10">
-									<BookOpen className="w-4 h-4 text-primary" />
-								</div>
 								<h2 class="truncate text-lg font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
 									{project.title}
 								</h2>
