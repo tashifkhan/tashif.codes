@@ -1040,8 +1040,8 @@ export default function ProjectStatsDashboard() {
 										Bounce Rate
 									</TabsTrigger>
 								</TabsList>
-								<div className="pb-3">
-									<span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground bg-muted border border-border px-2.5 py-1 rounded-md">
+								<div className="hidden md:block pb-3">
+									<span className="whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground bg-muted border border-border px-2.5 py-1 rounded-md">
 										{period === "0" ? "Lifetime" : `${period}d`} · {GRANULARITY_LABELS[granularity]}
 									</span>
 								</div>
