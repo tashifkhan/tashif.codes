@@ -1,558 +1,323 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import Haptics from "../../../components/Haptics.astro";
 import MarkdownRenderer from "../../../components/MarkdownRenderer.astro";
+import DocsSidebar from "../../../components/docs/DocsSidebar.astro";
+import TableOfContents from "../../../components/docs/TableOfContents.astro";
 import {
 	getAllDocs,
 	getSidebar,
 	getDocPagination,
-	type SidebarItem,
+	findSidebarTrail,
+	processDocContent,
 } from "../../../utils/docs";
-import { Button, buttonVariants } from "@/components/ui/button";
-import {
-	ChevronRight,
-	Menu,
-	X,
-	ChevronLeft,
-	FileText,
-	Github,
-	ExternalLink,
-	ArrowLeft,
-	Copy,
-	Check,
-} from "lucide-react";
-import { allProjects, type Project } from "../../../data/projects";
-import TableOfContents from "../../../components/docs/TableOfContents.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, Menu, Copy, Check } from "lucide-react";
+import { allProjects } from "../../../data/projects";
 
 export async function getStaticPaths() {
-	const docs = getAllDocs();
-	return docs;
+	return getAllDocs();
 }
 
 const { project, slug, content, title, headings } = Astro.props;
 const sidebar = getSidebar(project);
 const { prev, next } = getDocPagination(project, slug);
 
-// Remove leading h1 from content if it matches the title or if it's the first thing in the file
-// This prevents double headers since we render one manually
-const processedContent = content.trim().replace(/^#\s+.+[\n\r]*/, "");
+// The page renders its own title and "On this page" navigation — strip the
+// leading h1 and the generated "Table of Contents" section from the body.
+const processedContent = processDocContent(content);
 
-// Find current project metadata
 const currentProject = allProjects.find((p) => p.slug === project);
+const projectTitle = currentProject?.title || project.replace(/-/g, " ");
+const pageTitle = title.replace(/^[\d.\s]+/, "");
 
-// Helper to check if a link is active
-const isActive = (itemSlug: string) => {
-	// Current page slug vs item slug
-	// item slug is like "agentic-browser/1-overview"
-	// current url is /docs/agentic-browser/1-overview
-	const currentPath = `${project}/${slug}`;
-	return currentPath === itemSlug;
-};
+// Sidebar slugs are always lowercase; the project dir name may not be.
+const activePath = `${project.toLowerCase()}/${slug}`;
 
-// Recursive sidebar component
+// Chevron-separated breadcrumb trail (matches PageShell's convention)
+const trail = findSidebarTrail(sidebar, activePath) ?? [];
+const breadcrumbs = [
+	{ label: "Home", href: "/" },
+	{ label: "Docs", href: "/docs" },
+	{
+		label: projectTitle,
+		href: currentProject ? `/projects/${currentProject.slug}` : undefined,
+	},
+	...trail.map((item, i) => ({
+		label: item.title,
+		href:
+			i < trail.length - 1 && item.slug !== "#"
+				? `/docs/${item.slug}`
+				: undefined,
+	})),
+];
 ---
 
-<Layout
-	title={`${title.replace(/^[\d.\s]+/, "")} | ${currentProject?.title || project.replace(/-/g, " ")} Docs | Tashif Ahmad Khan`}
->
-	<div class="flex h-screen overflow-hidden bg-background text-foreground">
+<Layout title={`${pageTitle} | ${projectTitle} Docs | Tashif Ahmad Khan`}>
+	<div
+		class="flex h-screen overflow-hidden bg-gradient-to-b from-muted to-background dark:from-background dark:to-card text-foreground transition-colors duration-300 font-sans"
+	>
+		<!-- Desktop sidebar -->
 		<aside
-			class="hidden lg:block w-72 border-r border-border bg-muted/10 shrink-0 h-full overflow-y-auto"
+			class="hidden lg:block w-72 shrink-0 h-full border-r border-border/60 bg-card/60 backdrop-blur-xl"
 		>
-			<div class="h-full flex flex-col">
-				<div
-					class="p-6 border-b border-border/50 sticky top-0 bg-muted/5 z-10 backdrop-blur-md"
-				>
-					<div class="flex flex-col mb-6">
-						<h2
-							class="font-bold text-2xl tracking-tight capitalize flex items-center gap-2.5 text-foreground"
-						>
-							<FileText className="w-6 h-6 text-muted-foreground/80 shrink-0" />
-							<span class="truncate">{currentProject?.title || project.replace(/-/g, " ")}</span>
-						</h2>
-						<p class="text-sm leading-none text-muted-foreground mt-1.5 ml-[34px] font-medium">Documentation</p>
-					</div>
-
-					<a
-						href="/"
-						class="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-5 ml-[34px]"
-					>
-						<ArrowLeft className="w-4 h-4 mr-2" />
-						Back to Home
-					</a>
-
-					<div class="flex gap-2.5 w-full">
-						{
-							currentProject?.live_website_url && (
-								<a
-									href={currentProject.live_website_url}
-									target="_blank"
-									rel="noopener noreferrer"
-									class={buttonVariants({
-										variant: "default",
-										className: "flex-1 h-9 px-3 gap-1.5 shadow-sm text-sm",
-									})}
-								>
-									<ExternalLink className="w-4 h-4" />
-									Live
-								</a>
-							)
-						}
-						<a
-							href={currentProject?.github_link ||
-								`https://github.com/tashifkhan/${project}`}
-							target="_blank"
-							rel="noopener noreferrer"
-							class={buttonVariants({
-								variant: "outline",
-								className: "flex-1 h-9 px-3 gap-1.5 shadow-sm text-sm bg-background/50",
-							})}
-						>
-							<Github className="w-4 h-4" />
-							GitHub
-						</a>
-					</div>
-				</div>
-				<div class="flex-1 overflow-y-auto py-4">
-					<div class="px-4 space-y-1">
-						{
-							sidebar.map((item: SidebarItem) => (
-								<div class="space-y-1">
-									{item.children && item.children.length > 0 ? (
-										<div class="mb-4">
-											<h4 class="mb-1 rounded-md px-2 py-1 text-sm font-semibold tracking-tight">
-												{item.title}
-											</h4>
-											<div class="grid grid-flow-row auto-rows-max text-sm gap-0.5 ml-3 border-l border-border/50 pl-2">
-												{item.children.map((child: SidebarItem) =>
-													// Level 2
-													child.children && child.children.length > 0 ? (
-														<div class="space-y-0.5">
-															<div class="px-2 py-1.5 text-muted-foreground/70 font-medium text-xs uppercase tracking-wider">
-																{child.title}
-															</div>
-															{child.children.map((grandChild: SidebarItem) => (
-																<a
-																	href={`/docs/${grandChild.slug}`}
-																	class:list={[
-																		"group flex w-full items-center rounded-md border border-transparent px-2 py-1.5 hover:bg-muted hover:text-foreground text-muted-foreground transition-colors border-l border-border/40 ml-2 pl-4",
-																		isActive(grandChild.slug)
-																			? "bg-muted font-medium text-foreground border-primary/50"
-																			: "hover:border-foreground/20",
-																	]}
-																	data-sidebar-active={isActive(grandChild.slug) ? "true" : undefined}
-																>
-																	{grandChild.title}
-																</a>
-															))}
-														</div>
-													) : (
-														<a
-															href={`/docs/${child.slug}`}
-															class:list={[
-																"group flex w-full items-center rounded-md border border-transparent px-2 py-1.5 hover:bg-muted hover:text-foreground text-muted-foreground transition-colors",
-																isActive(child.slug)
-																	? "bg-muted font-medium text-foreground"
-																	: "",
-															]}
-															data-sidebar-active={isActive(child.slug) ? "true" : undefined}
-														>
-															{child.title}
-														</a>
-													)
-												)}
-											</div>
-										</div>
-									) : (
-										// Level 1 leaf
-										<a
-											href={`/docs/${item.slug}`}
-											class:list={[
-												"group flex w-full items-center rounded-md border border-transparent px-2 py-1.5 hover:bg-muted hover:text-foreground text-muted-foreground transition-colors",
-												isActive(item.slug)
-													? "bg-muted font-medium text-foreground"
-													: "",
-											]}
-											data-sidebar-active={isActive(item.slug) ? "true" : undefined}
-										>
-											{item.title}
-										</a>
-									)}
-								</div>
-							))
-						}
-					</div>
-				</div>
-			</div>
+			<DocsSidebar
+				project={project}
+				currentProject={currentProject}
+				sidebar={sidebar}
+				activePath={activePath}
+			/>
 		</aside>
 
-		<!-- Mobile Sidebar Toggle -->
+		<!-- Mobile sidebar toggle -->
 		<div class="lg:hidden fixed top-4 right-4 z-40">
-			<Button
-				variant="outline"
-				size="icon"
-				className="bg-background shadow-md"
+			<button
 				id="open-sidebar"
+				aria-label="Open navigation"
+				data-haptic
+				class={buttonVariants({
+					variant: "outline",
+					size: "icon",
+					className: "bg-card/80 backdrop-blur border-border/60 shadow-md",
+				})}
 			>
 				<Menu className="h-4 w-4" />
-			</Button>
+			</button>
 		</div>
 
-		<!-- Mobile Sidebar Overlay -->
+		<!-- Mobile sidebar overlay -->
 		<div
 			id="mobile-sidebar-overlay"
 			class="fixed inset-0 z-50 bg-black/80 lg:hidden hidden backdrop-blur-sm transition-all duration-200 opacity-0 data-[state=open]:opacity-100"
 		>
 		</div>
 
-		<!-- Mobile Sidebar Content -->
+		<!-- Mobile sidebar drawer -->
 		<div
 			id="mobile-sidebar"
-			class="fixed inset-y-0 left-0 z-50 h-full w-3/4 max-w-sm border-r border-border bg-background p-6 shadow-lg transition-transform duration-300 ease-in-out -translate-x-full lg:hidden data-[state=open]:translate-x-0"
+			class="fixed inset-y-0 left-0 z-50 h-full w-80 max-w-[85vw] border-r border-border/60 bg-card shadow-xl transition-transform duration-300 ease-in-out -translate-x-full lg:hidden data-[state=open]:translate-x-0"
 		>
-			<div class="flex flex-col mb-6 border-b border-border/50 pb-6">
-				<div class="flex items-start justify-between mb-6">
-					<div class="flex flex-col">
-						<h2
-							class="font-bold text-2xl tracking-tight capitalize flex items-center gap-2.5 text-foreground"
-						>
-							<FileText className="w-6 h-6 text-muted-foreground/80 shrink-0" />
-							<span class="truncate max-w-[200px]">{currentProject?.title || project.replace(/-/g, " ")}</span>
-						</h2>
-						<p class="text-sm leading-none text-muted-foreground mt-1.5 ml-[34px] font-medium">Documentation</p>
-					</div>
-					<Button variant="ghost" size="icon" id="close-sidebar" className="-mt-1 -mr-2">
-						<X className="h-5 w-5" />
-					</Button>
-				</div>
-
-				<a
-					href="/"
-					class="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-5 ml-[34px]"
-				>
-					<ArrowLeft className="w-4 h-4 mr-2" />
-					Back to Home
-				</a>
-
-				<div class="flex gap-2.5 w-full">
-					{
-						currentProject?.live_website_url && (
-							<a
-								href={currentProject.live_website_url}
-								target="_blank"
-								rel="noopener noreferrer"
-								class={buttonVariants({
-									variant: "default",
-									className: "flex-1 h-9 px-3 gap-1.5 shadow-sm text-sm",
-								})}
-							>
-								<ExternalLink className="w-4 h-4" />
-								Live
-							</a>
-						)
-					}
-					<a
-						href={currentProject?.github_link ||
-							`https://github.com/tashifkhan/${project}`}
-						target="_blank"
-						rel="noopener noreferrer"
-						class={buttonVariants({
-							variant: "outline",
-							className: "flex-1 h-9 px-3 gap-1.5 shadow-sm text-sm bg-background/50",
-						})}
-					>
-						<Github className="w-4 h-4" />
-						GitHub
-					</a>
-				</div>
-			</div>
-			<div class="h-[calc(100vh-8rem)] overflow-y-auto">
-				<div class="space-y-1">
-					{
-						sidebar.map((item) => (
-							<div class="space-y-1">
-								{item.children && item.children.length > 0 ? (
-									<div class="mb-4">
-										<h4 class="mb-1 rounded-md px-2 py-1 text-sm font-semibold tracking-tight">
-											{item.title}
-										</h4>
-										<div class="grid grid-flow-row auto-rows-max text-sm gap-0.5 ml-3 border-l border-border/50 pl-2">
-											{item.children.map((child: SidebarItem) =>
-												// Level 2
-												child.children && child.children.length > 0 ? (
-													<div class="space-y-0.5">
-														<div class="px-2 py-1.5 text-muted-foreground/70 font-medium text-xs uppercase tracking-wider">
-															{child.title}
-														</div>
-														{child.children.map((grandChild: SidebarItem) => (
-															<a
-																href={`/docs/${grandChild.slug}`}
-																class:list={[
-																	"group flex w-full items-center rounded-md border border-transparent px-2 py-1.5 hover:bg-muted hover:text-foreground text-muted-foreground transition-colors border-l border-border/40 ml-2 pl-4",
-																	isActive(grandChild.slug)
-																		? "bg-muted font-medium text-foreground border-primary/50"
-																		: "hover:border-foreground/20",
-																]}
-																data-sidebar-active={isActive(grandChild.slug) ? "true" : undefined}
-															>
-																{grandChild.title}
-															</a>
-														))}
-													</div>
-												) : (
-													<a
-														href={`/docs/${child.slug}`}
-														class:list={[
-															"group flex w-full items-center rounded-md border border-transparent px-2 py-1.5 hover:bg-muted hover:text-foreground text-muted-foreground transition-colors",
-															isActive(child.slug)
-																? "bg-muted font-medium text-foreground"
-																: "",
-														]}
-														data-sidebar-active={isActive(child.slug) ? "true" : undefined}
-													>
-														{child.title}
-													</a>
-												)
-											)}
-										</div>
-									</div>
-								) : (
-									<a
-										href={`/docs/${item.slug}`}
-										class:list={[
-											"group flex w-full items-center rounded-md border border-transparent px-2 py-1.5 hover:bg-muted hover:text-foreground text-muted-foreground transition-colors",
-											isActive(item.slug)
-												? "bg-muted font-medium text-foreground"
-												: "",
-										]}
-										data-sidebar-active={isActive(item.slug) ? "true" : undefined}
-									>
-										{item.title}
-									</a>
-								)}
-							</div>
-						))
-					}
-				</div>
-			</div>
+			<DocsSidebar
+				project={project}
+				currentProject={currentProject}
+				sidebar={sidebar}
+				activePath={activePath}
+				mobile
+			/>
 		</div>
 
-		<script>
-			const openBtn = document.getElementById("open-sidebar");
-			const closeBtn = document.getElementById("close-sidebar");
-			const overlay = document.getElementById("mobile-sidebar-overlay");
-			const sidebar = document.getElementById("mobile-sidebar");
+		<main class="relative flex-1 min-w-0 h-full overflow-y-auto">
+			<!-- Atmospheric wash behind the header, matching PageShell's orange tint -->
+			<div
+				class="pointer-events-none absolute inset-x-0 top-0 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]"
+			>
+				<div
+					class="h-40 bg-gradient-to-b from-orange-200/40 to-transparent dark:from-orange-900/20"
+				>
+				</div>
+			</div>
 
-			function toggleSidebar(show: boolean) {
-				if (!sidebar || !overlay) return;
-
-				if (show) {
-					sidebar.dataset.state = "open";
-					overlay.classList.remove("hidden");
-					// small delay to allow display:block to apply before opacity transition
-					requestAnimationFrame(() => {
-						if (overlay) overlay.dataset.state = "open";
-					});
-				} else {
-					sidebar.removeAttribute("data-state");
-					overlay.removeAttribute("data-state");
-					setTimeout(() => {
-						if (overlay) overlay.classList.add("hidden");
-					}, 200);
-				}
-			}
-
-			openBtn?.addEventListener("click", () => toggleSidebar(true));
-			closeBtn?.addEventListener("click", () => toggleSidebar(false));
-			overlay?.addEventListener("click", () => toggleSidebar(false));
-
-			// Copy Markdown functionality
-			document.addEventListener("astro:page-load", () => {
-				const copyBtn = document.getElementById("copy-markdown");
-				const activeIcon = document.getElementById("copy-icon-active");
-				const successIcon = document.getElementById("copy-icon-success");
-
-				if (copyBtn && activeIcon && successIcon) {
-					copyBtn.addEventListener("click", async () => {
-						const content = copyBtn.getAttribute("data-content") || "";
-						try {
-							await navigator.clipboard.writeText(content);
-							activeIcon.classList.add("hidden");
-							successIcon.classList.remove("hidden");
-							successIcon.classList.add("flex");
-							copyBtn.classList.add("border-green-500/50", "bg-green-500/5");
-							
-							setTimeout(() => {
-								activeIcon.classList.remove("hidden");
-								successIcon.classList.add("hidden");
-								successIcon.classList.remove("flex");
-								copyBtn.classList.remove("border-green-500/50", "bg-green-500/5");
-							}, 2000);
-						} catch (err) {
-							console.error("Failed to copy markdown: ", err);
-						}
-					});
-				}
-
-				// Sidebar auto-scroll
-				const activeLink = document.querySelector('[data-sidebar-active="true"]');
-				if (activeLink) {
-					activeLink.scrollIntoView({
-						behavior: 'auto',
-						block: 'center'
-					});
-				}
-			});
-		</script>
-
-		<main
-			class="flex-1 min-w-0 h-full overflow-y-auto py-10 lg:py-12 px-4 sm:px-6 lg:px-8"
-		>
-			<div class="mx-auto max-w-7xl">
+			<div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
 				<div class="flex flex-col xl:flex-row gap-12">
-					<div class="flex-1 min-w-0 max-w-4xl">
-						<div
-							class="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground"
-						>
-							<a
-								href="/"
-								class="hover:text-foreground hover:underline transition-colors"
-								>Home</a
+					<article class="flex-1 min-w-0 max-w-4xl">
+						<nav aria-label="Breadcrumb" class="mb-5">
+							<ol
+								class="flex flex-wrap items-center gap-x-2 gap-y-1 font-sans text-sm"
 							>
-							<ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
-							<a
-								href="/projects"
-								class="hover:text-foreground hover:underline transition-colors"
-								>Projects</a
-							>
-							<ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
-							<span class="font-medium text-foreground/80 capitalize"
-								>{currentProject?.title || project.replace(/-/g, " ")}</span
-							>
-							{
-								(() => {
-									// Find path to current item
-									const currentPath = `${project.toLowerCase()}/${slug}`;
-									const findPath = (
-										items: SidebarItem[],
-										target: string
-									): SidebarItem[] | null => {
-										for (const item of items) {
-											if (item.slug === target) return [item];
-											if (item.children) {
-												const found = findPath(item.children, target);
-												if (found) return [item, ...found];
-											}
-										}
-										return null;
-									};
-
-									const breadcrumbs = findPath(sidebar, currentPath);
-
-									if (breadcrumbs) {
-										return breadcrumbs.map((item, index) => (
-											<>
-												<ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
-												<span
-													class={`capitalize truncate max-w-[150px] ${index === breadcrumbs.length - 1 ? "text-foreground font-semibold" : "text-foreground/80"}`}
+								{
+									breadcrumbs.map((crumb, i) => (
+										<li class="flex items-center gap-x-2 min-w-0">
+											{i > 0 && (
+												<ChevronRight
+													className="w-3.5 h-3.5 shrink-0 text-muted-foreground/50"
+													aria-hidden="true"
+												/>
+											)}
+											{crumb.href ? (
+												<a
+													href={crumb.href}
+													data-haptic-nav
+													class="text-muted-foreground hover:text-primary transition-colors"
 												>
-													{item.title}
+													{crumb.label}
+												</a>
+											) : (
+												<span
+													class="text-foreground font-medium truncate max-w-[200px]"
+													aria-current={
+														i === breadcrumbs.length - 1 ? "page" : undefined
+													}
+												>
+													{crumb.label}
 												</span>
-											</>
-										));
-									}
-									return null;
-								})()
-							}
-						</div>
+											)}
+										</li>
+									))
+								}
+							</ol>
+						</nav>
 
-						<div class="flex items-center justify-between mb-8 pb-4 border-b border-border/50">
-							<h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-								{title.replace(/^[\d.\s]+/, "")}
+						<div
+							class="mb-8 flex flex-wrap items-start justify-between gap-4 border-b border-border/60 pb-6"
+						>
+							<h1
+								class="font-sans text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent pb-1"
+							>
+								{pageTitle}
 							</h1>
-							
-							<div class="flex items-center gap-2">
-								<button
-									id="copy-markdown"
-									class={buttonVariants({
-										variant: "outline",
-										size: "sm",
-										className: "h-8 px-3 text-xs gap-1.5 bg-background/50 backdrop-blur-sm hover:bg-muted transition-all"
-									})}
-									data-content={content}
+
+							<button
+								id="copy-markdown"
+								data-haptic
+								class={buttonVariants({
+									variant: "outline",
+									size: "sm",
+									className:
+										"h-8 px-3 text-xs gap-1.5 bg-background/50 backdrop-blur-sm hover:bg-muted transition-all shrink-0",
+								})}
+								data-content={content}
+							>
+								<span id="copy-icon-active" class="flex items-center gap-1.5">
+									<Copy className="w-3.5 h-3.5" />
+									Copy MD
+								</span>
+								<span
+									id="copy-icon-success"
+									class="hidden items-center gap-1.5 text-green-500"
 								>
-									<span id="copy-icon-active" class="flex items-center gap-1.5">
-										<Copy className="w-3.5 h-3.5" />
-										Copy MD
-									</span>
-									<span id="copy-icon-success" class="hidden items-center gap-1.5 text-green-500">
-										<Check className="w-3.5 h-3.5" />
-										Copied!
-									</span>
-								</button>
-							</div>
+									<Check className="w-3.5 h-3.5" />
+									Copied!
+								</span>
+							</button>
 						</div>
 
 						<MarkdownRenderer
 							content={processedContent}
 							project={project}
-							githubBaseUrl={currentProject?.github_link || `https://github.com/tashifkhan/${project}`}
+							githubBaseUrl={currentProject?.github_link ||
+								`https://github.com/tashifkhan/${project}`}
 						/>
 
-						<div
-							class="mt-16 pt-8 border-t border-border flex justify-between gap-4"
+						<nav
+							class="mt-16 flex flex-col sm:flex-row gap-4 border-t border-border/60 pt-8"
+							aria-label="Pagination"
 						>
 							{
 								prev ? (
-									<Button
-										variant="outline"
-										className="flex-1 justify-start h-auto py-4 px-4 whitespace-normal text-left"
-										asChild
+									<a
+										href={`/docs/${prev.slug}`}
+										data-haptic-nav
+										class="group flex-1 min-w-0 rounded-2xl border border-border/50 bg-card/70 backdrop-blur-sm p-4 transition-all duration-200 hover:border-primary/30 hover:shadow-md"
 									>
-										<a href={`/docs/${prev.slug}`}>
-											<div class="flex flex-col gap-1 items-start">
-												<span class="text-xs text-muted-foreground flex items-center gap-1">
-													<ChevronLeft className="w-3 h-3" /> Previous
-												</span>
-												<span class="font-medium text-base truncate w-full">
-													{prev.title}
-												</span>
-											</div>
-										</a>
-									</Button>
+										<span class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+											<ChevronLeft className="w-3 h-3 transition-transform group-hover:-translate-x-0.5" />
+											Previous
+										</span>
+										<span class="mt-1.5 block truncate text-sm font-medium text-foreground transition-colors group-hover:text-primary">
+											{prev.title}
+										</span>
+									</a>
 								) : (
-									<div class="flex-1" />
+									<div class="hidden sm:block flex-1" />
 								)
 							}
-
 							{
 								next && (
-									<Button
-										variant="outline"
-										className="flex-1 justify-end h-auto py-4 px-4 whitespace-normal text-right"
-										asChild
+									<a
+										href={`/docs/${next.slug}`}
+										data-haptic-nav
+										class="group flex-1 min-w-0 rounded-2xl border border-border/50 bg-card/70 backdrop-blur-sm p-4 text-right transition-all duration-200 hover:border-primary/30 hover:shadow-md"
 									>
-										<a href={`/docs/${next.slug}`}>
-											<div class="flex flex-col gap-1 items-end">
-												<span class="text-xs text-muted-foreground flex items-center gap-1">
-													Next <ChevronRight className="w-3 h-3" />
-												</span>
-												<span class="font-medium text-base truncate w-full">
-													{next.title}
-												</span>
-											</div>
-										</a>
-									</Button>
+										<span class="flex items-center justify-end gap-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+											Next
+											<ChevronRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+										</span>
+										<span class="mt-1.5 block truncate text-sm font-medium text-foreground transition-colors group-hover:text-primary">
+											{next.title}
+										</span>
+									</a>
 								)
 							}
-						</div>
-					</div>
+						</nav>
+					</article>
 
-					<aside class="hidden xl:block w-72 shrink-0">
+					<aside class="hidden xl:block w-64 shrink-0">
 						<TableOfContents headings={headings || []} />
 					</aside>
 				</div>
 			</div>
 		</main>
-
 	</div>
+	<Haptics />
 </Layout>
+
+<script>
+	function toggleSidebar(show: boolean) {
+		const overlay = document.getElementById("mobile-sidebar-overlay");
+		const sidebar = document.getElementById("mobile-sidebar");
+		if (!sidebar || !overlay) return;
+
+		if (show) {
+			sidebar.dataset.state = "open";
+			overlay.classList.remove("hidden");
+			// small delay to allow display:block to apply before opacity transition
+			requestAnimationFrame(() => {
+				overlay.dataset.state = "open";
+			});
+		} else {
+			sidebar.removeAttribute("data-state");
+			overlay.removeAttribute("data-state");
+			setTimeout(() => {
+				overlay.classList.add("hidden");
+			}, 200);
+		}
+	}
+
+	function initDocsPage() {
+		// The ClientRouter swaps the DOM on navigation, so rebind every load
+		document
+			.getElementById("open-sidebar")
+			?.addEventListener("click", () => toggleSidebar(true));
+		document
+			.getElementById("close-sidebar")
+			?.addEventListener("click", () => toggleSidebar(false));
+		document
+			.getElementById("mobile-sidebar-overlay")
+			?.addEventListener("click", () => toggleSidebar(false));
+
+		// Copy Markdown
+		const copyBtn = document.getElementById("copy-markdown");
+		const activeIcon = document.getElementById("copy-icon-active");
+		const successIcon = document.getElementById("copy-icon-success");
+
+		if (copyBtn && activeIcon && successIcon && !copyBtn.dataset.wired) {
+			copyBtn.dataset.wired = "true";
+			copyBtn.addEventListener("click", async () => {
+				const content = copyBtn.getAttribute("data-content") || "";
+				try {
+					await navigator.clipboard.writeText(content);
+					activeIcon.classList.add("hidden");
+					successIcon.classList.remove("hidden");
+					successIcon.classList.add("flex");
+					copyBtn.classList.add("border-green-500/50", "bg-green-500/5");
+
+					setTimeout(() => {
+						activeIcon.classList.remove("hidden");
+						successIcon.classList.add("hidden");
+						successIcon.classList.remove("flex");
+						copyBtn.classList.remove("border-green-500/50", "bg-green-500/5");
+					}, 2000);
+				} catch (err) {
+					console.error("Failed to copy markdown: ", err);
+				}
+			});
+		}
+
+		// Scroll the active sidebar link into view
+		const activeLink = document.querySelector('[data-sidebar-active="true"]');
+		activeLink?.scrollIntoView({ behavior: "auto", block: "center" });
+	}
+
+	initDocsPage();
+	document.addEventListener("astro:page-load", initDocsPage);
+</script>

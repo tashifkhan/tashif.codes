@@ -1,0 +1,109 @@
+---
+import { ArrowLeft, ExternalLink, FileText, Github, X } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import type { Project } from "../../data/projects";
+import type { SidebarItem } from "../../utils/docs";
+import SidebarTree from "./SidebarTree.astro";
+
+interface Props {
+	project: string;
+	currentProject?: Project;
+	sidebar: SidebarItem[];
+	activePath: string;
+	/** Adds the drawer close button (wired by the page script via #close-sidebar) */
+	mobile?: boolean;
+}
+
+const { project, currentProject, sidebar, activePath, mobile = false } =
+	Astro.props;
+
+const projectTitle = currentProject?.title || project.replace(/-/g, " ");
+const githubUrl =
+	currentProject?.github_link || `https://github.com/tashifkhan/${project}`;
+---
+
+<div class="flex h-full flex-col">
+	<div class="border-b border-border/60 p-5">
+		<div class="flex items-center justify-between gap-2">
+			<a
+				href="/docs"
+				data-haptic-back
+				class="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
+			>
+				<ArrowLeft className="w-3.5 h-3.5" />
+				All Docs
+			</a>
+			{
+				mobile && (
+					<button
+						id="close-sidebar"
+						aria-label="Close navigation"
+						class="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+					>
+						<X className="w-4 h-4" />
+					</button>
+				)
+			}
+		</div>
+
+		<div class="mt-4 flex items-start gap-3">
+			<div
+				class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10"
+			>
+				<FileText className="w-4.5 h-4.5 text-primary" />
+			</div>
+			<div class="min-w-0">
+				<h2
+					class="text-[15px] font-bold capitalize leading-snug tracking-tight text-foreground line-clamp-2 break-words"
+				>
+					{projectTitle}
+				</h2>
+				<p
+					class="mt-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
+				>
+					Documentation
+				</p>
+			</div>
+		</div>
+
+		<div class="mt-4 flex gap-2">
+			{
+				currentProject?.live_website_url && (
+					<a
+						href={currentProject.live_website_url}
+						target="_blank"
+						rel="noopener noreferrer"
+						data-haptic-external
+						class={buttonVariants({
+							variant: "default",
+							size: "sm",
+							className: "h-8 flex-1 gap-1.5 text-xs shadow-sm",
+						})}
+					>
+						<ExternalLink className="w-3.5 h-3.5" />
+						Live
+					</a>
+				)
+			}
+			<a
+				href={githubUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+				data-haptic-external
+				class={buttonVariants({
+					variant: "outline",
+					size: "sm",
+					className:
+						"h-8 flex-1 gap-1.5 text-xs bg-background/50 backdrop-blur-sm",
+				})}
+			>
+				<Github className="w-3.5 h-3.5" />
+				GitHub
+			</a>
+		</div>
+	</div>
+
+	<nav class="flex-1 overflow-y-auto p-3" aria-label="Documentation navigation">
+		<SidebarTree items={sidebar} activePath={activePath} />
+	</nav>
+</div>

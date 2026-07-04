@@ -44,28 +44,54 @@ function slugify(text: string): string {
     .replace(/(^-|-$)+/g, '');
 }
 
-// Helper to extract h2 and h3 headings from markdown
+// Helper to extract h2 and h3 headings from markdown for the "On this page" TOC.
+// Skips fenced code blocks (a `## comment` inside a fence is not a heading) and
+// dedupes anchor slugs the same way MarkdownRenderer.astro does, so TOC links
+// always match the rendered heading IDs.
 function extractHeadings(content: string): { depth: number; text: string; slug: string }[] {
   const headings: { depth: number; text: string; slug: string }[] = [];
-  const lines = content.split('\n');
-  
-  // Basic regex to match lines starting with ## or ###
-  // Also handle headings that might have a number prefix like "## 1. Introduction"
-  const headingRegex = /^(#{2,3})\s+(.+)$/;
+  const slugCounts = new Map<string, number>();
+  const headingRegex = /^(#{1,6})\s+(.+)$/;
+  let fenceChar: string | null = null;
 
-  for (const line of lines) {
+  for (const line of content.split('\n')) {
+    const fenceMatch = line.match(/^\s{0,3}(`{3,}|~{3,})/);
+    if (fenceMatch) {
+      if (!fenceChar) fenceChar = fenceMatch[1][0];
+      else if (fenceMatch[1][0] === fenceChar) fenceChar = null;
+      continue;
+    }
+    if (fenceChar) continue;
+
     const match = line.match(headingRegex);
-    if (match) {
-      const depth = match[1].length;
-      const text = match[2].trim().replace(/\{#.*\}$/, ''); // Remove any custom IDs like {#my-id}
-      headings.push({
-        depth,
-        text,
-        slug: slugify(text)
-      });
+    if (!match) continue;
+
+    const depth = match[1].length;
+    const text = match[2].trim().replace(/\{#.*\}$/, ''); // Remove any custom IDs like {#my-id}
+    const base = slugify(text);
+    const count = slugCounts.get(base) ?? 0;
+    slugCounts.set(base, count + 1);
+    const slug = count === 0 ? base : `${base}-${count}`;
+
+    // Only h2/h3 appear in the TOC, but every heading level participates in
+    // slug dedup because the renderer assigns IDs to all of them.
+    if (depth === 2 || depth === 3) {
+      headings.push({ depth, text, slug });
     }
   }
   return headings;
+}
+
+// Prepare raw markdown for rendering: the page renders its own title and
+// "On this page" navigation, so drop the leading h1 and the generated
+// "Table of Contents" section (a heading followed by anchor-link list items).
+export function processDocContent(content: string): string {
+  let processed = content.trim().replace(/^#\s+.+(\r?\n)*/, '');
+  processed = processed.replace(
+    /^#{2,3}\s+table of contents[^\S\r\n]*\r?\n(?:[^\S\r\n]*(?:(?:[-*+]|\d+\.)[^\S\r\n]+\[[^\]\r\n]*\]\(#[^)\r\n]*\)[^\S\r\n]*)?\r?\n)*/im,
+    ''
+  );
+  return processed;
 }
 
 // Helper to get all projects (directories in src/data/docs)
@@ -107,7 +133,9 @@ export function getAllDocs(): DocPage[] {
       const content = fs.readFileSync(path.join(projectDir, file), 'utf-8');
       const slug = file.replace(/\.md$/, '');
       const title = formatTitle(path.basename(slug));
-      const headings = extractHeadings(content);
+      // Extract headings from the processed content — what actually gets
+      // rendered — so slug dedup counters stay in sync with heading IDs.
+      const headings = extractHeadings(processDocContent(content));
 
       pages.push({
         params: {
@@ -389,7 +417,15 @@ function pinTopSections(items: SidebarItem[]): SidebarItem[] {
 
 // ---- UNIFIED getSidebar ----
 
+// Building a sidebar walks the whole project directory; every doc page needs
+// it (nav + pagination), so cache per project across the static build.
+const sidebarCache = new Map<string, SidebarItem[]>();
+
 export function getSidebar(projectSlug: string): SidebarItem[] {
+  const cacheKey = projectSlug.toLowerCase();
+  const cached = sidebarCache.get(cacheKey);
+  if (cached) return cached;
+
   const realProjectDirName = resolveProjectDir(projectSlug);
   if (!realProjectDirName) return [];
 
@@ -405,7 +441,21 @@ export function getSidebar(projectSlug: string): SidebarItem[] {
   }
 
   // Always float "Project Overview" and "Getting Started" to the top
-  return pinTopSections(sidebar);
+  const result = pinTopSections(sidebar);
+  sidebarCache.set(cacheKey, result);
+  return result;
+}
+
+// Find the trail of sidebar items leading to the given slug (for breadcrumbs).
+export function findSidebarTrail(items: SidebarItem[], target: string): SidebarItem[] | null {
+  for (const item of items) {
+    if (item.slug === target) return [item];
+    if (item.children) {
+      const found = findSidebarTrail(item.children, target);
+      if (found) return [item, ...found];
+    }
+  }
+  return null;
 }
 
 export function getProjectEntry(project: string): string | null {

@@ -1,0 +1,86 @@
+---
+import type { SidebarItem } from "../../utils/docs";
+
+interface Props {
+	items: SidebarItem[];
+	activePath: string;
+	depth?: number;
+}
+
+const { items, activePath, depth = 0 } = Astro.props;
+
+const isActive = (item: SidebarItem) => item.slug === activePath;
+
+const leafClasses = (item: SidebarItem) => [
+	"flex w-full items-center rounded-lg px-2.5 py-1.5 text-sm leading-snug transition-colors",
+	isActive(item)
+		? "bg-primary/10 font-medium text-primary"
+		: "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+];
+
+const sectionLabelClasses = (item: SidebarItem) => [
+	"mb-1.5 flex items-center px-2.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
+	isActive(item)
+		? "text-primary"
+		: "text-muted-foreground hover:text-foreground",
+];
+---
+
+<div class:list={[depth === 0 ? "space-y-6" : "space-y-0.5"]}>
+	{
+		items.map((item) =>
+			item.children && item.children.length > 0 ? (
+				<div>
+					{
+						// Group headers: top-level groups render as micro-labels
+						// (site convention), nested groups as regular links.
+						item.slug !== "#" ? (
+							<a
+								href={`/docs/${item.slug}`}
+								data-haptic-nav
+								data-sidebar-active={isActive(item) ? "true" : undefined}
+								class:list={
+									depth === 0 ? sectionLabelClasses(item) : leafClasses(item)
+								}
+							>
+								{item.title}
+							</a>
+						) : (
+							<div
+								class:list={
+									depth === 0
+										? "mb-1.5 px-2.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
+										: "px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70"
+								}
+							>
+								{item.title}
+							</div>
+						)
+					}
+					<div
+						class:list={[
+							depth === 0
+								? "space-y-0.5"
+								: "ml-2.5 mt-0.5 space-y-0.5 border-l border-border/60 pl-2",
+						]}
+					>
+						<Astro.self
+							items={item.children}
+							activePath={activePath}
+							depth={depth + 1}
+						/>
+					</div>
+				</div>
+			) : (
+				<a
+					href={`/docs/${item.slug}`}
+					data-haptic-nav
+					data-sidebar-active={isActive(item) ? "true" : undefined}
+					class:list={leafClasses(item)}
+				>
+					{item.title}
+				</a>
+			)
+		)
+	}
+</div>
