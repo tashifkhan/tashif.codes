@@ -19,6 +19,8 @@ interface Props {
 	containerClass?: string;
 	/** Extra classes for the <main> container */
 	mainClass?: string;
+	/** Tighter header/main padding for dense, data-heavy pages */
+	compact?: boolean;
 }
 
 const {
@@ -29,7 +31,17 @@ const {
 	backLabel = "Back",
 	containerClass = "max-w-7xl",
 	mainClass = "",
+	compact = false,
 } = Astro.props;
+
+const hasHeaderContent = Astro.slots.has("header");
+const headerPadding = compact ? "py-4 sm:py-5" : "py-6 sm:py-8";
+const breadcrumbMargin = !hasHeaderContent
+	? ""
+	: compact
+		? "mb-2 sm:mb-3"
+		: "mb-4 sm:mb-6";
+const mainPadding = compact ? "py-6 sm:py-8" : "py-8 sm:py-12";
 
 const tintClass = {
 	orange:
@@ -55,11 +67,11 @@ const tintClass = {
 			class="relative bg-card/80 backdrop-blur border-b border-border/60 transition-colors duration-300"
 		>
 			<div
-				class:list={[containerClass, "mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8"]}
+				class:list={[containerClass, "mx-auto px-4 sm:px-6 lg:px-8", headerPadding]}
 			>
 				{
 					breadcrumbs && breadcrumbs.length > 0 ? (
-						<nav aria-label="Breadcrumb" class="mb-4 sm:mb-6">
+						<nav aria-label="Breadcrumb" class={breadcrumbMargin}>
 							<ol class="flex flex-wrap items-center gap-x-2 gap-y-1 font-sans text-sm">
 								{breadcrumbs.map((crumb, i) => (
 									<li class="flex items-center gap-x-2 min-w-0">
@@ -94,7 +106,10 @@ const tintClass = {
 							<a
 								href={backHref}
 								data-haptic-back
-								class="inline-flex items-center text-primary hover:text-primary/80 hover:underline mb-4 sm:mb-6 text-sm sm:text-base font-medium transition-colors"
+								class:list={[
+									"inline-flex items-center text-primary hover:text-primary/80 hover:underline text-sm sm:text-base font-medium transition-colors",
+									breadcrumbMargin,
+								]}
 							>
 								<ArrowLeft className="w-4 h-4 mr-2" />
 								{backLabel}
@@ -110,7 +125,8 @@ const tintClass = {
 			<div
 				class:list={[
 					containerClass,
-					"mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12",
+					"mx-auto px-4 sm:px-6 lg:px-8",
+					mainPadding,
 					mainClass,
 				]}
 			>

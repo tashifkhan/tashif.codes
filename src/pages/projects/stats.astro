@@ -6,22 +6,12 @@ import ProjectStatsDashboard from "../../components/ProjectStatsDashboard";
 <PageShell
 	title="Project Stats | Tashif Ahmad Khan"
 	tint="blue"
+	compact
 	breadcrumbs={[
 		{ label: "Home", href: "/" },
 		{ label: "Projects", href: "/projects" },
 		{ label: "Stats" },
 	]}
 >
-	<Fragment slot="header">
-		<h1
-			class="font-sans text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 dark:from-foreground dark:to-muted-foreground bg-clip-text text-transparent mb-2 pb-1"
-		>
-			Project Stats
-		</h1>
-		<p class="text-muted-foreground text-base sm:text-lg leading-relaxed">
-			Live traffic and engagement metrics across deployed projects
-		</p>
-	</Fragment>
-
 	<ProjectStatsDashboard client:only="react" />
 </PageShell>

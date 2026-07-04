@@ -4,7 +4,7 @@ import GitHubStats from "../components/GitHubStats.astro";
 import { starLists } from "../data/starLists";
 import {
 	Github as GithubIcon,
-	BarChart3,
+	ChartPie,
 	Activity,
 	Star,
 	ArrowLeft,
@@ -82,7 +82,7 @@ const starredLists = starLists || [];
 				>
 					<CardHeader>
 						<div class="flex items-center space-x-3">
-							<BarChart3 className="w-5 h-5 text-muted-foreground" />
+							<ChartPie className="w-5 h-5 text-muted-foreground" />
 							<CardTitle>Statistics & Activity</CardTitle>
 						</div>
 					</CardHeader>

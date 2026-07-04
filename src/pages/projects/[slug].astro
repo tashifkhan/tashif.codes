@@ -5,7 +5,7 @@ import {
 	ExternalLink,
 	FileText,
 	GitFork,
-	BarChart3,
+	ChartPie,
 	Tag,
 	Download,
 	Calendar,
@@ -109,50 +109,51 @@ export async function getStaticPaths() {
 >
 	<Fragment slot="header">
 		<h1
-			class="font-sans text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent mb-4 pb-1"
+			class="font-sans text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent mb-2 sm:mb-4 pb-1"
 		>
 			{project.title}
 		</h1>
 		<p
-			class="text-muted-foreground mb-5 text-base sm:text-lg leading-relaxed max-w-3xl"
+			class="text-muted-foreground mb-3 sm:mb-5 text-sm sm:text-lg leading-relaxed max-w-3xl"
 		>
 			{project.description}
 		</p>
 
 		{
-			project.parentRepo && (
-				<a
-					href={`https://github.com/${project.parentRepo}`}
-					target="_blank"
-					rel="noopener noreferrer"
-					data-haptic-external
-					class="inline-flex items-center gap-1.5 text-sm text-muted-foreground mb-5 bg-muted/50 dark:bg-secondary/50 w-fit px-3 py-1 rounded-full border border-border hover:border-primary/40 transition-colors"
-				>
-					<GitFork className="w-4 h-4" />
-					<span>
-						Forked from <strong class="font-medium">{project.parentRepo}</strong>
-					</span>
-				</a>
-			)
-		}
-
-		{
-			repoFacts.length > 0 && (
-				<div class="flex flex-wrap items-center gap-x-5 gap-y-2 mb-6 font-mono text-xs text-muted-foreground">
+			(project.parentRepo || repoFacts.length > 0) && (
+				<div class="flex flex-wrap items-center gap-x-4 sm:gap-x-5 gap-y-2 mb-4 sm:mb-6">
+					{project.parentRepo && (
+						<a
+							href={`https://github.com/${project.parentRepo}`}
+							target="_blank"
+							rel="noopener noreferrer"
+							title={`Forked from ${project.parentRepo}`}
+							data-haptic-external
+							class="inline-flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground bg-muted/50 dark:bg-secondary/50 w-fit px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full border border-border hover:border-primary/40 transition-colors"
+						>
+							<GitFork className="w-3.5 h-3.5" />
+							<span class="font-medium">{project.parentRepo}</span>
+						</a>
+					)}
 					{repoFacts.map(({ icon: Icon, label, value }) => (
-						<span class="inline-flex items-center gap-1.5">
+						<span
+							class="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground"
+							title={label}
+						>
 							<Icon className="w-3.5 h-3.5" />
 							<span class="text-foreground font-semibold tabular-nums">
 								{value}
 							</span>
-							{label.toLowerCase()}
+							<span class="hidden sm:inline">{label.toLowerCase()}</span>
 						</span>
 					))}
 				</div>
 			)
 		}
 
-		<div class="flex flex-row flex-wrap items-center gap-2.5 sm:gap-3">
+		<div
+			class="flex flex-row items-center gap-2 sm:gap-3 flex-nowrap overflow-x-auto sm:flex-wrap sm:overflow-visible -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+		>
 			{
 				project.live_website_url && (
 					<a
@@ -162,7 +163,7 @@ export async function getStaticPaths() {
 						data-haptic-external
 						class={cn(
 							buttonVariants({ variant: "default", size: "sm" }),
-							"h-8 text-xs gap-1.5 shadow-sm"
+							"h-8 text-xs gap-1.5 shadow-sm shrink-0"
 						)}
 					>
 						<ExternalLink className="w-3.5 h-3.5" />
@@ -177,7 +178,7 @@ export async function getStaticPaths() {
 				data-haptic-external
 				class={cn(
 					buttonVariants({ variant: "outline", size: "sm" }),
-					"h-8 text-xs gap-1.5 bg-background/50 backdrop-blur-sm"
+					"h-8 text-xs gap-1.5 bg-background/50 backdrop-blur-sm shrink-0"
 				)}
 			>
 				<Github className="w-3.5 h-3.5" />
@@ -190,7 +191,7 @@ export async function getStaticPaths() {
 						data-haptic-nav
 						class={cn(
 							buttonVariants({ variant: "outline", size: "sm" }),
-							"h-8 text-xs gap-1.5 shadow-sm hover:bg-secondary/70 transition-colors"
+							"h-8 text-xs gap-1.5 shadow-sm hover:bg-secondary/70 transition-colors shrink-0"
 						)}
 					>
 						<FileText className="w-3.5 h-3.5" />
@@ -205,10 +206,10 @@ export async function getStaticPaths() {
 						data-haptic-nav
 						class={cn(
 							buttonVariants({ variant: "outline", size: "sm" }),
-							"h-8 text-xs gap-1.5 shadow-sm hover:bg-blue-500/10 hover:border-blue-500/30 transition-colors"
+							"h-8 text-xs gap-1.5 shadow-sm hover:bg-blue-500/10 hover:border-blue-500/30 transition-colors shrink-0"
 						)}
 					>
-						<BarChart3 className="w-3.5 h-3.5" />
+						<ChartPie className="w-3.5 h-3.5" />
 						Stats
 					</a>
 				)
@@ -220,7 +221,7 @@ export async function getStaticPaths() {
 						data-haptic-nav
 						class={cn(
 							buttonVariants({ variant: "outline", size: "sm" }),
-							"h-8 text-xs gap-1.5 shadow-sm hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-colors"
+							"h-8 text-xs gap-1.5 shadow-sm hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-colors shrink-0"
 						)}
 					>
 						<Tag className="w-3.5 h-3.5" />
@@ -337,7 +338,23 @@ export async function getStaticPaths() {
 								"h-8 w-8 hover:bg-blue-500/10 hover:border-blue-500/30 transition-colors"
 							)}
 						>
-							<BarChart3 className="w-3.5 h-3.5" />
+							<ChartPie className="w-3.5 h-3.5" />
+						</a>
+					)
+				}
+				{
+					releases.length > 0 && (
+						<a
+							href="#releases"
+							data-haptic-nav
+							aria-label="Releases"
+							title="Releases"
+							class={cn(
+								buttonVariants({ variant: "outline", size: "icon" }),
+								"h-8 w-8 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-colors"
+							)}
+						>
+							<Tag className="w-3.5 h-3.5" />
 						</a>
 					)
 				}
@@ -351,7 +368,7 @@ export async function getStaticPaths() {
 		<!-- README -->
 		<article
 			id="project-readme"
-			class="bg-card/80 backdrop-blur-xl p-6 sm:p-8 lg:p-10 rounded-2xl border border-border/50 shadow-lg min-w-0"
+			class="bg-card/80 backdrop-blur-xl p-4 sm:p-8 lg:p-10 rounded-2xl border border-border/50 shadow-lg min-w-0"
 		>
 			{
 				readmeContent ? (

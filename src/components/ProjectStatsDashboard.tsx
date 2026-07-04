@@ -812,53 +812,64 @@ export default function ProjectStatsDashboard() {
 	}
 
 	return (
-		<div className="w-full max-w-7xl mx-auto pb-12 space-y-8">
-			{/* Controls */}
-			<div className="flex flex-col sm:flex-row gap-3">
-				<Select
-					value={selectedSlug}
-					onValueChange={(v) => {
-						trigger("selection");
-						setLoading(true);
-						setSelectedSlug(v);
-					}}
-				>
-					<SelectTrigger className="w-full sm:w-[240px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
-						<SelectValue placeholder="Select Project" />
-					</SelectTrigger>
-					<SelectContent className="bg-card border-border">
-						{projects.map((p) => (
-							<SelectItem
-								key={p.slug}
-								value={p.slug}
-								className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
-							>
-								{p.name}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+		<div className="w-full max-w-7xl mx-auto pb-12 space-y-5">
+			{/* Header row: title left, controls right */}
+			<div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+				<div>
+					<h1 className="font-sans text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 dark:from-foreground dark:to-muted-foreground bg-clip-text text-transparent">
+						Project Stats
+					</h1>
+					<p className="text-muted-foreground text-sm sm:text-base mt-1">
+						Live traffic and engagement metrics across deployed projects
+					</p>
+				</div>
 
-				<Select
-					value={period}
-					onValueChange={(v) => {
-						trigger("selection");
-						setLoading(true);
-						setPeriod(v);
-					}}
-				>
-					<SelectTrigger className="w-full sm:w-[160px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
-						<Calendar className="w-3.5 h-3.5 mr-2 text-primary/60" />
-						<SelectValue placeholder="Period" />
-					</SelectTrigger>
-					<SelectContent className="bg-card border-border">
-						<SelectItem value="7" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Last 7 days</SelectItem>
-						<SelectItem value="30" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Last 30 days</SelectItem>
-						<SelectItem value="90" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Last 90 days</SelectItem>
-						<SelectItem value="365" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Last 365 days</SelectItem>
-						<SelectItem value="0" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Lifetime</SelectItem>
-					</SelectContent>
-				</Select>
+				<div className="flex flex-col sm:flex-row gap-3">
+					<Select
+						value={selectedSlug}
+						onValueChange={(v) => {
+							trigger("selection");
+							setLoading(true);
+							setSelectedSlug(v);
+						}}
+					>
+						<SelectTrigger className="w-full sm:w-[240px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
+							<SelectValue placeholder="Select Project" />
+						</SelectTrigger>
+						<SelectContent className="bg-card border-border">
+							{projects.map((p) => (
+								<SelectItem
+									key={p.slug}
+									value={p.slug}
+									className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
+								>
+									{p.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+
+					<Select
+						value={period}
+						onValueChange={(v) => {
+							trigger("selection");
+							setLoading(true);
+							setPeriod(v);
+						}}
+					>
+						<SelectTrigger className="w-full sm:w-[160px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
+							<Calendar className="w-3.5 h-3.5 mr-2 text-primary/60" />
+							<SelectValue placeholder="Period" />
+						</SelectTrigger>
+						<SelectContent className="bg-card border-border">
+							<SelectItem value="7" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Last 7 days</SelectItem>
+							<SelectItem value="30" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Last 30 days</SelectItem>
+							<SelectItem value="90" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Last 90 days</SelectItem>
+							<SelectItem value="365" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Last 365 days</SelectItem>
+							<SelectItem value="0" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Lifetime</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
 			</div>
 
 			{/* Error */}
@@ -892,7 +903,7 @@ export default function ProjectStatsDashboard() {
 					<div className="h-[380px] rounded-xl bg-card border border-border animate-pulse" />
 				</div>
 			) : (
-				<div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+				<div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
 					{/* Metric Cards */}
 					<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 						<MetricCard

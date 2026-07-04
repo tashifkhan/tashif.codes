@@ -2,34 +2,63 @@
 import PageShell from "../../layouts/PageShell.astro";
 import ProjectFilters from "../../components/ProjectFilters.tsx";
 import { starLists } from "../../data/starLists";
-import { BarChart3 } from "lucide-react";
+import { ChartPie } from "lucide-react";
 import ProjectCard from "../../components/ProjectCard.astro";
 import { allProjects, type Project } from "../../data/projects";
 import { fetchAnalyticsProjects, hasAnalytics, getAnalyticsSlug } from "../../data/analyticsProjects";
 
 const projects: Project[] = allProjects;
 const analyticsProjects = await fetchAnalyticsProjects();
+const liveCount = projects.filter((p) => Boolean(p.live_website_url)).length;
 ---
 
 <PageShell
 	title="Projects | Tashif Ahmad Khan"
+	tint="orange"
 	breadcrumbs={[{ label: "Home", href: "/" }, { label: "Projects" }]}
 >
 	<Fragment slot="header">
-		<div class="flex items-center justify-between gap-4 mb-4">
-			<h1
-				class="font-sans text-4xl sm:text-5xl font-semibold tracking-tight text-foreground"
+		<div class="mb-4">
+			<div class="flex items-center justify-between gap-4">
+				<h1
+					class="font-sans text-4xl sm:text-5xl font-semibold tracking-tight text-foreground"
+				>
+					Projects
+				</h1>
+				<a
+					href="/projects/stats"
+					data-haptic-nav
+					class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-full bg-primary/10 text-primary ring-1 ring-primary/25 hover:bg-primary/20 hover:ring-primary/40 transition-colors shrink-0"
+				>
+					<ChartPie className="w-4 h-4" />
+					Analytics
+				</a>
+			</div>
+			<p class="mt-2 sm:mt-3 max-w-xl text-sm sm:text-base text-muted-foreground">
+				Things I've built and shipped — web apps, tools, and experiments.
+			</p>
+			<div
+				class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm text-muted-foreground"
 			>
-				Projects
-			</h1>
-			<a
-				href="/projects/stats"
-				data-haptic-nav
-				class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-secondary/50 hover:bg-secondary border border-border/50 rounded-lg transition-colors shrink-0"
-			>
-				<BarChart3 className="w-4 h-4" />
-				Analytics
-			</a>
+				<span>
+					<span class="font-semibold text-foreground tabular-nums"
+						>{projects.length}</span
+					> projects
+				</span>
+				<span class="inline-flex items-center gap-1.5">
+					<span class="relative flex h-1.5 w-1.5">
+						<span
+							class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
+						></span>
+						<span
+							class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"
+						></span>
+					</span>
+					<span class="font-semibold text-foreground tabular-nums"
+						>{liveCount}</span
+					> live
+				</span>
+			</div>
 		</div>
 	</Fragment>
 
