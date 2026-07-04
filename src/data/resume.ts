@@ -37,7 +37,7 @@ export interface ResumeAction {
 
 export const resumeAbout = {
 	greeting: "Holaaaa! 👋",
-	introHtml: `I'm an engineering undergraduate based in <span class="text-foreground font-medium">Delhi, India</span>, working at the intersection of <span class="text-foreground font-medium">Full-stack Development</span> and <span class="text-foreground font-medium">Generative AI</span>. I’ve always been driven by the idea that software should bridge the gap between complex systems and the end-user. This philosophy led me to build the <span class="text-foreground font-medium">JIIT Tools Suite</span>. What started as a simple React PWA has now evolved into a platform serving <span class="text-foreground font-medium">18,000+ daily users</span> . In essence I'm an Engineering student by day, <span class="text-foreground font-medium">developer and debater</span> by night, with a pation to solve real world problems (mostly my laziness) via code.`,
+	introHtml: `I'm an engineering undergraduate based in <span class="text-foreground font-medium">Delhi, India</span>, working at the intersection of <span class="text-foreground font-medium">Full-stack Development</span> and <span class="text-foreground font-medium">Generative AI</span>. I’ve always been driven by the idea that software should bridge the gap between complex systems and the end-user. This philosophy led me to build the <span class="text-foreground font-medium">JIIT Tools Suite</span>. What started as a simple React PWA has now evolved into a platform serving <span class="text-foreground font-medium">18,000+ daily users</span>. In essence I'm an Engineering student by day, <span class="text-foreground font-medium">developer and debater</span> by night, with a passion to solve real world problems (mostly my laziness) via code.`,
 	location: "Delhi, India",
 	highlights: ["Full Stack Engineer", "Open Source"],
 	actions: [
@@ -93,10 +93,10 @@ export const resumeProjects: ResumeProject[] = [
 		points: [
 			"Developed a unified suite of REST APIs and interactive dashboards for analyzing developer profiles across major platforms.",
 			"Key components include:",
-			'<a href="https://github-stats.tashif.codes" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">GitHub Stats</a> (FastAPI): Profile stalker, contribution graphs, and repository insights.',
-			'<a href="https://leetcode-stats.tashif.codes" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">LeetCode Stats</a> (Flask): Solved problem counts, contest rankings, and badges.',
-			'<a href="https://codeforces-stats.tashif.codes" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">CodeForces Stats</a> (FastAPI): Rating history, contest performance, and comparisons.',
-			'<a href="https://gfg-stats.tashif.codes" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">GeeksForGeeks Stats</a> (FastAPI): Problem difficulty breakdown and coding scores.',
+			'<a href="https://github-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">GitHub Stats</a> (FastAPI): Profile stalker, contribution graphs, and repository insights.',
+			'<a href="https://leetcode-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">LeetCode Stats</a> (Flask): Solved problem counts, contest rankings, and badges.',
+			'<a href="https://codeforces-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">CodeForces Stats</a> (FastAPI): Rating history, contest performance, and comparisons.',
+			'<a href="https://gfg-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">GeeksForGeeks Stats</a> (FastAPI): Problem difficulty breakdown and coding scores.',
 		],
 	},
 	{
@@ -109,12 +109,12 @@ export const resumeProjects: ResumeProject[] = [
 		],
 		points: [
 			"Developed a comprehensive suite of web applications and automation tools to enhance the JIIT student experience.",
-			'Developed <a href="https://jportal.tashif.codes/" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">JPortal</a> (<strong>React</strong> PWA for JIIT WebKiosk, 18k+ users) with <strong>Pyodide</strong> PDF parsing.',
-			'Created <a href="https://jiit-timetable.tashif.codes/" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Timetable Website</a> providing real-time schedules for 6.5k+ students.',
-			'Implemented <a href="https://jiit-timetable.tashif.codes/mess-menu" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Mess Menu</a> offering daily/weekly meal plans for 5.2k+ students.',
-			'Engineered <a href="https://jiit-placement-updates.tashif.codes/?shh" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Placement & Campus Updates portal</a> for opportunities/news for 4k+/2k+ users.',
-			'Created <a href="https://sophos-autologin.tashif.codes/" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Sophos Auto-Login</a> scripts (one-click access for ~100 individuals).',
-			'Developed <strong>Telegram</strong>-based <a href="https://tashif.codes/projects/jiit-placement-alerts" class="text-purple-400 hover:text-purple-300 underline decoration-dotted transition-colors">Notification Bot</a> for real-time updates.',
+			'Developed <a href="https://jportal.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">JPortal</a> (<strong>React</strong> PWA for JIIT WebKiosk, 18k+ users) with <strong>Pyodide</strong> PDF parsing.',
+			'Created <a href="https://jiit-timetable.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Timetable Website</a> providing real-time schedules for 6.5k+ students.',
+			'Implemented <a href="https://jiit-timetable.tashif.codes/mess-menu" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Mess Menu</a> offering daily/weekly meal plans for 5.2k+ students.',
+			'Engineered <a href="https://jiit-placement-updates.tashif.codes/?shh" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Placement & Campus Updates portal</a> for opportunities/news for 4k+/2k+ users.',
+			'Created <a href="https://sophos-autologin.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Sophos Auto-Login</a> scripts (one-click access for ~100 individuals).',
+			'Developed <strong>Telegram</strong>-based <a href="https://tashif.codes/projects/jiit-placement-alerts" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Notification Bot</a> for real-time updates.',
 		],
 	},
 	{

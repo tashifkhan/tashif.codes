@@ -10,19 +10,19 @@ export interface ExperienceEntry {
 }
 
 export const experiences: ExperienceEntry[] = [
-	{
-		company: "Systematic Reasoning",
-		role: "Founding Engineer",
-		period: "July 2026 – Present",
-		color: "orange",
-		website: "https://systematicreasoning.com/#/",
-		logo: "https://cps-mvp-app-donskov-donskovs-projects.vercel.app/favicon.svg",
-		points: [
-			"Building <strong>ForgeIQX</strong>, a continuous compliance platform for highly regulated industries — monitoring regulatory requirements, organizational policies, code, and operational artifacts to detect gaps through deterministic, auditable neuro-symbolic analysis.",
-			"Contributing to the <strong>reasoning layer</strong> that keeps LLM interpretation bounded, ensuring compliance verdicts are traceable and auditable rather than generated.",
-			"Shaping core product architecture and engineering culture from the ground up as a <strong>Founding Engineer</strong>.",
-		],
-	},
+	// {
+	// 	company: "Systematic Reasoning",
+	// 	role: "Founding Engineer",
+	// 	period: "July 2026 – Present",
+	// 	color: "orange",
+	// 	website: "https://systematicreasoning.com/#/",
+	// 	logo: "https://cps-mvp-app-donskov-donskovs-projects.vercel.app/favicon.svg",
+	// 	points: [
+	// 		"Building <strong>ForgeIQX</strong>, a continuous compliance platform for highly regulated industries — monitoring regulatory requirements, organizational policies, code, and operational artifacts to detect gaps through deterministic, auditable neuro-symbolic analysis.",
+	// 		"Contributing to the <strong>reasoning layer</strong> that keeps LLM interpretation bounded, ensuring compliance verdicts are traceable and auditable rather than generated.",
+	// 		"Shaping core product architecture and engineering culture from the ground up as a <strong>Founding Engineer</strong>.",
+	// 	],
+	// },
 	{
 		company: "SITG France",
 		role: "Software Development Engineer",
@@ -59,7 +59,7 @@ export const experiences: ExperienceEntry[] = [
 		color: "blue",
 		logo: "https://unicloud.co/wp-content/themes/u-design/assets/images/favicon.png",
 		points: [
-			'Engineered and deployed 3 critical <strong>React</strong> modules for a <a href="https://irgvap.ircep.gov.in" target="_blank" class="text-blue-400 hover:text-blue-300 underline decoration-dotted transition-colors">high-profile IRCTC project</a>, significantly enhancing vendor progress monitoring and data visualisation capabilities.',
+			'Engineered and deployed 3 critical <strong>React</strong> modules for a <a href="https://irgvap.ircep.gov.in" target="_blank" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">high-profile IRCTC project</a>, significantly enhancing vendor progress monitoring and data visualisation capabilities.',
 			"Developed robust <strong>FastAPI</strong> REST APIs, securing data transactions with <strong>JWT authentication</strong> and <strong>PostgreSQL</strong>.",
 			"Automated and improved Database Migration Cron jobs to dispatch real-time Block Change Alerts to approvers via <strong>SMTP mail server</strong> and browser <strong>webpush notifications</strong>.",
 		],
