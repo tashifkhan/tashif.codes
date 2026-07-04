@@ -103,7 +103,16 @@ type ProjectListResponse = {
 	total: number;
 };
 
+type Granularity = "day" | "week" | "month" | "year";
+
 // --- Constants ---
+
+const GRANULARITY_LABELS: Record<Granularity, string> = {
+	day: "Daily",
+	week: "Weekly",
+	month: "Monthly",
+	year: "Yearly",
+};
 
 const COLORS = [
 	"var(--color-chart-1)",
@@ -141,12 +150,14 @@ const RechartsAreaChart = memo(({
 	color,
 	height = 300,
 	unit = "",
+	granularity = "day",
 }: {
 	data: TimeseriesEntry[];
 	dataKey: "pageviews" | "visitors" | "bounce_rate";
 	color: string;
 	height?: number;
 	unit?: string;
+	granularity?: Granularity;
 }) => {
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const [chartWidth, setChartWidth] = useState<number>(0);
@@ -178,14 +189,18 @@ const RechartsAreaChart = memo(({
 	const formattedData = useMemo(() => {
 		if (!data || data.length === 0) return [];
 
+		const labelOptions: Intl.DateTimeFormatOptions =
+			granularity === "year"
+				? { year: "numeric", timeZone: "UTC" }
+				: granularity === "month"
+				? { month: "short", year: "numeric", timeZone: "UTC" }
+				: { month: "short", day: "numeric", timeZone: "UTC" };
+
 		return data.map((d) => {
 			const parsedDate = new Date(d.date);
 			const safeDate = isNaN(parsedDate.getTime())
 				? String(d.date).split("T")[0]
-				: parsedDate.toLocaleDateString(undefined, {
-						month: "short",
-						day: "numeric",
-				 });
+				: parsedDate.toLocaleDateString(undefined, labelOptions);
 
 			return {
 				...d,
@@ -197,7 +212,7 @@ const RechartsAreaChart = memo(({
 						: d[dataKey],
 			};
 		});
-	}, [data, dataKey]);
+	}, [data, dataKey, granularity]);
 
 	const tooltipFormatter = useCallback((value: number | undefined) => {
 		const numValue = value ?? 0;
@@ -529,6 +544,54 @@ const MetricCard = memo(({
 ));
 MetricCard.displayName = "MetricCard";
 
+// Bucket a daily timeseries into week (Monday start), month, or year buckets.
+// Pageviews and visitors are summed; bounce rate is weight-averaged by pageviews.
+function aggregateTimeseries(
+	data: TimeseriesEntry[],
+	granularity: Granularity
+): TimeseriesEntry[] {
+	if (granularity === "day" || data.length === 0) return data;
+
+	const bucketKey = (dateStr: string): string => {
+		const d = new Date(dateStr);
+		if (isNaN(d.getTime())) return dateStr;
+		if (granularity === "year") return `${d.getUTCFullYear()}-01-01`;
+		if (granularity === "month") {
+			return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-01`;
+		}
+		const start = new Date(d);
+		start.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+		return start.toISOString().slice(0, 10);
+	};
+
+	const buckets = new Map<
+		string,
+		{ pageviews: number; visitors: number; bounceSum: number; bounceWeight: number }
+	>();
+
+	for (const entry of data) {
+		const key = bucketKey(entry.date);
+		let bucket = buckets.get(key);
+		if (!bucket) {
+			bucket = { pageviews: 0, visitors: 0, bounceSum: 0, bounceWeight: 0 };
+			buckets.set(key, bucket);
+		}
+		bucket.pageviews += entry.pageviews;
+		bucket.visitors += entry.visitors;
+		if (entry.bounce_rate > 0 && entry.pageviews > 0) {
+			bucket.bounceSum += entry.bounce_rate * entry.pageviews;
+			bucket.bounceWeight += entry.pageviews;
+		}
+	}
+
+	return Array.from(buckets.entries()).map(([date, b]) => ({
+		date,
+		pageviews: b.pageviews,
+		visitors: b.visitors,
+		bounce_rate: b.bounceWeight > 0 ? b.bounceSum / b.bounceWeight : 0,
+	}));
+}
+
 // Downsample a series to at most `points` values so sparklines stay light
 function downsample(values: number[], points = 40): number[] {
 	if (values.length <= points) return values;
@@ -636,6 +699,7 @@ export default function ProjectStatsDashboard() {
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
 	const [period, setPeriod] = useState<string>("0");
+	const [granularity, setGranularity] = useState<Granularity>("week");
 	const [retryToken, setRetryToken] = useState<number>(0);
 	const { trigger } = useWebHaptics();
 	const API_PREFIX = "/projects/stats/api";
@@ -771,8 +835,8 @@ export default function ProjectStatsDashboard() {
 
 	const chartData = useMemo(() => {
 		if (!stats) return [];
-		return stats.timeseries;
-	}, [stats]);
+		return aggregateTimeseries(stats.timeseries, granularity);
+	}, [stats, granularity]);
 
 	const sparks = useMemo(() => {
 		if (!stats) return { views: [], visitors: [], bounce: [] };
@@ -869,6 +933,25 @@ export default function ProjectStatsDashboard() {
 							<SelectItem value="0" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Lifetime</SelectItem>
 						</SelectContent>
 					</Select>
+
+					<Select
+						value={granularity}
+						onValueChange={(v) => {
+							trigger("selection");
+							setGranularity(v as Granularity);
+						}}
+					>
+						<SelectTrigger className="w-full sm:w-[140px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
+							<Activity className="w-3.5 h-3.5 mr-2 text-primary/60" />
+							<SelectValue placeholder="Group by" />
+						</SelectTrigger>
+						<SelectContent className="bg-card border-border">
+							<SelectItem value="day" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Daily</SelectItem>
+							<SelectItem value="week" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Weekly</SelectItem>
+							<SelectItem value="month" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Monthly</SelectItem>
+							<SelectItem value="year" className="text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">Yearly</SelectItem>
+						</SelectContent>
+					</Select>
 				</div>
 			</div>
 
@@ -959,7 +1042,7 @@ export default function ProjectStatsDashboard() {
 								</TabsList>
 								<div className="pb-3">
 									<span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground bg-muted border border-border px-2.5 py-1 rounded-md">
-										{period === "0" ? "Lifetime" : `${period}d`}
+										{period === "0" ? "Lifetime" : `${period}d`} · {GRANULARITY_LABELS[granularity]}
 									</span>
 								</div>
 							</div>
@@ -969,33 +1052,35 @@ export default function ProjectStatsDashboard() {
 								<TabsContent value="traffic" className="mt-0 space-y-4">
 									<div>
 										<h3 className="text-foreground font-semibold text-base">Pageviews Over Time</h3>
-										<p className="text-muted-foreground text-xs mt-0.5">Daily pageview count for the selected period</p>
+										<p className="text-muted-foreground text-xs mt-0.5">{GRANULARITY_LABELS[granularity]} pageview count for the selected period</p>
 									</div>
 									<RechartsAreaChart
 										data={chartData}
 										dataKey="pageviews"
 										color="var(--color-chart-2)"
 										height={260}
+										granularity={granularity}
 									/>
 								</TabsContent>
 
 								<TabsContent value="visitors" className="mt-0 space-y-4">
 									<div>
 										<h3 className="text-foreground font-semibold text-base">Visitors Over Time</h3>
-										<p className="text-muted-foreground text-xs mt-0.5">Daily unique visitor count for the selected period</p>
+										<p className="text-muted-foreground text-xs mt-0.5">{GRANULARITY_LABELS[granularity]} unique visitor count for the selected period</p>
 									</div>
 									<RechartsAreaChart
 										data={chartData}
 										dataKey="visitors"
 										color="var(--color-chart-3)"
 										height={260}
+										granularity={granularity}
 									/>
 								</TabsContent>
 
 								<TabsContent value="bounce" className="mt-0 space-y-4">
 									<div>
 										<h3 className="text-foreground font-semibold text-base">Bounce Rate</h3>
-										<p className="text-muted-foreground text-xs mt-0.5">Percentage of single-page sessions per day</p>
+										<p className="text-muted-foreground text-xs mt-0.5">Percentage of single-page sessions, {GRANULARITY_LABELS[granularity].toLowerCase()} average</p>
 									</div>
 									<RechartsAreaChart
 										data={chartData}
@@ -1003,6 +1088,7 @@ export default function ProjectStatsDashboard() {
 										color="var(--color-chart-1)"
 										height={260}
 										unit="%"
+										granularity={granularity}
 									/>
 								</TabsContent>
 							</div>
