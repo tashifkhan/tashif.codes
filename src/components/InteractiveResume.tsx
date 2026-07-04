@@ -53,6 +53,10 @@ const actionIcons = {
 	download: Download,
 } as const;
 
+// Shared panel shell used across the dashboard (GitHub stats, star lists, …)
+const panelClass =
+	"rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm";
+
 // --- HELPERS ---
 
 function parsePeriodDuration(period: string): string {
@@ -90,86 +94,88 @@ function parsePeriodDuration(period: string): string {
 
 // --- COMPONENTS ---
 
-const colorMap: Record<string, string> = {
-	purple:
-		"from-purple-500/10 to-purple-900/10 border-purple-500/20 text-purple-600 dark:text-purple-300 hover:border-purple-500/50",
-	blue: "from-blue-500/10 to-blue-900/10 border-blue-500/20 text-blue-600 dark:text-blue-300 hover:border-blue-500/50",
-	green:
-		"from-emerald-500/10 to-emerald-900/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-300 hover:border-emerald-500/50",
-	yellow:
-		"from-yellow-500/10 to-yellow-900/10 border-yellow-500/20 text-yellow-600 dark:text-yellow-300 hover:border-yellow-500/50",
-	orange:
-		"from-orange-500/10 to-orange-900/10 border-orange-500/20 text-orange-600 dark:text-orange-300 hover:border-orange-500/50",
-	red: "from-red-500/10 to-red-900/10 border-red-500/20 text-red-600 dark:text-red-300 hover:border-red-500/50",
-	indigo:
-		"from-indigo-500/10 to-indigo-900/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-300 hover:border-indigo-500/50",
-	emerald:
-		"from-emerald-500/10 to-emerald-900/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-300 hover:border-emerald-500/50",
-	gray: "from-zinc-500/10 to-zinc-900/10 border-zinc-500/20 text-zinc-600 dark:text-zinc-300 hover:border-zinc-500/50",
-};
-
-const GlowCard = ({
-	children,
-	color = "gray",
-	className = "",
-	onClick,
-}: {
-	children: React.ReactNode;
-	color?: string;
-	className?: string;
-	onClick?: () => void;
-}) => {
-	return (
-		<div
-			onClick={onClick}
-			className={cn(
-				`group relative overflow-hidden rounded-xl border bg-gradient-to-br backdrop-blur-sm transition-all duration-500`,
-				colorMap[color] || colorMap.gray,
-				className,
-			)}
-		>
-			{/* Noise texture overlay */}
-			<div
-				className="absolute inset-0 bg-white/5 dark:bg-black/5 opacity-10"
-				style={{ backgroundImage: "url('data:image/svg+xml,...')" }}
-			></div>
-
-			<div className="relative z-10 p-6 h-full flex flex-col">{children}</div>
-			{/* Spotlight Effect - Subtle on light, more visible on dark */}
-			<div className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 group-hover:opacity-100 z-20">
-				<div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent dark:from-white/5" />
-			</div>
-		</div>
-	);
-};
-
+/** Section heading matching the dashboard pattern: bold title + mono meta + hairline. */
 const SectionHeader = ({
 	id,
 	title,
-	icon: Icon,
+	meta,
 }: {
 	id: string;
 	title: string;
-	icon: any;
+	meta?: string;
 }) => (
-	<div id={id} className="flex items-center gap-3 mb-8 pt-16 scroll-mt-24">
-		<div className="p-2 bg-muted border border-border rounded-lg">
-			<Icon className="w-5 h-5 text-muted-foreground" />
-		</div>
-		<h2 className="text-2xl font-bold tracking-tight text-foreground uppercase font-mono">
+	<div id={id} className="flex items-center gap-x-3 min-w-0 mb-6 pt-12 scroll-mt-24">
+		<h2 className="font-sans text-lg sm:text-xl font-bold tracking-tight text-foreground shrink-0">
 			{title}
 		</h2>
-		<div className="h-px flex-1 bg-gradient-to-r from-border to-transparent ml-4"></div>
+		{meta && (
+			<span className="font-mono text-xs text-muted-foreground truncate">
+				{meta}
+			</span>
+		)}
+		<div className="h-px flex-1 bg-gradient-to-r from-border/60 to-transparent" />
 	</div>
 );
 
+/** zsh-style window chrome (traffic lights + label), as used by EmptyState. */
+const WindowBar = ({ label, hint }: { label: string; hint?: string }) => (
+	<div className="flex items-center gap-2 border-b border-border/60 bg-muted/40 px-4 py-2.5">
+		<span className="flex gap-1.5" aria-hidden="true">
+			<span className="h-2.5 w-2.5 rounded-full bg-rose-400/70" />
+			<span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
+			<span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
+		</span>
+		<span className="ml-1 font-mono text-[11px] text-muted-foreground/60 truncate">
+			{label}
+		</span>
+		{hint && (
+			<span className="ml-auto font-mono text-[10px] text-muted-foreground/50 shrink-0">
+				{hint}
+			</span>
+		)}
+	</div>
+);
+
+/** Terminal prompt line: ➜ tashif.codes % <command> */
+const PromptLine = ({ command }: { command: string }) => (
+	<div className="flex items-baseline gap-1.5 font-mono text-sm min-w-0">
+		<span className="text-primary font-bold select-none" aria-hidden="true">
+			➜
+		</span>
+		<span className="font-semibold text-foreground">tashif.codes</span>
+		<span className="text-muted-foreground/70 select-none" aria-hidden="true">
+			%
+		</span>
+		<span className="text-muted-foreground truncate">{command}</span>
+	</div>
+);
+
+const CertificateLink = ({
+	href,
+	onNavigate,
+}: {
+	href: string;
+	onNavigate: () => void;
+}) => (
+	<a
+		href={href}
+		target="_blank"
+		rel="noopener noreferrer"
+		onClick={onNavigate}
+		className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/50 px-2.5 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
+	>
+		<Award size={12} className="text-primary/70" />
+		certificate
+	</a>
+);
+
 const tocMain = [
-	{ id: "about", label: "About", icon: Terminal },
-	{ id: "skills", label: "Stack", icon: Cpu },
-	{ id: "experience", label: "Work", icon: Zap },
-	{ id: "projects", label: "Builds", icon: Globe },
-	{ id: "education", label: "Edu", icon: BookOpen },
-	{ id: "positions", label: "Roles", icon: Layout },
+	{ id: "about", label: "about", icon: Terminal },
+	{ id: "skills", label: "stack", icon: Cpu },
+	{ id: "experience", label: "work", icon: Zap },
+	{ id: "projects", label: "builds", icon: Globe },
+	{ id: "education", label: "edu", icon: BookOpen },
+	{ id: "positions", label: "roles", icon: Layout },
 ];
 
 export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
@@ -180,6 +186,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 	skillCategories,
 }) => {
 	const [activeSection, setActiveSection] = useState("about");
+	const [scrollPct, setScrollPct] = useState(0);
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const { trigger } = useWebHaptics();
 
@@ -194,8 +201,15 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 				}
 			}
 			setActiveSection(current);
+
+			const max =
+				document.documentElement.scrollHeight - window.innerHeight;
+			setScrollPct(
+				max > 0 ? Math.min(100, Math.round((window.scrollY / max) * 100)) : 0,
+			);
 		};
-		window.addEventListener("scroll", handleScroll);
+		window.addEventListener("scroll", handleScroll, { passive: true });
+		handleScroll();
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, []);
 
@@ -208,13 +222,83 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 		}
 	};
 
+	// Group consecutive roles at the same company into one timeline entry
+	const companyOrder: string[] = [];
+	const companyGroups: Record<string, Experience[]> = {};
+	experiences.forEach((exp) => {
+		if (!companyGroups[exp.company]) {
+			companyGroups[exp.company] = [];
+			companyOrder.push(exp.company);
+		}
+		companyGroups[exp.company].push(exp);
+	});
+
+	const totalSkills = skillCategories.reduce((n, c) => n + c.items.length, 0);
+
+	const CompanyHeading = ({ exp }: { exp: Experience }) => (
+		<div className="flex items-center gap-2 mb-3">
+			{exp.logo && (
+				<img
+					src={exp.logo}
+					alt=""
+					width={18}
+					height={18}
+					className="w-[18px] h-[18px] rounded-sm object-contain shrink-0"
+					onError={(e) => { e.currentTarget.style.display = "none"; }}
+				/>
+			)}
+			{exp.website ? (
+				<a
+					href={exp.website}
+					target="_blank"
+					rel="noopener noreferrer"
+					onClick={() => trigger("light")}
+					className="group/company inline-flex items-center gap-1.5 text-base font-semibold text-foreground transition-colors hover:text-primary"
+				>
+					{exp.company}
+					<ExternalLink
+						size={12}
+						className="text-muted-foreground opacity-60 transition-colors group-hover/company:text-primary"
+					/>
+				</a>
+			) : (
+				<span className="text-base font-semibold text-foreground">
+					{exp.company}
+				</span>
+			)}
+		</div>
+	);
+
+	const RoleHeading = ({ exp }: { exp: Experience }) => (
+		<div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-3">
+			<h3 className="text-lg font-bold tracking-tight text-foreground">
+				{exp.role}
+			</h3>
+			<span className="font-mono text-xs text-muted-foreground tabular-nums shrink-0">
+				{exp.period}
+				{parsePeriodDuration(exp.period) && (
+					<span className="opacity-60"> · {parsePeriodDuration(exp.period)}</span>
+				)}
+			</span>
+		</div>
+	);
+
+	const BulletList = ({ points }: { points: string[] }) => (
+		<ul className="space-y-2.5 mb-4">
+			{points.map((pt, i) => (
+				<li
+					key={i}
+					className="flex items-start gap-3 text-sm leading-relaxed text-muted-foreground"
+				>
+					<span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-primary/40 shrink-0" />
+					<span dangerouslySetInnerHTML={{ __html: pt }} />
+				</li>
+			))}
+		</ul>
+	);
+
 	return (
 		<div className="min-h-screen bg-transparent text-foreground font-sans w-full">
-			{/* Background Grid - Optional, reusing existing background from Layout usually, but adding local grid if needed */}
-			<div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]">
-				<div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-			</div>
-
 			{/* Mobile Nav */}
 			<div className="fixed top-20 right-4 z-50 lg:hidden">
 				<Button
@@ -234,22 +318,20 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 			<div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
 					{/* Left Content Column */}
-					<main className="flex-1 min-w-0 lg:pr-56">
-						{/* About Section - Simplified since main header already shows name/avatar */}
-						<section id="about" className="mb-16 pt-8 scroll-mt-24">
-							<div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-muted/30 border border-border p-6 md:p-8">
-								{/* Background decorative elements */}
-								<div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-								<div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-purple-500/10 to-transparent rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
+					<main className="flex-1 min-w-0 lg:pr-56 pb-20">
+						{/* About - terminal window, matching the welcome statusline & EmptyState */}
+						<section id="about" className="pt-6 scroll-mt-24">
+							<div className={cn(panelClass, "overflow-hidden")}>
+								<WindowBar label="taf@tashif.codes — about" hint="zsh" />
+								<div className="p-5 sm:p-6 space-y-5">
+									<PromptLine command="cat ./about.md" />
 
-								<div className="relative z-10 space-y-6">
-									{/* Intro text */}
-									<div className="space-y-4">
-										<h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+									<div className="space-y-3">
+										<h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
 											{resumeAbout.greeting}
 										</h2>
 										<p
-											className="text-base md:text-lg text-muted-foreground leading-relaxed"
+											className="text-sm sm:text-base text-muted-foreground leading-relaxed"
 											dangerouslySetInnerHTML={{
 												__html: resumeAbout.introHtml,
 											}}
@@ -258,37 +340,36 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 
 									{/* Quick highlights */}
 									<div className="flex flex-wrap items-center gap-2">
-										<Badge
-											variant="outline"
-											className="gap-1.5 font-mono bg-background/50"
-										>
-											<MapPin size={12} className="text-primary" />
+										<span className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/50 px-2.5 py-1 font-mono text-[11px] text-muted-foreground">
+											<MapPin size={12} className="text-primary/70" />
 											{resumeAbout.location}
-										</Badge>
+										</span>
 										{resumeAbout.highlights.map((highlight) => (
-											<Badge
+											<span
 												key={highlight}
-												variant="secondary"
-												className="font-mono"
+												className="inline-flex items-center rounded-lg border border-border/60 bg-background/50 px-2.5 py-1 font-mono text-[11px] text-muted-foreground"
 											>
 												{highlight}
-											</Badge>
+											</span>
 										))}
 									</div>
 
 									{/* Action Buttons */}
-									<div className="flex flex-wrap gap-3 pt-2">
+									<div className="flex flex-wrap gap-2.5 pt-1">
 										{resumeAbout.actions.map((action) => {
 											const Icon = actionIcons[action.icon];
 											return (
 												<Button
 													key={action.label}
 													asChild
+													size="sm"
 													variant={action.primary ? "default" : "outline"}
 													onClick={() => trigger("light")}
 													className={cn(
-														"gap-2",
-														action.primary && "bg-primary hover:bg-primary/90",
+														"gap-2 rounded-lg",
+														action.primary
+															? "bg-primary hover:bg-primary/90"
+															: "bg-transparent border-border/60 hover:bg-muted/50",
 													)}
 												>
 													<a
@@ -297,7 +378,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 															? {}
 															: { target: "_blank", rel: "noreferrer" })}
 													>
-														<Icon size={18} />
+														<Icon size={15} />
 														<span className="font-semibold">{action.label}</span>
 													</a>
 												</Button>
@@ -308,299 +389,219 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 							</div>
 						</section>
 
-						{/* Skills (System Specs Style) */}
-						<SectionHeader id="skills" title="System Specs" icon={Cpu} />
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-20">
+						{/* Stack */}
+						<SectionHeader
+							id="skills"
+							title="Stack"
+							meta={`${totalSkills} tools · ${skillCategories.length} categories`}
+						/>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							{skillCategories.map((cat) => {
-								// Simple icon mapping since we are passing plain objects
 								let Icon = Terminal;
 								if (cat.label === "Frameworks") Icon = Layout;
-								if (cat.label === "Databases") Icon = Globe; // using Globe for DB as placeholder/requested
+								if (cat.label === "Databases") Icon = Globe;
 								if (cat.label === "Tools") Icon = Zap;
-								// Or rely on logic:
-								// const Icon = cat.icon || Terminal;
 
 								return (
-									<div
+									<section
 										key={cat.label}
-										className="p-5 rounded-xl bg-card border border-border hover:border-ring/50 transition-all duration-300 shadow-sm"
+										className={cn(
+											panelClass,
+											"overflow-hidden transition-colors hover:border-primary/30",
+										)}
 									>
-										<div className="flex items-center gap-3 mb-4 border-b border-border pb-3">
-											<div
-												className={cn(
-													"p-1.5 rounded-md bg-muted text-muted-foreground",
-												)}
-											>
-												<Icon size={16} />
-											</div>
-											<h3
-												className={cn(
-													"text-xs font-bold uppercase tracking-widest text-muted-foreground",
-												)}
-											>
+										<div className="px-5 py-3 border-b border-border/60 flex items-center gap-2">
+											<Icon className="w-3.5 h-3.5 text-muted-foreground" />
+											<span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
 												{cat.label}
-											</h3>
+											</span>
+											<span className="ml-auto font-mono text-[10px] tabular-nums text-muted-foreground/60">
+												{cat.items.length}
+											</span>
 										</div>
-										<div className="flex flex-wrap gap-2">
+										<div className="p-4 flex flex-wrap gap-1.5">
 											{cat.items.map((item) => (
 												<Badge
 													key={item}
 													variant="secondary"
-													className="font-mono text-xs font-normal"
+													className="font-mono text-xs font-normal bg-secondary/50 hover:bg-secondary/70 transition-colors border-transparent"
 												>
 													{item}
 												</Badge>
 											))}
 										</div>
-									</div>
+									</section>
 								);
 							})}
 						</div>
 
 						{/* Experience Timeline */}
-						<SectionHeader id="experience" title="Experience" icon={Zap} />
-						<div className="relative border-l-2 border-border ml-3 md:ml-6 space-y-12 mb-20">
-							{(() => {
-								const order: string[] = [];
-								const groups: Record<string, Experience[]> = {};
-								experiences.forEach((exp) => {
-									if (!groups[exp.company]) {
-										groups[exp.company] = [];
-										order.push(exp.company);
-									}
-									groups[exp.company].push(exp);
-								});
+						<SectionHeader
+							id="experience"
+							title="Experience"
+							meta={`${companyOrder.length} companies · ${experiences.length} roles`}
+						/>
+						<div className="relative border-l border-border/60 ml-2 md:ml-4 space-y-12">
+							{companyOrder.map((company) => {
+								const exps = companyGroups[company];
+								const first = exps[0];
+								const isGrouped = exps.length > 1;
 
-								const CompanyHeading = ({ exp }: { exp: Experience }) => (
-									<div className="flex items-center gap-2 mb-3">
-										{exp.logo && (
-											<img
-												src={exp.logo}
-												alt=""
-												width={18}
-												height={18}
-												className="w-[18px] h-[18px] rounded-sm object-contain shrink-0"
-												onError={(e) => { e.currentTarget.style.display = "none"; }}
-											/>
-										)}
-										{exp.website ? (
-											<a
-												href={exp.website}
-												target="_blank"
-												rel="noopener noreferrer"
-												onClick={() => trigger("light")}
-												className={cn(
-													"text-lg font-semibold inline-flex items-center gap-1 underline underline-offset-4 decoration-dotted hover:decoration-solid transition-all",
-													`text-${exp.color}-500 dark:text-${exp.color}-400`,
-												)}
-											>
-												{exp.company}
-												<ExternalLink size={13} className="opacity-50" />
-											</a>
+								return (
+									<div key={company} className="relative pl-8 md:pl-10">
+										{/* Timeline node */}
+										<span className="absolute -left-[7px] top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background border border-border/60">
+											<span className="h-1.5 w-1.5 rounded-full bg-primary" />
+										</span>
+
+										{/* Company name always at top */}
+										<CompanyHeading exp={first} />
+
+										{isGrouped ? (
+											/* ── Grouped: inner role timeline ── */
+											<div className="relative border-l border-border/40 space-y-8 pl-6">
+												{exps.map((exp, i) => (
+													<div key={i} className="relative">
+														<span className="absolute -left-[29px] top-[7px] h-2.5 w-2.5 rounded-full bg-background border border-primary/50" />
+														<RoleHeading exp={exp} />
+														<BulletList points={exp.points} />
+														{exp.certificate && (
+															<CertificateLink
+																href={exp.certificate}
+																onNavigate={() => trigger("light")}
+															/>
+														)}
+													</div>
+												))}
+											</div>
 										) : (
-											<span className={cn(
-												"text-lg font-semibold",
-												`text-${exp.color}-500 dark:text-${exp.color}-400`,
-											)}>
-												{exp.company}
-											</span>
+											/* ── Single role ── */
+											<>
+												<RoleHeading exp={first} />
+												<BulletList points={first.points} />
+												{first.certificate && (
+													<CertificateLink
+														href={first.certificate}
+														onNavigate={() => trigger("light")}
+													/>
+												)}
+											</>
 										)}
 									</div>
 								);
-
-								const BulletList = ({ points }: { points: string[] }) => (
-									<ul className="space-y-3 mb-4">
-										{points.map((pt, i) => (
-											<li key={i} className="text-muted-foreground leading-relaxed text-sm sm:text-base flex items-start gap-3">
-												<span className="mt-2 w-1.5 h-1.5 bg-muted-foreground/50 rounded-full shrink-0" />
-												<span dangerouslySetInnerHTML={{ __html: pt }} />
-											</li>
-										))}
-									</ul>
-								);
-
-								return order.map((company) => {
-									const exps = groups[company];
-									const first = exps[0];
-									const isGrouped = exps.length > 1;
-
-									return (
-										<div key={company} className="relative pl-8 md:pl-12">
-											{/* Timeline node */}
-											<div className={cn(
-												"absolute -left-[9px] top-2 w-4 h-4 rounded-full bg-background border-4 border-muted-foreground/30",
-												`border-${first.color}-500/50`,
-											)} />
-
-											{/* Company name always at top */}
-											<CompanyHeading exp={first} />
-
-											{isGrouped ? (
-												/* ── Grouped: inner role timeline ── */
-												<div className={cn(
-													"relative border-l-2 space-y-8 pl-6",
-													`border-${first.color}-500/20`,
-												)}>
-													{exps.map((exp, i) => (
-														<div key={i} className="relative">
-															<div className={cn(
-																"absolute -left-[31px] top-[7px] w-3 h-3 rounded-full bg-background border-2",
-																`border-${exp.color}-500/50`,
-															)} />
-															<div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-3">
-																<h4 className="text-xl font-bold text-foreground">{exp.role}</h4>
-																<span className="font-mono text-sm text-muted-foreground shrink-0">
-																	{exp.period}
-																	{parsePeriodDuration(exp.period) && (
-																		<span className="opacity-60"> · {parsePeriodDuration(exp.period)}</span>
-																	)}
-																</span>
-															</div>
-															<BulletList points={exp.points} />
-															{exp.certificate && (
-																<a
-																	href={exp.certificate}
-																	target="_blank"
-																	onClick={() => trigger("light")}
-																	className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors border-b border-transparent hover:border-foreground pb-0.5"
-																>
-																	<Award size={14} /> Certificate
-																</a>
-															)}
-														</div>
-													))}
-												</div>
-											) : (
-												/* ── Single role ── */
-												<>
-													<div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-3">
-														<h3 className="text-xl font-bold text-foreground">{first.role}</h3>
-														<span className="font-mono text-sm text-muted-foreground shrink-0">
-															{first.period}
-															{parsePeriodDuration(first.period) && (
-																<span className="opacity-60"> · {parsePeriodDuration(first.period)}</span>
-															)}
-														</span>
-													</div>
-													<BulletList points={first.points} />
-													{first.certificate && (
-														<a
-															href={first.certificate}
-															target="_blank"
-															onClick={() => trigger("light")}
-															className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors border-b border-transparent hover:border-foreground pb-0.5"
-														>
-															<Award size={14} /> Certificate
-														</a>
-													)}
-												</>
-											)}
-										</div>
-									);
-								});
-							})()}
+							})}
 						</div>
 
-						{/* Projects Masonry */}
-						<SectionHeader id="projects" title="Selected Works" icon={Globe} />
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20">
+						{/* Selected Works */}
+						<SectionHeader
+							id="projects"
+							title="Selected Works"
+							meta={`${projects.length} builds`}
+						/>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
 							{projects.map((project, idx) => (
-								<GlowCard
+								<section
 									key={idx}
-									color={project.color}
-									className="flex flex-col h-full shadow-sm"
+									className={cn(
+										panelClass,
+										"group flex flex-col overflow-hidden transition-colors hover:border-primary/30",
+									)}
 								>
-									<div className="flex justify-between items-start mb-4">
-										<div>
-											<h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+									<div className="px-5 py-4 border-b border-border/60 flex items-start justify-between gap-3">
+										<div className="min-w-0">
+											<h3 className="text-base font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors">
 												{project.title}
 											</h3>
-											<div
-												className="text-xs font-mono text-muted-foreground mt-1 line-clamp-1"
+											<p
+												className="mt-1 font-mono text-[11px] text-muted-foreground truncate"
 												title={project.stack}
 											>
 												{project.stack}
-											</div>
+											</p>
 										</div>
-										<div className="flex gap-2">
+										<div className="flex gap-1 shrink-0">
 											{project.links.map((link) => (
 												<Button
 													key={link.label}
 													variant="ghost"
 													size="icon"
-													className="h-8 w-8 text-muted-foreground hover:text-foreground"
+													className="h-7 w-7 text-muted-foreground hover:text-foreground"
 													onClick={() => trigger("light")}
 													asChild
 												>
 													<a
 														href={link.url}
 														target="_blank"
+														rel="noopener noreferrer"
 														aria-label={link.label}
 													>
 														{link.label === "GitHub" ? (
-															<Github size={16} />
+															<Github size={15} />
 														) : (
-															<ExternalLink size={16} />
+															<ExternalLink size={15} />
 														)}
 													</a>
 												</Button>
 											))}
 										</div>
 									</div>
-									<div className="space-y-3 mt-auto border-t border-border/50 pt-4">
+									<div className="p-5 pt-4 space-y-2.5 flex-1">
 										{project.points.map((pt, i) => (
 											<div
 												key={i}
-												className="flex gap-2 text-sm text-muted-foreground"
+												className="flex gap-2.5 text-sm leading-relaxed text-muted-foreground"
 											>
 												<ChevronRight
 													size={14}
-													className={cn(
-														"shrink-0 mt-1",
-														`text-${project.color}-500`,
-													)}
+													className="mt-1 shrink-0 text-primary/50"
 												/>
 												<span dangerouslySetInnerHTML={{ __html: pt }} />
 											</div>
 										))}
 									</div>
-								</GlowCard>
+								</section>
 							))}
 						</div>
 
 						{/* Education & Positions Grid */}
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
 							<div>
-								<SectionHeader
-									id="education"
-									title="Education"
-									icon={BookOpen}
-								/>
-								<div className="space-y-6">
+								<SectionHeader id="education" title="Education" />
+								<div className="space-y-4">
 									{education.map((edu, idx) => (
 										<div
 											key={idx}
-											className="border-l-2 border-border pl-4 py-1 hover:border-primary transition-colors duration-300"
-										>
-											<div className="text-foreground font-bold">
-												{edu.institute}
-											</div>
-											<div className="text-sm text-muted-foreground font-mono my-1">
-												{edu.period}
-											</div>
-											{edu.degree && (
-												<div className="text-sm text-primary">{edu.degree}</div>
+											className={cn(
+												panelClass,
+												"relative p-4 transition-colors hover:border-primary/30",
 											)}
-											<div className="flex gap-2 mt-2">
-												{edu.details?.map((d) => (
-													<Badge
-														key={d}
-														variant="outline"
-														className="text-xs font-normal"
-													>
-														{d}
-													</Badge>
-												))}
+										>
+											<span className="absolute left-0 top-3.5 bottom-3.5 w-[2px] rounded-r-full bg-primary/70" />
+											<div className="pl-3">
+												<p className="text-sm font-semibold text-foreground">
+													{edu.institute}
+												</p>
+												<p className="mt-0.5 font-mono text-[11px] text-muted-foreground tabular-nums">
+													{edu.period}
+												</p>
+												{edu.degree && (
+													<p className="mt-1 text-xs text-primary">
+														{edu.degree}
+													</p>
+												)}
+												{edu.details?.length > 0 && (
+													<div className="mt-2 flex flex-wrap gap-1.5">
+														{edu.details.map((d) => (
+															<Badge
+																key={d}
+																variant="outline"
+																className="font-mono text-[10px] font-normal border-border/60"
+															>
+																{d}
+															</Badge>
+														))}
+													</div>
+												)}
 											</div>
 										</div>
 									))}
@@ -608,41 +609,39 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 							</div>
 
 							<div>
-								<SectionHeader
-									id="positions"
-									title="Leadership"
-									icon={Layout}
-								/>
-								<div className="space-y-4">
-									{positions.map((pos, idx) => (
-										<div
-											key={idx}
-											className="group p-4 bg-muted/30 border border-border hover:border-ring/50 rounded-lg transition-all"
-										>
-											<div className="flex justify-between text-sm mb-1">
-												<span className="font-bold text-foreground group-hover:text-primary transition-colors">
-													{pos.title}
-												</span>
-												<span className="text-muted-foreground font-mono text-xs">
-													{pos.period}
-												</span>
+								<SectionHeader id="positions" title="Leadership" />
+								<div className={cn(panelClass, "overflow-hidden")}>
+									<div className="divide-y divide-border/40">
+										{positions.map((pos, idx) => (
+											<div
+												key={idx}
+												className="group px-5 py-4 hover:bg-muted/30 transition-colors"
+											>
+												<div className="flex items-baseline justify-between gap-2">
+													<p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+														{pos.title}
+													</p>
+													<span className="font-mono text-[11px] text-muted-foreground tabular-nums shrink-0">
+														{pos.period}
+													</span>
+												</div>
+												<p className="mt-0.5 font-mono text-[11px] text-muted-foreground/80">
+													{pos.org}
+												</p>
+												<ul className="mt-2 space-y-1.5">
+													{pos.points.map((pt, i) => (
+														<li
+															key={i}
+															className="flex items-start gap-2.5 text-xs leading-relaxed text-muted-foreground"
+														>
+															<span className="mt-[6px] h-1 w-1 rounded-full bg-primary/40 shrink-0" />
+															{pt}
+														</li>
+													))}
+												</ul>
 											</div>
-											<div className="text-xs text-muted-foreground mb-2">
-												{pos.org}
-											</div>
-											<ul className="space-y-1">
-												{pos.points.map((pt, i) => (
-													<li
-														key={i}
-														className="text-xs text-muted-foreground leading-relaxed flex gap-2"
-													>
-														<span className="text-muted-foreground/60">•</span>{" "}
-														{pt}
-													</li>
-												))}
-											</ul>
-										</div>
-									))}
+										))}
+									</div>
 								</div>
 							</div>
 						</div>
@@ -650,14 +649,20 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 
 					{/* Right Sidebar - Fixed on page */}
 					<aside className="hidden lg:block fixed top-1/2 -translate-y-1/2 right-[max(2rem,calc((100vw-80rem)/2+2rem))] w-48 z-40">
-						<div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 shadow-xl">
-							<div className="flex items-center gap-2 mb-4 px-2">
-								<div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-								<span className="text-xs font-bold text-muted-foreground tracking-widest uppercase">
-									System Nav
+						<div
+							className={cn(panelClass, "overflow-hidden shadow-lg bg-card/80")}
+						>
+							<div className="px-4 py-2.5 border-b border-border/60 bg-muted/40 flex items-center gap-2">
+								<span className="flex gap-1.5" aria-hidden="true">
+									<span className="h-2 w-2 rounded-full bg-rose-400/70" />
+									<span className="h-2 w-2 rounded-full bg-amber-400/70" />
+									<span className="h-2 w-2 rounded-full bg-emerald-400/70" />
+								</span>
+								<span className="ml-auto font-mono text-[10px] text-muted-foreground/60">
+									nav
 								</span>
 							</div>
-							<nav className="space-y-1">
+							<nav className="p-2 space-y-0.5">
 								{tocMain.map((item) => {
 									const isActive = activeSection === item.id;
 									const Icon = item.icon;
@@ -666,41 +671,33 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 											key={item.id}
 											onClick={() => scrollTo(item.id)}
 											className={cn(
-												"group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-300",
+												"relative w-full flex items-center gap-2.5 px-3 py-2 rounded-lg font-mono text-xs transition-colors",
 												isActive
-													? "bg-primary text-primary-foreground font-bold shadow-md"
-													: "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+													? "bg-primary/10 text-primary font-semibold"
+													: "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
 											)}
 										>
-											<Icon
-												size={16}
-												className={
-													isActive
-														? "text-primary-foreground"
-														: "group-hover:text-accent-foreground"
-												}
-											/>
-											{item.label}
+											{isActive && (
+												<span className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-r-full bg-primary" />
+											)}
+											<Icon size={14} className="shrink-0" />
+											./{item.label}
 										</button>
 									);
 								})}
 							</nav>
 
-							{/* Decorative Tech Elements */}
-							<div className="mt-6 px-2 pt-6 border-t border-border space-y-3">
-								<div className="flex justify-between text-[10px] text-muted-foreground font-mono">
-									<span>CPU</span>
-									<span>12%</span>
+							{/* Scroll progress readout */}
+							<div className="px-4 py-3 border-t border-border/60 space-y-1.5">
+								<div className="flex justify-between font-mono text-[10px] text-muted-foreground">
+									<span>scroll</span>
+									<span className="tabular-nums">{scrollPct}%</span>
 								</div>
-								<div className="w-full bg-muted h-0.5 rounded-full overflow-hidden">
-									<div className="w-[12%] h-full bg-green-500/50"></div>
-								</div>
-								<div className="flex justify-between text-[10px] text-muted-foreground font-mono">
-									<span>RAM</span>
-									<span>48%</span>
-								</div>
-								<div className="w-full bg-muted h-0.5 rounded-full overflow-hidden">
-									<div className="w-[48%] h-full bg-purple-500/50"></div>
+								<div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
+									<div
+										className="h-full rounded-full bg-primary/70 transition-[width] duration-150"
+										style={{ width: `${scrollPct}%` }}
+									/>
 								</div>
 							</div>
 						</div>
@@ -710,25 +707,35 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 
 			{/* Mobile Menu Overlay */}
 			{isMenuOpen && (
-				<div className="fixed inset-0 z-40 bg-background/95 backdrop-blur-xl p-8 flex flex-col justify-center animate-in fade-in duration-200">
-				<Button
-					variant="ghost"
-					size="icon"
-					className="absolute top-4 right-4"
-					onClick={() => { trigger("light"); setIsMenuOpen(false); }}
-				>
-					<X size={24} />
-				</Button>
-					<nav className="space-y-6">
-						{tocMain.map((item) => (
-							<button
-								key={item.id}
-								onClick={() => scrollTo(item.id)}
-								className="block w-full text-center text-3xl font-black text-foreground uppercase tracking-tight hover:text-primary transition-colors"
-							>
-								{item.label}
-							</button>
-						))}
+				<div className="fixed inset-0 z-40 bg-background/95 backdrop-blur-xl p-8 flex flex-col justify-center animate-in fade-in duration-200 lg:hidden">
+					<Button
+						variant="ghost"
+						size="icon"
+						className="absolute top-4 right-4"
+						onClick={() => { trigger("light"); setIsMenuOpen(false); }}
+					>
+						<X size={24} />
+					</Button>
+					<nav className="mx-auto w-full max-w-xs space-y-1">
+						{tocMain.map((item) => {
+							const isActive = activeSection === item.id;
+							const Icon = item.icon;
+							return (
+								<button
+									key={item.id}
+									onClick={() => scrollTo(item.id)}
+									className={cn(
+										"w-full flex items-center gap-3 rounded-lg px-4 py-3 font-mono text-base transition-colors",
+										isActive
+											? "bg-primary/10 text-primary font-semibold"
+											: "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+									)}
+								>
+									<Icon size={16} className="shrink-0" />
+									./{item.label}
+								</button>
+							);
+						})}
 					</nav>
 				</div>
 			)}
