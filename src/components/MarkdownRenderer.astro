@@ -185,10 +185,12 @@ md.renderer.rules.fence = (tokens: any[], idx: number) => {
   const isMermaidContent = MERMAID_STARTERS.some((kw) => trimmedLower.startsWith(kw.toLowerCase()));
 
   if (isMermaidLang || isMermaidContent) {
-    const normalizedMermaidCode = rawCode
-      .replace(/\|\s*"([^"\n]+)"\s*\|/g, "|$1|")
-      .trim();
-    return `<div class="mermaid-container my-6 overflow-x-auto rounded-xl border border-border bg-card p-6 shadow-sm"><div class="mermaid" style="min-width: fit-content;">${normalizedMermaidCode}</div></div>`;
+    // Fix broken bidirectional arrows the docs generator emits ("<- -->")
+    const normalizedMermaidCode = rawCode.replace(/<-\s+-->/g, "<-->").trim();
+    // Source is kept escaped in a hidden <pre>; the client script reads it
+    // back via textContent and renders with explicit error handling, so a
+    // bad diagram degrades to its source instead of mermaid's bomb icon.
+    return `<div class="mermaid-block my-6 overflow-x-auto rounded-xl border border-border bg-card p-6 shadow-sm"><pre class="mermaid-source hidden">${md.utils.escapeHtml(normalizedMermaidCode)}</pre><div class="mermaid-render" style="min-width: fit-content;"></div></div>`;
   }
 
   const terminalIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>`;
@@ -199,7 +201,7 @@ md.renderer.rules.fence = (tokens: any[], idx: number) => {
     <div class="code-block-container relative group my-6 overflow-hidden rounded-xl border border-border bg-card shadow-md">
       <div class="flex items-center justify-between px-4 py-2 bg-muted/50 border-b border-border">
         <div class="flex items-center gap-2">${terminalIcon}<span class="text-xs font-medium text-muted-foreground uppercase tracking-wider font-mono">${lang}</span></div>
-        <button class="copy-btn p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" data-code="${escapedCode}">${copyIcon}${checkIcon}</button>
+        <button class="copy-btn p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" data-haptic data-code="${escapedCode}">${copyIcon}${checkIcon}</button>
       </div>
       <pre class="m-0 p-6 bg-transparent text-[0.9rem] leading-[1.6] overflow-x-auto"><code class="language-${lang} font-mono text-foreground/90">${escapedCode}</code></pre>
     </div>
@@ -207,9 +209,18 @@ md.renderer.rules.fence = (tokens: any[], idx: number) => {
 };
 
 // ---- HEADINGS ----
+// Dedupe repeated heading slugs (GitHub-style: "usage", "usage-1", …) so every
+// heading gets a unique anchor. Reset before each render; the resolved id is
+// stashed on the inline token so heading_close reuses it instead of recounting.
+let headingSlugCounts = new Map<string, number>();
+
 md.renderer.rules.heading_open = (tokens: any[], idx: number) => {
   const tag = tokens[idx].tag;
-  const id = slugify(tokens[idx + 1].content);
+  const base = slugify(tokens[idx + 1].content);
+  const count = headingSlugCounts.get(base) ?? 0;
+  headingSlugCounts.set(base, count + 1);
+  const id = count === 0 ? base : `${base}-${count}`;
+  tokens[idx + 1].meta = { ...(tokens[idx + 1].meta || {}), headingSlug: id };
 
   if (tag === "h1") {
     return `<div class="group relative mt-10 mb-6 first:mt-0"><div class="absolute -left-6 top-1.5 opacity-0 group-hover:opacity-100 transition-opacity"><a href="#${id}" class="text-primary hover:text-primary/80">#</a></div><h1 id="${id}" class="scroll-mt-24 text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground border-b border-border pb-4">`;
@@ -237,7 +248,7 @@ md.renderer.rules.heading_open = (tokens: any[], idx: number) => {
 
 md.renderer.rules.heading_close = (tokens: any[], idx: number) => {
   const tag = tokens[idx].tag;
-  const id = slugify(tokens[idx - 1].content);
+  const id = tokens[idx - 1].meta?.headingSlug ?? slugify(tokens[idx - 1].content);
   const link = `<a href="#${id}" class="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary transition-all ml-2 text-sm">#</a>`;
   return tag === "h1" || tag === "h2"
     ? `${link}</${tag}></div>`
@@ -401,6 +412,7 @@ if (githubBaseUrl && processedContent) {
 // ============================================
 // RENDER
 // ============================================
+headingSlugCounts = new Map();
 let renderedHtml = processedContent
   ? md.render(processedContent)
   : "<p>No content provided.</p>";
@@ -534,33 +546,106 @@ if (githubBaseUrl) {
       "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
   }
 
-  document.addEventListener("astro:page-load", () => {
-    // Mermaid
+  // ── Mermaid: theme-aware, with graceful per-diagram error fallback ──
+  const MERMAID_DARK = {
+    darkMode: true,
+    background: "#0d0e15",
+    mainBkg: "#11131c",
+    primaryColor: "#11131c",
+    primaryTextColor: "#dce1ec",
+    primaryBorderColor: "#2a2f42",
+    nodeTextColor: "#dce1ec",
+    lineColor: "#6c7590",
+    secondaryColor: "#1a1d2a",
+    tertiaryColor: "#151827",
+    clusterBkg: "#0b0c12",
+    clusterBorder: "#1a1d2a",
+    edgeLabelBackground: "#11131c",
+    noteBkgColor: "#1a1d2a",
+    noteTextColor: "#dce1ec",
+    noteBorderColor: "#2a2f42",
+    defaultLinkColor: "#6c7590",
+    fontFamily: "var(--font-sans, 'Lexend', sans-serif)",
+  };
+
+  const MERMAID_LIGHT = {
+    darkMode: false,
+    background: "#ffffff",
+    mainBkg: "#f8fafc",
+    primaryColor: "#f1f5f9",
+    primaryTextColor: "#1e293b",
+    primaryBorderColor: "#cbd5e1",
+    nodeTextColor: "#1e293b",
+    lineColor: "#64748b",
+    secondaryColor: "#e2e8f0",
+    tertiaryColor: "#f8fafc",
+    clusterBkg: "#f8fafc",
+    clusterBorder: "#e2e8f0",
+    edgeLabelBackground: "#ffffff",
+    noteBkgColor: "#fff7ed",
+    noteTextColor: "#7c2d12",
+    noteBorderColor: "#fed7aa",
+    defaultLinkColor: "#64748b",
+    fontFamily: "var(--font-sans, 'Lexend', sans-serif)",
+  };
+
+  const isDarkTheme = () =>
+    document.documentElement.classList.contains("dark");
+
+  const WARN_ICON = `<svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`;
+
+  let mermaidSeq = 0;
+
+  async function renderMermaidBlocks() {
+    const blocks = document.querySelectorAll<HTMLElement>(".mermaid-block");
+    if (!blocks.length) return;
+
     mermaid.initialize({
       startOnLoad: false,
       theme: "base",
-      look: "handDrawn",
-      themeVariables: {
-        darkMode: true,
-        background: "#121212",        // Deep dark background
-        primaryColor: "#1e1e1e",      // Slightly elevated card background
-        primaryTextColor: "#e0e0e0",  // Soft off-white text
-        primaryBorderColor: "#707070",// Neutral gray borders
-        lineColor: "#888888",         // Neutral gray lines
-        secondaryColor: "#2a2a2a",    // Dark secondary background
-        tertiaryColor: "#333333",     // Slightly lighter tertiary background
-        clusterBkg: "#1a1a1a",        // Cluster background
-        clusterBorder: "#555555",     // Cluster border
-        defaultLinkColor: "#aaaaaa",  // Link color
-        fontFamily: "var(--font-sans, 'Lexend', sans-serif)", // Match app font
-      },
+      themeVariables: isDarkTheme() ? MERMAID_DARK : MERMAID_LIGHT,
       sequence: { useMaxWidth: false, diagramMarginX: 16, diagramMarginY: 16 },
       flowchart: { useMaxWidth: true },
       er: { useMaxWidth: true, diagramPadding: 20 },
     });
-    if (document.querySelectorAll(".mermaid").length > 0) {
-      mermaid.run({ querySelector: ".mermaid" });
+
+    for (const block of blocks) {
+      const source = block.querySelector(".mermaid-source")?.textContent?.trim();
+      const target = block.querySelector<HTMLElement>(".mermaid-render");
+      if (!source || !target) continue;
+
+      const id = `mermaid-svg-${++mermaidSeq}`;
+      try {
+        const { svg } = await mermaid.render(id, source);
+        target.innerHTML = svg;
+      } catch {
+        // Remove any orphaned elements mermaid leaves behind on failure
+        document.getElementById(id)?.remove();
+        document.getElementById(`d${id}`)?.remove();
+
+        target.innerHTML = `<div class="flex items-center gap-2 mb-3 text-xs font-medium text-muted-foreground">${WARN_ICON}<span>Diagram preview unavailable — showing source</span></div><pre class="m-0 p-0 bg-transparent text-xs font-mono leading-relaxed text-muted-foreground overflow-x-auto"><code></code></pre>`;
+        const codeEl = target.querySelector("code");
+        if (codeEl) codeEl.textContent = source;
+      }
     }
+  }
+
+  // Re-render diagrams when the theme toggles (ThemeToggle swaps the
+  // "dark"/"cream" classes on <html>)
+  let lastMermaidDark = isDarkTheme();
+  new MutationObserver(() => {
+    if (isDarkTheme() !== lastMermaidDark) {
+      lastMermaidDark = isDarkTheme();
+      renderMermaidBlocks();
+    }
+  }).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+
+  document.addEventListener("astro:page-load", () => {
+    lastMermaidDark = isDarkTheme();
+    renderMermaidBlocks();
 
     // PrismJS syntax highlighting
     Prism.highlightAll();
