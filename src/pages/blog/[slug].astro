@@ -66,6 +66,7 @@ const totalComments = initialComments.reduce(
 			>
 				<a
 					href="/?blog"
+					data-haptic-back
 					class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group shrink-0"
 				>
 					<ArrowLeft
@@ -91,6 +92,7 @@ const totalComments = initialComments.reduce(
 						href={originalUrl}
 						target="_blank"
 						rel="noopener noreferrer"
+						data-haptic-external
 						class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary/15 transition-all"
 					>
 						blog.tashif.codes <ExternalLink size={11} />
@@ -155,6 +157,7 @@ const totalComments = initialComments.reduce(
 				<div class="lg:hidden mt-5 flex items-center gap-2 flex-wrap">
 					<button
 						id="like-btn-mobile"
+						data-haptic="medium"
 						class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-border/60 bg-card/60 text-sm font-medium transition-all duration-200 hover:border-primary/40 hover:text-primary"
 					>
 						<Heart size={14} id="like-icon-mobile" />
@@ -164,6 +167,7 @@ const totalComments = initialComments.reduce(
 					</button>
 					<button
 						id="scroll-comments-mobile"
+						data-haptic
 						class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-border/60 bg-card/60 text-sm text-muted-foreground transition-all hover:border-border hover:bg-muted/40"
 					>
 						<MessageCircle size={14} />
@@ -175,6 +179,7 @@ const totalComments = initialComments.reduce(
 						href={originalUrl}
 						target="_blank"
 						rel="noopener noreferrer"
+						data-haptic-external
 						class="ml-auto flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
 					>
 						Original <ExternalLink size={12} />
@@ -278,6 +283,7 @@ const totalComments = initialComments.reduce(
 							>
 								<button
 									id="like-btn"
+									data-haptic="medium"
 									class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-border/60 text-sm font-medium transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
 								>
 									<Heart size={14} id="like-icon" />
@@ -285,6 +291,7 @@ const totalComments = initialComments.reduce(
 								</button>
 								<button
 									id="scroll-comments"
+									data-haptic
 									class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-border/60 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground"
 								>
 									<MessageCircle size={14} />
@@ -294,6 +301,7 @@ const totalComments = initialComments.reduce(
 									href={originalUrl}
 									target="_blank"
 									rel="noopener noreferrer"
+									data-haptic-external
 									class="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
 								>
 									Read Original <ExternalLink size={12} />
@@ -374,6 +382,7 @@ const totalComments = initialComments.reduce(
 							</p>
 							<button
 								id="submit-comment-btn"
+								data-haptic
 								class="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
 							>
 								<Send size={13} />
@@ -513,6 +522,7 @@ const totalComments = initialComments.reduce(
 					isH3 ? "pl-3 text-[11px]" : "text-xs font-medium",
 				].join(" ");
 				a.style.textDecoration = "none";
+				a.dataset.haptic = "selection";
 				a.addEventListener("click", (e) => {
 					e.preventDefault();
 					h.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -687,6 +697,7 @@ const totalComments = initialComments.reduce(
 			body.textContent = comment.text;
 
 			const replyBtn = document.createElement("button");
+			replyBtn.dataset.haptic = "light";
 			replyBtn.className =
 				"text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-medium";
 			replyBtn.innerHTML =
@@ -722,6 +733,7 @@ const totalComments = initialComments.reduce(
 				"text-xs px-3 py-1.5 rounded-md border border-border/60 text-muted-foreground hover:bg-muted/60 transition-all";
 
 			const submitReplyBtn = document.createElement("button");
+			submitReplyBtn.dataset.haptic = "light";
 			submitReplyBtn.className =
 				"text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all font-semibold flex items-center gap-1.5 disabled:opacity-50";
 			submitReplyBtn.innerHTML =

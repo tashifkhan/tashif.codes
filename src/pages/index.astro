@@ -1409,16 +1409,7 @@ const avgReadingMinutes = blogPosts.length
 			})
 		);
 
-		// Haptic feedback for navigation and external links added in HTML
-		document.querySelectorAll('[data-haptic-nav]').forEach(el =>
-			el.addEventListener('click', () => haptics.trigger('light'))
-		);
-		document.querySelectorAll('[data-haptic-external]').forEach(el =>
-			el.addEventListener('click', () => haptics.trigger('light'))
-		);
-		document.querySelectorAll('[data-haptic-social]').forEach(el =>
-			el.addEventListener('click', () => haptics.trigger('medium'))
-		);
+		// data-haptic-* elements are wired globally by the shared Haptics component.
 
 		// Re-attach tab click handlers after client-side navigation (Astro view transitions)
 		setupTabClickHandlers();

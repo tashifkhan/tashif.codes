@@ -45,7 +45,7 @@ const wordCountText = wordCount
 			data-blog-card
 			data-blog-tags={post.tags?.join(",")}
 			data-blog-slug={post.slug}
-			data-haptic-blog
+			data-haptic
 		>
 			<Card
 				className={cn(
@@ -122,7 +122,7 @@ const wordCountText = wordCount
 			href={url}
 			class="block h-full group focus:outline-none"
 			data-blog-slug={post.slug}
-			data-haptic-blog
+			data-haptic
 		>
 			<Card
 				className={cn(
@@ -195,13 +195,3 @@ const wordCountText = wordCount
 		</a>
 	)
 }
-
-<script>
-	import { WebHaptics } from "web-haptics";
-	const haptics = new WebHaptics();
-
-	document.addEventListener("click", (e) => {
-		const target = (e.target as Element)?.closest("[data-haptic-blog]");
-		if (target) haptics.trigger("light");
-	});
-</script>

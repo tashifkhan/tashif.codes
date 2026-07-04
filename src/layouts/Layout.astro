@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import PostHog from "../components/posthog.astro";
+import Haptics from "../components/Haptics.astro";
 import { ClientRouter } from "astro:transitions";
 
 interface Props {
@@ -25,6 +26,7 @@ const { title } = Astro.props;
 	</head>
 	<body>
 		<slot />
+		<Haptics />
 		<PostHog />
 		<Analytics />
 		<script is:inline>

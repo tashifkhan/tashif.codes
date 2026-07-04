@@ -79,6 +79,7 @@ const maxW = size === "sm" ? "max-w-sm" : "max-w-md";
 					<a
 						href={ctaHref}
 						data-haptic-external={ctaExternal ? "" : undefined}
+						data-haptic-nav={ctaExternal ? undefined : ""}
 						target={ctaExternal ? "_blank" : undefined}
 						rel={ctaExternal ? "noopener noreferrer" : undefined}
 						class="group mt-3 inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/50 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"

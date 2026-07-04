@@ -1,25 +1,27 @@
 ---
-// Shared haptic feedback wiring. Drop this once per page; every element
-// carrying a data-haptic-* attribute gets a light tap on click.
+// Shared haptic feedback wiring, included once in the base Layout. A single
+// delegated listener covers server-rendered markup, React islands, and
+// elements created after page load.
+//
+//   data-haptic                     → light tap
+//   data-haptic="<pattern>"         → any web-haptics pattern (medium, selection, …)
+//   data-haptic-back / -nav / -external → light tap
+//   data-haptic-social              → medium tap
 ---
 
 <script>
 	import { WebHaptics } from "web-haptics";
 
 	const haptics = new WebHaptics();
+	const selector =
+		"[data-haptic], [data-haptic-back], [data-haptic-nav], [data-haptic-external], [data-haptic-social]";
 
-	function wire() {
-		document
-			.querySelectorAll<HTMLElement>(
-				"[data-haptic-back], [data-haptic-nav], [data-haptic-external]"
-			)
-			.forEach((el) => {
-				if (el.dataset.hapticWired) return;
-				el.dataset.hapticWired = "true";
-				el.addEventListener("click", () => haptics.trigger("light"));
-			});
-	}
-
-	wire();
-	document.addEventListener("astro:page-load", wire);
+	document.addEventListener("click", (e) => {
+		const el = (e.target as Element | null)?.closest<HTMLElement>(selector);
+		if (!el) return;
+		const pattern =
+			el.dataset.haptic ||
+			(el.dataset.hapticSocial !== undefined ? "medium" : "light");
+		haptics.trigger(pattern);
+	});
 </script>

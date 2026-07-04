@@ -1,7 +1,6 @@
 ---
 import Layout from "./Layout.astro";
-import Haptics from "../components/Haptics.astro";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 
 export interface Breadcrumb {
 	label: string;
@@ -12,7 +11,7 @@ interface Props {
 	title: string;
 	/** Top-of-page atmospheric wash behind the header */
 	tint?: "orange" | "blue" | "none";
-	/** Terminal-style breadcrumb trail; takes precedence over backHref */
+	/** Chevron-separated breadcrumb trail; takes precedence over backHref */
 	breadcrumbs?: Breadcrumb[];
 	backHref?: string;
 	backLabel?: string;
@@ -65,12 +64,10 @@ const tintClass = {
 								{breadcrumbs.map((crumb, i) => (
 									<li class="flex items-center gap-x-2 min-w-0">
 										{i > 0 && (
-											<span
-												class="text-muted-foreground/40 select-none"
+											<ChevronRight
+												className="w-3.5 h-3.5 shrink-0 text-muted-foreground/50"
 												aria-hidden="true"
-											>
-												/
-											</span>
+											/>
 										)}
 										{crumb.href ? (
 											<a
@@ -121,5 +118,4 @@ const tintClass = {
 			</div>
 		</main>
 	</div>
-	<Haptics />
 </Layout>

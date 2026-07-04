@@ -13,8 +13,8 @@ if (filteredHeadings.length === 0) return null;
 
 <nav class="toc hidden lg:block w-64 shrink-0 h-fit sticky top-24 self-start max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 pb-10">
   <div class="flex items-center gap-2 mb-4 px-2">
-    <div class="w-1 h-4 bg-primary rounded-full"></div>
-    <h3 class="font-semibold text-sm tracking-tight text-foreground/80 uppercase">On This Page</h3>
+    <div class="w-1 h-3.5 bg-primary rounded-full"></div>
+    <h3 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">On This Page</h3>
   </div>
   
   <ul class="space-y-1 text-sm">
@@ -31,6 +31,7 @@ if (filteredHeadings.length === 0) return null;
           data-toc-link
           data-toc-target={heading.slug}
           data-toc-depth={heading.depth}
+          data-haptic="selection"
         >
           {heading.text}
         </a>

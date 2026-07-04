@@ -18,6 +18,7 @@ export default function ProfileDropdown({ isMobile }: ProfileDropdownProps) {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger
+				data-haptic=""
 				className={
 					isMobile
 						? "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors focus:outline-none"
