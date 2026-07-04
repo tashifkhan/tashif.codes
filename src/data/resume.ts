@@ -68,7 +68,7 @@ export const resumeProjects: ResumeProject[] = [
 			"FastAPI, LangChain, LangGraph, React, TypeScript, MCP, Docker, WebExtension APIs",
 		color: "green",
 		links: [
-			{ label: "Live", url: "https://findex.tashif.codes" },
+			{ label: "Live", url: "https://tashif.codes/agentic-browser" },
 			{ label: "GitHub", url: "https://github.com/tashifkhan/agentic-browser" },
 		],
 		points: [

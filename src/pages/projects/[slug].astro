@@ -124,7 +124,7 @@ export async function getStaticPaths() {
 				<div class="flex flex-wrap items-center gap-x-4 sm:gap-x-5 gap-y-2 mb-4 sm:mb-6">
 					{project.parentRepo && (
 						<a
-							href={`https://github.com/${project.parentRepo}`}
+							href={project.originalRepo?.url ?? `https://github.com/${project.parentRepo}`}
 							target="_blank"
 							rel="noopener noreferrer"
 							title={`Forked from ${project.parentRepo}`}

@@ -40,6 +40,12 @@ export interface Project {
 	forks?: number;
     docs_slug?: string | null;
     parentRepo?: string;
+    originalRepo?: {
+        name: string;
+        full_name: string;
+        owner: string;
+        url: string;
+    } | null;
     isFork?: boolean;
     contributors?: Contributor[];
     releases?: RepoRelease[];
@@ -81,6 +87,46 @@ async function fetchPinnedProjects(first = 6): Promise<Project[]> {
 	}
 }
 
+async function fetchForkCounts(users: string[]): Promise<Map<string, number>> {
+	const forkMap = new Map<string, number>();
+
+	await Promise.all(users.map(async (user) => {
+		try {
+			const response = await fetch(
+				`https://api.github.com/users/${user}/repos?per_page=100&type=owner`
+			);
+			if (!response.ok) {
+				console.error(
+					`Failed to fetch fork counts for ${user}:`,
+					response.status,
+					response.statusText
+				);
+				return;
+			}
+
+			const repos = await response.json();
+			if (!Array.isArray(repos)) return;
+
+			repos.forEach((repo: any) => {
+				const forks = repo.forks_count ?? repo.forks;
+				if (typeof forks !== "number") return;
+
+				if (repo.full_name) {
+					forkMap.set(repo.full_name.toLowerCase(), forks);
+				}
+				if (repo.name) {
+					forkMap.set(`${user}/${repo.name}`.toLowerCase(), forks);
+					forkMap.set(repo.name.toLowerCase(), forks);
+				}
+			});
+		} catch (e) {
+			console.error(`Error fetching fork counts for ${user}:`, e);
+		}
+	}));
+
+	return forkMap;
+}
+
 async function fetchAllProjects(): Promise<Project[]> {
 	let repos: any[] = [];
 	try {
@@ -100,6 +146,7 @@ async function fetchAllProjects(): Promise<Project[]> {
 	const starMap = new Map<string, number>();
     // User requested "multiple stars api call" for these accounts
     const starSources = ['tashifkhan', 'codeblech', 'codelif'];
+    const forkMapPromise = fetchForkCounts(starSources);
     
 	await Promise.all(starSources.map(async (user) => {
         try {
@@ -128,16 +175,19 @@ async function fetchAllProjects(): Promise<Project[]> {
     }));
 
 	// Fetch pinned in parallel / earlier
-	const pinnedProjects = await fetchPinnedProjects();
+	const [pinnedProjects, forkMap] = await Promise.all([
+		fetchPinnedProjects(),
+		forkMapPromise,
+	]);
 	const pinnedNames = new Set(
 		pinnedProjects.map((p) => p.title.toLowerCase().trim())
 	);
 
 	// Map repos -> Project objects
     const FORK_MAPPINGS: Record<string, string> = {
-        "jsjiit": "codeblech",
-        "jportal": "codeblech",
-        "pyjiit": "codelif",
+        "jsjiit": "codeblech/jsjiit",
+        "jportal": "codeblech/jportal",
+        "pyjiit": "codelif/pyjiit",
     };
 
 	const repoProjects: Project[] = repos.map((project: any) => {
@@ -145,7 +195,8 @@ async function fetchAllProjects(): Promise<Project[]> {
 		const isPinned = pinnedNames.has(titleFormatted.toLowerCase());
         const projectSlug = slugify(project.title);
         
-        let parentRepo = FORK_MAPPINGS[projectSlug] || FORK_MAPPINGS[project.title.toLowerCase()] || undefined;
+        const originalRepo = project.original_repo ?? null;
+        const parentRepo = originalRepo?.full_name || FORK_MAPPINGS[projectSlug] || FORK_MAPPINGS[project.title.toLowerCase()] || undefined;
 
 		// Priority: Star map (parent if exists, else self) -> project.stars -> project.stargazers -> 0
 		let stars = starMap.get(project.title.toLowerCase());
@@ -163,7 +214,13 @@ async function fetchAllProjects(): Promise<Project[]> {
              }
 		}
 
-		const forks = project.forks ?? project.forks_count ?? 0;
+		const forks =
+			(parentRepo ? forkMap.get(parentRepo.toLowerCase()) : undefined) ??
+			forkMap.get(`tashifkhan/${project.title}`.toLowerCase()) ??
+			forkMap.get(project.title.toLowerCase()) ??
+			project.forks ??
+			project.forks_count ??
+			0;
 		return {
 			title: titleFormatted,
 			description: project.description || "No description available.",
@@ -177,7 +234,8 @@ async function fetchAllProjects(): Promise<Project[]> {
 			forks,
             docs_slug: getProjectEntry(projectSlug),
             parentRepo,
-            isFork: project.fork,
+            originalRepo,
+            isFork: project.is_fork ?? project.fork ?? false,
             contributors: project.contributors,
             releases: project.releases || [],
 		};
@@ -192,6 +250,12 @@ async function fetchAllProjects(): Promise<Project[]> {
             if (freshStars !== undefined) {
                 pinned.stars = freshStars;
             }
+			const freshForks =
+				forkMap.get(`tashifkhan/${pinned.slug}`.toLowerCase()) ??
+				forkMap.get(pinned.slug.toLowerCase());
+			if (freshForks !== undefined) {
+				pinned.forks = freshForks;
+			}
 			repoProjects.push(pinned);
 		}
 	}
