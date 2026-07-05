@@ -80,23 +80,25 @@ export const resumeProjects: ResumeProject[] = [
 		],
 	},
 	{
-		title: "Coding Platform Stats APIs Suite",
-		stack: "Python, FastAPI, Flask, Web Scraping, React, Docker",
+		title: "CodeTrace",
+		stack:
+			"React 19, TypeScript, Vite, TanStack Router, TanStack Query, Tailwind CSS, Supabase, Recharts",
 		color: "blue",
 		links: [
-			{ label: "Live", url: "https://stats-api-demo.tashif.codes" },
+			{ label: "Live", url: "https://tashif.codes/codetrace" },
 			{
 				label: "GitHub",
-				url: "https://github.com/stars/tashifkhan/lists/jiit-tool-suite",
+				url: "https://github.com/stars/tashifkhan/lists/stats-apis",
 			},
 		],
 		points: [
-			"Developed a unified suite of REST APIs and interactive dashboards for analyzing developer profiles across major platforms.",
-			"Key components include:",
-			'<a href="https://github-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">GitHub Stats</a> (FastAPI): Profile stalker, contribution graphs, and repository insights.',
-			'<a href="https://leetcode-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">LeetCode Stats</a> (Flask): Solved problem counts, contest rankings, and badges.',
-			'<a href="https://codeforces-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">CodeForces Stats</a> (FastAPI): Rating history, contest performance, and comparisons.',
-			'<a href="https://gfg-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">GeeksForGeeks Stats</a> (FastAPI): Problem difficulty breakdown and coding scores.',
+			"Built a unified coding-profile dashboard that aggregates developer statistics from GitHub, LeetCode, Codeforces, GeeksForGeeks, CodeChef, HackerRank, and takeUforward into a single shareable view.",
+			"Implemented stateful URL synchronization and saved public profiles via Supabase Auth, enabling clean URLs like /<username>.",
+			"Engineered platform-specific deep-dive pages with interactive recharts visualizations for rating history, difficulty breakdowns, and language profiles.",
+			"Consolidated daily contributions and submissions from all active platforms into a universal activity heatmap.",
+			"Backed by a suite of dedicated REST APIs:",
+			'<a href="https://github-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">GitHub Stats</a>, <a href="https://leetcode-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">LeetCode Stats</a>, <a href="https://codeforces-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">CodeForces Stats</a>, <a href="https://gfg-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">GeeksForGeeks Stats</a>, <a href="https://codechef-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">CodeChef Stats</a>, <a href="https://hackerrank-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">HackerRank Stats</a>, and <a href="https://tuf-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">takeUforward Stats</a>.',
+			"Deployed with Vercel and configured API rewrites to existing *-stats.tashif.codes microservices for seamless data aggregation.",
 		],
 	},
 	{
