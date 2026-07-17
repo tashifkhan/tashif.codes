@@ -104,6 +104,13 @@ def _api_list_payload() -> dict:
                         "range": "0..912",
                         "description": "0 means lifetime data.",
                     },
+                    {
+                        "name": "refresh",
+                        "type": "bool",
+                        "required": False,
+                        "default": False,
+                        "description": "Bypass caches and re-fetch live analytics.",
+                    },
                 ],
             },
             {
@@ -126,6 +133,13 @@ def _api_list_payload() -> dict:
                         "default": 30,
                         "range": "0..912",
                         "description": "0 means lifetime data.",
+                    },
+                    {
+                        "name": "refresh",
+                        "type": "bool",
+                        "required": False,
+                        "default": False,
+                        "description": "Bypass caches and re-fetch live analytics.",
                     },
                 ],
             },

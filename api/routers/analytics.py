@@ -175,11 +175,19 @@ async def get_project_stats(
         le=3650,
         description="Number of days to fetch data for (0 for lifetime)",
     ),
+    refresh: bool = Query(
+        default=False,
+        description="Bypass in-process and CDN caches and re-fetch live analytics",
+    ),
 ):
     """
     Get unified analytics stats for one or multiple projects concurrently.
     """
-    response.headers["Cache-Control"] = _cache_control(days)
+    if refresh:
+        # Don't let shared caches serve a stale body after a forced refresh.
+        response.headers["Cache-Control"] = "no-store"
+    else:
+        response.headers["Cache-Control"] = _cache_control(days)
 
     async def fetch_one(slug: str):
         try:
@@ -188,6 +196,7 @@ async def get_project_stats(
                 f"stats:{slug}:{days}",
                 IN_PROCESS_CACHE_TTL,
                 lambda p=project: _get_project_stats_internal(project=p, days=days),
+                force=refresh,
             )
             return {
                 "slug": slug,
@@ -217,11 +226,18 @@ async def get_project_timeseries(
         le=3650,
         description="Number of days to fetch data for (0 for lifetime)",
     ),
+    refresh: bool = Query(
+        default=False,
+        description="Bypass in-process and CDN caches and re-fetch live analytics",
+    ),
 ):
     """
     Get only timeseries data for one or multiple projects concurrently.
     """
-    response.headers["Cache-Control"] = _cache_control(days)
+    if refresh:
+        response.headers["Cache-Control"] = "no-store"
+    else:
+        response.headers["Cache-Control"] = _cache_control(days)
 
     async def fetch_one(slug: str):
         try:
@@ -230,6 +246,7 @@ async def get_project_timeseries(
                 f"timeseries:{slug}:{days}",
                 IN_PROCESS_CACHE_TTL,
                 lambda p=project: _get_project_timeseries_internal(project=p, days=days),
+                force=refresh,
             )
             return {
                 "slug": slug,
