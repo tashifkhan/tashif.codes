@@ -12,6 +12,10 @@ export const owner = {
 	fallbackTitle: "Software Developer",
 };
 
+/** Personal account used when "Personal only" is toggled on. */
+export const personalGithubUsername = "tashifkhan";
+
+/** All GitHub accounts (personal + work). Default aggregation source. */
 export const githubUsernames = [
 	"tashifkhan",
 	"tashifkhansitg",
@@ -35,7 +39,7 @@ export const socials: SocialLink[] = [
 	},
 	{
 		icon: Twitter,
-		link: "https://twitter.com/khan__tashif",
+		link: "https://tashif.codes/twitter",
 		label: "Twitter",
 	},
 	{ icon: Mail, link: "mailto:tashif@duck.com", label: "Email" },

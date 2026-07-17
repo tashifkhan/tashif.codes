@@ -153,4 +153,7 @@ async function fetchLeetCodeData(): Promise<LeetCodeData> {
 	}
 }
 
-export const leetCodeData: LeetCodeData = await fetchLeetCodeData(); 
+export const leetCodeData: LeetCodeData = await fetchLeetCodeData();
+
+/** ISO timestamp when LeetCode data was last fetched (build / server). */
+export const leetCodeFetchedAt: string = new Date().toISOString();

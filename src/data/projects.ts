@@ -287,3 +287,6 @@ async function fetchAllProjects(): Promise<Project[]> {
 
 
 export const allProjects: Project[] = await fetchAllProjects();
+
+/** ISO timestamp when projects data was last fetched (build / server). */
+export const projectsFetchedAt: string = new Date().toISOString();

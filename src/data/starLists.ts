@@ -30,3 +30,6 @@ async function fetchStarLists(): Promise<StarList[]> {
 }
 
 export const starLists: StarList[] = await fetchStarLists();
+
+/** ISO timestamp when star lists were last fetched (build / server). */
+export const starListsFetchedAt: string = new Date().toISOString();
