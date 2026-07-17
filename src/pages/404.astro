@@ -56,7 +56,8 @@ const quickLinks = [
 							<span class="h-3 w-3 rounded-full bg-emerald-500/70"></span>
 						</span>
 						<span
-							class="flex-1 text-center font-mono text-xs text-muted-foreground/80"
+							id="terminal-title"
+							class="flex-1 truncate px-2 text-center font-mono text-xs text-muted-foreground/80"
 							>tashif.codes — zsh — 404</span
 						>
 						<span class="w-[52px]" aria-hidden="true"></span>
@@ -70,7 +71,7 @@ const quickLinks = [
 								>➜</span
 							>
 							<span class="font-semibold text-foreground">~</span>
-							<span class="text-foreground/90">cat</span>
+							<span id="requested-cmd" class="text-foreground/90">cat</span>
 							<span
 								id="requested-path"
 								class="max-w-full truncate text-muted-foreground"
@@ -78,9 +79,10 @@ const quickLinks = [
 							>
 						</p>
 						<!-- Error output -->
-						<p class="mt-2 text-destructive/90">
-							cat: <span id="requested-path-echo">route</span>: No such file or
-							directory
+						<p class="mt-2 break-words text-destructive/90">
+							<span id="error-prefix">cat</span>: <span id="requested-path-echo"
+								>route</span
+							>: <span id="error-suffix">No such file or directory</span>
 						</p>
 
 						<!-- Big 404 glyph -->
@@ -94,10 +96,14 @@ const quickLinks = [
 
 						<!-- Message -->
 						<div class="text-center">
-							<h2 class="mb-2 text-xl font-bold text-foreground sm:text-2xl">
+							<h2
+								id="error-title"
+								class="mb-2 text-xl font-bold text-foreground sm:text-2xl"
+							>
 								Page Not Found
 							</h2>
 							<p
+								id="error-message"
 								class="mx-auto max-w-md font-sans text-sm leading-relaxed text-muted-foreground"
 							>
 								The page you're looking for wandered off into the digital void.
@@ -164,13 +170,70 @@ const quickLinks = [
 	</main>
 
 	<script is:inline>
+		// Callers can hand us context about what they failed to resolve, so this
+		// page can name it instead of showing a generic "page not found".
+		//   ?from=shortlink&path=/<path>&slug=<slug>
+		// The shortener (smoll-url) redirects its 404s here with those params.
 		function init404() {
-			const raw = window.location.pathname.replace(/^\/+|\/+$/g, "");
-			const path = raw ? "/" + raw : "the-page-you-wanted";
-			const el = document.getElementById("requested-path");
-			const echo = document.getElementById("requested-path-echo");
-			if (el) el.textContent = path;
-			if (echo) echo.textContent = raw ? "/" + raw : "route";
+			const params = new URLSearchParams(window.location.search);
+			// Everything below is written with textContent, never innerHTML — but
+			// still clamp it so a hostile link can't stuff the page with prose.
+			const param = (key) => (params.get(key) || "").trim().slice(0, 120);
+
+			const from = param("from");
+			const slug = param("slug");
+			const fromPath = param("path");
+
+			const pathname = window.location.pathname.replace(/^\/+|\/+$/g, "");
+			// The shortener's path wins: our own pathname is just /404 by then.
+			const requested =
+				fromPath.replace(/^\/+|\/+$/g, "") || (slug ? slug : pathname);
+			const route = requested ? "/" + requested : "";
+			// Short links live under this domain too (the middleware resolves them),
+			// so always show the canonical tashif.codes/<slug> form.
+			const host = window.location.host || "tashif.codes";
+
+			const view =
+				from === "shortlink"
+					? {
+							title: host + " — curl — 404",
+							cmd: "curl -sIL",
+							target: host + (route || "/…"),
+							errPrefix: "curl",
+							errPath: route || "shortlink",
+							errSuffix: "No such shortlink — expired, revoked, or never existed",
+							heading: "Short Link Not Found",
+							message:
+								"That short link doesn't resolve to anything. It may have expired, been revoked, or never existed — check the link for typos and try again.",
+						}
+					: {
+							title: "tashif.codes — zsh — 404",
+							cmd: "cat",
+							target: route || "the-page-you-wanted",
+							errPrefix: "cat",
+							errPath: route || "route",
+							errSuffix: "No such file or directory",
+							heading: "Page Not Found",
+							message:
+								"The page you're looking for wandered off into the digital void. Even the best explorers take a wrong turn now and then.",
+						};
+
+			const set = (id, text) => {
+				const el = document.getElementById(id);
+				if (el) el.textContent = text;
+			};
+
+			set("terminal-title", view.title);
+			set("requested-cmd", view.cmd);
+			set("requested-path", view.target);
+			set("error-prefix", view.errPrefix);
+			set("requested-path-echo", view.errPath);
+			set("error-suffix", view.errSuffix);
+			set("error-title", view.heading);
+			set("error-message", view.message);
+
+			document.title =
+				view.heading + " — 404 | Tashif Ahmad Khan";
 
 			const back = document.getElementById("go-back-btn");
 			if (back) {
