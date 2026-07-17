@@ -18,6 +18,11 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import DataFreshness from "@/components/DataFreshness";
+import {
+	dispatchLiveRefreshed,
+	writeStoredFetchedAt,
+} from "@/lib/dataFreshness";
 import {
 	AreaChart,
 	Area,
@@ -719,6 +724,45 @@ export default function ProjectStatsDashboard() {
 		return "";
 	}, []);
 
+	const loadStats = useCallback(
+		async (
+			slug: string,
+			days: string,
+			opts: { refresh?: boolean; signal?: AbortSignal } = {},
+		) => {
+			const { refresh = false, signal } = opts;
+			const params = new URLSearchParams({
+				slugs: slug,
+				days,
+			});
+			if (refresh) params.set("refresh", "true");
+
+			const res = await fetch(`${API_BASE}/v1/stats?${params.toString()}`, {
+				signal,
+				cache: refresh ? "no-store" : "default",
+			});
+			if (!res.ok) {
+				let detail = "Failed to fetch stats";
+				try {
+					const body = await res.json();
+					if (body?.detail) detail = body.detail;
+				} catch {
+					// Ignore JSON parse errors and keep generic detail
+				}
+				throw new Error(`${detail} (${res.status})`);
+			}
+			const body = await res.json();
+			const result = body?.results?.[0];
+
+			if (result?.error) {
+				throw new Error(result.error);
+			}
+
+			return (result?.data as AllStats | null) || null;
+		},
+		[API_BASE],
+	);
+
 	// Fetch Projects List
 	useEffect(() => {
 		const controller = new AbortController();
@@ -760,7 +804,7 @@ export default function ProjectStatsDashboard() {
 		}
 	}, [selectedSlug]);
 
-	// Fetch Stats when selection changes
+	// Fetch Stats when selection / period changes (initial + normal loads)
 	useEffect(() => {
 		if (!selectedSlug) return;
 
@@ -770,29 +814,10 @@ export default function ProjectStatsDashboard() {
 			setLoading(true);
 			setError(null);
 			try {
-				const encodedSlug = encodeURIComponent(selectedSlug);
-				const res = await fetch(
-					`${API_BASE}/v1/stats?slugs=${encodedSlug}&days=${period}`,
-					{ signal: controller.signal }
-				);
-				if (!res.ok) {
-					let detail = "Failed to fetch stats";
-					try {
-						const body = await res.json();
-						if (body?.detail) detail = body.detail;
-					} catch {
-						// Ignore JSON parse errors and keep generic detail
-					}
-					throw new Error(`${detail} (${res.status})`);
-				}
-				const body = await res.json();
-				const result = body?.results?.[0];
-
-				if (result?.error) {
-					throw new Error(result.error);
-				}
-
-				setStats(result?.data || null);
+				const data = await loadStats(selectedSlug, period, {
+					signal: controller.signal,
+				});
+				setStats(data);
 			} catch (err) {
 				if (err instanceof Error && err.name === 'AbortError') return;
 				console.error(err);
@@ -806,7 +831,16 @@ export default function ProjectStatsDashboard() {
 		fetchStats();
 
 		return () => controller.abort();
-	}, [selectedSlug, period, API_BASE, retryToken]);
+	}, [selectedSlug, period, loadStats, retryToken]);
+
+	const handleRefreshStats = useCallback(async () => {
+		if (!selectedSlug) throw new Error("No project selected");
+		const data = await loadStats(selectedSlug, period, { refresh: true });
+		setStats(data);
+		const at = data?.metadata?.export_date ?? new Date().toISOString();
+		writeStoredFetchedAt("project-stats", at);
+		dispatchLiveRefreshed("project-stats", at);
+	}, [selectedSlug, period, loadStats]);
 
 	// Derived metrics
 	const totals = useMemo(() => {
@@ -875,6 +909,9 @@ export default function ProjectStatsDashboard() {
 		);
 	}
 
+	const selectedProjectName =
+		projects.find((p) => p.slug === selectedSlug)?.name ?? selectedSlug;
+
 	return (
 		<div className="w-full max-w-7xl mx-auto pb-12 space-y-5">
 			{/* Header row: title left, controls right */}
@@ -886,6 +923,17 @@ export default function ProjectStatsDashboard() {
 					<p className="text-muted-foreground text-sm sm:text-base mt-1">
 						Live traffic and engagement metrics across deployed projects
 					</p>
+					{stats?.metadata?.export_date && (
+						<div className="mt-3">
+							<DataFreshness
+								source="project-stats"
+								fetchedAt={stats.metadata.export_date}
+								label="Project analytics"
+								description={`Re-fetch live analytics for ${selectedProjectName}. This bypasses the cache and may take a few seconds.`}
+								onRefresh={handleRefreshStats}
+							/>
+						</div>
+					)}
 				</div>
 
 				<div className="flex flex-col sm:flex-row gap-3">

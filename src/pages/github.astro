@@ -1,7 +1,9 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import GitHubStats from "../components/GitHubStats.astro";
+import DataFreshness from "../components/DataFreshness";
 import { starLists } from "../data/starLists";
+import { githubFetchedAt } from "../data/github";
 import {
 	Github as GithubIcon,
 	ChartPie,
@@ -61,7 +63,7 @@ const starredLists = starLists || [];
 						>
 							<GithubIcon className="w-5 h-5" />
 						</div>
-						<div class="flex-1">
+						<div class="flex-1 min-w-0">
 							<h1
 								class="text-xl font-semibold text-foreground dark:text-white mb-1"
 							>
@@ -70,6 +72,15 @@ const starredLists = starLists || [];
 							<p class="text-sm text-muted-foreground dark:text-muted-foreground">
 								Open source contributions and development activity
 							</p>
+							<div class="mt-3">
+								<DataFreshness
+									client:load
+									source="github"
+									fetchedAt={githubFetchedAt}
+									label="GitHub stats"
+									description="Re-fetch commits, streaks, stars, PRs, profile views, and the contribution graph from the live GitHub stats API."
+								/>
+							</div>
 						</div>
 					</CardContent>
 				</Card>

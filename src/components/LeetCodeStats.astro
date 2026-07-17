@@ -6,24 +6,29 @@ const { stats } = leetCodeData;
 
 const metricCards = [
 	{
+		key: "totalSolved",
+		subKey: "totalQuestions",
 		label: "Total Solved",
 		value: stats.totalSolved.toString(),
 		sub: `of ${stats.totalQuestions} problems`,
 		icon: Trophy,
 	},
 	{
+		key: "ranking",
 		label: "Global Ranking",
 		value: `#${stats.ranking.toLocaleString()}`,
 		sub: "out of millions",
 		icon: Target,
 	},
 	{
+		key: "reputation",
 		label: "Reputation",
 		value: stats.reputation.toString(),
 		sub: "contribution points",
 		icon: Award,
 	},
 	{
+		key: "contribution",
 		label: "Contribution",
 		value: stats.contributionPoints.toString(),
 		sub: "points earned",
@@ -34,6 +39,7 @@ const metricCards = [
 // LeetCode's own difficulty palette
 const difficulties = [
 	{
+		key: "easy",
 		label: "Easy",
 		solved: stats.easySolved,
 		total: stats.totalEasy,
@@ -41,6 +47,7 @@ const difficulties = [
 		bar: "bg-emerald-500",
 	},
 	{
+		key: "medium",
 		label: "Medium",
 		solved: stats.mediumSolved,
 		total: stats.totalMedium,
@@ -48,6 +55,7 @@ const difficulties = [
 		bar: "bg-amber-500",
 	},
 	{
+		key: "hard",
 		label: "Hard",
 		solved: stats.hardSolved,
 		total: stats.totalHard,
@@ -58,7 +66,7 @@ const difficulties = [
 ---
 
 <!-- Metric Grid -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6" data-lc-stats>
 	{
 		metricCards.map((card) => (
 			<div class="relative overflow-hidden rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-4 sm:p-5 hover:border-primary/30 transition-colors">
@@ -67,10 +75,16 @@ const difficulties = [
 					<card.icon className="w-3 h-3 shrink-0" />
 					{card.label}
 				</p>
-				<p class="pl-3 mt-2.5 font-mono text-2xl sm:text-[1.7rem] font-bold text-foreground tabular-nums leading-none">
+				<p
+					class="pl-3 mt-2.5 font-mono text-2xl sm:text-[1.7rem] font-bold text-foreground tabular-nums leading-none"
+					data-lc-metric={card.key}
+				>
 					{card.value}
 				</p>
-				<p class="pl-3 mt-1.5 text-[10px] text-muted-foreground truncate">
+				<p
+					class="pl-3 mt-1.5 text-[10px] text-muted-foreground truncate"
+					data-lc-metric={card.subKey}
+				>
 					{card.sub}
 				</p>
 			</div>
@@ -85,7 +99,10 @@ const difficulties = [
 			const pct =
 				diff.total > 0 ? Math.round((diff.solved / diff.total) * 100) : 0;
 			return (
-				<div class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-5 hover:border-primary/30 transition-colors">
+				<div
+					class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-5 hover:border-primary/30 transition-colors"
+					data-lc-diff={diff.key}
+				>
 					<div class="flex items-baseline justify-between mb-3">
 						<span
 							class:list={[
@@ -96,8 +113,11 @@ const difficulties = [
 							{diff.label}
 						</span>
 						<span class="font-mono text-lg font-bold text-foreground tabular-nums">
-							{diff.solved}
-							<span class="text-xs font-medium text-muted-foreground">
+							<span data-lc-diff-solved>{diff.solved}</span>
+							<span
+								class="text-xs font-medium text-muted-foreground"
+								data-lc-diff-total
+							>
 								/{diff.total}
 							</span>
 						</span>
@@ -106,9 +126,13 @@ const difficulties = [
 						<div
 							class:list={["h-full rounded-full", diff.bar]}
 							style={`width:${pct}%`}
+							data-lc-diff-bar
 						/>
 					</div>
-					<p class="mt-2 font-mono text-[11px] text-muted-foreground tabular-nums">
+					<p
+						class="mt-2 font-mono text-[11px] text-muted-foreground tabular-nums"
+						data-lc-diff-pct
+					>
 						{pct}% solved
 					</p>
 				</div>

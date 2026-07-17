@@ -29,6 +29,7 @@ const releaseCount = project.releases?.length ?? 0;
 <div
 	class="block h-full group focus-within:ring-2 focus-within:ring-primary rounded-xl relative"
 	data-project-card
+	data-project-slug={project.slug}
 	data-pinned={project.pinned ? "true" : "false"}
 	data-has-releases={releaseCount > 0 ? "true" : "false"}
 >
@@ -69,18 +70,28 @@ const releaseCount = project.releases?.length ?? 0;
 						)
 					}
 					{
-						project.stars !== undefined && project.stars > 0 && (
-							<div class="flex items-center gap-1 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors px-1.5 py-0.5 rounded border border-amber-500/20 text-[10px] font-medium" title="GitHub Stars">
+						project.stars !== undefined && (
+							<div
+								class="flex items-center gap-1 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors px-1.5 py-0.5 rounded border border-amber-500/20 text-[10px] font-medium"
+								title="GitHub Stars"
+								data-project-stars-wrap
+								hidden={!(project.stars > 0)}
+							>
 								<Star className="w-3 h-3 fill-amber-500/40" />
-								<span>{project.stars}</span>
+								<span data-project-stars>{project.stars}</span>
 							</div>
 						)
 					}
 					{
-						project.forks !== undefined && project.forks > 0 && (
-							<div class="flex items-center gap-1 bg-sky-500/10 text-sky-500 hover:bg-sky-500/20 transition-colors px-1.5 py-0.5 rounded border border-sky-500/20 text-[10px] font-medium" title="GitHub Forks">
+						project.forks !== undefined && (
+							<div
+								class="flex items-center gap-1 bg-sky-500/10 text-sky-500 hover:bg-sky-500/20 transition-colors px-1.5 py-0.5 rounded border border-sky-500/20 text-[10px] font-medium"
+								title="GitHub Forks"
+								data-project-forks-wrap
+								hidden={!(project.forks > 0)}
+							>
 								<GitFork className="w-3 h-3" />
-								<span>{project.forks}</span>
+								<span data-project-forks>{project.forks}</span>
 							</div>
 						)
 					}
