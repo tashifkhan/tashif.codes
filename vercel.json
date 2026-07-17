@@ -35,6 +35,22 @@
 			"destination": "/api/index.py"
 		},
 		{
+			"source": "/proxy/gh-stats/:path*",
+			"destination": "https://github-stats.tashif.codes/:path*"
+		},
+		{
+			"source": "/proxy/lc-stats/:path*",
+			"destination": "https://leetcode-stats.tashif.codes/:path*"
+		},
+		{
+			"source": "/proxy/blog/:path*",
+			"destination": "https://blog.tashif.codes/api/:path*"
+		},
+		{
+			"source": "/proxy/ghpvc",
+			"destination": "https://komarev.com/ghpvc/"
+		},
+		{
 			"source": "/ph/static/:path*",
 			"destination": "https://eu-assets.i.posthog.com/static/:path*"
 		},
@@ -47,7 +63,7 @@
 			"destination": "https://eu.i.posthog.com/:path*"
 		},
 		{
-			"source": "/:slug((?!api|static|projects|docs|download|blog|blogs|github|leetcode|print-resume|resume|fdroid|ph|u|_astro|404$)[A-Za-z0-9_-]+)",
+			"source": "/:slug((?!api|static|projects|docs|download|blog|blogs|github|leetcode|print-resume|resume|fdroid|ph|u|proxy|_astro|404$)[A-Za-z0-9_-]+)",
 			"destination": "https://u.tashif.codes/:slug"
 		}
 	],
