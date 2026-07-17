@@ -2,7 +2,11 @@
 import { Calendar } from "lucide-react";
 import EmptyState from "./EmptyState.astro";
 import { starLists } from "../data/starLists";
-import { githubUsernames, githubStatsApiBase } from "../data/profile";
+import {
+	githubUsernames,
+	githubStatsApiBase,
+	personalGithubUsername,
+} from "../data/profile";
 import YearSelect from "./YearSelect";
 
 // Calculate date range (last 365 days from today)
@@ -171,7 +175,10 @@ const starredLists = starLists || [];
 			{formatDateRange()} • {totalContributions.toLocaleString()} contributions
 		</span>
 
-		<div class="ml-auto flex items-center gap-3 sm:gap-4">
+		<div class="ml-auto flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+			<!-- Personal-only toggle (slotted from parent) -->
+			<slot name="toggle" />
+
 			<!-- Year Selector -->
 			<div class="relative">
 				<YearSelect client:load availableYears={availableYears} defaultValue={String(availableYears[0])} />
@@ -375,10 +382,16 @@ const starredLists = starLists || [];
 </style>
 
 <script>
-	// Year selector functionality and tooltip management
+	// Year selector + personal-only filter for contribution graph
 	import { WebHaptics as WebHapticsContrib } from 'web-haptics';
-	import { githubUsernames, githubStatsApiBase } from '../data/profile';
+	import {
+		githubUsernames,
+		personalGithubUsername,
+	} from '../data/profile';
+	// Same-origin proxy avoids browser CORS issues (see vercel.json / vite proxy)
+	const githubStatsApiBase = '/proxy/gh-stats';
 	const hapticsDays = new WebHapticsContrib();
+	const PERSONAL_ONLY_EVENT = 'github-personal-only-change';
 
 	document.addEventListener('astro:page-load', function() {
 		const yearSelector = document.getElementById('year-selector') as HTMLSelectElement;
@@ -386,15 +399,21 @@ const starredLists = starLists || [];
 		const tooltip = document.getElementById('contribution-tooltip');
 		const tooltipContent = document.getElementById('tooltip-content');
 
-		// Initialize tooltip functionality
 		initializeTooltip();
 
 		if (!yearSelector || !contributionGrid) return;
 
+		let personalOnly =
+			typeof localStorage !== 'undefined' &&
+			localStorage.getItem('github_personal_only') === '1';
+
+		function activeUsernames(): string[] {
+			return personalOnly ? [personalGithubUsername] : [...githubUsernames];
+		}
+
 		function initializeTooltip() {
 			if (!tooltip || !tooltipContent) return;
 
-			// Add event listeners to all contribution days
 			const contributionDays = document.querySelectorAll('.contribution-day');
 
 			contributionDays.forEach(day => {
@@ -442,7 +461,6 @@ const starredLists = starLists || [];
 			const containerRect = container.getBoundingClientRect();
 			const targetRect = (event.target as HTMLElement).getBoundingClientRect();
 
-			// Get the day of week from the target element's position
 			const target = event.target as HTMLElement;
 			const weekColumn = target.closest('.contribution-week');
 			if (!weekColumn) return;
@@ -450,31 +468,25 @@ const starredLists = starLists || [];
 			const dayElements = weekColumn.querySelectorAll('.contribution-day');
 			const dayIndex = Array.from(dayElements).indexOf(target);
 
-			// Position tooltip above or below based on day of week
-			// Top 3 days (Sun=0, Mon=1, Tue=2) show tooltip below, others show above
 			const showBelow = dayIndex <= 2;
 
 			const left = targetRect.left - containerRect.left + (targetRect.width / 2);
 
 			if (showBelow) {
-				// Position tooltip below the day cell
 				const top = targetRect.bottom - containerRect.top + 8;
 				tooltip.style.top = `${top}px`;
 				tooltip.style.transform = 'translate(-50%, 0)';
 
-				// Update arrow to point up (for bottom tooltip)
 				const arrow = tooltip.querySelector('.absolute.top-full');
 				if (arrow) {
 					arrow.className = 'absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-foreground dark:border-b-secondary';
 				}
 			} else {
-				// Position tooltip above the day cell (original behavior)
 				const top = targetRect.top - containerRect.top;
 				tooltip.style.top = `${top}px`;
 				tooltip.style.transform = 'translate(-50%, -100%)';
 				tooltip.style.marginTop = '-8px';
 
-				// Update arrow to point down (for top tooltip)
 				const arrow = tooltip.querySelector('.absolute.bottom-full, .absolute.top-full');
 				if (arrow) {
 					arrow.className = 'absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground dark:border-t-secondary';
@@ -483,7 +495,6 @@ const starredLists = starLists || [];
 
 			tooltip.style.left = `${left}px`;
 
-			// Ensure tooltip doesn't go outside container bounds horizontally
 			const tooltipRect = tooltip.getBoundingClientRect();
 			const maxLeft = containerRect.width - tooltipRect.width;
 
@@ -494,14 +505,12 @@ const starredLists = starLists || [];
 			}
 		}
 
-		yearSelector.addEventListener('change', async function() {
-			const selectedValue = this.value;
+		async function loadContributions() {
+			const selectedValue = yearSelector.value;
 
-			// Show loading state (span all week columns of the grid)
 			contributionGrid.innerHTML = '<div class="flex items-center justify-center h-28 text-muted-foreground dark:text-muted-foreground" style="grid-column: 1 / -1">Loading...</div>';
 
 			try {
-				// Calculate date range based on selection
 				let fromDate: Date, toDate: Date;
 
 				if (selectedValue === 'last-year') {
@@ -509,20 +518,16 @@ const starredLists = starLists || [];
 					fromDate = new Date(toDate);
 					fromDate.setFullYear(toDate.getFullYear() - 1);
 				} else {
-					// Full calendar year
 					const year = parseInt(selectedValue);
 					fromDate = new Date(year, 0, 1);
 					toDate = new Date(year, 11, 31);
 				}
 
-				// Build flat date→count map (same approach as SSR)
 				const countMap = new Map<string, number>();
-				// Fetch adjacent years too — the last weeks of year N are often cached
-				// under year N+1 in the stats server, causing December to appear empty.
 				const y = fromDate.getFullYear();
 				const yearsToFetch = Array.from(new Set([y - 1, y, toDate.getFullYear(), toDate.getFullYear() + 1]));
 
-				await Promise.all(githubUsernames.map(async (username) => {
+				await Promise.all(activeUsernames().map(async (username) => {
 					try {
 						const res = await fetch(`${githubStatsApiBase}/${username}/contributions`);
 						if (!res.ok) return;
@@ -539,7 +544,6 @@ const starredLists = starLists || [];
 					} catch {}
 				}));
 
-				// Build aligned grid from Sunday before fromDate
 				function toDS(d: Date) {
 					return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 				}
@@ -563,14 +567,30 @@ const starredLists = starLists || [];
 				updateMonthLabels(gridWeeks);
 				updateHeaderInfo(countMap, rangeStart, rangeEnd, fromDate, toDate);
 
-				// Re-initialize tooltip for new elements
 				setTimeout(initializeTooltip, 100);
 
 			} catch (error) {
 				console.error('Error fetching contribution data:', error);
 				contributionGrid.innerHTML = '<div class="flex items-center justify-center h-28 text-muted-foreground dark:text-muted-foreground" style="grid-column: 1 / -1">Error loading data</div>';
 			}
+		}
+
+		yearSelector.addEventListener('change', loadContributions);
+
+		document.addEventListener(PERSONAL_ONLY_EVENT, ((e: CustomEvent<{ personalOnly: boolean }>) => {
+			personalOnly = e.detail.personalOnly;
+			loadContributions();
+		}) as EventListener);
+
+		// Re-load when DataFreshness refreshes GitHub stats
+		document.addEventListener("github-stats-refreshed", () => {
+			loadContributions();
 		});
+
+		// If preference was already personal-only, refresh graph to match
+		if (personalOnly) {
+			loadContributions();
+		}
 
 		// Quantile-based thresholds, mirroring the SSR logic
 		let thresholds = [0, 0, 0];
@@ -637,7 +657,6 @@ const starredLists = starLists || [];
 		function updateContributionGrid(gridWeeks: { date: string; count: number; inRange: boolean }[][]) {
 			const grid = document.getElementById('contribution-grid');
 			if (!grid) return;
-			// Keep month-label and week tracks in sync with the new week count
 			document.querySelector<HTMLElement>('.contribution-grid-wrapper')
 				?.style.setProperty('--weeks', String(gridWeeks.length));
 			grid.innerHTML = gridWeeks.map(week => `

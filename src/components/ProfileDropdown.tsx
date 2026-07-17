@@ -19,22 +19,16 @@ export default function ProfileDropdown({ isMobile }: ProfileDropdownProps) {
 		<DropdownMenu>
 			<DropdownMenuTrigger
 				data-haptic=""
+				aria-label="External GitHub profiles"
 				className={
 					isMobile
-						? "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors focus:outline-none"
-						: "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors focus:outline-none"
+						? "inline-flex items-center justify-center h-7 w-7 rounded-lg text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors focus:outline-none shrink-0"
+						: "inline-flex items-center justify-center sm:justify-start gap-0 sm:gap-1.5 h-7 w-7 sm:w-auto sm:px-2.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors focus:outline-none shrink-0"
 				}
 			>
-				{isMobile ? (
-					<>
-						<ExternalLink className="w-3 h-3" />
-						Profiles
-					</>
-				) : (
-					<>
-						External Profile <ExternalLink size={12} />
-					</>
-				)}
+				{/* Icon-only on mobile; label from sm up */}
+				<ExternalLink className="w-3.5 h-3.5 sm:w-3 sm:h-3 shrink-0" />
+				<span className="hidden sm:inline">External Profile</span>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				align="end"

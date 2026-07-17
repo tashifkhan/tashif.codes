@@ -1,6 +1,7 @@
 ---
-import { githubStats } from "../data/github";
+import { githubStats, githubStatsPersonal } from "../data/github";
 import GitHubContributionGraph from "./GitHubContributionGraph.astro";
+import PersonalOnlyToggle from "./PersonalOnlyToggle";
 import {
 	GitCommit,
 	Star,
@@ -11,48 +12,65 @@ import {
 	Code2,
 } from "lucide-react";
 
-const { stats, prs, stars, commits } = githubStats;
+const all = githubStats;
+const personal = githubStatsPersonal;
 
-const metricCards = [
-	{
-		label: "Commits",
-		value: stats.totalCommits.toLocaleString(),
-		sub: "lifetime",
-		icon: GitCommit,
-	},
-	{
-		label: "Streak",
-		value: stats.currentStreak.toString(),
-		sub: "current",
-		icon: TrendingUp,
-	},
-	{
-		label: "Longest",
-		value: stats.longestStreak.toString(),
-		sub: "streak",
-		icon: Calendar,
-	},
-	{
-		label: "Stars",
-		value: stars.total_stars.toLocaleString(),
-		sub: "total",
-		icon: Star,
-	},
-	{
-		label: "PRs",
-		value: prs.length.toString(),
-		sub: "opened",
-		icon: GitPullRequest,
-	},
-	{
-		label: "Views",
-		value: stats.profile_visitors.toLocaleString(),
-		sub: "profile",
-		icon: Users,
-	},
-];
+function metricCardsFor(source: typeof all) {
+	return [
+		{
+			key: "commits",
+			label: "Commits",
+			value: source.stats.totalCommits.toLocaleString(),
+			sub: "lifetime",
+			icon: GitCommit,
+		},
+		{
+			key: "streak",
+			label: "Streak",
+			value: source.stats.currentStreak.toString(),
+			sub: "current",
+			icon: TrendingUp,
+		},
+		{
+			key: "longest",
+			label: "Longest",
+			value: source.stats.longestStreak.toString(),
+			sub: "streak",
+			icon: Calendar,
+		},
+		{
+			key: "stars",
+			label: "Stars",
+			value: source.stars.total_stars.toLocaleString(),
+			sub: "total",
+			icon: Star,
+		},
+		{
+			key: "prs",
+			label: "PRs",
+			value: source.prs.length.toString(),
+			sub: "opened",
+			icon: GitPullRequest,
+		},
+		{
+			key: "views",
+			label: "Views",
+			value: source.stats.profile_visitors.toLocaleString(),
+			sub: "profile",
+			icon: Users,
+		},
+	];
+}
 
-const topLanguages = stats.topLanguages.slice(0, 6).map((lang) => ({
+const metricCardsAll = metricCardsFor(all);
+const metricCardsPersonal = metricCardsFor(personal);
+
+const topLanguagesAll = all.stats.topLanguages.slice(0, 6).map((lang) => ({
+	...lang,
+	color: lang.color || "var(--color-primary)",
+	pct: Math.max(0, Math.min(100, Number(lang.percentage) || 0)),
+}));
+const topLanguagesPersonal = personal.stats.topLanguages.slice(0, 6).map((lang) => ({
 	...lang,
 	color: lang.color || "var(--color-primary)",
 	pct: Math.max(0, Math.min(100, Number(lang.percentage) || 0)),
@@ -71,7 +89,6 @@ function prStateColor(state: string): string {
 	}
 }
 
-// Function to get language icon URL from Simple Icons
 function getLanguageIcon(languageName: string): string {
 	const iconMap: { [key: string]: string } = {
 		JavaScript: "javascript",
@@ -148,7 +165,6 @@ function getLanguageIcon(languageName: string): string {
 	return `https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/${iconName}.svg`;
 }
 
-// Function to get fallback icon for unknown languages
 function getFallbackIcon(): string {
 	return `data:image/svg+xml,${encodeURIComponent(`
 		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -158,183 +174,314 @@ function getFallbackIcon(): string {
 }
 ---
 
-<div class="space-y-8">
-<!-- Metrics Grid -->
-<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-	{
-		metricCards.map((card) => (
-			<div class="relative overflow-hidden rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-4 hover:border-primary/30 transition-colors">
-				<div class="absolute left-0 top-3.5 bottom-3.5 w-[2px] rounded-r-full bg-primary/70" />
-				<p class="pl-3 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground flex items-center gap-1.5 truncate">
-					<card.icon className="w-3 h-3 shrink-0" />
-					{card.label}
-				</p>
-				<p class="pl-3 mt-2 font-mono text-2xl font-bold text-foreground tabular-nums leading-none">
-					{card.value}
-				</p>
-				<p class="pl-3 mt-1.5 text-[10px] text-muted-foreground">{card.sub}</p>
-			</div>
-		))
-	}
-</div>
-
-<!-- GitHub Contribution Graph -->
-<GitHubContributionGraph />
-
-<!-- Optional content placed directly below the contribution graph (e.g. Star Lists) -->
-<slot name="after-graph" />
-
-<!-- Top Languages -->
-<section
-	class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden"
->
-	<div class="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
-		<Code2 className="w-3.5 h-3.5 text-muted-foreground" />
-		<span
-			class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
-		>
-			Top Languages
-		</span>
-		<span class="ml-auto text-[10px] text-muted-foreground/70">
-			across public repos
-		</span>
+<div class="space-y-8" data-github-stats-root>
+	<!-- Metrics Grid -->
+	<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+		{
+			metricCardsAll.map((card, i) => (
+				<div
+					class="relative overflow-hidden rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-4 hover:border-primary/30 transition-colors"
+					data-github-metric
+					data-metric={card.key}
+					data-value-all={card.value}
+					data-value-personal={metricCardsPersonal[i].value}
+				>
+					<div class="absolute left-0 top-3.5 bottom-3.5 w-[2px] rounded-r-full bg-primary/70" />
+					<p class="pl-3 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground flex items-center gap-1.5 truncate">
+						<card.icon className="w-3 h-3 shrink-0" />
+						{card.label}
+					</p>
+					<p
+						class="pl-3 mt-2 font-mono text-2xl font-bold text-foreground tabular-nums leading-none"
+						data-github-metric-value
+					>
+						{card.value}
+					</p>
+					<p class="pl-3 mt-1.5 text-[10px] text-muted-foreground">{card.sub}</p>
+				</div>
+			))
+		}
 	</div>
-	<div class="p-5">
-		<!-- Stacked distribution bar -->
-		<div
-			class="flex h-2 w-full rounded-full overflow-hidden bg-secondary mb-5"
-			role="img"
-			aria-label="Language distribution"
-		>
-			{
-				topLanguages.map((lang) => (
-					<div
-						class="h-full first:rounded-l-full last:rounded-r-full"
-						style={`width:${lang.pct}%; background-color:${lang.color};`}
-						title={`${lang.name} ${Math.round(lang.pct)}%`}
-					/>
-				))
-			}
-		</div>
 
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
-			{
-				topLanguages.map((lang) => (
-					<div class="flex items-center gap-3 min-w-0">
-						<div class="relative flex items-center justify-center w-8 h-8 rounded-lg bg-background/60 border border-border/40 overflow-hidden shrink-0">
-							<img
-								src={getLanguageIcon(lang.name)}
-								alt={`${lang.name} icon`}
-								class="w-4.5 h-4.5 object-contain language-icon"
-								data-fallback={getFallbackIcon()}
-							/>
-						</div>
-						<div class="flex-1 min-w-0">
-							<div class="flex items-baseline justify-between gap-2">
-								<p class="text-sm font-medium text-foreground truncate">
-									{lang.name}
-								</p>
-								<span class="font-mono text-xs font-semibold tabular-nums text-muted-foreground shrink-0">
-									{Math.round(lang.pct)}%
-								</span>
-							</div>
-							<div class="mt-1 h-1 w-full bg-secondary rounded-full overflow-hidden">
-								<div
-									class="h-full rounded-full"
-									style={`background-color:${lang.color}; width:${lang.pct}%;`}
+	<!-- GitHub Contribution Graph (includes personal-only toggle) -->
+	<GitHubContributionGraph>
+		<PersonalOnlyToggle client:load slot="toggle" />
+	</GitHubContributionGraph>
+
+	<!-- Optional content placed directly below the contribution graph (e.g. Star Lists) -->
+	<slot name="after-graph" />
+
+	<!-- Top Languages: dual panes, swapped by toggle -->
+	<section
+		class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden"
+		data-github-languages-all
+	>
+		<div class="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
+			<Code2 className="w-3.5 h-3.5 text-muted-foreground" />
+			<span
+				class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
+			>
+				Top Languages
+			</span>
+			<span class="ml-auto text-[10px] text-muted-foreground/70">
+				across public repos
+			</span>
+		</div>
+		<div class="p-5">
+			<div
+				class="flex h-2 w-full rounded-full overflow-hidden bg-secondary mb-5"
+				role="img"
+				aria-label="Language distribution"
+			>
+				{
+					topLanguagesAll.map((lang) => (
+						<div
+							class="h-full first:rounded-l-full last:rounded-r-full"
+							style={`width:${lang.pct}%; background-color:${lang.color};`}
+							title={`${lang.name} ${Math.round(lang.pct)}%`}
+						/>
+					))
+				}
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
+				{
+					topLanguagesAll.map((lang) => (
+						<div class="flex items-center gap-3 min-w-0">
+							<div class="relative flex items-center justify-center w-8 h-8 rounded-lg bg-background/60 border border-border/40 overflow-hidden shrink-0">
+								<img
+									src={getLanguageIcon(lang.name)}
+									alt={`${lang.name} icon`}
+									class="w-4.5 h-4.5 object-contain language-icon"
+									data-fallback={getFallbackIcon()}
 								/>
 							</div>
+							<div class="flex-1 min-w-0">
+								<div class="flex items-baseline justify-between gap-2">
+									<p class="text-sm font-medium text-foreground truncate">
+										{lang.name}
+									</p>
+									<span class="font-mono text-xs font-semibold tabular-nums text-muted-foreground shrink-0">
+										{Math.round(lang.pct)}%
+									</span>
+								</div>
+								<div class="mt-1 h-1 w-full bg-secondary rounded-full overflow-hidden">
+									<div
+										class="h-full rounded-full"
+										style={`background-color:${lang.color}; width:${lang.pct}%;`}
+									/>
+								</div>
+							</div>
 						</div>
-					</div>
-				))
-			}
-		</div>
-	</div>
-</section>
-
-<!-- Recent Activity -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-	<!-- Recent Commits -->
-	<section
-		class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden"
-	>
-		<div class="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
-			<GitCommit className="w-3.5 h-3.5 text-muted-foreground" />
-			<span
-				class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
-			>
-				Recent Commits
-			</span>
-		</div>
-		<div class="divide-y divide-border/40">
-			{
-				commits.slice(0, 5).map((commit) => (
-					<a
-						href={commit.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						data-haptic-external
-						class="group flex items-start gap-3 px-5 py-3 hover:bg-muted/30 transition-colors"
-					>
-						<span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary/60 shrink-0 group-hover:bg-primary transition-colors" />
-						<div class="flex-1 min-w-0">
-							<p class="text-[13px] font-medium text-foreground truncate group-hover:text-primary transition-colors">
-								{commit.message}
-							</p>
-							<p class="mt-0.5 font-mono text-[11px] text-muted-foreground truncate">
-								{commit.repo} · {new Date(commit.timestamp).toLocaleDateString()}
-							</p>
-						</div>
-					</a>
-				))
-			}
+					))
+				}
+			</div>
 		</div>
 	</section>
 
-	<!-- Recent Pull Requests -->
 	<section
-		class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden"
+		class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden hidden"
+		data-github-languages-personal
 	>
 		<div class="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
-			<GitPullRequest className="w-3.5 h-3.5 text-muted-foreground" />
+			<Code2 className="w-3.5 h-3.5 text-muted-foreground" />
 			<span
 				class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
 			>
-				Recent Pull Requests
+				Top Languages
+			</span>
+			<span class="ml-auto text-[10px] text-muted-foreground/70">
+				personal account
 			</span>
 		</div>
-		<div class="divide-y divide-border/40">
-			{
-				prs.slice(0, 5).map((pr) => (
-					<a
-						href={pr.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						data-haptic-external
-						class="group flex items-start gap-3 px-5 py-3 hover:bg-muted/30 transition-colors"
-					>
-						<span
-							class:list={[
-								"mt-1.5 h-1.5 w-1.5 rounded-full shrink-0",
-								prStateColor(pr.state),
-							]}
-							title={pr.state}
+		<div class="p-5">
+			<div
+				class="flex h-2 w-full rounded-full overflow-hidden bg-secondary mb-5"
+				role="img"
+				aria-label="Language distribution (personal)"
+			>
+				{
+					topLanguagesPersonal.map((lang) => (
+						<div
+							class="h-full first:rounded-l-full last:rounded-r-full"
+							style={`width:${lang.pct}%; background-color:${lang.color};`}
+							title={`${lang.name} ${Math.round(lang.pct)}%`}
 						/>
-						<div class="flex-1 min-w-0">
-							<p class="text-[13px] font-medium text-foreground truncate group-hover:text-primary transition-colors">
-								{pr.title}
-							</p>
-							<p class="mt-0.5 font-mono text-[11px] text-muted-foreground truncate">
-								{pr.repo} · <span class="capitalize">{pr.state}</span> ·{" "}
-								{new Date(pr.created_at).toLocaleDateString()}
-							</p>
+					))
+				}
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
+				{
+					topLanguagesPersonal.map((lang) => (
+						<div class="flex items-center gap-3 min-w-0">
+							<div class="relative flex items-center justify-center w-8 h-8 rounded-lg bg-background/60 border border-border/40 overflow-hidden shrink-0">
+								<img
+									src={getLanguageIcon(lang.name)}
+									alt={`${lang.name} icon`}
+									class="w-4.5 h-4.5 object-contain language-icon"
+									data-fallback={getFallbackIcon()}
+								/>
+							</div>
+							<div class="flex-1 min-w-0">
+								<div class="flex items-baseline justify-between gap-2">
+									<p class="text-sm font-medium text-foreground truncate">
+										{lang.name}
+									</p>
+									<span class="font-mono text-xs font-semibold tabular-nums text-muted-foreground shrink-0">
+										{Math.round(lang.pct)}%
+									</span>
+								</div>
+								<div class="mt-1 h-1 w-full bg-secondary rounded-full overflow-hidden">
+									<div
+										class="h-full rounded-full"
+										style={`background-color:${lang.color}; width:${lang.pct}%;`}
+									/>
+								</div>
+							</div>
 						</div>
-					</a>
-				))
-			}
+					))
+				}
+			</div>
 		</div>
 	</section>
-</div>
+
+	<!-- Recent Activity -->
+	<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+		<!-- Recent Commits -->
+		<section
+			class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden"
+		>
+			<div class="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
+				<GitCommit className="w-3.5 h-3.5 text-muted-foreground" />
+				<span
+					class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
+				>
+					Recent Commits
+				</span>
+			</div>
+			<div class="divide-y divide-border/40" data-github-commits-all>
+				{
+					all.commits.slice(0, 5).map((commit) => (
+						<a
+							href={commit.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							data-haptic-external
+							class="group flex items-start gap-3 px-5 py-3 hover:bg-muted/30 transition-colors"
+						>
+							<span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary/60 shrink-0 group-hover:bg-primary transition-colors" />
+							<div class="flex-1 min-w-0">
+								<p class="text-[13px] font-medium text-foreground truncate group-hover:text-primary transition-colors">
+									{commit.message}
+								</p>
+								<p class="mt-0.5 font-mono text-[11px] text-muted-foreground truncate">
+									{commit.repo} · {new Date(commit.timestamp).toLocaleDateString()}
+								</p>
+							</div>
+						</a>
+					))
+				}
+			</div>
+			<div class="divide-y divide-border/40 hidden" data-github-commits-personal>
+				{
+					personal.commits.slice(0, 5).map((commit) => (
+						<a
+							href={commit.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							data-haptic-external
+							class="group flex items-start gap-3 px-5 py-3 hover:bg-muted/30 transition-colors"
+						>
+							<span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary/60 shrink-0 group-hover:bg-primary transition-colors" />
+							<div class="flex-1 min-w-0">
+								<p class="text-[13px] font-medium text-foreground truncate group-hover:text-primary transition-colors">
+									{commit.message}
+								</p>
+								<p class="mt-0.5 font-mono text-[11px] text-muted-foreground truncate">
+									{commit.repo} · {new Date(commit.timestamp).toLocaleDateString()}
+								</p>
+							</div>
+						</a>
+					))
+				}
+			</div>
+		</section>
+
+		<!-- Recent Pull Requests -->
+		<section
+			class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden"
+		>
+			<div class="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
+				<GitPullRequest className="w-3.5 h-3.5 text-muted-foreground" />
+				<span
+					class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
+				>
+					Recent Pull Requests
+				</span>
+			</div>
+			<div class="divide-y divide-border/40" data-github-prs-all>
+				{
+					all.prs.slice(0, 5).map((pr) => (
+						<a
+							href={pr.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							data-haptic-external
+							class="group flex items-start gap-3 px-5 py-3 hover:bg-muted/30 transition-colors"
+						>
+							<span
+								class:list={[
+									"mt-1.5 h-1.5 w-1.5 rounded-full shrink-0",
+									prStateColor(pr.state),
+								]}
+								title={pr.state}
+							/>
+							<div class="flex-1 min-w-0">
+								<p class="text-[13px] font-medium text-foreground truncate group-hover:text-primary transition-colors">
+									{pr.title}
+								</p>
+								<p class="mt-0.5 font-mono text-[11px] text-muted-foreground truncate">
+									{pr.repo} · <span class="capitalize">{pr.state}</span> ·{" "}
+									{new Date(pr.created_at).toLocaleDateString()}
+								</p>
+							</div>
+						</a>
+					))
+				}
+			</div>
+			<div class="divide-y divide-border/40 hidden" data-github-prs-personal>
+				{
+					personal.prs.slice(0, 5).map((pr) => (
+						<a
+							href={pr.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							data-haptic-external
+							class="group flex items-start gap-3 px-5 py-3 hover:bg-muted/30 transition-colors"
+						>
+							<span
+								class:list={[
+									"mt-1.5 h-1.5 w-1.5 rounded-full shrink-0",
+									prStateColor(pr.state),
+								]}
+								title={pr.state}
+							/>
+							<div class="flex-1 min-w-0">
+								<p class="text-[13px] font-medium text-foreground truncate group-hover:text-primary transition-colors">
+									{pr.title}
+								</p>
+								<p class="mt-0.5 font-mono text-[11px] text-muted-foreground truncate">
+									{pr.repo} · <span class="capitalize">{pr.state}</span> ·{" "}
+									{new Date(pr.created_at).toLocaleDateString()}
+								</p>
+							</div>
+						</a>
+					))
+				}
+			</div>
+		</section>
+	</div>
 </div>
 
 <script>
@@ -345,39 +492,31 @@ function getFallbackIcon(): string {
 		languageIcons.forEach((icon) => {
 			const img = icon as HTMLImageElement;
 
-			// Function to apply correct theme styling
 			function applyThemeStyle() {
 				const isDark = document.documentElement.classList.contains("dark");
 
-				// Don't apply filter if this is a fallback icon
 				if (img.src.startsWith("data:image/svg+xml")) {
 					img.style.filter = "none";
 					img.style.color = isDark ? "#9CA3AF" : "#6B7280";
 					return;
 				}
 
-				// Simple Icons are typically black SVGs, so we need to handle them properly
 				if (isDark) {
-					// For dark mode, invert the black icons to white
 					img.style.filter = "invert(1) brightness(0.9)";
 				} else {
-					// For light mode, keep icons darker but not completely black
 					img.style.filter = "brightness(0.7)";
 				}
 			}
 
-			// Set initial styling
 			img.style.opacity = "0.9";
 			img.style.transition = "all 0.3s ease";
 			applyThemeStyle();
 
-			// Handle successful load
 			img.addEventListener("load", function () {
 				this.style.opacity = "1";
 				applyThemeStyle();
 			});
 
-			// Handle error loading
 			img.addEventListener("error", function () {
 				const fallbackUrl = this.dataset.fallback;
 				if (fallbackUrl && this.src !== fallbackUrl) {
@@ -386,7 +525,6 @@ function getFallbackIcon(): string {
 				}
 			});
 
-			// Apply dark mode styling when theme changes
 			const observer = new MutationObserver(() => {
 				applyThemeStyle();
 			});
@@ -396,5 +534,52 @@ function getFallbackIcon(): string {
 				attributeFilter: ["class"],
 			});
 		});
+	});
+</script>
+
+<script>
+	// Swap metric cards / languages / activity lists when personal-only toggles
+	const EVENT = "github-personal-only-change";
+
+	function applyPersonalOnly(personalOnly: boolean) {
+		document.querySelectorAll("[data-github-metric]").forEach((el) => {
+			const valueEl = el.querySelector("[data-github-metric-value]");
+			if (!valueEl) return;
+			const key = personalOnly ? "valuePersonal" : "valueAll";
+			const val = (el as HTMLElement).dataset[key];
+			if (val != null) valueEl.textContent = val;
+		});
+
+		const pairs: [string, string][] = [
+			["[data-github-languages-all]", "[data-github-languages-personal]"],
+			["[data-github-commits-all]", "[data-github-commits-personal]"],
+			["[data-github-prs-all]", "[data-github-prs-personal]"],
+		];
+
+		for (const [allSel, personalSel] of pairs) {
+			document.querySelectorAll(allSel).forEach((el) => {
+				el.classList.toggle("hidden", personalOnly);
+			});
+			document.querySelectorAll(personalSel).forEach((el) => {
+				el.classList.toggle("hidden", !personalOnly);
+			});
+		}
+
+		// Section heading commit count on home page
+		const headingCommits = document.querySelector("[data-github-heading-commits]");
+		if (headingCommits) {
+			const key = personalOnly ? "valuePersonal" : "valueAll";
+			const val = (headingCommits as HTMLElement).dataset[key];
+			if (val != null) headingCommits.textContent = val;
+		}
+	}
+
+	document.addEventListener("astro:page-load", () => {
+		const saved = localStorage.getItem("github_personal_only") === "1";
+		applyPersonalOnly(saved);
+
+		document.addEventListener(EVENT, ((e: CustomEvent<{ personalOnly: boolean }>) => {
+			applyPersonalOnly(e.detail.personalOnly);
+		}) as EventListener);
 	});
 </script>
