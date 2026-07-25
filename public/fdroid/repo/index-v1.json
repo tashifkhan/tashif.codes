@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1785006088000,
+    "timestamp": 1785008012000,
     "version": 20002,
     "name": "Tashif Codes",
     "icon": "icon.png",
@@ -31,9 +31,192 @@
       "added": 1785006084000,
       "packageName": "codes.tashif.paisa",
       "lastUpdated": 1785006084000
+    },
+    {
+      "authorEmail": "tashifkhan010@gmail.com",
+      "authorName": "Tashif Ahmad Khan",
+      "categories": [
+        "Productivity",
+        "Development",
+        "Internet"
+      ],
+      "changelog": "https://github.com/tashifkhan/caldav-todo/releases",
+      "suggestedVersionCode": "3",
+      "description": "Patchwork is a developer-focused task manager built with Expo and React Native.\n\nFeatures:\n\n* CalDAV task sync (Nextcloud and other CalDAV servers)\n* Nextcloud Deck boards\n* AI-assisted task drafting and import from photos or notes\n* Custom AI model providers (OpenAI-compatible endpoints)\n* GitHub issue tracking\n* Android home-screen widgets\n\nReleases are built with EAS, published on GitHub Releases, and mirrored into\nthis F-Droid-compatible repository.\n",
+      "donate": "https://tashif.codes",
+      "issueTracker": "https://github.com/tashifkhan/caldav-todo/issues",
+      "license": "MIT",
+      "name": "Patchwork",
+      "sourceCode": "https://github.com/tashifkhan/caldav-todo",
+      "summary": "Developer-focused tasks with CalDAV, Deck, AI, and GitHub",
+      "webSite": "https://tashif.codes",
+      "added": 1785008008000,
+      "packageName": "codes.tashhif.patchwork",
+      "lastUpdated": 1785008008000
     }
   ],
   "packages": {
+    "codes.tashhif.patchwork": [
+      {
+        "added": 1785008008000,
+        "apkName": "codes.tashhif.patchwork_3.apk",
+        "hash": "05868483437a2f045a14383e759f2daa923dac5b2f9e8ba441fc768e65359747",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a"
+        ],
+        "packageName": "codes.tashhif.patchwork",
+        "sig": "76f6a3560d2758446bd90127a81ea7de",
+        "signer": "40d44ae28eb4751de2f3195185677ba128d767941e0776cdeac109e34bae769b",
+        "size": 50974073,
+        "targetSdkVersion": 36,
+        "uses-permission": [
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.READ_CALENDAR",
+            null
+          ],
+          [
+            "android.permission.READ_EXTERNAL_STORAGE",
+            32
+          ],
+          [
+            "android.permission.RECORD_AUDIO",
+            null
+          ],
+          [
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            null
+          ],
+          [
+            "android.permission.VIBRATE",
+            null
+          ],
+          [
+            "android.permission.WRITE_CALENDAR",
+            null
+          ],
+          [
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            32
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "android.permission.CAMERA",
+            null
+          ],
+          [
+            "android.permission.RECEIVE_BOOT_COMPLETED",
+            null
+          ],
+          [
+            "android.permission.POST_NOTIFICATIONS",
+            null
+          ],
+          [
+            "android.permission.WAKE_LOCK",
+            null
+          ],
+          [
+            "android.permission.FOREGROUND_SERVICE",
+            null
+          ],
+          [
+            "android.permission.USE_BIOMETRIC",
+            null
+          ],
+          [
+            "android.permission.USE_FINGERPRINT",
+            null
+          ],
+          [
+            "com.google.android.c2dm.permission.RECEIVE",
+            null
+          ],
+          [
+            "codes.tashhif.patchwork.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ],
+          [
+            "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE",
+            null
+          ],
+          [
+            "com.sec.android.provider.badge.permission.READ",
+            null
+          ],
+          [
+            "com.sec.android.provider.badge.permission.WRITE",
+            null
+          ],
+          [
+            "com.htc.launcher.permission.READ_SETTINGS",
+            null
+          ],
+          [
+            "com.htc.launcher.permission.UPDATE_SHORTCUT",
+            null
+          ],
+          [
+            "com.sonyericsson.home.permission.BROADCAST_BADGE",
+            null
+          ],
+          [
+            "com.sonymobile.home.permission.PROVIDER_INSERT_BADGE",
+            null
+          ],
+          [
+            "com.anddoes.launcher.permission.UPDATE_COUNT",
+            null
+          ],
+          [
+            "com.majeur.launcher.permission.UPDATE_BADGE",
+            null
+          ],
+          [
+            "com.huawei.android.launcher.permission.CHANGE_BADGE",
+            null
+          ],
+          [
+            "com.huawei.android.launcher.permission.READ_SETTINGS",
+            null
+          ],
+          [
+            "com.huawei.android.launcher.permission.WRITE_SETTINGS",
+            null
+          ],
+          [
+            "android.permission.READ_APP_BADGE",
+            null
+          ],
+          [
+            "com.oppo.launcher.permission.READ_SETTINGS",
+            null
+          ],
+          [
+            "com.oppo.launcher.permission.WRITE_SETTINGS",
+            null
+          ],
+          [
+            "me.everything.badger.permission.BADGE_COUNT_READ",
+            null
+          ],
+          [
+            "me.everything.badger.permission.BADGE_COUNT_WRITE",
+            null
+          ]
+        ],
+        "versionCode": 3,
+        "versionName": "1.0.0"
+      }
+    ],
     "codes.tashif.paisa": [
       {
         "added": 1785006084000,
