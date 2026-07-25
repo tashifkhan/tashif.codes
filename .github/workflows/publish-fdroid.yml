@@ -104,15 +104,28 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          # fdroidserver + aapt (via android-sdk) for reliable APK scanning
+          # System packages provide apksigner/zipalign/aapt. Do NOT use the
+          # distro androguard — Ubuntu's copy crashes on AGP 8+ resources.arsc
+          # ("res1 must be zero!"). Install fdroidserver + modern androguard via pip.
           sudo apt-get install -y --no-install-recommends \
-            fdroidserver \
+            python3-pip \
+            python3-venv \
             apksigner \
             zipalign \
-            python3-androguard \
-            || sudo apt-get install -y fdroidserver
+            aapt \
+            openjdk-17-jre-headless
 
-          fdroid --version || true
+          python3 -m venv "$HOME/fdroid-venv"
+          # shellcheck disable=SC1091
+          source "$HOME/fdroid-venv/bin/activate"
+          pip install --upgrade pip
+          pip install 'fdroidserver>=2.3.0' 'androguard>=4.1.0'
+
+          echo "$HOME/fdroid-venv/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/fdroid-venv/bin:$PATH"
+
+          fdroid --version
+          python -c "import androguard; print('androguard', androguard.__version__ if hasattr(androguard,'__version__') else 'ok')"
           which aapt || true
           which apksigner || true
 
