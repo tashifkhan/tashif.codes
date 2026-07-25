@@ -170,6 +170,10 @@ jobs:
           # Drop any sidecar checksums that may have matched a broad pattern
           rm -f fdroid-input/*.sha256 fdroid-input/*.asc fdroid-input/*.sig || true
 
+          # fdroidserver rejects zero-size files (e.g. a placeholder .gitkeep)
+          find public/fdroid/repo -type f -size 0 -print -delete || true
+          find public/fdroid/repo -name '.gitkeep' -print -delete || true
+
           # Copy into the binary repo. Keep prior versions; fdroid archive_older
           # will move stale APKs into archive/ automatically.
           for apk in "${APKS[@]}"; do
