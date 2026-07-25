@@ -1,0 +1,127 @@
+{
+  "repo": {
+    "name": {
+      "en-US": "Tashif Codes"
+    },
+    "description": {
+      "en-US": "Android apps published by Tashif Khan."
+    },
+    "icon": {
+      "en-US": {
+        "name": "/icons/icon.png",
+        "sha256": "f9ff166bc336b21051ab782ec3445edc2746afd8a3b312d808ad564d0d4243b7",
+        "size": 705
+      }
+    },
+    "address": "https://tashif.codes/fdroid/repo",
+    "timestamp": 1785006088000,
+    "categories": {
+      "Money": {
+        "name": {
+          "en-US": "Money"
+        }
+      },
+      "Offline": {
+        "name": {
+          "en-US": "Offline"
+        }
+      }
+    }
+  },
+  "packages": {
+    "codes.tashif.paisa": {
+      "metadata": {
+        "added": 1785006084000,
+        "categories": [
+          "Money",
+          "Offline"
+        ],
+        "changelog": "https://github.com/tashifkhan/Paisa/releases",
+        "issueTracker": "https://github.com/tashifkhan/Paisa/issues",
+        "lastUpdated": 1785006084000,
+        "license": "AGPL-3.0-or-later",
+        "sourceCode": "https://github.com/tashifkhan/Paisa",
+        "webSite": "https://tashif.codes",
+        "authorEmail": "tashifkhan010@gmail.com",
+        "authorName": "Tashif Ahmad Khan",
+        "name": {
+          "en-US": "Paisa"
+        },
+        "summary": {
+          "en-US": "Offline-first personal finance for Android"
+        },
+        "description": {
+          "en-US": "Paisa keeps your money ledger on your phone.\n\nBank SMS is parsed on-device (100+ Indian banks via an AGPL parser\ncore). Optional BYOK statement import for PDF/CSV/images — your API\nkey, your endpoint; SMS never leaves the device.\n\nFeatures:\n* Home balance, filters, and recent transactions\n* Analytics charts with date ranges\n* Monthly budgets by category\n* Multiple accounts / wallets\n* SMS bulk scan + live receiver with hash dedup\n* App lock via biometrics or device credential\n* Export to CSV / PDF\n\nPackage ID: codes.tashif.paisa\n"
+        },
+        "preferredSigner": "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be"
+      },
+      "versions": {
+        "c45c1a890025c70068fd4b1577c02fd21b07a489e6ecdf0ad6cd782baa0fcbe8": {
+          "added": 1785006084000,
+          "file": {
+            "name": "/codes.tashif.paisa_1.apk",
+            "sha256": "c45c1a890025c70068fd4b1577c02fd21b07a489e6ecdf0ad6cd782baa0fcbe8",
+            "size": 25772081
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a",
+              "armeabi-v7a",
+              "x86",
+              "x86_64"
+            ],
+            "versionName": "1.0.0",
+            "versionCode": 1,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 35
+            },
+            "signer": {
+              "sha256": [
+                "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.READ_SMS"
+              },
+              {
+                "name": "android.permission.RECEIVE_SMS"
+              },
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.POST_NOTIFICATIONS"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+              },
+              {
+                "name": "android.permission.USE_BIOMETRIC"
+              },
+              {
+                "name": "android.permission.USE_FINGERPRINT"
+              },
+              {
+                "name": "android.permission.WAKE_LOCK"
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "android.permission.RECEIVE_BOOT_COMPLETED"
+              },
+              {
+                "name": "codes.tashif.paisa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

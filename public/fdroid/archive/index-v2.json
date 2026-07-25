@@ -1,0 +1,20 @@
+{
+  "repo": {
+    "name": {
+      "en-US": "My First F-Droid Archive Demo"
+    },
+    "description": {
+      "en-US": "These are the apps that have been archived from the main repo."
+    },
+    "icon": {
+      "en-US": {
+        "name": "/icons/icon.png",
+        "sha256": "f9ff166bc336b21051ab782ec3445edc2746afd8a3b312d808ad564d0d4243b7",
+        "size": 705
+      }
+    },
+    "address": "https://tashif.codes/fdroid/archive",
+    "timestamp": 1785006084000
+  },
+  "packages": {}
+}
