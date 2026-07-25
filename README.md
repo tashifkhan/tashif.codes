@@ -17,10 +17,11 @@ Public URLs:
 - F-Droid repository URL: `https://tashif.codes/fdroid/repo`
 - Paisa releases: `https://github.com/tashifkhan/Paisa/releases/latest`
 - Patchwork releases: `https://github.com/tashifkhan/caldav-todo/releases/latest`
+- Delhi Metro releases: `https://github.com/tashifkhan/delhi-metro/releases/latest`
 
 How publishing works:
 
-1. An app repo (e.g. Patchwork / Paisa) builds an APK and attaches it to a GitHub Release.
+1. An app repo (Patchwork / Paisa / Delhi Metro) builds an APK and attaches it to a GitHub Release.
 2. That repo dispatches `.github/workflows/publish-fdroid.yml` here (or you run it manually).
 3. The workflow downloads the APK into `public/fdroid/repo`, runs `fdroid update` (signed index), and commits the result.
 4. Vercel deploys the static files under `/fdroid/repo`.
@@ -54,17 +55,17 @@ base64 -i fdroid-repo.p12 | pbcopy   # macOS
 
 Cross-repo automation (app repos):
 
-- Add `TASHIF_CODES_WORKFLOW_TOKEN` (fine-grained PAT with **Actions: Read and write** on `tashifkhan/tashif.codes`) to `tashifkhan/caldav-todo` (Patchwork) and/or `tashifkhan/Paisa`.
-- Patchwork also needs `EXPO_TOKEN` for EAS APK builds.
+- Add `TASHIF_CODES_WORKFLOW_TOKEN` (fine-grained PAT with **Actions: Read and write** on `tashifkhan/tashif.codes`) to `tashifkhan/caldav-todo` (Patchwork), `tashifkhan/Paisa`, and/or `tashifkhan/delhi-metro`.
+- Patchwork and Delhi Metro also need `EXPO_TOKEN` for EAS APK builds.
 
 Manual re-import of an existing release:
 
 ```bash
 gh workflow run publish-fdroid.yml \
   --repo tashifkhan/tashif.codes \
-  --field source_repository=tashifkhan/caldav-todo \
-  --field release_tag=v1.0.0 \
-  --field apk_pattern='*.apk'
+  --field source_repository=tashifkhan/delhi-metro \
+  --field release_tag=v1.1.0 \
+  --field apk_pattern='DelhiMetro-v*.apk'
 ```
 
 See [`public/fdroid/README.md`](public/fdroid/README.md) for layout, metadata, and local dry-run notes.

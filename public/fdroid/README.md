@@ -14,11 +14,12 @@ Install / instructions page: `https://tashif.codes/fdroid`
 | --- | --- | --- | --- |
 | **Paisa** | [tashifkhan/Paisa](https://github.com/tashifkhan/Paisa) | `codes.tashif.paisa` | `Paisa-v*.apk` |
 | **Patchwork** | [tashifkhan/caldav-todo](https://github.com/tashifkhan/caldav-todo) | `codes.tashhif.patchwork` | `*.apk` |
+| **Delhi Metro** | [tashifkhan/delhi-metro](https://github.com/tashifkhan/delhi-metro) | `codes.tashif.delhimetro` | `DelhiMetro-v*.apk` |
 
 ## How publishing works
 
 1. An app repo builds a release APK and attaches it to a GitHub Release
-   (Paisa: `Release` workflow; Patchwork: `Release Android APK` / EAS).
+   (Paisa: `Release`; Patchwork / Delhi Metro: EAS `github-release` + tag push).
 2. That workflow dispatches `.github/workflows/publish-fdroid.yml` in this repo
    (or you run it manually).
 3. The workflow downloads the APK, copies it into `public/fdroid/repo`, runs
@@ -41,6 +42,13 @@ gh workflow run publish-fdroid.yml \
   --field source_repository=tashifkhan/caldav-todo \
   --field release_tag=v1.0.0 \
   --field apk_pattern='*.apk'
+
+# Delhi Metro
+gh workflow run publish-fdroid.yml \
+  --repo tashifkhan/tashif.codes \
+  --field source_repository=tashifkhan/delhi-metro \
+  --field release_tag=v1.1.0 \
+  --field apk_pattern='DelhiMetro-v*.apk'
 ```
 
 ## Layout
@@ -50,6 +58,7 @@ public/fdroid/
   metadata/                       # per-app F-Droid metadata (committed)
     codes.tashif.paisa.yml
     codes.tashhif.patchwork.yml
+    codes.tashif.delhimetro.yml
   repo/                           # APKs + signed indexes (committed by CI)
   archive/                        # older APKs (created by fdroidserver)
   config.yml.example              # non-secret reference config
@@ -76,7 +85,7 @@ In **`tashifkhan/Paisa`**:
 | `KEYSTORE_PASSWORD` / `KEY_ALIAS` / `KEY_PASSWORD` | APK signing |
 | `TASHIF_CODES_WORKFLOW_TOKEN` | fine-grained PAT with **Actions: Read and write** on `tashifkhan/tashif.codes` |
 
-In **`tashifkhan/caldav-todo`** (Patchwork):
+In **`tashifkhan/caldav-todo`** (Patchwork) and **`tashifkhan/delhi-metro`**:
 
 | Secret | Purpose |
 |---|---|

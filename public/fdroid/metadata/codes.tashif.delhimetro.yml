@@ -1,0 +1,42 @@
+Categories:
+  - Navigation
+  - Travel & Local
+  - Internet
+License: MIT
+AuthorName: Tashif Ahmad Khan
+AuthorEmail: tashifkhan010@gmail.com
+WebSite: https://tashif.codes
+SourceCode: https://github.com/tashifkhan/delhi-metro
+IssueTracker: https://github.com/tashifkhan/delhi-metro/issues
+Changelog: https://github.com/tashifkhan/delhi-metro/releases
+
+AutoName: Delhi Metro
+Name: Delhi Metro
+
+Summary: Plan Delhi Metro journeys with fares, maps, and line status
+Description: |
+  Delhi Metro is a Material 3 companion app for the Delhi Metro network.
+
+  Plan trips between stations with least-distance or minimum-interchange
+  strategies, edit endpoints on the results screen, and swap origin and
+  destination without starting over. Browse lines and stations, check
+  first and last train times, follow service alerts, and open the network
+  map with zoom and PDF share.
+
+  Features:
+
+  * Journey planner with strategy toggle
+  * Editable origin and destination on route results
+  * Station search with local cache
+  * Line explorer and station detail
+  * Network map view with share
+  * Notifications / service alerts
+  * Light, dark, and Material You theming
+
+  Releases are built with Expo EAS, published on GitHub Releases, and
+  mirrored into this F-Droid-compatible repository.
+
+  Package ID: codes.tashif.delhimetro
+
+RepoType: git
+Repo: https://github.com/tashifkhan/delhi-metro.git

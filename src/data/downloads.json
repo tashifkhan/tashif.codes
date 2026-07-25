@@ -23,6 +23,22 @@
 		{
 			"title": "splitwise-cpp-ds-Graphs",
 			"download_url": "https://github.com/tashifkhan/splitwise-cpp-ds-Graphs/releases/"
+		},
+		{
+			"title": "delhi-metro",
+			"download_url": "https://github.com/tashifkhan/delhi-metro/releases/latest"
+		},
+		{
+			"title": "DelhiMetro",
+			"download_url": "https://github.com/tashifkhan/delhi-metro/releases/latest"
+		},
+		{
+			"title": "paisa",
+			"download_url": "https://github.com/tashifkhan/Paisa/releases/latest"
+		},
+		{
+			"title": "patchwork",
+			"download_url": "https://github.com/tashifkhan/caldav-todo/releases/latest"
 		}
 	]
 }
