@@ -264,7 +264,7 @@ jobs:
       - name: Commit F-Droid repo files
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'chore(fdroid): publish ${{ env.RELEASE_TAG }} from ${{ env.SOURCE_REPOSITORY }}'
+          commit_message: 'chore: publish F-Droid ${{ env.RELEASE_TAG }} from ${{ env.SOURCE_REPOSITORY }}'
           skip_dirty_check: false
           disable_globbing: true
           file_pattern: public/fdroid/**
