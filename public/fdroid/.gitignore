@@ -1,0 +1,19 @@
+# Local signing material and generated config — never commit
+config.yml
+config.py
+*.p12
+*.jks
+*.keystore
+fdroid-repo.p12
+keystore.jks
+
+# fdroidserver working dirs
+tmp/
+.fdroidcache/
+unsigned/
+.cache/
+
+# Keep the repo/ and archive/ trees (APKs + indexes) tracked so Vercel
+# can serve them as static files from this repository.
+!repo/
+!archive/

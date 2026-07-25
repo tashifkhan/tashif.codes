@@ -1,22 +1,42 @@
 name: Publish F-Droid Repo
 
+# Imports a release APK into the static F-Droid binary repository under
+# public/fdroid, regenerates the signed index, and commits the result so
+# Vercel can serve https://tashif.codes/fdroid/repo
+#
+# Triggers:
+#   - workflow_dispatch (from UI or from Patchwork's release-apk.yml)
+#   - repository_dispatch with event_type=fdroid-publish
+#
+# Required secrets:
+#   FDROID_KEYSTORE_BASE64  — base64-encoded PKCS12 keystore
+#   FDROID_KEYSTORE_PASS    — keystore password
+#   FDROID_KEY_ALIAS        — key alias (e.g. fdroid)
+#   FDROID_KEY_PASS         — key password
+
 on:
   workflow_dispatch:
     inputs:
       source_repository:
-        description: 'GitHub repository containing the APK release'
+        description: 'GitHub repository that owns the release (owner/repo), e.g. tashifkhan/caldav-todo or tashifkhan/Paisa'
         required: true
-        default: 'tashifkhan/Patchwork'
+        default: 'tashifkhan/caldav-todo'
         type: string
       release_tag:
-        description: 'Release tag to import, for example v1.0.0'
+        description: 'Release tag to import (e.g. v1.0.0)'
         required: true
         type: string
       apk_pattern:
-        description: 'APK asset pattern in the release'
+        description: 'APK asset pattern (e.g. *.apk or Paisa-v*.apk)'
         required: true
         default: '*.apk'
         type: string
+  repository_dispatch:
+    types: [fdroid-publish]
+
+concurrency:
+  group: publish-fdroid
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -25,6 +45,7 @@ jobs:
   publish:
     name: Import APK and update F-Droid index
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       REPO_URL: https://tashif.codes/fdroid/repo
       REPO_NAME: Tashif Codes
@@ -33,53 +54,214 @@ jobs:
       FDROID_KEYSTORE_PASS: ${{ secrets.FDROID_KEYSTORE_PASS }}
       FDROID_KEY_ALIAS: ${{ secrets.FDROID_KEY_ALIAS }}
       FDROID_KEY_PASS: ${{ secrets.FDROID_KEY_PASS }}
-      GH_TOKEN: ${{ github.token }}
+      # Public releases work with github.token. For private source repos, set
+      # FDROID_SOURCE_TOKEN (contents:read on the source).
+      GH_TOKEN: ${{ secrets.FDROID_SOURCE_TOKEN || github.token }}
+
     steps:
       - name: Checkout website
         uses: actions/checkout@v4
+        with:
+          # Need full history so auto-commit can push cleanly
+          fetch-depth: 0
 
-      - name: Validate signing secrets
+      - name: Resolve inputs
         run: |
-          test -n "$FDROID_KEYSTORE_BASE64"
-          test -n "$FDROID_KEYSTORE_PASS"
-          test -n "$FDROID_KEY_ALIAS"
-          test -n "$FDROID_KEY_PASS"
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            SOURCE_REPOSITORY='${{ github.event.client_payload.source_repository }}'
+            RELEASE_TAG='${{ github.event.client_payload.release_tag }}'
+            APK_PATTERN='${{ github.event.client_payload.apk_pattern }}'
+            APK_PATTERN="${APK_PATTERN:-*.apk}"
+          else
+            SOURCE_REPOSITORY='${{ inputs.source_repository }}'
+            RELEASE_TAG='${{ inputs.release_tag }}'
+            APK_PATTERN='${{ inputs.apk_pattern }}'
+          fi
+
+          for var in SOURCE_REPOSITORY RELEASE_TAG APK_PATTERN; do
+            if [[ -z "${!var:-}" ]]; then
+              echo "::error::Missing required input: $var"
+              exit 1
+            fi
+          done
+          for var in FDROID_KEYSTORE_BASE64 FDROID_KEYSTORE_PASS FDROID_KEY_ALIAS FDROID_KEY_PASS; do
+            if [[ -z "${!var:-}" ]]; then
+              echo "::error::Missing required secret: $var"
+              exit 1
+            fi
+          done
+
+          {
+            echo "SOURCE_REPOSITORY=$SOURCE_REPOSITORY"
+            echo "RELEASE_TAG=$RELEASE_TAG"
+            echo "APK_PATTERN=$APK_PATTERN"
+          } >> "$GITHUB_ENV"
+
+          echo "Source: $SOURCE_REPOSITORY @ $RELEASE_TAG (pattern: $APK_PATTERN)"
 
       - name: Install fdroidserver
         run: |
+          set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y fdroidserver
+          # fdroidserver + aapt (via android-sdk) for reliable APK scanning
+          sudo apt-get install -y --no-install-recommends \
+            fdroidserver \
+            apksigner \
+            zipalign \
+            python3-androguard \
+            || sudo apt-get install -y fdroidserver
 
-      - name: Download APK from release
+          fdroid --version || true
+          which aapt || true
+          which apksigner || true
+
+      - name: Download APK from GitHub Release
+        id: download
         run: |
-          mkdir -p fdroid-input public/fdroid/repo
-          gh release download "${{ inputs.release_tag }}" \
-            --repo "${{ inputs.source_repository }}" \
-            --pattern "${{ inputs.apk_pattern }}" \
-            --dir fdroid-input
-          test -n "$(ls fdroid-input/*.apk 2>/dev/null)"
-          cp fdroid-input/*.apk public/fdroid/repo/
+          set -euo pipefail
+          mkdir -p fdroid-input public/fdroid/repo public/fdroid/metadata public/fdroid/srclibs
+
+          echo "Downloading from ${SOURCE_REPOSITORY} release ${RELEASE_TAG}"
+          # Retry: the releasing workflow may dispatch us before assets are fully available
+          DOWNLOAD_OK=0
+          for attempt in 1 2 3 4 5 6; do
+            rm -rf fdroid-input
+            mkdir -p fdroid-input
+            if gh release download "$RELEASE_TAG" \
+              --repo "$SOURCE_REPOSITORY" \
+              --pattern "$APK_PATTERN" \
+              --dir fdroid-input
+            then
+              DOWNLOAD_OK=1
+              break
+            fi
+            echo "Download attempt $attempt failed; retrying in 15s..."
+            sleep 15
+          done
+          if [[ "$DOWNLOAD_OK" -ne 1 ]]; then
+            echo "::error::Failed to download APK from ${SOURCE_REPOSITORY}@${RELEASE_TAG} after retries"
+            exit 1
+          fi
+
+          mapfile -t APKS < <(find fdroid-input -maxdepth 1 -type f -name '*.apk' | sort)
+          if [[ ${#APKS[@]} -eq 0 ]]; then
+            echo "::error::No APK matched pattern '$APK_PATTERN' in ${SOURCE_REPOSITORY}@${RELEASE_TAG}"
+            ls -la fdroid-input || true
+            exit 1
+          fi
+
+          echo "Downloaded ${#APKS[@]} APK(s):"
+          printf '  - %s\n' "${APKS[@]}"
+
+          # Drop any sidecar checksums that may have matched a broad pattern
+          rm -f fdroid-input/*.sha256 fdroid-input/*.asc fdroid-input/*.sig || true
+
+          # Copy into the binary repo. Keep prior versions; fdroid archive_older
+          # will move stale APKs into archive/ automatically.
+          for apk in "${APKS[@]}"; do
+            base="$(basename "$apk")"
+            # Skip checksum-only faux matches
+            [[ "$base" == *.apk ]] || continue
+            cp -f "$apk" "public/fdroid/repo/$base"
+            echo "Staged public/fdroid/repo/$base"
+          done
+
+          FIRST="$(basename "${APKS[0]}")"
+          echo "apk_name=$FIRST" >> "$GITHUB_OUTPUT"
+          echo "apk_count=${#APKS[@]}" >> "$GITHUB_OUTPUT"
 
       - name: Generate signed F-Droid index
         working-directory: public/fdroid
         run: |
+          set -euo pipefail
+          umask 077
+
           printf '%s' "$FDROID_KEYSTORE_BASE64" | base64 --decode > fdroid-repo.p12
-          cat > config.yml <<EOF
-          repo_url: $REPO_URL
-          repo_name: $REPO_NAME
-          repo_description: $REPO_DESCRIPTION
+          chmod 600 fdroid-repo.p12
+
+          # Write config.yml via Python so passwords with $, `, ', " stay intact.
+          # config.yml is local-only (gitignored). Secrets never leave this step.
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          def lit(value: str) -> str:
+              # YAML single-quoted scalar; escape ' as ''
+              return "'" + value.replace("'", "''") + "'"
+
+          cfg = f"""repo_url: {lit(os.environ["REPO_URL"])}
+          repo_name: {lit(os.environ["REPO_NAME"])}
+          repo_description: {lit(os.environ["REPO_DESCRIPTION"])}
           archive_older: 3
+          make_current_version_link: true
           keystore: fdroid-repo.p12
-          keystorepass: $FDROID_KEYSTORE_PASS
-          repo_keyalias: $FDROID_KEY_ALIAS
-          keypass: $FDROID_KEY_PASS
-          keydname: CN=Tashif Codes, OU=F-Droid Repo, O=Tashif Codes, L=Delhi, C=IN
-          EOF
-          fdroid update --create-metadata --verbose
+          keystorepass: {lit(os.environ["FDROID_KEYSTORE_PASS"])}
+          repo_keyalias: {lit(os.environ["FDROID_KEY_ALIAS"])}
+          keypass: {lit(os.environ["FDROID_KEY_PASS"])}
+          keydname: 'CN=Tashif Codes, OU=F-Droid Repo, O=Tashif Codes, L=Delhi, C=IN'
+          """
+          # Dedent: the f-string above inherits script indent; normalize to column 0
+          lines = [line.lstrip() for line in cfg.strip().splitlines()]
+          Path("config.yml").write_text("\n".join(lines) + "\n")
+          os.chmod("config.yml", 0o600)
+          print("Wrote config.yml")
+          PY
+
+          # --create-metadata only fills in missing package stubs; committed
+          # metadata under metadata/ takes precedence.
+          # --rename-apks normalizes names to package_versionCode.apk
+          fdroid update --create-metadata --rename-apks --pretty --verbose
+
+          # Never commit secrets
           rm -f config.yml fdroid-repo.p12
+          # Drop any local cache fdroid may leave behind
+          rm -rf tmp .fdroidcache 2>/dev/null || true
+
+          echo "Repo contents after update:"
+          find repo archive -type f 2>/dev/null | sort || find repo -type f | sort
+
+      - name: Sanity-check index
+        run: |
+          set -euo pipefail
+          INDEX="public/fdroid/repo/index-v1.json"
+          if [[ ! -f "$INDEX" ]]; then
+            echo "::error::fdroid update did not produce index-v1.json"
+            ls -laR public/fdroid || true
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json, pathlib, sys
+          index = json.loads(pathlib.Path("public/fdroid/repo/index-v1.json").read_text())
+          apps = index.get("apps") or []
+          packages = index.get("packages") or {}
+          print(f"Apps: {len(apps)}")
+          for app in apps:
+              pkg = app.get("packageName")
+              vers = packages.get(pkg) or []
+              print(f"  - {pkg}: {len(vers)} version(s), suggested={app.get('suggestedVersionCode')}")
+          if not apps:
+              print("WARNING: index has zero apps", file=sys.stderr)
+          PY
 
       - name: Commit F-Droid repo files
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'chore(fdroid): publish ${{ inputs.release_tag }}'
-          file_pattern: public/fdroid
+          commit_message: 'chore(fdroid): publish ${{ env.RELEASE_TAG }} from ${{ env.SOURCE_REPOSITORY }}'
+          skip_dirty_check: false
+          disable_globbing: true
+          file_pattern: public/fdroid/**
+          commit_user_name: github-actions[bot]
+          commit_user_email: github-actions[bot]@users.noreply.github.com
+          commit_author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+
+      - name: Summary
+        run: |
+          {
+            echo "## F-Droid publish"
+            echo ""
+            echo "- Source: \`${SOURCE_REPOSITORY}@${RELEASE_TAG}\`"
+            echo "- APKs imported: ${{ steps.download.outputs.apk_count }} (\`${{ steps.download.outputs.apk_name }}\`)"
+            echo "- Repo URL: ${REPO_URL}"
+            echo "- Install page: https://tashif.codes/fdroid"
+          } >> "$GITHUB_STEP_SUMMARY"

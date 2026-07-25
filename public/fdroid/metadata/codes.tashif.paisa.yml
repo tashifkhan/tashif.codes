@@ -1,0 +1,35 @@
+Categories:
+  - Money
+  - Offline
+License: AGPL-3.0-or-later
+AuthorName: Tashif Ahmad Khan
+AuthorEmail: tashifkhan010@gmail.com
+WebSite: https://tashif.codes
+SourceCode: https://github.com/tashifkhan/Paisa
+IssueTracker: https://github.com/tashifkhan/Paisa/issues
+Changelog: https://github.com/tashifkhan/Paisa/releases
+
+AutoName: Paisa
+Name: Paisa
+
+Summary: Offline-first personal finance for Android
+Description: |
+    Paisa keeps your money ledger on your phone.
+
+    Bank SMS is parsed on-device (100+ Indian banks via an AGPL parser
+    core). Optional BYOK statement import for PDF/CSV/images — your API
+    key, your endpoint; SMS never leaves the device.
+
+    Features:
+    * Home balance, filters, and recent transactions
+    * Analytics charts with date ranges
+    * Monthly budgets by category
+    * Multiple accounts / wallets
+    * SMS bulk scan + live receiver with hash dedup
+    * App lock via biometrics or device credential
+    * Export to CSV / PDF
+
+    Package ID: codes.tashif.paisa
+
+RepoType: git
+Repo: https://github.com/tashifkhan/Paisa.git

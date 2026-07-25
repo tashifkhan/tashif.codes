@@ -9,30 +9,33 @@ A modern, responsive personal dashboard built with **Astro** that showcases proj
 
 ## F-Droid Repository Hosting
 
-This site also hosts a self-contained F-Droid-compatible repository for Android APK releases.
+This site hosts a self-contained F-Droid-compatible **binary** repository for Android APK releases.
 
 Public URLs:
 
-- Install/instructions page: `https://tashif.codes/fdroid`
+- Install / instructions: `https://tashif.codes/fdroid`
 - F-Droid repository URL: `https://tashif.codes/fdroid/repo`
-- Patchwork APK source releases: `https://github.com/tashifkhan/Patchwork/releases/latest`
+- Paisa releases: `https://github.com/tashifkhan/Paisa/releases/latest`
+- Patchwork releases: `https://github.com/tashifkhan/caldav-todo/releases/latest`
 
 How publishing works:
 
-1. `tashifkhan/Patchwork` publishes an APK to GitHub Releases.
-2. `.github/workflows/publish-fdroid.yml` downloads the APK from that release.
-3. The workflow runs `fdroid update` inside `public/fdroid`.
-4. Generated F-Droid index files are committed back to this repo.
-5. Vercel deploys the static repo files from `public/fdroid/repo`.
+1. An app repo (e.g. Patchwork / Paisa) builds an APK and attaches it to a GitHub Release.
+2. That repo dispatches `.github/workflows/publish-fdroid.yml` here (or you run it manually).
+3. The workflow downloads the APK into `public/fdroid/repo`, runs `fdroid update` (signed index), and commits the result.
+4. Vercel deploys the static files under `/fdroid/repo`.
 
-Required GitHub Actions secrets in this repo:
+Required secrets in **this** repo:
 
-- `FDROID_KEYSTORE_BASE64`: base64-encoded PKCS12 signing keystore.
-- `FDROID_KEYSTORE_PASS`: keystore password.
-- `FDROID_KEY_ALIAS`: signing key alias, usually `fdroid`.
-- `FDROID_KEY_PASS`: signing key password.
+| Secret | Purpose |
+|---|---|
+| `FDROID_KEYSTORE_BASE64` | base64-encoded PKCS12 signing keystore |
+| `FDROID_KEYSTORE_PASS` | keystore password |
+| `FDROID_KEY_ALIAS` | key alias (usually `fdroid`) |
+| `FDROID_KEY_PASS` | key password |
+| `FDROID_SOURCE_TOKEN` | optional; only if the APK source repo is private |
 
-Create the signing keystore locally:
+Create the signing keystore once:
 
 ```bash
 keytool -genkeypair \
@@ -44,14 +47,27 @@ keytool -genkeypair \
   -keysize 4096 \
   -validity 10000
 
-base64 -i fdroid-repo.p12 | pbcopy
+base64 -i fdroid-repo.p12 | pbcopy   # macOS
 ```
 
-Keep `fdroid-repo.p12` backed up securely. If it is lost, existing F-Droid clients will not trust a replacement signing key.
+**Back up `fdroid-repo.p12` offline.** If it is lost, existing F-Droid clients will not trust a replacement signing key.
 
-Optional cross-repo automation:
+Cross-repo automation (app repos):
 
-- Add `TASHIF_CODES_WORKFLOW_TOKEN` to `tashifkhan/Patchwork` so its APK release workflow can dispatch this repo's F-Droid publishing workflow automatically.
+- Add `TASHIF_CODES_WORKFLOW_TOKEN` (fine-grained PAT with **Actions: Read and write** on `tashifkhan/tashif.codes`) to `tashifkhan/caldav-todo` (Patchwork) and/or `tashifkhan/Paisa`.
+- Patchwork also needs `EXPO_TOKEN` for EAS APK builds.
+
+Manual re-import of an existing release:
+
+```bash
+gh workflow run publish-fdroid.yml \
+  --repo tashifkhan/tashif.codes \
+  --field source_repository=tashifkhan/caldav-todo \
+  --field release_tag=v1.0.0 \
+  --field apk_pattern='*.apk'
+```
+
+See [`public/fdroid/README.md`](public/fdroid/README.md) for layout, metadata, and local dry-run notes.
 
 ## Features
 

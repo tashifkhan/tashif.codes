@@ -1,0 +1,34 @@
+Categories:
+  - Productivity
+  - Development
+  - Internet
+License: MIT
+AuthorName: Tashif Ahmad Khan
+AuthorEmail: tashifkhan010@gmail.com
+WebSite: https://tashif.codes
+SourceCode: https://github.com/tashifkhan/caldav-todo
+IssueTracker: https://github.com/tashifkhan/caldav-todo/issues
+Changelog: https://github.com/tashifkhan/caldav-todo/releases
+Donate: https://tashif.codes
+
+Name: Patchwork
+
+Summary: Developer-focused tasks with CalDAV, Deck, AI, and GitHub
+
+Description: |
+  Patchwork is a developer-focused task manager built with Expo and React Native.
+
+  Features:
+
+  * CalDAV task sync (Nextcloud and other CalDAV servers)
+  * Nextcloud Deck boards
+  * AI-assisted task drafting and import from photos or notes
+  * Custom AI model providers (OpenAI-compatible endpoints)
+  * GitHub issue tracking
+  * Android home-screen widgets
+
+  Releases are built with EAS, published on GitHub Releases, and mirrored into
+  this F-Droid-compatible repository.
+
+RepoType: git
+Repo: https://github.com/tashifkhan/caldav-todo.git

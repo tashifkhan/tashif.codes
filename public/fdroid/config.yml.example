@@ -1,0 +1,19 @@
+# Example fdroidserver config for a simple binary repo.
+# CI generates a real config.yml from secrets — do not put passwords here.
+#
+# Docs: https://f-droid.org/en/docs/Setup_an_F-Droid_App_Repo/
+
+repo_url: https://tashif.codes/fdroid/repo
+repo_name: Tashif Codes
+repo_description: Android apps published by Tashif Khan.
+
+# Keep the latest N versions in repo/; older ones move to archive/
+archive_older: 3
+make_current_version_link: true
+
+# Local-only paths (gitignored). CI writes these from GitHub secrets.
+keystore: fdroid-repo.p12
+keystorepass: CHANGE_ME
+repo_keyalias: fdroid
+keypass: CHANGE_ME
+keydname: CN=Tashif Codes, OU=F-Droid Repo, O=Tashif Codes, L=Delhi, C=IN
