@@ -9,7 +9,11 @@ export type LiveDataSource =
 
 const STORAGE_PREFIX = "live-fetched-at:";
 
-export function formatFetchedAt(iso: string | null | undefined): {
+export function formatFetchedAt(
+	iso: string | null | undefined,
+	/** Pass an explicit "now" so SSR can avoid baking a stale "just now". */
+	nowMs: number = Date.now(),
+): {
 	relative: string;
 	absolute: string;
 } {
@@ -26,8 +30,9 @@ export function formatFetchedAt(iso: string | null | undefined): {
 		timeStyle: "short",
 	});
 
-	const diffMs = Date.now() - date.getTime();
-	const sec = Math.round(diffMs / 1000);
+	const diffMs = nowMs - date.getTime();
+	// Future / clock-skew: treat as just now rather than negative ages
+	const sec = Math.max(0, Math.round(diffMs / 1000));
 	if (sec < 45) return { relative: "just now", absolute };
 	const min = Math.round(sec / 60);
 	if (min < 60) return { relative: `${min}m ago`, absolute };

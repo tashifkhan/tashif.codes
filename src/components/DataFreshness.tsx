@@ -58,16 +58,22 @@ export default function DataFreshness({
 	const [open, setOpen] = useState(false);
 	const [refreshing, setRefreshing] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [nowTick, setNowTick] = useState(0);
+	/**
+	 * Relative labels must use the viewer's clock. Build-time SSR always sees
+	 * `fetchedAt ≈ now`, so it would permanently bake "just now" into static
+	 * HTML. We only compute relative time after mount (and on a 30s tick).
+	 */
+	const [nowMs, setNowMs] = useState<number | null>(null);
 	const dialogRef = useRef<HTMLDialogElement>(null);
 	const { trigger } = useWebHaptics();
 
 	const displayLabel = label ?? (source ? SOURCE_LABELS[source] : "Data");
 
-	// Keep relative labels fresh
+	// Client clock: mount immediately, then refresh relative labels
 	useEffect(() => {
-		if (!fetchedAt) return;
-		const id = window.setInterval(() => setNowTick((t) => t + 1), 30_000);
+		const tick = () => setNowMs(Date.now());
+		tick();
+		const id = window.setInterval(tick, 30_000);
 		return () => window.clearInterval(id);
 	}, [fetchedAt]);
 
@@ -100,9 +106,14 @@ export default function DataFreshness({
 	}, [open]);
 
 	const labels = useMemo(() => {
-		void nowTick;
-		return formatFetchedAt(fetchedAt);
-	}, [fetchedAt, nowTick]);
+		// Pre-hydration / SSR: never claim "just now" from the build clock.
+		// Relative age is only valid against the viewer's clock (set in useEffect).
+		if (nowMs == null) {
+			const { absolute } = formatFetchedAt(fetchedAt);
+			return { relative: "…", absolute };
+		}
+		return formatFetchedAt(fetchedAt, nowMs);
+	}, [fetchedAt, nowMs]);
 
 	const openModal = useCallback(() => {
 		if (refreshing) return;

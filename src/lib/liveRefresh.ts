@@ -10,7 +10,6 @@ import {
 	githubUsernames,
 	personalGithubUsername,
 } from "@/data/profile";
-import { sortBlogPostsNewestFirst } from "@/data/blog";
 import { formatTitle } from "@/utils/formatTitle";
 import { slugify } from "@/utils/slugify";
 import {
@@ -18,6 +17,17 @@ import {
 	type LiveDataSource,
 	writeStoredFetchedAt,
 } from "@/lib/dataFreshness";
+
+/** Pure sort — kept local so we don't pull `blog.ts` top-level fetches into the client bundle. */
+function sortBlogPostsNewestFirst<T extends { date: string; slug: string }>(
+	posts: T[],
+): T[] {
+	return [...posts].sort((a, b) => {
+		const byDate = new Date(b.date).getTime() - new Date(a.date).getTime();
+		if (byDate !== 0) return byDate;
+		return a.slug.localeCompare(b.slug);
+	});
+}
 
 /** Same-origin proxies — never hit third-party hosts from the browser. */
 const GH_STATS = "/proxy/gh-stats";
