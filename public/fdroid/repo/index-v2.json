@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/repo",
-    "timestamp": 1785102614000,
+    "timestamp": 1785179768000,
     "categories": {
       "Development": {
         "name": {
@@ -64,7 +64,7 @@
         ],
         "changelog": "https://github.com/tashifkhan/caldav-todo/releases",
         "issueTracker": "https://github.com/tashifkhan/caldav-todo/issues",
-        "lastUpdated": 1785102608000,
+        "lastUpdated": 1785179760000,
         "license": "MIT",
         "sourceCode": "https://github.com/tashifkhan/caldav-todo",
         "webSite": "https://tashif.codes",
@@ -85,6 +85,139 @@
         "preferredSigner": "40d44ae28eb4751de2f3195185677ba128d767941e0776cdeac109e34bae769b"
       },
       "versions": {
+        "2e90e2c707a4a17a9c8594921c2ee60c196f122bbd194cde225328dc949b6fca": {
+          "added": 1785179760000,
+          "file": {
+            "name": "/codes.tashhif.patchwork_6.apk",
+            "sha256": "2e90e2c707a4a17a9c8594921c2ee60c196f122bbd194cde225328dc949b6fca",
+            "size": 51115938
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a"
+            ],
+            "versionName": "1.2.0",
+            "versionCode": 6,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "40d44ae28eb4751de2f3195185677ba128d767941e0776cdeac109e34bae769b"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.READ_CALENDAR"
+              },
+              {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.RECORD_AUDIO"
+              },
+              {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW"
+              },
+              {
+                "name": "android.permission.VIBRATE"
+              },
+              {
+                "name": "android.permission.WRITE_CALENDAR"
+              },
+              {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "android.permission.CAMERA"
+              },
+              {
+                "name": "android.permission.RECEIVE_BOOT_COMPLETED"
+              },
+              {
+                "name": "android.permission.POST_NOTIFICATIONS"
+              },
+              {
+                "name": "android.permission.WAKE_LOCK"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE"
+              },
+              {
+                "name": "android.permission.USE_BIOMETRIC"
+              },
+              {
+                "name": "android.permission.USE_FINGERPRINT"
+              },
+              {
+                "name": "com.google.android.c2dm.permission.RECEIVE"
+              },
+              {
+                "name": "codes.tashhif.patchwork.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              },
+              {
+                "name": "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE"
+              },
+              {
+                "name": "com.sec.android.provider.badge.permission.READ"
+              },
+              {
+                "name": "com.sec.android.provider.badge.permission.WRITE"
+              },
+              {
+                "name": "com.htc.launcher.permission.READ_SETTINGS"
+              },
+              {
+                "name": "com.htc.launcher.permission.UPDATE_SHORTCUT"
+              },
+              {
+                "name": "com.sonyericsson.home.permission.BROADCAST_BADGE"
+              },
+              {
+                "name": "com.sonymobile.home.permission.PROVIDER_INSERT_BADGE"
+              },
+              {
+                "name": "com.anddoes.launcher.permission.UPDATE_COUNT"
+              },
+              {
+                "name": "com.majeur.launcher.permission.UPDATE_BADGE"
+              },
+              {
+                "name": "com.huawei.android.launcher.permission.CHANGE_BADGE"
+              },
+              {
+                "name": "com.huawei.android.launcher.permission.READ_SETTINGS"
+              },
+              {
+                "name": "com.huawei.android.launcher.permission.WRITE_SETTINGS"
+              },
+              {
+                "name": "android.permission.READ_APP_BADGE"
+              },
+              {
+                "name": "com.oppo.launcher.permission.READ_SETTINGS"
+              },
+              {
+                "name": "com.oppo.launcher.permission.WRITE_SETTINGS"
+              },
+              {
+                "name": "me.everything.badger.permission.BADGE_COUNT_READ"
+              },
+              {
+                "name": "me.everything.badger.permission.BADGE_COUNT_WRITE"
+              }
+            ]
+          }
+        },
         "f02efc22b78bb8f513f5d653b946594ad43e43b57f89906efea827e99fef888e": {
           "added": 1785102608000,
           "file": {
@@ -231,139 +364,6 @@
             ],
             "versionName": "1.0.0",
             "versionCode": 4,
-            "usesSdk": {
-              "minSdkVersion": 24,
-              "targetSdkVersion": 36
-            },
-            "signer": {
-              "sha256": [
-                "40d44ae28eb4751de2f3195185677ba128d767941e0776cdeac109e34bae769b"
-              ]
-            },
-            "usesPermission": [
-              {
-                "name": "android.permission.INTERNET"
-              },
-              {
-                "name": "android.permission.READ_CALENDAR"
-              },
-              {
-                "name": "android.permission.READ_EXTERNAL_STORAGE",
-                "maxSdkVersion": 32
-              },
-              {
-                "name": "android.permission.RECORD_AUDIO"
-              },
-              {
-                "name": "android.permission.SYSTEM_ALERT_WINDOW"
-              },
-              {
-                "name": "android.permission.VIBRATE"
-              },
-              {
-                "name": "android.permission.WRITE_CALENDAR"
-              },
-              {
-                "name": "android.permission.WRITE_EXTERNAL_STORAGE",
-                "maxSdkVersion": 32
-              },
-              {
-                "name": "android.permission.ACCESS_NETWORK_STATE"
-              },
-              {
-                "name": "android.permission.CAMERA"
-              },
-              {
-                "name": "android.permission.RECEIVE_BOOT_COMPLETED"
-              },
-              {
-                "name": "android.permission.POST_NOTIFICATIONS"
-              },
-              {
-                "name": "android.permission.WAKE_LOCK"
-              },
-              {
-                "name": "android.permission.FOREGROUND_SERVICE"
-              },
-              {
-                "name": "android.permission.USE_BIOMETRIC"
-              },
-              {
-                "name": "android.permission.USE_FINGERPRINT"
-              },
-              {
-                "name": "com.google.android.c2dm.permission.RECEIVE"
-              },
-              {
-                "name": "codes.tashhif.patchwork.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-              },
-              {
-                "name": "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE"
-              },
-              {
-                "name": "com.sec.android.provider.badge.permission.READ"
-              },
-              {
-                "name": "com.sec.android.provider.badge.permission.WRITE"
-              },
-              {
-                "name": "com.htc.launcher.permission.READ_SETTINGS"
-              },
-              {
-                "name": "com.htc.launcher.permission.UPDATE_SHORTCUT"
-              },
-              {
-                "name": "com.sonyericsson.home.permission.BROADCAST_BADGE"
-              },
-              {
-                "name": "com.sonymobile.home.permission.PROVIDER_INSERT_BADGE"
-              },
-              {
-                "name": "com.anddoes.launcher.permission.UPDATE_COUNT"
-              },
-              {
-                "name": "com.majeur.launcher.permission.UPDATE_BADGE"
-              },
-              {
-                "name": "com.huawei.android.launcher.permission.CHANGE_BADGE"
-              },
-              {
-                "name": "com.huawei.android.launcher.permission.READ_SETTINGS"
-              },
-              {
-                "name": "com.huawei.android.launcher.permission.WRITE_SETTINGS"
-              },
-              {
-                "name": "android.permission.READ_APP_BADGE"
-              },
-              {
-                "name": "com.oppo.launcher.permission.READ_SETTINGS"
-              },
-              {
-                "name": "com.oppo.launcher.permission.WRITE_SETTINGS"
-              },
-              {
-                "name": "me.everything.badger.permission.BADGE_COUNT_READ"
-              },
-              {
-                "name": "me.everything.badger.permission.BADGE_COUNT_WRITE"
-              }
-            ]
-          }
-        },
-        "05868483437a2f045a14383e759f2daa923dac5b2f9e8ba441fc768e65359747": {
-          "added": 1785008008000,
-          "file": {
-            "name": "/codes.tashhif.patchwork_3.apk",
-            "sha256": "05868483437a2f045a14383e759f2daa923dac5b2f9e8ba441fc768e65359747",
-            "size": 50974073
-          },
-          "manifest": {
-            "nativecode": [
-              "arm64-v8a"
-            ],
-            "versionName": "1.0.0",
-            "versionCode": 3,
             "usesSdk": {
               "minSdkVersion": 24,
               "targetSdkVersion": 36
