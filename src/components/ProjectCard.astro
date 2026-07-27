@@ -23,6 +23,9 @@ interface Props {
 const { project, hasAnalytics = false, analyticsSlug = "" } = Astro.props as Props;
 const languagesToShow = project.languages.slice(0, 3);
 const moreLanguages = Math.max(0, project.languages.length - 3);
+const topics = project.topics ?? [];
+const topicsToShow = topics.slice(0, 4);
+const moreTopics = Math.max(0, topics.length - 4);
 const releaseCount = project.releases?.length ?? 0;
 ---
 
@@ -135,6 +138,29 @@ const releaseCount = project.releases?.length ?? 0;
 					moreLanguages > 0 && (
 						<Badge variant="secondary" className="text-[10px] font-medium px-2 py-0.5 bg-secondary/50 text-secondary-foreground hover:bg-secondary/70 transition-colors border-transparent">
 							+{moreLanguages}
+						</Badge>
+					)
+				}
+				{
+					topicsToShow.map((topic) => (
+						<Badge
+							variant="outline"
+							className="text-[10px] font-medium px-2 py-0.5 border-primary/25 bg-primary/5 text-primary/90 hover:bg-primary/10 transition-colors"
+							data-project-topic
+							title="GitHub topic"
+						>
+							#{topic}
+						</Badge>
+					))
+				}
+				{
+					moreTopics > 0 && (
+						<Badge
+							variant="outline"
+							className="text-[10px] font-medium px-2 py-0.5 border-primary/25 bg-primary/5 text-primary/90 hover:bg-primary/10 transition-colors"
+							title={`${moreTopics} more topics`}
+						>
+							+{moreTopics}
 						</Badge>
 					)
 				}

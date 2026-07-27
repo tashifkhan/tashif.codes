@@ -145,7 +145,10 @@ const liveCount = projects.filter((p) => Boolean(p.live_website_url)).length;
 			const languages = Array.from(
 				card.querySelectorAll("[data-project-language]")
 			).map((n) => n.textContent || "");
-			const fields = [title, description, ...languages].map((f) =>
+			const topics = Array.from(
+				card.querySelectorAll("[data-project-topic]")
+			).map((n) => n.textContent || "");
+			const fields = [title, description, ...languages, ...topics].map((f) =>
 				f.toLowerCase()
 			);
 			const hasLiveLink =

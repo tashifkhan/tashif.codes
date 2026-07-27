@@ -30,6 +30,8 @@ export interface Project {
 	title: string;
 	description: string;
 	languages: string[];
+	/** GitHub repository topics/tags */
+	topics?: string[];
 	live_website_url?: string;
 	github_link: string;
 	readme: string;
@@ -73,6 +75,7 @@ async function fetchPinnedProjects(first = 6): Promise<Project[]> {
 			title: formatTitle(p.name),
 			description: p.description || "No description available.",
 			languages: p.primary_language ? [p.primary_language] : [],
+			topics: Array.isArray(p.topics) ? p.topics : [],
 			github_link: p.url,
 			readme: "", // Not provided by pinned endpoint
 			slug: slugify(p.name),
@@ -87,8 +90,15 @@ async function fetchPinnedProjects(first = 6): Promise<Project[]> {
 	}
 }
 
-async function fetchForkCounts(users: string[]): Promise<Map<string, number>> {
+interface RepoMeta {
+	forkMap: Map<string, number>;
+	/** repo name (lowercase) / full_name → GitHub topics */
+	topicsMap: Map<string, string[]>;
+}
+
+async function fetchRepoMeta(users: string[]): Promise<RepoMeta> {
 	const forkMap = new Map<string, number>();
+	const topicsMap = new Map<string, string[]>();
 
 	await Promise.all(users.map(async (user) => {
 		try {
@@ -97,7 +107,7 @@ async function fetchForkCounts(users: string[]): Promise<Map<string, number>> {
 			);
 			if (!response.ok) {
 				console.error(
-					`Failed to fetch fork counts for ${user}:`,
+					`Failed to fetch repo meta for ${user}:`,
 					response.status,
 					response.statusText
 				);
@@ -109,22 +119,36 @@ async function fetchForkCounts(users: string[]): Promise<Map<string, number>> {
 
 			repos.forEach((repo: any) => {
 				const forks = repo.forks_count ?? repo.forks;
-				if (typeof forks !== "number") return;
+				const topics: string[] = Array.isArray(repo.topics)
+					? repo.topics.filter((t: unknown): t is string => typeof t === "string")
+					: [];
 
-				if (repo.full_name) {
-					forkMap.set(repo.full_name.toLowerCase(), forks);
+				if (typeof forks === "number") {
+					if (repo.full_name) {
+						forkMap.set(repo.full_name.toLowerCase(), forks);
+					}
+					if (repo.name) {
+						forkMap.set(`${user}/${repo.name}`.toLowerCase(), forks);
+						forkMap.set(repo.name.toLowerCase(), forks);
+					}
 				}
-				if (repo.name) {
-					forkMap.set(`${user}/${repo.name}`.toLowerCase(), forks);
-					forkMap.set(repo.name.toLowerCase(), forks);
+
+				if (topics.length > 0) {
+					if (repo.full_name) {
+						topicsMap.set(repo.full_name.toLowerCase(), topics);
+					}
+					if (repo.name) {
+						topicsMap.set(`${user}/${repo.name}`.toLowerCase(), topics);
+						topicsMap.set(repo.name.toLowerCase(), topics);
+					}
 				}
 			});
 		} catch (e) {
-			console.error(`Error fetching fork counts for ${user}:`, e);
+			console.error(`Error fetching repo meta for ${user}:`, e);
 		}
 	}));
 
-	return forkMap;
+	return { forkMap, topicsMap };
 }
 
 async function fetchAllProjects(): Promise<Project[]> {
@@ -146,7 +170,8 @@ async function fetchAllProjects(): Promise<Project[]> {
 	const starMap = new Map<string, number>();
     // User requested "multiple stars api call" for these accounts
     const starSources = ['tashifkhan', 'codeblech', 'codelif'];
-    const forkMapPromise = fetchForkCounts(starSources);
+    // Fork counts + topics from GitHub (topics also come from Stats API when deployed)
+    const repoMetaPromise = fetchRepoMeta(starSources);
     
 	await Promise.all(starSources.map(async (user) => {
         try {
@@ -175,9 +200,9 @@ async function fetchAllProjects(): Promise<Project[]> {
     }));
 
 	// Fetch pinned in parallel / earlier
-	const [pinnedProjects, forkMap] = await Promise.all([
+	const [pinnedProjects, { forkMap, topicsMap }] = await Promise.all([
 		fetchPinnedProjects(),
-		forkMapPromise,
+		repoMetaPromise,
 	]);
 	const pinnedNames = new Set(
 		pinnedProjects.map((p) => p.title.toLowerCase().trim())
@@ -189,6 +214,21 @@ async function fetchAllProjects(): Promise<Project[]> {
         "jportal": "codeblech/jportal",
         "pyjiit": "codelif/pyjiit",
     };
+
+	const resolveTopics = (
+		project: any,
+		titleKey: string,
+		parentRepo?: string
+	): string[] => {
+		const fromApi = Array.isArray(project.topics) ? project.topics : [];
+		if (fromApi.length > 0) return fromApi;
+		return (
+			(parentRepo ? topicsMap.get(parentRepo.toLowerCase()) : undefined) ??
+			topicsMap.get(`tashifkhan/${titleKey}`.toLowerCase()) ??
+			topicsMap.get(titleKey.toLowerCase()) ??
+			[]
+		);
+	};
 
 	const repoProjects: Project[] = repos.map((project: any) => {
 		const titleFormatted = formatTitle(project.title);
@@ -225,6 +265,7 @@ async function fetchAllProjects(): Promise<Project[]> {
 			title: titleFormatted,
 			description: project.description || "No description available.",
 			languages: project.languages || [],
+			topics: resolveTopics(project, project.title, parentRepo),
 			live_website_url: project.live_website_url,
 			github_link: `https://github.com/tashifkhan/${project.title}`,
 			readme: project.readme,
@@ -255,6 +296,12 @@ async function fetchAllProjects(): Promise<Project[]> {
 				forkMap.get(pinned.slug.toLowerCase());
 			if (freshForks !== undefined) {
 				pinned.forks = freshForks;
+			}
+			if (!pinned.topics?.length) {
+				pinned.topics =
+					topicsMap.get(`tashifkhan/${pinned.slug}`.toLowerCase()) ??
+					topicsMap.get(pinned.slug.toLowerCase()) ??
+					[];
 			}
 			repoProjects.push(pinned);
 		}

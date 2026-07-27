@@ -1149,7 +1149,10 @@ const latestBlogDate = blogPosts[0]?.date ? new Date(blogPosts[0].date) : null;
 			const languages = Array.from(
 				card.querySelectorAll("[data-project-language]")
 			).map((l) => l.textContent || "");
-			const fields = [title, description, ...languages].map((f) =>
+			const topics = Array.from(
+				card.querySelectorAll("[data-project-topic]")
+			).map((t) => t.textContent || "");
+			const fields = [title, description, ...languages, ...topics].map((f) =>
 				f.toLowerCase()
 			);
 			const hasLiveLink =

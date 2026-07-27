@@ -417,6 +417,34 @@ export async function getStaticPaths() {
 			}
 
 			{
+				(project.topics?.length ?? 0) > 0 && (
+					<section class="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
+						<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3.5">
+							GitHub Topics
+						</h2>
+						<div class="flex flex-wrap gap-1.5">
+							{project.topics!.map((topic: string) => (
+								<a
+									href={`https://github.com/topics/${encodeURIComponent(topic)}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="inline-flex"
+									data-haptic-external
+								>
+									<Badge
+										variant="outline"
+										className="text-[10px] font-medium border-primary/25 bg-primary/5 text-primary/90 hover:bg-primary/10 transition-colors cursor-pointer"
+									>
+										#{topic}
+									</Badge>
+								</a>
+							))}
+						</div>
+					</section>
+				)
+			}
+
+			{
 				contributors.length > 1 && (
 					<section class="relative z-30 rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
 						<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-4">
