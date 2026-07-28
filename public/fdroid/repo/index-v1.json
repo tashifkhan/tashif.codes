@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1785179768000,
+    "timestamp": 1785219868000,
     "version": 20002,
     "name": "Tashif Codes",
     "icon": "icon.png",
@@ -21,7 +21,7 @@
         "Internet"
       ],
       "changelog": "https://github.com/tashifkhan/delhi-metro/releases",
-      "suggestedVersionCode": "16",
+      "suggestedVersionCode": "20",
       "description": "Delhi Metro is a Material 3 companion app for the Delhi Metro network.\n\nPlan trips between stations with least-distance or minimum-interchange\nstrategies, edit endpoints on the results screen, and swap origin and\ndestination without starting over. Browse lines and stations, check\nfirst and last train times, follow service alerts, and open the network\nmap with zoom and PDF share.\n\nFeatures:\n\n* Journey planner with strategy toggle\n* Editable origin and destination on route results\n* Station search with local cache\n* Line explorer and station detail\n* Network map view with share\n* Notifications / service alerts\n* Light, dark, and Material You theming\n\nReleases are built with Expo EAS, published on GitHub Releases, and\nmirrored into this F-Droid-compatible repository.\n\nPackage ID: codes.tashif.delhimetro\n",
       "issueTracker": "https://github.com/tashifkhan/delhi-metro/issues",
       "license": "MIT",
@@ -31,7 +31,7 @@
       "webSite": "https://tashif.codes",
       "added": 1785013639000,
       "packageName": "codes.tashif.delhimetro",
-      "lastUpdated": 1785013639000
+      "lastUpdated": 1785219860000
     },
     {
       "authorEmail": "tashifkhan010@gmail.com",
@@ -557,6 +557,56 @@
       }
     ],
     "codes.tashif.delhimetro": [
+      {
+        "added": 1785219860000,
+        "apkName": "codes.tashif.delhimetro_20.apk",
+        "hash": "318328dd853239f76b23a72572d1b0ee81dde11934f90523b6cf06fc0c22747c",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "packageName": "codes.tashif.delhimetro",
+        "sig": "e279fc012c64a59157be7ad09db800a1",
+        "signer": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933",
+        "size": 94789807,
+        "targetSdkVersion": 36,
+        "uses-permission": [
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.READ_EXTERNAL_STORAGE",
+            32
+          ],
+          [
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            null
+          ],
+          [
+            "android.permission.VIBRATE",
+            null
+          ],
+          [
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            null
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 20,
+        "versionName": "1.3.0"
+      },
       {
         "added": 1785013639000,
         "apkName": "codes.tashif.delhimetro_16.apk",
