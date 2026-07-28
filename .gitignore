@@ -34,3 +34,6 @@ pnpm-debug.log*
 .codex/
 .antigravity
 .env*
+
+# build-time API response cache (survives upstream outages)
+.cache/

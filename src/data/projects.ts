@@ -60,17 +60,75 @@ export interface Contributor {
     contributions: number;
 }
 
+/**
+ * The upstream stats API goes down periodically (500s), which used to collapse the
+ * site to whatever the /pinned endpoint returned. Every remote payload is now
+ * mirrored to disk on success and replayed when the live call fails.
+ */
+const CACHE_DIR = path.join(process.cwd(), ".cache", "github");
+
+function readCache<T>(key: string): T | null {
+	try {
+		const file = path.join(CACHE_DIR, `${key}.json`);
+		if (!fs.existsSync(file)) return null;
+		return JSON.parse(fs.readFileSync(file, "utf-8")) as T;
+	} catch {
+		return null;
+	}
+}
+
+function writeCache(key: string, data: unknown): void {
+	try {
+		fs.mkdirSync(CACHE_DIR, { recursive: true });
+		fs.writeFileSync(
+			path.join(CACHE_DIR, `${key}.json`),
+			JSON.stringify(data),
+			"utf-8"
+		);
+	} catch {
+		/* cache is best-effort */
+	}
+}
+
+/** Unauthenticated GitHub allows 60 req/hr; use a token when the env has one. */
+const GH_TOKEN =
+	process.env.GITHUB_TOKEN ||
+	process.env.GH_TOKEN ||
+	process.env.PUBLIC_GITHUB_TOKEN ||
+	"";
+const GH_HEADERS: Record<string, string> = GH_TOKEN
+	? { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json" }
+	: { Accept: "application/vnd.github+json" };
+
+async function fetchJsonCached<T>(
+	url: string,
+	key: string,
+	init?: RequestInit
+): Promise<T | null> {
+	try {
+		const res = await fetch(url, init);
+		if (res.ok) {
+			const data = (await res.json()) as T;
+			writeCache(key, data);
+			return data;
+		}
+		console.error(`Fetch failed (${res.status}) for ${url}`);
+	} catch (e) {
+		console.error(`Error fetching ${url}`, e);
+	}
+	const cached = readCache<T>(key);
+	if (cached) console.warn(`Using cached payload for ${key}`);
+	return cached;
+}
+
 async function fetchPinnedProjects(first = 6): Promise<Project[]> {
 	try {
         // Reverted to only fetching tashifkhan's pinned projects
-		const res = await fetch(
-			`https://github-stats.tashif.codes/tashifkhan/pinned?first=${first}`
+		const data = await fetchJsonCached<any[]>(
+			`https://github-stats.tashif.codes/tashifkhan/pinned?first=${first}`,
+			"stats-pinned-tashifkhan"
 		);
-		if (!res.ok) {
-			console.error("Failed to fetch pinned projects:", res.status, res.statusText);
-			return [];
-		}
-		const data = await res.json();
+		if (!Array.isArray(data)) return [];
 		return (data as any[]).map((p) => ({
 			title: formatTitle(p.name),
 			description: p.description || "No description available.",
@@ -94,27 +152,56 @@ interface RepoMeta {
 	forkMap: Map<string, number>;
 	/** repo name (lowercase) / full_name → GitHub topics */
 	topicsMap: Map<string, string[]>;
+	/** repo name (lowercase) / full_name → languages (fallback when the stats API returns none) */
+	languageMap: Map<string, string[]>;
+}
+
+/**
+ * Full language breakdown for a repo, ordered by bytes. Cached to disk because it
+ * costs one API call per repo and rarely changes.
+ */
+async function fetchRepoLanguages(fullName: string): Promise<string[] | null> {
+	const key = `gh-languages-${fullName.replace("/", "__").toLowerCase()}`;
+	const cached = readCache<Record<string, number>>(key);
+	if (cached) return Object.keys(cached);
+	if (!GH_TOKEN) return null; // don't burn the 60/hr anonymous budget
+
+	const data = await fetchJsonCached<Record<string, number>>(
+		`https://api.github.com/repos/${fullName}/languages`,
+		key,
+		{ headers: GH_HEADERS }
+	);
+	if (!data || typeof data !== "object") return null;
+	return Object.entries(data)
+		.sort((a, b) => b[1] - a[1])
+		.map(([lang]) => lang);
+}
+
+/** Resolve promises in batches so we never open 100 sockets at once. */
+async function inBatches<T, R>(
+	items: T[],
+	size: number,
+	fn: (item: T) => Promise<R>
+): Promise<R[]> {
+	const out: R[] = [];
+	for (let i = 0; i < items.length; i += size) {
+		out.push(...(await Promise.all(items.slice(i, i + size).map(fn))));
+	}
+	return out;
 }
 
 async function fetchRepoMeta(users: string[]): Promise<RepoMeta> {
 	const forkMap = new Map<string, number>();
 	const topicsMap = new Map<string, string[]>();
+	const languageMap = new Map<string, string[]>();
 
 	await Promise.all(users.map(async (user) => {
 		try {
-			const response = await fetch(
-				`https://api.github.com/users/${user}/repos?per_page=100&type=owner`
+			const repos = await fetchJsonCached<any[]>(
+				`https://api.github.com/users/${user}/repos?per_page=100&type=owner`,
+				`gh-repos-${user}`,
+				{ headers: GH_HEADERS }
 			);
-			if (!response.ok) {
-				console.error(
-					`Failed to fetch repo meta for ${user}:`,
-					response.status,
-					response.statusText
-				);
-				return;
-			}
-
-			const repos = await response.json();
 			if (!Array.isArray(repos)) return;
 
 			repos.forEach((repo: any) => {
@@ -142,28 +229,72 @@ async function fetchRepoMeta(users: string[]): Promise<RepoMeta> {
 						topicsMap.set(repo.name.toLowerCase(), topics);
 					}
 				}
+
+			});
+
+			// Full language lists (bytes-ordered) for every repo, primary as fallback
+			await inBatches(repos, 8, async (repo: any) => {
+				if (!repo.full_name && !repo.name) return;
+				const full = repo.full_name || `${user}/${repo.name}`;
+				const languages =
+					(await fetchRepoLanguages(full)) ??
+					(typeof repo.language === "string" && repo.language
+						? [repo.language]
+						: []);
+				if (languages.length === 0) return;
+				languageMap.set(full.toLowerCase(), languages);
+				if (repo.name) {
+					languageMap.set(`${user}/${repo.name}`.toLowerCase(), languages);
+					languageMap.set(repo.name.toLowerCase(), languages);
+					languageMap.set(slugify(repo.name).toLowerCase(), languages);
+				}
 			});
 		} catch (e) {
 			console.error(`Error fetching repo meta for ${user}:`, e);
 		}
 	}));
 
-	return { forkMap, topicsMap };
+	return { forkMap, topicsMap, languageMap };
+}
+
+/**
+ * Last-resort repo list straight from GitHub, shaped like the stats API payload.
+ * Keeps the grid populated when github-stats is 500ing (README/live URL come from
+ * the repo record itself rather than the richer stats response).
+ */
+async function fetchReposFromGitHub(user: string): Promise<any[]> {
+	const repos = await fetchJsonCached<any[]>(
+		`https://api.github.com/users/${user}/repos?per_page=100&type=owner&sort=updated`,
+		`gh-repos-${user}`,
+		{ headers: GH_HEADERS }
+	);
+	if (!Array.isArray(repos)) return [];
+	return repos.map((repo: any) => ({
+		title: repo.name,
+		description: repo.description,
+		languages: [],
+		topics: Array.isArray(repo.topics) ? repo.topics : [],
+		live_website_url: repo.homepage || undefined,
+		readme: "",
+		stars: repo.stargazers_count ?? 0,
+		forks: repo.forks_count ?? 0,
+		is_fork: repo.fork ?? false,
+		num_commits: 0,
+	}));
 }
 
 async function fetchAllProjects(): Promise<Project[]> {
-	let repos: any[] = [];
-	try {
-		const response = await fetch(
-			"https://github-stats.tashif.codes/tashifkhan/repos"
+	let repos: any[] =
+		(await fetchJsonCached<any[]>(
+			"https://github-stats.tashif.codes/tashifkhan/repos",
+			"stats-repos-tashifkhan"
+		)) ?? [];
+
+	if (!Array.isArray(repos) || repos.length === 0) {
+		console.warn(
+			"Stats API returned no repos — falling back to the GitHub repo list"
 		);
-		if (!response.ok) {
-			console.error("Failed to fetch projects:", response.statusText);
-		} else {
-			repos = await response.json();
-		}
-	} catch (e) {
-		console.error("Error fetching repos", e);
+		repos = await fetchReposFromGitHub("tashifkhan");
 	}
 
 	// Fetch stars from multiple users to support parent repo star counts
@@ -174,39 +305,33 @@ async function fetchAllProjects(): Promise<Project[]> {
     const repoMetaPromise = fetchRepoMeta(starSources);
     
 	await Promise.all(starSources.map(async (user) => {
-        try {
-            const starsRes = await fetch(
-                `https://github-stats.tashif.codes/${user}/stars`
-            );
-            if (starsRes.ok) {
-                const starsData = await starsRes.json();
-                if (starsData.repositories && Array.isArray(starsData.repositories)) {
-                    starsData.repositories.forEach((repo: any) => {
-                        // Map by name (lowercase for safety)
-                        // This allows looking up 'jsjiit' and finding the star count from the 'codeblech' fetch
-                        starMap.set(repo.name.toLowerCase(), repo.stars);
-                    });
-                }
-            } else {
-                console.error(
-                    `Failed to fetch stars for ${user}:`,
-                    starsRes.status,
-                    starsRes.statusText
-                );
-            }
-        } catch (e) {
-            console.error(`Error fetching stars for ${user}:`, e);
+        const starsData = await fetchJsonCached<any>(
+            `https://github-stats.tashif.codes/${user}/stars`,
+            `stats-stars-${user}`
+        );
+        if (starsData?.repositories && Array.isArray(starsData.repositories)) {
+            starsData.repositories.forEach((repo: any) => {
+                // Map by name (lowercase for safety)
+                // This allows looking up 'jsjiit' and finding the star count from the 'codeblech' fetch
+                starMap.set(repo.name.toLowerCase(), repo.stars);
+            });
         }
     }));
 
 	// Fetch pinned in parallel / earlier
-	const [pinnedProjects, { forkMap, topicsMap }] = await Promise.all([
+	const [pinnedProjects, { forkMap, topicsMap, languageMap }] = await Promise.all([
 		fetchPinnedProjects(),
 		repoMetaPromise,
 	]);
 	const pinnedNames = new Set(
 		pinnedProjects.map((p) => p.title.toLowerCase().trim())
 	);
+	// The pinned endpoint still carries primary_language when /repos does not.
+	pinnedProjects.forEach((p) => {
+		if (p.languages.length && !languageMap.has(p.slug.toLowerCase())) {
+			languageMap.set(p.slug.toLowerCase(), p.languages);
+		}
+	});
 
 	// Map repos -> Project objects
     const FORK_MAPPINGS: Record<string, string> = {
@@ -214,6 +339,29 @@ async function fetchAllProjects(): Promise<Project[]> {
         "jportal": "codeblech/jportal",
         "pyjiit": "codelif/pyjiit",
     };
+
+	// The stats API intermittently returns an empty languages array — fall back to
+	// the repo's primary language from the GitHub API so cards never go blank.
+	const resolveLanguages = (
+		project: any,
+		titleKey: string,
+		parentRepo?: string
+	): string[] => {
+		const fromApi = Array.isArray(project.languages) ? project.languages : [];
+		if (fromApi.length > 0) return fromApi;
+		const fromGitHub =
+			(parentRepo ? languageMap.get(parentRepo.toLowerCase()) : undefined) ??
+			languageMap.get(`tashifkhan/${titleKey}`.toLowerCase()) ??
+			languageMap.get(titleKey.toLowerCase()) ??
+			languageMap.get(slugify(titleKey).toLowerCase());
+		if (fromGitHub?.length) return fromGitHub;
+		const primary =
+			(typeof project.primary_language === "string"
+				? project.primary_language
+				: undefined) ??
+			(typeof project.language === "string" ? project.language : undefined);
+		return primary ? [primary] : [];
+	};
 
 	const resolveTopics = (
 		project: any,
@@ -264,7 +412,7 @@ async function fetchAllProjects(): Promise<Project[]> {
 		return {
 			title: titleFormatted,
 			description: project.description || "No description available.",
-			languages: project.languages || [],
+			languages: resolveLanguages(project, project.title, parentRepo),
 			topics: resolveTopics(project, project.title, parentRepo),
 			live_website_url: project.live_website_url,
 			github_link: `https://github.com/tashifkhan/${project.title}`,
