@@ -26,6 +26,7 @@ import {
 	Trophy,
 	ChartPie,
 	ChevronRight,
+	ChevronDown,
 	Star,
 } from "lucide-react";
 import { allProjects, projectsFetchedAt, type Project } from "../data/projects";
@@ -48,6 +49,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { slugify } from "../utils/slugify";
+import { formatTitle } from "../utils/formatTitle";
 
 import ThemeToggle from "@/components/ThemeToggle";
 import { owner, socials, githubProfiles } from "../data/profile";
@@ -374,7 +377,7 @@ const latestBlogDate = blogPosts[0]?.date ? new Date(blogPosts[0].date) : null;
 
 				<ProjectFilters client:load starLists={starLists} />
 				<div
-					class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 auto-rows-fr"
+					class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
 				>
 					{
 						projects.map((project) => (
@@ -578,25 +581,27 @@ const latestBlogDate = blogPosts[0]?.date ? new Date(blogPosts[0].date) : null;
 
 				<!-- Stats + Graph / Languages etc. -->
 				<GitHubStats>
-					<!-- Star Lists: curated repo lists that filter the Projects grid.
-					     Rendered directly below the contribution graph. -->
+					<!-- Star Lists: expand a list to browse its repos; each repo opens the project detail page. -->
 					<section
 						slot="after-graph"
 						class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden"
+						data-star-lists
 					>
-					<div class="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
-						<Star className="w-3.5 h-3.5 text-muted-foreground" />
+					<div class="px-4 sm:px-5 pt-3.5 pb-2.5 flex items-center gap-2">
+						<Star className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
 						<span
-							class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
+							class="text-[10px] font-bold uppercase tracking-[0.18em] text-foreground/80 shrink-0"
 						>
 							Star Lists
 						</span>
-						<span class="hidden sm:inline text-[10px] text-muted-foreground/70">
-							pick a list to filter the project grid
+						<span
+							class="hidden md:inline text-[10px] text-muted-foreground/60 truncate before:content-['·'] before:mr-1.5 before:text-muted-foreground/40"
+						>
+							pick a list to see its repos
 						</span>
 						<button
 							data-open-projects
-							class="ml-auto inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors"
+							class="ml-auto inline-flex items-center gap-0.5 text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors shrink-0"
 						>
 							All projects
 							<ChevronRight className="w-3 h-3" />
@@ -604,27 +609,92 @@ const latestBlogDate = blogPosts[0]?.date ? new Date(blogPosts[0].date) : null;
 					</div>
 					{
 						starLists.length > 0 ? (
-							<div class="p-4 sm:p-5 flex flex-wrap gap-2">
-								{starLists.map((list) => (
-									<button
-										data-star-list={list.name}
-										title={list.description}
-										class="group inline-flex items-center gap-2 rounded-lg border border-border/60 bg-background/50 px-3 py-2 font-mono text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-colors"
-									>
-										<Star className="w-3 h-3 text-primary/60 transition-colors group-hover:text-primary" />
-										<span class="font-medium">{list.name}</span>
-										{typeof list.num_repos === "number" && (
-											<span class="rounded-full bg-secondary/80 px-1.5 py-0.5 text-[10px] leading-none tabular-nums text-muted-foreground/80 transition-colors group-hover:text-primary">
-												{list.num_repos}
-											</span>
-										)}
-									</button>
-								))}
+							<div>
+								<div class="p-4 sm:p-5 flex flex-wrap gap-2">
+									{starLists.map((list) => {
+										const repos = list.repositories || [];
+										const count = list.num_repos ?? repos.length;
+										return (
+											<button
+												type="button"
+												data-star-list={list.name}
+												aria-expanded="false"
+												aria-controls={`star-list-panel-${slugify(list.name)}`}
+												title={list.description || `Show repos in ${list.name}`}
+												class="group inline-flex items-center gap-2 rounded-lg border border-border/60 bg-background/50 px-3 py-2 font-mono text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-colors aria-expanded:text-foreground aria-expanded:border-primary/50 aria-expanded:bg-primary/5"
+											>
+												<Star className="w-3 h-3 text-primary/60 transition-colors group-hover:text-primary group-aria-expanded:text-primary" />
+												<span class="font-medium">{list.name}</span>
+												{count > 0 && (
+													<span class="rounded-full bg-secondary/80 px-1.5 py-0.5 text-[10px] leading-none tabular-nums text-muted-foreground/80 transition-colors group-hover:text-primary group-aria-expanded:text-primary">
+														{count}
+													</span>
+												)}
+												<ChevronDown className="w-3 h-3 text-muted-foreground/60 transition-transform duration-200 group-aria-expanded:rotate-180 group-aria-expanded:text-primary" />
+											</button>
+										);
+									})}
+								</div>
+								{starLists.map((list) => {
+									const repos = list.repositories || [];
+									return (
+										<div
+											id={`star-list-panel-${slugify(list.name)}`}
+											data-star-list-panel
+											hidden
+											class="star-list-panel border-t border-border/40 px-4 sm:px-5 pt-3 pb-4"
+										>
+											{list.description && (
+												<p class="mb-1 text-[11px] leading-relaxed text-muted-foreground/45">
+													{list.description}
+												</p>
+											)}
+											{repos.length > 0 ? (
+												<ul class="max-h-72 overflow-y-auto overscroll-contain grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8">
+													{repos.map((fullName) => {
+														const parts = fullName.split("/");
+														const ownerName = parts[0] || "";
+														const repoName = parts[parts.length - 1] || fullName;
+														const projectSlug = slugify(repoName);
+														const label = formatTitle(repoName);
+														const isExternal =
+															ownerName &&
+															ownerName.toLowerCase() !== "tashifkhan";
+														return (
+															<li class="border-b border-border/20">
+																<a
+																	href={`/projects/${projectSlug}`}
+																	data-haptic-nav
+																	title={fullName}
+																	class="group/repo flex items-center gap-2 py-2 text-[11px] text-muted-foreground/75 hover:text-foreground transition-colors"
+																>
+																	<span class="min-w-0 flex-1 truncate">
+																		{label}
+																	</span>
+																	{isExternal && (
+																		<span class="shrink-0 font-mono text-[10px] text-muted-foreground/30">
+																			{ownerName}
+																		</span>
+																	)}
+																	<ChevronRight className="w-3 h-3 shrink-0 text-primary opacity-0 -translate-x-1 group-hover/repo:opacity-100 group-hover/repo:translate-x-0 transition-all" />
+																</a>
+															</li>
+														);
+													})}
+												</ul>
+											) : (
+												<p class="text-[11px] text-muted-foreground/50">
+													No repositories in this list yet.
+												</p>
+											)}
+										</div>
+									);
+								})}
 							</div>
 						) : (
 							<p class="p-4 sm:p-5 text-xs text-muted-foreground leading-relaxed">
-								Curated repository lists live in the Projects tab — selecting
-								one auto-filters the grid.
+								Curated repository lists will show up here once they load —
+								open a list to browse its repos and jump to a project page.
 							</p>
 						)
 					}
@@ -1151,7 +1221,10 @@ const latestBlogDate = blogPosts[0]?.date ? new Date(blogPosts[0].date) : null;
 			).map((l) => l.textContent || "");
 			const topics = Array.from(
 				card.querySelectorAll("[data-project-topic]")
-			).map((t) => t.textContent || "");
+			).flatMap((t) => [
+				t.getAttribute("data-project-topic") || "",
+				t.textContent || "",
+			]);
 			const fields = [title, description, ...languages, ...topics].map((f) =>
 				f.toLowerCase()
 			);
@@ -1359,6 +1432,33 @@ const latestBlogDate = blogPosts[0]?.date ? new Date(blogPosts[0].date) : null;
 			applyWelcomeState(false);
 		});
 
+		// Star list chips: toggle a panel of the list's repos (accordion — one open at a time)
+		{
+			const root = document.querySelector<HTMLElement>('[data-star-lists]');
+			const chips = Array.from(
+				root?.querySelectorAll<HTMLElement>('[data-star-list]') ?? []
+			);
+			const panelFor = (chip: HTMLElement) =>
+				root?.querySelector<HTMLElement>(
+					`#${CSS.escape(chip.getAttribute('aria-controls') || '')}`
+				) ?? null;
+
+			chips.forEach((chip) =>
+				chip.addEventListener('click', () => {
+					haptics.trigger('light');
+					const willOpen = chip.getAttribute('aria-expanded') !== 'true';
+					chips.forEach((other) => {
+						other.setAttribute('aria-expanded', 'false');
+						panelFor(other)?.setAttribute('hidden', '');
+					});
+					if (willOpen) {
+						chip.setAttribute('aria-expanded', 'true');
+						panelFor(chip)?.removeAttribute('hidden');
+					}
+				})
+			);
+		}
+
 		// Open Projects button (in GitHub Star Lists callout)
 		document.querySelector('[data-open-projects]')?.addEventListener('click', () => {
 			haptics.trigger('light');
@@ -1366,18 +1466,6 @@ const latestBlogDate = blogPosts[0]?.date ? new Date(blogPosts[0].date) : null;
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 		});
 
-		// Star list chips (in GitHub Star Lists callout): open Projects pre-filtered
-		document.querySelectorAll<HTMLElement>('[data-star-list]').forEach((btn) =>
-			btn.addEventListener('click', () => {
-				haptics.trigger('light');
-				const name = btn.dataset.starList;
-				if (!name) return;
-				document.dispatchEvent(
-					new CustomEvent('open-star-list', { detail: { name } })
-				);
-				window.scrollTo({ top: 0, behavior: 'smooth' });
-			})
-		);
 
 		// data-haptic-* elements are wired globally by the shared Haptics component.
 
@@ -1568,8 +1656,25 @@ const latestBlogDate = blogPosts[0]?.date ? new Date(blogPosts[0].date) : null;
 		}
 	}
 
+	/* Star list repo panel eases open when its chip is clicked */
+	.star-list-panel {
+		animation: star-list-in 0.18s ease-out;
+	}
+
+	@keyframes star-list-in {
+		from {
+			opacity: 0;
+			transform: translateY(-3px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
 	@media (prefers-reduced-motion: reduce) {
-		.welcome-cursor {
+		.welcome-cursor,
+		.star-list-panel {
 			animation: none;
 		}
 	}
