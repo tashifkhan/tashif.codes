@@ -119,7 +119,7 @@ jobs:
           # shellcheck disable=SC1091
           source "$HOME/fdroid-venv/bin/activate"
           pip install --upgrade pip
-          pip install 'fdroidserver>=2.3.0' 'androguard>=4.1.0'
+          pip install 'fdroidserver>=2.3.0' 'androguard>=4.1.0' 'Pillow>=10.0.0'
 
           echo "$HOME/fdroid-venv/bin" >> "$GITHUB_PATH"
           export PATH="$HOME/fdroid-venv/bin:$PATH"
@@ -187,6 +187,11 @@ jobs:
           FIRST="$(basename "${APKS[0]}")"
           echo "apk_name=$FIRST" >> "$GITHUB_OUTPUT"
           echo "apk_count=${#APKS[@]}" >> "$GITHUB_OUTPUT"
+
+      - name: Extract app icons from APKs
+        run: |
+          set -euo pipefail
+          python .github/scripts/extract-apk-icons.py fdroid-input || true
 
       - name: Generate signed F-Droid index
         working-directory: public/fdroid
