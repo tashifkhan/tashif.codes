@@ -26,6 +26,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { languageColor } from "../../utils/languageColors";
+import { formatTopic } from "../../utils/formatTopic";
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
 
 const { project, projectHasAnalytics, analyticsSlug } = Astro.props as {
@@ -397,76 +399,6 @@ export async function getStaticPaths() {
 			style="scrollbar-width: none;"
 		>
 			{
-				project.languages.length > 0 && (
-					<section class="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
-						<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3.5">
-							Built With
-						</h2>
-						<div class="flex flex-wrap gap-1.5">
-							{project.languages.map((lang: string) => (
-								<Badge
-									variant="secondary"
-									className="text-[10px] font-medium bg-secondary/50 hover:bg-secondary/70 transition-colors"
-								>
-									{lang}
-								</Badge>
-							))}
-						</div>
-					</section>
-				)
-			}
-
-			{
-				(project.topics?.length ?? 0) > 0 && (
-					<section class="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
-						<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3.5">
-							GitHub Topics
-						</h2>
-						<div class="flex flex-wrap gap-1.5">
-							{project.topics!.map((topic: string) => (
-								<a
-									href={`https://github.com/topics/${encodeURIComponent(topic)}`}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="inline-flex"
-									data-haptic-external
-								>
-									<Badge
-										variant="outline"
-										className="text-[10px] font-medium border-primary/25 bg-primary/5 text-primary/90 hover:bg-primary/10 transition-colors cursor-pointer"
-									>
-										#{topic}
-									</Badge>
-								</a>
-							))}
-						</div>
-					</section>
-				)
-			}
-
-			{
-				contributors.length > 1 && (
-					<section class="relative z-30 rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
-						<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-4">
-							Contributors
-						</h2>
-						<div class="flex flex-row items-center justify-start">
-							<AnimatedTooltip
-								client:load
-								items={contributors.map((c, i) => ({
-									id: i + 1,
-									name: c.login,
-									designation: `${c.contributions} contributions`,
-									image: c.avatar_url,
-									url: c.html_url,
-								}))}
-							/>
-						</div>
-					</section>
-				)
-			}
-
-			{
 				latestRelease && (
 					<section
 						id="releases"
@@ -635,6 +567,74 @@ export async function getStaticPaths() {
 								</div>
 							</details>
 						)}
+					</section>
+				)
+			}
+
+			{
+				(project.topics?.length ?? 0) > 0 && (
+					<section class="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
+						<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3.5">
+							GitHub Topics
+						</h2>
+						<div class="flex flex-wrap gap-1.5">
+							{project.topics!.map((topic: string) => (
+								<a
+									href={`https://github.com/topics/${encodeURIComponent(topic)}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									title={`#${topic} on GitHub`}
+									class="inline-flex items-center rounded-full border border-border/60 bg-muted/40 px-2.5 py-1 text-[11px] font-medium leading-none text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+									data-haptic-external
+								>
+									{formatTopic(topic)}
+								</a>
+							))}
+						</div>
+					</section>
+				)
+			}
+
+			{
+				contributors.length > 1 && (
+					<section class="relative z-30 rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
+						<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-4">
+							Contributors
+						</h2>
+						<div class="flex flex-row items-center justify-start">
+							<AnimatedTooltip
+								client:load
+								items={contributors.map((c, i) => ({
+									id: i + 1,
+									name: c.login,
+									designation: `${c.contributions} contributions`,
+									image: c.avatar_url,
+									url: c.html_url,
+								}))}
+							/>
+						</div>
+					</section>
+				)
+			}
+
+			{
+				project.languages.length > 0 && (
+					<section class="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
+						<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3.5">
+							Built With
+						</h2>
+						<ul class="flex flex-col gap-2.5">
+							{project.languages.map((lang: string) => (
+								<li class="flex items-center gap-2.5 text-[13px] leading-none text-foreground/85">
+									<span
+										class="w-2.5 h-2.5 rounded-full shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10"
+										style={`background-color: ${languageColor(lang)}`}
+										aria-hidden="true"
+									/>
+									{lang}
+								</li>
+							))}
+						</ul>
 					</section>
 				)
 			}

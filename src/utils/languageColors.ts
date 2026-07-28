@@ -1,0 +1,45 @@
+// GitHub linguist colors for the languages that actually show up on the site.
+// Anything unknown falls back to a neutral tone.
+const LANGUAGE_COLORS: Record<string, string> = {
+	javascript: "#f1e05a",
+	typescript: "#3178c6",
+	python: "#3572a5",
+	html: "#e34c26",
+	css: "#563d7c",
+	scss: "#c6538c",
+	java: "#b07219",
+	kotlin: "#a97bff",
+	swift: "#f05138",
+	dart: "#00b4ab",
+	go: "#00add8",
+	rust: "#dea584",
+	c: "#555555",
+	"c++": "#f34b7d",
+	"c#": "#178600",
+	php: "#4f5d95",
+	ruby: "#701516",
+	shell: "#89e051",
+	powershell: "#012456",
+	lua: "#000080",
+	r: "#198ce7",
+	haskell: "#5e5086",
+	elixir: "#6e4a7e",
+	vue: "#41b883",
+	svelte: "#ff3e00",
+	astro: "#ff5a03",
+	jupyter: "#da5b0b",
+	"jupyter notebook": "#da5b0b",
+	makefile: "#427819",
+	dockerfile: "#384d54",
+	nix: "#7e7eff",
+	solidity: "#aa6746",
+	mdx: "#fcb32c",
+	"objective-c": "#438eff",
+	perl: "#0298c3",
+	scala: "#c22d40",
+	zig: "#ec915c",
+};
+
+export function languageColor(language: string): string {
+	return LANGUAGE_COLORS[language.trim().toLowerCase()] ?? "#8b949e";
+}
