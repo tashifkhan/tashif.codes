@@ -10,26 +10,28 @@ SourceCode: https://github.com/tashifkhan/delhi-metro
 IssueTracker: https://github.com/tashifkhan/delhi-metro/issues
 Changelog: https://github.com/tashifkhan/delhi-metro/releases
 
-AutoName: Delhi Metro
-Name: Delhi Metro
+AutoName: Delhi NCR Metro
+Name: Delhi NCR Metro
 
-Summary: Plan Delhi Metro journeys with fares, maps, and line status
+Summary: Plan Delhi and Noida Metro journeys with fares, maps, and alerts
 Description: |
-  Delhi Metro is a Material 3 companion app for the Delhi Metro network.
+  Delhi NCR Metro is a Material 3 companion for the Delhi Metro and Noida Metro
+  networks.
 
-  Plan trips between stations with least-distance or minimum-interchange
-  strategies, edit endpoints on the results screen, and swap origin and
-  destination without starting over. Browse lines and stations, check
-  first and last train times, follow service alerts, and open the network
-  map with zoom and PDF share.
+  Switch operators, plan trips with least-distance or minimum-interchange
+  strategies, and follow cross-network journeys that transfer at Sector 52/51
+  with clear dual-ticket fares. Browse lines and stations, check first and last
+  trains, follow service alerts, and open the network map with zoom and save.
 
   Features:
 
-  * Journey planner with strategy toggle
-  * Editable origin and destination on route results
+  * Delhi Metro (DMRC) and Noida Metro (NMRC) catalogs
+  * Network switcher with local persistence
+  * Cross-network journey planning at Sector 52/51
+  * Journey strategies, fares, and transfer walk legs
   * Station search with local cache
   * Line explorer and station detail
-  * Network map view with share
+  * Network map view with save
   * Notifications / service alerts
   * Light, dark, and Material You theming
 
@@ -37,6 +39,7 @@ Description: |
   mirrored into this F-Droid-compatible repository.
 
   Package ID: codes.tashif.delhimetro
+
 
 RepoType: git
 Repo: https://github.com/tashifkhan/delhi-metro.git
