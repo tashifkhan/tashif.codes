@@ -615,10 +615,14 @@ const totalComments = initialComments.reduce(
 			};
 		}
 
-		// ── Views (auto-increments server-side) ───────────────────────────────────
+		// ── Views ─────────────────────────────────────────────────────────────────
+		// Recording a view is POST. GET /views/{slug} is read-only and does not
+		// increment, so a GET here would silently stop counting views.
 		async function loadViews() {
 			try {
-				const res = await fetch(`${apiBase}/views/${slug}`);
+				const res = await fetch(`${apiBase}/views/${slug}`, {
+					method: "POST",
+				});
 				if (res.ok) {
 					const data = await res.json();
 					viewCount = data.views;

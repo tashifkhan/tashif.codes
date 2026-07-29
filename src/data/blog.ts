@@ -215,10 +215,23 @@ export async function fetchFullPost(slug: string): Promise<FullBlogPost> {
 	return data.post;
 }
 
-/** Fetch (and increment) the view count for a post. */
+/** Fetch the view count for a post. Read-only: does not record a view. */
 export async function fetchViews(slug: string): Promise<number> {
 	const res = await fetch(`${BLOG_API_BASE}/views/${slug}`);
 	if (!res.ok) throw new Error(`Failed to fetch views for "${slug}"`);
+	const data = await res.json();
+	return data.views;
+}
+
+/**
+ * Record a view for this client and return the updated count.
+ *
+ * De-duplicated server-side per viewer within a rolling window, so calling it
+ * on every page load will not inflate the count.
+ */
+export async function recordView(slug: string): Promise<number> {
+	const res = await fetch(`${BLOG_API_BASE}/views/${slug}`, { method: "POST" });
+	if (!res.ok) throw new Error(`Failed to record view for "${slug}"`);
 	const data = await res.json();
 	return data.views;
 }
