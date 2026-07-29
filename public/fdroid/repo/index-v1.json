@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1785219868000,
+    "timestamp": 1785319206000,
     "version": 20002,
     "name": "Tashif Codes",
     "icon": "icon.png",
@@ -21,17 +21,22 @@
         "Internet"
       ],
       "changelog": "https://github.com/tashifkhan/delhi-metro/releases",
-      "suggestedVersionCode": "20",
-      "description": "Delhi Metro is a Material 3 companion app for the Delhi Metro network.\n\nPlan trips between stations with least-distance or minimum-interchange\nstrategies, edit endpoints on the results screen, and swap origin and\ndestination without starting over. Browse lines and stations, check\nfirst and last train times, follow service alerts, and open the network\nmap with zoom and PDF share.\n\nFeatures:\n\n* Journey planner with strategy toggle\n* Editable origin and destination on route results\n* Station search with local cache\n* Line explorer and station detail\n* Network map view with share\n* Notifications / service alerts\n* Light, dark, and Material You theming\n\nReleases are built with Expo EAS, published on GitHub Releases, and\nmirrored into this F-Droid-compatible repository.\n\nPackage ID: codes.tashif.delhimetro\n",
+      "suggestedVersionCode": "23",
+      "description": "Delhi NCR Metro is a Material 3 companion for the Delhi Metro and Noida Metro\nnetworks.\n\nSwitch operators, plan trips with least-distance or minimum-interchange\nstrategies, and follow cross-network journeys that transfer at Sector 52/51\nwith clear dual-ticket fares. Browse lines and stations, check first and last\ntrains, follow service alerts, and open the network map with zoom and save.\n\nFeatures:\n\n* Delhi Metro (DMRC) and Noida Metro (NMRC) catalogs\n* Network switcher with local persistence\n* Cross-network journey planning at Sector 52/51\n* Journey strategies, fares, and transfer walk legs\n* Station search with local cache\n* Line explorer and station detail\n* Network map view with save\n* Notifications / service alerts\n* Light, dark, and Material You theming\n\nReleases are built with Expo EAS, published on GitHub Releases, and\nmirrored into this F-Droid-compatible repository.\n\nPackage ID: codes.tashif.delhimetro\n",
       "issueTracker": "https://github.com/tashifkhan/delhi-metro/issues",
       "license": "MIT",
-      "name": "Delhi Metro",
+      "name": "Delhi NCR Metro",
       "sourceCode": "https://github.com/tashifkhan/delhi-metro",
-      "summary": "Plan Delhi Metro journeys with fares, maps, and line status",
+      "summary": "Plan Delhi and Noida Metro journeys with fares, maps, and alerts",
       "webSite": "https://tashif.codes",
       "added": 1785013639000,
       "packageName": "codes.tashif.delhimetro",
-      "lastUpdated": 1785219860000
+      "lastUpdated": 1785319197000,
+      "localized": {
+        "en-US": {
+          "icon": "icon_IiA6vEuYZC_2reV-Bh2xkz8i-4TS8Sk9Va30U7iPyG0=.png"
+        }
+      }
     },
     {
       "authorEmail": "tashifkhan010@gmail.com",
@@ -51,7 +56,12 @@
       "webSite": "https://tashif.codes",
       "added": 1785006084000,
       "packageName": "codes.tashif.paisa",
-      "lastUpdated": 1785006084000
+      "lastUpdated": 1785006084000,
+      "localized": {
+        "en-US": {
+          "icon": "icon_86WgtVl8BQsv0XcPf48yMfMNgROT8F8fQuiYLLYKzxQ=.png"
+        }
+      }
     },
     {
       "authorEmail": "tashifkhan010@gmail.com",
@@ -73,7 +83,12 @@
       "webSite": "https://tashif.codes",
       "added": 1785008008000,
       "packageName": "codes.tashhif.patchwork",
-      "lastUpdated": 1785179760000
+      "lastUpdated": 1785179760000,
+      "localized": {
+        "en-US": {
+          "icon": "icon_JG4D_DwTtAryO9u-XuswkxlhYf-56yvsdZBcqou9cDI=.png"
+        }
+      }
     }
   ],
   "packages": {
@@ -557,6 +572,60 @@
       }
     ],
     "codes.tashif.delhimetro": [
+      {
+        "added": 1785319197000,
+        "apkName": "codes.tashif.delhimetro_23.apk",
+        "hash": "ce180faf1a2e73061985363aa271ec29d927ce7900bd0afda986a77f96023e45",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "packageName": "codes.tashif.delhimetro",
+        "sig": "e279fc012c64a59157be7ad09db800a1",
+        "signer": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933",
+        "size": 97651525,
+        "targetSdkVersion": 36,
+        "uses-permission": [
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.READ_EXTERNAL_STORAGE",
+            32
+          ],
+          [
+            "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+            null
+          ],
+          [
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            null
+          ],
+          [
+            "android.permission.VIBRATE",
+            null
+          ],
+          [
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            null
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 23,
+        "versionName": "1.4.1"
+      },
       {
         "added": 1785219860000,
         "apkName": "codes.tashif.delhimetro_20.apk",

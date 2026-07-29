@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/repo",
-    "timestamp": 1785219868000,
+    "timestamp": 1785319206000,
     "categories": {
       "Development": {
         "name": {
@@ -82,6 +82,13 @@
         "donate": [
           "https://tashif.codes"
         ],
+        "icon": {
+          "en-US": {
+            "name": "/codes.tashhif.patchwork/en-US/icon_JG4D_DwTtAryO9u-XuswkxlhYf-56yvsdZBcqou9cDI=.png",
+            "sha256": "246e03fc3c13b40af23bdbbe5eeb3093196161ffb9eb2bec75905caa8bbd7032",
+            "size": 15118
+          }
+        },
         "preferredSigner": "40d44ae28eb4751de2f3195185677ba128d767941e0776cdeac109e34bae769b"
       },
       "versions": {
@@ -496,24 +503,85 @@
         ],
         "changelog": "https://github.com/tashifkhan/delhi-metro/releases",
         "issueTracker": "https://github.com/tashifkhan/delhi-metro/issues",
-        "lastUpdated": 1785219860000,
+        "lastUpdated": 1785319197000,
         "license": "MIT",
         "sourceCode": "https://github.com/tashifkhan/delhi-metro",
         "webSite": "https://tashif.codes",
         "authorEmail": "tashifkhan010@gmail.com",
         "authorName": "Tashif Ahmad Khan",
         "name": {
-          "en-US": "Delhi Metro"
+          "en-US": "Delhi NCR Metro"
         },
         "summary": {
-          "en-US": "Plan Delhi Metro journeys with fares, maps, and line status"
+          "en-US": "Plan Delhi and Noida Metro journeys with fares, maps, and alerts"
         },
         "description": {
-          "en-US": "Delhi Metro is a Material 3 companion app for the Delhi Metro network.\n\nPlan trips between stations with least-distance or minimum-interchange\nstrategies, edit endpoints on the results screen, and swap origin and\ndestination without starting over. Browse lines and stations, check\nfirst and last train times, follow service alerts, and open the network\nmap with zoom and PDF share.\n\nFeatures:\n\n* Journey planner with strategy toggle\n* Editable origin and destination on route results\n* Station search with local cache\n* Line explorer and station detail\n* Network map view with share\n* Notifications / service alerts\n* Light, dark, and Material You theming\n\nReleases are built with Expo EAS, published on GitHub Releases, and\nmirrored into this F-Droid-compatible repository.\n\nPackage ID: codes.tashif.delhimetro\n"
+          "en-US": "Delhi NCR Metro is a Material 3 companion for the Delhi Metro and Noida Metro\nnetworks.\n\nSwitch operators, plan trips with least-distance or minimum-interchange\nstrategies, and follow cross-network journeys that transfer at Sector 52/51\nwith clear dual-ticket fares. Browse lines and stations, check first and last\ntrains, follow service alerts, and open the network map with zoom and save.\n\nFeatures:\n\n* Delhi Metro (DMRC) and Noida Metro (NMRC) catalogs\n* Network switcher with local persistence\n* Cross-network journey planning at Sector 52/51\n* Journey strategies, fares, and transfer walk legs\n* Station search with local cache\n* Line explorer and station detail\n* Network map view with save\n* Notifications / service alerts\n* Light, dark, and Material You theming\n\nReleases are built with Expo EAS, published on GitHub Releases, and\nmirrored into this F-Droid-compatible repository.\n\nPackage ID: codes.tashif.delhimetro\n"
+        },
+        "icon": {
+          "en-US": {
+            "name": "/codes.tashif.delhimetro/en-US/icon_IiA6vEuYZC_2reV-Bh2xkz8i-4TS8Sk9Va30U7iPyG0=.png",
+            "sha256": "22203abc4b98642ff6ade57e061db1933f22fb84d2f1293d55adf453b88fc86d",
+            "size": 15106
+          }
         },
         "preferredSigner": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
       },
       "versions": {
+        "ce180faf1a2e73061985363aa271ec29d927ce7900bd0afda986a77f96023e45": {
+          "added": 1785319197000,
+          "file": {
+            "name": "/codes.tashif.delhimetro_23.apk",
+            "sha256": "ce180faf1a2e73061985363aa271ec29d927ce7900bd0afda986a77f96023e45",
+            "size": 97651525
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a",
+              "armeabi-v7a",
+              "x86",
+              "x86_64"
+            ],
+            "versionName": "1.4.1",
+            "versionCode": 23,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+              },
+              {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW"
+              },
+              {
+                "name": "android.permission.VIBRATE"
+              },
+              {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE"
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              }
+            ]
+          }
+        },
         "318328dd853239f76b23a72572d1b0ee81dde11934f90523b6cf06fc0c22747c": {
           "added": 1785219860000,
           "file": {
@@ -640,6 +708,13 @@
         },
         "description": {
           "en-US": "Paisa keeps your money ledger on your phone.\n\nBank SMS is parsed on-device (100+ Indian banks via an AGPL parser\ncore). Optional BYOK statement import for PDF/CSV/images — your API\nkey, your endpoint; SMS never leaves the device.\n\nFeatures:\n* Home balance, filters, and recent transactions\n* Analytics charts with date ranges\n* Monthly budgets by category\n* Multiple accounts / wallets\n* SMS bulk scan + live receiver with hash dedup\n* App lock via biometrics or device credential\n* Export to CSV / PDF\n\nPackage ID: codes.tashif.paisa\n"
+        },
+        "icon": {
+          "en-US": {
+            "name": "/codes.tashif.paisa/en-US/icon_86WgtVl8BQsv0XcPf48yMfMNgROT8F8fQuiYLLYKzxQ=.png",
+            "sha256": "f3a5a0b5597c050b2fd1770f7f8f3231f30d811393f05f1f42e8982cb60acf14",
+            "size": 16041
+          }
         },
         "preferredSigner": "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be"
       },
