@@ -75,13 +75,8 @@
 	],
 	"redirects": [
 		{
-			"source": "/blog",
-			"destination": "https://blog.tashif.codes",
-			"permanent": true
-		},
-		{
 			"source": "/blogs",
-			"destination": "https://blog.tashif.codes",
+			"destination": "/blog",
 			"permanent": true
 		}
 	]
