@@ -147,6 +147,41 @@
 }
 
 /*
+ * Indented code blocks.
+ *
+ * A run of 4-space-indented lines is a code block per CommonMark, and the
+ * renderer has no rule for it, so markdown-it's default emits a bare
+ * `<pre><code>` with none of the `md-code` chrome — no surface, no border, and
+ * no scroll container. A long line inside it then runs straight out of the
+ * column and across the page furniture. Posts hit this by accident: a list
+ * indented one level too far parses as code, and the raw Markdown shows through
+ * unwrapped. Styling `pre` without a class keeps those blocks inside the column
+ * and makes them look like the fenced ones. (`.md-code-pre` and
+ * `.md-mermaid-source` both carry classes, so neither matches.)
+ */
+.markdown-body pre:not([class]) {
+  margin: var(--md-gap) 0;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  border: 1px solid var(--md-border);
+  border-radius: var(--md-radius);
+  background: var(--md-surface);
+  box-shadow: var(--shadow-md);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.markdown-body pre:not([class]) code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: color-mix(in oklab, var(--md-fg) 90%, transparent);
+  font-family: var(--font-mono);
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/*
  * A wide table's header stays visible while its body scrolls. This needs the
  * scroll container to be the wrapper, which is where `overflow: auto` lives.
  */
