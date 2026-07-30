@@ -1,0 +1,99 @@
+/*
+ * Portfolio theming for rendered Markdown.
+ *
+ * The renderer in src/lib/markdown (mirrored from the Blog repo's
+ * packages/markdown) emits structural `md-*` classes. This file maps them onto
+ * the site's design tokens; MarkdownRenderer.astro supplies the typography as
+ * Tailwind utilities. Blog posts, project READMEs, and generated docs all render
+ * through it.
+ */
+
+@import "../lib/markdown/markdown.css";
+
+.markdown-body {
+  --md-fg: var(--foreground);
+  --md-fg-muted: var(--muted-foreground);
+  --md-accent: var(--primary);
+  --md-border: var(--border);
+  --md-surface: var(--card);
+  --md-surface-muted: color-mix(in oklab, var(--muted) 50%, transparent);
+  --md-radius: var(--radius-xl);
+}
+
+/* Heading accent bars keep their per-level colours. */
+.markdown-body .md-heading-bar--h3 {
+  background: #20b2aa;
+}
+
+.markdown-body .md-heading-bar--h4 {
+  background: #a1c9d9;
+}
+
+/* Code and table chrome pick up the site's shadow scale. */
+.markdown-body .md-code,
+.markdown-body .md-mermaid {
+  box-shadow: var(--shadow-md);
+}
+
+.markdown-body .md-table-wrap,
+.markdown-body .md-quote {
+  box-shadow: var(--shadow-sm);
+}
+
+/*
+ * Callouts.
+ *
+ * The site labels things in mono uppercase — code block languages, table
+ * headers, project tags — so the callout heading follows, and the panel sits on
+ * the same soft shadow scale as the other blocks rather than inventing a
+ * treatment of its own.
+ */
+.markdown-body .md-callout {
+  box-shadow: var(--shadow-sm);
+}
+
+.markdown-body .md-callout-title {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+.markdown-body .md-callout-body {
+  color: color-mix(in oklab, var(--foreground) 90%, transparent);
+}
+
+/*
+ * markdown.css is imported above, so its `> :last-child { margin-bottom: 0 }`
+ * ties with the theme's `.md-p` margin and loses on order, leaving a stray gap
+ * at the end of every callout and column.
+ */
+.markdown-body .md-callout-body > :last-child,
+.markdown-body .md-col > :last-child,
+.markdown-body details > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body .md-callout-body > :first-child,
+.markdown-body .md-col > :first-child {
+  margin-top: 0;
+}
+
+/*
+ * A wide table's header stays visible while its body scrolls. This needs the
+ * scroll container to be the wrapper, which is where `overflow: auto` lives.
+ */
+.markdown-body .md-th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  backdrop-filter: blur(4px);
+}
+
+/*
+ * Prism's one-dark theme colours `.token` spans but also sets a background on
+ * `pre[class*="language-"]`, which would fight the code block's own surface.
+ */
+.markdown-body .md-code-pre,
+.markdown-body .md-code-pre[class*="language-"] {
+  background: transparent;
+}
