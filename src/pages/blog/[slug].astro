@@ -9,6 +9,7 @@ import {
 	type BlogPost,
 	type BlogComment,
 	BLOG_API_BASE,
+	BLOG_REPO_URL,
 } from "../../data/blog";
 
 export async function getStaticPaths() {
@@ -202,7 +203,12 @@ const totalComments = initialComments.reduce(
 				>
 					{
 						markdown ? (
-							<MarkdownRenderer content={markdown} />
+							<MarkdownRenderer
+								content={markdown}
+								githubBaseUrl={BLOG_REPO_URL}
+								source="post"
+								assetBaseUrl={new URL(BLOG_API_BASE).origin}
+							/>
 						) : (
 							<div class="text-center py-20 text-muted-foreground rounded-xl border border-border/60 bg-card/50">
 								<MessageCircle

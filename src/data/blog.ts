@@ -1,5 +1,14 @@
 export const BLOG_API_BASE = "https://blog.tashif.codes/api";
 
+/**
+ * Repository the posts live in.
+ *
+ * blog.tashif.codes passes this to its renderer, so this site has to pass it
+ * too or the same post renders differently here: relative image paths,
+ * `file://` links, and `<cite>` reference blocks all need it to resolve.
+ */
+export const BLOG_REPO_URL = "https://github.com/tashifkhan/Blog";
+
 export interface BlogPost {
 	slug: string;
 	title: string;
