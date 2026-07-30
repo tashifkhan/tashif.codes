@@ -29,7 +29,44 @@
   color: var(--md-fg);
 }
 
-/* Heading accent bars keep their per-level colours. */
+/*
+ * Heading accent bars.
+ *
+ * markdown.css lays the heading out as a flex row to place the bar. Flex
+ * blockifies every child, so a heading that mixes text with `code` or `em`
+ * turns each run into its own flex item: the code span stops being inline,
+ * inflates to a block, and the line no longer wraps as prose. The bar does not
+ * need flex — an inline-block on the baseline sits in the text flow and leaves
+ * the rest of the heading as ordinary inline content.
+ *
+ * Sizing is in `em` rather than markdown.css's per-level rem heights because
+ * this site scales headings at the `sm` breakpoint: a bar tuned to `text-3xl`
+ * overshoots the same heading at `text-2xl`, and a mobile h2 ends up with a bar
+ * as tall as its own type. `em` tracks whatever font-size the heading resolves
+ * to, at every level and breakpoint.
+ */
+.markdown-body .md-heading {
+  display: block;
+  /*
+   * Headings here run long — a code identifier plus a subtitle after a colon —
+   * so the default greedy break tends to leave a stranded word on the last
+   * line. Balancing splits them evenly; it applies to short blocks only, which
+   * is what a heading is.
+   */
+  text-wrap: balance;
+}
+
+.markdown-body .md-heading-bar {
+  display: inline-block;
+  width: 0.16em;
+  min-width: 3px;
+  height: 0.75em;
+  margin-right: 0.4em;
+  /* Nudged below the baseline so the bar brackets the cap height of the text. */
+  vertical-align: -0.06em;
+}
+
+/* Per-level colours. */
 .markdown-body .md-heading-bar--h3 {
   background: #20b2aa;
 }
