@@ -18,6 +18,15 @@
   --md-surface: var(--card);
   --md-surface-muted: color-mix(in oklab, var(--muted) 50%, transparent);
   --md-radius: var(--radius-xl);
+
+  /*
+   * markdown.css leaves text colour to inheritance, and what these blocks
+   * inherit is `body`'s legacy `--text-color` (#222), which does not follow the
+   * dark theme. Anything the theme below does not name — list items, cell text,
+   * summaries — would render near-black on the dark surface, so the container
+   * pins the site foreground for its subtree.
+   */
+  color: var(--md-fg);
 }
 
 /* Heading accent bars keep their per-level colours. */
@@ -91,9 +100,13 @@
 
 /*
  * Prism's one-dark theme colours `.token` spans but also sets a background on
- * `pre[class*="language-"]`, which would fight the code block's own surface.
+ * `pre[class*="language-"]` and `code[class*="language-"]`, which would fight
+ * the code block's own surface. The `<code>` is an inline box, so its
+ * background paints one grey slab per wrapped line rather than a panel; both
+ * selectors have to outrank Prism's, which the `.markdown-body` prefix does.
  */
 .markdown-body .md-code-pre,
-.markdown-body .md-code-pre[class*="language-"] {
+.markdown-body .md-code-pre[class*="language-"],
+.markdown-body .md-code-pre code[class*="language-"] {
   background: transparent;
 }
