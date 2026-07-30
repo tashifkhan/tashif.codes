@@ -75,6 +75,28 @@
   background: #a1c9d9;
 }
 
+/*
+ * Inline code inside a heading.
+ *
+ * The prose treatment is a bordered pill with its own padding and weight, which
+ * a heading scales up with its type until an identifier like `datasource` reads
+ * as a button dropped into the title. In a heading the code span only has to be
+ * mono and lightly tinted; the heading already supplies size, weight, and
+ * colour. `display: inline` also puts it back on the text baseline — the pill is
+ * `inline-flex`, which is what makes it ride high next to the words.
+ */
+.markdown-body .md-heading .md-code-inline {
+  display: inline;
+  padding: 0 0.2em;
+  border: 0;
+  border-radius: 0.25em;
+  background: color-mix(in oklab, var(--md-fg) 10%, transparent);
+  box-shadow: none;
+  color: inherit;
+  font-size: 0.92em;
+  font-weight: inherit;
+}
+
 /* Code and table chrome pick up the site's shadow scale. */
 .markdown-body .md-code,
 .markdown-body .md-mermaid {
