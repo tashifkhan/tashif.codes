@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
+	resolveCoverImage,
 	resolveReadingTimeMinutes,
 	type BlogPost,
 } from "../data/blog";
@@ -36,6 +37,7 @@ const wordCount =
 		? (post.metadata.wordCount as number)
 		: 0);
 const readTime = resolveReadingTimeMinutes(post);
+const coverUrl = resolveCoverImage(post);
 ---
 
 {
@@ -56,19 +58,45 @@ const readTime = resolveReadingTimeMinutes(post);
 				style={{ animationDelay: `${index * 100}ms` }}
 			>
 				<div class="flex flex-col md:flex-row h-full">
-					<div class="relative md:w-1/3 p-6 flex flex-col justify-between bg-muted/30 border-b md:border-b-0 md:border-r border-border/50">
-						<div class="flex flex-wrap gap-2 z-10">
+					<div class="relative md:w-1/3 min-h-[10rem] md:min-h-0 flex flex-col justify-between bg-muted/30 border-b md:border-b-0 md:border-r border-border/50 overflow-hidden">
+						{coverUrl ? (
+							<>
+								<img
+									src={coverUrl}
+									alt=""
+									data-blog-cover
+									class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+									loading="lazy"
+								/>
+								<div class="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-background/40" />
+							</>
+						) : (
+							<>
+								{/* Empty cover target for live refresh when a cover appears later */}
+								<img
+									src=""
+									alt=""
+									data-blog-cover
+									class="absolute inset-0 w-full h-full object-cover hidden"
+									loading="lazy"
+								/>
+								<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-50" />
+							</>
+						)}
+						<div class="relative z-10 flex flex-wrap gap-2 p-6">
 							{post.tags?.slice(0, 3).map((tag) => (
 								<Badge
 									variant="secondary"
-									className="text-[10px] font-medium tracking-wide"
+									className={cn(
+										"text-[10px] font-medium tracking-wide",
+										coverUrl && "backdrop-blur-sm bg-background/70"
+									)}
 									data-blog-tag
 								>
 									{tag}
 								</Badge>
 							))}
 						</div>
-						<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-50" />
 					</div>
 					<div class="flex-1 flex flex-col p-6 gap-4">
 						<div class="space-y-2">
@@ -125,6 +153,24 @@ const readTime = resolveReadingTimeMinutes(post);
 				)}
 				style={{ animationDelay: `${index * 100}ms` }}
 			>
+				<div
+					class={cn(
+						"relative w-full aspect-[16/9] overflow-hidden border-b border-border/40 bg-muted/30",
+						coverUrl ? "" : "hidden"
+					)}
+					data-blog-cover-wrap
+				>
+					<img
+						src={coverUrl || ""}
+						alt=""
+						data-blog-cover
+						class={cn(
+							"w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]",
+							coverUrl ? "" : "hidden"
+						)}
+						loading="lazy"
+					/>
+				</div>
 				<CardHeader className="p-5 pb-2 space-y-3">
 					<div class="flex flex-wrap gap-2">
 						{post.tags?.slice(0, 3).map((tag) => (

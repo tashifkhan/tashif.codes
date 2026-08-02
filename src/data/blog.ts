@@ -9,6 +9,9 @@ export const BLOG_API_BASE = "https://blog.tashif.codes/api";
  */
 export const BLOG_REPO_URL = "https://github.com/tashifkhan/Blog";
 
+/** Origin that hosts published post images (`/images/blog/...`). */
+export const BLOG_SITE_ORIGIN = new URL(BLOG_API_BASE).origin;
+
 export interface BlogPost {
 	slug: string;
 	title: string;
@@ -16,11 +19,40 @@ export interface BlogPost {
 	author: string;
 	tags: string[];
 	excerpt: string;
+	/** Public path or absolute URL of the post cover image. */
+	coverImage?: string;
 	socials: string[];
 	category: string | null;
 	wordCount?: number;
 	readingTimeMinutes?: number;
 	metadata?: Record<string, unknown>;
+}
+
+/**
+ * Cover (and other post) assets live on blog.tashif.codes. List API paths are
+ * site-root relative (`/images/blog/...`); rewrite them so they load here.
+ */
+export function resolveBlogAssetUrl(
+	path: string | undefined | null,
+): string | undefined {
+	if (!path) return undefined;
+	const trimmed = path.trim();
+	if (!trimmed) return undefined;
+	if (/^https?:\/\//i.test(trimmed)) return trimmed;
+	return `${BLOG_SITE_ORIGIN}${trimmed.startsWith("/") ? "" : "/"}${trimmed}`;
+}
+
+/** Prefer the top-level field, then leftover frontmatter in metadata. */
+export function resolveCoverImage(
+	post: Pick<BlogPost, "coverImage" | "metadata">,
+): string | undefined {
+	const fromField =
+		typeof post.coverImage === "string" ? post.coverImage : undefined;
+	const fromMeta =
+		typeof post.metadata?.coverImage === "string"
+			? (post.metadata.coverImage as string)
+			: undefined;
+	return resolveBlogAssetUrl(fromField || fromMeta);
 }
 
 export interface BlogComment {
@@ -122,6 +154,19 @@ export function getAvgReadingMinutes(posts: BlogPost[]): number {
  * Fetch the list of all blog posts with metadata.
  * Throws on HTTP errors so callers can handle failures explicitly.
  */
+function normalizeBlogPost(raw: BlogPost): BlogPost {
+	const coverImage =
+		(typeof raw.coverImage === "string" && raw.coverImage) ||
+		(typeof raw.metadata?.coverImage === "string"
+			? (raw.metadata.coverImage as string)
+			: undefined) ||
+		undefined;
+	return {
+		...raw,
+		...(coverImage ? { coverImage } : {}),
+	};
+}
+
 export async function fetchBlogPosts(): Promise<BlogPost[]> {
 	const res = await fetch(`${BLOG_API_BASE}/posts.json`);
 	if (!res.ok) throw new Error(`Failed to fetch posts: ${res.status}`);
@@ -129,7 +174,9 @@ export async function fetchBlogPosts(): Promise<BlogPost[]> {
 	if (!Array.isArray(data)) {
 		throw new Error("Blog posts response was not an array");
 	}
-	return sortBlogPostsNewestFirst(data as BlogPost[]);
+	return sortBlogPostsNewestFirst(
+		(data as BlogPost[]).map(normalizeBlogPost),
+	);
 }
 
 /**

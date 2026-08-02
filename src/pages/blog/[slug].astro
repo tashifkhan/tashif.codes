@@ -6,6 +6,7 @@ import {
 	blogPosts,
 	fetchFullPost,
 	estimateReadingStats,
+	resolveCoverImage,
 	type BlogPost,
 	type BlogComment,
 	BLOG_API_BASE,
@@ -25,6 +26,7 @@ let markdown = "";
 let initialViews = 0;
 let initialLikes = 0;
 let initialComments: BlogComment[] = [];
+let fullMetadata: Record<string, unknown> = {};
 
 try {
 	const fullPost = await fetchFullPost(post.slug);
@@ -32,6 +34,7 @@ try {
 	initialViews = fullPost.metrics.views;
 	initialLikes = fullPost.metrics.likes;
 	initialComments = fullPost.comments;
+	fullMetadata = fullPost.metadata ?? {};
 } catch (err) {
 	console.error("Error fetching full post:", err);
 }
@@ -44,6 +47,12 @@ const dateText = new Date(post.date).toLocaleDateString("en-US", {
 	day: "numeric",
 });
 const originalUrl = `https://blog.tashif.codes/blog/${post.slug}`;
+// List payload first; full frontmatter as fallback for posts published with a
+// cover before the list field was widely available.
+const coverUrl = resolveCoverImage({
+	coverImage: post.coverImage,
+	metadata: { ...fullMetadata, ...post.metadata },
+});
 const totalComments = initialComments.reduce(
 	(acc: number, c: BlogComment) => acc + 1 + (c.replies?.length ?? 0),
 	0
@@ -108,6 +117,18 @@ const totalComments = initialComments.reduce(
 			<div
 				class="mb-10 max-w-4xl animate-in fade-in slide-in-from-bottom duration-500"
 			>
+				{
+					coverUrl && (
+						<div class="mb-8 overflow-hidden rounded-xl border border-border/60 bg-muted/20 shadow-sm">
+							<img
+								src={coverUrl}
+								alt=""
+								class="w-full max-h-[420px] object-cover"
+							/>
+						</div>
+					)
+				}
+
 				{
 					post.tags && post.tags.length > 0 && (
 						<div class="flex flex-wrap gap-2 mb-5">

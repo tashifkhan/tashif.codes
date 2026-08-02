@@ -550,10 +550,26 @@ type BlogListPost = {
 	date: string;
 	tags?: string[];
 	excerpt?: string;
+	coverImage?: string;
 	wordCount?: number;
 	readingTimeMinutes?: number;
 	metadata?: Record<string, unknown>;
 };
+
+const BLOG_SITE_ORIGIN = "https://blog.tashif.codes";
+
+function resolveBlogCoverUrl(
+	post: Pick<BlogListPost, "coverImage" | "metadata">,
+): string | undefined {
+	const raw =
+		(typeof post.coverImage === "string" && post.coverImage) ||
+		(typeof post.metadata?.coverImage === "string"
+			? (post.metadata.coverImage as string)
+			: undefined);
+	if (!raw) return undefined;
+	if (/^https?:\/\//i.test(raw)) return raw;
+	return `${BLOG_SITE_ORIGIN}${raw.startsWith("/") ? "" : "/"}${raw}`;
+}
 
 function formatBlogDate(iso: string): string {
 	const date = new Date(iso);
@@ -614,6 +630,27 @@ function applyBlogListMeta(list: BlogListPost[]) {
 				const dateEl = root.querySelector("[data-blog-date]");
 				if (dateEl && post.date) {
 					dateEl.textContent = formatBlogDate(post.date);
+				}
+
+				const coverUrl = resolveBlogCoverUrl(post);
+				const coverWrap = root.querySelector<HTMLElement>(
+					"[data-blog-cover-wrap]",
+				);
+				const coverImgs = root.querySelectorAll<HTMLImageElement>(
+					"[data-blog-cover]",
+				);
+				coverImgs.forEach((img) => {
+					if (coverUrl) {
+						img.src = coverUrl;
+						img.classList.remove("hidden");
+					} else {
+						img.removeAttribute("src");
+						img.classList.add("hidden");
+					}
+				});
+				if (coverWrap) {
+					if (coverUrl) coverWrap.classList.remove("hidden");
+					else coverWrap.classList.add("hidden");
 				}
 
 				root
