@@ -17,7 +17,13 @@
   --md-border: var(--border);
   --md-surface: var(--card);
   --md-surface-muted: color-mix(in oklab, var(--muted) 50%, transparent);
-  --md-radius: var(--radius-xl);
+  /*
+   * Match site cards: ProjectCard / docs tiles use rounded-2xl, chips use
+   * rounded-full. A notch above radius-xl keeps callouts/phases as soft blobs.
+   */
+  --md-radius: 1rem;
+  --md-radius-lg: 1.25rem;
+  --md-radius-sm: 0.75rem;
 
   /*
    * Component tokens.
@@ -33,10 +39,9 @@
   --md-highlight: color-mix(in oklab, var(--primary) 28%, transparent);
 
   /*
-   * The zine knobs stay off. This site is soft elevation and rounded panels;
-   * a tilted card with a hard offset shadow would read as a different design
-   * system dropped into the middle of an article. The same post picks up the
-   * blog's window chrome there and this treatment here, from one Markdown file.
+   * The zine knobs stay off. Soft elevation + pill accents match the rest of
+   * the site (TOC rail, project cards, stats chips). Same post, different
+   * chrome on the blog.
    */
   --md-rotate: 0;
   --md-panel-shadow: var(--shadow-sm, 0 1px 2px 0 rgb(0 0 0 / 0.05));
@@ -82,10 +87,11 @@
 
 .markdown-body .md-heading-bar {
   display: inline-block;
-  width: 0.16em;
+  width: 0.18em;
   min-width: 3px;
   height: 0.75em;
-  margin-right: 0.4em;
+  margin-right: 0.45em;
+  border-radius: 999px;
   /* Nudged below the baseline so the bar brackets the cap height of the text. */
   vertical-align: -0.06em;
 }
@@ -111,9 +117,9 @@
  */
 .markdown-body .md-heading .md-code-inline {
   display: inline;
-  padding: 0 0.2em;
+  padding: 0 0.25em;
   border: 0;
-  border-radius: 0.25em;
+  border-radius: 0.4em;
   background: color-mix(in oklab, var(--md-fg) 10%, transparent);
   box-shadow: none;
   color: inherit;
@@ -121,37 +127,62 @@
   font-weight: inherit;
 }
 
-/* Code and table chrome pick up the site's shadow scale. */
+/* Soft elevation — same scale as project / stats cards. */
 .markdown-body .md-code,
 .markdown-body .md-mermaid {
   box-shadow: var(--shadow-md);
+  border-radius: var(--md-radius-lg);
 }
 
 .markdown-body .md-table-wrap,
 .markdown-body .md-quote {
   box-shadow: var(--shadow-sm);
+  border-radius: var(--md-radius-lg);
 }
 
 /*
- * Callouts.
- *
- * The site labels things in mono uppercase — code block languages, table
- * headers, project tags — so the callout heading follows, and the panel sits on
- * the same soft shadow scale as the other blocks rather than inventing a
- * treatment of its own.
+ * Callouts, panels, and phases share the open rail look. Kill card chrome so
+ * theme utilities cannot re-box them.
  */
-.markdown-body .md-callout {
-  box-shadow: var(--shadow-sm);
+.markdown-body .md-callout,
+.markdown-body .md-panel,
+.markdown-body .md-phase {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
-.markdown-body .md-callout-title {
+.markdown-body .md-callout-title,
+.markdown-body .md-panel-title {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
 }
 
-.markdown-body .md-callout-body {
+.markdown-body .md-callout-body,
+.markdown-body .md-panel-body,
+.markdown-body .md-phase-body {
   color: color-mix(in oklab, var(--foreground) 90%, transparent);
+}
+
+.markdown-body .md-toc,
+.markdown-body .md-meter,
+.markdown-body .md-stat,
+.markdown-body .md-bars,
+.markdown-body .md-checklist,
+.markdown-body .md-tabs,
+.markdown-body .md-details,
+.markdown-body .md-cite,
+.markdown-body .md-ascii {
+  border-radius: var(--md-radius-lg);
+}
+
+.markdown-body .md-phase-tag {
+  font-family: var(--font-mono);
+  border-radius: 999px;
 }
 
 /*
@@ -188,7 +219,7 @@
   padding: 1.25rem 1.5rem;
   overflow-x: auto;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius);
+  border-radius: var(--md-radius-lg);
   background: var(--md-surface);
   box-shadow: var(--shadow-md);
   font-size: 0.9rem;
@@ -256,17 +287,12 @@
   font-family: var(--font-mono);
 }
 
-/* The step chip is a circle here, matching the site's rounded language. */
+/* Step index is a full circle — same as stats / leetcode icon chips. */
 .markdown-body .md-step::before {
   font-family: var(--font-mono);
+  border-radius: 999px;
   background: color-mix(in oklab, var(--primary) 12%, var(--card));
   border-color: color-mix(in oklab, var(--primary) 35%, transparent);
-}
-
-.markdown-body .md-panel-title {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
 }
 
 /*
