@@ -262,9 +262,10 @@ export const COMPONENTS: readonly ComponentSpec[] = [
       tone: { type: 'enum', values: TONES, describe: 'Accent colour' },
     },
     positional: 'title',
-    describe: 'Bordered card, optionally taped and tilted',
+    describe: 'Open rail note; taped panels sit in a quiet card',
     render: ({ attrs, theme }) => {
       const tone = attrs.tone ? ` md-panel--${attrs.tone}` : ''
+      const taped = attrs.tape ? ' md-panel--taped' : ''
       const tape = attrs.tape
         ? `<span class="md-tape" aria-hidden="true"></span>`
         : ''
@@ -273,7 +274,7 @@ export const COMPONENTS: readonly ComponentSpec[] = [
         : ''
       return {
         open:
-          `<div class="${cx(`md-panel${tone}`, theme.panel)}"${styleVars(rotateVar(attrs.tilt))}>` +
+          `<div class="${cx(`md-panel${tone}${taped}`, theme.panel)}"${styleVars(rotateVar(attrs.tilt))}>` +
           tape +
           title +
           `<div class="md-panel-body">`,

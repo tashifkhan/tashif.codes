@@ -731,6 +731,35 @@
 .md-panel-body > :first-child { margin-top: 0; }
 .md-panel-body > :last-child { margin-bottom: 0; }
 
+/*
+ * Taped panels need a surface for the tape to sit on. Quiet card only —
+ * hairline border, muted fill, no glow. The rail stays inside the pad.
+ */
+.md-panel--taped {
+  margin-top: 2.25rem;
+  padding: 1.2rem 1.25rem 1rem 1.45rem;
+  border: 1px solid var(--md-border);
+  border-radius: var(--md-radius);
+  background: var(--md-surface-muted);
+  box-shadow: none;
+}
+
+.md-panel--taped::before {
+  left: 0.7rem;
+  top: 1rem;
+  bottom: 1rem;
+}
+
+.md-panel--taped.md-panel--accent,
+.md-panel--taped.md-panel--alt,
+.md-panel--taped.md-panel--ok,
+.md-panel--taped.md-panel--warn,
+.md-panel--taped.md-panel--danger,
+.md-panel--taped.md-panel--muted {
+  border-color: color-mix(in oklab, var(--md-tone) 22%, var(--md-border));
+  background: color-mix(in oklab, var(--md-tone) 4%, var(--md-surface-muted));
+}
+
 /* ---------- Tape ---------- */
 
 /*
@@ -740,16 +769,19 @@
 .md-tape {
   display: block;
   width: 5.5rem;
-  height: 1.5rem;
-  background: color-mix(in oklab, var(--md-fg) 12%, transparent);
+  height: 1.35rem;
+  border-radius: 2px;
+  background: color-mix(in oklab, var(--md-fg) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--md-fg) 8%, transparent);
   transform: rotate(calc(var(--md-rotate-local, -4deg) * var(--md-rotate)));
 }
 
 .md-panel > .md-tape {
   position: absolute;
-  top: -0.75rem;
+  top: -0.7rem;
   left: 50%;
   margin-left: -2.75rem;
+  z-index: 1;
 }
 
 /* ---------- InkBand ---------- */
