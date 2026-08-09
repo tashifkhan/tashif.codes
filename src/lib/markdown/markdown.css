@@ -787,23 +787,62 @@
 /* ---------- InkBand ---------- */
 
 .md-ink-band {
+  --md-ink-fg: var(--md-surface, canvas);
+  --md-ink-bg: var(--md-fg);
   margin: 2.5rem 0;
-  padding: 1.75rem 1.5rem;
+  padding: 1.5rem 1.5rem 1.35rem;
+  border: 0;
   border-radius: var(--md-radius-lg);
-  background: var(--md-fg);
-  color: var(--md-surface, canvas);
+  background: var(--md-ink-bg);
+  color: var(--md-ink-fg);
+  box-shadow: none;
 }
 
-/* The band inverts, so every descendant has to follow it rather than the page. */
-.md-ink-band :is(a, code, strong, em, p, li, h2, h3, h4) { color: inherit; }
-.md-ink-band a { text-decoration-color: currentColor; }
+/*
+ * Everything inside follows the inverted pair. Theme utilities that pin
+ * `text-foreground` etc. must lose so the band stays one colour system.
+ */
+.md-ink-band :is(a, code, strong, em, p, li, h2, h3, h4, h5, h6, span, div) {
+  color: inherit;
+}
+
+.md-ink-band a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+}
+
+.md-ink-band a:hover {
+  text-decoration-color: currentColor;
+}
+
+.md-ink-band :is(code, .md-code-inline) {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12em 0.5em;
+  border: 1px solid color-mix(in oklab, currentColor 18%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, currentColor 10%, transparent);
+  box-shadow: none;
+  color: inherit;
+  font-weight: 500;
+}
 
 .md-ink-band-title {
-  margin: 0 0 1rem;
+  margin: 0 0 0.75rem;
   font-family: var(--md-display-font);
-  font-size: 1.35rem;
-  letter-spacing: 0.02em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: inherit;
+  opacity: 0.72;
+}
+
+.md-ink-band-body {
+  line-height: 1.65;
 }
 
 .md-ink-band-body > :first-child { margin-top: 0; }

@@ -304,13 +304,44 @@
 }
 
 /*
- * The ink band inverts, and `--foreground` in the cream theme is a warm
- * near-black that turns muddy at full bleed. The site's own high-contrast pair
- * reads correctly in all three themes.
+ * Ink band: true page invert. Soft theme foregrounds (e.g. dark mode's
+ * #dce1ec) look washed at full bleed, so push toward high-contrast paper/ink.
+ * Nested code/links are restyled in markdown.css to follow this pair.
  */
 .markdown-body .md-ink-band {
-  background: var(--foreground);
-  color: var(--background);
+  --md-ink-bg: color-mix(in oklab, var(--foreground) 88%, white 12%);
+  --md-ink-fg: color-mix(in oklab, var(--background) 92%, black 8%);
+  background: var(--md-ink-bg);
+  color: var(--md-ink-fg);
+}
+
+.dark .markdown-body .md-ink-band {
+  /* On dark pages: clean paper surface, near-black type — not soft gray on gray. */
+  --md-ink-bg: #eef1f6;
+  --md-ink-fg: #0c0d14;
+}
+
+.markdown-body .md-ink-band-title {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  opacity: 0.65;
+}
+
+.markdown-body .md-ink-band :is(.md-code-inline, code) {
+  border-color: color-mix(in oklab, var(--md-ink-fg) 16%, transparent) !important;
+  background: color-mix(in oklab, var(--md-ink-fg) 9%, transparent) !important;
+  color: var(--md-ink-fg) !important;
+  box-shadow: none !important;
+}
+
+.markdown-body .md-ink-band :is(p, a, strong, em, li, span) {
+  color: inherit !important;
+}
+
+.markdown-body .md-ink-band a {
+  color: inherit !important;
+  text-decoration-color: color-mix(in oklab, var(--md-ink-fg) 40%, transparent);
 }
 
 .markdown-body .md-toc-link:hover {
