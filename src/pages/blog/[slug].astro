@@ -9,9 +9,11 @@ import {
 	resolveCoverImage,
 	type BlogPost,
 	type BlogComment,
+	type BlogHeading,
 	BLOG_API_BASE,
 	BLOG_REPO_URL,
 } from "../../data/blog";
+import { RENDERER_VERSION } from "../../lib/markdown";
 
 export async function getStaticPaths() {
 	return blogPosts.map((post) => ({
@@ -27,6 +29,7 @@ let initialViews = 0;
 let initialLikes = 0;
 let initialComments: BlogComment[] = [];
 let fullMetadata: Record<string, unknown> = {};
+let tocHeadings: BlogHeading[] = [];
 
 try {
 	const fullPost = await fetchFullPost(post.slug);
@@ -35,6 +38,25 @@ try {
 	initialLikes = fullPost.metrics.likes;
 	initialComments = fullPost.comments;
 	fullMetadata = fullPost.metadata ?? {};
+
+	// The API derives these from the same rules the renderer uses, so the
+	// contents list is known at build time instead of being scraped out of the
+	// DOM after paint. h2 and h3 only, which is what the sidebar has room for.
+	tocHeadings = (fullPost.outline?.headings ?? []).filter(
+		(heading) => heading.depth === 2 || heading.depth === 3
+	);
+
+	// A post authored against a newer vocabulary than this site's vendored copy
+	// of src/lib/markdown would render unknown tags as raw HTML. Worth a build
+	// log rather than a silent oddity on the page.
+	const postRenderer = fullPost.outline?.renderer ?? fullPost.renderer;
+	if (postRenderer && postRenderer !== RENDERER_VERSION) {
+		console.warn(
+			`[blog] "${post.slug}" was written for renderer ${postRenderer}, ` +
+				`but src/lib/markdown is ${RENDERER_VERSION}. ` +
+				`Re-run: bun scripts/sync-markdown.mjs ../tashif.codes/src/lib/markdown`
+		);
+	}
 } catch (err) {
 	console.error("Error fetching full post:", err);
 }
@@ -434,6 +456,7 @@ const totalComments = initialComments.reduce(
 			initialComments,
 			totalComments,
 			apiBase: BLOG_API_BASE,
+			tocHeadings,
 		}}
 	>
 		const LIKED_KEY = `liked-${slug}`;
@@ -522,6 +545,36 @@ const totalComments = initialComments.reduce(
 			return clone.textContent?.trim() || "";
 		}
 
+		/**
+		 * The headings to list, and the element each one points at.
+		 *
+		 * Preferred source is the API outline, which is derived from the same
+		 * rules the renderer uses, so the label is the heading's own text rather
+		 * than a DOM clone with the anchor and bar spans stripped back out.
+		 * Falls back to scraping when an older API serves no outline.
+		 */
+		function collectHeadings(article) {
+			if (Array.isArray(tocHeadings) && tocHeadings.length) {
+				const resolved = tocHeadings
+					.map((entry) => {
+						const el = document.getElementById(entry.slug);
+						return el ? { el, text: entry.text, depth: entry.depth } : null;
+					})
+					.filter(Boolean);
+				// Only trust it if the anchors actually line up with the document.
+				if (resolved.length === tocHeadings.length) return resolved;
+			}
+
+			return Array.from(article.querySelectorAll("h2, h3")).map((el, i) => {
+				if (!el.id) el.id = `h-${i}`;
+				return {
+					el,
+					text: getHeadingText(el),
+					depth: el.tagName === "H3" ? 3 : 2,
+				};
+			});
+		}
+
 		function buildToC() {
 			if (cleanupToC) cleanupToC();
 			cleanupToC = null;
@@ -531,19 +584,20 @@ const totalComments = initialComments.reduce(
 			const list = document.getElementById("toc-list");
 			if (!article || !widget || !list) return;
 
-			const headings = Array.from(article.querySelectorAll("h2, h3"));
-			if (headings.length < 2) return;
+			const entries = collectHeadings(article);
+			if (entries.length < 2) return;
 
 			widget.classList.remove("hidden");
 			list.innerHTML = "";
 			list.scrollTop = 0;
 
-			headings.forEach((h, i) => {
-				if (!h.id) h.id = `h-${i}`;
+			const headings = entries.map((entry) => entry.el);
+
+			entries.forEach(({ el: h, text, depth }) => {
 				const a = document.createElement("a");
 				a.href = "#" + h.id;
-				a.textContent = getHeadingText(h);
-				const isH3 = h.tagName === "H3";
+				a.textContent = text;
+				const isH3 = depth === 3;
 				a.className = [
 					"block py-1 transition-colors duration-150 leading-snug break-words no-underline",
 					"text-muted-foreground hover:text-foreground",
