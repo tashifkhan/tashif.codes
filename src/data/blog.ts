@@ -1,4 +1,14 @@
-export const BLOG_API_BASE = "https://blog.tashif.codes/api";
+/**
+ * Where post content is fetched from, at build time.
+ *
+ * Overridable so the site can be built against a locally running blog API when
+ * developing a change that spans both repos — a new renderer version, say,
+ * where production has not been deployed yet:
+ *
+ *   BLOG_API_BASE=http://127.0.0.1:8123/api bun run dev
+ */
+export const BLOG_API_BASE =
+	import.meta.env.BLOG_API_BASE ?? "https://blog.tashif.codes/api";
 
 /**
  * Repository the posts live in.
@@ -69,6 +79,30 @@ export interface BlogMetrics {
 	commentsCount: number;
 }
 
+export interface BlogHeading {
+	depth: number;
+	text: string;
+	slug: string;
+}
+
+/**
+ * Metadata the API derives from a post's Markdown.
+ *
+ * Advisory — the Markdown is still the source of truth and is still rendered
+ * locally. This is what lets the table of contents be built before paint rather
+ * than scraped out of the DOM afterwards, and it carries the renderer version
+ * so a stale vendored copy of src/lib/markdown can be noticed.
+ *
+ * Optional because the field post-dates some deployed API versions.
+ */
+export interface BlogOutline {
+	renderer: string;
+	headings: BlogHeading[];
+	components: string[];
+	wordCount: number;
+	readingTimeMinutes: number;
+}
+
 export interface FullBlogPost {
 	slug: string;
 	markdown: string;
@@ -80,6 +114,8 @@ export interface FullBlogPost {
 	};
 	metrics: BlogMetrics;
 	comments: BlogComment[];
+	renderer?: string;
+	outline?: BlogOutline;
 }
 
 const toFiniteNumber = (value: unknown): number =>

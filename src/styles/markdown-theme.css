@@ -20,6 +20,30 @@
   --md-radius: var(--radius-xl);
 
   /*
+   * Component tokens.
+   *
+   * The chart palette already exists for exactly this — a second and third
+   * accent that hold up in light, dark and cream — so the tones borrow from it
+   * rather than introducing new colours.
+   */
+  --md-accent-2: var(--chart-2);
+  --md-tone-ok: var(--chart-2);
+  --md-tone-warn: var(--chart-4);
+  --md-tone-danger: var(--destructive);
+  --md-highlight: color-mix(in oklab, var(--primary) 28%, transparent);
+
+  /*
+   * The zine knobs stay off. This site is soft elevation and rounded panels;
+   * a tilted card with a hard offset shadow would read as a different design
+   * system dropped into the middle of an article. The same post picks up the
+   * blog's window chrome there and this treatment here, from one Markdown file.
+   */
+  --md-rotate: 0;
+  --md-panel-shadow: var(--shadow-sm, 0 1px 2px 0 rgb(0 0 0 / 0.05));
+  --md-hand-font: inherit;
+  --md-display-font: var(--font-sans);
+
+  /*
    * markdown.css leaves text colour to inheritance, and what these blocks
    * inherit is `body`'s legacy `--text-color` (#222), which does not follow the
    * dark theme. Anything the theme below does not name — list items, cell text,
@@ -203,4 +227,82 @@
 .markdown-body .md-code-pre[class*="language-"],
 .markdown-body .md-code-pre code[class*="language-"] {
   background: transparent;
+}
+
+/* ---------- document components ---------- */
+
+/*
+ * markdown.css already lays these out. What follows is only where this site's
+ * conventions differ from the structural defaults: mono uppercase meta labels,
+ * the `bg-card/50 backdrop-blur-sm` surface, and `border-border/60` hairlines.
+ */
+
+.markdown-body :is(
+    .md-toc-title,
+    .md-bars-title,
+    .md-checklist-title,
+    .md-tab-title,
+    .md-stat-label,
+    .md-phase-tag
+  ) {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+.markdown-body .md-stat-value,
+.markdown-body .md-meter-score,
+.markdown-body .md-bar-value {
+  font-family: var(--font-mono);
+}
+
+/* The step chip is a circle here, matching the site's rounded language. */
+.markdown-body .md-step::before {
+  font-family: var(--font-mono);
+  background: color-mix(in oklab, var(--primary) 12%, var(--card));
+  border-color: color-mix(in oklab, var(--primary) 35%, transparent);
+}
+
+.markdown-body .md-panel-title {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+/*
+ * The ink band inverts, and `--foreground` in the cream theme is a warm
+ * near-black that turns muddy at full bleed. The site's own high-contrast pair
+ * reads correctly in all three themes.
+ */
+.markdown-body .md-ink-band {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+.markdown-body .md-toc-link:hover {
+  color: var(--primary);
+}
+
+.markdown-body .md-tab-button[aria-selected="true"] {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.markdown-body .md-ascii-pre {
+  font-family: var(--font-mono);
+}
+
+/*
+ * Narrow screens: the bar chart's fixed label track squeezes the bars to
+ * nothing, so the label moves onto its own line. A container query rather than
+ * a media query, to match how the two-column grid already measures itself.
+ */
+@container (max-width: 26rem) {
+  .markdown-body .md-bar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .markdown-body .md-bar-label {
+    grid-column: 1 / -1;
+  }
 }

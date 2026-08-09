@@ -64,6 +64,22 @@ const theme: MarkdownTheme = {
 
   image:
     "shadow-md transition-all duration-300 group-hover:shadow-lg",
+
+  // Document components. Structure and spacing come from markdown.css; these
+  // are only the site's surface treatment — the `bg-card/50 backdrop-blur-sm`
+  // and `border-border/60` used everywhere else on the site.
+  panel: "bg-card/50 backdrop-blur-sm border-border/60",
+  toc: "bg-card/50 backdrop-blur-sm border-border/60",
+  checklist: "bg-card/40 border-border/60",
+  meter: "bg-card/50 backdrop-blur-sm border-border/60",
+  phase: "bg-card/50 backdrop-blur-sm border-border/60",
+  bars: "bg-card/50 backdrop-blur-sm border-border/60",
+  stat: "bg-card/50 backdrop-blur-sm border-border/60",
+  tabs: "bg-card/50 backdrop-blur-sm border-border/60",
+  details: "bg-card/50 backdrop-blur-sm border-border/60",
+  ascii: "bg-card/60 border-border/60",
+
+  lede: "text-lg text-foreground/90",
 };
 
 const html = content
@@ -98,6 +114,7 @@ const html = content
 
   import {
     initCopyButtons,
+    initTabs,
     isDarkTheme,
     renderMermaidBlocks,
     watchThemeChanges,
@@ -119,9 +136,13 @@ const html = content
   }
 
   initCopyButtons();
+  initTabs();
   watchThemeChanges(() => void drawDiagrams(true));
 
+  // Re-run on every view transition: the article element is swapped wholesale,
+  // so the previous page's tab strips and highlighting go with it.
   document.addEventListener("astro:page-load", () => {
+    initTabs();
     void drawDiagrams();
     Prism.highlightAll();
   });
