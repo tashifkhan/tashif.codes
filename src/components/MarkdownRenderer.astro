@@ -53,7 +53,7 @@ const theme: MarkdownTheme = {
   link: "text-primary underline underline-offset-4 hover:text-primary/80 transition-colors",
 
   codeInline:
-    "inline-flex items-center rounded-lg border border-slate-300 bg-slate-100 px-2.5 py-1 font-mono text-[0.92em] font-semibold text-slate-800 shadow-sm dark:border-slate-600/40 dark:bg-slate-800/90 dark:text-slate-100",
+    "inline-flex items-center rounded-xl border border-slate-300 bg-slate-100 px-2.5 py-1 font-mono text-[0.92em] font-semibold text-slate-800 shadow-sm dark:border-slate-600/40 dark:bg-slate-800/90 dark:text-slate-100",
   codeLang: "font-mono",
   codePre: "text-[0.9rem]",
   codeTag: "font-mono text-foreground/90",
@@ -63,19 +63,20 @@ const theme: MarkdownTheme = {
   td: "text-sm text-foreground/90 whitespace-pre-wrap",
 
   image:
-    "shadow-md transition-all duration-300 group-hover:shadow-lg",
+    "rounded-xl shadow-md transition-all duration-300 group-hover:shadow-lg",
 
-  // Callouts/panels/phases are rail-only. Taped panels pick up a quiet surface.
+  // Document components. Callouts/panels/phases are rail-only (no card chrome).
+  // Taped panels pick up a quiet surface from CSS. Other blocks keep soft cards.
   panel: "",
-  toc: "bg-card/50 backdrop-blur-sm border-border/60",
-  checklist: "bg-card/40 border-border/60",
-  meter: "bg-card/50 backdrop-blur-sm border-border/60",
+  toc: "rounded-2xl bg-card/50 backdrop-blur-sm border-border/60",
+  checklist: "rounded-2xl bg-card/40 border-border/60",
+  meter: "rounded-2xl bg-card/50 backdrop-blur-sm border-border/60",
   phase: "",
-  bars: "bg-card/50 backdrop-blur-sm border-border/60",
-  stat: "bg-card/50 backdrop-blur-sm border-border/60",
-  tabs: "bg-card/50 backdrop-blur-sm border-border/60",
-  details: "bg-card/50 backdrop-blur-sm border-border/60",
-  ascii: "bg-card/60 border-border/60",
+  bars: "rounded-2xl bg-card/50 backdrop-blur-sm border-border/60",
+  stat: "rounded-2xl bg-card/50 backdrop-blur-sm border-border/60",
+  tabs: "rounded-2xl bg-card/50 backdrop-blur-sm border-border/60",
+  details: "rounded-2xl bg-card/50 backdrop-blur-sm border-border/60",
+  ascii: "rounded-2xl bg-card/60 border-border/60",
   callout: "",
 
   lede: "text-lg text-foreground/90",
