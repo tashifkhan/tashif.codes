@@ -16,14 +16,7 @@
   --md-border: color-mix(in oklab, currentColor 18%, transparent);
   --md-surface: transparent;
   --md-surface-muted: color-mix(in oklab, currentColor 5%, transparent);
-  /*
-   * Soft, pillowy chrome — matches the site cards (rounded-2xl) and TOC pills.
-   * Components layer on top of this with full pills for chips and round icon
-   * badges so everything reads as one squishy surface language.
-   */
-  --md-radius: 1rem;
-  --md-radius-lg: 1.25rem;
-  --md-radius-sm: 0.75rem;
+  --md-radius: 0.75rem;
   --md-gap: 1.5rem;
 
   --md-callout-note: #3b82f6;
@@ -66,8 +59,13 @@
   container-type: inline-size;
 }
 
-/* ---------- two-column grid ---------- */
+/* ---------- multi-column grid (Cols) ---------- */
 
+/*
+ * `.md-cols` is the canonical class; `.md-two-col` remains as an alias so host
+ * themes that still target the old name keep working after the 2–4 col expansion.
+ */
+.md-cols,
 .md-two-col {
   display: grid;
   grid-template-columns: 1fr;
@@ -77,10 +75,11 @@
 }
 
 /*
- * Stacked, the two columns run together as one block of prose and the split the
+ * Stacked, the columns run together as one block of prose and the split the
  * author wrote is invisible. A rule between them keeps the boundary legible;
  * side by side the gap already says it, so it comes back off.
  */
+.md-cols > .md-col:not(:last-child),
 .md-two-col > .md-col:not(:last-child) {
   padding-bottom: var(--md-gap);
   border-bottom: 1px solid var(--md-border);
@@ -91,14 +90,19 @@
  * sits in: the editor's reading pane measures 38.5rem (a 760px column less its
  * 72px gutters), and a blog post window is narrower still. A 40rem threshold
  * meant the grid fell back to one column everywhere it was actually used.
+ *
+ * Three- and four-column layouts still flip at 34rem — equal card columns
+ * (icon + title + short list) stay readable narrower than two prose columns.
  */
 @container (min-width: 34rem) {
+  .md-cols,
   .md-two-col {
     grid-template-columns: var(--md-grid-cols, 1fr 1fr);
-    /* Two text columns need more air between them than stacked blocks do. */
-    gap: 2.25rem;
+    /* Side-by-side columns need more air between them than stacked blocks do. */
+    gap: 1.5rem;
   }
 
+  .md-cols > .md-col:not(:last-child),
   .md-two-col > .md-col:not(:last-child) {
     padding-bottom: 0;
     border-bottom: 0;
@@ -127,28 +131,16 @@
 
 .md-callout {
   --md-callout-color: var(--md-callout-note);
-  position: relative;
   margin: 2rem 0;
-  padding: 0.15rem 0 0.15rem 1.1rem;
+  padding: 1.125rem 1.25rem;
   /*
-   * Rail + content only — no card border, fill, or shadow. The capsule bar
-   * is the only chrome; the rest reads as prose.
+   * A full outline rather than a bare left bar: tinted only on one edge, a
+   * callout inside a column reads as a stray indent rather than a panel.
    */
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.md-callout::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.15rem;
-  bottom: 0.15rem;
-  width: 0.2rem;
-  border-radius: 999px;
-  background: var(--md-callout-color);
+  border: 1px solid color-mix(in oklab, var(--md-callout-color) 28%, transparent);
+  border-left: 3px solid var(--md-callout-color);
+  border-radius: var(--md-radius);
+  background: color-mix(in oklab, var(--md-callout-color) 6%, var(--md-surface));
 }
 
 .md-callout--note {
@@ -171,19 +163,20 @@
 }
 
 /*
- * Round icon badge + mono label — chips on the site are full pills, so the
- * badge is a circle rather than a square tile.
+ * An icon badge plus a plain label, rather than the whole title inside a pill.
+ * A pill reads as a tag — something you could click or filter by — where this
+ * is the callout's heading.
  */
 .md-callout-title {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  margin-bottom: 0.6rem;
-  color: color-mix(in oklab, var(--md-callout-color) 78%, var(--md-fg));
-  font-size: 0.78rem;
+  gap: 0.625rem;
+  margin-bottom: 0.625rem;
+  color: color-mix(in oklab, var(--md-callout-color) 72%, var(--md-fg));
+  font-size: 0.8125rem;
   font-weight: 700;
   line-height: 1.2;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -192,15 +185,14 @@
   box-sizing: content-box;
   width: 1rem;
   height: 1rem;
-  padding: 0.28rem;
-  border-radius: 999px;
-  background: color-mix(in oklab, var(--md-callout-color) 14%, transparent);
+  padding: 0.25rem;
+  border-radius: 0.4rem;
+  background: color-mix(in oklab, var(--md-callout-color) 16%, transparent);
   color: var(--md-callout-color);
 }
 
 .md-callout-body {
   color: var(--md-fg);
-  line-height: 1.65;
 }
 
 .md-callout-body > :first-child {
@@ -223,7 +215,7 @@
   margin: var(--md-gap) 0;
   overflow: hidden;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
   background: var(--md-surface);
 }
 
@@ -260,7 +252,7 @@
   flex-shrink: 0;
   padding: 0.375rem;
   border: 0;
-  border-radius: 999px;
+  border-radius: 0.375rem;
   background: transparent;
   color: var(--md-fg-muted);
   cursor: pointer;
@@ -309,7 +301,7 @@
   padding: 1.5rem;
   overflow-x: auto;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
   background: var(--md-surface);
 }
 
@@ -466,7 +458,7 @@
    */
   overflow: auto;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
   background: var(--md-surface);
 }
 
@@ -498,25 +490,13 @@
 /* ---------- quotes, rules, media ---------- */
 
 .md-quote {
-  position: relative;
   margin: 2rem 0;
-  padding: 1.1rem 1.4rem 1.1rem 1.55rem;
-  border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  padding: 1rem 1.5rem;
+  border-left: 4px solid color-mix(in oklab, var(--md-accent) 45%, transparent);
+  border-radius: 0 var(--md-radius) var(--md-radius) 0;
   background: var(--md-surface-muted);
   color: var(--md-fg-muted);
   font-style: italic;
-}
-
-.md-quote::before {
-  content: "";
-  position: absolute;
-  left: 0.55rem;
-  top: 0.85rem;
-  bottom: 0.85rem;
-  width: 0.22rem;
-  border-radius: 999px;
-  background: color-mix(in oklab, var(--md-accent) 70%, transparent);
 }
 
 .md-hr {
@@ -541,7 +521,7 @@
   height: auto;
   margin: 0 auto;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius);
+  border-radius: 0.5rem;
 }
 
 /* An image inside a sentence: no frame, no centring, sits on the text baseline. */
@@ -565,7 +545,7 @@
   gap: 0.375rem;
   padding: 0.25rem 0.625rem;
   border: 1px dashed var(--md-callout-warning);
-  border-radius: 999px;
+  border-radius: 0.375rem;
   color: var(--md-fg-muted);
   font-size: 0.8125rem;
 }
@@ -576,7 +556,7 @@
   margin: var(--md-gap) 0;
   overflow: hidden;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
 }
 
 .md-cite-heading {
@@ -602,9 +582,9 @@
   align-items: center;
   gap: 0.375rem;
   max-width: 100%;
-  padding: 0.3rem 0.7rem;
+  padding: 0.25rem 0.625rem;
   border: 1px solid var(--md-border);
-  border-radius: 999px;
+  border-radius: 0.375rem;
   background: var(--md-surface-muted);
   color: var(--md-fg-muted);
   font-size: 0.75rem;
@@ -628,7 +608,7 @@
   margin: 2rem 0;
   overflow: hidden;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
   background: var(--md-surface);
 }
 
@@ -680,84 +660,76 @@
 /* ---------- Panel ---------- */
 
 .md-panel {
-  --md-tone: var(--md-accent);
   position: relative;
   margin: 2rem 0;
-  padding: 0.15rem 0 0.15rem 1.1rem;
-  /*
-   * Same language as callouts: pill rail + content. No card border, fill, or
-   * shadow — tone only colours the rail and the optional title.
-   */
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  padding: 1.25rem 1.25rem 0.25rem;
+  border: 1px solid var(--md-border);
+  border-radius: var(--md-radius);
+  background: var(--md-surface);
+  box-shadow: var(--md-panel-shadow);
   transform: rotate(calc(var(--md-rotate-local, 0deg) * var(--md-rotate)));
-}
-
-.md-panel::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.15rem;
-  bottom: 0.15rem;
-  width: 0.2rem;
-  border-radius: 999px;
-  background: var(--md-tone);
 }
 
 .md-panel--accent, .md-panel--alt, .md-panel--ok,
 .md-panel--warn, .md-panel--danger, .md-panel--muted {
-  /* Tone is carried by the rail/title; no filled card chrome. */
-  border: 0;
-  background: transparent;
+  border-color: color-mix(in oklab, var(--md-tone) 40%, transparent);
+  background: color-mix(in oklab, var(--md-tone) 5%, var(--md-surface));
 }
 
 .md-panel-title {
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.75rem;
   font-family: var(--md-display-font);
   font-weight: 700;
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--md-tone, var(--md-fg));
 }
 
-.md-panel-body {
-  color: var(--md-fg);
-  line-height: 1.65;
+/*
+ * Lucide-style icon above the panel title — matches the feature-card pattern
+ * (icon, heading, short body) without requiring a separate card component.
+ */
+.md-panel-icon {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0 0 0.75rem;
+  color: var(--md-tone, var(--md-fg));
+}
+
+.md-panel-icon .md-icon,
+.md-panel-icon-svg {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
+.md-panel--icon .md-panel-title {
+  margin-top: 0;
 }
 
 .md-panel-body > :first-child { margin-top: 0; }
-.md-panel-body > :last-child { margin-bottom: 0; }
 
-/*
- * Taped panels need a surface for the tape to sit on. Quiet card only —
- * hairline border, muted fill, no glow. The rail stays inside the pad.
- */
-.md-panel--taped {
-  margin-top: 2.25rem;
-  padding: 1.2rem 1.25rem 1rem 1.45rem;
-  border: 1px solid var(--md-border);
-  border-radius: var(--md-radius);
-  background: var(--md-surface-muted);
-  box-shadow: none;
+/* ---------- Standalone Icon ---------- */
+
+.md-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  line-height: 0;
+  color: var(--md-tone, currentColor);
 }
 
-.md-panel--taped::before {
-  left: 0.7rem;
-  top: 1rem;
-  bottom: 1rem;
+.md-icon-wrap .md-icon,
+.md-icon-standalone {
+  display: block;
+  flex-shrink: 0;
 }
 
-.md-panel--taped.md-panel--accent,
-.md-panel--taped.md-panel--alt,
-.md-panel--taped.md-panel--ok,
-.md-panel--taped.md-panel--warn,
-.md-panel--taped.md-panel--danger,
-.md-panel--taped.md-panel--muted {
-  border-color: color-mix(in oklab, var(--md-tone) 22%, var(--md-border));
-  background: color-mix(in oklab, var(--md-tone) 4%, var(--md-surface-muted));
+.md-icon-missing {
+  font-family: var(--md-mono-font, ui-monospace, monospace);
+  font-size: 0.8em;
+  color: var(--md-tone-danger, #c44);
 }
 
 /* ---------- Tape ---------- */
@@ -769,80 +741,38 @@
 .md-tape {
   display: block;
   width: 5.5rem;
-  height: 1.35rem;
-  border-radius: 2px;
-  background: color-mix(in oklab, var(--md-fg) 14%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--md-fg) 8%, transparent);
+  height: 1.5rem;
+  background: color-mix(in oklab, var(--md-fg) 12%, transparent);
   transform: rotate(calc(var(--md-rotate-local, -4deg) * var(--md-rotate)));
 }
 
 .md-panel > .md-tape {
   position: absolute;
-  top: -0.7rem;
+  top: -0.75rem;
   left: 50%;
   margin-left: -2.75rem;
-  z-index: 1;
 }
 
 /* ---------- InkBand ---------- */
 
 .md-ink-band {
-  --md-ink-fg: var(--md-surface, canvas);
-  --md-ink-bg: var(--md-fg);
   margin: 2.5rem 0;
-  padding: 1.5rem 1.5rem 1.35rem;
-  border: 0;
-  border-radius: var(--md-radius-lg);
-  background: var(--md-ink-bg);
-  color: var(--md-ink-fg);
-  box-shadow: none;
+  padding: 1.75rem 1.5rem;
+  border-radius: var(--md-radius);
+  background: var(--md-fg);
+  color: var(--md-surface, canvas);
 }
 
-/*
- * Everything inside follows the inverted pair. Theme utilities that pin
- * `text-foreground` etc. must lose so the band stays one colour system.
- */
-.md-ink-band :is(a, code, strong, em, p, li, h2, h3, h4, h5, h6, span, div) {
-  color: inherit;
-}
-
-.md-ink-band a {
-  color: inherit;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.2em;
-  text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
-}
-
-.md-ink-band a:hover {
-  text-decoration-color: currentColor;
-}
-
-.md-ink-band :is(code, .md-code-inline) {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.12em 0.5em;
-  border: 1px solid color-mix(in oklab, currentColor 18%, transparent);
-  border-radius: 999px;
-  background: color-mix(in oklab, currentColor 10%, transparent);
-  box-shadow: none;
-  color: inherit;
-  font-weight: 500;
-}
+/* The band inverts, so every descendant has to follow it rather than the page. */
+.md-ink-band :is(a, code, strong, em, p, li, h2, h3, h4) { color: inherit; }
+.md-ink-band a { text-decoration-color: currentColor; }
 
 .md-ink-band-title {
-  margin: 0 0 0.75rem;
+  margin: 0 0 1rem;
   font-family: var(--md-display-font);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-size: 1.35rem;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: inherit;
-  opacity: 0.72;
-}
-
-.md-ink-band-body {
-  line-height: 1.65;
 }
 
 .md-ink-band-body > :first-child { margin-top: 0; }
@@ -862,9 +792,9 @@
 }
 
 .md-strips .md-li {
-  padding: 0.75rem 1.1rem;
+  padding: 0.7rem 1rem;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius);
+  border-radius: calc(var(--md-radius) * 0.6);
   background: var(--md-surface-muted);
 }
 
@@ -884,33 +814,20 @@
 
 .md-toc {
   margin: 1.75rem 0;
-  padding: 1.05rem 1.25rem;
+  padding: 1rem 1.25rem;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
   background: var(--md-surface-muted);
-  box-shadow: var(--md-panel-shadow);
 }
 
 .md-toc-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0 0 0.65rem;
+  margin: 0 0 0.6rem;
   font-family: var(--md-display-font);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--md-fg-muted);
-}
-
-/* Little pill rail next to the TOC label — same as the sticky page TOC. */
-.md-toc-title::before {
-  content: "";
-  width: 0.2rem;
-  height: 0.85rem;
-  border-radius: 999px;
-  background: var(--md-accent);
 }
 
 .md-toc-list {
@@ -988,8 +905,8 @@
   width: 2rem;
   height: 2rem;
   border-radius: 999px;
-  background: color-mix(in oklab, var(--md-accent) 12%, var(--md-surface));
-  border: 1px solid color-mix(in oklab, var(--md-accent) 35%, transparent);
+  background: color-mix(in oklab, var(--md-accent) 15%, var(--md-surface));
+  border: 1px solid color-mix(in oklab, var(--md-accent) 40%, transparent);
   color: var(--md-accent);
   font-family: var(--md-display-font);
   font-size: 0.85rem;
@@ -1009,9 +926,20 @@
 }
 
 .md-step-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   margin: 0 0 0.35rem;
   font-weight: 650;
   color: var(--md-fg);
+}
+
+.md-step-title .md-icon,
+.md-step-icon-svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--md-tone, var(--md-fg-muted, var(--md-fg)));
 }
 
 .md-step-body > :first-child { margin-top: 0; }
@@ -1021,63 +949,50 @@
 
 .md-phases {
   display: grid;
-  gap: 1.1rem;
+  gap: 1rem;
   margin: 1.75rem 0;
 }
 
 .md-phase {
-  --md-tone: var(--md-accent);
-  position: relative;
-  padding: 0.1rem 0 0.1rem 1.1rem;
-  /* Open rail — same language as callouts/panels, no card box. */
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.md-phase::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.15rem;
-  bottom: 0.15rem;
-  width: 0.2rem;
-  border-radius: 999px;
-  background: var(--md-tone);
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--md-border);
+  border-left: 3px solid var(--md-tone, var(--md-accent));
+  border-radius: var(--md-radius);
+  background: var(--md-surface);
 }
 
 .md-phase-head {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.5rem;
   flex-wrap: wrap;
 }
 
+.md-phase-head .md-icon,
+.md-phase-icon-svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--md-tone, var(--md-fg-muted, var(--md-fg)));
+}
+
 .md-phase-tag {
-  padding: 0.18rem 0.55rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 999px;
-  background: color-mix(in oklab, var(--md-tone) 14%, transparent);
-  color: var(--md-tone);
-  font-size: 0.68rem;
+  background: color-mix(in oklab, var(--md-tone, var(--md-accent)) 16%, transparent);
+  color: var(--md-tone, var(--md-accent));
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
-  line-height: 1.3;
 }
 
 .md-phase-name {
   font-family: var(--md-display-font);
   font-weight: 700;
-  font-size: 1.02rem;
-  letter-spacing: -0.01em;
-}
-
-.md-phase-body {
-  color: color-mix(in oklab, var(--md-fg) 90%, transparent);
-  line-height: 1.6;
+  font-size: 1.05rem;
 }
 
 .md-phase-body > :first-child { margin-top: 0; }
@@ -1087,9 +1002,9 @@
 
 .md-checklist {
   margin: 1.75rem 0;
-  padding: 1.1rem 1.3rem;
-  border: 1px dashed color-mix(in oklab, var(--md-border) 90%, var(--md-accent));
-  border-radius: var(--md-radius-lg);
+  padding: 1rem 1.25rem;
+  border: 1px dashed var(--md-border);
+  border-radius: var(--md-radius);
   background: var(--md-surface-muted);
 }
 
@@ -1128,11 +1043,10 @@
 
 .md-meter {
   --md-meter-color: var(--md-tone-warn);
-  padding: 1rem 1.2rem;
+  padding: 0.9rem 1.1rem;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
   background: var(--md-surface);
-  box-shadow: var(--md-panel-shadow);
 }
 
 .md-meter--high { --md-meter-color: var(--md-tone-danger); }
@@ -1165,7 +1079,7 @@
 
 .md-meter-track {
   display: block;
-  height: 0.45rem;
+  height: 0.4rem;
   border-radius: 999px;
   background: color-mix(in oklab, var(--md-fg) 10%, transparent);
   overflow: hidden;
@@ -1207,13 +1121,25 @@
 .md-stat {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: 1.05rem 1rem;
+  gap: 0.2rem;
+  padding: 1rem;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
   background: var(--md-surface-muted);
   text-align: center;
-  box-shadow: var(--md-panel-shadow);
+}
+
+.md-stat-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.35rem;
+  color: var(--md-tone, var(--md-fg-muted, var(--md-fg)));
+}
+
+.md-stat-icon .md-icon,
+.md-stat-icon-svg {
+  width: 1.125rem;
+  height: 1.125rem;
 }
 
 .md-stat-value {
@@ -1236,11 +1162,10 @@
 
 .md-bars {
   margin: 1.75rem 0;
-  padding: 1.1rem 1.2rem;
+  padding: 1rem 1.1rem;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
   background: var(--md-surface);
-  box-shadow: var(--md-panel-shadow);
 }
 
 .md-bars-title {
@@ -1322,10 +1247,9 @@
 
 .md-sticker {
   display: inline-block;
-  padding: 0.28rem 0.7rem;
+  padding: 0.25rem 0.6rem;
   background: color-mix(in oklab, var(--md-tone, var(--md-accent)) 18%, var(--md-surface));
   border: 1px solid color-mix(in oklab, var(--md-tone, var(--md-accent)) 45%, transparent);
-  border-radius: 999px;
   color: var(--md-tone, var(--md-accent));
   font-family: var(--md-display-font);
   font-size: 0.7rem;
@@ -1336,7 +1260,7 @@
   transform: rotate(calc(var(--md-rotate-local, 0deg) * var(--md-rotate)));
 }
 
-.md-sticker--rect { border-radius: var(--md-radius-sm); }
+.md-sticker--rect { border-radius: 3px; }
 .md-sticker--round { border-radius: 999px; }
 
 /* ---------- Hand ---------- */
@@ -1360,8 +1284,8 @@ div.md-hand {
 .md-mark {
   background: var(--md-highlight);
   color: inherit;
-  padding: 0.08em 0.28em;
-  border-radius: 0.4em;
+  padding: 0.05em 0.15em;
+  border-radius: 2px;
   /* Keeps the highlight intact when the phrase wraps across two lines. */
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
@@ -1377,9 +1301,9 @@ div.md-hand {
 
 .md-figure--explicit {
   margin: 2rem 0;
-  padding: 0.85rem;
+  padding: 0.75rem;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
   background: var(--md-surface-muted);
 }
 
@@ -1404,9 +1328,9 @@ div.md-hand {
 
 .md-ascii {
   margin: 1.75rem 0;
-  padding: 1.1rem;
+  padding: 1rem;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
   background: var(--md-surface-muted);
   overflow-x: auto;
 }
@@ -1433,8 +1357,7 @@ div.md-hand {
 .md-embed {
   position: relative;
   margin: 2rem 0;
-  border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
   overflow: hidden;
   background: color-mix(in oklab, var(--md-fg) 8%, transparent);
   /* Reserves the space before the frame loads, so nothing shifts under the
@@ -1454,9 +1377,9 @@ div.md-hand {
 
 .md-embed-invalid {
   display: inline-block;
-  padding: 0.25rem 0.65rem;
+  padding: 0.2rem 0.5rem;
   border: 1px dashed var(--md-tone-danger);
-  border-radius: 999px;
+  border-radius: 4px;
   color: var(--md-tone-danger);
   font-size: 0.85em;
 }
@@ -1466,9 +1389,8 @@ div.md-hand {
 .md-tabs {
   margin: 1.75rem 0;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
   overflow: hidden;
-  box-shadow: var(--md-panel-shadow);
 }
 
 /*
@@ -1493,13 +1415,12 @@ div.md-hand {
   appearance: none;
   border: 0;
   background: none;
-  padding: 0.5rem 0.95rem;
+  padding: 0.5rem 0.9rem;
   font: inherit;
   font-size: 0.88rem;
   color: var(--md-fg-muted);
   cursor: pointer;
   border-bottom: 2px solid transparent;
-  border-radius: var(--md-radius-sm) var(--md-radius-sm) 0 0;
   white-space: nowrap;
 }
 
@@ -1509,7 +1430,6 @@ div.md-hand {
   color: var(--md-accent);
   border-bottom-color: var(--md-accent);
   font-weight: 600;
-  background: color-mix(in oklab, var(--md-accent) 6%, transparent);
 }
 
 .md-tab { padding: 1rem 1.1rem; }
@@ -1539,10 +1459,8 @@ div.md-hand {
 .md-details {
   margin: 1.25rem 0;
   border: 1px solid var(--md-border);
-  border-radius: var(--md-radius-lg);
+  border-radius: var(--md-radius);
   background: var(--md-surface);
-  box-shadow: var(--md-panel-shadow);
-  overflow: hidden;
 }
 
 .md-details-summary {
