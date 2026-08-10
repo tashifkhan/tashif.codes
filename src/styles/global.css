@@ -883,3 +883,38 @@ nav::-webkit-scrollbar-thumb:hover {
     animation: none;
   }
 }
+
+/* ── TanStack Charts tooltips (project stats dashboard) ── */
+.stats-chart-tooltip {
+  background-color: var(--color-popover) !important;
+  color: var(--color-popover-foreground) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: 10px 14px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+}
+
+.stats-chart-tooltip [data-ts-chart-tooltip-title],
+.stats-chart-tooltip .ts-chart-tooltip-title {
+  color: var(--color-primary);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.stats-chart-tooltip [data-ts-chart-tooltip-row],
+.stats-chart-tooltip .ts-chart-tooltip-row {
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stats-tanstack-chart .ts-chart-host,
+.stats-tanstack-chart {
+  width: 100%;
+}

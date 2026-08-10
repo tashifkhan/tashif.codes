@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, memo, useRef, useLayoutEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
 import {
 	Select,
 	SelectContent,
@@ -23,48 +23,21 @@ import {
 	dispatchLiveRefreshed,
 	writeStoredFetchedAt,
 } from "@/lib/dataFreshness";
-import {
-	AreaChart,
-	Area,
-	XAxis,
-	YAxis,
-	CartesianGrid,
-	Tooltip,
-	PieChart,
-	Pie,
-	Cell,
-	BarChart,
-	Bar,
-	ResponsiveContainer,
-} from "recharts";
+import { areaY, barX, defineChart, lineY } from "@tanstack/charts";
+import { Chart } from "@tanstack/charts/react";
+import { pie, polar, radialArc } from "@tanstack/charts/polar";
+import { scaleBand } from "@tanstack/charts/scales/band";
+import { scaleLinear } from "@tanstack/charts/scales/linear";
+import { scalePoint } from "@tanstack/charts/scales/point";
+import { tooltip } from "@tanstack/charts/tooltip";
 import { useWebHaptics } from "web-haptics/react";
 
-// --- Shared Tooltip Styles ---
-const TOOLTIP_STYLES = {
-	contentStyle: {
-		backgroundColor: "var(--color-popover)",
-		borderColor: "var(--color-border)",
-		borderRadius: "8px",
-		borderWidth: "1px",
-		color: "var(--color-popover-foreground)",
-		boxShadow: "var(--shadow-lg)",
-		padding: "10px 14px",
-	},
-	itemStyle: {
-		color: "var(--color-muted-foreground)",
-		fontSize: "12px",
-		fontWeight: "500",
-		lineHeight: "1.6",
-		fontFamily: "var(--font-mono)",
-	},
-	labelStyle: {
-		color: "var(--color-primary)",
-		marginBottom: "6px",
-		fontSize: "10px",
-		fontWeight: "700",
-		letterSpacing: "0.1em",
-		textTransform: "uppercase" as const,
-	},
+// Theme tokens shared by every TanStack chart on this page
+const CHART_THEME = {
+	foreground: "var(--color-muted-foreground)",
+	muted: "var(--color-muted-foreground)",
+	grid: "var(--color-border)",
+	background: "transparent",
 } as const;
 
 // --- Types ---
@@ -147,9 +120,21 @@ const ChartEmpty = memo(({ label = "no data" }: { label?: string }) => (
 	</div>
 ));
 
-// --- Chart Components ---
+// --- Chart Components (TanStack Charts) ---
 
-const RechartsAreaChart = memo(({
+type AreaSeriesRow = {
+	date: string;
+	formattedDate: string;
+	displayValue: number;
+	pageviews: number;
+	visitors: number;
+	bounce_rate: number;
+};
+
+const metricLabel = (key: string) =>
+	key.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
+
+const TimeseriesAreaChart = memo(({
 	data,
 	dataKey,
 	color,
@@ -164,34 +149,7 @@ const RechartsAreaChart = memo(({
 	unit?: string;
 	granularity?: Granularity;
 }) => {
-	const containerRef = useRef<HTMLDivElement | null>(null);
-	const [chartWidth, setChartWidth] = useState<number>(0);
-
-	useLayoutEffect(() => {
-		const el = containerRef.current;
-		if (!el) return;
-
-		const updateWidth = () => {
-			const nextWidth = Math.floor(el.getBoundingClientRect().width);
-			setChartWidth((prev) => (prev !== nextWidth ? nextWidth : prev));
-		};
-
-		updateWidth();
-
-		const ro = new ResizeObserver(() => updateWidth());
-		ro.observe(el);
-
-		window.addEventListener("orientationchange", updateWidth);
-		window.addEventListener("resize", updateWidth);
-
-		return () => {
-			ro.disconnect();
-			window.removeEventListener("orientationchange", updateWidth);
-			window.removeEventListener("resize", updateWidth);
-		};
-	}, []);
-
-	const formattedData = useMemo(() => {
+	const series = useMemo((): AreaSeriesRow[] => {
 		if (!data || data.length === 0) return [];
 
 		const labelOptions: Intl.DateTimeFormatOptions =
@@ -208,9 +166,11 @@ const RechartsAreaChart = memo(({
 				: parsedDate.toLocaleDateString(undefined, labelOptions);
 
 			return {
-				...d,
-				rawDate: d.date,
+				date: d.date,
 				formattedDate: safeDate,
+				pageviews: d.pageviews,
+				visitors: d.visitors,
+				bounce_rate: d.bounce_rate,
 				displayValue:
 					dataKey === "bounce_rate"
 						? Math.round(d[dataKey] * 100) / 100
@@ -219,79 +179,113 @@ const RechartsAreaChart = memo(({
 		});
 	}, [data, dataKey, granularity]);
 
-	const tooltipFormatter = useCallback((value: number | undefined) => {
-		const numValue = value ?? 0;
-		return [
-			`${numValue}${unit}`,
-			dataKey.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-		];
-	}, [dataKey, unit]);
+	const gradientId = `area-fill-${dataKey}`;
+	const seriesLabel = metricLabel(dataKey);
 
-	if (formattedData.length === 0)
+	const definition = useMemo(() => {
+		if (series.length === 0) return null;
+
+		return defineChart({
+			marks: [
+				areaY(series, {
+					id: `${dataKey}-area`,
+					x: "formattedDate",
+					y1: 0,
+					y2: "displayValue",
+					fill: `url(#${gradientId})`,
+					fillOpacity: 1,
+					key: "date",
+				}),
+				lineY(series, {
+					id: `${dataKey}-line`,
+					x: "formattedDate",
+					y: "displayValue",
+					stroke: color,
+					strokeWidth: 1.5,
+					key: "date",
+				}),
+			],
+			x: {
+				scale: () => scalePoint<string>().padding(0.05),
+				grid: false,
+				axis: {
+					line: false,
+					ticks: { size: 0, spacing: 72 },
+					tickLabels: {
+						fontSize: 11,
+						thin: { minGap: 20, priority: "ends" },
+					},
+				},
+			},
+			y: {
+				scale: scaleLinear,
+				nice: true,
+				grid: true,
+				axis: {
+					line: false,
+					ticks: {
+						size: 0,
+						count: 5,
+						format: (value) => `${Number(value).toLocaleString()}${unit}`,
+					},
+					tickLabels: { fontSize: 11 },
+				},
+			},
+			gradients: [
+				{
+					id: gradientId,
+					x1: 0,
+					y1: 1,
+					x2: 0,
+					y2: 0,
+					stops: [
+						{ offset: 0, color, opacity: 0 },
+						{ offset: 1, color, opacity: 0.18 },
+					],
+				},
+			],
+			theme: CHART_THEME,
+			focus: "nearest-x",
+			tooltip: {
+				use: tooltip,
+				className: "stats-chart-tooltip",
+				items: [
+					{
+						channel: "y",
+						label: seriesLabel,
+						text: (point) =>
+							`${Number(point.yValue).toLocaleString()}${unit}`,
+					},
+					{
+						channel: "x",
+						label: "Date",
+					},
+				],
+			},
+		});
+	}, [series, dataKey, color, unit, gradientId, seriesLabel]);
+
+	if (!definition) {
 		return (
 			<div style={{ height }}>
 				<ChartEmpty label="no data available" />
 			</div>
 		);
+	}
 
 	return (
-		<div ref={containerRef} style={{ width: "100%", height: height || 300 }}>
-			{chartWidth > 0 ? (
-				<AreaChart
-					width={chartWidth}
-					height={height || 300}
-					data={formattedData}
-					margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-				>
-					<defs>
-						<linearGradient id={`grad-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
-							<stop offset="0%" stopColor={color} stopOpacity={0.18} />
-							<stop offset="100%" stopColor={color} stopOpacity={0} />
-						</linearGradient>
-					</defs>
-					<CartesianGrid strokeDasharray="0" vertical={false} stroke="var(--color-border)" opacity={1} />
-					<XAxis
-						dataKey="formattedDate"
-						fontSize={11}
-						tickLine={false}
-						axisLine={false}
-						tick={{ fill: "var(--color-muted-foreground)" }}
-						interval="preserveStartEnd"
-						minTickGap={20}
-					/>
-					<YAxis
-						fontSize={11}
-						tickLine={false}
-						axisLine={false}
-						tickFormatter={(value) => `${value.toLocaleString()}${unit}`}
-						tick={{ fill: "var(--color-muted-foreground)" }}
-						width={44}
-					/>
-					<Tooltip
-						contentStyle={TOOLTIP_STYLES.contentStyle}
-						itemStyle={TOOLTIP_STYLES.itemStyle}
-						labelStyle={TOOLTIP_STYLES.labelStyle}
-						formatter={tooltipFormatter}
-					/>
-					<Area
-						type="monotone"
-						dataKey={dataKey === "bounce_rate" ? "displayValue" : dataKey}
-						stroke={color}
-						fill={`url(#grad-${dataKey})`}
-						strokeWidth={1.5}
-						connectNulls
-						isAnimationActive={false}
-					/>
-				</AreaChart>
-			) : (
-				<div className="flex items-center justify-center text-muted-foreground text-sm" style={{ height }}>
-					Loading chart...
-				</div>
-			)}
+		<div className="w-full" style={{ height }}>
+			<Chart
+				definition={definition}
+				height={height}
+				ariaLabel={`${seriesLabel} over time`}
+				className="w-full stats-tanstack-chart"
+				style={{ color: "var(--color-muted-foreground)" }}
+			/>
 		</div>
 	);
 });
-RechartsAreaChart.displayName = "RechartsAreaChart";
+TimeseriesAreaChart.displayName = "TimeseriesAreaChart";
 
 const DonutChart = memo(({
 	data,
@@ -302,39 +296,13 @@ const DonutChart = memo(({
 	title: string;
 	height?: number;
 }) => {
-	const containerRef = useRef<HTMLDivElement | null>(null);
-	const [chartWidth, setChartWidth] = useState<number>(0);
-
-	useLayoutEffect(() => {
-		const el = containerRef.current;
-		if (!el) return;
-
-		const updateWidth = () => {
-			const nextWidth = Math.floor(el.getBoundingClientRect().width);
-			setChartWidth((prev) => (prev !== nextWidth ? nextWidth : prev));
-		};
-
-		updateWidth();
-
-		const ro = new ResizeObserver(() => updateWidth());
-		ro.observe(el);
-
-		window.addEventListener("orientationchange", updateWidth);
-		window.addEventListener("resize", updateWidth);
-
-		return () => {
-			ro.disconnect();
-			window.removeEventListener("orientationchange", updateWidth);
-			window.removeEventListener("resize", updateWidth);
-		};
-	}, []);
-
-	const chartData = useMemo(() =>
-		data.slice(0, 5).map((item) => ({
-			name: item.key,
-			value: item.pageviews,
-		})),
-		[data]
+	const chartData = useMemo(
+		() =>
+			data.slice(0, 5).map((item) => ({
+				name: item.key,
+				value: item.pageviews,
+			})),
+		[data],
 	);
 
 	const chartHeight = useMemo(() => {
@@ -343,53 +311,70 @@ const DonutChart = memo(({
 		return Math.max(170, height - legendHeight - 16);
 	}, [chartData.length, height]);
 
-	const outerRadius = useMemo(() => {
-		if (chartWidth === 0) return 72;
-		return Math.max(44, Math.min(82, Math.floor(chartWidth * 0.24)));
-	}, [chartWidth]);
+	const definition = useMemo(() => {
+		if (chartData.length === 0) return null;
 
-	const innerRadius = useMemo(() => Math.max(30, Math.floor(outerRadius * 0.68)), [outerRadius]);
+		const names = chartData.map((row) => row.name);
+		const slices = pie(chartData, {
+			value: "value",
+			gapAngle: 0.05,
+		});
 
-	const cells = useMemo(() =>
-		chartData.map((_, index) => (
-			<Cell key={index} fill={COLORS[index % COLORS.length]} stroke="transparent" />
-		)),
-		[chartData]
-	);
+		return defineChart({
+			marks: [
+				polar({
+					inset: 8,
+					radiusRatio: 0.9,
+					marks: [
+						radialArc(slices, {
+							innerRadius: ({ radius }) => radius * 0.68,
+							cornerRadius: 3,
+							color: "name",
+							key: "name",
+							stroke: "transparent",
+						}),
+					],
+				}),
+			],
+			guides: false,
+			color: {
+				domain: names,
+				range: COLORS.slice(0, names.length),
+			},
+			theme: CHART_THEME,
+			tooltip: {
+				use: tooltip,
+				className: "stats-chart-tooltip",
+				items: [
+					{
+						field: "name",
+						label: title,
+					},
+					{
+						field: "value",
+						label: "Pageviews",
+						text: (point) =>
+							Number(point.datum.value).toLocaleString(),
+					},
+				],
+			},
+		});
+	}, [chartData, title]);
 
-	if (chartData.length === 0) {
-		return (
-			<ChartEmpty />
-		);
+	if (chartData.length === 0 || !definition) {
+		return <ChartEmpty />;
 	}
 
 	return (
 		<div className="w-full h-full flex flex-col justify-center">
-			<div ref={containerRef} style={{ width: "100%", height: chartHeight }}>
-				{chartWidth > 0 ? (
-					<PieChart width={chartWidth} height={chartHeight}>
-						<Pie
-							data={chartData}
-							cx="50%"
-							cy="50%"
-							innerRadius={innerRadius}
-							outerRadius={outerRadius}
-							paddingAngle={3}
-							dataKey="value"
-							isAnimationActive={false}
-						>
-							{cells}
-						</Pie>
-						<Tooltip
-							contentStyle={TOOLTIP_STYLES.contentStyle}
-							itemStyle={TOOLTIP_STYLES.itemStyle}
-						/>
-					</PieChart>
-				) : (
-					<div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-						Loading chart...
-					</div>
-				)}
+			<div style={{ width: "100%", height: chartHeight }}>
+				<Chart
+					definition={definition}
+					height={chartHeight}
+					ariaLabel={title}
+					className="w-full stats-tanstack-chart"
+					style={{ color: "var(--color-muted-foreground)" }}
+				/>
 			</div>
 
 			<div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2">
@@ -415,53 +400,83 @@ const HorizontalBarChart = memo(({
 	data: StatEntry[];
 	height?: number;
 }) => {
-	const chartData = useMemo(() =>
-		data.slice(0, 8).map((item) => ({
-			name: item.key,
-			value: item.pageviews,
-		})),
-		[data]
+	const chartData = useMemo(
+		() =>
+			data.slice(0, 8).map((item) => ({
+				name: item.key,
+				value: item.pageviews,
+			})),
+		[data],
 	);
 
-	const cells = useMemo(() =>
-		chartData.map((_, index) => (
-			<Cell key={index} fill={COLORS[index % COLORS.length]} />
-		)),
-		[chartData]
-	);
+	const definition = useMemo(() => {
+		if (chartData.length === 0) return null;
 
-	if (chartData.length === 0) {
-		return (
-			<ChartEmpty />
-		);
+		const names = chartData.map((row) => row.name);
+
+		return defineChart({
+			marks: [
+				barX(chartData, {
+					y: "name",
+					x: "value",
+					color: "name",
+					key: "name",
+					radius: 3,
+					inset: 2,
+				}),
+			],
+			x: {
+				scale: scaleLinear,
+				nice: true,
+				grid: true,
+				axis: false,
+			},
+			y: {
+				scale: () =>
+					scaleBand<string>()
+						.domain(names)
+						.padding(0.18),
+				grid: false,
+				axis: {
+					line: false,
+					ticks: { size: 0 },
+					tickLabels: { fontSize: 11 },
+				},
+			},
+			color: {
+				domain: names,
+				range: COLORS.slice(0, names.length),
+			},
+			theme: CHART_THEME,
+			tooltip: {
+				use: tooltip,
+				className: "stats-chart-tooltip",
+				items: [
+					{ field: "name", label: "Category" },
+					{
+						channel: "x",
+						label: "Pageviews",
+						text: (point) => Number(point.xValue).toLocaleString(),
+					},
+				],
+			},
+		});
+	}, [chartData]);
+
+	if (chartData.length === 0 || !definition) {
+		return <ChartEmpty />;
 	}
 
 	return (
-		<ResponsiveContainer width="100%" height={height}>
-			<BarChart
-				layout="vertical"
-				data={chartData}
-				margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
-			>
-				<CartesianGrid strokeDasharray="0" horizontal={false} stroke="var(--color-border)" opacity={1} />
-				<XAxis type="number" hide />
-				<YAxis
-					dataKey="name"
-					type="category"
-					width={100}
-					tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }}
-					interval={0}
-				/>
-				<Tooltip
-					cursor={{ fill: "var(--color-muted)" }}
-					contentStyle={TOOLTIP_STYLES.contentStyle}
-					itemStyle={TOOLTIP_STYLES.itemStyle}
-				/>
-				<Bar dataKey="value" radius={[0, 3, 3, 0]} isAnimationActive={false}>
-					{cells}
-				</Bar>
-			</BarChart>
-		</ResponsiveContainer>
+		<div className="w-full" style={{ height }}>
+			<Chart
+				definition={definition}
+				height={height}
+				ariaLabel="Pageviews by category"
+				className="w-full stats-tanstack-chart"
+				style={{ color: "var(--color-muted-foreground)" }}
+			/>
+		</div>
 	);
 });
 HorizontalBarChart.displayName = "HorizontalBarChart";
@@ -1102,7 +1117,7 @@ export default function ProjectStatsDashboard() {
 										<h3 className="text-foreground font-semibold text-base">Pageviews Over Time</h3>
 										<p className="text-muted-foreground text-xs mt-0.5">{GRANULARITY_LABELS[granularity]} pageview count for the selected period</p>
 									</div>
-									<RechartsAreaChart
+									<TimeseriesAreaChart
 										data={chartData}
 										dataKey="pageviews"
 										color="var(--color-chart-2)"
@@ -1116,7 +1131,7 @@ export default function ProjectStatsDashboard() {
 										<h3 className="text-foreground font-semibold text-base">Visitors Over Time</h3>
 										<p className="text-muted-foreground text-xs mt-0.5">{GRANULARITY_LABELS[granularity]} unique visitor count for the selected period</p>
 									</div>
-									<RechartsAreaChart
+									<TimeseriesAreaChart
 										data={chartData}
 										dataKey="visitors"
 										color="var(--color-chart-3)"
@@ -1130,7 +1145,7 @@ export default function ProjectStatsDashboard() {
 										<h3 className="text-foreground font-semibold text-base">Bounce Rate</h3>
 										<p className="text-muted-foreground text-xs mt-0.5">Percentage of single-page sessions, {GRANULARITY_LABELS[granularity].toLowerCase()} average</p>
 									</div>
-									<RechartsAreaChart
+									<TimeseriesAreaChart
 										data={chartData}
 										dataKey="bounce_rate"
 										color="var(--color-chart-1)"
