@@ -259,8 +259,8 @@ async function fetchRepoMeta(users: string[]): Promise<RepoMeta> {
 
 /**
  * Last-resort repo list straight from GitHub, shaped like the stats API payload.
- * Keeps the grid populated when github-stats is 500ing (README/live URL come from
- * the repo record itself rather than the richer stats response).
+ * Keeps the grid populated when github-stats is 500ing. READMEs are filled in
+ * separately via {@link fillMissingReadmes}.
  */
 async function fetchReposFromGitHub(user: string): Promise<any[]> {
 	const repos = await fetchJsonCached<any[]>(
@@ -283,6 +283,85 @@ async function fetchReposFromGitHub(user: string): Promise<any[]> {
 	}));
 }
 
+/** Decode a GitHub Contents API base64 payload to UTF-8 markdown. */
+function decodeGithubReadmeContent(contentB64: string | undefined | null): string {
+	if (!contentB64) return "";
+	try {
+		const normalized = contentB64.replace(/\n/g, "");
+		return Buffer.from(normalized, "base64").toString("utf-8");
+	} catch {
+		return "";
+	}
+}
+
+/**
+ * Fetch a single repo README from GitHub, disk-cached so rebuilds stay cheap.
+ * Returns empty string when the repo has no README or the API refuses the call.
+ */
+async function fetchGithubReadme(fullName: string): Promise<string> {
+	const key = `gh-readme-${fullName.replace("/", "__").toLowerCase()}`;
+	const cached = readCache<{ content?: string; empty?: boolean }>(key);
+	if (cached) {
+		if (cached.empty) return "";
+		if (typeof cached.content === "string") return cached.content;
+	}
+
+	try {
+		const res = await fetch(
+			`https://api.github.com/repos/${fullName}/readme`,
+			{ headers: GH_HEADERS }
+		);
+		if (res.status === 404) {
+			writeCache(key, { empty: true });
+			return "";
+		}
+		if (!res.ok) {
+			console.error(`README fetch failed (${res.status}) for ${fullName}`);
+			return "";
+		}
+		const body = (await res.json()) as { content?: string };
+		const markdown = decodeGithubReadmeContent(body.content);
+		if (markdown) {
+			writeCache(key, { content: markdown });
+		} else {
+			writeCache(key, { empty: true });
+		}
+		return markdown;
+	} catch (e) {
+		console.error(`Error fetching README for ${fullName}`, e);
+		return "";
+	}
+}
+
+/**
+ * Backfill empty `readme` fields from the GitHub Contents API.
+ * Used when the stats API is down, returns skeleton rows, or omits READMEs.
+ */
+async function fillMissingReadmes(
+	repos: any[],
+	owner = "tashifkhan"
+): Promise<void> {
+	const missing = repos.filter(
+		(r) => r && typeof r === "object" && !(typeof r.readme === "string" && r.readme.trim())
+	);
+	if (missing.length === 0) return;
+
+	// Cap unauthenticated fills; with a token cover the full list in batches.
+	const limit = GH_TOKEN ? missing.length : Math.min(missing.length, 8);
+	const targets = missing.slice(0, limit);
+
+	await inBatches(targets, 6, async (repo) => {
+		const name = repo.title || repo.name;
+		if (!name || typeof name !== "string") return;
+		const fullName =
+			typeof repo.full_name === "string" && repo.full_name.includes("/")
+				? repo.full_name
+				: `${owner}/${name}`;
+		const readme = await fetchGithubReadme(fullName);
+		if (readme) repo.readme = readme;
+	});
+}
+
 async function fetchAllProjects(): Promise<Project[]> {
 	let repos: any[] =
 		(await fetchJsonCached<any[]>(
@@ -296,6 +375,12 @@ async function fetchAllProjects(): Promise<Project[]> {
 		);
 		repos = await fetchReposFromGitHub("tashifkhan");
 	}
+
+	// Stats API may 500 mid-build, return a warm cache with holes, or serve the
+	// lite payload with some skeleton rows. Always backfill empty READMEs from
+	// GitHub so project pages never show the empty terminal shell when a
+	// README actually exists upstream.
+	await fillMissingReadmes(repos, "tashifkhan");
 
 	// Fetch stars from multiple users to support parent repo star counts
 	const starMap = new Map<string, number>();
@@ -451,9 +536,33 @@ async function fetchAllProjects(): Promise<Project[]> {
 					topicsMap.get(pinned.slug.toLowerCase()) ??
 					[];
 			}
+			// Pinned endpoint never includes README; backfill from GitHub.
+			if (!pinned.readme?.trim() && pinned.github_link) {
+				const match = pinned.github_link.match(
+					/github\.com\/([^/]+\/[^/]+)/i
+				);
+				if (match) {
+					pinned.readme = await fetchGithubReadme(match[1]);
+				}
+			}
 			repoProjects.push(pinned);
 		}
 	}
+
+	// Final pass: any project still missing a README (stats skeleton rows,
+	// stale cache holes, or pinned-only entries that skipped above).
+	await inBatches(
+		repoProjects.filter((p) => !p.readme?.trim()),
+		6,
+		async (project) => {
+			const match = project.github_link?.match(
+				/github\.com\/([^/]+\/[^/]+)/i
+			);
+			if (!match) return;
+			const readme = await fetchGithubReadme(match[1]);
+			if (readme) project.readme = readme;
+		}
+	);
 
 	// Sort: pinned first, then by stars desc within pinned; preserve original order otherwise
 	repoProjects.sort((a, b) => {
