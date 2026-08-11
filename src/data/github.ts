@@ -1,4 +1,5 @@
 import {
+	githubAttributedStatsUrl,
 	githubUsernames,
 	personalGithubUsername,
 } from "./profile";
@@ -151,7 +152,7 @@ async function fetchExtraParentStars(): Promise<number> {
 
 async function fetchUserResults(username: string): Promise<UserResults> {
 	const endpoints = [
-		`https://github-stats.tashif.codes/${username}/stats?exclude=HTML,CSS,Jupyter Notebook,SCSS`,
+		githubAttributedStatsUrl("https://github-stats.tashif.codes", username),
 		`https://github-stats.tashif.codes/${username}/prs`,
 		`https://github-stats.tashif.codes/${username}/stars`,
 		`https://github-stats.tashif.codes/${username}/commits`,

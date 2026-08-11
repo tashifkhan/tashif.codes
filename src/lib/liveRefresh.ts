@@ -7,6 +7,7 @@
  */
 
 import {
+	githubAttributedStatsUrl,
 	githubUsernames,
 	personalGithubUsername,
 } from "@/data/profile";
@@ -139,9 +140,8 @@ async function fetchViews(usernames: string[]): Promise<number> {
 }
 
 async function loadUserBundle(username: string) {
-	const exclude = encodeURIComponent("HTML,CSS,Jupyter Notebook,SCSS");
 	const [stats, prs, stars, commits, pulls] = await Promise.all([
-		fetchJson<GhStatsPayload>(`${GH_STATS}/${username}/stats?exclude=${exclude}`),
+		fetchJson<GhStatsPayload>(githubAttributedStatsUrl(GH_STATS, username)),
 		fetchJson<unknown[]>(`${GH_STATS}/${username}/prs`),
 		fetchJson<GhStarsPayload>(`${GH_STATS}/${username}/stars`),
 		fetchJson<

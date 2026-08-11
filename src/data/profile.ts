@@ -29,6 +29,36 @@ export const githubProfiles = githubUsernames.map((handle) => ({
 
 export const githubStatsApiBase = "https://github-stats.tashif.codes";
 
+/** Non-source formats omitted from authored-code language percentages. */
+export const githubLanguageExclusions = [
+	"HTML",
+	"CSS",
+	"Jupyter Notebook",
+	"SCSS",
+	"CSV",
+	"JSON",
+	"Markdown",
+	"YAML",
+	"XML",
+	"Text",
+	"Ignore List",
+	"Git Attributes",
+	"Dotenv",
+];
+
+/** Explicit attributed stats URL with a versioned response-cache key. */
+export function githubAttributedStatsUrl(
+	apiBase: string,
+	username: string,
+): string {
+	const params = new URLSearchParams({
+		attributed: "true",
+		exclude: githubLanguageExclusions.join(","),
+		source: "portfolio-own-commits-v2",
+	});
+	return `${apiBase}/${encodeURIComponent(username)}/stats?${params.toString()}`;
+}
+
 export const socials: SocialLink[] = [
 	{ icon: Github, link: "https://github.com/tashifkhan", label: "GitHub" },
 	{ icon: Globe, link: "https://portfolio.tashif.codes", label: "Portfolio" },
