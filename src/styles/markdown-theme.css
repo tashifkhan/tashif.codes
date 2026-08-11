@@ -134,25 +134,79 @@
   border-radius: var(--md-radius-lg);
 }
 
-.markdown-body .md-table-wrap,
-.markdown-body .md-quote {
+.markdown-body .md-table-wrap {
   box-shadow: var(--shadow-sm);
   border-radius: var(--md-radius-lg);
 }
 
 /*
- * Callouts, panels, and phases share the open rail look. Kill card chrome so
- * theme utilities cannot re-box them. Taped panels re-enable a quiet surface.
+ * Callouts, panels, phases, and quotes share the open rail look. Kill card
+ * chrome so theme utilities cannot re-box them. Taped panels re-enable a quiet
+ * surface. Quotes used to keep a muted pill + left bar; nested inside project
+ * README cards that read as a chat chip rather than a pull quote.
  */
 .markdown-body .md-callout,
 .markdown-body .md-panel:not(.md-panel--taped),
-.markdown-body .md-phase {
+.markdown-body .md-phase,
+.markdown-body .md-quote {
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+/*
+ * Quote rail — same pill accent as heading bars / phase rails, not a filled
+ * card. Body is upright so multi-sentence mission notes stay readable; emphasis
+ * still arrives via `.md-em`.
+ */
+.markdown-body .md-quote {
+  position: relative;
+  margin: 1.75rem 0;
+  padding: 0.15rem 0 0.15rem 1.15rem;
+  color: color-mix(in oklab, var(--foreground) 88%, transparent);
+  font-style: normal;
+  font-size: 1.02em;
+  line-height: 1.7;
+}
+
+.markdown-body .md-quote::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.35em;
+  bottom: 0.35em;
+  width: 3px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--primary) 55%, transparent);
+}
+
+.markdown-body .md-quote > :first-child {
+  margin-top: 0;
+}
+
+.markdown-body .md-quote > :last-child {
+  margin-bottom: 0;
+}
+
+/*
+ * READMEs often lead with a bold label ("Mission:", "Note:"). Treat that like a
+ * callout title — mono, tracked, primary-tinted — so the block sits with the
+ * rest of the document components instead of reading as free-form prose.
+ */
+.markdown-body .md-quote > .md-p > .md-strong:first-child {
+  display: inline-block;
+  margin-right: 0.35em;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--primary) 72%, var(--foreground));
+  vertical-align: 0.08em;
 }
 
 .markdown-body .md-panel--taped {
