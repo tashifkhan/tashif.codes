@@ -296,10 +296,16 @@ function decodeGithubReadmeContent(contentB64: string | undefined | null): strin
 
 /**
  * Fetch a single repo README from GitHub, disk-cached so rebuilds stay cheap.
- * Returns empty string when the repo has no README or the API refuses the call.
+ * The conventional raw README URL is tried first because it does not consume
+ * the unauthenticated GitHub API quota shared by Vercel build machines. The
+ * Contents API remains the fallback for repositories using another README
+ * filename. Returns an empty string only when GitHub confirms no README exists
+ * or neither source can be reached.
  */
 async function fetchGithubReadme(fullName: string): Promise<string> {
-	const key = `gh-readme-${fullName.replace("/", "__").toLowerCase()}`;
+	// v2 invalidates old negative cache entries created when an earlier build
+	// was rate-limited and mistakenly treated the repo as undocumented.
+	const key = `gh-readme-v2-${fullName.replace("/", "__").toLowerCase()}`;
 	const cached = readCache<{ content?: string; empty?: boolean }>(key);
 	if (cached) {
 		if (cached.empty) return "";
@@ -307,6 +313,19 @@ async function fetchGithubReadme(fullName: string): Promise<string> {
 	}
 
 	try {
+		const rawUrl = `https://raw.githubusercontent.com/${fullName}/HEAD/README.md`;
+		const rawRes = await fetch(rawUrl);
+		if (rawRes.ok) {
+			const markdown = await rawRes.text();
+			if (markdown.trim()) {
+				writeCache(key, { content: markdown });
+				return markdown;
+			}
+		}
+
+		// GitHub's README endpoint resolves alternate names/casing for us. Only
+		// a 404 is a durable "no README" result; rate limits and transient errors
+		// must never be written as an empty cache entry.
 		const res = await fetch(
 			`https://api.github.com/repos/${fullName}/readme`,
 			{ headers: GH_HEADERS }
