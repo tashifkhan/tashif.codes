@@ -37,3 +37,4 @@ pnpm-debug.log*
 
 # build-time API response cache (survives upstream outages)
 .cache/
+.mdport/

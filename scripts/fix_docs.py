@@ -58,5 +58,5 @@ def process_docs(docs_dir):
 
 
 if __name__ == "__main__":
-    DOCS_DIR = "/Users/taf/Projects/Dashboard/src/data/docs"
+    DOCS_DIR = os.path.join(os.getcwd(), "src/data/docs")
     process_docs(DOCS_DIR)
