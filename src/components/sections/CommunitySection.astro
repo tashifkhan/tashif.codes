@@ -9,9 +9,15 @@ import { socials, githubProfiles } from "../../data/profile";
 
 const socialLink = (label: string) =>
 	socials.find((s) => s.label === label)?.link ?? "#";
+
+interface Props {
+	active?: boolean;
+}
+
+const { active = false } = Astro.props;
 ---
 
-<div id="community-section" class="hidden">
+<div id="community-section" class:list={[!active && "hidden"]}>
 	<div class="mb-10">
 		<h2
 			class="font-sans text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent mb-4 pb-1"

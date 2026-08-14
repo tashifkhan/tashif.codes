@@ -7,64 +7,62 @@ import {
 	Code2,
 	Users,
 } from "lucide-react";
+import { TABS, type TabId } from "../../lib/tabs";
+import { owner } from "../../data/profile";
+
+interface Props {
+	activeTab?: TabId;
+}
+
+const { activeTab = "projects" } = Astro.props;
+
+const ICONS: Record<TabId, any> = {
+	projects: FolderOpen,
+	resume: FileText,
+	blog: BookOpen,
+	github: Github,
+	leetcode: Code2,
+	community: Users,
+};
+
+// Rendered onto each tab so the client can keep <title> honest across pushState
+const titleFor = (titleLabel: string) =>
+	titleLabel
+		? `${titleLabel} | ${owner.name}`
+		: `${owner.name} | Dashboard & Portfolio`;
+
+const tabClass =
+	"inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:text-foreground shrink-0";
 ---
 
-		<nav
-class="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:supports-[backdrop-filter]:bg-card/60 bg-card/80 dark:bg-card/70 border-b border-border/60 dark:border-border/60 transition-colors duration-300 overflow-x-auto font-sans no-scrollbar"
+<nav
+	class="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:supports-[backdrop-filter]:bg-card/60 bg-card/80 dark:bg-card/70 border-b border-border/60 dark:border-border/60 transition-colors duration-300 overflow-x-auto font-sans no-scrollbar"
+>
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+		<div
+			class="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground w-full sm:w-auto overflow-x-auto no-scrollbar"
+			style="overflow-x: auto !important;"
 		>
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-	<div
-		class="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground w-full sm:w-auto overflow-x-auto no-scrollbar"
-		style="overflow-x: auto !important;"
-	>
-		<button
-			id="projects-tab"
-			class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:text-foreground shrink-0"
-			data-state="active"
-		>
-			<FolderOpen size={16} className="mr-2" />
-			Projects
-		</button>
-		<button
-			id="resume-tab"
-			class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:text-foreground shrink-0"
-			data-state="inactive"
-		>
-			<FileText size={16} className="mr-2" />
-			About
-		</button>
-		<button
-			id="blog-tab"
-			class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:text-foreground shrink-0"
-			data-state="inactive"
-		>
-			<BookOpen size={16} className="mr-2" />
-			Blog
-		</button>
-		<button
-			id="github-tab"
-			class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:text-foreground shrink-0"
-			data-state="inactive"
-		>
-			<Github size={16} className="mr-2" />
-			GitHub
-		</button>
-		<button
-			id="leetcode-tab"
-			class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:text-foreground shrink-0"
-			data-state="inactive"
-		>
-			<Code2 size={16} className="mr-2" />
-			LeetCode
-		</button>
-		<button
-			id="community-tab"
-			class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:text-foreground shrink-0"
-			data-state="inactive"
-		>
-			<Users size={16} className="mr-2" />
-			Connect
-		</button>
+			{
+				TABS.map((tab) => {
+					const Icon = ICONS[tab.id];
+					const isActive = tab.id === activeTab;
+					return (
+						<a
+							id={`${tab.id}-tab`}
+							href={tab.href}
+							data-tab={tab.id}
+							data-tab-title={titleFor(tab.titleLabel)}
+							data-state={isActive ? "active" : "inactive"}
+							aria-current={isActive ? "page" : undefined}
+							class={tabClass}
+						>
+							<Icon size={16} className="mr-2" />
+							{tab.label}
+						</a>
+					);
+				})
+			}
+		</div>
 	</div>
-</div>
-		</nav>
+</nav>

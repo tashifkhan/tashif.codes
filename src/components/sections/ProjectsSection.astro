@@ -12,9 +12,15 @@ const projects: Project[] = allProjects;
 const analyticsProjects = await fetchAnalyticsProjects();
 const numProjects = projects.length;
 const liveProjectCount = projects.filter((p) => p.live_website_url).length;
+
+interface Props {
+	active?: boolean;
+}
+
+const { active = false } = Astro.props;
 ---
 
-<div id="projects-section">
+<div id="projects-section" class:list={[!active && "hidden"]}>
 	<!-- Section heading: single compact row -->
 	<div class="mb-4 sm:mb-5 flex items-center gap-x-2 sm:gap-x-3 min-w-0">
 		<h2
