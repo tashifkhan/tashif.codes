@@ -1,0 +1,671 @@
+---
+/**
+ * The tabbed dashboard. Every tab is also a route (/, /resume, /blog,
+ * /github, /leetcode, /connect) — this renders the whole thing with one
+ * section already open, and the client script swaps sections + pushState's
+ * the matching URL when a tab is clicked. See src/lib/tabs.ts.
+ */
+import Layout from "./Layout.astro";
+import SiteHeader from "../components/sections/SiteHeader.astro";
+import SectionTabs from "../components/sections/SectionTabs.astro";
+import WelcomeBanner from "../components/sections/WelcomeBanner.astro";
+import ProjectsSection from "../components/sections/ProjectsSection.astro";
+import BlogSection from "../components/sections/BlogSection.astro";
+import GitHubSection from "../components/sections/GitHubSection.astro";
+import LeetCodeSection from "../components/sections/LeetCodeSection.astro";
+import CommunitySection from "../components/sections/CommunitySection.astro";
+import Resume from "../components/resume/Resume.astro";
+import { Button } from "@/components/ui/button";
+import { ArrowUp } from "lucide-react";
+import { owner } from "../data/profile";
+import { getTab, type TabId } from "../lib/tabs";
+
+interface Props {
+	activeTab?: TabId;
+}
+
+const { activeTab = "projects" } = Astro.props;
+
+const { titleLabel } = getTab(activeTab);
+const title = titleLabel
+	? `${titleLabel} | ${owner.name}`
+	: `${owner.name} | Dashboard & Portfolio`;
+---
+
+<Layout title={title}>
+	<div
+		class="relative min-h-screen bg-background text-foreground dark:text-foreground transition-colors duration-300 font-sans scroll-smooth"
+	>
+		<div
+			class="pointer-events-none absolute inset-0 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]"
+		>
+			<div
+				class="h-40 bg-gradient-to-b from-orange-200/40 to-transparent dark:from-orange-900/20"
+			>
+			</div>
+		</div>
+
+		<SiteHeader />
+		<SectionTabs activeTab={activeTab} />
+
+		<!-- Main Content -->
+		<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+			<WelcomeBanner />
+
+			<ProjectsSection active={activeTab === "projects"} />
+
+			<div id="resume-section" class:list={[activeTab !== "resume" && "hidden"]}>
+				<Resume />
+			</div>
+
+			<BlogSection active={activeTab === "blog"} />
+			<GitHubSection active={activeTab === "github"} />
+			<LeetCodeSection active={activeTab === "leetcode"} />
+			<CommunitySection active={activeTab === "community"} />
+		</main>
+	</div>
+</Layout>
+
+<!-- Scroll to top button -->
+<Button
+	id="scroll-top-btn"
+	type="button"
+	size="icon"
+	className="fixed bottom-6 right-6 z-40 h-11 w-11 rounded-full shadow-md opacity-0 pointer-events-none transition-all"
+	aria-label="Scroll to top"
+>
+	<ArrowUp size={18} />
+</Button>
+
+<script>
+	import { WebHaptics } from "web-haptics";
+	import {
+		TAB_IDS,
+		DEFAULT_TAB,
+		getTab,
+		tabFromPath,
+		tabFromSearch,
+		stripTabParams,
+		type TabId,
+	} from "../lib/tabs";
+
+	const haptics = new WebHaptics();
+
+	function getTabEl(id: TabId) {
+		return document.getElementById(`${id}-tab`);
+	}
+
+	function getSectionEl(id: TabId) {
+		return document.getElementById(`${id}-section`);
+	}
+
+	/** Show one section and mark its tab active. Pure DOM — no history. */
+	function activateTab(tabId: TabId) {
+		TAB_IDS.forEach((id) => {
+			const tab = getTabEl(id);
+			const section = getSectionEl(id);
+			const isActive = id === tabId;
+
+			if (tab) {
+				tab.setAttribute("data-state", isActive ? "active" : "inactive");
+				if (isActive) tab.setAttribute("aria-current", "page");
+				else tab.removeAttribute("aria-current");
+			}
+			section?.classList.toggle("hidden", !isActive);
+		});
+
+		const title = getTabEl(tabId)?.dataset.tabTitle;
+		if (title) document.title = title;
+	}
+
+	/** Switch tabs and put the tab's own URL in the address bar. */
+	function navigateToTab(tabId: TabId, { push = true } = {}) {
+		activateTab(tabId);
+		if (push && tabFromPath(window.location.pathname) !== tabId) {
+			history.pushState({ tab: tabId }, "", getTab(tabId).href);
+		}
+	}
+
+	function scrollToTabTop() {
+		// If already scrolled past the profile header, land just below it
+		// (tab nav stuck at top); otherwise go to the very top.
+		const header = document.querySelector("header");
+		const threshold = header ? header.offsetHeight : 0;
+		window.scrollTo(0, window.scrollY >= threshold ? threshold : 0);
+	}
+
+	function setupTabClickHandlers() {
+		TAB_IDS.forEach((id) => {
+			const tab = getTabEl(id);
+			// Guard: this runs both at script load and on astro:page-load, so
+			// without the flag each tab ends up with two click listeners.
+			if (!tab || tab.dataset.tabWired) return;
+			tab.dataset.tabWired = "true";
+			tab.addEventListener("click", (event) => {
+				// Let the browser handle new-tab / new-window / download intents
+				if (
+					event.metaKey ||
+					event.ctrlKey ||
+					event.shiftKey ||
+					event.altKey ||
+					event.button !== 0
+				) {
+					return;
+				}
+				// Also stops Astro's ClientRouter from navigating for real: it
+				// bails out on already-defaultPrevented clicks.
+				event.preventDefault();
+				haptics.trigger("selection");
+				navigateToTab(id);
+				scrollToTabTop();
+			});
+		});
+	}
+
+	/** Which tab this URL means. Legacy ?blog / ?tab=about links still work. */
+	function resolveTabFromLocation(): { tabId: TabId; legacy: boolean } {
+		const legacy = tabFromSearch(window.location.search);
+		if (legacy) return { tabId: legacy, legacy: true };
+		return {
+			tabId: tabFromPath(window.location.pathname) ?? DEFAULT_TAB,
+			legacy: false,
+		};
+	}
+
+	function syncTabWithLocation() {
+		const { tabId, legacy } = resolveTabFromLocation();
+		if (legacy) {
+			// Rewrite /?blog to /blog, keeping any unrelated params (utm_*, ref…)
+			const rest = stripTabParams(window.location.search);
+			history.replaceState(
+				{ tab: tabId },
+				"",
+				`${getTab(tabId).href}${rest}${window.location.hash}`
+			);
+		}
+		activateTab(tabId);
+	}
+
+	setupTabClickHandlers();
+
+	// Back/forward between tabs. Registered once — Astro re-runs this module
+	// after every view transition, but `window` survives the swap.
+	if (!(window as any).__tabHistoryWired) {
+		(window as any).__tabHistoryWired = true;
+		window.addEventListener("popstate", () => {
+			const el = document.getElementById("projects-tab");
+			if (!el) return; // navigated away from the dashboard entirely
+			activateTab(resolveTabFromLocation().tabId);
+		});
+	}
+
+	// Enhanced search functions
+	function fuzzySearch(text: string, query: string): boolean {
+		if (!query.trim()) return true;
+
+		const textLower = text.toLowerCase();
+		const queryLower = query.toLowerCase();
+
+		// Exact match check
+		if (textLower.includes(queryLower)) return true;
+
+		// Fuzzy match using character sequence
+		let queryIndex = 0;
+		for (
+			let i = 0;
+			i < textLower.length && queryIndex < queryLower.length;
+			i++
+		) {
+			if (textLower[i] === queryLower[queryIndex]) {
+				queryIndex++;
+			}
+		}
+
+		// If we found all characters in sequence, it's a fuzzy match
+		return queryIndex === queryLower.length;
+	}
+
+	function enhancedSearch(
+		text: string,
+		query: string,
+		exactOnly: boolean
+	): boolean {
+		if (!query.trim()) return true;
+
+		const textLower = text.toLowerCase();
+		const queryLower = query.toLowerCase();
+
+		// 1. Exact substring match (highest priority)
+		if (textLower.includes(queryLower)) return true;
+
+		// If exactOnly flag, skip deeper fuzzy logic
+		if (exactOnly) return false;
+
+		// 2. Word boundary match (matches whole words)
+		const words = textLower.split(/\s+/);
+		const queryWords = queryLower.split(/\s+/);
+
+		// Check if all query words are found in text words
+		const allWordsFound = queryWords.every((queryWord) =>
+			words.some((word) => word.includes(queryWord))
+		);
+		if (allWordsFound) return true;
+
+		// 3. Fuzzy match (for typos and partial matches)
+		return fuzzySearch(textLower, queryLower);
+	}
+
+	function normalizeRepoName(value?: string | null): string {
+		if (!value) return "";
+		const cleaned = value
+			.toLowerCase()
+			.trim()
+			.replace(/[?#].*$/, "")
+			.replace(/\.git$/, "")
+			.replace(/\/+$/, "");
+		const parts = cleaned.split("/").filter(Boolean);
+		return parts[parts.length - 1] || "";
+	}
+
+	// Project search and filter functionality (exact matches first, then fuzzy)
+	document.addEventListener("project-search", (e: Event) => {
+		const { term: searchTerm, showLiveOnly, list } = (e as CustomEvent).detail;
+		const query = (searchTerm || "").trim().toLowerCase();
+		const projectCards = Array.from(
+			document.querySelectorAll("[data-project-item-card]")
+		);
+		const exactMatches: HTMLElement[] = [];
+		const fuzzyMatches: HTMLElement[] = [];
+
+		projectCards.forEach((cardEl) => {
+			const card = cardEl as HTMLElement;
+			const title =
+				card.querySelector("[data-project-title]")?.textContent || "";
+			const description =
+				card.querySelector("[data-project-description]")?.textContent || "";
+			const languages = Array.from(
+				card.querySelectorAll("[data-project-language]")
+			).map((l) => l.textContent || "");
+			const topics = Array.from(
+				card.querySelectorAll("[data-project-topic]")
+			).flatMap((t) => [
+				t.getAttribute("data-project-topic") || "",
+				t.textContent || "",
+			]);
+			const fields = [title, description, ...languages, ...topics].map((f) =>
+				f.toLowerCase()
+			);
+			const hasLiveLink =
+				card.querySelector("[data-live-link]") !== null ||
+				card.getAttribute("data-has-live-link") === "true";
+
+			// Star list filtering
+			let listFilter = true;
+			if (list && list !== "all-projects") {
+				const repoName = normalizeRepoName(
+					card
+					.querySelector("[data-github-link]")
+					?.getAttribute("data-url")
+				);
+				// @ts-ignore
+				const starLists = window.__STAR_LISTS__ as
+					| { name: string; repositories?: string[] }[]
+					| undefined;
+				const selected = starLists?.find((l) => l.name === list);
+				const repoNames = new Set(
+					(selected?.repositories || [])
+						.map((r) => normalizeRepoName(r))
+						.filter(Boolean)
+				);
+				listFilter = repoName ? repoNames.has(repoName) : false;
+			}
+
+			let isExact = false;
+			let isFuzzy = false;
+			if (!query) {
+				isExact = true; // treat empty query as exact so we skip reordering
+			} else {
+				isExact = fields.some((f) => f.includes(query));
+				if (!isExact) {
+					isFuzzy = fields.some((f) => fuzzySearch(f, query));
+				}
+			}
+
+			const liveFilter = !showLiveOnly || hasLiveLink;
+			const matches = (isExact || isFuzzy) && liveFilter && listFilter;
+			card.style.display = matches ? "" : "none";
+
+			if (matches) {
+				if (isExact) exactMatches.push(card);
+				else if (isFuzzy) fuzzyMatches.push(card);
+			}
+		});
+
+		// Re-order DOM for non-empty queries: exact first then fuzzy
+		if (query && projectCards.length) {
+			const gridContainer = (projectCards[0] as HTMLElement).parentElement;
+			if (gridContainer) {
+				const frag = document.createDocumentFragment();
+				exactMatches.forEach((card) => frag.appendChild(card));
+				fuzzyMatches.forEach((card) => frag.appendChild(card));
+				gridContainer.appendChild(frag);
+			}
+		}
+	});
+
+	// When a starred list is requested from GitHub section
+	document.addEventListener("open-star-list", (e: Event) => {
+		const name = (e as CustomEvent).detail?.name as string | undefined;
+		if (!name) return;
+		navigateToTab("projects");
+		// store temporarily in case ProjectFilters hasn't mounted yet
+		localStorage.setItem("pending_star_list_select", name);
+		// Dispatch project-list-select for already-mounted ProjectFilters
+		setTimeout(() => {
+			document.dispatchEvent(
+				new CustomEvent("project-list-select", { detail: { list: name } })
+			);
+		}, 80);
+	});
+
+	// Blog search and filter functionality (title + tags)
+	document.addEventListener("blog-search", (e: Event) => {
+		const searchTerm = (e as CustomEvent).detail.term;
+		const blogCards = document.querySelectorAll("[data-blog-card]");
+
+		blogCards.forEach((card) => {
+			const title = card.querySelector("[data-blog-title]")?.textContent || "";
+			const tags = Array.from(card.querySelectorAll("[data-blog-tag]")).map(
+				(el) => el.textContent || ""
+			);
+
+			// Use enhanced search for better matching
+			const titleMatch = enhancedSearch(title, searchTerm, false);
+			const tagMatch = tags.some((t) => enhancedSearch(t, searchTerm, false));
+
+			(card as HTMLElement).style.display =
+				titleMatch || tagMatch ? "block" : "none";
+		});
+	});
+
+	document.addEventListener("blog-category", (e: Event) => {
+		const categories = (e as CustomEvent).detail.categories as string[];
+		const blogCards = document.querySelectorAll("[data-blog-card]");
+
+		blogCards.forEach((card) => {
+			const tags = (card.getAttribute("data-blog-tags") || "")
+				.split(",")
+				.filter(Boolean);
+
+			// Match if "all" is selected OR if any of the selected categories matches any of the post's tags
+			const matches =
+				categories.includes("all") ||
+				categories.some((cat) => tags.includes(cat));
+
+			(card as HTMLElement).style.display = matches ? "block" : "none";
+		});
+	});
+
+	// Initialize filters and handle link clicks
+	document.addEventListener("astro:page-load", () => {
+		const theme = localStorage.getItem("theme") || "dark";
+		document.documentElement.classList.toggle("dark", theme === "dark");
+
+		// Apply initial filter state (show all projects by default)
+		document.dispatchEvent(
+			new CustomEvent("project-search", {
+				detail: { term: "", showLiveOnly: false },
+			})
+		);
+
+		// Welcome banner dismiss/restore
+		const WELCOME_KEY = "welcome_hidden";
+		const welcomeBanner = document.getElementById("welcome-banner");
+		const welcomeDismiss = document.getElementById("welcome-dismiss");
+		const welcomeRestore = document.getElementById("welcome-restore");
+		const welcomeRestoreBtn = document.getElementById("welcome-restore-btn");
+
+		const isMobile = () => window.innerWidth < 768;
+
+		const applyWelcomeState = (hidden: boolean) => {
+			if (!welcomeBanner || !welcomeRestore) return;
+
+			// On mobile, hide both banner and restore pill entirely
+			if (isMobile()) {
+				welcomeBanner.classList.add("hidden");
+				welcomeRestore.classList.add("hidden");
+				return;
+			}
+
+			// On desktop, use the stored preference
+			welcomeBanner.classList.toggle("hidden", hidden);
+			welcomeRestore.classList.toggle("hidden", !hidden);
+		};
+
+		const storedHidden = localStorage.getItem(WELCOME_KEY) === "1";
+		applyWelcomeState(storedHidden);
+
+		// Re-apply state on window resize
+		window.addEventListener("resize", () => {
+			const storedHidden = localStorage.getItem(WELCOME_KEY) === "1";
+			applyWelcomeState(storedHidden);
+		});
+
+		welcomeDismiss?.addEventListener("click", () => {
+			haptics.trigger("light");
+			localStorage.setItem(WELCOME_KEY, "1");
+			applyWelcomeState(true);
+		});
+
+		welcomeRestoreBtn?.addEventListener("click", () => {
+			haptics.trigger("light");
+			localStorage.removeItem(WELCOME_KEY);
+			applyWelcomeState(false);
+		});
+
+		// Star list chips: toggle a panel of the list's repos (accordion — one open at a time)
+		{
+			const root = document.querySelector<HTMLElement>('[data-star-lists]');
+			const chips = Array.from(
+				root?.querySelectorAll<HTMLElement>('[data-star-list]') ?? []
+			);
+			const panelFor = (chip: HTMLElement) =>
+				root?.querySelector<HTMLElement>(
+					`#${CSS.escape(chip.getAttribute('aria-controls') || '')}`
+				) ?? null;
+
+			chips.forEach((chip) =>
+				chip.addEventListener('click', () => {
+					haptics.trigger('light');
+					const willOpen = chip.getAttribute('aria-expanded') !== 'true';
+					chips.forEach((other) => {
+						other.setAttribute('aria-expanded', 'false');
+						panelFor(other)?.setAttribute('hidden', '');
+					});
+					if (willOpen) {
+						chip.setAttribute('aria-expanded', 'true');
+						panelFor(chip)?.removeAttribute('hidden');
+					}
+				})
+			);
+		}
+
+		// Open Projects button (in GitHub Star Lists callout)
+		document.querySelector('[data-open-projects]')?.addEventListener('click', () => {
+			haptics.trigger('light');
+			navigateToTab('projects');
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		});
+
+		// data-haptic-* elements are wired globally by the shared Haptics component.
+
+		// Re-attach tab click handlers after client-side navigation (Astro view transitions)
+		setupTabClickHandlers();
+
+		// Open the tab this URL owns (/blog, /github, …) — and canonicalise
+		// legacy deep links like /?blog or /?tab=about.
+		syncTabWithLocation();
+
+		// Scroll-to-top button visibility
+		const scrollBtn = document.getElementById("scroll-top-btn");
+		if (scrollBtn) {
+			const onScroll = () => {
+				const show = window.scrollY > 400;
+				scrollBtn.classList.toggle("opacity-100", show);
+				scrollBtn.classList.toggle("pointer-events-auto", show);
+				scrollBtn.classList.toggle("opacity-0", !show);
+				scrollBtn.classList.toggle("pointer-events-none", !show);
+			};
+			window.addEventListener("scroll", onScroll, { passive: true });
+			onScroll();
+			scrollBtn.addEventListener("click", () => {
+				haptics.trigger("light");
+				window.scrollTo({ top: 0, behavior: "smooth" });
+			});
+		}
+
+		// Contact form mailto handler
+		const contactForm = document.getElementById(
+			"contact-form"
+		) as HTMLFormElement | null;
+		if (contactForm) {
+			contactForm.addEventListener("submit", (e) => {
+				e.preventDefault();
+				const name =
+					(
+						document.getElementById("contact-name") as HTMLInputElement | null
+					)?.value.trim() || "";
+				const email =
+					(
+						document.getElementById("contact-email") as HTMLInputElement | null
+					)?.value.trim() || "";
+				const subjectRaw =
+					(
+						document.getElementById(
+							"contact-subject"
+						) as HTMLInputElement | null
+					)?.value.trim() || "";
+				const messageRaw =
+					(
+						document.getElementById(
+							"contact-message"
+						) as HTMLTextAreaElement | null
+					)?.value.trim() || "";
+				const statusEl = document.getElementById("contact-status");
+
+			if (!email || !messageRaw) {
+				if (statusEl) statusEl.textContent = "Email & message are required.";
+					haptics.trigger("error");
+					return;
+				}
+
+			// Basic email heuristic
+			if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+				if (statusEl)
+					statusEl.textContent = "Please provide a valid email address.";
+					haptics.trigger("error");
+					return;
+				}
+
+				const subject =
+					subjectRaw || `Message from ${name || "Website Visitor"}`;
+				const bodyLines = [
+					`Name: ${name || "(not provided)"}`,
+					`Email: ${email}`,
+					"",
+					messageRaw,
+					"",
+					"---",
+					"Sent via dashboard contact form",
+				];
+				const body = encodeURIComponent(bodyLines.join("\n"));
+				const mailto = `mailto:tashif@duck.com?subject=${encodeURIComponent(subject)}&body=${body}`;
+
+				if (statusEl) statusEl.textContent = "Opening your email client...";
+				haptics.trigger("success");
+				window.location.href = mailto;
+			});
+		}
+	});
+</script>
+
+<script>
+	// Welcome statusline: typewriter prompt, count-up stats
+	document.addEventListener("DOMContentLoaded", () => {
+		const reducedMotion = window.matchMedia(
+			"(prefers-reduced-motion: reduce)"
+		).matches;
+
+		const typer = document.getElementById("welcome-typer");
+		if (typer) {
+			let phrases: string[] = [];
+			try {
+				phrases = JSON.parse(typer.dataset.phrases || "[]");
+			} catch {
+				phrases = [typer.textContent || ""];
+			}
+			const hour = new Date().getHours();
+			const greeting =
+				hour < 5
+					? "up late? me too — welcome in"
+					: hour < 12
+						? "good morning — welcome in"
+						: hour < 18
+							? "good afternoon — welcome in"
+							: "good evening — welcome in";
+			phrases.unshift(greeting);
+
+			if (reducedMotion) {
+				typer.textContent = greeting;
+			} else {
+				let phraseIdx = 0;
+				let charIdx = 0;
+				let deleting = false;
+				const tick = () => {
+					const phrase = phrases[phraseIdx];
+					if (!deleting) {
+						charIdx++;
+						typer.textContent = phrase.slice(0, charIdx);
+						if (charIdx === phrase.length) {
+							deleting = true;
+							setTimeout(tick, 3200);
+							return;
+						}
+						setTimeout(tick, 38 + Math.random() * 46);
+						return;
+					}
+					charIdx--;
+					typer.textContent = phrase.slice(0, charIdx);
+					if (charIdx === 0) {
+						deleting = false;
+						phraseIdx = (phraseIdx + 1) % phrases.length;
+						setTimeout(tick, 450);
+						return;
+					}
+					setTimeout(tick, 18);
+				};
+				typer.textContent = "";
+				setTimeout(tick, 500);
+			}
+		}
+
+		if (!reducedMotion) {
+			document
+				.querySelectorAll<HTMLElement>("[data-countup]")
+				.forEach((el, i) => {
+					const target = Number(el.dataset.countup || 0);
+					if (!Number.isFinite(target) || target <= 0) return;
+					const duration = 900;
+					const start = performance.now() + i * 120;
+					el.textContent = "0";
+					const step = (now: number) => {
+						const t = Math.min(1, Math.max(0, (now - start) / duration));
+						const eased = 1 - Math.pow(1 - t, 3);
+						el.textContent = Math.round(target * eased).toLocaleString();
+						if (t < 1) requestAnimationFrame(step);
+					};
+					requestAnimationFrame(step);
+				});
+		}
+	});
+</script>
