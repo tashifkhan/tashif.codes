@@ -1,0 +1,5 @@
+---
+import type { BlockProps } from "./shared";
+const { theme } = Astro.props as BlockProps;
+---
+<ol class:list={["md-steps", theme.steps]}><slot /></ol>

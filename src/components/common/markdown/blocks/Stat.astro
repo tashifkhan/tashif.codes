@@ -1,0 +1,15 @@
+---
+import { getIcon } from "../pipeline/icons";
+import type { BlockProps } from "./shared";
+
+const { attrs, theme } = Astro.props as BlockProps;
+const icon = getIcon(attrs.icon ? String(attrs.icon) : "", {
+  size: 18,
+  className: "md-icon md-stat-icon-svg",
+});
+---
+<div class:list={["md-stat", attrs.tone && `md-stat--${attrs.tone}`, theme.stat]}>
+  {icon && <span class="md-stat-icon" aria-hidden="true" set:html={icon} />}
+  <span class="md-stat-value">{attrs.value}</span>
+  <span class="md-stat-label">{attrs.label}</span>
+</div>

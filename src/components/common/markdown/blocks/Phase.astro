@@ -1,0 +1,14 @@
+---
+import { getIcon } from "../pipeline/icons";
+import type { BlockProps } from "./shared";
+
+const { attrs, theme } = Astro.props as BlockProps;
+const icon = getIcon(attrs.icon ? String(attrs.icon) : "", {
+  size: 16,
+  className: "md-icon md-phase-icon-svg",
+});
+---
+<section class:list={["md-phase", attrs.tone && `md-phase--${attrs.tone}`, theme.phase]}>
+  <div class="md-phase-head"><Fragment set:html={icon} />{attrs.tag && <span class="md-phase-tag">{attrs.tag}</span>}<span class="md-phase-name">{attrs.title}</span></div>
+  <div class="md-phase-body"><slot /></div>
+</section>

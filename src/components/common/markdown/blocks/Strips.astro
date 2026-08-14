@@ -1,0 +1,5 @@
+---
+import type { BlockProps } from "./shared";
+const { theme } = Astro.props as BlockProps;
+---
+<div class:list={["md-strips", theme.strips]}><slot /></div>

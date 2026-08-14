@@ -1,0 +1,21 @@
+---
+import { getIcon } from "../pipeline/icons";
+import type { BlockProps } from "./shared";
+
+const { attrs, theme } = Astro.props as BlockProps;
+
+// The number comes from a CSS counter, so inserting a step in the middle does
+// not mean renumbering the ones after it by hand.
+const icon = getIcon(attrs.icon ? String(attrs.icon) : "", {
+  size: 16,
+  className: "md-icon md-step-icon-svg",
+});
+---
+<li class:list={["md-step", theme.step]}>
+  {attrs.title
+    ? <p class="md-step-title"><Fragment set:html={icon} />{attrs.title}</p>
+    : icon
+      ? <p class="md-step-title md-step-title--icon-only" set:html={icon} />
+      : null}
+  <div class="md-step-body"><slot /></div>
+</li>

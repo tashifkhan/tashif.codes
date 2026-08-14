@@ -1,0 +1,8 @@
+---
+import { clamp, num } from "./shared";
+import type { BlockProps } from "./shared";
+
+const { attrs, theme } = Astro.props as BlockProps;
+const cols = clamp(num(attrs.cols, 3), 1, 4);
+---
+<div class:list={["md-kpi", theme.kpi]} style={`--md-kpi-cols: ${cols}`}><slot /></div>

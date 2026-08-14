@@ -1,0 +1,17 @@
+---
+/** All six callout flavours; `name` picks the icon, label and modifier. */
+import { CALLOUT_ICONS } from "../pipeline/icons";
+import { CALLOUT_LABELS } from "../pipeline/registry";
+import type { BlockProps } from "./shared";
+
+interface Props extends BlockProps { name: string }
+const { attrs, theme, name } = Astro.props as Props;
+
+const label = String(attrs.title || CALLOUT_LABELS[name] || name);
+const icon = CALLOUT_ICONS[name] ?? CALLOUT_ICONS.note;
+---
+{/* Two wrappers: the title must not inherit the body's typography. */}
+<div class:list={["md-callout", `md-callout--${name}`, theme.callout]}>
+  <div class:list={["md-callout-title", theme.calloutTitle]}><Fragment set:html={icon} /><span>{label}</span></div>
+  <div class="md-callout-body"><slot /></div>
+</div>

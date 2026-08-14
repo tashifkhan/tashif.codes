@@ -1,0 +1,9 @@
+---
+import type { BlockProps } from "./shared";
+const { attrs, theme } = Astro.props as BlockProps;
+---
+{/* `role="img"` plus the label: the box-drawing characters are noise read
+    aloud, so the description stands in for them. */}
+<figure class:list={["md-ascii", theme.ascii]} role="img" aria-label={String(attrs.label ?? "")}>
+  <pre class="md-ascii-pre"><code><slot /></code></pre>
+</figure>

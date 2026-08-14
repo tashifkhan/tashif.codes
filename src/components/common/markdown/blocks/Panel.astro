@@ -1,0 +1,21 @@
+---
+import { getIcon } from "../pipeline/icons";
+import { rotateStyle } from "./shared";
+import type { BlockProps } from "./shared";
+
+const { attrs, theme } = Astro.props as BlockProps;
+
+const icon = getIcon(attrs.icon ? String(attrs.icon) : "", {
+  size: 22,
+  className: "md-icon md-panel-icon-svg",
+});
+---
+<div
+  class:list={["md-panel", attrs.tone && `md-panel--${attrs.tone}`, icon && "md-panel--icon", theme.panel]}
+  style={rotateStyle(attrs.tilt)}
+>
+  {attrs.tape && <span class="md-tape" aria-hidden="true"></span>}
+  {icon && <div class="md-panel-icon" aria-hidden="true" set:html={icon} />}
+  {attrs.title && <div class="md-panel-title">{attrs.title}</div>}
+  <div class="md-panel-body"><slot /></div>
+</div>

@@ -3,13 +3,19 @@
  * Renders Markdown from three sources: blog post bodies fetched from the blog
  * API, project READMEs, and the generated docs under src/data/docs.
  *
- * Parsing, directives, callouts, anchors, and diagram detection come from
- * src/lib/markdown, which is mirrored from the Blog repo's packages/markdown so
- * a post renders identically here, on blog.tashif.codes, and in the editor.
- * This file supplies only the site's class names.
+ * The renderer lives beside this file and is owned by this repo. It used to be
+ * a generated mirror of the Blog repo's packages/markdown, kept byte-identical
+ * by a sync script; that link is gone. The consequence worth remembering: posts
+ * are still authored in the Blog editor against *its* component vocabulary, so
+ * a component added there has to be ported to ./blocks/ here or it renders as
+ * raw text. blog/[slug].astro logs a warning when a post's renderer version is
+ * ahead of ours.
+ *
+ * `./pipeline` parses; `./blocks` are the Astro components each directive
+ * resolves to; this file supplies the site's class names.
  */
-import { renderMarkdown, type MarkdownTheme } from "../lib/markdown";
-import "../styles/markdown-theme.css";
+import { renderMarkdown, type MarkdownTheme } from "./index";
+import "../../../styles/markdown-theme.css";
 
 interface Props {
   content?: string;
@@ -83,7 +89,7 @@ const theme: MarkdownTheme = {
 };
 
 const html = content
-  ? renderMarkdown(content, {
+  ? await renderMarkdown(content, {
       githubBaseUrl,
       project,
       rootRelative: resolvedSource === "repo" ? "repo" : "site",
@@ -118,7 +124,7 @@ const html = content
     isDarkTheme,
     renderMermaidBlocks,
     watchThemeChanges,
-  } from "../lib/markdown/client";
+  } from "./pipeline/client";
 
   // @ts-ignore - the autoloader plugin adds this property at runtime
   if (Prism.plugins.autoloader) {

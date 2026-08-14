@@ -1,0 +1,19 @@
+---
+import { clamp, num } from "./shared";
+import { COLUMN_RATIOS } from "../pipeline/registry";
+import type { BlockProps } from "./shared";
+
+const { attrs, theme } = Astro.props as BlockProps;
+
+// Prefer an explicit ratio; otherwise build equal tracks from `cols`.
+const ratioKey = attrs.ratio !== undefined ? String(attrs.ratio) : "";
+const fromRatio = (COLUMN_RATIOS as Record<string, string>)[ratioKey];
+const equalCount = clamp(num(attrs.cols, 2), 2, 4);
+const columns = fromRatio ?? Array.from({ length: equalCount }, () => "1fr").join(" ");
+---
+{/* Tracks arrive as a custom property so the single-column fallback and its
+    breakpoint live in CSS, where a container query is usable. `md-two-col`
+    stays as a class alias so existing host themes still match. */}
+<div class:list={["md-cols", "md-two-col", theme.twoCol]} style={`--md-grid-cols: ${columns}`}>
+  <slot />
+</div>

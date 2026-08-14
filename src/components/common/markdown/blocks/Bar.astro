@@ -1,0 +1,23 @@
+---
+import { clamp, num } from "./shared";
+import type { BlockProps } from "./shared";
+
+const { attrs, theme } = Astro.props as BlockProps;
+
+const max = num(attrs.max, 100);
+const value = num(attrs.value, 0);
+// Guard the divide: `max={0}` is a typo, not a request for infinity.
+const percent = max > 0 ? clamp((value / max) * 100, 0, 100) : 0;
+const shown = attrs.display ?? attrs.value;
+const label = String(attrs.label ?? "");
+---
+<div
+  class:list={["md-bar", attrs.tone && `md-bar--${attrs.tone}`, theme.bar]}
+  style={`--md-bar-fill: ${percent.toFixed(2)}%`}
+>
+  <span class="md-bar-label">{label}</span>
+  <span class="md-bar-track" role="img" aria-label={`${label}: ${shown}`}>
+    <span class="md-bar-fill"></span>
+  </span>
+  <span class="md-bar-value">{shown}</span>
+</div>

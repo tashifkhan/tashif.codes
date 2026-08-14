@@ -1,0 +1,9 @@
+---
+import type { BlockProps } from "./shared";
+const { attrs, theme } = Astro.props as BlockProps;
+const title = String(attrs.title ?? "");
+---
+<section class:list={["md-tab", theme.tab]} data-md-tab-title={title}>
+  <p class="md-tab-title">{title}</p>
+  <div class="md-tab-body"><slot /></div>
+</section>

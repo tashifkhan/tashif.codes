@@ -1,0 +1,6 @@
+---
+import { rotateStyle } from "./shared";
+import type { BlockProps } from "./shared";
+const { attrs, theme } = Astro.props as BlockProps;
+---
+<span class:list={["md-tape", theme.tape]} aria-hidden="true" style={rotateStyle(attrs.rotate)}></span>

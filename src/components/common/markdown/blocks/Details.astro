@@ -1,0 +1,10 @@
+---
+import type { BlockProps } from "./shared";
+const { attrs, theme } = Astro.props as BlockProps;
+---
+{/* Native <details>, so this needs no JavaScript at all and still works with
+    in-page search on browsers that expand matches automatically. */}
+<details class:list={["md-details", theme.details]} open={Boolean(attrs.open)}>
+  <summary class="md-details-summary">{attrs.summary}</summary>
+  <div class="md-details-body"><slot /></div>
+</details>

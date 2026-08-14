@@ -1,0 +1,8 @@
+---
+import type { BlockProps } from "./shared";
+const { attrs, theme } = Astro.props as BlockProps;
+---
+<section class:list={["md-ink-band", theme.inkBand]}>
+  {attrs.title && <p class="md-ink-band-title">{attrs.title}</p>}
+  <div class="md-ink-band-body"><slot /></div>
+</section>

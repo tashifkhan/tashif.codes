@@ -1,0 +1,24 @@
+---
+import { clamp, num } from "./shared";
+import type { BlockProps } from "./shared";
+
+const { attrs, theme, headings } = Astro.props as BlockProps;
+
+const from = clamp(num(attrs.from, 2), 1, 6);
+const depth = clamp(num(attrs.depth, 3), from, 6);
+const items = headings.filter((h) => h.depth >= from && h.depth <= depth);
+const title = String(attrs.title ?? "Contents");
+---
+{/* An empty nav is worse than none: it reads as a broken component. */}
+{items.length > 0 && (
+  <nav class:list={["md-toc", theme.toc]} aria-label={title}>
+    <p class="md-toc-title">{title}</p>
+    <ol class="md-toc-list">
+      {items.map((h) => (
+        <li class:list={["md-toc-item", `md-toc-item--h${h.depth}`]}>
+          <a class="md-toc-link" href={`#${h.slug}`}>{h.text}</a>
+        </li>
+      ))}
+    </ol>
+  </nav>
+)}

@@ -1,19 +1,10 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import MarkdownRenderer from "../../components/MarkdownRenderer.astro";
+import MarkdownRenderer from "../../components/common/markdown/MarkdownRenderer.astro";
 import { ArrowLeft, ExternalLink, Eye, Heart, MessageCircle, Clock, Calendar, User, Send } from "lucide-react";
-import {
-	blogPosts,
-	fetchFullPost,
-	estimateReadingStats,
-	resolveCoverImage,
-	type BlogPost,
-	type BlogComment,
-	type BlogHeading,
-	BLOG_API_BASE,
-	BLOG_REPO_URL,
-} from "../../data/blog";
-import { RENDERER_VERSION } from "../../lib/markdown";
+import { blogPosts, fetchFullPost, estimateReadingStats, resolveCoverImage, BLOG_API_BASE, BLOG_REPO_URL } from "../../data/blog";
+import { RENDERER_VERSION } from "../../components/common/markdown/index";
+import type { BlogComment, BlogHeading, BlogPost } from "@/types";
 
 export async function getStaticPaths() {
 	return blogPosts.map((post) => ({
@@ -46,15 +37,18 @@ try {
 		(heading) => heading.depth === 2 || heading.depth === 3
 	);
 
-	// A post authored against a newer vocabulary than this site's vendored copy
-	// of src/lib/markdown would render unknown tags as raw HTML. Worth a build
-	// log rather than a silent oddity on the page.
+	// This site owns its renderer outright — there is no sync from the Blog
+	// repo anymore — so a post authored against a newer component vocabulary
+	// will render unknown tags as raw HTML. Nothing repairs that automatically;
+	// the fix is to add the component under markdown/blocks/ here. Worth a loud
+	// build log rather than a silent oddity on the page.
 	const postRenderer = fullPost.outline?.renderer ?? fullPost.renderer;
 	if (postRenderer && postRenderer !== RENDERER_VERSION) {
 		console.warn(
 			`[blog] "${post.slug}" was written for renderer ${postRenderer}, ` +
-				`but src/lib/markdown is ${RENDERER_VERSION}. ` +
-				`Re-run: bun scripts/sync-markdown.mjs ../tashif.codes/src/lib/markdown`
+				`but this site's renderer is ${RENDERER_VERSION}. ` +
+				`Any component added since then needs porting to ` +
+				`src/components/common/markdown/blocks/.`
 		);
 	}
 } catch (err) {

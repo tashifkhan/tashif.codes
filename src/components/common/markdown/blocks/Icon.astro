@@ -1,0 +1,18 @@
+---
+import { getIcon } from "../pipeline/icons";
+import { clamp, num } from "./shared";
+import type { BlockProps } from "./shared";
+
+const { attrs, theme, inline } = Astro.props as BlockProps;
+
+const size = clamp(num(attrs.size, 24), 12, 64);
+const svg = getIcon(attrs.name ? String(attrs.name) : "", {
+  size,
+  className: "md-icon md-icon-standalone",
+});
+// Unknown names fail open at render time; validate.ts blocks publish.
+const Tag = inline ? "span" : "div";
+---
+{svg
+  ? <Tag class:list={["md-icon-wrap", theme.icon]} set:html={svg} />
+  : <span class="md-icon-missing" title="Unknown icon">{attrs.name}</span>}

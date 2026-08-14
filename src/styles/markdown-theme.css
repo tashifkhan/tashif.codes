@@ -1,14 +1,14 @@
 /*
  * Portfolio theming for rendered Markdown.
  *
- * The renderer in src/lib/markdown (mirrored from the Blog repo's
- * packages/markdown) emits structural `md-*` classes. This file maps them onto
+ * The renderer in src/components/common/markdown emits structural `md-*`
+ * classes from its block components. This file maps them onto
  * the site's design tokens; MarkdownRenderer.astro supplies the typography as
  * Tailwind utilities. Blog posts, project READMEs, and generated docs all render
  * through it.
  */
 
-@import "../lib/markdown/markdown.css";
+@import "../components/common/markdown/markdown.css";
 
 .markdown-body {
   --md-fg: var(--foreground);

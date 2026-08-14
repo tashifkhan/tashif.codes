@@ -1,0 +1,8 @@
+---
+import type { BlockProps } from "./shared";
+const { theme, inline } = Astro.props as BlockProps;
+// A `span` cannot hold the paragraphs a block body produces, and a `div`
+// inside a `<p>` is invalid, so the element follows the position.
+const Tag = inline ? "span" : "div";
+---
+<Tag class:list={["md-hand", theme.hand]}><slot /></Tag>

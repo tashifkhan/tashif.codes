@@ -1,0 +1,8 @@
+---
+import type { BlockProps } from "./shared";
+const { theme } = Astro.props as BlockProps;
+---
+{/* The tab strip is built by pipeline/client.ts from the panels below it.
+    Without JavaScript every panel stays visible under its own heading, which
+    is a readable document rather than a broken widget. */}
+<div class:list={["md-tabs", theme.tabs]} data-md-tabs><slot /></div>

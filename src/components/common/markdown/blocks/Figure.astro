@@ -1,0 +1,15 @@
+---
+import type { BlockProps } from "./shared";
+const { attrs, theme } = Astro.props as BlockProps;
+const hasCaption = Boolean(attrs.caption || attrs.credit);
+---
+<figure
+  class:list={["md-figure", "md-figure--explicit", attrs.full && "md-figure--full", theme.imageWrap]}
+>
+  <slot />
+  {hasCaption && (
+    <figcaption class="md-figure-caption">
+      {attrs.caption}{attrs.credit && <span class="md-figure-credit">{attrs.credit}</span>}
+    </figcaption>
+  )}
+</figure>

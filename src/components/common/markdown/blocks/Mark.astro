@@ -1,0 +1,5 @@
+---
+import type { BlockProps } from "./shared";
+const { attrs, theme } = Astro.props as BlockProps;
+---
+<mark class:list={["md-mark", attrs.tone && `md-mark--${attrs.tone}`, theme.mark]}><slot /></mark>

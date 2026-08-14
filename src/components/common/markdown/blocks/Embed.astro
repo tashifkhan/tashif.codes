@@ -1,0 +1,28 @@
+---
+import { embedUrl } from "../pipeline/registry";
+import type { BlockProps } from "./shared";
+
+const { attrs, theme } = Astro.props as BlockProps;
+
+const provider = String(attrs.type ?? "");
+const id = String(attrs.id ?? "");
+const src = embedUrl(provider, id);
+const title = attrs.title ? String(attrs.title) : `${provider} embed`;
+---
+{/* Only an allowlisted provider and a pattern-checked id ever become a frame.
+    This content crosses an API boundary, so an arbitrary author-supplied URL
+    is not on offer. */}
+{src ? (
+  <div class:list={["md-embed", `md-embed--${provider}`, theme.embed]}>
+    <iframe
+      src={src}
+      title={title}
+      loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+  </div>
+) : (
+  <span class="md-embed-invalid">Unsupported embed: {provider} {id}</span>
+)}

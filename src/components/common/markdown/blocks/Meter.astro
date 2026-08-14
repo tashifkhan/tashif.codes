@@ -1,0 +1,21 @@
+---
+import { clamp, num } from "./shared";
+import type { BlockProps } from "./shared";
+
+const { attrs, theme } = Astro.props as BlockProps;
+const score = clamp(num(attrs.score, 0), 0, 10);
+const label = String(attrs.label ?? "");
+---
+<div
+  class:list={["md-meter", `md-meter--${attrs.level}`, theme.meter]}
+  style={`--md-meter-score: ${score}`}
+>
+  <div class="md-meter-head">
+    <span class="md-meter-label">{label}</span>
+    <span class="md-meter-score">{score}<span class="md-meter-score-max">/10</span></span>
+  </div>
+  <div class="md-meter-track" role="img" aria-label={`${label}: ${score} out of 10`}>
+    <span class="md-meter-fill"></span>
+  </div>
+  <div class="md-meter-blurb"><slot /></div>
+</div>

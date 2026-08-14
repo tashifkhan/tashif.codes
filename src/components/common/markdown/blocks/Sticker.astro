@@ -1,0 +1,9 @@
+---
+import { rotateStyle } from "./shared";
+import type { BlockProps } from "./shared";
+const { attrs, theme } = Astro.props as BlockProps;
+---
+<span
+  class:list={["md-sticker", `md-sticker--${attrs.shape}`, attrs.tone && `md-sticker--${attrs.tone}`, theme.sticker]}
+  style={rotateStyle(attrs.rotate)}
+><slot /></span>

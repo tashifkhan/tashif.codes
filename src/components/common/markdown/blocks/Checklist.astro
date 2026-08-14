@@ -1,0 +1,8 @@
+---
+import type { BlockProps } from "./shared";
+const { attrs, theme } = Astro.props as BlockProps;
+---
+<div class:list={["md-checklist", theme.checklist]}>
+  {attrs.title && <p class="md-checklist-title">{attrs.title}</p>}
+  <slot />
+</div>
