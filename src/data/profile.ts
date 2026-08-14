@@ -1,10 +1,6 @@
 import { Github, Globe, Linkedin, Mail, Twitter } from "lucide-react";
+import type { SocialLink } from "@/types";
 
-export interface SocialLink {
-	icon: React.ComponentType<{ className?: string; size?: number | string }>;
-	link: string;
-	label: string;
-}
 
 export const owner = {
 	name: "Tashif Ahmad Khan",

@@ -1,39 +1,6 @@
-export interface ResumeProject {
-	title: string;
-	stack: string;
-	color: string;
-	links: { label: string; url: string }[];
-	points: string[];
-}
+import type { Education, Position, ResumeAction, ResumeProject, SkillCategory } from "@/types";
 
-export interface Education {
-	institute: string;
-	period: string;
-	degree?: string;
-	details: string[];
-	color: string;
-}
 
-export interface Position {
-	title: string;
-	org: string;
-	period: string;
-	color: string;
-	points: string[];
-}
-
-export interface SkillCategory {
-	label: string;
-	color: string;
-	items: string[];
-}
-
-export interface ResumeAction {
-	label: string;
-	url: string;
-	icon: "github" | "linkedin" | "mail" | "download";
-	primary?: boolean;
-}
 
 export const resumeAbout = {
 	greeting: "Holaaaa! 👋",

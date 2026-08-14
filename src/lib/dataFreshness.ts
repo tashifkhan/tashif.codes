@@ -1,11 +1,6 @@
 /** Shared helpers for last-fetched timestamps and client refresh bookkeeping. */
+import type { LiveDataSource } from "@/types";
 
-export type LiveDataSource =
-	| "github"
-	| "leetcode"
-	| "projects"
-	| "project-stats"
-	| "blog";
 
 const STORAGE_PREFIX = "live-fetched-at:";
 
@@ -89,7 +84,3 @@ export function dispatchLiveRefreshed(
 	);
 }
 
-export type LiveRefreshDetail = {
-	source: LiveDataSource;
-	fetchedAt: string;
-};
