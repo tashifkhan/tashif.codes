@@ -1,156 +1,62 @@
-export interface LeetCodeStats {
-	totalSolved: number;
-	totalQuestions: number;
-	easySolved: number;
-	totalEasy: number;
-	mediumSolved: number;
-	totalMedium: number;
-	hardSolved: number;
-	totalHard: number;
-	ranking: number;
-	contributionPoints: number;
-	reputation: number;
-	submissionCalendar: {
-		[date: string]: number;
-	};
-}
+import { createCachedFetch } from "../lib/fetchCached";
+import type { Badge, Contest, LeetCodeData, LeetCodeProfile, LeetCodeStats } from "@/types";
 
-export interface Contest {
-	title: string;
-	startTime: number;
-	duration: number;
-	participants: number;
-	rank: number;
-	score: number;
-	ratingChange: number;
-	problemsSolved: number;
-}
 
-export interface Badge {
-	id: string;
-	displayName: string;
-	icon: string;
-	createdDate: string;
-	description: string;
-}
+const EMPTY_STATS: LeetCodeStats = {
+	totalSolved: 0,
+	totalQuestions: 0,
+	easySolved: 0,
+	totalEasy: 0,
+	mediumSolved: 0,
+	totalMedium: 0,
+	hardSolved: 0,
+	totalHard: 0,
+	ranking: 0,
+	contributionPoints: 0,
+	reputation: 0,
+	submissionCalendar: {},
+};
 
-export interface LeetCodeProfile {
-	username: string;
-	realName: string;
-	countryName: string;
-	company: string;
-	school: string;
-	skillTags: string[];
-	starRating: number;
-	aboutMe: string;
-	userAvatar: string;
-	reputation: number;
-	ranking: number;
-	contributionPoints: number;
-	submissionCalendar: {
-		[date: string]: number;
-	};
-}
+const EMPTY_PROFILE: LeetCodeProfile = {
+	username: "",
+	realName: "",
+	countryName: "",
+	company: "",
+	school: "",
+	skillTags: [],
+	starRating: 0,
+	aboutMe: "",
+	userAvatar: "",
+	reputation: 0,
+	ranking: 0,
+	contributionPoints: 0,
+	submissionCalendar: {},
+};
 
-export interface LeetCodeData {
-	stats: LeetCodeStats;
-	contests: Contest[];
-	badges: Badge[];
-	profile: LeetCodeProfile;
-}
+const { fetchJson } = createCachedFetch("leetcode");
 
+/**
+ * Each endpoint is fetched and cached independently, so a single failing one
+ * (contests is the flakiest) degrades that panel alone instead of zeroing the
+ * whole LeetCode section.
+ */
 async function fetchLeetCodeData(): Promise<LeetCodeData> {
-	const endpoints = [
-		"https://leetcode-stats.tashif.codes/khan-tashif",
-		"https://leetcode-stats.tashif.codes/khan-tashif/contests",
-		"https://leetcode-stats.tashif.codes/khan-tashif/badges",
-		"https://leetcode-stats.tashif.codes/khan-tashif/profile"
-	];
+	const user = "khan-tashif";
+	const base = `https://leetcode-stats.tashif.codes/${user}`;
 
-	try {
-		const responses = await Promise.all(
-			endpoints.map(endpoint => fetch(endpoint))
-		);
+	const [stats, contests, badges, profile] = await Promise.all([
+		fetchJson<LeetCodeStats>(base, `${user}-stats`),
+		fetchJson<Contest[]>(`${base}/contests`, `${user}-contests`),
+		fetchJson<Badge[]>(`${base}/badges`, `${user}-badges`),
+		fetchJson<LeetCodeProfile>(`${base}/profile`, `${user}-profile`),
+	]);
 
-		const [stats, contests, badges, profile] = await Promise.all(
-			responses.map(response => {
-				if (!response.ok) {
-					console.error(`Failed to fetch from ${response.url}:`, response.statusText);
-					return null;
-				}
-				return response.json();
-			})
-		);
-
-		return {
-			stats: stats || {
-				totalSolved: 0,
-				totalQuestions: 0,
-				easySolved: 0,
-				easyTotal: 0,
-				mediumSolved: 0,
-				mediumTotal: 0,
-				hardSolved: 0,
-				hardTotal: 0,
-				ranking: 0,
-				contributionPoints: 0,
-				reputation: 0,
-				submissionCalendar: {}
-			},
-			contests: contests || [],
-			badges: badges || [],
-			profile: profile || {
-				username: "",
-				realName: "",
-				countryName: "",
-				company: "",
-				school: "",
-				skillTags: [],
-				starRating: 0,
-				aboutMe: "",
-				userAvatar: "",
-				reputation: 0,
-				ranking: 0,
-				contributionPoints: 0,
-				submissionCalendar: {}
-			}
-		};
-	} catch (error) {
-		console.error("Error fetching LeetCode data:", error);
-		return {
-			stats: {
-				totalSolved: 0,
-				totalQuestions: 0,
-				easySolved: 0,
-				totalEasy: 0,
-				mediumSolved: 0,
-				totalMedium: 0,
-				hardSolved: 0,
-				totalHard: 0,
-				ranking: 0,
-				contributionPoints: 0,
-				reputation: 0,
-				submissionCalendar: {}
-			},
-			contests: [],
-			badges: [],
-			profile: {
-				username: "",
-				realName: "",
-				countryName: "",
-				company: "",
-				school: "",
-				skillTags: [],
-				starRating: 0,
-				aboutMe: "",
-				userAvatar: "",
-				reputation: 0,
-				ranking: 0,
-				contributionPoints: 0,
-				submissionCalendar: {}
-			}
-		};
-	}
+	return {
+		stats: stats ?? EMPTY_STATS,
+		contests: Array.isArray(contests) ? contests : [],
+		badges: Array.isArray(badges) ? badges : [],
+		profile: profile ?? EMPTY_PROFILE,
+	};
 }
 
 export const leetCodeData: LeetCodeData = await fetchLeetCodeData();

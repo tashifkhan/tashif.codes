@@ -1,32 +1,20 @@
-export interface StarList {
-  name: string;
-  url: string;
-  repositories?: string[]; // owner/repo slugs
-  description?: string;
-  num_repos?: number;
-}
+import { createCachedFetch } from "../lib/fetchCached";
+import type { StarList } from "@/types";
+
+const { fetchJson } = createCachedFetch("github");
+
 
 async function fetchStarLists(): Promise<StarList[]> {
   const endpoint = "https://github-stats.tashif.codes/tashifkhan/star-lists?include_repos=true";
-  try {
-    const res = await fetch(endpoint);
-    if (!res.ok) {
-      console.error("Failed to fetch star lists:", res.status, res.statusText);
-      return [];
-    }
-    const data = await res.json();
-    if (!Array.isArray(data)) return [];
-    return data.map((l: any) => ({
-      name: l.name,
-      url: l.url,
-      repositories: l.repositories || [],
-      description: l.description,
-      num_repos: l.num_repos,
-    }));
-  } catch (err) {
-    console.error("Error fetching star lists:", err);
-    return [];
-  }
+  const data = await fetchJson<any[]>(endpoint, "stats-star-lists-tashifkhan");
+  if (!Array.isArray(data)) return [];
+  return data.map((l: any) => ({
+    name: l.name,
+    url: l.url,
+    repositories: l.repositories || [],
+    description: l.description,
+    num_repos: l.num_repos,
+  }));
 }
 
 export const starLists: StarList[] = await fetchStarLists();

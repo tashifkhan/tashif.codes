@@ -10,6 +10,11 @@
 export const BLOG_API_BASE =
 	import.meta.env.BLOG_API_BASE ?? "https://blog.tashif.codes/api";
 
+import { readCache, writeCache } from "../lib/fetchCached";
+import type { BlogComment, BlogPost, FullBlogPost } from "@/types";
+
+const BLOG_CACHE_NS = "blog";
+
 /**
  * Repository the posts live in.
  *
@@ -22,21 +27,6 @@ export const BLOG_REPO_URL = "https://github.com/tashifkhan/Blog";
 /** Origin that hosts published post images (`/images/blog/...`). */
 export const BLOG_SITE_ORIGIN = new URL(BLOG_API_BASE).origin;
 
-export interface BlogPost {
-	slug: string;
-	title: string;
-	date: string;
-	author: string;
-	tags: string[];
-	excerpt: string;
-	/** Public path or absolute URL of the post cover image. */
-	coverImage?: string;
-	socials: string[];
-	category: string | null;
-	wordCount?: number;
-	readingTimeMinutes?: number;
-	metadata?: Record<string, unknown>;
-}
 
 /**
  * Cover (and other post) assets live on blog.tashif.codes. List API paths are
@@ -65,58 +55,6 @@ export function resolveCoverImage(
 	return resolveBlogAssetUrl(fromField || fromMeta);
 }
 
-export interface BlogComment {
-	id: string;
-	name: string;
-	text: string;
-	date: string;
-	replies: BlogComment[];
-}
-
-export interface BlogMetrics {
-	views: number;
-	likes: number;
-	commentsCount: number;
-}
-
-export interface BlogHeading {
-	depth: number;
-	text: string;
-	slug: string;
-}
-
-/**
- * Metadata the API derives from a post's Markdown.
- *
- * Advisory — the Markdown is still the source of truth and is still rendered
- * locally. This is what lets the table of contents be built before paint rather
- * than scraped out of the DOM afterwards, and it carries the renderer version
- * so a stale vendored copy of src/lib/markdown can be noticed.
- *
- * Optional because the field post-dates some deployed API versions.
- */
-export interface BlogOutline {
-	renderer: string;
-	headings: BlogHeading[];
-	components: string[];
-	wordCount: number;
-	readingTimeMinutes: number;
-}
-
-export interface FullBlogPost {
-	slug: string;
-	markdown: string;
-	metadata: {
-		title?: string;
-		date?: string;
-		author?: string;
-		[key: string]: unknown;
-	};
-	metrics: BlogMetrics;
-	comments: BlogComment[];
-	renderer?: string;
-	outline?: BlogOutline;
-}
 
 const toFiniteNumber = (value: unknown): number =>
 	typeof value === "number" && Number.isFinite(value) ? value : 0;
@@ -288,13 +226,29 @@ async function enrichPostsWithReadingStats(
  * Safe fetch used at build/module load time.
  * Returns [] on failure instead of throwing (matches github/leetcode modules).
  * Always enriches reading time / word count for static list rendering.
+ *
+ * The enriched list — not the raw API response — is what gets mirrored to
+ * disk, because enrichment may itself need a second call to `/posts/full`.
+ * Caching the finished shape means a blog-API outage costs the site nothing
+ * but freshness.
+ *
+ * Only this build-time path is cached. The view/like/comment helpers above are
+ * live reads and writes against a mutable counter; replaying a stale value for
+ * those would be worse than failing.
  */
 async function loadBlogPosts(): Promise<BlogPost[]> {
 	try {
 		const posts = await fetchBlogPosts();
-		return await enrichPostsWithReadingStats(posts);
+		const enriched = await enrichPostsWithReadingStats(posts);
+		if (enriched.length) writeCache(BLOG_CACHE_NS, "posts-enriched", enriched);
+		return enriched;
 	} catch (err) {
 		console.error("Error fetching blog posts:", err);
+		const cached = readCache<BlogPost[]>(BLOG_CACHE_NS, "posts-enriched");
+		if (cached) {
+			console.warn(`Using cached payload for ${BLOG_CACHE_NS}/posts-enriched`);
+			return cached;
+		}
 		return [];
 	}
 }

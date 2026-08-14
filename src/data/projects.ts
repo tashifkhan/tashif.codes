@@ -1,94 +1,33 @@
-import { formatTitle } from "../utils/formatTitle";
-import { getProjectEntry } from "../utils/docs";
-import { slugify } from "../utils/slugify";
-import fs from 'fs';
-import path from 'path';
+import { formatTitle } from "../lib/formatTitle";
+import { getProjectEntry } from "../lib/docs";
+import { slugify } from "../lib/slugify";
+import {
+	createCachedFetch,
+	readCache as readCacheNS,
+	writeCache as writeCacheNS,
+} from "../lib/fetchCached";
+import type { Project } from "@/types";
 
-export interface ReleaseAsset {
-    name: string;
-    download_url: string;
-    size: number;
-    download_count: number;
-    content_type: string | null;
-    updated_at: string | null;
-}
-
-export interface RepoRelease {
-    id: number;
-    tag_name: string;
-    name: string | null;
-    body: string | null;
-    url: string;
-    draft: boolean;
-    prerelease: boolean;
-    created_at: string | null;
-    published_at: string | null;
-    assets: ReleaseAsset[];
-}
-
-export interface Project {
-	title: string;
-	description: string;
-	languages: string[];
-	/** GitHub repository topics/tags */
-	topics?: string[];
-	live_website_url?: string;
-	github_link: string;
-	readme: string;
-	slug: string;
-	// Optional metadata
-	pinned?: boolean;
-	stars?: number;
-	forks?: number;
-    docs_slug?: string | null;
-    parentRepo?: string;
-    originalRepo?: {
-        name: string;
-        full_name: string;
-        owner: string;
-        url: string;
-    } | null;
-    isFork?: boolean;
-    contributors?: Contributor[];
-    releases?: RepoRelease[];
-}
-
-export interface Contributor {
-    login: string;
-    avatar_url: string;
-    html_url: string;
-    contributions: number;
-}
 
 /**
  * The upstream stats API goes down periodically (500s), which used to collapse the
  * site to whatever the /pinned endpoint returned. Every remote payload is now
  * mirrored to disk on success and replayed when the live call fails.
+ *
+ * The namespace stays "github" so cache entries written before this moved into
+ * src/lib/fetchCached.ts are still found.
  */
-const CACHE_DIR = path.join(process.cwd(), ".cache", "github");
+const CACHE_NS = "github";
+const { fetchJson: fetchJsonCached } = createCachedFetch(CACHE_NS);
 
-function readCache<T>(key: string): T | null {
-	try {
-		const file = path.join(CACHE_DIR, `${key}.json`);
-		if (!fs.existsSync(file)) return null;
-		return JSON.parse(fs.readFileSync(file, "utf-8")) as T;
-	} catch {
-		return null;
-	}
-}
-
-function writeCache(key: string, data: unknown): void {
-	try {
-		fs.mkdirSync(CACHE_DIR, { recursive: true });
-		fs.writeFileSync(
-			path.join(CACHE_DIR, `${key}.json`),
-			JSON.stringify(data),
-			"utf-8"
-		);
-	} catch {
-		/* cache is best-effort */
-	}
-}
+/**
+ * README caching stays hand-rolled rather than going through `fetchJson`: it
+ * has to distinguish a 404 (durable "no README", safe to cache as empty) from
+ * a rate limit (must never be cached), which a generic helper cannot see.
+ */
+const readCache = <T>(key: string) => readCacheNS<T>(CACHE_NS, key);
+const writeCache = (key: string, data: unknown) =>
+	writeCacheNS(CACHE_NS, key, data);
 
 /** Unauthenticated GitHub allows 60 req/hr; use a token when the env has one. */
 const GH_TOKEN =
@@ -99,27 +38,6 @@ const GH_TOKEN =
 const GH_HEADERS: Record<string, string> = GH_TOKEN
 	? { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json" }
 	: { Accept: "application/vnd.github+json" };
-
-async function fetchJsonCached<T>(
-	url: string,
-	key: string,
-	init?: RequestInit
-): Promise<T | null> {
-	try {
-		const res = await fetch(url, init);
-		if (res.ok) {
-			const data = (await res.json()) as T;
-			writeCache(key, data);
-			return data;
-		}
-		console.error(`Fetch failed (${res.status}) for ${url}`);
-	} catch (e) {
-		console.error(`Error fetching ${url}`, e);
-	}
-	const cached = readCache<T>(key);
-	if (cached) console.warn(`Using cached payload for ${key}`);
-	return cached;
-}
 
 async function fetchPinnedProjects(first = 6): Promise<Project[]> {
 	try {

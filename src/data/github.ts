@@ -1,98 +1,11 @@
-import {
-	githubAttributedStatsUrl,
-	githubUsernames,
-	personalGithubUsername,
-} from "./profile";
+import { githubAttributedStatsUrl, githubUsernames, personalGithubUsername } from "./profile";
+import { createCachedFetch } from "../lib/fetchCached";
+import type { Commit, GitHubStats, GitHubStatsData, OrgContribution, Pull, PullRequest, StarsData } from "@/types";
 
-export interface TopLanguage {
-	name: string;
-	percentage: number;
-	color: string;
-}
+// Shares the "github" namespace with projects.ts — same upstream, and the keys
+// below are distinct from the ones that module writes.
+const { fetchJson, fetchText } = createCachedFetch("github");
 
-export interface YearlyContributions {
-	[date: string]: number;
-}
-
-export interface GitHubStatsData {
-	status: string;
-	message: string;
-	topLanguages: TopLanguage[];
-	totalCommits: number;
-	longestStreak: number;
-	currentStreak: number;
-	profile_visitors: number;
-	contributions: {
-		[year: string]: YearlyContributions;
-	};
-}
-
-export interface PullRequest {
-	repo: string;
-	number: number;
-	title: string;
-	state: string;
-	created_at: string;
-	updated_at: string;
-	closed_at: string | null;
-	merged_at: string | null;
-	user: string;
-	url: string;
-	body: string | null;
-}
-
-export interface StarredRepository {
-	name: string;
-	description: string | null;
-	language: string | null;
-	stars: number;
-	forks: number;
-	url: string;
-}
-
-export interface StarsData {
-	total_stars: number;
-	repositories: StarredRepository[];
-}
-
-export interface Commit {
-	repo: string;
-	message: string;
-	timestamp: string;
-	sha: string;
-	url: string;
-}
-
-export interface Pull {
-	repo: string;
-	number: number;
-	title: string;
-	state: string;
-	created_at: string;
-	updated_at: string;
-	closed_at: string | null;
-	merged_at: string | null;
-	user: string;
-	url: string;
-	body: string | null;
-}
-
-export interface OrgContribution {
-	org: string;
-	org_id: number;
-	org_url: string;
-	org_avatar_url: string;
-	repos: string[];
-}
-
-export interface GitHubStats {
-	stats: GitHubStatsData;
-	prs: PullRequest[];
-	stars: StarsData;
-	commits: Commit[];
-	pulls: Pull[];
-	orgContributions: OrgContribution[];
-}
 
 type UserResults = {
 	username: string;
@@ -127,22 +40,16 @@ async function fetchExtraParentStars(): Promise<number> {
 
 	await Promise.all(
 		mappings.map(async ({ user, repos }) => {
-			try {
-				const res = await fetch(
-					`https://github-stats.tashif.codes/${user}/stars`
-				);
-				if (res.ok) {
-					const data = await res.json();
-					if (data.repositories && Array.isArray(data.repositories)) {
-						data.repositories.forEach((repo: any) => {
-							if (repos.includes(repo.name.toLowerCase())) {
-								totalExtraStars += repo.stars;
-							}
-						});
+			const data = await fetchJson<any>(
+				`https://github-stats.tashif.codes/${user}/stars`,
+				`stats-stars-${user}`
+			);
+			if (data?.repositories && Array.isArray(data.repositories)) {
+				data.repositories.forEach((repo: any) => {
+					if (repos.includes(repo.name.toLowerCase())) {
+						totalExtraStars += repo.stars;
 					}
-				}
-			} catch (e) {
-				console.error(`Error fetching extra stars for ${user}:`, e);
+				});
 			}
 		})
 	);
@@ -151,28 +58,35 @@ async function fetchExtraParentStars(): Promise<number> {
 }
 
 async function fetchUserResults(username: string): Promise<UserResults> {
-	const endpoints = [
-		githubAttributedStatsUrl("https://github-stats.tashif.codes", username),
-		`https://github-stats.tashif.codes/${username}/prs`,
-		`https://github-stats.tashif.codes/${username}/stars`,
-		`https://github-stats.tashif.codes/${username}/commits`,
-		`https://github-stats.tashif.codes/${username}/me/pulls`,
-		`https://github-stats.tashif.codes/${username}/org-contributions`,
+	// Cached per endpoint rather than per user, so one failing slice (org
+	// contributions rate-limits most often) falls back on its own and the rest
+	// of the profile still comes from live data.
+	const endpoints: Array<[url: string, key: string]> = [
+		[
+			githubAttributedStatsUrl("https://github-stats.tashif.codes", username),
+			`stats-attributed-${username}`,
+		],
+		[`https://github-stats.tashif.codes/${username}/prs`, `stats-prs-${username}`],
+		[
+			`https://github-stats.tashif.codes/${username}/stars`,
+			`stats-stars-${username}`,
+		],
+		[
+			`https://github-stats.tashif.codes/${username}/commits`,
+			`stats-commits-${username}`,
+		],
+		[
+			`https://github-stats.tashif.codes/${username}/me/pulls`,
+			`stats-pulls-${username}`,
+		],
+		[
+			`https://github-stats.tashif.codes/${username}/org-contributions`,
+			`stats-orgs-${username}`,
+		],
 	];
 
-	const responses = await Promise.all(endpoints.map((endpoint) => fetch(endpoint)));
-
 	const results = await Promise.all(
-		responses.map((response) => {
-			if (!response.ok) {
-				console.error(
-					`Failed to fetch from ${response.url}:`,
-					response.statusText
-				);
-				return null;
-			}
-			return response.json();
-		})
+		endpoints.map(([url, key]) => fetchJson<any>(url, key))
 	);
 
 	return { username, results: results as UserResults["results"] };
@@ -279,22 +193,17 @@ async function fetchViewsFor(usernames: string[]): Promise<number> {
 	let totalViews = 0;
 
 	for (const username of usernames) {
-		try {
-			const viewsResponse = await fetch(
-				`https://komarev.com/ghpvc/?username=${username}&style=for-the-badge&color=orange`
-			);
-			if (viewsResponse.ok) {
-				const viewsData = await viewsResponse.text();
-				const titleMatch = viewsData.match(/<title>(.*?)<\/title>/);
-				const matches = titleMatch
-					? titleMatch[1].match(/(\d[\d,]*)/)
-					: null;
-				if (matches && matches[0]) {
-					totalViews += parseInt(matches[0].replace(/,/g, ""), 10);
-				}
-			}
-		} catch (e) {
-			console.error(`Failed to fetch views for ${username}:`, e);
+		// An SVG badge, not JSON — the count is scraped out of its <title>.
+		const viewsData = await fetchText(
+			`https://komarev.com/ghpvc/?username=${username}&style=for-the-badge&color=orange`,
+			`ghpvc-${username}`
+		);
+		if (!viewsData) continue;
+
+		const titleMatch = viewsData.match(/<title>(.*?)<\/title>/);
+		const matches = titleMatch ? titleMatch[1].match(/(\d[\d,]*)/) : null;
+		if (matches && matches[0]) {
+			totalViews += parseInt(matches[0].replace(/,/g, ""), 10);
 		}
 	}
 
