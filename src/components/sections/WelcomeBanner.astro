@@ -1,0 +1,139 @@
+---
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Code2, BookOpen, Github, Trophy, FileText } from "lucide-react";
+import { allProjects } from "../../data/projects";
+import { numBlogPosts } from "../../data/blog";
+import { githubStats } from "../../data/github";
+import { leetCodeData } from "../../data/leetcode";
+
+const numProjects = allProjects.length;
+const liveProjectCount = allProjects.filter((p) => p.live_website_url).length;
+const totalCommits = githubStats.stats?.totalCommits ?? 0;
+const totalSolved = leetCodeData?.stats?.totalSolved ?? 0;
+
+// Phrases cycled by the welcome statusline typewriter (a time-of-day
+// greeting is prepended client-side)
+const welcomePhrases = [
+	`shipping ${numProjects} projects — ${liveProjectCount} of them live`,
+	"open source, experiments & product work",
+	`${totalCommits.toLocaleString()} commits into the void`,
+	"currently: probably debugging something",
+];
+---
+
+<!-- Welcome restore pill (shown when banner is hidden) -->
+<div id="welcome-restore" class="mb-4 hidden">
+	<Button
+		id="welcome-restore-btn"
+		variant="outline"
+		size="sm"
+		className="rounded-full bg-card/60 dark:bg-card/60"
+		aria-controls="welcome-banner"
+	>
+		<span class="inline-block h-2 w-2 rounded-full bg-orange-500 mr-2"
+		></span>
+		Show welcome
+	</Button>
+</div>
+
+<!-- Welcome Banner -->
+<Card
+	id="welcome-banner"
+	className="relative mb-6 overflow-hidden bg-card/60 dark:bg-card/60 backdrop-blur border-border/60 dark:border-border/60"
+>
+	<CardContent className="relative px-4 py-3 sm:px-5">
+		<h2 class="sr-only">Welcome</h2>
+		<div class="flex items-center gap-x-4 lg:gap-x-6">
+			<!-- Terminal prompt + typewriter -->
+			<div
+				class="flex items-baseline gap-1.5 font-mono text-sm flex-1 min-w-0"
+				aria-label="Welcome message"
+			>
+				<span class="text-primary font-bold select-none" aria-hidden="true"
+					>➜</span
+				>
+				<span class="font-semibold text-foreground whitespace-nowrap"
+					><span class="hidden sm:inline">taf@</span>tashif.codes</span
+				>
+				<span class="text-muted-foreground/70 select-none" aria-hidden="true"
+					>%</span
+				>
+				<span
+					id="welcome-typer"
+					class="text-muted-foreground truncate"
+					data-phrases={JSON.stringify(welcomePhrases)}
+					>{welcomePhrases[0]}</span
+				>
+				<span
+					class="welcome-cursor inline-block w-[7px] h-3.5 self-center rounded-[1px] bg-primary/70 shrink-0"
+					aria-hidden="true"></span>
+			</div>
+			<div class="flex items-center gap-x-4 xl:gap-x-6 shrink-0">
+				{
+					[
+						{ icon: Code2, value: numProjects, label: "Projects" },
+						{ icon: BookOpen, value: numBlogPosts, label: "Posts" },
+						{ icon: Github, value: totalCommits, label: "Commits" },
+						{ icon: Trophy, value: totalSolved, label: "Solved" },
+					].map((stat) => (
+						<div class="flex items-center gap-1.5">
+							<stat.icon className="w-3.5 h-3.5 text-primary/80" />
+							<span
+								class="font-mono text-sm font-semibold text-foreground tabular-nums"
+								data-countup={stat.value}
+							>
+								{stat.value.toLocaleString()}
+							</span>
+							<span class="hidden lg:inline text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/80">
+								{stat.label}
+							</span>
+						</div>
+					))
+				}
+			</div>
+			<div class="flex items-center gap-2 shrink-0 ml-auto">
+				<a
+					href="/resume"
+					aria-label="View resume"
+					data-haptic-nav
+					class="inline-flex items-center gap-1.5 h-7 px-3 text-xs font-semibold rounded-full text-primary border border-border/60 hover:bg-primary/10 hover:border-primary/30 transition-colors"
+				>
+					<FileText size={14} />
+					<span class="hidden sm:inline">Resume</span>
+				</a>
+				<button
+					id="welcome-dismiss"
+					aria-label="Dismiss welcome"
+					aria-controls="welcome-banner"
+					class="inline-flex items-center justify-center h-7 w-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+				>
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+		</div>
+	</CardContent>
+</Card>
+
+<style>
+	.welcome-cursor {
+		animation: cursor-blink 1.1s steps(1) infinite;
+	}
+
+	@keyframes cursor-blink {
+		0%,
+		49% {
+			opacity: 1;
+		}
+		50%,
+		100% {
+			opacity: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.welcome-cursor {
+			animation: none;
+		}
+	}
+</style>

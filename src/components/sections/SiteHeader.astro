@@ -1,0 +1,82 @@
+---
+import { Button } from "@/components/ui/button";
+import ThemeToggle from "@/components/common/ThemeToggle";
+import { owner, socials } from "../../data/profile";
+import { leetCodeData } from "../../data/leetcode";
+
+// The LeetCode profile supplies the tagline when it loaded; otherwise fall
+// back to the statically configured one.
+const { profile } = leetCodeData;
+---
+
+		<header
+class="relative backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:supports-[backdrop-filter]:bg-card/60 bg-card/80 dark:bg-card/70 border-b border-border/60 dark:border-border/60 shadow-sm"
+		>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 relative">
+	<div class="flex flex-col sm:flex-row items-center sm:justify-between gap-4 w-full">
+		<!-- Left: Profile Info -->
+		<div class="flex items-center space-x-4 overflow-visible w-full sm:w-auto justify-start">
+			<div class="relative shrink-0">
+				<span class="block p-[2.5px] rounded-full bg-primary/80">
+					<img
+						src={owner.avatar}
+						alt={owner.name}
+						class="w-14 h-14 sm:w-[60px] sm:h-[60px] rounded-full object-cover block ring-2 ring-card"
+					/>
+				</span>
+			</div>
+			<div class="flex flex-col gap-0.5">
+				<h1
+					class="text-2xl sm:text-[1.75rem] font-bold text-foreground leading-tight tracking-tight text-left"
+					style="font-family: 'Lexend', sans-serif; letter-spacing: -0.02em;"
+				>
+					{owner.name}
+				</h1>
+				<div class="flex items-center gap-2 justify-start">
+					<span class="block w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+					<p class="text-muted-foreground text-sm font-medium text-left" style="font-family: 'Lexend', sans-serif;">
+						{profile.realName || owner.fallbackTitle}
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Right/Center: Social Links and Theme Button -->
+		<div class="flex items-center justify-center sm:justify-end w-full sm:w-auto mt-1 sm:mt-0">
+			<!-- Social Links -->
+			<div class="flex items-center gap-0.5 sm:gap-1 z-10">
+				{
+					socials.map((social) => (
+						<Button
+							variant="ghost"
+							size="icon"
+							asChild
+							className="rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+						>
+							<a
+								href={social.link}
+								target="_blank"
+								rel="noopener noreferrer"
+								aria-label={social.label}
+								data-haptic-social
+							>
+								<social.icon size={18} />
+							</a>
+						</Button>
+					))
+				}
+			</div>
+
+			<!-- Desktop Divider -->
+			<div class="hidden sm:block w-px h-5 bg-border/60 mx-3 sm:mx-4 z-10"></div>
+
+			<!-- Theme Button (Inline on Desktop, Absolute on Mobile) -->
+			<div class="absolute right-4 top-[60%] -translate-y-1/2 sm:static sm:translate-y-0 z-20">
+				<div class="rounded-full bg-secondary/40 ring-1 ring-border/60 hover:ring-border transition-all">
+					<ThemeToggle client:load />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+		</header>

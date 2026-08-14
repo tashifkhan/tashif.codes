@@ -1,0 +1,89 @@
+---
+import ProjectFilters from "../projects/ProjectFilters.tsx";
+import ProjectCard from "../projects/ProjectCard.astro";
+import DataFreshness from "../common/DataFreshness";
+import { ChartPie } from "lucide-react";
+import { allProjects, projectsFetchedAt } from "../../data/projects";
+import { starLists } from "../../data/starLists";
+import { fetchAnalyticsProjects, hasAnalytics, getAnalyticsSlug } from "../../data/analyticsProjects";
+import type { Project } from "@/types";
+
+const projects: Project[] = allProjects;
+const analyticsProjects = await fetchAnalyticsProjects();
+const numProjects = projects.length;
+const liveProjectCount = projects.filter((p) => p.live_website_url).length;
+---
+
+<div id="projects-section">
+	<!-- Section heading: single compact row -->
+	<div class="mb-4 sm:mb-5 flex items-center gap-x-2 sm:gap-x-3 min-w-0">
+		<h2
+			class="font-sans text-lg sm:text-xl font-bold tracking-tight text-foreground shrink-0"
+		>
+			Projects
+		</h2>
+		<span
+			class="hidden xs:inline-flex sm:inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground truncate min-w-0"
+		>
+			<span class="font-bold text-foreground tabular-nums"
+				>{numProjects}</span
+			>
+			<span class="hidden sm:inline">total</span>
+			<span class="text-border select-none hidden sm:inline" aria-hidden="true">·</span>
+			<span
+				class="relative flex h-1.5 w-1.5 shrink-0 hidden sm:flex"
+				aria-hidden="true"
+			>
+				<span
+					class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60"
+				></span>
+				<span
+					class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"
+				></span>
+			</span>
+			<span class="font-bold text-foreground tabular-nums hidden sm:inline"
+				>{liveProjectCount}</span
+			>
+			<span class="hidden sm:inline">live</span>
+		</span>
+		<div class="ml-auto flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+			<DataFreshness
+				client:load
+				source="projects"
+				fetchedAt={projectsFetchedAt}
+				compact
+			/>
+			<a
+				href="/projects/stats"
+				data-haptic-nav
+				class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors shrink-0"
+				aria-label="View project stats"
+			>
+				<ChartPie className="w-3.5 h-3.5" />
+				<span class="hidden sm:inline">View Stats</span>
+			</a>
+		</div>
+	</div>
+
+	<ProjectFilters client:load starLists={starLists} />
+	<div
+		class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+	>
+		{
+			projects.map((project) => (
+				<div
+					class="h-full"
+					data-project-item-card
+					data-has-live-link={Boolean(project.live_website_url)}
+				>
+					<ProjectCard
+						project={project}
+						hasAnalytics={hasAnalytics(project.slug, analyticsProjects)}
+						analyticsSlug={getAnalyticsSlug(project.slug)}
+					/>
+				</div>
+			))
+		}
+	</div>
+</div>
+
