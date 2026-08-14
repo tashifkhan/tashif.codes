@@ -35,7 +35,7 @@ const { active = false } = Astro.props;
 		</span>
 		<div class="ml-auto flex items-center gap-1.5 sm:gap-2.5 shrink-0">
 			<DataFreshness
-				client:load
+				client:visible
 				source="leetcode"
 				fetchedAt={leetCodeFetchedAt}
 				compact

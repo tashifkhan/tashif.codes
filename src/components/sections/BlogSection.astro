@@ -54,7 +54,7 @@ const { active = false } = Astro.props;
 		</span>
 		<div class="ml-auto flex items-center gap-1.5 sm:gap-2.5 shrink-0">
 			<DataFreshness
-				client:load
+				client:visible
 				source="blog"
 				fetchedAt={blogFetchedAt}
 				label="Blog posts"
@@ -72,7 +72,7 @@ const { active = false } = Astro.props;
 			</a>
 		</div>
 	</div>
-	<BlogFilters client:load categories={blogCategories} />
+	<BlogFilters client:visible categories={blogCategories} />
 	{
 		blogPosts.length > 0 ? (
 			<div class="space-y-10">
