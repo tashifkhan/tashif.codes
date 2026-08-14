@@ -1,12 +1,13 @@
 ---
 import PageShell from "../../layouts/PageShell.astro";
-import ProjectFilters from "../../components/ProjectFilters.tsx";
-import DataFreshness from "../../components/DataFreshness";
+import ProjectFilters from "../../components/projects/ProjectFilters.tsx";
+import DataFreshness from "../../components/common/DataFreshness";
 import { starLists } from "../../data/starLists";
 import { ChartPie } from "lucide-react";
-import ProjectCard from "../../components/ProjectCard.astro";
-import { allProjects, projectsFetchedAt, type Project } from "../../data/projects";
+import ProjectCard from "../../components/projects/ProjectCard.astro";
+import { allProjects, projectsFetchedAt } from "../../data/projects";
 import { fetchAnalyticsProjects, hasAnalytics, getAnalyticsSlug } from "../../data/analyticsProjects";
+import type { Project } from "@/types";
 
 const projects: Project[] = allProjects;
 const analyticsProjects = await fetchAnalyticsProjects();

@@ -9,8 +9,9 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { StarList } from "../data/starLists";
+
 import { useWebHaptics } from "web-haptics/react";
+import type { StarList } from "@/types";
 
 interface StarListOption {
 	key: string; // identifier

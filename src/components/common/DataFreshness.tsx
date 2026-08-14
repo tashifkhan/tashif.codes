@@ -3,15 +3,9 @@ import { Clock, RefreshCw, X } from "lucide-react";
 import { useWebHaptics } from "web-haptics/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-	formatFetchedAt,
-	resolveFetchedAt,
-	writeStoredFetchedAt,
-	LIVE_REFRESH_EVENT,
-	type LiveDataSource,
-	type LiveRefreshDetail,
-} from "@/lib/dataFreshness";
+import { formatFetchedAt, resolveFetchedAt, writeStoredFetchedAt, LIVE_REFRESH_EVENT } from "@/lib/dataFreshness";
 import { friendlyFetchError, refreshLiveSource } from "@/lib/liveRefresh";
+import type { LiveDataSource, LiveRefreshDetail } from "@/types";
 
 const SOURCE_LABELS: Record<LiveDataSource, string> = {
 	github: "GitHub stats",

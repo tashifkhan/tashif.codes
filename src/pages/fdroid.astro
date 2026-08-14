@@ -2,9 +2,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import PageShell from "../layouts/PageShell.astro";
-import EmptyState from "../components/EmptyState.astro";
+import EmptyState from "../components/common/EmptyState.astro";
 import { allProjects } from "../data/projects";
-import { slugify } from "../utils/slugify";
+import { slugify } from "../lib/slugify";
 import {
 	Card,
 	CardContent,

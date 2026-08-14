@@ -18,11 +18,8 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import DataFreshness from "@/components/DataFreshness";
-import {
-	dispatchLiveRefreshed,
-	writeStoredFetchedAt,
-} from "@/lib/dataFreshness";
+import DataFreshness from "@/components/common/DataFreshness";
+import { dispatchLiveRefreshed, writeStoredFetchedAt } from "@/lib/dataFreshness";
 import { areaY, barX, defineChart, lineY } from "@tanstack/charts";
 import { Chart } from "@tanstack/charts/react";
 import { pie, polar, radialArc } from "@tanstack/charts/polar";

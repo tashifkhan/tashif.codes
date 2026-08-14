@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import type { ExperienceEntry } from "../data/experiences";
+
 import {
 	Github,
 	Linkedin,
@@ -23,23 +23,17 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useWebHaptics } from "web-haptics/react";
 
-// --- INTERFACES ---
-// Data shapes live alongside the content in src/data/resume.ts;
-// re-exported here so existing imports keep working.
-import {
-	resumeAbout,
-	type ResumeProject,
-	type Education,
-	type Position,
-	type SkillCategory,
-} from "../data/resume";
-
-export type Experience = ExperienceEntry;
-export type Project = ResumeProject;
-export type { Education, Position, SkillCategory };
+import { resumeAbout } from "../../data/resume";
+import type {
+	Education,
+	ExperienceEntry,
+	Position,
+	ResumeProject,
+	SkillCategory,
+} from "@/types";
 
 interface InteractiveResumeProps {
-	experiences: Experience[];
+	experiences: ExperienceEntry[];
 	projects: ResumeProject[];
 	education: Education[];
 	positions: Position[];
@@ -224,7 +218,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 
 	// Group consecutive roles at the same company into one timeline entry
 	const companyOrder: string[] = [];
-	const companyGroups: Record<string, Experience[]> = {};
+	const companyGroups: Record<string, ExperienceEntry[]> = {};
 	experiences.forEach((exp) => {
 		if (!companyGroups[exp.company]) {
 			companyGroups[exp.company] = [];
@@ -235,7 +229,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 
 	const totalSkills = skillCategories.reduce((n, c) => n + c.items.length, 0);
 
-	const CompanyHeading = ({ exp }: { exp: Experience }) => (
+	const CompanyHeading = ({ exp }: { exp: ExperienceEntry }) => (
 		<div className="flex items-center gap-2 mb-3">
 			{exp.logo && (
 				<img
@@ -269,7 +263,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 		</div>
 	);
 
-	const RoleHeading = ({ exp }: { exp: Experience }) => (
+	const RoleHeading = ({ exp }: { exp: ExperienceEntry }) => (
 		<div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-3">
 			<h3 className="text-lg font-bold tracking-tight text-foreground">
 				{exp.role}

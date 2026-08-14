@@ -1,18 +1,11 @@
 ---
 import PageShell from "../../layouts/PageShell.astro";
-import BlogFilters from "../../components/BlogFilters";
-import BlogCard from "../../components/BlogCard.astro";
-import EmptyState from "../../components/EmptyState.astro";
-import DataFreshness from "../../components/DataFreshness";
+import BlogFilters from "../../components/blog/BlogFilters";
+import BlogCard from "../../components/blog/BlogCard.astro";
+import EmptyState from "../../components/common/EmptyState.astro";
+import DataFreshness from "../../components/common/DataFreshness";
 import { ExternalLink } from "lucide-react";
-import {
-	blogPosts,
-	blogFetchedAt,
-	blogCategories,
-	avgReadingMinutes,
-	numBlogPosts,
-	totalBlogWords,
-} from "../../data/blog";
+import { blogPosts, blogFetchedAt, blogCategories, avgReadingMinutes, numBlogPosts, totalBlogWords } from "../../data/blog";
 ---
 
 <PageShell

@@ -1,13 +1,9 @@
 ---
 import { Calendar } from "lucide-react";
-import EmptyState from "./EmptyState.astro";
-import { starLists } from "../data/starLists";
-import {
-	githubUsernames,
-	githubStatsApiBase,
-	personalGithubUsername,
-} from "../data/profile";
-import YearSelect from "./YearSelect";
+import EmptyState from "../common/EmptyState.astro";
+import { starLists } from "../../data/starLists";
+import { githubUsernames, githubStatsApiBase, personalGithubUsername } from "../../data/profile";
+import YearSelect from "../projects/YearSelect";
 
 // Calculate date range (last 365 days from today)
 const today = new Date();
@@ -384,10 +380,7 @@ const starredLists = starLists || [];
 <script>
 	// Year selector + personal-only filter for contribution graph
 	import { WebHaptics as WebHapticsContrib } from 'web-haptics';
-	import {
-		githubUsernames,
-		personalGithubUsername,
-	} from '../data/profile';
+	import { githubUsernames, personalGithubUsername } from '../../data/profile';
 	// Same-origin proxy avoids browser CORS issues (see vercel.json / vite proxy)
 	const githubStatsApiBase = '/proxy/gh-stats';
 	const hapticsDays = new WebHapticsContrib();

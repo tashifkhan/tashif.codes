@@ -5,9 +5,9 @@ import {
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from "../ui/dropdown-menu";
 import { ExternalLink, Github } from "lucide-react";
-import { githubProfiles } from "../data/profile";
+import { githubProfiles } from "../../data/profile";
 
 interface ProfileDropdownProps {
 	isMobile?: boolean;

@@ -1,10 +1,11 @@
 ---
 import { Github, ExternalLink, Pin, FileText, ChartPie, Star, Tag, GitFork } from "lucide-react";
-import type { Project } from "../data/projects";
+
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { languageColor } from "../utils/languageColors";
-import { formatTopic } from "../utils/formatTopic";
+import { languageColor } from "../../lib/languageColors";
+import { formatTopic } from "../../lib/formatTopic";
+import type { Project } from "@/types";
 
 interface Props {
 	project: Project;
