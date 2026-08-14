@@ -6,18 +6,11 @@
  * (vercel.json in prod, vite server.proxy in `astro dev`) to avoid CORS.
  */
 
-import {
-	githubAttributedStatsUrl,
-	githubUsernames,
-	personalGithubUsername,
-} from "@/data/profile";
-import { formatTitle } from "@/utils/formatTitle";
-import { slugify } from "@/utils/slugify";
-import {
-	dispatchLiveRefreshed,
-	type LiveDataSource,
-	writeStoredFetchedAt,
-} from "@/lib/dataFreshness";
+import { githubAttributedStatsUrl, githubUsernames, personalGithubUsername } from "@/data/profile";
+import { formatTitle } from "@/lib/formatTitle";
+import { slugify } from "@/lib/slugify";
+import { dispatchLiveRefreshed, writeStoredFetchedAt } from "@/lib/dataFreshness";
+import type { LiveDataSource } from "@/types";
 
 /** Pure sort — kept local so we don't pull `blog.ts` top-level fetches into the client bundle. */
 function sortBlogPostsNewestFirst<T extends { date: string; slug: string }>(

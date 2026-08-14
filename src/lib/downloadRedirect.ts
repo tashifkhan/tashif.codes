@@ -1,9 +1,6 @@
 import downloadsData from '../data/downloads.json';
+import type { DownloadProject } from "@/types";
 
-export interface DownloadProject {
-  title: string;
-  download_url: string;
-}
 
 export function getDownloadUrl(projectTitle: string): string | null {
   const normalizedTitle = projectTitle.toLowerCase().replace(/[^a-z0-9-]/g, '-');

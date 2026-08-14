@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { formatTitle } from './formatTitle';
+import type { DocPage, SidebarItem } from "@/types";
 
 const DOCS_DIR = path.join(process.cwd(), 'src/data/docs');
 
@@ -13,28 +14,6 @@ function resolveProjectDir(projectSlug: string): string | null {
   return match || null;
 }
 
-export interface DocPage {
-  params: {
-    project: string;
-    slug: string | undefined;
-  };
-  props: {
-    project: string;
-    slug: string;
-    content: string;
-    title: string;
-    headings: { depth: number; text: string; slug: string }[];
-  };
-}
-
-export interface SidebarItem {
-  title: string;
-  slug: string;
-  path: string;
-  order: number;
-  children?: SidebarItem[];
-  depth: number;
-}
 
 // Helper to slugify text (matching MarkdownRenderer.astro)
 function slugify(text: string): string {
