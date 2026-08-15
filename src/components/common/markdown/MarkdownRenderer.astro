@@ -20,6 +20,7 @@ import "../../../styles/markdown-theme.css";
 interface Props {
   content?: string;
   githubBaseUrl?: string;
+  githubProfileUrl?: string;
   project?: string;
   /**
    * `repo` reads a root-relative URL as repository-root-relative, which is what
@@ -34,6 +35,7 @@ interface Props {
 const {
   content,
   githubBaseUrl,
+  githubProfileUrl,
   project,
   source,
   assetBaseUrl,
@@ -91,6 +93,7 @@ const theme: MarkdownTheme = {
 const html = content
   ? await renderMarkdown(content, {
       githubBaseUrl,
+      githubProfileUrl,
       project,
       rootRelative: resolvedSource === "repo" ? "repo" : "site",
       assetBaseUrl,

@@ -42,8 +42,13 @@ export {
 } from './pipeline/render'
 export { EMPTY_THEME, type MarkdownTheme } from './pipeline/theme'
 export {
+  CUSTOM_SCHEME_NAMES,
+  CUSTOM_SCHEMES,
   convertRelativeUrl,
+  KNOWN_SITES,
+  resolveGithubRef,
   type RootRelativeMode,
+  type SchemeResolver,
   type UrlOptions,
 } from './pipeline/urls'
 export {
