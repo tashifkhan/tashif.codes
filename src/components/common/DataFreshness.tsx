@@ -234,7 +234,10 @@ export default function DataFreshness({
 				className={cn(
 					// Mobile: bottom sheet · Desktop: centered modal
 					"fixed inset-x-0 bottom-0 top-auto m-0 w-full max-w-none",
-					"sm:inset-auto sm:m-auto sm:w-[calc(100vw-2rem)] sm:max-w-md sm:bottom-auto",
+					// inset-0 + m-auto is what centers a native dialog; inset-auto would
+					// drop it at its static position (top-right of the header row).
+					"sm:inset-0 sm:m-auto sm:h-fit sm:w-[calc(100vw-2rem)] sm:max-w-md",
+					"max-h-[85dvh] overflow-y-auto",
 					"rounded-t-2xl sm:rounded-2xl border border-border bg-card text-foreground p-0 shadow-2xl",
 					"backdrop:bg-black/60 backdrop:backdrop-blur-sm",
 					"open:flex open:flex-col",
