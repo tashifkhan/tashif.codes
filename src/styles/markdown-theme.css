@@ -280,9 +280,9 @@
   margin: var(--md-gap) 0;
   padding: 1.25rem 1.5rem;
   overflow-x: auto;
-  border: 1px solid var(--md-border);
+  border: 1px solid var(--md-code-border);
   border-radius: var(--md-radius-lg);
-  background: var(--md-surface);
+  background: var(--md-code-bg);
   box-shadow: var(--shadow-md);
   font-size: 0.9rem;
   line-height: 1.6;
@@ -292,7 +292,7 @@
   padding: 0;
   border: 0;
   background: none;
-  color: color-mix(in oklab, var(--md-fg) 90%, transparent);
+  color: var(--md-code-fg);
   font-family: var(--font-mono);
   font-size: inherit;
   font-weight: inherit;
