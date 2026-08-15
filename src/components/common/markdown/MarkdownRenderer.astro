@@ -124,6 +124,7 @@ const html = content
   import {
     initCopyButtons,
     initTabs,
+    initYtTitles,
     isDarkTheme,
     renderMermaidBlocks,
     watchThemeChanges,
@@ -146,6 +147,7 @@ const html = content
 
   initCopyButtons();
   initTabs();
+  void initYtTitles();
   watchThemeChanges(() => void drawDiagrams(true));
 
   // Re-run on every view transition: the article element is swapped wholesale,
@@ -153,6 +155,7 @@ const html = content
   document.addEventListener("astro:page-load", () => {
     initTabs();
     void drawDiagrams();
+    void initYtTitles();
     Prism.highlightAll();
   });
 </script>
