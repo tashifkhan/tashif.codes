@@ -72,6 +72,8 @@ interface RepoMeta {
 	topicsMap: Map<string, string[]>;
 	/** repo name (lowercase) / full_name → languages (fallback when the stats API returns none) */
 	languageMap: Map<string, string[]>;
+	/** repo name (lowercase) / full_name → last push date (ISO), used for RSS ordering */
+	updatedMap: Map<string, string>;
 }
 
 /**
@@ -112,6 +114,7 @@ async function fetchRepoMeta(users: string[]): Promise<RepoMeta> {
 	const forkMap = new Map<string, number>();
 	const topicsMap = new Map<string, string[]>();
 	const languageMap = new Map<string, string[]>();
+	const updatedMap = new Map<string, string>();
 
 	await Promise.all(users.map(async (user) => {
 		try {
@@ -127,6 +130,8 @@ async function fetchRepoMeta(users: string[]): Promise<RepoMeta> {
 				const topics: string[] = Array.isArray(repo.topics)
 					? repo.topics.filter((t: unknown): t is string => typeof t === "string")
 					: [];
+				const updatedAt: string =
+					repo.pushed_at ?? repo.updated_at ?? repo.created_at;
 
 				if (typeof forks === "number") {
 					if (repo.full_name) {
@@ -135,6 +140,17 @@ async function fetchRepoMeta(users: string[]): Promise<RepoMeta> {
 					if (repo.name) {
 						forkMap.set(`${user}/${repo.name}`.toLowerCase(), forks);
 						forkMap.set(repo.name.toLowerCase(), forks);
+					}
+				}
+
+				if (typeof updatedAt === "string" && updatedAt) {
+					if (repo.full_name) {
+						updatedMap.set(repo.full_name.toLowerCase(), updatedAt);
+					}
+					if (repo.name) {
+						updatedMap.set(`${user}/${repo.name}`.toLowerCase(), updatedAt);
+						updatedMap.set(repo.name.toLowerCase(), updatedAt);
+						updatedMap.set(slugify(repo.name).toLowerCase(), updatedAt);
 					}
 				}
 
@@ -172,7 +188,7 @@ async function fetchRepoMeta(users: string[]): Promise<RepoMeta> {
 		}
 	}));
 
-	return { forkMap, topicsMap, languageMap };
+	return { forkMap, topicsMap, languageMap, updatedMap };
 }
 
 /**
@@ -341,10 +357,8 @@ async function fetchAllProjects(): Promise<Project[]> {
     }));
 
 	// Fetch pinned in parallel / earlier
-	const [pinnedProjects, { forkMap, topicsMap, languageMap }] = await Promise.all([
-		fetchPinnedProjects(),
-		repoMetaPromise,
-	]);
+	const [pinnedProjects, { forkMap, topicsMap, languageMap, updatedMap }] =
+		await Promise.all([fetchPinnedProjects(), repoMetaPromise]);
 	const pinnedNames = new Set(
 		pinnedProjects.map((p) => p.title.toLowerCase().trim())
 	);
@@ -431,6 +445,13 @@ async function fetchAllProjects(): Promise<Project[]> {
 			project.forks ??
 			project.forks_count ??
 			0;
+
+		const updatedAt =
+			(parentRepo ? updatedMap.get(parentRepo.toLowerCase()) : undefined) ??
+			updatedMap.get(`tashifkhan/${project.title}`.toLowerCase()) ??
+			updatedMap.get(project.title.toLowerCase()) ??
+			updatedMap.get(projectSlug.toLowerCase()) ??
+			undefined;
 		return {
 			title: titleFormatted,
 			description: project.description || "No description available.",
@@ -443,6 +464,7 @@ async function fetchAllProjects(): Promise<Project[]> {
 			pinned: isPinned,
 			stars,
 			forks,
+			updated_at: updatedAt,
             docs_slug: getProjectEntry(projectSlug),
             parentRepo,
             originalRepo,
@@ -472,6 +494,12 @@ async function fetchAllProjects(): Promise<Project[]> {
 					topicsMap.get(`tashifkhan/${pinned.slug}`.toLowerCase()) ??
 					topicsMap.get(pinned.slug.toLowerCase()) ??
 					[];
+			}
+			if (!pinned.updated_at) {
+				pinned.updated_at =
+					updatedMap.get(`tashifkhan/${pinned.slug}`.toLowerCase()) ??
+					updatedMap.get(pinned.slug.toLowerCase()) ??
+					null;
 			}
 			// Pinned endpoint never includes README; backfill from GitHub.
 			if (!pinned.readme?.trim() && pinned.github_link) {

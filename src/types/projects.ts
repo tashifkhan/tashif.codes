@@ -38,6 +38,8 @@ export interface Project {
 	pinned?: boolean;
 	stars?: number;
 	forks?: number;
+	/** Last push date (ISO), mirrored from GitHub when available. */
+	updated_at?: string | null;
     docs_slug?: string | null;
     parentRepo?: string;
     originalRepo?: {
