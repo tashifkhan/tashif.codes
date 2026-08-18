@@ -358,6 +358,29 @@
 }
 
 /*
+ * Inline code is a single unbreakable token as far as line breaking is
+ * concerned, so a long one (`AsyncSession(impersonate="chrome124")`) pushes
+ * past a phone-width column. Step bodies can hold literal `<code>` without the
+ * `md-code-inline` class, so match on the element and exclude `pre`, whose
+ * `white-space: pre` must survive for box-drawing diagrams to line up.
+ */
+.markdown-body :not(pre) > code {
+  overflow-wrap: anywhere;
+}
+
+/* Give terminal blocks more horizontal room on phones. */
+@media (max-width: 480px) {
+  .markdown-body .md-step {
+    padding-left: 2.5rem;
+  }
+
+  .markdown-body .md-panel-body,
+  .markdown-body .md-tab {
+    padding: 0.75rem;
+  }
+}
+
+/*
  * Ink band: true page invert. Soft theme foregrounds (e.g. dark mode's
  * #dce1ec) look washed at full bleed, so push toward high-contrast paper/ink.
  * Nested code/links are restyled in markdown.css to follow this pair.
