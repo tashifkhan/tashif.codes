@@ -905,6 +905,14 @@
   position: relative;
   padding: 0.15rem 0 0.15rem 3rem;
   min-height: 2rem;
+  /*
+   * `.md-steps` is a grid, so each step inherits `min-width: auto` and refuses
+   * to shrink below the min-content width of whatever it wraps. A step
+   * containing a code/terminal block with one long unbreakable line therefore
+   * widens the whole page instead of letting the block scroll on its own.
+   * Same fix as `.md-col` above.
+   */
+  min-width: 0;
 }
 
 /*
@@ -956,6 +964,10 @@
   height: 1rem;
   flex-shrink: 0;
   color: var(--md-tone, var(--md-fg-muted, var(--md-fg)));
+}
+
+.md-step-body {
+  min-width: 0;
 }
 
 .md-step-body > :first-child { margin-top: 0; }
