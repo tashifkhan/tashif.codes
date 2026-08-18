@@ -240,18 +240,28 @@ export function isDarkTheme(): boolean {
 }
 
 /**
- * Record the diagram's own width on the wrapper as `--md-diagram-width`.
+ * Normalize the rendered SVG so CSS can scale it with max-width.
  *
- * `useMaxWidth` makes mermaid scale an SVG down to whatever box it lands in,
- * which reads fine in an article column and turns into unreadable four-pixel
- * type on a phone. Stylesheets use this custom property to hold the diagram at
- * its natural size on narrow screens and scroll it instead.
+ * Mermaid often sets width="100%" when useMaxWidth is on, which fights the
+ * column layout. Prefer the viewBox intrinsic size as attributes, then let
+ * `.md-mermaid-render > svg { max-width: 100%; height: auto }` fit the phone.
  */
-function publishDiagramWidth(target: HTMLElement): void {
+function normalizeDiagramSvg(target: HTMLElement): void {
   const svg = target.querySelector('svg')
-  const width = svg?.viewBox?.baseVal?.width
-  if (!width) return
-  target.style.setProperty('--md-diagram-width', `${Math.round(width)}px`)
+  if (!svg) return
+
+  const vb = svg.viewBox?.baseVal
+  const vbWidth = vb?.width
+  const vbHeight = vb?.height
+  if (vbWidth && vbHeight) {
+    svg.setAttribute('width', String(Math.round(vbWidth)))
+    svg.setAttribute('height', String(Math.round(vbHeight)))
+    target.style.setProperty('--md-diagram-width', `${Math.round(vbWidth)}px`)
+  }
+
+  svg.removeAttribute('style')
+  svg.style.maxWidth = '100%'
+  svg.style.height = 'auto'
 }
 
 /**
@@ -279,13 +289,14 @@ export async function renderMermaidBlocks(
     startOnLoad: false,
     theme: 'base',
     themeVariables: dark ? MERMAID_DARK : MERMAID_LIGHT,
+    // Natural SVG size; CSS max-width scales to the column (mobile can zoom).
     sequence: { useMaxWidth: false, diagramMarginX: 16, diagramMarginY: 16 },
     // Keep subgraph titles under ~22 characters. mermaid hard-caps a cluster
     // label at 200px and lays the cluster out as if the title were one line, so
     // a title that wraps prints straight over the first node inside it — and
     // neither `wrappingWidth` nor `subGraphTitleMargin` moves that box.
-    flowchart: { useMaxWidth: true },
-    er: { useMaxWidth: true, diagramPadding: 20 },
+    flowchart: { useMaxWidth: false },
+    er: { useMaxWidth: false, diagramPadding: 20 },
   })
 
   for (const block of blocks) {
@@ -300,7 +311,7 @@ export async function renderMermaidBlocks(
     try {
       const { svg } = await mermaid.render(id, source)
       target.innerHTML = svg
-      publishDiagramWidth(target)
+      normalizeDiagramSvg(target)
     } catch {
       // mermaid leaves orphaned nodes behind when a parse fails.
       document.getElementById(id)?.remove()
