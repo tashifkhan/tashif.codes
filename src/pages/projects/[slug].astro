@@ -99,6 +99,8 @@ export async function getStaticPaths() {
 
 <PageShell
 	title={`${project.title} | Projects | Tashif Ahmad Khan`}
+	description={project.description || undefined}
+	url={`/projects/${project.slug}`}
 	tint="orange"
 	breadcrumbs={[
 		{ label: "Home", href: "/" },

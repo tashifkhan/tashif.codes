@@ -1,0 +1,30 @@
+# Allow every link-preview crawler (WhatsApp, Telegram, iMessage, Signal, X, Discord, …)
+User-agent: *
+Allow: /
+
+# Explicit allow for common unfurl bots (some WAFs treat unknown UA poorly)
+User-agent: WhatsApp
+Allow: /
+
+User-agent: TelegramBot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Facebot
+Allow: /
+
+User-agent: Discordbot
+Allow: /
+
+User-agent: Slackbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+Sitemap: https://tashif.codes/sitemap-index.xml

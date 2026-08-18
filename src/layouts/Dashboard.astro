@@ -19,12 +19,15 @@ import { Button } from "@/components/ui/button";
 import { ArrowUp } from "lucide-react";
 import { owner } from "../data/profile";
 import { getTab, type TabId } from "../lib/tabs";
+import { DEFAULT_DESCRIPTION, DEFAULT_OG_IMAGE } from "../lib/seo";
 
 interface Props {
 	activeTab?: TabId;
+	description?: string;
 }
 
-const { activeTab = "projects" } = Astro.props;
+const { activeTab = "projects", description = DEFAULT_DESCRIPTION } =
+	Astro.props;
 
 const { titleLabel } = getTab(activeTab);
 const title = titleLabel
@@ -32,7 +35,12 @@ const title = titleLabel
 	: `${owner.name} | Dashboard & Portfolio`;
 ---
 
-<Layout title={title}>
+<Layout
+	title={title}
+	description={description}
+	image={DEFAULT_OG_IMAGE}
+	url={Astro.url.pathname}
+>
 	<div
 		class="relative min-h-screen bg-background text-foreground dark:text-foreground transition-colors duration-300 font-sans scroll-smooth"
 	>

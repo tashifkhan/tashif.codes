@@ -1,13 +1,14 @@
 ---
 import Layout from "./Layout.astro";
 import { ArrowLeft, ChevronRight } from "lucide-react";
+import type { SeoProps } from "../lib/seo";
 
 export interface Breadcrumb {
 	label: string;
 	href?: string;
 }
 
-interface Props {
+interface Props extends Pick<SeoProps, "description" | "image" | "type" | "url"> {
 	title: string;
 	/** Top-of-page atmospheric wash behind the header */
 	tint?: "orange" | "blue" | "none";
@@ -25,6 +26,10 @@ interface Props {
 
 const {
 	title,
+	description,
+	image,
+	type,
+	url,
 	tint = "none",
 	breadcrumbs,
 	backHref,
@@ -51,7 +56,13 @@ const tintClass = {
 }[tint];
 ---
 
-<Layout title={title}>
+<Layout
+	title={title}
+	description={description}
+	image={image}
+	type={type}
+	url={url ?? Astro.url.pathname}
+>
 	<div
 		class="relative min-h-screen bg-gradient-to-b from-muted to-background dark:from-background dark:to-card text-foreground transition-colors duration-300 font-sans"
 	>
