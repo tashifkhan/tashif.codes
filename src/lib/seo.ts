@@ -74,7 +74,8 @@ export function resolveSocialImage(options: {
 	}
 
 	if (blogSlug) {
-		return absoluteUrl(`/og/blog/${encodeURIComponent(blogSlug)}.png`);
+		// Build-time JPEG (opaque sRGB) — Discord/WhatsApp drop SVG and flaky PNGs.
+		return absoluteUrl(`/og/blog/${encodeURIComponent(blogSlug)}.jpg`);
 	}
 
 	return DEFAULT_OG_IMAGE;
