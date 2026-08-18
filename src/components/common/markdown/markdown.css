@@ -319,20 +319,26 @@
   min-width: fit-content;
 }
 
-/*
- * Below the article breakpoint, hold the diagram at its own width (published by
- * the renderer as `--md-diagram-width`) and let `.md-mermaid` scroll. Letting
- * mermaid's `useMaxWidth` squeeze a 1200px flowchart into a 340px phone column
- * technically fits, but nothing in it is readable.
- */
-@media (max-width: 48rem) {
-  /* Trade the roomy desktop gutter for diagram width on a phone. */
+/* Mobile: scale diagrams to fit viewport, scroll if still too wide. */
+@media (max-width: 640px) {
   .md-mermaid {
-    padding: 1.25rem 0.75rem;
+    padding: 1rem;
+    margin-left: calc(-1 * var(--md-gap));
+    margin-right: calc(-1 * var(--md-gap));
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
   }
 
-  .md-mermaid-render > svg {
-    min-width: var(--md-diagram-width, auto);
+  .md-mermaid-render {
+    min-width: 0;
+  }
+
+  .md-mermaid-render svg {
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+    display: block;
   }
 }
 
