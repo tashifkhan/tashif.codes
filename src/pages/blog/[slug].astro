@@ -210,7 +210,7 @@ const totalComments = initialComments.reduce(
 					<button
 						id="like-btn-mobile"
 						data-haptic="medium"
-						class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-border/60 bg-card/60 text-sm font-medium transition-all duration-200 hover:border-primary/40 hover:text-primary"
+						class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-border/60 bg-card/60 text-sm font-medium text-muted-foreground transition-all duration-200 hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
 					>
 						<Heart size={14} id="like-icon-mobile" />
 						<span id="likes-mobile" class="tabular-nums font-mono"
@@ -342,7 +342,7 @@ const totalComments = initialComments.reduce(
 								<button
 									id="like-btn"
 									data-haptic="medium"
-									class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-border/60 text-sm font-medium transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
+									class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-border/60 text-sm font-medium text-muted-foreground transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
 								>
 									<Heart size={14} id="like-icon" />
 									<span id="like-btn-label">Like</span>
@@ -523,6 +523,7 @@ const totalComments = initialComments.reduce(
 				el.classList.toggle("border-primary/50", isLiked);
 				el.classList.toggle("bg-primary/10", isLiked);
 				el.classList.toggle("text-primary", isLiked);
+				el.classList.toggle("text-muted-foreground", !isLiked);
 			});
 			const label = document.getElementById("like-btn-label");
 			if (label) label.textContent = isLiked ? "Liked!" : "Like";
