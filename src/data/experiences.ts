@@ -23,9 +23,9 @@ export const experiences: ExperienceEntry[] = [
 		website: "https://sitg.dev",
 		logo: "https://35.86.142.168:3000/icon.svg?icon.46fd8538.svg",
 		points: [
-      "Led ownership and ongoing expansion of the compliance AI pipeline, extending coverage to new regulatory frameworks and certificate scopes.",
-			"Shipped <strong>Monitoring</strong> and <strong>Alerting</strong> infrastructure to track bugzilla and google groups to detect and respond to compliance issues in real-time.",
-			"Shipped and iterated on the <strong>Next.js</strong> compliance dashboard with <strong>Auth0</strong>, incorporating client feedback into metrics visualisations.",
+			"Own the compliance AI pipeline and keep extending it to new regulatory frameworks and certificate scopes.",
+			"Shipped <strong>monitoring and alerting</strong> infrastructure that watches Bugzilla and Google Groups for compliance issues.",
+			"Built and iterated on the <strong>Next.js</strong> compliance dashboard with <strong>Auth0</strong>, folding client feedback into the metrics views.",
 		],
 	},
 	{
@@ -36,10 +36,10 @@ export const experiences: ExperienceEntry[] = [
 		website: "https://sitg.dev",
 		logo: "https://35.86.142.168/icon.svg?icon.46fd8538.svg",
 		points: [
-			"Built an AI-driven pipeline using <strong>Django</strong> and <strong>Python</strong> to automate hierarchical PDF-to-Markdown conversion and extract structured compliance statements from governing documents.",
-			"Implemented <strong>Kafka</strong> for real-time data streaming and <strong>Celery</strong> with <strong>Redis</strong> to manage asynchronous LLM workloads, ensuring non-blocking execution of high-latency document processing.",
-			"Integrated <strong>OpenSearch</strong> and <strong>PostgreSQL</strong> to build a semantic search engine using custom logic to align conformance statements with regulatory standards.",
-			"Developed a <strong>Next.js</strong> dashboard with <strong>Auth0</strong> to visualise compliance radar metrics analysis.",
+			"Built an AI pipeline in <strong>Django</strong>/<strong>Python</strong> that converts hierarchical PDFs to Markdown and extracts structured compliance statements from governing documents.",
+			"Ran LLM workloads async through <strong>Celery</strong> and <strong>Redis</strong>, with <strong>Kafka</strong> streaming, so long document processing never blocks a request.",
+			"Built semantic search on <strong>OpenSearch</strong> and <strong>PostgreSQL</strong> that maps conformance statements to regulatory standards.",
+			"Developed a <strong>Next.js</strong> dashboard with <strong>Auth0</strong> for compliance radar metrics.",
 		],
 	},
 	{
@@ -51,9 +51,9 @@ export const experiences: ExperienceEntry[] = [
 		color: "blue",
 		logo: "https://unicloud.co/wp-content/themes/u-design/assets/images/favicon.png",
 		points: [
-			'Engineered and deployed 3 critical <strong>React</strong> modules for a <a href="https://irgvap.ircep.gov.in" target="_blank" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">high-profile IRCTC project</a>, significantly enhancing vendor progress monitoring and data visualisation capabilities.',
-			"Developed robust <strong>FastAPI</strong> REST APIs, securing data transactions with <strong>JWT authentication</strong> and <strong>PostgreSQL</strong>.",
-			"Automated and improved Database Migration Cron jobs to dispatch real-time Block Change Alerts to approvers via <strong>SMTP mail server</strong> and browser <strong>webpush notifications</strong>.",
+			'Built and shipped 3 <strong>React</strong> modules (video tracking, shapefile download, block change/edit page) for a <a href="https://irgvap.ircep.gov.in" target="_blank" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">live IRCTC project</a>, covering vendor progress monitoring and data visualisation.',
+			"Wrote <strong>FastAPI</strong> REST APIs with <strong>JWT auth</strong> on <strong>PostgreSQL</strong>.",
+			"Automated the DB migration cron jobs and added Block Change Alerts for approvers via SMTP and web push.",
 		],
 	},
 ];

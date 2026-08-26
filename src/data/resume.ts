@@ -4,7 +4,7 @@ import type { Education, Position, ResumeAction, ResumeProject, SkillCategory } 
 
 export const resumeAbout = {
 	greeting: "Holaaaa! 👋",
-	introHtml: `I'm an engineering undergraduate based in <span class="text-foreground font-medium">Delhi, India</span>, working at the intersection of <span class="text-foreground font-medium">Full-stack Development</span> and <span class="text-foreground font-medium">Generative AI</span>. I’ve always been driven by the idea that software should bridge the gap between complex systems and the end-user. This philosophy led me to build the <span class="text-foreground font-medium">JIIT Tools Suite</span>. What started as a simple React PWA has now evolved into a platform serving <span class="text-foreground font-medium">18,000+ daily users</span>. In essence I'm an Engineering student by day, <span class="text-foreground font-medium">developer and debater</span> by night, with a passion to solve real world problems (mostly my laziness) via code.`,
+	introHtml: `I'm an engineering undergraduate in <span class="text-foreground font-medium">Delhi, India</span>. I build <span class="text-foreground font-medium">full-stack apps</span> and work with <span class="text-foreground font-medium">generative AI</span>. The <span class="text-foreground font-medium">JIIT Tools Suite</span> started as one React PWA I wanted for myself and now serves <span class="text-foreground font-medium">18,000+ daily users</span>. Engineering student by day, <span class="text-foreground font-medium">developer and debater</span> by night. I use code to solve real problems, mostly my own laziness.`,
 	location: "Delhi, India",
 	highlights: ["Full Stack Engineer", "Open Source"],
 	actions: [
@@ -39,11 +39,11 @@ export const resumeProjects: ResumeProject[] = [
 			{ label: "GitHub", url: "https://github.com/tashifkhan/agentic-browser" },
 		],
 		points: [
-			"Architected a <strong>model-agnostic web automation platform</strong> combining AI reasoning with browser interaction capabilities via <strong>FastAPI</strong> and <strong>MCP</strong>.",
-			"Implemented <strong>LangGraph-based multi-agent orchestration</strong> with specialized tools for web search, content extraction, and Google Workspace integration.",
-			"Developed a <strong>dual-mode server</strong> supporting both REST API endpoints and <strong>Model Context Protocol</strong> for seamless agent inter-communication.",
-			"Built a <strong>TypeScript browser extension</strong> with a Python backend for direct DOM manipulation and execution of AI-generated script plans.",
-			"Designed a <strong>Bring Your Own Keys (BYOKeys)</strong> architecture supporting Gemini, OpenAI, and Anthropic models without vendor lock-in.",
+			"Built a <strong>model-agnostic automation platform</strong> where AI agents plan, execute, and verify actions on any website, through <strong>FastAPI</strong> and <strong>MCP</strong>.",
+			"<strong>LangGraph</strong> coordinates multiple agents with tools for web search, content extraction, and Google Workspace tasks.",
+			"One dual-mode server serves both REST endpoints and <strong>Model Context Protocol</strong> clients.",
+			"A <strong>TypeScript extension</strong> drives the DOM directly and executes AI-generated script plans, backed by the Python server.",
+			"Bring Your Own Keys: works with Gemini, OpenAI, and Anthropic models.",
 		],
 	},
 	{
@@ -52,20 +52,21 @@ export const resumeProjects: ResumeProject[] = [
 			"React 19, TypeScript, Vite, TanStack Router, TanStack Query, Tailwind CSS, Supabase, Recharts",
 		color: "blue",
 		links: [
-			{ label: "Live", url: "https://tashif.codes/codetrace" },
+			{ label: "Live", url: "https://codetrace.xyz" },
 			{
 				label: "GitHub",
 				url: "https://github.com/stars/tashifkhan/lists/stats-apis",
 			},
 		],
 		points: [
-			"Built a unified coding-profile dashboard that aggregates developer statistics from GitHub, LeetCode, Codeforces, GeeksForGeeks, CodeChef, HackerRank, and takeUforward into a single shareable view.",
-			"Implemented stateful URL synchronization and saved public profiles via Supabase Auth, enabling clean URLs like /<username>.",
-			"Engineered platform-specific deep-dive pages with interactive recharts visualizations for rating history, difficulty breakdowns, and language profiles.",
-			"Consolidated daily contributions and submissions from all active platforms into a universal activity heatmap.",
+			"Coding-profile dashboard that pulls stats from GitHub, LeetCode, Codeforces, GeeksForGeeks, CodeChef, HackerRank, and takeUforward into one shareable page.",
+			"Profiles save through Supabase Auth and get clean URLs like /<username>.",
+			"Per-platform deep-dive pages with interactive charts for rating history, difficulty breakdowns, and language profiles.",
+			"Daily submissions from every platform land in one activity heatmap.",
 			"Backed by a suite of dedicated REST APIs:",
 			'<a href="https://github-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">GitHub Stats</a>, <a href="https://leetcode-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">LeetCode Stats</a>, <a href="https://codeforces-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">CodeForces Stats</a>, <a href="https://gfg-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">GeeksForGeeks Stats</a>, <a href="https://codechef-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">CodeChef Stats</a>, <a href="https://hackerrank-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">HackerRank Stats</a>, and <a href="https://tuf-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">takeUforward Stats</a>.',
-			"Deployed with Vercel and configured API rewrites to existing *-stats.tashif.codes microservices for seamless data aggregation.",
+			'Plus a <a href="https://github.com/tashifkhan/GitHost-Stats-API" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">GitHost API</a> for Forgejo, Gitea, and Codeberg profiles.',
+			"Deployed on Vercel with rewrites to the *-stats.tashif.codes services.",
 		],
 	},
 	{
@@ -77,13 +78,13 @@ export const resumeProjects: ResumeProject[] = [
 			{ label: "GitHub", url: "https://github.com/tashifkhan/JIIT-tools-docs" },
 		],
 		points: [
-			"Developed a comprehensive suite of web applications and automation tools to enhance the JIIT student experience.",
+			"A set of web apps and bots built around JIIT's student systems.",
 			'Developed <a href="https://jportal.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">JPortal</a> (<strong>React</strong> PWA for JIIT WebKiosk, 18k+ users) with <strong>Pyodide</strong> PDF parsing.',
-			'Created <a href="https://jiit-timetable.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Timetable Website</a> providing real-time schedules for 6.5k+ students.',
-			'Implemented <a href="https://jiit-timetable.tashif.codes/mess-menu" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Mess Menu</a> offering daily/weekly meal plans for 5.2k+ students.',
-			'Engineered <a href="https://jiit-placement-updates.tashif.codes/?shh" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Placement & Campus Updates portal</a> for opportunities/news for 4k+/2k+ users.',
-			'Created <a href="https://sophos-autologin.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Sophos Auto-Login</a> scripts (one-click access for ~100 individuals).',
-			'Developed <strong>Telegram</strong>-based <a href="https://tashif.codes/projects/jiit-placement-alerts" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Notification Bot</a> for real-time updates.',
+			'Created a <a href="https://jiit-timetable.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Timetable Website</a> used by 6.5k+ students.',
+			'Added a <a href="https://jiit-timetable.tashif.codes/mess-menu" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Mess Menu</a> with daily and weekly meal plans, 5.2k+ readers.',
+			'Built the <a href="https://jiit-placement-updates.tashif.codes/?shh" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Placement & Campus Updates portal</a> for opportunities and news (4k+/2k+ users).',
+			'Wrote <a href="https://sophos-autologin.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Sophos Auto-Login</a> scripts for ~100 hostel and LRC users.',
+			'Runs a <strong>Telegram</strong> <a href="https://tashif.codes/projects/jiit-placement-alerts" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Notification Bot</a> that pushes Superset placement activity.',
 		],
 	},
 	{
@@ -92,9 +93,10 @@ export const resumeProjects: ResumeProject[] = [
 		color: "gray",
 		links: [{ label: "GitHub", url: "https://github.com/tashifkhan/home-lab" }],
 		points: [
-			"Self-hosted lab of 10+ Dockerized services (Nextcloud, Jellyfin, Arr stack).",
-			"Secure remote access via Tailscale VPN + Nginx Proxy Manager.",
-			"Automated media acquisition and container orchestration.",
+			"20+ self-hosted services on Docker: Nextcloud, Jellyfin, OnlyOffice, Forgejo, SearXNG, Homarr.",
+			"Media pipeline: Prowlarr/Sonarr/Radarr/Lidarr/Readarr feed qBittorrent through FlareSolverr; Seerr handles requests and Tdarr transcodes.",
+			"A custom FastAPI dashboard tracks service health and Tailscale devices.",
+			"Remote access over Tailscale VPN with Nginx Proxy Manager in front.",
 		],
 	},
 ];
@@ -122,8 +124,8 @@ export const positions: Position[] = [
 		period: "2024 - Present",
 		color: "green",
 		points: [
-			"Orchestrated flagship HC Verma talk with ~4,000 participants (on + off campus).",
-			"Coordinated high-engagement comedy talent open mic (~3,000 participants).",
+			"Organised a flagship HC Verma talk with ~4,000 participants, on and off campus.",
+			"Ran a comedy open mic that drew ~3,000 participants.",
 		],
 	},
 	{
@@ -132,7 +134,7 @@ export const positions: Position[] = [
 		period: "2023 - Present",
 		color: "blue",
 		points: [
-			"Guided junior cohort in advanced debate strategy elevating competitive performance.",
+			"Coach the junior cohort on debate strategy.",
 		],
 	},
 	{
@@ -141,7 +143,7 @@ export const positions: Position[] = [
 		period: "2023 - 2024",
 		color: "purple",
 		points: [
-			"Launched inaugural inter‑college debate (JPD 1.0) with 52 external teams; established recurring flagship.",
+			"Started the inaugural inter-college debate (JPD 1.0) with 52 external teams; it now runs as an annual event.",
 		],
 	},
 	{
@@ -150,7 +152,7 @@ export const positions: Position[] = [
 		period: "2019 - 2020",
 		color: "orange",
 		points: [
-			"Executed one of India's largest literary festivals (500+ paid participants; ₹700k revenue).",
+			"Helped run one of India's largest literary festivals (500+ paid participants, ₹700k revenue).",
 		],
 	},
 ];
