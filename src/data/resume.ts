@@ -90,7 +90,7 @@ export const resumeProjects: ResumeProject[] = [
 			{ label: "GitHub", url: "https://github.com/tashifkhan/JIIT-tools-docs" },
 		],
 		points: [
-			"JIIT's student portals are fragmented — timetables live in PDFs, attendance is invisible, and placement updates are scattered. Built the missing integration layer.",
+			"JIIT doesn't really do tech. Timetables lived in random PDFs, attendance was invisible until it already mattered, and companies visited campus while eligible students found out through WhatsApp groups. This suite exists because nobody at the university was going to build it.",
 			'<a href="https://jportal.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>JPortal</strong></a> (<strong>React</strong> PWA, <strong>18k+</strong> users) with <strong>Pyodide</strong> PDF parsing, so marks render on a phone.',
 			'<a href="https://jiit-timetable.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Timetable</strong></a> used by <strong>6.5k+</strong> students; <a href="https://jiit-timetable.tashif.codes/mess-menu" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Mess Menu</strong></a> with daily/weekly meal plans, <strong>5.2k+</strong> readers.',
 			'<a href="https://jiit-placement-updates.tashif.codes/?shh" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Placement & Campus Updates</strong></a> portal so opportunities reach students when they can still apply (<strong>4k+/2k+</strong> users).',
