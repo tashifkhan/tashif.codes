@@ -18,7 +18,7 @@ export const experiences: ExperienceEntry[] = [
 	{
 		company: "SITG France",
 		role: "Software Development Engineer",
-		period: "May 2026 – Present",
+		period: "April 2026 – Present",
 		color: "purple",
 		website: "https://sitg.dev",
 		logo: "https://35.86.142.168:3000/icon.svg?icon.46fd8538.svg",
