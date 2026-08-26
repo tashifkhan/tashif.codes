@@ -4,7 +4,7 @@ import type { Education, Position, ResumeAction, ResumeProject, SkillCategory } 
 
 export const resumeAbout = {
 	greeting: "Holaaaa! 👋",
-	introHtml: `I'm an engineer in <span class="text-foreground font-medium">Delhi, India</span>, building <span class="text-foreground font-medium">full-stack apps and generative AI</span>. I like the problems where something officially has no API, because it almost always does. Off hours I'm poking at my <span class="text-foreground font-medium">home lab</span> or over-engineering something nobody asked for. I use code to solve real problems, mostly my own laziness.`,
+	introHtml: `I'm an engineer in <span class="text-foreground font-medium">Delhi, India</span>, building <span class="text-foreground font-medium">full-stack apps and generative AI</span>. I like the problems nobody else is bothering to fix. Off hours I'm poking at my <span class="text-foreground font-medium">home lab</span> or over-engineering something nobody asked for. I use code to solve real problems, mostly my own laziness.`,
 	location: "Delhi, India",
 	highlights: ["Full Stack Engineer", "Open Source"],
 	actions: [
@@ -78,7 +78,7 @@ export const resumeProjects: ResumeProject[] = [
 			{ label: "GitHub", url: "https://github.com/tashifkhan/JIIT-tools-docs" },
 		],
 		points: [
-			"JIIT runs student life across disconnected portals. Timetables lived in random PDFs, attendance was effectively invisible until it was a problem, and companies came to campus while eligible students heard about it from group chats. This suite is the glue that should have existed.",
+			"JIIT doesn't really do tech. Timetables lived in random PDFs, attendance was invisible until it already mattered, and companies visited campus while eligible students found out through WhatsApp groups. This suite exists because nobody at the university was going to build it.",
 			'Developed <a href="https://jportal.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">JPortal</a> (<strong>React</strong> PWA for JIIT WebKiosk, 18k+ users) with <strong>Pyodide</strong> PDF parsing, so marks actually render on a phone.',
 			'Created a <a href="https://jiit-timetable.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Timetable Website</a> used by 6.5k+ students.',
 			'Added a <a href="https://jiit-timetable.tashif.codes/mess-menu" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Mess Menu</a> with daily and weekly meal plans, 5.2k+ readers.',
