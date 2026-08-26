@@ -202,40 +202,39 @@ import Layout from "../layouts/Layout.astro";
 			</ul>
 		</div>
 		<div class="project-card">
-			<strong><a href="https://sitg.dev" target="_blank">SITG France</a></strong> | Software Development Engineer (April 2026 – Present)
+			<strong><a href="https://sitg.dev" target="_blank">SITG France</a></strong> | Software Development Engineer (May 2026 – Present)
 			<ul>
-				<li>Own the compliance AI pipeline and keep extending it to new regulatory frameworks and certificate scopes.</li>
-				<li>Built an end-to-end notification system using SSE, SMTP, and Slack that watches Bugzilla and Google Groups, so compliance issues surface the day they happen.</li>
-				<li>Built and iterated on a Next.js compliance dashboard with Auth0, folding client feedback into the metrics views.</li>
+				<li>Own the compliance AI pipeline end-to-end; extended it to new regulatory frameworks and certificate scopes.</li>
+				<li>Built a real-time notification system (SSE + SMTP + Slack) monitoring Bugzilla, Google Groups, CCADB, and Regulatory Ballots for same-day compliance surfacing.</li>
+				<li>Built a continuous regulatory review pipeline; GitHub Bot reviews measure the impact of regulatory changes on CPS/Compliance Documents, powered by an internal Graph RAG LLM for compliance audits on Ballot releases and Governing Document updates.</li>
+				<li>Scraped live Google Groups, ballot releases, CAB Forum BR updates, and Root Policy GitHub Releases to build an active monitoring system with Graph RAG LLM orchestration.</li>
 			</ul>
 		</div>
 		<div class="project-card">
-			<strong><a href="https://sitg.dev" target="_blank">SITG France</a></strong> | Software Development Intern (Nov 2025 – Mar 2026)
+			<strong><a href="https://sitg.dev" target="_blank">SITG France</a></strong> | Software Development Intern (Nov 2025 – May 2026)
 			<ul>
-				<li>Built an AI pipeline in Django/Python that converts hierarchical PDFs to Markdown and extracts structured compliance statements from governing documents.</li>
-				<li>Ran LLM workloads async through Celery and Redis, with Kafka streaming, so long document processing never blocks a request.</li>
-				<li>Built semantic search on OpenSearch and PostgreSQL that maps conformance statements to regulatory standards.</li>
-				<li>Developed a Next.js dashboard with Auth0 for compliance radar metrics.</li>
+				<li>Built the pipeline the current role now owns: Django/Python converting hierarchical PDFs to Markdown and extracting structured compliance statements.</li>
+				<li>Ran LLM workloads async via Celery, Redis, and Kafka so a slow document never blocks a request.</li>
+				<li>Added semantic search on OpenSearch + PostgreSQL mapping conformance statements to regulatory standards.</li>
+				<li>Shipped the first Next.js dashboard with Auth0 for compliance radar metrics.</li>
 			</ul>
 		</div>
 		<div class="project-card">
 			<strong><a href="https://unicloud.co/" target="_blank">UNICLOUD</a></strong> | <a
 				href="https://drive.tashif.codes/s/RsaiDWGCEoXjt2K"
-				target="_blank">Software Development Intern (June - July 2026)</a
+				target="_blank">Software Development Intern (May 2025 – July 2025)</a
 			>
 			<ul>
 				<li>
-					Built and shipped 3 React modules (video tracking, shapefile download,
-					block change/edit page) for a <a href="https://irgvap.ircep.gov.in" target="_blank"
+					Shipped 3 React modules (video tracking, shapefile download, block
+					change/edit page) for a <a href="https://irgvap.ircep.gov.in" target="_blank"
 						>live IRCTC project</a
-					>, covering vendor progress monitoring and data visualization.
+					> covering vendor progress monitoring.
 				</li>
+				<li>Wrote FastAPI REST APIs with JWT auth on PostgreSQL.</li>
 				<li>
-					Wrote FastAPI REST APIs with JWT auth on PostgreSQL.
-				</li>
-				<li>
-					Automated the DB migration cron jobs and added Block Change Alerts
-					for approvers via SMTP and web push.
+					Automated DB migration cron jobs; added Block Change Alerts for
+					approvers via SMTP and web push.
 				</li>
 			</ul>
 		</div>
@@ -277,27 +276,67 @@ import Layout from "../layouts/Layout.astro";
 		</div>
 		<div class="project-card">
 			<strong>TalentSync AI</strong> | Next.js, TypeScript, FastAPI, LangChain, LangGraph,
-			PostgreSQL, Docker<br />
+			PostgreSQL, FastStream, Kafka, Redis, Docker<br />
 			<a href="https://talentsync.tashif.codes/" target="_blank">Live</a> | <a
-				href="https://github.com/harleenkaur28/AI-Resume-Parser"
+				href="https://github.com/tashifkhan/TalentSync"
 				target="_blank">GitHub</a
 			>
 			<ul>
 				<li>
-					Next.js platform that parses resumes, predicts job categories, and
-					gives employers a pre-vetted candidate dashboard.
+					Resume analysis, job category prediction, and a pre-vetted talent
+					dashboard for employers.
 				</li>
 				<li>
-					LangChain, RAG and LangGraph generate personalised cold emails,
-					targeted interview questions, and answer frameworks for candidates.
+					LangChain + RAG + LangGraph generate personalised cold emails,
+					targeted interview questions, and answer frameworks.
 				</li>
 				<li>
-					Parsing layer extracts structured data from raw resumes to drive job
-					category prediction and candidate profiles.
+					Parsing layer extracts structured data from raw resumes to drive
+					job-category prediction.
 				</li>
 				<li>
 					FastAPI backend with PostgreSQL, containerized with Docker; users can
-					plug in their own model keys per provider (BYOK).
+					plug in their own model keys (BYOK).
+				</li>
+			</ul>
+		</div>
+		<div class="project-card">
+			<strong>CodeTrace &amp; Stats APIs</strong> | React, TypeScript, TanStack Start, Supabase,
+			Python, FastAPI, Redis, Docker<br />
+			<a href="https://codetrace.xyz" target="_blank">Live</a> | <a
+				href="https://github.com/stars/tashifkhan/lists/coding-profile-stats-apis"
+				target="_blank">GitHub</a
+			>
+			<ul>
+				<li>
+					Coding-profile dashboard pulling stats from GitHub, LeetCode, Codeforces,
+					GeeksForGeeks, CodeChef, HackerRank, and takeUforward into one shareable
+					page.
+				</li>
+				<li>
+					Per-platform deep-dive pages with charts for rating history, difficulty
+					breakdowns, and language profiles. Daily submissions from every platform
+					land in one activity heatmap.
+				</li>
+				<li>
+					Built REST APIs for each platform (<a href="https://leetcode-stats.tashif.codes" target="_blank">LeetCode</a>,
+					<a href="https://github-stats.tashif.codes" target="_blank">GitHub</a>,
+					<a href="https://gfg-stats.tashif.codes" target="_blank">GFG</a>,
+					<a href="https://tuf-stats.tashif.codes" target="_blank">TakeUForward</a>,
+					<a href="https://hackerrank-stats.tashif.codes" target="_blank">HackerRank</a>,
+					<a href="https://codechef-stats.tashif.codes" target="_blank">CodeChef</a>,
+					<a href="https://codeforces-stats.tashif.codes" target="_blank">CodeForces</a>).
+				</li>
+				<li>
+					Plus a Self-Hostable Git Platform API (<a
+						href="https://github.com/tashifkhan/GitHost-Stats-API"
+						target="_blank">Forgejo, Gitea, Codeberg</a
+					>).
+				</li>
+				<li>
+					Basis of <a href="https://rcee.ac.in" target="_blank">RCEE</a>'s placement
+					portal <a href="https://sptracker1.vercel.app/" target="_blank">here</a> —
+					detailed blog <a href="https://tashif.codes/blog/Ramachandra-College-CodeTrace-Copy" target="_blank">here</a>.
 				</li>
 			</ul>
 		</div>
