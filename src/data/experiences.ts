@@ -24,7 +24,7 @@ export const experiences: ExperienceEntry[] = [
 		logo: "https://35.86.142.168:3000/icon.svg?icon.46fd8538.svg",
 		points: [
 			"Own the compliance AI pipeline and keep extending it to new regulatory frameworks and certificate scopes.",
-			"Shipped <strong>monitoring and alerting</strong> infrastructure that watches Bugzilla and Google Groups for compliance issues.",
+			"Built an end-to-end notification system using <strong>SSE</strong>, <strong>SMTP</strong>, and <strong>Slack</strong> that watches Bugzilla and Google Groups, so compliance issues surface the day they happen.",
 			"Built and iterated on the <strong>Next.js</strong> compliance dashboard with <strong>Auth0</strong>, folding client feedback into the metrics views.",
 		],
 	},
