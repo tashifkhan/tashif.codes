@@ -347,18 +347,26 @@ import Layout from "../layouts/Layout.astro";
 				<li>
 					20+ self-hosted services on Docker: Nextcloud for files, Jellyfin for
 					media, OnlyOffice documents, Forgejo git hosting, and SearXNG search.
+					One Compose file keeps the stack reproducible.
 				</li>
 				<li>
 					Media pipeline: the Arr stack (Prowlarr, Sonarr, Radarr, Lidarr,
 					Readarr) feeds qBittorrent through FlareSolverr; Seerr handles
-					requests and Tdarr transcodes.
+					requests and Tdarr transcodes overnight so storage stays sane.
 				</li>
 				<li>
-					Custom FastAPI dashboard tracks service health and Tailscale devices.
+					Custom FastAPI dashboard tracks service health, container restarts and
+					Tailscale devices, with uptime pings that catch a failed service early.
 				</li>
 				<li>
-					Tailscale VPN tunnel to a VPS exposes services publicly without a
-					static IP; Nginx Proxy Manager handles reverse proxy and SSL.
+					Remote access over Tailscale VPN with Nginx Proxy Manager in front for
+					SSL and subdomains, tunneled through a VPS so it works without a
+					static IP.
+				</li>
+				<li>
+					Nightly backups to local disk and an encrypted offsite copy, plus
+					Watchtower for updates and health checks that alert if anything stays
+					down.
 				</li>
 			</ul>
 		</div>
@@ -388,7 +396,8 @@ import Layout from "../layouts/Layout.astro";
 					Delhi NCR Metro plans DMRC and NMRC trips. The app runs on a <a
 						href="https://dmrc-rest-api.vercel.app/docs"
 						target="_blank">FastAPI service</a
-					> I built that wraps DMRC endpoints for routes, fares and station search.
+					> I built that wraps DMRC and NMRC endpoints and bridges the two
+					networks for routes, fares and station search.
 				</li>
 			</ul>
 		</div>

@@ -105,10 +105,11 @@ export const resumeProjects: ResumeProject[] = [
 		color: "gray",
 		links: [{ label: "GitHub", url: "https://github.com/tashifkhan/home-lab" }],
 		points: [
-			"20+ self-hosted services on Docker: Nextcloud, Jellyfin, OnlyOffice, Forgejo, SearXNG, Homarr.",
-			"Media pipeline: Prowlarr/Sonarr/Radarr/Lidarr/Readarr feed qBittorrent through FlareSolverr; Seerr handles requests and Tdarr transcodes.",
-			"A custom FastAPI dashboard tracks service health and Tailscale devices.",
-			"Remote access over Tailscale VPN with Nginx Proxy Manager in front.",
+			"20+ self-hosted services on Docker: Nextcloud, Jellyfin, OnlyOffice, Forgejo, SearXNG, Homarr. One Compose file keeps the stack reproducible.",
+			"Media pipeline: Prowlarr/Sonarr/Radarr/Lidarr/Readarr feed qBittorrent through FlareSolverr; Seerr handles requests and Tdarr transcodes overnight so storage stays sane.",
+			"A custom FastAPI dashboard tracks service health, container restarts and Tailscale devices, with uptime pings that catch a failed service early.",
+			"Remote access over Tailscale VPN with Nginx Proxy Manager in front for SSL and subdomains, tunneled through a VPS so it works without a static IP.",
+			"Nightly backups to local disk and an encrypted offsite copy, plus Watchtower for updates and health checks that alert if anything stays down.",
 		],
 	},
 	{
@@ -123,7 +124,7 @@ export const resumeProjects: ResumeProject[] = [
 			'Run a self-hosted <a href="https://tashif.codes/fdroid" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">F-Droid repo</a> at <strong>tashif.codes/fdroid</strong> with 3 signed apps. Add it once, get updates automatically.',
 			'<a href="https://github.com/tashifkhan/Paisa" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Paisa</strong></a> keeps the ledger on the phone. It parses bank SMS on device for 100+ Indian banks. SMS never leaves the device, and you can bring your own key for statement imports.',
 			'<a href="https://github.com/tashifkhan/caldav-todo" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Patchwork</strong></a> is the task manager I actually use. CalDAV and Nextcloud Deck boards, AI draft from a photo or note, GitHub issues, and widgets that stay quiet until you need them.',
-			'<a href="https://github.com/tashifkhan/delhi-metro" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Delhi NCR Metro</strong></a> plans DMRC and NMRC trips. The app runs on a <a href="https://dmrc-rest-api.vercel.app/docs" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">FastAPI service</a> I built that wraps the DMRC endpoints for routes, fares and station search.',
+			'<a href="https://github.com/tashifkhan/delhi-metro" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Delhi NCR Metro</strong></a> plans DMRC and NMRC trips. The app runs on a <a href="https://dmrc-rest-api.vercel.app/docs" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">FastAPI service</a> I built that wraps DMRC and NMRC endpoints and bridges the two networks for routes, fares and station search.',
 		],
 	},
 ];
