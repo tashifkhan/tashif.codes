@@ -4,7 +4,7 @@ import type { Education, Position, ResumeAction, ResumeProject, SkillCategory } 
 
 export const resumeAbout = {
 	greeting: "Holaaaa! 👋",
-	introHtml: `I'm an engineer in <span class="text-foreground font-medium">Delhi, India</span>, building <span class="text-foreground font-medium">full-stack apps and generative AI</span>. Most of what I've made starts the same way. Something's broken, usually college IT, it annoys me, I fix it. The campus portal was never meant for phones, so I wrote a React PWA over it from my hostel room. That grew into the <span class="text-foreground font-medium">JIIT Tools Suite</span>, now serving <span class="text-foreground font-medium">18,000+ daily users</span>. Developer by day, <span class="text-foreground font-medium">debater</span> by night. I use code to solve real problems, mostly my own laziness.`,
+	introHtml: `I'm an engineer in <span class="text-foreground font-medium">Delhi, India</span>, building <span class="text-foreground font-medium">full-stack apps and generative AI</span>. I like the problems where something officially has no API, because it almost always does. Off hours I'm poking at my <span class="text-foreground font-medium">home lab</span> or over-engineering something nobody asked for. I use code to solve real problems, mostly my own laziness.`,
 	location: "Delhi, India",
 	highlights: ["Full Stack Engineer", "Open Source"],
 	actions: [
@@ -78,12 +78,12 @@ export const resumeProjects: ResumeProject[] = [
 			{ label: "GitHub", url: "https://github.com/tashifkhan/JIIT-tools-docs" },
 		],
 		points: [
-			"A set of web apps and bots built around JIIT's student systems.",
-			'Developed <a href="https://jportal.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">JPortal</a> (<strong>React</strong> PWA for JIIT WebKiosk, 18k+ users) with <strong>Pyodide</strong> PDF parsing.',
+			"JIIT runs student life across disconnected portals. Timetables lived in random PDFs, attendance was effectively invisible until it was a problem, and companies came to campus while eligible students heard about it from group chats. This suite is the glue that should have existed.",
+			'Developed <a href="https://jportal.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">JPortal</a> (<strong>React</strong> PWA for JIIT WebKiosk, 18k+ users) with <strong>Pyodide</strong> PDF parsing, so marks actually render on a phone.',
 			'Created a <a href="https://jiit-timetable.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Timetable Website</a> used by 6.5k+ students.',
 			'Added a <a href="https://jiit-timetable.tashif.codes/mess-menu" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Mess Menu</a> with daily and weekly meal plans, 5.2k+ readers.',
-			'Built the <a href="https://jiit-placement-updates.tashif.codes/?shh" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Placement & Campus Updates portal</a> for opportunities and news (4k+/2k+ users).',
-			'Wrote <a href="https://sophos-autologin.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Sophos Auto-Login</a> scripts for ~100 hostel and LRC users.',
+			'Built the <a href="https://jiit-placement-updates.tashif.codes/?shh" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Placement & Campus Updates portal</a> so opportunities reach students when they can still apply (4k+/2k+ users).',
+			'Wrote <a href="https://sophos-autologin.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Sophos Auto-Login</a> scripts because the hostel wifi kicks you off every ~45 minutes (~100 users).',
 			'Runs a <strong>Telegram</strong> <a href="https://tashif.codes/projects/jiit-placement-alerts" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Notification Bot</a> that pushes Superset placement activity.',
 		],
 	},
