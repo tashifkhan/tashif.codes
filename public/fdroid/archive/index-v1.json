@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1785319202000,
+    "timestamp": 1788288698000,
     "version": 20002,
     "name": "My First F-Droid Archive Demo",
     "icon": "icon.png",
@@ -12,6 +12,27 @@
     "uninstall": []
   },
   "apps": [
+    {
+      "authorEmail": "tashifkhan010@gmail.com",
+      "authorName": "Tashif Ahmad Khan",
+      "categories": [
+        "Navigation",
+        "Travel & Local",
+        "Internet"
+      ],
+      "changelog": "https://github.com/tashifkhan/delhi-metro/releases",
+      "suggestedVersionCode": "16",
+      "description": "Delhi NCR Metro is a Material 3 companion for the Delhi Metro and Noida Metro\nnetworks.\n\nSwitch operators, plan trips with least-distance or minimum-interchange\nstrategies, and follow cross-network journeys that transfer at Sector 52/51\nwith clear dual-ticket fares. Browse lines and stations, check first and last\ntrains, follow service alerts, and open the network map with zoom and save.\n\nFeatures:\n\n* Delhi Metro (DMRC) and Noida Metro (NMRC) catalogs\n* Network switcher with local persistence\n* Cross-network journey planning at Sector 52/51\n* Journey strategies, fares, and transfer walk legs\n* Station search with local cache\n* Line explorer and station detail\n* Network map view with save\n* Notifications / service alerts\n* Light, dark, and Material You theming\n\nReleases are built with Expo EAS, published on GitHub Releases, and\nmirrored into this F-Droid-compatible repository.\n\nPackage ID: codes.tashif.delhimetro\n",
+      "issueTracker": "https://github.com/tashifkhan/delhi-metro/issues",
+      "license": "MIT",
+      "name": "Delhi NCR Metro",
+      "sourceCode": "https://github.com/tashifkhan/delhi-metro",
+      "summary": "Plan Delhi and Noida Metro journeys with fares, maps, and alerts",
+      "webSite": "https://tashif.codes",
+      "added": 1785013639000,
+      "packageName": "codes.tashif.delhimetro",
+      "lastUpdated": 1788288693000
+    },
     {
       "authorEmail": "tashifkhan010@gmail.com",
       "authorName": "Tashif Ahmad Khan",
@@ -195,6 +216,58 @@
         ],
         "versionCode": 3,
         "versionName": "1.0.0"
+      }
+    ],
+    "codes.tashif.delhimetro": [
+      {
+        "added": 1785013639000,
+        "apkName": "codes.tashif.delhimetro_16.apk",
+        "hash": "3e57fe0572106bfc101d18cede8c5cb48087e400b47944a6401214ceecbafe1c",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "packageName": "codes.tashif.delhimetro",
+        "sig": "e279fc012c64a59157be7ad09db800a1",
+        "signer": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933",
+        "size": 78384207,
+        "targetSdkVersion": 36,
+        "uses-permission": [
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.READ_EXTERNAL_STORAGE",
+            null
+          ],
+          [
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            null
+          ],
+          [
+            "android.permission.VIBRATE",
+            null
+          ],
+          [
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            null
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 16,
+        "versionName": "1.1.0"
       }
     ]
   }

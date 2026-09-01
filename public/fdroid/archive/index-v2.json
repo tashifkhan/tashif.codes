@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/archive",
-    "timestamp": 1785319202000,
+    "timestamp": 1788288698000,
     "categories": {
       "Development": {
         "name": {
@@ -26,9 +26,19 @@
           "en-US": "Internet"
         }
       },
+      "Navigation": {
+        "name": {
+          "en-US": "Navigation"
+        }
+      },
       "Productivity": {
         "name": {
           "en-US": "Productivity"
+        }
+      },
+      "Travel & Local": {
+        "name": {
+          "en-US": "Travel & Local"
         }
       }
     }
@@ -194,6 +204,86 @@
               },
               {
                 "name": "me.everything.badger.permission.BADGE_COUNT_WRITE"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "codes.tashif.delhimetro": {
+      "metadata": {
+        "added": 1785013639000,
+        "categories": [
+          "Navigation",
+          "Travel & Local",
+          "Internet"
+        ],
+        "changelog": "https://github.com/tashifkhan/delhi-metro/releases",
+        "issueTracker": "https://github.com/tashifkhan/delhi-metro/issues",
+        "lastUpdated": 1788288693000,
+        "license": "MIT",
+        "sourceCode": "https://github.com/tashifkhan/delhi-metro",
+        "webSite": "https://tashif.codes",
+        "authorEmail": "tashifkhan010@gmail.com",
+        "authorName": "Tashif Ahmad Khan",
+        "name": {
+          "en-US": "Delhi NCR Metro"
+        },
+        "summary": {
+          "en-US": "Plan Delhi and Noida Metro journeys with fares, maps, and alerts"
+        },
+        "description": {
+          "en-US": "Delhi NCR Metro is a Material 3 companion for the Delhi Metro and Noida Metro\nnetworks.\n\nSwitch operators, plan trips with least-distance or minimum-interchange\nstrategies, and follow cross-network journeys that transfer at Sector 52/51\nwith clear dual-ticket fares. Browse lines and stations, check first and last\ntrains, follow service alerts, and open the network map with zoom and save.\n\nFeatures:\n\n* Delhi Metro (DMRC) and Noida Metro (NMRC) catalogs\n* Network switcher with local persistence\n* Cross-network journey planning at Sector 52/51\n* Journey strategies, fares, and transfer walk legs\n* Station search with local cache\n* Line explorer and station detail\n* Network map view with save\n* Notifications / service alerts\n* Light, dark, and Material You theming\n\nReleases are built with Expo EAS, published on GitHub Releases, and\nmirrored into this F-Droid-compatible repository.\n\nPackage ID: codes.tashif.delhimetro\n"
+        },
+        "preferredSigner": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
+      },
+      "versions": {
+        "3e57fe0572106bfc101d18cede8c5cb48087e400b47944a6401214ceecbafe1c": {
+          "added": 1785013639000,
+          "file": {
+            "name": "/codes.tashif.delhimetro_16.apk",
+            "sha256": "3e57fe0572106bfc101d18cede8c5cb48087e400b47944a6401214ceecbafe1c",
+            "size": 78384207
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a",
+              "armeabi-v7a",
+              "x86",
+              "x86_64"
+            ],
+            "versionName": "1.1.0",
+            "versionCode": 16,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.READ_EXTERNAL_STORAGE"
+              },
+              {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW"
+              },
+              {
+                "name": "android.permission.VIBRATE"
+              },
+              {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE"
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
               }
             ]
           }

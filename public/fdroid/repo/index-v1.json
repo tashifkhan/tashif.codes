@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1785319206000,
+    "timestamp": 1788288702000,
     "version": 20002,
     "name": "Tashif Codes",
     "icon": "icon.png",
@@ -21,7 +21,7 @@
         "Internet"
       ],
       "changelog": "https://github.com/tashifkhan/delhi-metro/releases",
-      "suggestedVersionCode": "23",
+      "suggestedVersionCode": "26",
       "description": "Delhi NCR Metro is a Material 3 companion for the Delhi Metro and Noida Metro\nnetworks.\n\nSwitch operators, plan trips with least-distance or minimum-interchange\nstrategies, and follow cross-network journeys that transfer at Sector 52/51\nwith clear dual-ticket fares. Browse lines and stations, check first and last\ntrains, follow service alerts, and open the network map with zoom and save.\n\nFeatures:\n\n* Delhi Metro (DMRC) and Noida Metro (NMRC) catalogs\n* Network switcher with local persistence\n* Cross-network journey planning at Sector 52/51\n* Journey strategies, fares, and transfer walk legs\n* Station search with local cache\n* Line explorer and station detail\n* Network map view with save\n* Notifications / service alerts\n* Light, dark, and Material You theming\n\nReleases are built with Expo EAS, published on GitHub Releases, and\nmirrored into this F-Droid-compatible repository.\n\nPackage ID: codes.tashif.delhimetro\n",
       "issueTracker": "https://github.com/tashifkhan/delhi-metro/issues",
       "license": "MIT",
@@ -31,7 +31,7 @@
       "webSite": "https://tashif.codes",
       "added": 1785013639000,
       "packageName": "codes.tashif.delhimetro",
-      "lastUpdated": 1785319197000,
+      "lastUpdated": 1788288693000,
       "localized": {
         "en-US": {
           "icon": "icon_IiA6vEuYZC_2reV-Bh2xkz8i-4TS8Sk9Va30U7iPyG0=.png"
@@ -573,6 +573,60 @@
     ],
     "codes.tashif.delhimetro": [
       {
+        "added": 1788288693000,
+        "apkName": "codes.tashif.delhimetro_26.apk",
+        "hash": "860b743ef0f9a69798deb4348da603f86b3c125895aac2746fece4d1e9e2579b",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "packageName": "codes.tashif.delhimetro",
+        "sig": "e279fc012c64a59157be7ad09db800a1",
+        "signer": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933",
+        "size": 97662001,
+        "targetSdkVersion": 36,
+        "uses-permission": [
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.READ_EXTERNAL_STORAGE",
+            32
+          ],
+          [
+            "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+            null
+          ],
+          [
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            null
+          ],
+          [
+            "android.permission.VIBRATE",
+            null
+          ],
+          [
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            null
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 26,
+        "versionName": "1.5.1"
+      },
+      {
         "added": 1785319197000,
         "apkName": "codes.tashif.delhimetro_23.apk",
         "hash": "ce180faf1a2e73061985363aa271ec29d927ce7900bd0afda986a77f96023e45",
@@ -675,56 +729,6 @@
         ],
         "versionCode": 20,
         "versionName": "1.3.0"
-      },
-      {
-        "added": 1785013639000,
-        "apkName": "codes.tashif.delhimetro_16.apk",
-        "hash": "3e57fe0572106bfc101d18cede8c5cb48087e400b47944a6401214ceecbafe1c",
-        "hashType": "sha256",
-        "minSdkVersion": 24,
-        "nativecode": [
-          "arm64-v8a",
-          "armeabi-v7a",
-          "x86",
-          "x86_64"
-        ],
-        "packageName": "codes.tashif.delhimetro",
-        "sig": "e279fc012c64a59157be7ad09db800a1",
-        "signer": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933",
-        "size": 78384207,
-        "targetSdkVersion": 36,
-        "uses-permission": [
-          [
-            "android.permission.INTERNET",
-            null
-          ],
-          [
-            "android.permission.READ_EXTERNAL_STORAGE",
-            null
-          ],
-          [
-            "android.permission.SYSTEM_ALERT_WINDOW",
-            null
-          ],
-          [
-            "android.permission.VIBRATE",
-            null
-          ],
-          [
-            "android.permission.WRITE_EXTERNAL_STORAGE",
-            null
-          ],
-          [
-            "android.permission.ACCESS_NETWORK_STATE",
-            null
-          ],
-          [
-            "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
-            null
-          ]
-        ],
-        "versionCode": 16,
-        "versionName": "1.1.0"
       }
     ],
     "codes.tashif.paisa": [
