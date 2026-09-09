@@ -195,9 +195,8 @@ async function collectFontFiles() {
 }
 
 function generateSiteOgSvg({
-	category = "SOFTWARE DEVELOPER · FULL-STACK & SYSTEMS",
 	command = "cat profile.json",
-	badge = "PORTFOLIO",
+	badge = "Portfolio",
 	badgeColor = "#ea580c",
 	title = "Tashif Ahmad Khan",
 	description = "Personal dashboard, open source projects, engineering blog, and developer tools.",
@@ -207,8 +206,8 @@ function generateSiteOgSvg({
 }) {
 	const titleLines = wrapText(title, 34, 2);
 	const titleFontSize = titleLines.length > 1 || title.length > 24 ? 44 : 54;
-	const titleY = titleLines.length > 1 ? 200 : 214;
-	const descY = titleY + titleLines.length * (titleFontSize + 8) + 4;
+	const titleY = titleLines.length > 1 ? 168 : 180;
+	const descY = titleY + titleLines.length * (titleFontSize + 8) + 8;
 	const descLines = wrapText(description, 68, 2);
 
 	const numBoxes = Math.min(4, featureBoxes.length);
@@ -305,19 +304,17 @@ function generateSiteOgSvg({
   <line x1="28" y1="102" x2="1172" y2="102" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
 
   <!-- Hero Content -->
-  <text x="66" y="148" fill="${badgeColor}" font-family="JetBrains Mono" font-size="13" font-weight="bold" letter-spacing="0.14em">${escapeXml(category)}</text>
-
   <text x="66" y="${titleY}" fill="#ffffff" font-family="DM Sans" font-size="${titleFontSize}" font-weight="bold" letter-spacing="-0.02em">
     ${titleLines.map((line, idx) => `<tspan x="66" dy="${idx === 0 ? 0 : titleFontSize + 6}">${escapeXml(line)}</tspan>`).join("")}
   </text>
 
-  <text x="66" y="${descY}" fill="#94a3b8" font-family="DM Sans" font-size="22" font-weight="bold">
-    ${descLines.map((line, idx) => `<tspan x="66" dy="${idx === 0 ? 0 : 30}">${escapeXml(line)}</tspan>`).join("")}
+  <text x="66" y="${descY}" fill="#94a3b8" font-family="DM Sans" font-size="21" font-weight="500">
+    ${descLines.map((line, idx) => `<tspan x="66" dy="${idx === 0 ? 0 : 28}">${escapeXml(line)}</tspan>`).join("")}
   </text>
 
-  ${boxesSvg ? `<g transform="translate(66, 344)">${boxesSvg}</g>` : ""}
+  ${boxesSvg ? `<g transform="translate(66, 332)">${boxesSvg}</g>` : ""}
 
-  ${tagsSvg ? `<g transform="translate(66, ${boxesSvg ? 456 : 370})">${tagsSvg}</g>` : ""}
+  ${tagsSvg ? `<g transform="translate(66, ${boxesSvg ? 448 : 360})">${tagsSvg}</g>` : ""}
 
   <!-- Bottom Divider line -->
   <line x1="28" y1="528" x2="1172" y2="528" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
@@ -366,18 +363,17 @@ async function generateCoreCards(fontFiles) {
 		{
 			out: join(OG_DIR, "default.jpg"),
 			data: {
-				category: "SOFTWARE DEVELOPER · FULL-STACK & SYSTEMS",
 				command: "cat profile.json",
-				badge: "PORTFOLIO",
+				badge: "Portfolio",
 				badgeColor: "#ea580c",
 				title: "Tashif Ahmad Khan",
 				description:
 					"Personal dashboard, open source projects, engineering blog, and developer tools.",
 				featureBoxes: [
-					{ title: "80+", subtitle: "PROJECTS & TOOLS" },
-					{ title: "1,000+", subtitle: "GITHUB COMMITS" },
-					{ title: "19", subtitle: "TECH ARTICLES" },
-					{ title: "LeetCode", subtitle: "ALGORITHMS SOLVED" },
+					{ title: "80+", subtitle: "Projects & Tools" },
+					{ title: "1,000+", subtitle: "GitHub Commits" },
+					{ title: "19", subtitle: "Tech Articles" },
+					{ title: "Full-Stack", subtitle: "Web & Systems" },
 				],
 				tags: [
 					{ label: "TypeScript", color: "#3178c6" },
@@ -393,18 +389,17 @@ async function generateCoreCards(fontFiles) {
 		{
 			out: join(OG_DIR, "home.jpg"),
 			data: {
-				category: "SOFTWARE DEVELOPER · FULL-STACK & SYSTEMS",
 				command: "cat dashboard.json",
-				badge: "DASHBOARD",
+				badge: "Dashboard",
 				badgeColor: "#ea580c",
 				title: "Developer Portfolio & Dashboard",
 				description:
 					"Interactive portfolio showcasing shipping web applications, open source experiments, and technical essays.",
 				featureBoxes: [
-					{ title: "80+", subtitle: "PROJECTS & TOOLS" },
-					{ title: "1,000+", subtitle: "GITHUB COMMITS" },
-					{ title: "19", subtitle: "TECH ARTICLES" },
-					{ title: "LeetCode", subtitle: "ALGORITHMS SOLVED" },
+					{ title: "80+", subtitle: "Projects & Tools" },
+					{ title: "1,000+", subtitle: "GitHub Commits" },
+					{ title: "19", subtitle: "Tech Articles" },
+					{ title: "Full-Stack", subtitle: "Web & Systems" },
 				],
 				tags: [
 					{ label: "TypeScript", color: "#3178c6" },
@@ -419,18 +414,17 @@ async function generateCoreCards(fontFiles) {
 		{
 			out: join(OG_DIR, "resume.jpg"),
 			data: {
-				category: "CURRICULUM VITAE & EXPERIENCE",
 				command: "cat resume.md",
-				badge: "RESUME / CV",
+				badge: "Resume",
 				badgeColor: "#ea580c",
 				title: "Tashif Ahmad Khan — Resume",
 				description:
 					"Software Developer & Full-Stack Engineer. Professional work experience, projects, education, and technical competencies.",
 				featureBoxes: [
-					{ title: "Full-Stack", subtitle: "TYPESCRIPT & REACT" },
-					{ title: "Backend", subtitle: "PYTHON, FASTAPI, GO" },
-					{ title: "Cloud", subtitle: "CLOUDFLARE & D1/KV" },
-					{ title: "Mobile", subtitle: "REACT NATIVE & EXPO" },
+					{ title: "Full-Stack", subtitle: "TypeScript & React" },
+					{ title: "Backend", subtitle: "Python, FastAPI, Go" },
+					{ title: "Cloud", subtitle: "Cloudflare & D1/KV" },
+					{ title: "Mobile", subtitle: "React Native & Expo" },
 				],
 				tags: [
 					{ label: "TypeScript", color: "#3178c6" },
@@ -446,18 +440,17 @@ async function generateCoreCards(fontFiles) {
 		{
 			out: join(OG_DIR, "projects.jpg"),
 			data: {
-				category: "SOFTWARE & EXPERIMENTS CATALOG",
 				command: "ls -la ~/projects",
-				badge: "PROJECTS",
+				badge: "Projects",
 				badgeColor: "#8b5cf6",
 				title: "All Projects & Open Source",
 				description:
 					"Interactive catalog of shipped web applications, developer utilities, Android applications, and open-source libraries.",
 				featureBoxes: [
-					{ title: "80+", subtitle: "REPOSITORIES", color: "#a78bfa" },
-					{ title: "Live", subtitle: "DEPLOYED APPS", color: "#34d399" },
-					{ title: "Mobile", subtitle: "ANDROID RELEASES", color: "#38bdf8" },
-					{ title: "Tools", subtitle: "CLI UTILITIES", color: "#f472b6" },
+					{ title: "80+", subtitle: "Repositories", color: "#a78bfa" },
+					{ title: "Live", subtitle: "Deployed Apps", color: "#34d399" },
+					{ title: "Mobile", subtitle: "Android Releases", color: "#38bdf8" },
+					{ title: "Tools", subtitle: "CLI Utilities", color: "#f472b6" },
 				],
 				tags: [
 					{ label: "TypeScript", color: "#3178c6" },
@@ -472,18 +465,17 @@ async function generateCoreCards(fontFiles) {
 		{
 			out: join(OG_DIR, "projects-stats.jpg"),
 			data: {
-				category: "CODEBASE & REPOSITORY METRICS",
 				command: "git stats --projects",
-				badge: "PROJECT STATS",
+				badge: "Project Stats",
 				badgeColor: "#a855f7",
 				title: "Projects Analytics & Metrics",
 				description:
 					"Codebase statistics, language distribution, repository volume, and contribution velocity across projects.",
 				featureBoxes: [
-					{ title: "Languages", subtitle: "BYTE BREAKDOWN", color: "#c084fc" },
-					{ title: "Stars", subtitle: "COMMUNITY ENGAGEMENT", color: "#f59e0b" },
-					{ title: "Forks", subtitle: "CONTRIBUTIONS", color: "#10b981" },
-					{ title: "80+ Repos", subtitle: "ANALYZED", color: "#38bdf8" },
+					{ title: "Languages", subtitle: "Byte Breakdown", color: "#c084fc" },
+					{ title: "Stars", subtitle: "Community Stargazers", color: "#f59e0b" },
+					{ title: "Forks", subtitle: "Contributions", color: "#10b981" },
+					{ title: "80+ Repos", subtitle: "Analyzed", color: "#38bdf8" },
 				],
 				tags: [
 					{ label: "Analytics", color: "#a855f7" },
@@ -497,18 +489,17 @@ async function generateCoreCards(fontFiles) {
 		{
 			out: join(OG_DIR, "github.jpg"),
 			data: {
-				category: "OPEN SOURCE & CONTRIBUTIONS",
 				command: "gh profile view @tashifkhan",
-				badge: "GITHUB",
+				badge: "GitHub",
 				badgeColor: "#3b82f6",
 				title: "GitHub Activity & Open Source",
 				description:
 					"Public open-source contributions, commit history, repository developments, and pull requests by Tashif Ahmad Khan.",
 				featureBoxes: [
-					{ title: "1,000+", subtitle: "TOTAL COMMITS", color: "#60a5fa" },
-					{ title: "80+", subtitle: "REPOSITORIES", color: "#34d399" },
-					{ title: "Active", subtitle: "COMMIT STREAKS", color: "#fbbf24" },
-					{ title: "@tashifkhan", subtitle: "PRIMARY HANDLE", color: "#c084fc" },
+					{ title: "1,000+", subtitle: "Total Commits", color: "#60a5fa" },
+					{ title: "80+", subtitle: "Repositories", color: "#34d399" },
+					{ title: "Active", subtitle: "Commit Streaks", color: "#fbbf24" },
+					{ title: "@tashifkhan", subtitle: "Primary Handle", color: "#c084fc" },
 				],
 				tags: [
 					{ label: "Open Source", color: "#60a5fa" },
@@ -522,18 +513,17 @@ async function generateCoreCards(fontFiles) {
 		{
 			out: join(OG_DIR, "github-stats.jpg"),
 			data: {
-				category: "MULTI-ACCOUNT ACTIVITY ANALYTICS",
 				command: "gh stats --aggregated",
-				badge: "GITHUB STATS",
+				badge: "GitHub Stats",
 				badgeColor: "#38bdf8",
 				title: "GitHub Detailed Analytics",
 				description:
 					"Aggregated commit history, pull request stats, contribution streaks, and language velocity across accounts.",
 				featureBoxes: [
-					{ title: "Multi-Account", subtitle: "AGGREGATED STATS", color: "#38bdf8" },
-					{ title: "History", subtitle: "COMMIT GRAPH", color: "#34d399" },
-					{ title: "PRs", subtitle: "COLLABORATION", color: "#fbbf24" },
-					{ title: "Linguist", subtitle: "CODE SHARE", color: "#c084fc" },
+					{ title: "Multi-Account", subtitle: "Aggregated Stats", color: "#38bdf8" },
+					{ title: "History", subtitle: "Commit Graph", color: "#34d399" },
+					{ title: "PRs", subtitle: "Collaboration", color: "#fbbf24" },
+					{ title: "Linguist", subtitle: "Code Share", color: "#c084fc" },
 				],
 				tags: [
 					{ label: "Analytics", color: "#38bdf8" },
@@ -546,18 +536,17 @@ async function generateCoreCards(fontFiles) {
 		{
 			out: join(OG_DIR, "leetcode.jpg"),
 			data: {
-				category: "DATA STRUCTURES & ALGORITHMS",
 				command: "leetcode profile",
-				badge: "LEETCODE",
+				badge: "LeetCode",
 				badgeColor: "#f59e0b",
 				title: "LeetCode Solutions & Profiles",
 				description:
 					"Algorithmic problem solving, data structure implementations, and competitive contest ratings by Tashif Ahmad Khan.",
 				featureBoxes: [
-					{ title: "Easy", subtitle: "FUNDAMENTAL PATTERNS", color: "#34d399" },
-					{ title: "Medium", subtitle: "DP & GRAPH SEARCH", color: "#fbbf24" },
-					{ title: "Hard", subtitle: "ADVANCED SYSTEMS", color: "#f87171" },
-					{ title: "Contests", subtitle: "GLOBAL RATINGS", color: "#60a5fa" },
+					{ title: "Easy", subtitle: "Fundamental Patterns", color: "#34d399" },
+					{ title: "Medium", subtitle: "DP & Graph Search", color: "#fbbf24" },
+					{ title: "Hard", subtitle: "Advanced Systems", color: "#f87171" },
+					{ title: "Contests", subtitle: "Global Ratings", color: "#60a5fa" },
 				],
 				tags: [
 					{ label: "Algorithms", color: "#f59e0b" },
@@ -571,18 +560,17 @@ async function generateCoreCards(fontFiles) {
 		{
 			out: join(OG_DIR, "leetcode-stats.jpg"),
 			data: {
-				category: "PROBLEM SOLVING ANALYTICS",
 				command: "leetcode stats --detailed",
-				badge: "LEETCODE STATS",
+				badge: "LeetCode Stats",
 				badgeColor: "#eab308",
 				title: "LeetCode Detailed Analytics",
 				description:
 					"Problem difficulty breakdown, submission accuracy, contest ratings, and topic distribution analysis.",
 				featureBoxes: [
-					{ title: "Breakdown", subtitle: "EASY · MED · HARD", color: "#fde047" },
-					{ title: "Contest", subtitle: "RATING METRICS", color: "#60a5fa" },
-					{ title: "Streak", subtitle: "DAILY DISCIPLINE", color: "#34d399" },
-					{ title: "Topics", subtitle: "DYNAMIC PROG & TREES", color: "#c084fc" },
+					{ title: "Breakdown", subtitle: "Easy · Med · Hard", color: "#fde047" },
+					{ title: "Contest", subtitle: "Rating Metrics", color: "#60a5fa" },
+					{ title: "Streak", subtitle: "Daily Discipline", color: "#34d399" },
+					{ title: "Topics", subtitle: "Algorithms & Trees", color: "#c084fc" },
 				],
 				tags: [
 					{ label: "LeetCode API", color: "#eab308" },
@@ -595,18 +583,17 @@ async function generateCoreCards(fontFiles) {
 		{
 			out: join(OG_DIR, "connect.jpg"),
 			data: {
-				category: "GET IN TOUCH & SOCIALS",
 				command: "finger tashif@tashif.codes",
-				badge: "CONNECT",
+				badge: "Connect",
 				badgeColor: "#10b981",
 				title: "Connect & Collaborate",
 				description:
 					"Developer profiles, open source collaborations, social links, and communication channels with Tashif Ahmad Khan.",
 				featureBoxes: [
-					{ title: "GitHub", subtitle: "@TASHIFKHAN", color: "#60a5fa" },
-					{ title: "LinkedIn", subtitle: "IN/TASHIFKHAN", color: "#38bdf8" },
-					{ title: "Twitter / X", subtitle: "@TASHIFCODES", color: "#ffffff" },
-					{ title: "Email", subtitle: "TASHIF@DUCK.COM", color: "#34d399" },
+					{ title: "GitHub", subtitle: "@tashifkhan", color: "#60a5fa" },
+					{ title: "LinkedIn", subtitle: "in/tashifkhan", color: "#38bdf8" },
+					{ title: "Twitter / X", subtitle: "@tashifcodes", color: "#ffffff" },
+					{ title: "Email", subtitle: "tashif@duck.com", color: "#34d399" },
 				],
 				tags: [
 					{ label: "Open Source", color: "#60a5fa" },
@@ -619,23 +606,23 @@ async function generateCoreCards(fontFiles) {
 		{
 			out: join(OG_DIR, "docs.jpg"),
 			data: {
-				category: "SYSTEM MANUALS & ARCHITECTURE",
-				command: "man tashif-docs",
-				badge: "DOCUMENTATION",
+				command: "man tashif.codes",
+				badge: "Documentation",
 				badgeColor: "#06b6d4",
-				title: "Documentation Hub",
+				title: "Technical Documentation",
 				description:
-					"In-depth system architecture diagrams, setup guides, API specifications, and component manuals for projects.",
+					"Comprehensive architectural guides, API references, deployment walkthroughs, and system design specifications.",
 				featureBoxes: [
-					{ title: "Architecture", subtitle: "SYSTEM DESIGN", color: "#22d3ee" },
-					{ title: "API Reference", subtitle: "ENDPOINTS & SCHEMAS", color: "#38bdf8" },
-					{ title: "Setup Guides", subtitle: "INSTALLATION", color: "#34d399" },
-					{ title: "Pipelines", subtitle: "DATA FLOW", color: "#c084fc" },
+					{ title: "11 Projects", subtitle: "Architecture Manuals", color: "#38bdf8" },
+					{ title: "Architecture", subtitle: "System Diagrams", color: "#34d399" },
+					{ title: "API Reference", subtitle: "Endpoints & Models", color: "#a78bfa" },
+					{ title: "Guides", subtitle: "Setup & Deployment", color: "#f59e0b" },
 				],
 				tags: [
-					{ label: "Technical Docs", color: "#06b6d4" },
 					{ label: "Architecture", color: "#38bdf8" },
-					{ label: "API Reference", color: "#34d399" },
+					{ label: "System Design", color: "#34d399" },
+					{ label: "API Reference", color: "#a78bfa" },
+					{ label: "Open Source", color: "#f59e0b" },
 				],
 				footerRight: "https://tashif.codes/docs",
 			},
@@ -643,24 +630,23 @@ async function generateCoreCards(fontFiles) {
 		{
 			out: join(OG_DIR, "fdroid.jpg"),
 			data: {
-				category: "VERIFIED ANDROID APP REPOSITORY",
-				command: "fdroid repo info",
-				badge: "F-DROID",
-				badgeColor: "#00b4ab",
-				title: "Independent Android App Repository",
+				command: "fdroid repo update",
+				badge: "F-Droid",
+				badgeColor: "#10b981",
+				title: "F-Droid Android Repository",
 				description:
-					"Verified, open-source Android APK builds signed with reproducible releases and Fastlane metadata.",
+					"Direct APK package repository, verified release signatures, and open-source Android utilities by Tashif Ahmad Khan.",
 				featureBoxes: [
-					{ title: "Delhi Metro", subtitle: "TRANSIT APP", color: "#2dd4bf" },
-					{ title: "Patchwork", subtitle: "CALDAV TASKS", color: "#38bdf8" },
-					{ title: "Sophos Mobile", subtitle: "AUTO-LOGIN", color: "#fbbf24" },
-					{ title: "F-Droid", subtitle: "CLIENT REPO", color: "#34d399" },
+					{ title: "F-Droid", subtitle: "Official Repo", color: "#34d399" },
+					{ title: "Verified APKs", subtitle: "Release Signatures", color: "#38bdf8" },
+					{ title: "Open Source", subtitle: "GPL & MIT Apps", color: "#a78bfa" },
+					{ title: "Auto Builds", subtitle: "GitHub Actions", color: "#f59e0b" },
 				],
 				tags: [
-					{ label: "Android APK", color: "#00b4ab" },
-					{ label: "Fastlane", color: "#2dd4bf" },
-					{ label: "F-Droid Client", color: "#38bdf8" },
-					{ label: "Signed Releases", color: "#34d399" },
+					{ label: "Android", color: "#34d399" },
+					{ label: "F-Droid", color: "#38bdf8" },
+					{ label: "Open Source", color: "#a78bfa" },
+					{ label: "Kotlin", color: "#a97bff" },
 				],
 				footerRight: "https://tashif.codes/fdroid",
 			},
@@ -668,18 +654,17 @@ async function generateCoreCards(fontFiles) {
 		{
 			out: join(OG_DIR, "blog.jpg"),
 			data: {
-				category: "ENGINEERING WRITING & ESSAYS",
 				command: "cat /blog/index",
-				badge: "ARTICLES",
+				badge: "Blog",
 				badgeColor: "#f97316",
 				title: "Engineering Blog & Technical Notes",
 				description:
 					"Deep-dives into systems engineering, browser internals, web performance, and open source architectures.",
 				featureBoxes: [
-					{ title: "19", subtitle: "TECH ARTICLES", color: "#fb923c" },
-					{ title: "Web Perf", subtitle: "CORE WEB VITALS", color: "#38bdf8" },
-					{ title: "Browsers", subtitle: "RENDERING & SSR", color: "#34d399" },
-					{ title: "Languages", subtitle: "PYTHON & TS", color: "#c084fc" },
+					{ title: "19 Posts", subtitle: "Technical Articles", color: "#fb923c" },
+					{ title: "Web Perf", subtitle: "Core Web Vitals", color: "#38bdf8" },
+					{ title: "Browsers", subtitle: "Rendering & SSR", color: "#34d399" },
+					{ title: "Languages", subtitle: "Python & TypeScript", color: "#c084fc" },
 				],
 				tags: [
 					{ label: "Web Performance", color: "#38bdf8" },
@@ -731,19 +716,19 @@ async function generateProjectCards(fontFiles) {
 		const topics = (p.topics || []).slice(0, 5);
 
 		const featureBoxes = [
-			{ title: primaryLang, subtitle: "PRIMARY LANGUAGE", color: langColor },
+			{ title: primaryLang, subtitle: "Primary Language", color: langColor },
 		];
 		if (stars > 0) {
 			featureBoxes.push({
 				title: `★ ${stars}`,
-				subtitle: stars === 1 ? "GITHUB STAR" : "GITHUB STARS",
+				subtitle: stars === 1 ? "GitHub Star" : "GitHub Stars",
 				color: "#f59e0b",
 			});
 		}
 		if (forks > 0) {
 			featureBoxes.push({
 				title: `⑂ ${forks}`,
-				subtitle: forks === 1 ? "FORK" : "FORKS",
+				subtitle: forks === 1 ? "Fork" : "Forks",
 				color: "#10b981",
 			});
 		}
@@ -751,13 +736,13 @@ async function generateProjectCards(fontFiles) {
 			const latest = p.releases[0]?.tag_name || `v${p.releases.length}.0`;
 			featureBoxes.push({
 				title: latest,
-				subtitle: "LATEST RELEASE",
+				subtitle: "Latest Release",
 				color: "#a855f7",
 			});
 		} else if (p.num_commits) {
 			featureBoxes.push({
 				title: `${p.num_commits}`,
-				subtitle: "TOTAL COMMITS",
+				subtitle: "Total Commits",
 				color: "#38bdf8",
 			});
 		}
@@ -768,9 +753,8 @@ async function generateProjectCards(fontFiles) {
 		}));
 
 		const svg = generateSiteOgSvg({
-			category: `OPEN SOURCE PROJECT · ${primaryLang.toUpperCase()}`,
 			command: `git info ${slug}`,
-			badge: "PROJECT",
+			badge: "Project",
 			badgeColor: langColor !== "#94a3b8" ? langColor : "#3178c6",
 			title: formatTitle(p.title),
 			description:
@@ -805,17 +789,16 @@ async function generateDocsCards(fontFiles) {
 		const title = formatTitle(doc);
 
 		const svg = generateSiteOgSvg({
-			category: "PROJECT DOCUMENTATION · ARCHITECTURE & GUIDES",
 			command: `man ${slug}`,
-			badge: "DOCS",
+			badge: "Docs",
 			badgeColor: "#06b6d4",
 			title: `${title} Documentation`,
 			description: `Technical specifications, architecture diagrams, installation manuals, and API reference for ${title}.`,
 			featureBoxes: [
-				{ title: "Architecture", subtitle: "SYSTEM DESIGN", color: "#22d3ee" },
-				{ title: "API Reference", subtitle: "ENDPOINTS & PROTOCOLS", color: "#38bdf8" },
-				{ title: "Setup Guide", subtitle: "DEPLOYMENT MANUAL", color: "#34d399" },
-				{ title: "Components", subtitle: "INTERNAL SPECS", color: "#c084fc" },
+				{ title: "Architecture", subtitle: "System Design", color: "#22d3ee" },
+				{ title: "API Reference", subtitle: "Endpoints & Protocols", color: "#38bdf8" },
+				{ title: "Setup Guide", subtitle: "Deployment Manual", color: "#34d399" },
+				{ title: "Components", subtitle: "Internal Specs", color: "#c084fc" },
 			],
 			tags: [
 				{ label: "Technical Docs", color: "#06b6d4" },
@@ -848,16 +831,15 @@ async function generateDownloadCards(fontFiles) {
 			const formatted = formatTitle(title);
 
 			const svg = generateSiteOgSvg({
-				category: "SOFTWARE RELEASE · DIRECT DOWNLOAD",
 				command: `curl -LO releases/${title}`,
-				badge: "DOWNLOAD",
+				badge: "Download",
 				badgeColor: "#ec4899",
 				title: `Download ${formatted}`,
 				description: `Official binary releases, verified APK installers, and package artifacts for ${formatted}.`,
 				featureBoxes: [
-					{ title: "Official Build", subtitle: "VERIFIED BINARY", color: "#f472b6" },
-					{ title: "GitHub Release", subtitle: "TAGGED ARTIFACT", color: "#60a5fa" },
-					{ title: "Open Source", subtitle: "REPRODUCIBLE", color: "#34d399" },
+					{ title: "Official Build", subtitle: "Verified Binary", color: "#f472b6" },
+					{ title: "GitHub Release", subtitle: "Tagged Artifact", color: "#60a5fa" },
+					{ title: "Open Source", subtitle: "Reproducible Build", color: "#34d399" },
 				],
 				tags: [
 					{ label: "Release Artifact", color: "#ec4899" },
