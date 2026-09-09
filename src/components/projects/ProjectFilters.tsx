@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-import { useWebHaptics } from "web-haptics/react";
+import { trigger } from "@/lib/haptics";
 import type { StarList } from "@/types";
 
 interface StarListOption {
@@ -29,7 +29,6 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 	const [showReleasesOnly, setShowReleasesOnly] = useState(false);
 	const [selectedList, setSelectedList] = useState<string>("all-projects");
 	const [lists, setLists] = useState<StarListOption[]>([]);
-	const { trigger } = useWebHaptics();
 
 	// Initialize from pre-fetched build-time starLists module
 	useEffect(() => {
@@ -87,7 +86,6 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 	}, []); // run once
 
 	const handleSearch = (value: string) => {
-		trigger("light");
 		setSearchTerm(value);
 		const searchEvent = new CustomEvent("project-search", {
 			detail: { term: value, showLiveOnly, showReleasesOnly, list: selectedList },
@@ -96,7 +94,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 	};
 
 	const handleLiveFilter = () => {
-		trigger("light");
+		trigger("selection");
 		const newShowLiveOnly = !showLiveOnly;
 		setShowLiveOnly(newShowLiveOnly);
 		const searchEvent = new CustomEvent("project-search", {
@@ -111,7 +109,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 	};
 
 	const handleReleasesFilter = () => {
-		trigger("light");
+		trigger("selection");
 		const newShowReleasesOnly = !showReleasesOnly;
 		setShowReleasesOnly(newShowReleasesOnly);
 		const searchEvent = new CustomEvent("project-search", {
@@ -151,8 +149,9 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 				<div className="flex flex-row gap-2 w-full md:w-auto">
 					{/* Star list selector */}
 					<div className="relative flex-1">
-						<Select value={selectedList} onValueChange={handleListChange}>
+						<Select onOpenChange={() => trigger("light")} value={selectedList} onValueChange={handleListChange}>
 							<SelectTrigger
+								data-haptic="manual"
 								data-project-list-select
 								className="w-full bg-background/50 backdrop-blur-sm"
 							>

@@ -748,6 +748,7 @@ export async function getStaticPaths() {
 </PageShell>
 
 <script>
+	import { trigger } from "@/lib/haptics";
 	function wireReleaseDialogs() {
 		document
 			.querySelectorAll<HTMLElement>("[data-release-open]")
@@ -767,9 +768,10 @@ export async function getStaticPaths() {
 			.forEach((dialog) => {
 				if (dialog.dataset.dialogWired) return;
 				dialog.dataset.dialogWired = "true";
+				dialog.addEventListener("cancel", () => trigger("light"));
 				// Click on the backdrop (the dialog element itself) closes it
 				dialog.addEventListener("click", (e) => {
-					if (e.target === dialog) dialog.close();
+					if (e.target === dialog) { trigger("light"); dialog.close(); }
 				});
 				dialog
 					.querySelector("[data-release-close]")

@@ -1,3 +1,4 @@
+import { trigger } from "@/lib/haptics";
 import React from "react";
 import {
 	DropdownMenu,
@@ -16,9 +17,9 @@ interface ProfileDropdownProps {
 
 export default function ProfileDropdown({ isMobile }: ProfileDropdownProps) {
 	return (
-		<DropdownMenu>
+		<DropdownMenu onOpenChange={() => trigger("light")}>
 			<DropdownMenuTrigger
-				data-haptic=""
+				data-haptic="manual"
 				aria-label="External GitHub profiles"
 				className={
 					isMobile

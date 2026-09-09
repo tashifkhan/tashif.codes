@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Clock, RefreshCw, X } from "lucide-react";
-import { useWebHaptics } from "web-haptics/react";
+import { trigger } from "@/lib/haptics";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatFetchedAt, resolveFetchedAt, writeStoredFetchedAt, LIVE_REFRESH_EVENT } from "@/lib/dataFreshness";
@@ -59,7 +59,6 @@ export default function DataFreshness({
 	 */
 	const [nowMs, setNowMs] = useState<number | null>(null);
 	const dialogRef = useRef<HTMLDialogElement>(null);
-	const { trigger } = useWebHaptics();
 
 	const displayLabel = label ?? (source ? SOURCE_LABELS[source] : "Data");
 
@@ -111,20 +110,21 @@ export default function DataFreshness({
 
 	const openModal = useCallback(() => {
 		if (refreshing) return;
-		trigger("selection");
+		trigger("light");
 		setError(null);
 		setOpen(true);
 	}, [refreshing, trigger]);
 
 	const closeModal = useCallback(() => {
 		if (refreshing) return;
+		trigger("light");
 		setOpen(false);
 		setError(null);
 	}, [refreshing]);
 
 	const confirmRefresh = useCallback(async () => {
 		if (refreshing) return;
-		trigger("selection");
+		trigger("light");
 		setRefreshing(true);
 		setError(null);
 		try {
@@ -223,8 +223,7 @@ export default function DataFreshness({
 						e.preventDefault();
 						return;
 					}
-					setOpen(false);
-					setError(null);
+					closeModal();
 				}}
 				onClick={(e) => {
 					if (e.target === dialogRef.current && !refreshing) {

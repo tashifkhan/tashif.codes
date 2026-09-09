@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useWebHaptics } from "web-haptics/react";
+import { trigger } from "@/lib/haptics";
 
 import { resumeAbout } from "../../data/resume";
 import type {
@@ -182,7 +182,6 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 	const [activeSection, setActiveSection] = useState("about");
 	const [scrollPct, setScrollPct] = useState(0);
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	const { trigger } = useWebHaptics();
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -299,7 +298,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 					variant="outline"
 					size="icon"
 					onClick={() => {
-						trigger(isMenuOpen ? "light" : "medium");
+						trigger("light");
 						setIsMenuOpen(!isMenuOpen);
 					}}
 					className="rounded-full shadow-xl bg-background/80 backdrop-blur-md"

@@ -1,3 +1,5 @@
+import { trigger } from "@/lib/haptics"
+
 /**
  * Browser-side behaviour for rendered Markdown: copy buttons and diagrams.
  *
@@ -27,7 +29,7 @@ async function writeToClipboard(text: string): Promise<void> {
   document.body.appendChild(fallback)
   fallback.select()
   try {
-    document.execCommand('copy')
+    if (!document.execCommand('copy')) throw new Error('Copy failed')
   } finally {
     document.body.removeChild(fallback)
   }
@@ -61,10 +63,15 @@ export function initCopyButtons(): void {
     decoder.innerHTML = encoded
 
     void writeToClipboard(decoder.value).then(() => {
+      trigger('success')
+      button.setAttribute('aria-label', 'Copy code')
       button.dataset.copied = 'true'
       window.setTimeout(() => {
         delete button.dataset.copied
       }, 2000)
+    }).catch(() => {
+      trigger('error')
+      button.setAttribute('aria-label', 'Copy failed. Select the code and copy manually.')
     })
   })
 }
@@ -154,7 +161,8 @@ export function initTabs(root: ParentNode = document): void {
     if (!(target instanceof Element)) return
     const button = target.closest<HTMLButtonElement>('.md-tab-button')
     const group = button?.closest<HTMLElement>('[data-md-tabs]')
-    if (!button || !group) return
+    if (!button || !group || button.getAttribute('aria-selected') === 'true') return
+    trigger('selection')
 
     const buttons = Array.from(group.querySelectorAll('.md-tab-button'))
     selectTab(group, buttons.indexOf(button))
@@ -183,6 +191,7 @@ export function initTabs(root: ParentNode = document): void {
     else return
 
     event.preventDefault()
+    if (next !== current) trigger('selection')
     selectTab(group, next)
     buttons[next].focus()
   })
