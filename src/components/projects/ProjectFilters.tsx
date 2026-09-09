@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, ExternalLink, Tag, ListFilter } from "lucide-react";
+import { Search, ExternalLink, Tag } from "lucide-react";
 import {
 	Select,
 	SelectTrigger,

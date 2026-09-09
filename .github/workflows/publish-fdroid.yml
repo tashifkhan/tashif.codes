@@ -235,6 +235,11 @@ jobs:
           # --rename-apks normalizes names to package_versionCode.apk
           fdroid update --create-metadata --rename-apks --pretty --verbose
 
+          # make_current_version_link leaves root *.apk symlinks. When an APK is
+          # archived or the app label changes, old links go dangling and Vite's
+          # public-dir copy fails with ENOENT on Vercel.
+          find . -maxdepth 1 -type l ! -exec test -e {} \; -print -delete
+
           # Never commit secrets
           rm -f config.yml fdroid-repo.p12
           # Drop any local cache fdroid may leave behind
