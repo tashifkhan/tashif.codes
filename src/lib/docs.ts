@@ -64,13 +64,149 @@ function extractHeadings(content: string): { depth: number; text: string; slug: 
 // Prepare raw markdown for rendering: the page renders its own title and
 // "On this page" navigation, so drop the leading h1 and the generated
 // "Table of Contents" section (a heading followed by anchor-link list items).
+//
+// Also strips DeepWiki scraper artifacts (cite blocks, "> Source:" quotes,
+// "**Sources:**" lines, "**Section/Diagram sources**" + file:// link lists)
+// so a page that was never cleaned still renders without dead references.
+// Run scraped content through the docs cleanup script instead when possible.
 export function processDocContent(content: string): string {
-  let processed = content.trim().replace(/^#\s+.+(\r?\n)*/, '');
+  const lines = content.split('\n');
+  const out: string[] = [];
+  let inCite = false;
+
+  const isTocItem = (l: string) =>
+    /^\s*(?:[-*+]|\d+[.)])\s+\[[^\]]*\]\(#[^)]*\)\s*$/.test(l);
+  const isFileRefBullet = (l: string) =>
+    /^\s*-\s+\[[^\]]*\]\(file:\/\/[^)]*\)\s*$/.test(l);
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (!inCite && /<cite>/i.test(line)) {
+      inCite = true;
+      if (/<\/cite>/i.test(line)) inCite = false;
+      continue;
+    }
+    if (inCite) {
+      if (/<\/cite>/i.test(line)) inCite = false;
+      continue;
+    }
+    if (/^\s*>\s*Source:\s*https?:\/\/.*$/.test(line)) continue;
+    if (/^(?:\*\*Sources?\*\*|Sources?)\s*:.*$/.test(trimmed)) continue;
+    if (/^\*\*Sources?:\*\*.*$/.test(trimmed)) continue;
+    if (/^\*\*(?:Section|Diagram) sources\*\*\s*$/.test(trimmed)) {
+      // consume the file:// bullet run that follows the header
+      while (i + 1 < lines.length) {
+        const next = lines[i + 1];
+        if (isFileRefBullet(next)) i++;
+        else if (next.trim() === '') {
+          const after = lines[i + 2] ?? '';
+          if (isFileRefBullet(after)) i++;
+          else break;
+        } else break;
+      }
+      continue;
+    }
+    if (/^#{2,3}\s+table of contents\s*$/i.test(trimmed)) {
+      let j = i + 1;
+      let consumed = 0;
+      while (j < lines.length && (lines[j].trim() === '' || isTocItem(lines[j]))) {
+        if (isTocItem(lines[j])) consumed++;
+        j++;
+      }
+      if (consumed > 0) {
+        i = j - 1;
+        continue;
+      }
+    }
+    out.push(line);
+  }
+
+  let processed = out.join('\n').trim().replace(/^#\s+.+(\r?\n)*/, '');
+  // Dead file:// links have no target on a static site; show them as code.
+  processed = processed.replace(/\[([^\]]+)\]\(file:\/\/[^)]+\)/g, '`$1`');
   processed = processed.replace(
     /^#{2,3}\s+table of contents[^\S\r\n]*\r?\n(?:[^\S\r\n]*(?:(?:[-*+]|\d+\.)[^\S\r\n]+\[[^\]\r\n]*\]\(#[^)\r\n]*\)[^\S\r\n]*)?\r?\n)*/im,
     ''
   );
   return processed;
+}
+
+// Sentence case for doc nav labels ("Backend Architecture" renders as
+// "Backend architecture"). Acronyms (API), internal-caps names (OAuth,
+// TalentSync) and lowercase names (pyjiit, npm) are left alone. The shared
+// formatTitle keeps Title Case for project names, so docs use this instead.
+const DOC_PROPER_NOUNS = new Set([
+  'python', 'docker', 'astro', 'react', 'vue', 'svelte', 'tailwind',
+  'firebase', 'supabase', 'vercel', 'google', 'poetry', 'sphinx', 'furo',
+  'markdown', 'mermaid', 'pydantic', 'prisma', 'drizzle', 'zod',
+  'january', 'february', 'march', 'april', 'may', 'june', 'july',
+  'august', 'september', 'october', 'november', 'december',
+  'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
+  'sunday', 'english', 'next', 'nuxt', 'hono', 'fastify', 'trpc',
+]);
+
+const DOC_PROPER_PHRASES = [
+  'GitHub Actions',
+  'GitHub Pages',
+  'Visual Studio Code',
+  'VS Code',
+];
+
+// Lowercase form -> correct display form, for words formatTitle leaves as
+// "Api" (it title-cases lowercase filename segments like "api-reference").
+const DOC_ACRONYMS: Record<string, string> = {
+  api: 'API', url: 'URL', urls: 'URLs', ui: 'UI', faq: 'FAQ', jwt: 'JWT',
+  sql: 'SQL', html: 'HTML', css: 'CSS', js: 'JS', ts: 'TS', db: 'DB',
+  ci: 'CI', cd: 'CD', http: 'HTTP', https: 'HTTPS', rest: 'REST',
+  json: 'JSON', xml: 'XML', yaml: 'YAML', toml: 'TOML', cors: 'CORS',
+  csrf: 'CSRF', xss: 'XSS', smtp: 'SMTP', pdf: 'PDF', png: 'PNG',
+  jpg: 'JPG', svg: 'SVG', gif: 'GIF', wasm: 'WASM', pwa: 'PWA',
+  oauth: 'OAuth', mcp: 'MCP', llm: 'LLM', llms: 'LLMs', sdk: 'SDK',
+  cli: 'CLI', ide: 'IDE', ssl: 'SSL', tls: 'TLS', dns: 'DNS', cdn: 'CDN',
+  sso: 'SSO', orm: 'ORM', ssh: 'SSH', cicd: 'CI/CD',
+};
+
+function sentenceCaseWord(word: string, isFirst = false): string {
+  const m = word.match(/^([^A-Za-z0-9]*)([A-Za-z0-9][A-Za-z0-9'\-/]*)([^A-Za-z0-9]*)$/);
+  if (!m) return word;
+  const [, pre, core, post] = m;
+  if (/\d/.test(core)) return word;
+  const out = core.split(/([-'/])/).map((part) => {
+    if (!part || /^[-'/]$/.test(part)) return part;
+    if (part.length > 1 && part === part.toUpperCase()) return part;
+    if (/[A-Z]/.test(part.slice(1))) return part;
+    if (/^[A-Z][a-z]*$/.test(part)) {
+      const base = part.toLowerCase().endsWith("'s") ? part.slice(0, -2) : part;
+      const lower = base.toLowerCase();
+      // "Oauth" (from formatTitle) -> "OAuth", even in first position.
+      if (DOC_ACRONYMS[lower]) return DOC_ACRONYMS[lower] + part.slice(base.length);
+      if (isFirst || DOC_PROPER_NOUNS.has(lower)) return part;
+      return part.toLowerCase();
+    }
+    return part;
+  });
+  return pre + out.join('') + post;
+}
+
+export function sentenceCaseDocTitle(title: string): string {
+  const stashed: string[] = [];
+  for (const phrase of DOC_PROPER_PHRASES) {
+    if (title.includes(phrase)) {
+      stashed.push(phrase);
+      title = title.replaceAll(phrase, `\u0000${stashed.length - 1}\u0000`);
+    }
+  }
+  const words = title.split(' ').map((w, i) => {
+    if (w.includes('\u0000') || i === 0) return sentenceCaseWord(w, true);
+    return sentenceCaseWord(w);
+  });
+  let result = words.join(' ');
+  stashed.forEach((phrase, i) => {
+    result = result.replaceAll(`\u0000${i}\u0000`, phrase);
+  });
+  return result;
 }
 
 // Helper to get all projects (directories in src/data/docs)
@@ -111,7 +247,7 @@ export function getAllDocs(): DocPage[] {
     for (const file of files) {
       const content = fs.readFileSync(path.join(projectDir, file), 'utf-8');
       const slug = file.replace(/\.md$/, '');
-      const title = formatTitle(path.basename(slug));
+      const title = sentenceCaseDocTitle(formatTitle(path.basename(slug)));
       // Extract headings from the processed content — what actually gets
       // rendered — so slug dedup counters stay in sync with heading IDs.
       const headings = extractHeadings(processDocContent(content));
@@ -180,7 +316,7 @@ function buildNumberedSidebar(projectSlug: string, projectDir: string): SidebarI
   const nodes: Node[] = files.map(file => {
     const filename = path.basename(file, '.md');
     const orderPath = parseOrder(filename);
-    const title = formatTitle(filename.replace(/^(\d+(\.\d+)*)-?/, ''));
+    const title = sentenceCaseDocTitle(formatTitle(filename.replace(/^(\d+(\.\d+)*)-?/, '')));
 
     return {
       title: title || formatTitle(filename),
@@ -314,7 +450,7 @@ function buildFolderSidebar(projectSlug: string, projectDir: string): SidebarIte
         });
 
         items.push({
-          title: formatTitle(subDir),
+          title: sentenceCaseDocTitle(formatTitle(subDir)),
           slug: `${normalizedSlug}/${slug}`,
           path: relativePath,
           order: 0,
@@ -326,7 +462,7 @@ function buildFolderSidebar(projectSlug: string, projectDir: string): SidebarIte
         // Use the first child's slug as a fallback, or '#'
         const firstChild = children[0];
         items.push({
-          title: formatTitle(subDir),
+          title: sentenceCaseDocTitle(formatTitle(subDir)),
           slug: firstChild ? firstChild.slug : '#',
           path: subDir,
           order: 0,
@@ -349,7 +485,7 @@ function buildFolderSidebar(projectSlug: string, projectDir: string): SidebarIte
       const slug = relativePath.replace(/\.md$/, '');
 
       items.push({
-        title: formatTitle(baseName),
+        title: sentenceCaseDocTitle(formatTitle(baseName)),
         slug: `${normalizedSlug}/${slug}`,
         path: relativePath,
         order: 0,

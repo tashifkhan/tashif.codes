@@ -11,6 +11,11 @@ const { items, activePath, depth = 0 } = Astro.props;
 
 const isActive = (item: SidebarItem) => item.slug === activePath;
 
+const hasActiveDescendant = (item: SidebarItem): boolean =>
+	item.children?.some(
+		(child) => child.slug === activePath || hasActiveDescendant(child)
+	) ?? false;
+
 const leafClasses = (item: SidebarItem) => [
 	"flex w-full items-center rounded-lg px-2.5 py-1.5 text-sm leading-snug transition-colors",
 	isActive(item)
@@ -22,7 +27,9 @@ const sectionLabelClasses = (item: SidebarItem) => [
 	"mb-1.5 flex items-center px-2.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
 	isActive(item)
 		? "text-primary"
-		: "text-muted-foreground hover:text-foreground",
+		: hasActiveDescendant(item)
+			? "text-foreground"
+			: "text-muted-foreground hover:text-foreground",
 ];
 ---
 
@@ -34,11 +41,14 @@ const sectionLabelClasses = (item: SidebarItem) => [
 					{
 						// Group headers: top-level groups render as micro-labels
 						// (site convention), nested groups as regular links.
+						// A group whose child is active stays lit so the
+						// reader can tell which section they are in.
 						item.slug !== "#" ? (
 							<a
 								href={`/docs/${item.slug}`}
 								data-haptic-nav
 								data-sidebar-active={isActive(item) ? "true" : undefined}
+								aria-current={isActive(item) ? "page" : undefined}
 								class:list={
 									depth === 0 ? sectionLabelClasses(item) : leafClasses(item)
 								}
@@ -76,6 +86,7 @@ const sectionLabelClasses = (item: SidebarItem) => [
 					href={`/docs/${item.slug}`}
 					data-haptic-nav
 					data-sidebar-active={isActive(item) ? "true" : undefined}
+					aria-current={isActive(item) ? "page" : undefined}
 					class:list={leafClasses(item)}
 				>
 					{item.title}
