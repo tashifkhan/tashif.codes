@@ -1,31 +1,9 @@
-# File Operations IPC
-
-<cite>
-**Referenced Files in This Document**
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [utils.js](file://electron/src/electron/utils.js)
-- [README.md](file://README.md)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# File operations IPC
 
 ## Introduction
-This document provides comprehensive documentation for file operation IPC handlers focused on importing and reading email lists. It covers the 'import-email-list' dialog handler and the 'read-email-list-file' parser, including dialog configuration, supported file formats, parsing logic, path resolution, error handling, return value schemas, and security considerations. It also includes practical examples for batch processing, duplicate removal, and format conversion.
+This page provides detailed documentation for file operation IPC handlers focused on importing and reading email lists. It covers the 'import-email-list' dialog handler and the 'read-email-list-file' parser, including dialog configuration, supported file formats, parsing logic, path resolution, error handling, return value schemas, and security considerations. It also includes practical examples for batch processing, duplicate removal, and format conversion.
 
-## Project Structure
+## Project structure
 The file operation IPC handlers are implemented in the Electron main process and exposed to the renderer via a secure preload bridge. The frontend component demonstrates usage of these handlers to import and parse email lists.
 
 ```mermaid
@@ -40,17 +18,7 @@ FE --> |"invoke 'read-email-list-file'"| Preload
 FE --> |"progress events"| FE
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L264-L318)
-- [preload.js](file://electron/src/electron/preload.js#L13-L21)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L109-L147)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-
-## Core Components
+## Core components
 - IPC handler 'import-email-list': Opens a native file open dialog configured to accept text and CSV files, returning a structured result object containing the selected file paths and cancellation status.
 - IPC handler 'read-email-list-file': Reads the content of a given file path, parses CSV files using flexible column detection, and processes text files by extracting lines containing '@'. Returns a newline-delimited string of validated email addresses.
 
@@ -61,11 +29,7 @@ Key responsibilities:
 - Text file processing and email validation
 - Error propagation and handling
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L264-L318)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L109-L147)
-
-## Architecture Overview
+## Architecture overview
 The file operation IPC flow connects the frontend UI to the Electron main process, which interacts with the file system and parsers.
 
 ```mermaid
@@ -98,14 +62,9 @@ end
 Bridge-->>UI : parsed emails
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L264-L318)
-- [preload.js](file://electron/src/electron/preload.js#L13-L21)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L109-L147)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### IPC Handler: import-email-list
+### IPC handler: import-email-list
 Purpose:
 - Presents a native file open dialog to select an email list file.
 - Filters accepted file types to text and CSV files plus all files.
@@ -128,12 +87,7 @@ Usage in frontend:
 Notes:
 - The handler returns the raw dialog result, allowing the renderer to decide how to process the file.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L264-L276)
-- [preload.js](file://electron/src/electron/preload.js#L13-L15)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L109-L147)
-
-### IPC Handler: read-email-list-file
+### IPC handler: read-email-list-file
 Purpose:
 - Reads and parses the content of a selected email list file.
 - Supports CSV and text formats with flexible email detection.
@@ -160,32 +114,19 @@ Path resolution:
 - Relies on the filePath provided by the caller (import-email-list result).
 - No additional path normalization is performed in the handler.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L278-L318)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L126-L142)
-
-### Frontend Integration
+### Frontend integration
 - The frontend component invokes import-email-list, checks for cancellation, extracts the first file path, and calls read-email-list-file.
 - Displays the count of imported email addresses and handles errors gracefully.
 
 Validation and processing:
 - The frontend performs additional email format validation using a regex before sending emails.
-- This complements the handler’s basic '@' check.
+- This complements the handler's basic '@' check.
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L109-L147)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L160-L226)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L43-L83)
-
-### Supporting Utilities
+### Supporting utilities
 - Development environment detection is available for logging and conditional behavior.
 - The project README documents security features including context isolation and secure IPC.
 
-**Section sources**
-- [utils.js](file://electron/src/electron/utils.js#L1-L5)
-- [README.md](file://README.md#L333-L341)
-
-## Dependency Analysis
+## Dependency analysis
 The file operation handlers depend on:
 - Electron dialog API for file selection
 - Node.js fs module for file reading
@@ -201,29 +142,19 @@ M --> F["fs"]
 M --> C["csv-parser"]
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-
-## Performance Considerations
+## Performance considerations
 - Streaming CSV parsing: The handler streams CSV data to avoid loading entire files into memory, improving performance for large datasets.
 - Text file processing: Simple line-by-line processing with minimal allocations.
 - Frontend validation: Regex-based validation occurs after parsing to reduce unnecessary network calls.
 
 Recommendations:
-- Prefer CSV format for structured data to leverage flexible column detection.
+- Prefer CSV format for structured data to use flexible column detection.
 - For very large files, consider chunked processing and progress reporting.
 - Ensure adequate delay between operations to avoid overwhelming the system.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Dialog canceled or no file selected:
   - The handler returns canceled true and empty filePaths. The frontend should check these values before proceeding.
@@ -239,12 +170,5 @@ Security considerations:
 - Input sanitization is handled by the frontend email regex validation prior to sending emails.
 - Rate limiting is implemented in email handlers to prevent abuse.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L264-L318)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L109-L147)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L160-L226)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L43-L83)
-- [README.md](file://README.md#L333-L341)
-
 ## Conclusion
-The file operation IPC handlers provide a robust foundation for importing and parsing email lists. The 'import-email-list' dialog offers configurable filters, while 'read-email-list-file' delivers flexible CSV parsing and text processing with clear return schemas. Combined with frontend validation and secure IPC, these handlers support reliable batch email list processing workflows.
+The file operation IPC handlers provide a reliable foundation for importing and parsing email lists. The 'import-email-list' dialog offers configurable filters, while 'read-email-list-file' delivers flexible CSV parsing and text processing with clear return schemas. Combined with frontend validation and secure IPC, these handlers support reliable batch email list processing workflows.

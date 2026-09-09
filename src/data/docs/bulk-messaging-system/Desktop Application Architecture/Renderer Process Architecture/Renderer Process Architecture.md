@@ -1,38 +1,9 @@
-# Renderer Process Architecture
-
-<cite>
-**Referenced Files in This Document**
-- [main.jsx](file://electron/src/ui/main.jsx)
-- [App.jsx](file://electron/src/ui/App.jsx)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx)
-- [preload.js](file://electron/src/electron/preload.js)
-- [main.js](file://electron/src/electron/main.js)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [pyodide.js](file://electron/src/utils/pyodide.js)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Renderer process architecture
 
 ## Introduction
-This document explains the React renderer process architecture for the bulk messaging application. It traces the component hierarchy from the entry points, documents the central orchestrator BulkMailer, and details state management, component communication, Electron IPC integration, UI rendering pipeline, lifecycle management, performance optimizations, and separation of concerns between UI and business logic.
+This page explains the React renderer process architecture for the bulk messaging application. It traces the component hierarchy from the entry points, documents the central orchestrator BulkMailer, and details state management, component communication, Electron IPC integration, UI rendering pipeline, lifecycle management, performance optimizations, and separation of concerns between UI and business logic.
 
-## Project Structure
+## Project structure
 The renderer process is organized around a small React application bootstrapped in Electron. The UI is composed of a single-page layout with a sidebar navigation, top bar, and tabbed content areas for Gmail, SMTP, and WhatsApp messaging. Business logic is delegated to Electron main process handlers via IPC.
 
 ```mermaid
@@ -73,27 +44,7 @@ WF --> PY
 PY --> PP
 ```
 
-**Diagram sources**
-- [main.jsx](file://electron/src/ui/main.jsx#L1-L11)
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx#L1-L90)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx#L1-L24)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py#L1-L61)
-
-**Section sources**
-- [main.jsx](file://electron/src/ui/main.jsx#L1-L11)
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-
-## Core Components
+## Core components
 - main.jsx: Creates the React root and renders the App component.
 - App.jsx: Minimal wrapper that renders the central BulkMailer component.
 - BulkMailer.jsx: Central orchestrator managing shared state, tab routing, and Electron IPC interactions. It wires UI forms to backend services and manages real-time updates from WhatsApp events.
@@ -109,21 +60,7 @@ PY --> PP
 - pyodide.js: Loads Pyodide and executes Python phone number parsing logic.
 - parse_manual_numbers.py: Parses manual phone numbers and normalizes them.
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx#L1-L90)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx#L1-L24)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py#L1-L61)
-
-## Architecture Overview
+## Architecture overview
 The renderer process follows a unidirectional data flow:
 - UI components render based on React state.
 - User actions trigger BulkMailer methods that call electronAPI (IPC invocations).
@@ -147,15 +84,9 @@ E-->>R : Promise resolved with results
 R->>R : Update state (results, isSending=false)
 ```
 
-**Diagram sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-- [preload.js](file://electron/src/electron/preload.js#L8-L8)
-- [main.js](file://electron/src/electron/main.js#L105-L105)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Component Hierarchy and Communication
+### Component hierarchy and communication
 - Entry points: main.jsx creates the root; App.jsx renders BulkMailer.
 - BulkMailer composes Sidebar, TopBar, and conditionally renders the active form (WhatsAppForm, GmailForm, SMTPForm).
 - Forms receive props for state and callbacks, enabling centralized state management in BulkMailer.
@@ -254,25 +185,7 @@ BulkMailer --> GmailForm
 BulkMailer --> SMTPForm
 ```
 
-**Diagram sources**
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx#L1-L90)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx#L1-L24)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-
-**Section sources**
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L417-L480)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx#L41-L87)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx#L1-L24)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-
-### State Management Patterns
+### State management patterns
 - Centralized state in BulkMailer: activeTab, Gmail auth flag, email list, subject, message, delay, SMTP config, sending flags, and results arrays.
 - Form components receive state and setters as props, enabling unidirectional data flow.
 - WhatsApp-specific state (contacts, message, status, QR, sending, results) is isolated within BulkMailer but surfaced to the form.
@@ -283,11 +196,7 @@ Key patterns:
 - useEffect for initialization and event subscriptions (WhatsApp status, QR, send status).
 - Callback props for actions, keeping UI pure and testable.
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L9-L58)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L18-L30)
-
-### Electron IPC Integration
+### Electron IPC integration
 - Preload bridge exposes electronAPI with typed methods and event listeners.
 - Renderer invokes ipcRenderer.invoke for request/response flows (authentication, sending, file import).
 - Main process registers ipcMain.handle for each capability and emits events for streaming updates.
@@ -320,20 +229,7 @@ MP-->>PB : {results}
 PB-->>UI : Promise resolved
 ```
 
-**Diagram sources**
-- [preload.js](file://electron/src/electron/preload.js#L5-L11)
-- [main.js](file://electron/src/electron/main.js#L103-L108)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L110)
-
-### UI Rendering Pipeline and Lifecycle
+### UI rendering pipeline and lifecycle
 - Bootstrapping: main.jsx mounts App; App renders BulkMailer.
 - Mounting effects: BulkMailer checks Gmail auth and subscribes to WhatsApp events on mount.
 - Event cleanup: Effects return removal functions to avoid leaks.
@@ -374,22 +270,7 @@ UpdateEmails --> Render
 UserAction --> Render
 ```
 
-**Diagram sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L60-L107)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L221-L261)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L263-L321)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L323-L415)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L342-L371)
-
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L342-L371)
-
-### WhatsApp Integration Details
+### WhatsApp integration details
 - QR generation: Main process converts QR string to data URL and sends to renderer.
 - Status updates: Ready, authenticated, disconnected, and error statuses are broadcast.
 - Message sending: Iterates contacts, checks registration, sends with delays, and emits per-contact progress.
@@ -417,22 +298,7 @@ PB-->>BM : Resolved
 BM->>UI : Update waResults/waStatus
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L263-L415)
-- [preload.js](file://electron/src/electron/preload.js#L23-L39)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L26-L33)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py#L22-L54)
-
-### Gmail and SMTP Integration Details
+### Gmail and SMTP integration details
 - Gmail:
   - OAuth2 flow with BrowserWindow and redirect handling.
   - Stores tokens via electron-store; verifies presence before sending.
@@ -460,19 +326,7 @@ O --> P["emit 'email-progress' events"]
 P --> Q["Return {results}"]
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L110)
-- [preload.js](file://electron/src/electron/preload.js#L5-L11)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L110)
-
-## Dependency Analysis
+## Dependency analysis
 - UI depends on BulkMailer for state and IPC orchestration.
 - Forms depend on props passed by BulkMailer; they remain presentation-focused.
 - Preload bridge mediates all IPC calls; main.js centralizes handler registration.
@@ -490,21 +344,7 @@ UI --> PY["pyodide.js"]
 PY --> PP["parse_manual_numbers.py"]
 ```
 
-**Diagram sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py#L1-L61)
-
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-
-## Performance Considerations
+## Performance considerations
 - Rate limiting: Both Gmail and SMTP handlers introduce delays between messages to respect provider limits.
 - Streaming progress: email-progress events keep UI responsive and informed during long operations.
 - Conditional rendering: Only the active tab is mounted, reducing DOM and memory overhead.
@@ -520,7 +360,7 @@ Recommendations:
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Electron API not available: Ensure preload bridge is loaded and contextIsolation is enabled.
 - Gmail authentication failures: Verify environment variables and network access for OAuth redirect.
@@ -532,13 +372,6 @@ Diagnostics:
 - Check console logs for error messages from handlers.
 - Monitor email-progress and WhatsApp status events.
 - Verify file import filters and formats (CSV/TXT).
-
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L60-L107)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L110)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L5-L24)
 
 ## Conclusion
 The renderer process architecture centers on BulkMailer as the single source of truth for state and IPC coordination. React components remain presentation-focused, communicating through props and callbacks. Electron IPC cleanly separates UI from business logic, with handlers encapsulating Gmail, SMTP, and WhatsApp operations. The design emphasizes maintainability, scalability, and user feedback via real-time progress updates.

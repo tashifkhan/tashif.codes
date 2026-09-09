@@ -1,36 +1,9 @@
-# WhatsApp Integration
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://README.md)
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js)
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js)
-- [electron/src/utils/pyodide.js](file://electron/src/utils/pyodide.js)
-- [python-backend/app.py](file://python-backend/app.py)
-- [python-backend/extract_contacts.py](file://python-backend/extract_contacts.py)
-- [python-backend/parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py)
-- [python-backend/validate_number.py](file://python-backend/validate_number.py)
-- [electron/package.json](file://electron/package.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Security Considerations](#security-considerations)
-10. [Conclusion](#conclusion)
+# WhatsApp integration
 
 ## Introduction
-This document explains the WhatsApp Web integration for bulk messaging, focusing on QR code authentication, session and connection lifecycle, contact import from CSV, Excel, and text files, message composition with personalization, bulk sending with configurable delays, and real-time status monitoring. It also covers troubleshooting and security best practices.
+This page explains the WhatsApp Web integration for bulk messaging, focusing on QR code authentication, session and connection lifecycle, contact import from CSV, Excel, and text files, message composition with personalization, bulk sending with configurable delays, and real-time status monitoring. It also covers troubleshooting and security best practices.
 
-## Project Structure
+## Project structure
 The integration spans three layers:
 - Electron renderer (React UI) for user interaction and status display
 - Electron main process for WhatsApp Web.js client lifecycle and IPC
@@ -65,39 +38,14 @@ PYAPP --> PARSE
 PYAPP --> VALID
 ```
 
-**Diagram sources**
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L1-L371)
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [python-backend/app.py](file://python-backend/app.py#L1-L378)
-- [python-backend/extract_contacts.py](file://python-backend/extract_contacts.py#L1-L177)
-- [python-backend/parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L1-L61)
-- [python-backend/validate_number.py](file://python-backend/validate_number.py#L1-L27)
-
-**Section sources**
-- [README.md](file://README.md#L1-L455)
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L1-L371)
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [python-backend/app.py](file://python-backend/app.py#L1-L378)
-
-## Core Components
+## Core components
 - WhatsAppForm: UI for connecting, scanning QR, managing contacts, composing messages, and viewing activity logs.
 - BulkMailer: Orchestrates WhatsApp lifecycle, listens to status events, and coordinates IPC with the main process.
 - Electron Main: Initializes the WhatsApp client, handles QR generation, connection events, and bulk sending loop with delays.
 - Preload Bridge: Exposes secure IPC methods to the renderer for WhatsApp operations.
 - Python Backend: Provides REST endpoints for contact import and parsing, including CSV/Excel/Text support and number validation.
 
-**Section sources**
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L110-L213)
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js#L23-L39)
-- [python-backend/app.py](file://python-backend/app.py#L232-L280)
-
-## Architecture Overview
+## Architecture overview
 End-to-end flow for authentication and sending:
 
 ```mermaid
@@ -145,15 +93,9 @@ IPC-->>BM : resolved promise
 BM-->>UI : update status and results
 ```
 
-**Diagram sources**
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L137-L173)
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L263-L288)
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js#L23-L39)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L110-L213)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### QR Code Authentication and Session Lifecycle
+### QR code authentication and session lifecycle
 - The main process creates a Client with LocalAuth and emits QR codes as data URLs.
 - The renderer displays QR until authentication succeeds or errors occur.
 - Logout triggers explicit client logout and cleanup of cached auth/session files.
@@ -173,18 +115,9 @@ Disconnected --> Cleanup["Cleanup cache and auth dirs"]
 Cleanup --> End(["Idle/Reconnect"])
 ```
 
-**Diagram sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L110-L177)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L320-L340)
-
-**Section sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L110-L177)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L320-L340)
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L176-L278)
-
-### Contact Import and Parsing
+### Contact import and parsing
 - CSV/Excel/Text import is supported via two paths:
-  - Python backend REST endpoints for robust parsing and validation
+  - Python backend REST endpoints for reliable parsing and validation
   - Manual text parsing in the renderer using Pyodide for quick local processing
 - The renderer supports CSV/Text locally; Excel is noted as not yet supported in this UI path.
 
@@ -203,25 +136,9 @@ Manual --> Parse["parse_manual_numbers()"]
 Parse --> ReturnParsed["Return contacts array"]
 ```
 
-**Diagram sources**
-- [python-backend/app.py](file://python-backend/app.py#L232-L280)
-- [python-backend/extract_contacts.py](file://python-backend/extract_contacts.py#L25-L81)
-- [python-backend/extract_contacts.py](file://python-backend/extract_contacts.py#L84-L118)
-- [python-backend/extract_contacts.py](file://python-backend/extract_contacts.py#L121-L157)
-- [python-backend/parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L54)
-- [electron/src/utils/pyodide.js](file://electron/src/utils/pyodide.js#L26-L33)
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L323-L366)
-
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L232-L280)
-- [python-backend/extract_contacts.py](file://python-backend/extract_contacts.py#L25-L157)
-- [python-backend/parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L54)
-- [electron/src/utils/pyodide.js](file://electron/src/utils/pyodide.js#L26-L33)
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L323-L366)
-
-### Message Composition and Personalization
+### Message composition and personalization
 - Users compose messages in the UI and can use a placeholder to personalize with contact names.
-- During sending, the message is personalized by replacing the placeholder with either the contact’s name or a default value.
+- During sending, the message is personalized by replacing the placeholder with either the contact's name or a default value.
 
 ```mermaid
 flowchart TD
@@ -235,15 +152,7 @@ Next --> |Yes| Iterate
 Next --> |No| Done["Complete"]
 ```
 
-**Diagram sources**
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L447-L489)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L179-L213)
-
-**Section sources**
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L447-L489)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L179-L213)
-
-### Bulk Sending Implementation and Delays
+### Bulk sending implementation and delays
 - The main process sends messages sequentially to each contact.
 - It checks registration status before sending and applies delays to reduce spam risk.
 - Real-time progress is emitted via IPC to the renderer for display.
@@ -271,15 +180,7 @@ Main-->>IPC : summary result
 IPC-->>BM : resolve promise
 ```
 
-**Diagram sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L179-L213)
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L368-L415)
-
-**Section sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L179-L213)
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L368-L415)
-
-### Real-time Status Monitoring
+### Real-time status monitoring
 - The renderer subscribes to three event channels:
   - Connection status updates
   - QR code data URL updates
@@ -296,17 +197,7 @@ QR --> ShowQR["Render QR image"]
 SendStatus --> AppendLog["Append to results/log"]
 ```
 
-**Diagram sources**
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js#L28-L39)
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L512-L601)
-
-**Section sources**
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js#L28-L39)
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L512-L601)
-
-## Dependency Analysis
+## Dependency analysis
 Key runtime dependencies for the integration:
 - whatsapp-web.js: Core WhatsApp Web client and authentication
 - qrcode: QR code rendering for the UI
@@ -322,23 +213,13 @@ UI --> PY["Python Backend (Flask)"]
 PY --> PANDAS["pandas/openpyxl/xlrd"]
 ```
 
-**Diagram sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L8-L11)
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [python-backend/app.py](file://python-backend/app.py#L1-L11)
-- [electron/package.json](file://electron/package.json#L20-L31)
-
-**Section sources**
-- [electron/package.json](file://electron/package.json#L20-L31)
-- [python-backend/app.py](file://python-backend/app.py#L1-L11)
-
-## Performance Considerations
+## Performance considerations
 - Sequential sending with delays reduces rate limits and improves reliability.
 - Using isRegisteredUser avoids unnecessary send attempts and reduces error noise.
 - QR generation occurs only once per session; caching and reuse minimize overhead.
 - Consider batching contacts and adding jitter to delays for natural pacing.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - QR code not loading
   - Refresh the client and retry; the UI provides a retry button when QR fails to load.
@@ -353,23 +234,11 @@ Common issues and resolutions:
   - Verify file format and encoding; supported formats include CSV, Excel (.xlsx/.xls), and Text.
   - Ensure phone numbers are valid and standardized before sending.
 
-**Section sources**
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L216-L251)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L162-L169)
-- [python-backend/app.py](file://python-backend/app.py#L232-L280)
-- [README.md](file://README.md#L412-L447)
-
-## Security Considerations
+## Security considerations
 - Context isolation and secure IPC prevent direct Node.js access in the renderer.
 - LocalAuth stores session securely; logout clears cached auth files.
 - Input validation and sanitization are applied in the Python backend for numbers and contact parsing.
 - Use strong authentication for external services (Gmail/SMTP) and rotate credentials regularly.
 
-**Section sources**
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L343-L371)
-- [python-backend/validate_number.py](file://python-backend/validate_number.py#L6-L19)
-- [README.md](file://README.md#L333-L341)
-
 ## Conclusion
-The integration provides a robust, user-friendly pathway to authenticate via QR, manage contacts, compose personalized messages, and send them reliably with real-time feedback. The architecture cleanly separates concerns across renderer, main process, and Python utilities, enabling maintainability and scalability.
+The integration provides a reliable, user-friendly pathway to authenticate via QR, manage contacts, compose personalized messages, and send them reliably with real-time feedback. The architecture cleanly separates concerns across renderer, main process, and Python utilities, enabling maintainability and scalability.

@@ -1,35 +1,7 @@
-# Utility Components
-
-<cite>
-**Referenced Files in This Document**
-- [auth-guard.tsx](file://website/components/auth-guard.tsx)
-- [mode-toggle.tsx](file://website/components/mode-toggle.tsx)
-- [nav-header.tsx](file://website/components/nav-header.tsx)
-- [component-example.tsx](file://website/components/component-example.tsx)
-- [example.tsx](file://website/components/example.tsx)
-- [auth-context.tsx](file://website/lib/auth-context.tsx)
-- [providers.tsx](file://website/lib/providers.tsx)
-- [layout.tsx](file://website/app/layout.tsx)
-- [login/page.tsx](file://website/app/notice-reminders/login/page.tsx)
-- [dashboard/page.tsx](file://website/app/notice-reminders/dashboard/page.tsx)
-- [page.tsx](file://website/app/page.tsx)
-- [types.ts](file://website/lib/types.ts)
-- [api.ts](file://website/lib/api.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Utility components
 
 ## Introduction
-This document explains the utility and helper components that support the overall application functionality. It focuses on:
+This page explains the utility and helper components that support the overall application functionality. It focuses on:
 - AuthGuard: route protection and authentication state management
 - ModeToggle: dark/light/system theme switching
 - NavHeader: navigation and branding
@@ -37,7 +9,7 @@ This document explains the utility and helper components that support the overal
 
 It describes responsibilities, integration patterns with the authentication system, props and events, and how these components contribute to user experience and application architecture.
 
-## Project Structure
+## Project structure
 The utility components live under website/components and integrate with the authentication provider and theme provider via website/lib/providers. The layout composes NavHeader globally, while AuthGuard wraps protected routes.
 
 ```mermaid
@@ -66,34 +38,13 @@ GUARD --> AUTHCTX
 EXAMPLE --> EXWRAPPER
 ```
 
-**Diagram sources**
-- [layout.tsx](file://website/app/layout.tsx#L81-L98)
-- [providers.tsx](file://website/lib/providers.tsx#L10-L40)
-- [auth-context.tsx](file://website/lib/auth-context.tsx#L21-L88)
-- [nav-header.tsx](file://website/components/nav-header.tsx#L10-L139)
-- [mode-toggle.tsx](file://website/components/mode-toggle.tsx#L15-L42)
-- [auth-guard.tsx](file://website/components/auth-guard.tsx#L8-L27)
-- [component-example.tsx](file://website/components/component-example.tsx#L70-L77)
-- [example.tsx](file://website/components/example.tsx#L3-L17)
-
-**Section sources**
-- [layout.tsx](file://website/app/layout.tsx#L81-L98)
-- [providers.tsx](file://website/lib/providers.tsx#L10-L40)
-
-## Core Components
+## Core components
 - AuthGuard: Protects routes by checking authentication state and redirecting unauthenticated users to the login page while rendering a loading indicator during initialization.
 - ModeToggle: Provides theme switching (light, dark, system) using next-themes and UI dropdown primitives.
 - NavHeader: Implements responsive navigation with logo, desktop links, action buttons, and mobile menu, integrating ModeToggle and scroll-aware styling.
 - Example components: Provide a development reference and showcase of UI primitives for cards, forms, dialogs, and menus.
 
-**Section sources**
-- [auth-guard.tsx](file://website/components/auth-guard.tsx#L8-L27)
-- [mode-toggle.tsx](file://website/components/mode-toggle.tsx#L15-L42)
-- [nav-header.tsx](file://website/components/nav-header.tsx#L10-L139)
-- [component-example.tsx](file://website/components/component-example.tsx#L70-L77)
-- [example.tsx](file://website/components/example.tsx#L3-L17)
-
-## Architecture Overview
+## Architecture overview
 The authentication and theming systems are initialized at the root level and consumed by utility components and pages.
 
 ```mermaid
@@ -117,14 +68,7 @@ Guard-->>Page : Render children
 end
 ```
 
-**Diagram sources**
-- [layout.tsx](file://website/app/layout.tsx#L81-L98)
-- [providers.tsx](file://website/lib/providers.tsx#L24-L37)
-- [auth-context.tsx](file://website/lib/auth-context.tsx#L21-L88)
-- [auth-guard.tsx](file://website/components/auth-guard.tsx#L8-L27)
-- [dashboard/page.tsx](file://website/app/notice-reminders/dashboard/page.tsx#L17-L49)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### AuthGuard
 Responsibilities:
@@ -165,15 +109,6 @@ Redirect --> End
 RenderChildren --> End
 ```
 
-**Diagram sources**
-- [auth-guard.tsx](file://website/components/auth-guard.tsx#L8-L27)
-
-**Section sources**
-- [auth-guard.tsx](file://website/components/auth-guard.tsx#L8-L27)
-- [auth-context.tsx](file://website/lib/auth-context.tsx#L90-L96)
-- [providers.tsx](file://website/lib/providers.tsx#L24-L37)
-- [dashboard/page.tsx](file://website/app/notice-reminders/dashboard/page.tsx#L17-L49)
-
 ### ModeToggle
 Responsibilities:
 - Allow users to switch themes: light, dark, or system preference
@@ -204,14 +139,6 @@ Toggle->>Theme : setTheme("light"|"dark"|"system")
 Theme-->>UI : Apply theme class to document
 UI-->>User : Visual theme update
 ```
-
-**Diagram sources**
-- [mode-toggle.tsx](file://website/components/mode-toggle.tsx#L15-L42)
-
-**Section sources**
-- [mode-toggle.tsx](file://website/components/mode-toggle.tsx#L15-L42)
-- [providers.tsx](file://website/lib/providers.tsx#L26-L36)
-- [nav-header.tsx](file://website/components/nav-header.tsx#L72-L72)
 
 ### NavHeader
 Responsibilities:
@@ -252,18 +179,10 @@ SlideDown --> Actions["Render actions and ModeToggle"]
 Desktop --> Actions
 ```
 
-**Diagram sources**
-- [nav-header.tsx](file://website/components/nav-header.tsx#L10-L139)
-
-**Section sources**
-- [nav-header.tsx](file://website/components/nav-header.tsx#L10-L139)
-- [layout.tsx](file://website/app/layout.tsx#L81-L98)
-- [mode-toggle.tsx](file://website/components/mode-toggle.tsx#L15-L42)
-
-### Example Components (Development Reference)
+### Example components (development reference)
 Responsibilities:
 - Demonstrate UI primitives usage for cards, forms, alerts, and dropdowns
-- Serve as a living reference for component composition and styling
+- Are a living reference for component composition and styling
 
 Composition:
 - ComponentExample orchestrates multiple examples
@@ -274,11 +193,7 @@ Usage:
 - Used in development and documentation contexts to show component behavior
 - Demonstrates nested components like AlertDialog inside Card
 
-**Section sources**
-- [component-example.tsx](file://website/components/component-example.tsx#L70-L77)
-- [example.tsx](file://website/components/example.tsx#L3-L17)
-
-## Dependency Analysis
+## Dependency analysis
 The components depend on shared libraries and providers:
 
 ```mermaid
@@ -295,31 +210,13 @@ TYPES["Types (types.ts)"] --> AUTHCTX
 TYPES --> API
 ```
 
-**Diagram sources**
-- [auth-context.tsx](file://website/lib/auth-context.tsx#L21-L88)
-- [auth-guard.tsx](file://website/components/auth-guard.tsx#L8-L27)
-- [login/page.tsx](file://website/app/notice-reminders/login/page.tsx#L19-L32)
-- [dashboard/page.tsx](file://website/app/notice-reminders/dashboard/page.tsx#L17-L49)
-- [providers.tsx](file://website/lib/providers.tsx#L24-L37)
-- [mode-toggle.tsx](file://website/components/mode-toggle.tsx#L15-L42)
-- [nav-header.tsx](file://website/components/nav-header.tsx#L10-L139)
-- [layout.tsx](file://website/app/layout.tsx#L81-L98)
-- [api.tsx](file://website/lib/api.ts#L149-L181)
-- [types.ts](file://website/lib/types.ts#L65-L97)
-
-**Section sources**
-- [auth-context.tsx](file://website/lib/auth-context.tsx#L21-L88)
-- [providers.tsx](file://website/lib/providers.tsx#L24-L37)
-- [api.tsx](file://website/lib/api.ts#L149-L181)
-- [types.ts](file://website/lib/types.ts#L65-L97)
-
-## Performance Considerations
+## Performance considerations
 - AuthGuard defers rendering until authentication state resolves to avoid unnecessary re-renders and flicker.
 - NavHeader uses passive scroll listeners and minimal state updates to keep scrolling smooth.
 - ModeToggle relies on next-themes for efficient theme switching without heavy computations.
 - Providers configure React Query defaults to reduce network overhead and improve caching behavior.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - AuthGuard redirect loop on login:
   - Ensure the login page does not require authentication and guards against authenticated users.
@@ -331,17 +228,10 @@ Common issues and resolutions:
 - Navigation not responsive:
   - Verify mobileOpen state toggles and Tailwind classes apply correctly on small screens.
 
-**Section sources**
-- [auth-guard.tsx](file://website/components/auth-guard.tsx#L8-L27)
-- [login/page.tsx](file://website/app/notice-reminders/login/page.tsx#L19-L32)
-- [providers.tsx](file://website/lib/providers.tsx#L24-L37)
-- [mode-toggle.tsx](file://website/components/mode-toggle.tsx#L15-L42)
-- [nav-header.tsx](file://website/components/nav-header.tsx#L10-L139)
-
 ## Conclusion
 These utility components form the backbone of user experience and application structure:
 - AuthGuard ensures secure access to protected areas
-- ModeToggle enhances accessibility and personalization
+- ModeToggle improves accessibility and personalization
 - NavHeader delivers consistent navigation and branding across contexts
 - Example components provide a practical reference for building UIs
 

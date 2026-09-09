@@ -1,35 +1,9 @@
-# IPC Handlers
-
-<cite>
-**Referenced Files in This Document**
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx)
-- [package.json](file://electron/package.json)
-- [utils.js](file://electron/src/electron/utils.js)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Security Considerations](#security-considerations)
-10. [Conclusion](#conclusion)
+# IPC handlers
 
 ## Introduction
-This document provides comprehensive coverage of the Inter-Process Communication (IPC) handler system used in the application. It documents all registered IPC handlers, including WhatsApp client initialization, message sending, contact import, and logout functionality. It also details the Gmail and SMTP IPC handlers for external service integration. The document explains the event-driven communication pattern between the main and renderer processes, parameter passing, return value handling, and error propagation mechanisms. Examples of successful operations and error scenarios are included, along with security implications and data validation at process boundaries.
+This page provides detailed coverage of the Inter-Process Communication (IPC) handler system used in the application. It documents all registered IPC handlers, including WhatsApp client initialization, message sending, contact import, and logout functionality. It also details the Gmail and SMTP IPC handlers for external service integration. The document explains the event-driven communication pattern between the main and renderer processes, parameter passing, return value handling, and error propagation mechanisms. Examples of successful operations and error scenarios are included, along with security implications and data validation at process boundaries.
 
-## Project Structure
+## Project structure
 The IPC system spans three primary areas:
 - Main process handlers: Centralized in the main process, exposing capabilities to the renderer via ipcMain.handle.
 - Preload bridge: Exposes a controlled API surface to the renderer via contextBridge.
@@ -58,17 +32,7 @@ Main --> GH
 Main --> SH
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L108)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-
-## Core Components
+## Core components
 This section enumerates all registered IPC handlers and their responsibilities.
 
 - Gmail handlers
@@ -95,20 +59,7 @@ This section enumerates all registered IPC handlers and their responsibilities.
   - onWhatsAppSendStatus: Receives real-time send status updates.
   - onProgress: Receives email progress events.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-- [main.js](file://electron/src/electron/main.js#L342-L371)
-- [main.js](file://electron/src/electron/main.js#L264-L276)
-- [main.js](file://electron/src/electron/main.js#L278-L318)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-
-## Architecture Overview
+## Architecture overview
 The IPC architecture follows an event-driven model:
 - Renderer process invokes preload APIs (ipcRenderer.invoke).
 - Main process handles requests via ipcMain.handle and performs operations.
@@ -131,14 +82,9 @@ P-->>R : Promise resolved
 Note over R,M : Real-time events via onWhatsAppStatus/onWhatsAppQR/onWhatsAppSendStatus
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### WhatsApp IPC Handlers
+### WhatsApp IPC handlers
 The WhatsApp handlers orchestrate client lifecycle, authentication, messaging, and cleanup.
 
 - whatsapp-start-client
@@ -185,19 +131,7 @@ M->>P : emit("whatsapp-status", "Client is ready!")
 P-->>BM : Promise resolved
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [preload.js](file://electron/src/electron/preload.js#L23-L39)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L154-L172)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-- [main.js](file://electron/src/electron/main.js#L342-L371)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-
-### Gmail IPC Handlers
+### Gmail IPC handlers
 The Gmail handlers manage OAuth2 authentication and email sending.
 
 - gmail-auth
@@ -234,14 +168,7 @@ Exchange --> StoreToken["Store token in electron-store"]
 StoreToken --> ReturnOK["Return {success: true}"]
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-
-### SMTP IPC Handlers
+### SMTP IPC handlers
 The SMTP handler manages SMTP configuration, connection verification, and email sending.
 
 - smtp-send
@@ -250,10 +177,7 @@ The SMTP handler manages SMTP configuration, connection verification, and email 
   - Return: { success: boolean, results[] }.
   - Events emitted: email-progress.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-### File Operations IPC Handlers
+### File operations IPC handlers
 These handlers support importing and parsing email lists.
 
 - import-email-list
@@ -266,11 +190,7 @@ These handlers support importing and parsing email lists.
   - Parameters: filePath.
   - Return: Promise resolving to newline-separated emails or throws on error.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L264-L276)
-- [main.js](file://electron/src/electron/main.js#L278-L318)
-
-### Renderer Integration and Event Handling
+### Renderer integration and event handling
 The renderer integrates with IPC through the preload bridge and updates UI state accordingly.
 
 - Preload API exposure
@@ -310,22 +230,7 @@ M-->>P : {success : true, results}
 P-->>BM : Promise resolved
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L261)
-
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L261)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-
-## Dependency Analysis
+## Dependency analysis
 The IPC handlers depend on external libraries and Electron APIs.
 
 ```mermaid
@@ -346,17 +251,7 @@ Main --> FS["fs"]
 Main --> CSV["csv-parser"]
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L1-L13)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L6)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L4)
-- [package.json](file://electron/package.json#L20-L31)
-
-**Section sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [main.js](file://electron/src/electron/main.js#L1-L13)
-
-## Performance Considerations
+## Performance considerations
 - Rate limiting: Both Gmail and SMTP handlers implement configurable delays between sends to avoid rate limits and reduce load.
 - Asynchronous processing: Long-running operations (initialization, authentication, file parsing) are handled asynchronously to keep the UI responsive.
 - Event-driven updates: Real-time progress events minimize polling and improve perceived performance.
@@ -364,7 +259,7 @@ Main --> CSV["csv-parser"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 
 - WhatsApp authentication failures
@@ -385,26 +280,14 @@ Common issues and resolutions:
 - File import errors
   - Symptoms: No contacts loaded, parsing errors.
   - Causes: Unsupported file types, malformed CSV/ TXT.
-  - Resolution: Use supported formats (.csv, .txt), ensure correct column names or comma separation.
+  - Resolution: Use supported formats (.csv,.txt), ensure correct column names or comma separation.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L137-L169)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L63-L125)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L47-L48)
-- [main.js](file://electron/src/electron/main.js#L228-L261)
-
-## Security Considerations
+## Security considerations
 - Context isolation: The preload script uses contextBridge to expose a minimal API surface, preventing direct Node.js access from the renderer.
 - Environment validation: Gmail OAuth requires environment variables for client credentials; missing variables cause immediate failure.
 - Token storage: Tokens are stored securely via electron-store; SMTP passwords are intentionally not saved for security.
 - Input validation: Form components validate email formats and required fields before invoking IPC handlers.
 - Error containment: Errors are returned as structured objects rather than thrown exceptions, reducing information leakage.
 
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L20-L29)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L22-L31)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L149-L179)
-
 ## Conclusion
-The IPC handler system provides a robust, event-driven architecture for integrating external services and managing client lifecycles. WhatsApp handlers offer a complete authentication and messaging pipeline with real-time feedback. Gmail and SMTP handlers encapsulate external service complexities while maintaining clear error propagation and progress reporting. The preload bridge ensures secure, controlled access from the renderer, and form components deliver intuitive user experiences with comprehensive validation and error handling.
+The IPC handler system provides a reliable, event-driven architecture for integrating external services and managing client lifecycles. WhatsApp handlers offer a complete authentication and messaging pipeline with real-time feedback. Gmail and SMTP handlers encapsulate external service complexities while maintaining clear error propagation and progress reporting. The preload bridge ensures secure, controlled access from the renderer, and form components deliver intuitive user experiences with detailed validation and error handling.

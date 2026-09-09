@@ -276,7 +276,7 @@ const pipeline = [
 					<button
 						type="button"
 						data-copy-repo-url
-						data-haptic
+						data-haptic="manual"
 						data-url={repoUrl}
 						aria-label="Copy repo URL"
 						class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent transition-colors shrink-0"
@@ -555,12 +555,16 @@ const pipeline = [
 </PageShell>
 
 <script>
+	import { trigger } from "@/lib/haptics";
 	document.addEventListener("astro:page-load", () => {
 		document.querySelectorAll<HTMLElement>("[data-project-card]").forEach((card) => {
 			card.addEventListener("click", (e) => {
 				if ((e.target as HTMLElement).closest("[data-stop-nav]")) return;
 				const href = card.dataset.projectCard;
-				if (href) window.location.href = href;
+				if (href) {
+					trigger("light");
+					window.location.href = href;
+				}
 			});
 		});
 
@@ -579,6 +583,7 @@ const pipeline = [
 			if (!url) return;
 			try {
 				await navigator.clipboard.writeText(url);
+				trigger("success");
 				feedback?.classList.remove("opacity-0");
 				copyIcon?.classList.add("hidden");
 				checkIcon?.classList.remove("hidden");
@@ -589,6 +594,7 @@ const pipeline = [
 					checkIcon?.classList.add("hidden");
 				}, 2000);
 			} catch {
+				trigger("error");
 				// Clipboard unavailable (insecure context); the URL stays selectable.
 			}
 		});

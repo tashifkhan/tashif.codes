@@ -1,35 +1,9 @@
-# PDF Resume Generation Components
-
-<cite>
-**Referenced Files in This Document**
-- [ConfigurationForm.tsx](file://frontend/components/pdf-resume/ConfigurationForm.tsx)
-- [ExportTab.tsx](file://frontend/components/pdf-resume/ExportTab.tsx)
-- [LatexOutput.tsx](file://frontend/components/pdf-resume/LatexOutput.tsx)
-- [ResumePreview.tsx](file://frontend/components/pdf-resume/ResumePreview.tsx)
-- [ResumeSourceSelector.tsx](file://frontend/components/pdf-resume/ResumeSourceSelector.tsx)
-- [TailoringForm.tsx](file://frontend/components/pdf-resume/TailoringForm.tsx)
-- [latexGenerator.ts](file://frontend/utils/latexGenerator.ts)
-- [latexEscape.ts](file://frontend/utils/latexEscape.ts)
-- [resume-gen.service.ts](file://frontend/services/resume-gen.service.ts)
-- [tailored-resume/route.ts](file://frontend/app/api/(backend-interface)/tailored-resume/route.ts)
-- [graph.py](file://backend/app/services/resume_generator/graph.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# PDF resume generation components
 
 ## Introduction
-This document explains the PDF resume generation system, focusing on the frontend components that enable users to customize, preview, and export professional resumes. It covers the configuration options, export formats, LaTeX generation process, template system, styling options, and integration with backend APIs. The goal is to help developers and technical users understand how the resume generation pipeline works from UI interactions to backend processing and final output delivery.
+This page explains the PDF resume generation system, focusing on the frontend components that enable users to customize, preview, and export professional resumes. It covers the configuration options, export formats, LaTeX generation process, template system, styling options, and integration with backend APIs. The goal is to help developers and technical users understand how the resume generation pipeline works from UI interactions to backend processing and final output delivery.
 
-## Project Structure
+## Project structure
 The resume generation feature is organized into reusable React components and supporting utilities, with clear separation between UI, data orchestration, and LaTeX generation logic. The frontend components communicate with Next.js API routes, which act as bridges to the backend services responsible for resume tailoring and PDF generation.
 
 ```mermaid
@@ -64,33 +38,7 @@ LTX --> GEN
 GEN --> ESC
 ```
 
-**Diagram sources**
-- [ExportTab.tsx](file://frontend/components/pdf-resume/ExportTab.tsx#L1-L293)
-- [ConfigurationForm.tsx](file://frontend/components/pdf-resume/ConfigurationForm.tsx#L1-L158)
-- [TailoringForm.tsx](file://frontend/components/pdf-resume/TailoringForm.tsx#L1-L130)
-- [ResumePreview.tsx](file://frontend/components/pdf-resume/ResumePreview.tsx#L1-L277)
-- [LatexOutput.tsx](file://frontend/components/pdf-resume/LatexOutput.tsx#L1-L83)
-- [ResumeSourceSelector.tsx](file://frontend/components/pdf-resume/ResumeSourceSelector.tsx#L1-L271)
-- [latexGenerator.ts](file://frontend/utils/latexGenerator.ts#L1-L347)
-- [latexEscape.ts](file://frontend/utils/latexEscape.ts#L1-L50)
-- [resume-gen.service.ts](file://frontend/services/resume-gen.service.ts#L1-L20)
-- [tailored-resume/route.ts](file://frontend/app/api/(backend-interface)/tailored-resume/route.ts#L1-L366)
-- [graph.py](file://backend/app/services/resume_generator/graph.py#L1-L266)
-
-**Section sources**
-- [ExportTab.tsx](file://frontend/components/pdf-resume/ExportTab.tsx#L1-L293)
-- [ConfigurationForm.tsx](file://frontend/components/pdf-resume/ConfigurationForm.tsx#L1-L158)
-- [TailoringForm.tsx](file://frontend/components/pdf-resume/TailoringForm.tsx#L1-L130)
-- [ResumePreview.tsx](file://frontend/components/pdf-resume/ResumePreview.tsx#L1-L277)
-- [LatexOutput.tsx](file://frontend/components/pdf-resume/LatexOutput.tsx#L1-L83)
-- [ResumeSourceSelector.tsx](file://frontend/components/pdf-resume/ResumeSourceSelector.tsx#L1-L271)
-- [latexGenerator.ts](file://frontend/utils/latexGenerator.ts#L1-L347)
-- [latexEscape.ts](file://frontend/utils/latexEscape.ts#L1-L50)
-- [resume-gen.service.ts](file://frontend/services/resume-gen.service.ts#L1-L20)
-- [tailored-resume/route.ts](file://frontend/app/api/(backend-interface)/tailored-resume/route.ts#L1-L366)
-- [graph.py](file://backend/app/services/resume_generator/graph.py#L1-L266)
-
-## Core Components
+## Core components
 This section introduces the primary components involved in the resume generation workflow:
 
 - ConfigurationForm: Allows users to choose a resume template, color scheme, and font size.
@@ -105,20 +53,7 @@ This section introduces the primary components involved in the resume generation
 - tailored-resume/route.ts: Next.js API route that bridges frontend requests to backend services.
 - graph.py: Backend service orchestrating resume tailoring with LLMs and tools.
 
-**Section sources**
-- [ConfigurationForm.tsx](file://frontend/components/pdf-resume/ConfigurationForm.tsx#L1-L158)
-- [TailoringForm.tsx](file://frontend/components/pdf-resume/TailoringForm.tsx#L1-L130)
-- [ExportTab.tsx](file://frontend/components/pdf-resume/ExportTab.tsx#L1-L293)
-- [ResumePreview.tsx](file://frontend/components/pdf-resume/ResumePreview.tsx#L1-L277)
-- [LatexOutput.tsx](file://frontend/components/pdf-resume/LatexOutput.tsx#L1-L83)
-- [ResumeSourceSelector.tsx](file://frontend/components/pdf-resume/ResumeSourceSelector.tsx#L1-L271)
-- [latexGenerator.ts](file://frontend/utils/latexGenerator.ts#L1-L347)
-- [latexEscape.ts](file://frontend/utils/latexEscape.ts#L1-L50)
-- [resume-gen.service.ts](file://frontend/services/resume-gen.service.ts#L1-L20)
-- [tailored-resume/route.ts](file://frontend/app/api/(backend-interface)/tailored-resume/route.ts#L1-L366)
-- [graph.py](file://backend/app/services/resume_generator/graph.py#L1-L266)
-
-## Architecture Overview
+## Architecture overview
 The resume generation architecture follows a clear separation of concerns:
 - Frontend components collect user preferences and trigger actions.
 - ExportTab coordinates state and orchestrates API calls.
@@ -150,14 +85,7 @@ Utils-->>Export : "Formatted LaTeX"
 Export-->>User : "Preview and download options"
 ```
 
-**Diagram sources**
-- [ExportTab.tsx](file://frontend/components/pdf-resume/ExportTab.tsx#L50-L168)
-- [resume-gen.service.ts](file://frontend/services/resume-gen.service.ts#L4-L18)
-- [tailored-resume/route.ts](file://frontend/app/api/(backend-interface)/tailored-resume/route.ts#L43-L329)
-- [graph.py](file://backend/app/services/resume_generator/graph.py#L74-L261)
-- [latexGenerator.ts](file://frontend/utils/latexGenerator.ts#L343-L347)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### ConfigurationForm
 ConfigurationForm provides three customization controls:
@@ -176,12 +104,6 @@ AdjustFont --> Apply["Apply Changes"]
 Apply --> End(["Options Ready"])
 ```
 
-**Diagram sources**
-- [ConfigurationForm.tsx](file://frontend/components/pdf-resume/ConfigurationForm.tsx#L46-L154)
-
-**Section sources**
-- [ConfigurationForm.tsx](file://frontend/components/pdf-resume/ConfigurationForm.tsx#L1-L158)
-
 ### TailoringForm
 TailoringForm enables job-specific resume tailoring:
 - Toggle for enabling tailoring.
@@ -197,12 +119,6 @@ EnterRole --> OptionalFields["Optionally enter Company Details<br/>and Job Descr
 OptionalFields --> Submit["Submit Tailoring Request"]
 Submit --> End(["Tailored Data Returned"])
 ```
-
-**Diagram sources**
-- [TailoringForm.tsx](file://frontend/components/pdf-resume/TailoringForm.tsx#L55-L126)
-
-**Section sources**
-- [TailoringForm.tsx](file://frontend/components/pdf-resume/TailoringForm.tsx#L1-L130)
 
 ### ExportTab
 ExportTab is the central orchestrator:
@@ -244,14 +160,6 @@ Tab->>Output : "Display LaTeX"
 end
 ```
 
-**Diagram sources**
-- [ExportTab.tsx](file://frontend/components/pdf-resume/ExportTab.tsx#L50-L168)
-- [ResumePreview.tsx](file://frontend/components/pdf-resume/ResumePreview.tsx#L11-L14)
-- [LatexOutput.tsx](file://frontend/components/pdf-resume/LatexOutput.tsx#L11-L15)
-
-**Section sources**
-- [ExportTab.tsx](file://frontend/components/pdf-resume/ExportTab.tsx#L1-L293)
-
 ### ResumePreview
 ResumePreview renders a readable preview of the resume data:
 - Header with name and contact information.
@@ -274,12 +182,6 @@ Education --> End
 Other --> End
 ```
 
-**Diagram sources**
-- [ResumePreview.tsx](file://frontend/components/pdf-resume/ResumePreview.tsx#L26-L272)
-
-**Section sources**
-- [ResumePreview.tsx](file://frontend/components/pdf-resume/ResumePreview.tsx#L1-L277)
-
 ### LatexOutput
 LatexOutput presents the generated LaTeX code:
 - Provides buttons to copy LaTeX to clipboard and open in Overleaf.
@@ -296,12 +198,6 @@ Copy --> End(["Done"])
 Open --> End
 Manual --> End
 ```
-
-**Diagram sources**
-- [LatexOutput.tsx](file://frontend/components/pdf-resume/LatexOutput.tsx#L20-L78)
-
-**Section sources**
-- [LatexOutput.tsx](file://frontend/components/pdf-resume/LatexOutput.tsx#L1-L83)
 
 ### ResumeSourceSelector
 ResumeSourceSelector allows users to choose a resume source:
@@ -321,13 +217,7 @@ Select --> End(["Resume Selected"])
 Choose --> End
 ```
 
-**Diagram sources**
-- [ResumeSourceSelector.tsx](file://frontend/components/pdf-resume/ResumeSourceSelector.tsx#L46-L268)
-
-**Section sources**
-- [ResumeSourceSelector.tsx](file://frontend/components/pdf-resume/ResumeSourceSelector.tsx#L1-L271)
-
-### LaTeX Generation Process and Template System
+### LaTeX generation process and template system
 The LaTeX generation pipeline transforms structured resume data into compilable LaTeX:
 - Templates: Professional and Modern, each with distinct styling and packages.
 - Options: Font size, margins, and color scheme.
@@ -358,18 +248,10 @@ ProfessionalTemplate --> EscapeUtils : "uses"
 ModernTemplate --> EscapeUtils : "uses"
 ```
 
-**Diagram sources**
-- [latexGenerator.ts](file://frontend/utils/latexGenerator.ts#L5-L171)
-- [latexEscape.ts](file://frontend/utils/latexEscape.ts#L8-L49)
-
-**Section sources**
-- [latexGenerator.ts](file://frontend/utils/latexGenerator.ts#L1-L347)
-- [latexEscape.ts](file://frontend/utils/latexEscape.ts#L1-L50)
-
-### Backend Integration and Resume Tailoring
+### Backend integration and resume tailoring
 The frontend communicates with backend services through Next.js API routes:
 - Authentication: Session-based checks ensure authorized access.
-- Tailoring: Two pathways—file upload (v1) or existing resume text (v2).
+- Tailoring: Two pathways, file upload (v1) or existing resume text (v2).
 - Validation: Ensures required fields and prevents conflicting inputs.
 - Error handling: Graceful handling of timeouts, non-JSON responses, and access restrictions.
 - Pipeline: Backend orchestrates LLM-based tailoring and returns structured data.
@@ -389,15 +271,7 @@ BE-->>API : "Return data"
 API-->>FE : "Success response"
 ```
 
-**Diagram sources**
-- [tailored-resume/route.ts](file://frontend/app/api/(backend-interface)/tailored-resume/route.ts#L43-L329)
-- [graph.py](file://backend/app/services/resume_generator/graph.py#L74-L261)
-
-**Section sources**
-- [tailored-resume/route.ts](file://frontend/app/api/(backend-interface)/tailored-resume/route.ts#L1-L366)
-- [graph.py](file://backend/app/services/resume_generator/graph.py#L1-L266)
-
-## Dependency Analysis
+## Dependency analysis
 The components and utilities depend on each other as follows:
 - ExportTab depends on TailoringForm, ConfigurationForm, ResumePreview, LatexOutput, and resume-gen.service.
 - LatexOutput depends on latexGenerator and latexEscape.
@@ -417,33 +291,13 @@ Export --> API["tailored-resume/route.ts"]
 API --> Pipeline["graph.py"]
 ```
 
-**Diagram sources**
-- [ExportTab.tsx](file://frontend/components/pdf-resume/ExportTab.tsx#L1-L293)
-- [TailoringForm.tsx](file://frontend/components/pdf-resume/TailoringForm.tsx#L1-L130)
-- [ConfigurationForm.tsx](file://frontend/components/pdf-resume/ConfigurationForm.tsx#L1-L158)
-- [ResumePreview.tsx](file://frontend/components/pdf-resume/ResumePreview.tsx#L1-L277)
-- [LatexOutput.tsx](file://frontend/components/pdf-resume/LatexOutput.tsx#L1-L83)
-- [latexGenerator.ts](file://frontend/utils/latexGenerator.ts#L1-L347)
-- [latexEscape.ts](file://frontend/utils/latexEscape.ts#L1-L50)
-- [resume-gen.service.ts](file://frontend/services/resume-gen.service.ts#L1-L20)
-- [tailored-resume/route.ts](file://frontend/app/api/(backend-interface)/tailored-resume/route.ts#L1-L366)
-- [graph.py](file://backend/app/services/resume_generator/graph.py#L1-L266)
-
-**Section sources**
-- [ExportTab.tsx](file://frontend/components/pdf-resume/ExportTab.tsx#L1-L293)
-- [latexGenerator.ts](file://frontend/utils/latexGenerator.ts#L1-L347)
-- [latexEscape.ts](file://frontend/utils/latexEscape.ts#L1-L50)
-- [resume-gen.service.ts](file://frontend/services/resume-gen.service.ts#L1-L20)
-- [tailored-resume/route.ts](file://frontend/app/api/(backend-interface)/tailored-resume/route.ts#L1-L366)
-- [graph.py](file://backend/app/services/resume_generator/graph.py#L1-L266)
-
-## Performance Considerations
+## Performance considerations
 - Timeout handling: Backend requests use extended timeouts suitable for long-running LLM operations.
 - Error resilience: Non-JSON responses and HTML error pages are handled gracefully with user-friendly messages.
 - Large payloads: Ensure resume text length is sufficient before tailoring to avoid unnecessary processing.
 - UI responsiveness: Loading overlays and disabled states prevent concurrent operations and improve UX.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Authentication failures: Verify session validity; ensure proper sign-in.
 - Missing job role: Tailoring requires a non-empty job role; provide it before enabling tailoring.
@@ -451,11 +305,5 @@ Common issues and resolutions:
 - Backend connectivity: Timeouts or service unavailability trigger fallback behavior; retry later or use LaTeX output.
 - PDF download failures: When PDF service is unavailable, the system returns LaTeX code for manual compilation.
 
-**Section sources**
-- [tailored-resume/route.ts](file://frontend/app/api/(backend-interface)/tailored-resume/route.ts#L46-L52)
-- [tailored-resume/route.ts](file://frontend/app/api/(backend-interface)/tailored-resume/route.ts#L90-L99)
-- [tailored-resume/route.ts](file://frontend/app/api/(backend-interface)/tailored-resume/route.ts#L167-L177)
-- [ExportTab.tsx](file://frontend/components/pdf-resume/ExportTab.tsx#L148-L161)
-
 ## Conclusion
-The PDF resume generation system combines intuitive UI components with robust backend processing to deliver customizable, ATS-friendly resumes. Users can tailor resumes to specific jobs, preview the results, generate LaTeX code, and download PDFs. The modular design ensures maintainability, while the backend pipeline leverages LLMs and tools to produce high-quality, structured resume data ready for LaTeX compilation.
+The PDF resume generation system combines intuitive UI components with reliable backend processing to deliver customizable, ATS-friendly resumes. Users can tailor resumes to specific jobs, preview the results, generate LaTeX code, and download PDFs. The modular design ensures maintainability, while the backend pipeline uses LLMs and tools to produce high-quality, structured resume data ready for LaTeX compilation.

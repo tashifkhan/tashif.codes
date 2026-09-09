@@ -1,38 +1,9 @@
-# State Management and Data Flow
-
-<cite>
-**Referenced Files in This Document**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx)
-- [Icons.jsx](file://electron/src/components/Icons.jsx)
-- [preload.js](file://electron/src/electron/preload.js)
-- [main.js](file://electron/src/electron/main.js)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [pyodide.js](file://electron/src/utils/pyodide.js)
-- [App.jsx](file://electron/src/ui/App.jsx)
-- [main.jsx](file://electron/src/ui/main.jsx)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# State management and data flow
 
 ## Introduction
-This document explains state management and data flow patterns in the renderer process of the BulkMessaging application. It focuses on how React state is organized within the BulkMailer component and coordinated across multiple messaging services (Gmail, SMTP, and WhatsApp). It documents the end-to-end flow from user interactions through component state to Electron IPC handlers, including state update patterns, event handling strategies, and UI consistency with backend service states. It also covers side effects handling, mutation patterns, and the integration between local component state and Electron’s main process.
+This page explains state management and data flow patterns in the renderer process of the BulkMessaging application. It focuses on how React state is organized within the BulkMailer component and coordinated across multiple messaging services (Gmail, SMTP, and WhatsApp). It documents the end-to-end flow from user interactions through component state to Electron IPC handlers, including state update patterns, event handling strategies, and UI consistency with backend service states. It also covers side effects handling, mutation patterns, and the integration between local component state and Electron's main process.
 
-## Project Structure
+## Project structure
 The renderer-side application is structured around a single-page React layout with a sidebar navigation and tabbed content areas. Each tab corresponds to a distinct messaging service with its own form and state management.
 
 ```mermaid
@@ -74,38 +45,7 @@ K --> M
 H --> N
 ```
 
-**Diagram sources**
-- [main.jsx](file://electron/src/ui/main.jsx#L1-L11)
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx#L1-L90)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx#L1-L24)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [Icons.jsx](file://electron/src/components/Icons.jsx#L1-L53)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-
-**Section sources**
-- [main.jsx](file://electron/src/ui/main.jsx#L1-L11)
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx#L1-L90)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx#L1-L24)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-
-## Core Components
+## Core components
 - BulkMailer: Central orchestrator managing cross-service state, coordinating IPC calls, and handling side effects. It initializes listeners for real-time updates and exposes actions for each service.
 - Form components: GmailForm, SMTPForm, and WhatsAppForm encapsulate UI state and present service-specific controls. They receive props from BulkMailer and trigger actions via callbacks.
 - Preload bridge: Exposes a controlled API surface to the renderer, mapping Electron IPC channels to JavaScript functions.
@@ -117,13 +57,7 @@ Key state containers in BulkMailer:
 - SMTP: smtpConfig, emailList, subject, message, delay, results, isSending
 - WhatsApp: waContacts, waMessage, waStatus, waQR, waSending, waResults, isSending
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L9-L34)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L3-L18)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L3-L18)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L5-L18)
-
-## Architecture Overview
+## Architecture overview
 The renderer process follows a unidirectional data flow:
 - User interactions update component state via React hooks.
 - Actions dispatch Electron IPC invocations through the preload bridge.
@@ -151,16 +85,9 @@ BM->>BM : setResults([...prev, update])
 BM-->>GF : results prop updated
 ```
 
-**Diagram sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L229-L254)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-- [preload.js](file://electron/src/electron/preload.js#L6-L21)
-- [main.js](file://electron/src/electron/main.js#L264-L318)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### BulkMailer: Central State Orchestrator
+### BulkMailer: central state orchestrator
 Responsibilities:
 - Maintains cross-service state (tabs, Gmail, SMTP, WhatsApp).
 - Subscribes to real-time events from the main process for live updates.
@@ -194,17 +121,7 @@ Side effects:
 - Cleanup of event listeners on unmount.
 - File import and parsing via Pyodide.
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L60-L73)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L221-L261)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L263-L288)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L290-L321)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L323-L366)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L368-L415)
-
-### GmailForm: Gmail Service UI and State
+### GmailForm: gmail service UI and state
 Responsibilities:
 - Manages Gmail-specific state: authentication flag, recipients list, subject, message, delay, results, and sending state.
 - Provides actions to authenticate, import email lists, and send emails.
@@ -221,14 +138,7 @@ Integration with BulkMailer:
 - Receives props for all state and callbacks.
 - Triggers sendGmailBulk action on submit.
 
-**Section sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L3-L18)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L19-L100)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L101-L167)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L168-L256)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L257-L332)
-
-### SMTPForm: SMTP Service UI and State
+### SMTPForm: SMTP service UI and state
 Responsibilities:
 - Manages SMTP configuration and email composition state.
 - Provides actions to import email lists and send emails via SMTP.
@@ -244,14 +154,7 @@ Integration with BulkMailer:
 - Receives props for all state and callbacks.
 - Triggers sendSMTPBulk action on submit.
 
-**Section sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L3-L18)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L66-L163)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L164-L226)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L227-L314)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L315-L390)
-
-### WhatsAppForm: WhatsApp Service UI and State
+### WhatsAppForm: WhatsApp service UI and state
 Responsibilities:
 - Manages WhatsApp-specific state: contacts, message, status, QR, sending state, and results.
 - Provides actions to connect, import contacts, and send messages.
@@ -269,18 +172,7 @@ Integration with BulkMailer:
 - Receives props for all state and callbacks.
 - Triggers startWhatsAppClient, logoutWhatsApp, importWhatsAppContacts, and sendWhatsAppBulk actions.
 
-**Section sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L5-L18)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L19-L40)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L41-L62)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L63-L76)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L77-L115)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L116-L279)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L280-L431)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L432-L491)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L492-L609)
-
-### Preload Bridge: Electron API Exposure
+### Preload bridge: electron API exposure
 Responsibilities:
 - Exposes a safe, typed API to the renderer via contextBridge.
 - Maps IPC channels to invoke/on methods for Gmail, SMTP, file operations, and WhatsApp.
@@ -290,10 +182,7 @@ Patterns:
 - on("channel", callback) for event streams.
 - Returns removal functions to unsubscribe from events.
 
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-
-### Main Process Handlers: Backend Execution and Events
+### Main process handlers: backend execution and events
 Responsibilities:
 - Gmail: Handles OAuth flow, token storage, and batch email sending with progress events.
 - SMTP: Validates configuration, creates transport, verifies connectivity, and sends emails with progress events.
@@ -304,17 +193,7 @@ Patterns:
 - event.sender.send emits progress and status events back to renderer.
 - Cleanup and error handling in handlers.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-- [main.js](file://electron/src/electron/main.js#L342-L371)
-
-### Data Flow: From User Interaction to Backend and Back
+### Data flow: from user interaction to backend and back
 End-to-end flow for Gmail bulk send:
 
 ```mermaid
@@ -340,14 +219,7 @@ BM->>BM : setIsSending(false)
 BM-->>GF : results prop updated
 ```
 
-**Diagram sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L229-L254)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-- [preload.js](file://electron/src/electron/preload.js#L6-L21)
-- [main.js](file://electron/src/electron/main.js#L264-L318)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-
-### State Update Patterns and Event Handling Strategies
+### State update patterns and event handling strategies
 - Controlled inputs: Each form component manages its own state via useState and passes setters to BulkMailer.
 - Event-driven updates: BulkMailer subscribes to onProgress and WhatsApp events; updates results arrays and status fields.
 - Conditional rendering: UI reflects state (e.g., authentication status, sending state, QR display).
@@ -359,29 +231,13 @@ Mutation examples:
 - Controlled toggles: setDelay(value) and checkbox updates.
 - Batch updates: setIsSending(true/false) around long-running operations.
 
-**Section sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L183-L254)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L288-L314)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L470-L488)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L221-L261)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L368-L415)
-
-### Integration Between Local Component State and Global Application State
+### Integration between local component state and global application state
 - Local component state: Managed by individual form components for immediate UI feedback.
 - Cross-service state: BulkMailer centralizes shared state and actions, enabling coordinated behavior across services.
 - Electron state: Token and configuration persistence handled in main process handlers; renderer reads state via IPC queries.
 - UI consistency: Real-time events keep the UI synchronized with backend progress and status.
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L9-L34)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L3-L18)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L3-L18)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L5-L18)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L132-L139)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L107-L110)
-
-## Dependency Analysis
+## Dependency analysis
 The renderer depends on the preload bridge for IPC, which routes to main process handlers. Handlers depend on external libraries and filesystem operations.
 
 ```mermaid
@@ -398,33 +254,7 @@ BM --> SB["Sidebar.jsx"]
 BM --> TB["TopBar.jsx"]
 ```
 
-**Diagram sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx#L1-L90)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx#L1-L24)
-
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx#L1-L90)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx#L1-L24)
-
-## Performance Considerations
+## Performance considerations
 - Debounce or throttle heavy operations: Consider debouncing input updates for large recipient lists.
 - Virtualized lists: For large results/logs, consider virtualization to reduce DOM nodes.
 - Efficient state updates: Use immutable updates to minimize re-renders; batch related state changes.
@@ -432,7 +262,7 @@ BM --> TB["TopBar.jsx"]
 - Lazy initialization: Defer expensive operations until needed (e.g., Pyodide loading).
 - Cleanup: Ensure event listeners are removed on unmount to prevent memory leaks.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Electron API not available: Ensure preload bridge is loaded and window.electronAPI is exposed. Check main process webPreferences and preload path.
 - Authentication failures: Verify environment variables for Gmail OAuth and network connectivity. Check timeout handling and error messages.
@@ -440,13 +270,5 @@ Common issues and resolutions:
 - WhatsApp QR not displaying: Validate QR event emission and image handling; check for CORS or base64 decoding issues.
 - SMTP verification failures: Verify host/port/credentials; enable TLS settings appropriately.
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L75-L107)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L263-L288)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L48)
-- [main.js](file://electron/src/electron/main.js#L137-L148)
-- [main.js](file://electron/src/electron/main.js#L342-L371)
-
 ## Conclusion
-The BulkMailer component serves as the central coordinator for state and IPC in the renderer process. It integrates three distinct messaging services—Gmail, SMTP, and WhatsApp—by maintaining local state, subscribing to real-time events, and orchestrating IPC calls. The design emphasizes controlled updates, event-driven synchronization, and robust error handling, ensuring a responsive and consistent user experience across services.
+The BulkMailer component is the central coordinator for state and IPC in the renderer process. It integrates three distinct messaging services, Gmail, SMTP, and WhatsApp, by maintaining local state, subscribing to real-time events, and orchestrating IPC calls. The design emphasizes controlled updates, event-driven synchronization, and reliable error handling, ensuring a responsive and consistent user experience across services.

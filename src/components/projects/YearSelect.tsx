@@ -6,7 +6,7 @@ import {
 	SelectContent,
 	SelectItem,
 } from "../ui/select";
-import { useWebHaptics } from "web-haptics/react";
+import { trigger } from "@/lib/haptics";
 
 interface Props {
 	availableYears: number[];
@@ -15,7 +15,6 @@ interface Props {
 
 export default function YearSelect({ availableYears, defaultValue }: Props) {
 	const [value, setValue] = useState<string>(defaultValue);
-	const { trigger } = useWebHaptics();
 
 	useEffect(() => {
 		// Ensure hidden native select reflects initial value
@@ -43,8 +42,9 @@ export default function YearSelect({ availableYears, defaultValue }: Props) {
 
 	return (
 		<div>
-			<Select value={value} onValueChange={handleChange}>
+			<Select onOpenChange={() => trigger("light")} value={value} onValueChange={handleChange}>
 				<SelectTrigger
+					data-haptic="manual"
 					id="year-select-trigger"
 					className="text-xs sm:text-sm font-medium"
 				>

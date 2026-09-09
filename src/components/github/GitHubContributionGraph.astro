@@ -379,11 +379,10 @@ const starredLists = starLists || [];
 
 <script>
 	// Year selector + personal-only filter for contribution graph
-	import { WebHaptics as WebHapticsContrib } from 'web-haptics';
+	import { trigger } from "@/lib/haptics";
 	import { githubUsernames, personalGithubUsername } from '../../data/profile';
 	// Same-origin proxy avoids browser CORS issues (see vercel.json / vite proxy)
 	const githubStatsApiBase = '/proxy/gh-stats';
-	const hapticsDays = new WebHapticsContrib();
 	const PERSONAL_ONLY_EVENT = 'github-personal-only-change';
 
 	document.addEventListener('astro:page-load', function() {
@@ -413,7 +412,10 @@ const starredLists = starLists || [];
 				day.addEventListener('mouseenter', handleMouseEnter);
 				day.addEventListener('mouseleave', handleMouseLeave);
 				day.addEventListener('mousemove', handleMouseMove);
-				day.addEventListener('click', () => hapticsDays.trigger('selection'));
+				day.addEventListener('click', (event) => {
+					handleMouseEnter(event);
+					trigger('selection');
+				});
 			});
 		}
 
@@ -499,6 +501,7 @@ const starredLists = starLists || [];
 		}
 
 		async function loadContributions() {
+			if (!contributionGrid) return;
 			const selectedValue = yearSelector.value;
 
 			contributionGrid.innerHTML = '<div class="flex items-center justify-center h-28 text-muted-foreground dark:text-muted-foreground" style="grid-column: 1 / -1">Loading...</div>';
@@ -677,14 +680,13 @@ const starredLists = starLists || [];
 
 <script>
 // Star list buttons -> switch to Projects tab & apply list filter
-import { WebHaptics } from 'web-haptics';
-const haptics = new WebHaptics();
+import { trigger } from "@/lib/haptics";
 
 document.addEventListener('astro:page-load', () => {
 	const buttons = document.querySelectorAll('[data-star-list-select]');
 	buttons.forEach(btn => {
 		btn.addEventListener('click', () => {
-			haptics.trigger('selection');
+			trigger('selection');
 			const name = (btn as HTMLElement).getAttribute('data-star-list-select');
 			if (!name) return;
 			localStorage.setItem('pending_star_list_select', name);

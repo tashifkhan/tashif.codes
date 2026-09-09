@@ -431,7 +431,7 @@ function createParser(): MarkdownIt {
       `<div class="${cx('md-code', theme.codeBlock)}">` +
       `<div class="${cx('md-code-bar', theme.codeBar)}">` +
       `<div class="md-code-meta">${TERMINAL_ICON}<span class="${cx('md-code-lang', theme.codeLang)}">${md.utils.escapeHtml(lang)}</span></div>` +
-      `<button class="${cx('md-code-copy', theme.codeCopy)}" type="button" aria-label="Copy code" data-haptic data-code="${escaped}">${COPY_ICON}${CHECK_ICON}</button>` +
+      `<button class="${cx('md-code-copy', theme.codeCopy)}" type="button" aria-label="Copy code" data-haptic="manual" data-code="${escaped}">${COPY_ICON}${CHECK_ICON}</button>` +
       `</div>` +
       `<pre class="${cx('md-code-pre', theme.codePre)}"><code class="${cx(`language-${lang}`, theme.codeTag)}">${escaped}</code></pre>` +
       `</div>`

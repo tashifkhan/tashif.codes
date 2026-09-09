@@ -1,31 +1,9 @@
-# WhatsApp IPC Handlers
-
-<cite>
-**Referenced Files in This Document**
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [pyodide.js](file://electron/src/utils/pyodide.js)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py)
-- [package.json](file://electron/package.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# WhatsApp IPC handlers
 
 ## Introduction
-This document provides comprehensive technical documentation for the WhatsApp-related Inter-Process Communication (IPC) handlers in the desktop application. It covers the implementation of four key handlers: `whatsapp-start-client`, `whatsapp-send-messages`, `whatsapp-import-contacts`, and `whatsapp-logout`. The documentation includes client initialization parameters, authentication strategy configuration, Puppeteer browser settings, contact array schema, message personalization patterns, rate limiting implementation, file dialog configuration, supported formats, contact data structure, session cleanup procedures, cache deletion, parameter validation, error handling patterns, return value schemas, and WhatsApp Web API integration specifics including QR code generation and authentication flow.
+This page provides detailed technical documentation for the WhatsApp-related Inter-Process Communication (IPC) handlers in the desktop application. It covers the implementation of four key handlers: `whatsapp-start-client`, `whatsapp-send-messages`, `whatsapp-import-contacts`, and `whatsapp-logout`. The documentation includes client initialization parameters, authentication strategy configuration, Puppeteer browser settings, contact array schema, message personalization patterns, rate limiting implementation, file dialog configuration, supported formats, contact data structure, session cleanup procedures, cache deletion, parameter validation, error handling patterns, return value schemas, and WhatsApp Web API integration specifics including QR code generation and authentication flow.
 
-## Project Structure
+## Project structure
 The WhatsApp IPC handlers are implemented in the Electron main process and exposed to the renderer process through a secure context bridge. The relevant components are organized as follows:
 - Electron main process: defines IPC handlers and manages the WhatsApp client lifecycle
 - Preload script: exposes a controlled API surface to the renderer process
@@ -53,20 +31,10 @@ Main --> FS
 Main --> CSV
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-
-## Core Components
+## Core components
 This section documents the four WhatsApp IPC handlers and their associated functionality.
 
-### whatsapp-start-client Handler
+### whatsapp-start-client handler
 Purpose: Initialize and connect to WhatsApp Web via a local authentication strategy with a headless browser.
 
 Key Implementation Details:
@@ -84,10 +52,7 @@ Key Implementation Details:
 Return Value Schema:
 - No explicit return value; status updates are sent via events
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L111-L177)
-
-### whatsapp-send-messages Handler
+### whatsapp-send-messages handler
 Purpose: Send personalized bulk messages to a list of contacts.
 
 Key Implementation Details:
@@ -118,10 +83,7 @@ Key Implementation Details:
 Return Value Schema:
 - Object with success flag, sent count, and failed count
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-
-### whatsapp-import-contacts Handler
+### whatsapp-import-contacts handler
 Purpose: Import contacts from file dialogs supporting CSV and TXT formats.
 
 Key Implementation Details:
@@ -142,10 +104,7 @@ Key Implementation Details:
 Return Value Schema:
 - Array of contact objects or null
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-
-### whatsapp-logout Handler
+### whatsapp-logout handler
 Purpose: Terminate the WhatsApp session and clean up cached authentication data.
 
 Key Implementation Details:
@@ -153,8 +112,8 @@ Key Implementation Details:
   - Calls client.logout() to disconnect from WhatsApp
   - Sets the client reference to null
 - Cache Deletion:
-  - Removes .wwebjs_cache directory
-  - Removes .wwebjs_auth directory
+  - Removes.wwebjs_cache directory
+  - Removes.wwebjs_auth directory
 - Status Updates:
   - Emits Disconnected status
   - Clears QR code data
@@ -165,10 +124,7 @@ Key Implementation Details:
 Return Value Schema:
 - Object with success flag and message
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L343-L371)
-
-## Architecture Overview
+## Architecture overview
 The WhatsApp IPC architecture integrates the renderer UI with the Electron main process and the WhatsApp Web API through the following sequence:
 
 ```mermaid
@@ -217,15 +173,9 @@ Preload-->>BM : result
 BM-->>UI : Reset UI state
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L111-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [main.js](file://electron/src/electron/main.js#L343-L371)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L155-L172)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### WhatsApp Client Lifecycle Management
+### WhatsApp client lifecycle management
 The main process manages the complete lifecycle of the WhatsApp client, including initialization, authentication, and cleanup.
 
 ```mermaid
@@ -240,11 +190,8 @@ Ready --> Disconnected : disconnected event
 Disconnected --> Uninitialized : cleanup/logout
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L111-L177)
-
-### Message Sending Algorithm
-The message sending process implements a robust pipeline with validation and rate limiting.
+### Message sending algorithm
+The message sending process implements a reliable pipeline with validation and rate limiting.
 
 ```mermaid
 flowchart TD
@@ -271,10 +218,7 @@ ReturnError --> End([Function Exit])
 ReturnSuccess --> End
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-
-### Contact Import Processing
+### Contact import processing
 The contact import handler supports multiple file formats with consistent output structure.
 
 ```mermaid
@@ -299,11 +243,8 @@ ReturnContacts --> End
 HandleError --> End
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-
-### Parameter Validation Patterns
-The application implements comprehensive validation across different components:
+### Parameter validation patterns
+The application implements detailed validation across different components:
 
 ```mermaid
 classDiagram
@@ -333,18 +274,7 @@ MessageValidation --> ContactValidation : "validates"
 FileValidation --> ContactValidation : "validates"
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L26-L33)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py#L22-L54)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L26-L33)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py#L22-L54)
-
-## Dependency Analysis
+## Dependency analysis
 The WhatsApp IPC handlers rely on several external libraries and internal components:
 
 ```mermaid
@@ -380,16 +310,7 @@ PyUtils --> PyParser
 Utils --> Main
 ```
 
-**Diagram sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [main.js](file://electron/src/electron/main.js#L1-L16)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-
-**Section sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [main.js](file://electron/src/electron/main.js#L1-L16)
-
-## Performance Considerations
+## Performance considerations
 The application implements several performance optimizations and rate limiting strategies:
 
 - Browser Optimization: Puppeteer runs in headless mode with Chromium arguments designed for Electron environments, reducing memory footprint and improving stability.
@@ -398,28 +319,23 @@ The application implements several performance optimizations and rate limiting s
 - Memory Management: Proper cleanup of client instances and file system resources prevents memory leaks.
 - Asynchronous Processing: Streaming CSV parsing and asynchronous message sending prevent UI blocking.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and their resolutions:
 
-### Authentication Problems
+### Authentication problems
 - QR Code Not Loading: Check network connectivity and restart the application. The system attempts to regenerate QR codes on error.
 - Authentication Failures: Verify that the device is linked to WhatsApp Web and that the QR code is scanned within the timeout period.
 
-### Message Delivery Issues
+### Message delivery issues
 - Rate Limiting: The system implements automatic delays between sends. Excessive failures may indicate rate limiting by WhatsApp.
 - Registration Check Failures: Some numbers may not be registered on WhatsApp. The system checks registration status before sending.
 
-### File Import Problems
+### File import problems
 - CSV Parsing Errors: Ensure CSV files have proper headers and encoding. The system uses streaming parsing for large files.
 - TXT Format Issues: Verify that TXT files use comma separation for number/name pairs.
 
-### Session Management
+### Session management
 - Logout Issues: The system attempts cleanup even if logout fails. Forced cleanup ensures no stale authentication data remains.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L137-L148)
-- [main.js](file://electron/src/electron/main.js#L162-L169)
-- [main.js](file://electron/src/electron/main.js#L343-L371)
-
 ## Conclusion
-The WhatsApp IPC handlers provide a robust foundation for bulk messaging through WhatsApp Web. The implementation includes comprehensive authentication flow management, flexible contact import capabilities, intelligent message personalization, and resilient error handling. The architecture balances performance with reliability through careful rate limiting, proper resource cleanup, and efficient file processing. The modular design allows for easy extension and maintenance while maintaining security through the Electron context isolation model.
+The WhatsApp IPC handlers provide a reliable foundation for bulk messaging through WhatsApp Web. The implementation includes detailed authentication flow management, flexible contact import capabilities, intelligent message personalization, and resilient error handling. The architecture balances performance with reliability through careful rate limiting, proper resource cleanup, and efficient file processing. The modular design allows for easy extension and maintenance while maintaining security through the Electron context isolation model.

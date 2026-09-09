@@ -1,40 +1,16 @@
-# GitHub Integration API
-
-<cite>
-**Referenced Files in This Document**
-- [api/main.py](file://api/main.py)
-- [routers/github.py](file://routers/github.py)
-- [services/github_service.py](file://services/github_service.py)
-- [models/requests/github.py](file://models/requests/github.py)
-- [models/response/gihub.py](file://models/response/gihub.py)
-- [prompts/github.py](file://prompts/github.py)
-- [tools/github_crawler/convertor.py](file://tools/github_crawler/convertor.py)
-- [core/config.py](file://core/config.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# GitHub integration API
 
 ## Introduction
-This document describes the GitHub integration API that enables repository analysis and contextual Q&A powered by a large language model. It supports:
+This page describes the GitHub integration API that enables repository analysis and contextual Q&A powered by a large language model. It supports:
 - Repository ingestion via a normalized GitHub URL
 - Context-aware question answering using repository summary, file tree, and content
 - Optional file attachment processing via a cloud generative AI SDK
 - Chat history integration for conversational context
-- Robust error handling and user-friendly messages for common failure modes
+- Reliable error handling and user-friendly messages for common failure modes
 
 The API exposes a single endpoint that accepts a GitHub repository URL and a question, returning a Markdown-formatted answer derived from the repository context.
 
-## Project Structure
+## Project structure
 The GitHub integration spans several modules:
 - API router: defines the endpoint and request/response models
 - Service layer: orchestrates ingestion, optional file attachment processing, and LLM invocation
@@ -54,36 +30,14 @@ Service --> Config["Environment Config"]
 Tool --> Gitingest["gitingest<br/>ingest_async/ingest"]
 ```
 
-**Diagram sources**
-- [api/main.py](file://api/main.py#L29-L30)
-- [routers/github.py](file://routers/github.py#L16-L44)
-- [services/github_service.py](file://services/github_service.py#L11-L109)
-- [prompts/github.py](file://prompts/github.py#L75-L82)
-- [tools/github_crawler/convertor.py](file://tools/github_crawler/convertor.py#L62-L86)
-- [core/config.py](file://core/config.py#L13-L14)
-
-**Section sources**
-- [api/main.py](file://api/main.py#L12-L41)
-- [routers/github.py](file://routers/github.py#L1-L49)
-- [services/github_service.py](file://services/github_service.py#L1-L109)
-- [prompts/github.py](file://prompts/github.py#L1-L110)
-- [tools/github_crawler/convertor.py](file://tools/github_crawler/convertor.py#L1-L99)
-- [core/config.py](file://core/config.py#L1-L26)
-
-## Core Components
+## Core components
 - Endpoint: POST /api/genai/github
 - Request body: GitHubRequest (URL, question, optional chat history, optional attached file path)
 - Response body: GitHubResponse (content)
 - Authentication: Not enforced by the endpoint; clients should secure access as appropriate for their deployment
 - Rate limiting: Not implemented in the endpoint; consider upstream rate limiting and retries
 
-**Section sources**
-- [routers/github.py](file://routers/github.py#L16-L44)
-- [models/requests/github.py](file://models/requests/github.py#L4-L8)
-- [models/response/gihub.py](file://models/response/gihub.py#L4-L5)
-- [api/main.py](file://api/main.py#L29-L30)
-
-## Architecture Overview
+## Architecture overview
 The request lifecycle:
 1. Client sends a POST request with a GitHub URL and question
 2. Router validates presence of required fields and delegates to the service
@@ -113,15 +67,9 @@ Service-->>Router : "content"
 Router-->>Client : "{ content }"
 ```
 
-**Diagram sources**
-- [routers/github.py](file://routers/github.py#L16-L44)
-- [services/github_service.py](file://services/github_service.py#L12-L109)
-- [tools/github_crawler/convertor.py](file://tools/github_crawler/convertor.py#L62-L86)
-- [prompts/github.py](file://prompts/github.py#L75-L82)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Endpoint Definition
+### Endpoint definition
 - Method: POST
 - Path: /api/genai/github
 - Request JSON schema:
@@ -137,12 +85,7 @@ Behavior highlights:
 - Returns structured error messages for invalid inputs or ingestion failures
 - Supports optional file attachment processing via a cloud generative AI SDK
 
-**Section sources**
-- [routers/github.py](file://routers/github.py#L16-L44)
-- [models/requests/github.py](file://models/requests/github.py#L4-L8)
-- [models/response/gihub.py](file://models/response/gihub.py#L4-L5)
-
-### Service Layer
+### Service layer
 Responsibilities:
 - Normalize GitHub URL to repository root
 - Ingest repository content (summary, tree, content)
@@ -171,15 +114,7 @@ BuildPrompt2 --> InvokeChain["Invoke LangChain chain"]
 InvokeChain --> ReturnAnswer
 ```
 
-**Diagram sources**
-- [services/github_service.py](file://services/github_service.py#L12-L109)
-- [tools/github_crawler/convertor.py](file://tools/github_crawler/convertor.py#L35-L86)
-- [prompts/github.py](file://prompts/github.py#L75-L82)
-
-**Section sources**
-- [services/github_service.py](file://services/github_service.py#L11-L109)
-
-### Prompt Pipeline
+### Prompt pipeline
 The prompt pipeline composes:
 - A system message instructing the model to answer solely from repository context
 - Repository summary, file tree, and relevant content
@@ -189,11 +124,7 @@ The prompt pipeline composes:
 
 The pipeline uses a LangChain chain with a prompt template and an LLM client, returning a string response.
 
-**Section sources**
-- [prompts/github.py](file://prompts/github.py#L10-L72)
-- [prompts/github.py](file://prompts/github.py#L75-L82)
-
-### GitHub Crawler Tool
+### GitHub crawler tool
 The crawler:
 - Normalizes GitHub URLs to repository root
 - Uses asynchronous ingestion when available, otherwise falls back to synchronous ingestion
@@ -214,22 +145,11 @@ class GitHubCrawler {
 GitHubCrawler --> InjestedContent : "returns"
 ```
 
-**Diagram sources**
-- [tools/github_crawler/convertor.py](file://tools/github_crawler/convertor.py#L29-L33)
-- [tools/github_crawler/convertor.py](file://tools/github_crawler/convertor.py#L62-L86)
-
-**Section sources**
-- [tools/github_crawler/convertor.py](file://tools/github_crawler/convertor.py#L1-L99)
-
-### Configuration and Environment
+### Configuration and environment
 - Google API key is loaded from environment variables for optional file attachment processing
 - Logging level is configurable via environment variables
 
-**Section sources**
-- [core/config.py](file://core/config.py#L13-L14)
-- [core/config.py](file://core/config.py#L16-L25)
-
-## Dependency Analysis
+## Dependency analysis
 The GitHub integration depends on:
 - FastAPI router for endpoint definition
 - Pydantic models for request/response validation
@@ -247,26 +167,14 @@ Prompt --> LLM["LargeLanguageModel"]
 Tool --> Gitingest["gitingest"]
 ```
 
-**Diagram sources**
-- [routers/github.py](file://routers/github.py#L1-L6)
-- [services/github_service.py](file://services/github_service.py#L1-L8)
-- [prompts/github.py](file://prompts/github.py#L1-L4)
-- [tools/github_crawler/convertor.py](file://tools/github_crawler/convertor.py#L1-L12)
-
-**Section sources**
-- [routers/github.py](file://routers/github.py#L1-L6)
-- [services/github_service.py](file://services/github_service.py#L1-L8)
-- [prompts/github.py](file://prompts/github.py#L1-L4)
-- [tools/github_crawler/convertor.py](file://tools/github_crawler/convertor.py#L1-L12)
-
-## Performance Considerations
+## Performance considerations
 - Repository content truncation: The crawler enforces a maximum content length to prevent exceeding LLM context windows. This preserves the tree and summary for navigation and structure while limiting large file content.
 - Asynchronous ingestion: When available, asynchronous ingestion reduces latency in the request path.
 - Optional file attachments: Uploading and processing attached files adds overhead; use judiciously and ensure the file size remains within SDK limits.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Invalid or non-repository URL:
   - Symptom: Error indicating the URL does not point to a valid repository root
@@ -281,19 +189,14 @@ Common issues and resolutions:
   - Symptom: Failure to process the attached file
   - Resolution: Confirm the file path exists and the environment has a valid Google API key configured
 
-**Section sources**
-- [services/github_service.py](file://services/github_service.py#L27-L37)
-- [services/github_service.py](file://services/github_service.py#L103-L107)
-- [core/config.py](file://core/config.py#L13-L14)
-
 ## Conclusion
-The GitHub integration API provides a streamlined pathway to analyze repositories and answer contextual questions. By normalizing URLs, truncating content, and leveraging a structured prompt pipeline, it delivers reliable, Markdown-formatted answers. Optional file attachment support extends capabilities for multimodal workflows. For production deployments, consider adding authentication, rate limiting, and observability around ingestion and LLM calls.
+The GitHub integration API provides a streamlined pathway to analyze repositories and answer contextual questions. By normalizing URLs, truncating content, and using a structured prompt pipeline, it delivers reliable, Markdown-formatted answers. Optional file attachment support extends capabilities for multimodal workflows. For production deployments, consider adding authentication, rate limiting, and observability around ingestion and LLM calls.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### API Reference
+### API reference
 
 - Base URL: /api/genai/github
 - Method: POST
@@ -311,7 +214,7 @@ The GitHub integration API provides a streamlined pathway to analyze repositorie
 Example request payload:
 - url: "https://github.com/example/repo"
 - question: "Explain the main entry point"
-- chat_history: [] or [{"role": "user", "content": "..."}, ...]
+- chat_history: [] or [{"role": "user", "content": "..."},...]
 - attached_file_path: null or "/absolute/path/to/file"
 
 Example response payload:
@@ -328,9 +231,3 @@ Webhook integration:
 
 Repository context extraction:
 - The service normalizes the URL to the repository root and truncates content to fit within LLM context windows
-
-**Section sources**
-- [routers/github.py](file://routers/github.py#L16-L44)
-- [models/requests/github.py](file://models/requests/github.py#L4-L8)
-- [models/response/gihub.py](file://models/response/gihub.py#L4-L5)
-- [tools/github_crawler/convertor.py](file://tools/github_crawler/convertor.py#L35-L86)

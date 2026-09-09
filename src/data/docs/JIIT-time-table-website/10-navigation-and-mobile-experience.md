@@ -1,8 +1,8 @@
-# Navigation & Mobile Experience
+# Navigation & mobile experience
 
-## Purpose and Scope
+## Purpose and scope
 
-This document describes the navigation system implementation, including the dual-navigation architecture (desktop sidebar and mobile bottom bar), swipe gesture support, and responsive design patterns. The navigation system provides consistent routing across five main pages while adapting to different screen sizes and input methods.
+This page describes the navigation system implementation, including the dual-navigation architecture (desktop sidebar and mobile bottom bar), swipe gesture support, and responsive design patterns. The navigation system provides consistent routing across five main pages while adapting to different screen sizes and input methods.
 
 For information about specific page implementations, see the following pages:
 
@@ -14,21 +14,19 @@ For information about specific page implementations, see the following pages:
 
 ---
 
-## Navigation Architecture Overview
+## Navigation architecture overview
 
 The application implements a dual-navigation pattern with distinct interfaces for desktop and mobile devices. Both navigation components share the same route configuration but render differently based on screen size.
 
-![Architecture Diagram](images/10-navigation-and-mobile-experience_diagram_1.png)
-
-**Sources:** [website/components/navbar.tsx1-201](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L1-L201) [website/components/mobile-navbar.tsx1-98](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/mobile-navbar.tsx#L1-L98)
+![Diagram 1](images/10-navigation-and-mobile-experience_diagram_1.png)
 
 ---
 
-## Route Configuration
+## Route configuration
 
 All navigation routes are defined in a centralized `tabs` array exported from `navbar.tsx`. This configuration is shared between both navigation components to ensure consistency.
 
-### Tab Definition Structure
+### Tab definition structure
 
 | Property | Type | Purpose |
 | --- | --- | --- |
@@ -37,23 +35,21 @@ All navigation routes are defined in a centralized `tabs` array exported from `n
 | `path` | string | Next.js route path |
 | `icon` | LucideIcon | Icon component from lucide-react |
 
-![Architecture Diagram](images/10-navigation-and-mobile-experience_diagram_2.png)
+![Diagram 2](images/10-navigation-and-mobile-experience_diagram_2.png)
 
 The `tabs` array is imported by `MobileNavbar` to maintain identical route definitions across both navigation implementations.
 
-**Sources:** [website/components/navbar.tsx19-50](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L19-L50) [website/components/mobile-navbar.tsx6](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/mobile-navbar.tsx#L6-L6)
-
 ---
 
-## Desktop Sidebar Navigation
+## Desktop sidebar navigation
 
 The desktop navigation renders as a fixed left sidebar visible only on medium and larger screens (`md:flex` breakpoint). It occupies a 256px width (`w-64`) and extends the full viewport height.
 
-### Desktop Navigation Layout
+### Desktop navigation layout
 
-![Architecture Diagram](images/10-navigation-and-mobile-experience_diagram_3.png)
+![Diagram 3](images/10-navigation-and-mobile-experience_diagram_3.png)
 
-### Active State Detection
+### Active state detection
 
 Active route detection uses Next.js `usePathname()` with special handling for the root path:
 
@@ -67,19 +63,17 @@ The active tab receives:
 * Animated indicator: `motion.div` with `layoutId="activeTab"` for smooth transitions
 * Right edge indicator: 1px vertical bar (`layoutId="activeIndicator"`)
 
-**Sources:** [website/components/navbar.tsx102-177](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L102-L177) [website/components/navbar.tsx119-162](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L119-L162)
-
 ---
 
-## Mobile Bottom Navigation
+## Mobile bottom navigation
 
 The mobile navigation bar renders as a fixed bottom element, visible only on small screens (`md:hidden`). It uses a horizontally scrollable layout with icons and abbreviated labels.
 
-### Mobile Navigation Component Architecture
+### Mobile navigation component architecture
 
-![Architecture Diagram](images/10-navigation-and-mobile-experience_diagram_4.png)
+![Diagram 4](images/10-navigation-and-mobile-experience_diagram_4.png)
 
-### Indicator Animation System
+### Indicator animation system
 
 The mobile navbar uses a sliding indicator that animates between active tabs. The system tracks button positions using refs and calculates indicator dimensions dynamically.
 
@@ -98,7 +92,7 @@ The mobile navbar uses a sliding indicator that animates between active tabs. Th
 * Stiffness: 400
 * Damping: 30
 
-### Mobile Tab Button Layout
+### Mobile tab button layout
 
 Each tab button contains:
 
@@ -108,19 +102,17 @@ Each tab button contains:
 * Active color: `text-[#F0BB78]`
 * Inactive color: `text-slate-400` with hover effect
 
-**Sources:** [website/components/mobile-navbar.tsx1-98](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/mobile-navbar.tsx#L1-L98) [website/components/mobile-navbar.tsx55-94](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/mobile-navbar.tsx#L55-L94)
-
 ---
 
-## Swipe Gesture Navigation
+## Swipe gesture navigation
 
 The application implements horizontal swipe gestures for mobile navigation using the `react-swipeable` library. Swipe navigation allows users to move between pages with left/right gestures.
 
-### Swipe Handler Configuration
+### Swipe handler configuration
 
-![Architecture Diagram](images/10-navigation-and-mobile-experience_diagram_5.png)
+![Diagram 5](images/10-navigation-and-mobile-experience_diagram_5.png)
 
-### Swipe Navigation Flow
+### Swipe navigation flow
 
 **Left Swipe (Forward Navigation):**
 
@@ -135,14 +127,14 @@ The application implements horizontal swipe gestures for mobile navigation using
 1. User swipes right on screen
 2. Check if current page is timeline
 3. If timeline, return early (disable navigation)
-4. Calculate previous index: `currentTabIndex <= 0 ? tabs.length - 1 : currentTabIndex - 1`
+4. Calculate previous index: `currentTabIndex <= 0? tabs.length - 1: currentTabIndex - 1`
 5. Navigate to `tabs[prevIndex].path`
 
 **Timeline Page Exception:**
 
 Swipe navigation is explicitly disabled on the timeline page (`/timeline`) to prevent conflicts with the timeline's own horizontal scrolling functionality. The check occurs at line [website/components/navbar.tsx76](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L76-L76) and early returns in both swipe handlers [website/components/navbar.tsx81](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L81-L81) [website/components/navbar.tsx88](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L88-L88)
 
-### Swipe Area Implementation
+### Swipe area implementation
 
 Two invisible touch target areas are rendered at the left and right edges of the screen to capture swipe gestures:
 
@@ -160,22 +152,20 @@ Both areas:
 * Use `pointer-events-auto` for touch capture
 * Have transparent backgrounds
 
-**Sources:** [website/components/navbar.tsx78-98](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L78-L98) [website/components/navbar.tsx180-195](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L180-L195) [README.md32-33](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L32-L33) [README.md210-213](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L210-L213)
-
 ---
 
-## Responsive Design Breakpoints
+## Responsive design breakpoints
 
 The navigation system uses Tailwind CSS breakpoint utilities to switch between mobile and desktop modes.
 
-### Breakpoint Configuration
+### Breakpoint configuration
 
 | Breakpoint | Class Prefix | Viewport Width | Navigation Mode |
 | --- | --- | --- | --- |
 | Default (mobile) | (none) | < 768px | Bottom bar visible, sidebar hidden |
 | Medium+ (desktop) | `md:` | ≥ 768px | Sidebar visible, bottom bar hidden |
 
-### Component Visibility Controls
+### Component visibility controls
 
 **Desktop Sidebar:**
 
@@ -196,15 +186,15 @@ The navigation system uses Tailwind CSS breakpoint utilities to switch between m
 
 ---
 
-## Navigation State Management
+## Navigation state management
 
 Both navigation components use Next.js routing hooks for state management and navigation control.
 
-### Routing Hook Usage
+### Routing hook usage
 
-![Architecture Diagram](images/10-navigation-and-mobile-experience_diagram_6.png)
+![Diagram 6](images/10-navigation-and-mobile-experience_diagram_6.png)
 
-### Active Route Detection Logic
+### Active route detection logic
 
 Both components implement identical logic for determining the active tab:
 
@@ -232,11 +222,11 @@ This logic ensures that:
 
 ---
 
-## Animation and Visual Effects
+## Animation and visual effects
 
 The navigation system uses Framer Motion for smooth transitions and visual feedback.
 
-### Desktop Sidebar Animations
+### Desktop sidebar animations
 
 **Initial Load Animation:**
 
@@ -258,7 +248,7 @@ The navigation system uses Framer Motion for smooth transitions and visual feedb
 * Visual: Vertical bar on right edge of active tab
 * Implementation: [website/components/navbar.tsx155-158](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L155-L158)
 
-### Mobile Bottom Bar Animations
+### Mobile bottom bar animations
 
 **Sliding Indicator:**
 
@@ -268,7 +258,7 @@ The navigation system uses Framer Motion for smooth transitions and visual feedb
 * Delay: 50ms timeout for layout stabilization
 * Implementation: [website/components/mobile-navbar.tsx62-66](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/mobile-navbar.tsx#L62-L66) [website/components/mobile-navbar.tsx46](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/mobile-navbar.tsx#L46-L46)
 
-### Visual Design Theme
+### Visual design theme
 
 **Color Palette:**
 
@@ -284,19 +274,17 @@ The navigation system uses Framer Motion for smooth transitions and visual feedb
 * Semi-transparent backgrounds
 * Border overlays: `border-white/10`
 
-**Sources:** [website/components/navbar.tsx102-177](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L102-L177) [website/components/mobile-navbar.tsx55-94](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/mobile-navbar.tsx#L55-L94)
-
 ---
 
-## Integration with Application Layout
+## Integration with application layout
 
 The navigation components are rendered at the application root level and persist across all pages.
 
-### Layout Integration Pattern
+### Layout integration pattern
 
-![Architecture Diagram](images/10-navigation-and-mobile-experience_diagram_7.png)
+![Diagram 7](images/10-navigation-and-mobile-experience_diagram_7.png)
 
-### Z-Index Layering
+### Z-Index layering
 
 | Element | Z-Index | Purpose |
 | --- | --- | --- |
@@ -304,19 +292,17 @@ The navigation components are rendered at the application root level and persist
 | Mobile Bottom Bar | `z-50` | Above page content |
 | Swipe Detection Areas | `z-20` | Below navigation, above content |
 
-### Content Margin Adjustment
+### Content margin adjustment
 
 The desktop sidebar occupies 256px (`w-64`) of horizontal space. Page content automatically adjusts on desktop screens to account for this offset, though specific margin implementations are handled by individual page layouts rather than the navigation component itself.
 
-**Sources:** [website/components/navbar.tsx102-177](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L102-L177) [website/components/mobile-navbar.tsx56-59](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/mobile-navbar.tsx#L56-L59)
-
 ---
 
-## Touch Optimization
+## Touch optimization
 
 The mobile navigation implements several touch-specific optimizations for improved user experience on mobile devices.
 
-### Touch Target Sizing
+### Touch target sizing
 
 **Mobile Bottom Bar Buttons:**
 
@@ -332,7 +318,7 @@ The mobile navigation implements several touch-specific optimizations for improv
 * Transparent background: No visual interference
 * Implementation: [website/components/navbar.tsx183-194](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L183-L194)
 
-### Gesture Configuration
+### Gesture configuration
 
 **React Swipeable Settings:**
 
@@ -342,7 +328,7 @@ The mobile navigation implements several touch-specific optimizations for improv
 * Scroll prevention: Disabled to allow vertical scrolling
 * Implementation: [website/components/navbar.tsx94-97](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L94-L97)
 
-### Hover State Handling
+### Hover state handling
 
 Mobile buttons use color transitions instead of hover backgrounds to avoid "sticky" hover states on touch devices:
 
@@ -350,13 +336,11 @@ Mobile buttons use color transitions instead of hover backgrounds to avoid "stic
 * Inactive: `text-slate-400 hover:text-slate-200`
 * No background color changes on hover
 
-**Sources:** [website/components/mobile-navbar.tsx77-89](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/mobile-navbar.tsx#L77-L89) [website/components/navbar.tsx78-98](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L78-L98)
-
 ---
 
-## Known Limitations and Considerations
+## Known limitations and considerations
 
-### Timeline Page Swipe Conflict
+### Timeline page swipe conflict
 
 Swipe navigation is explicitly disabled on the `/timeline` route to prevent conflicts with the timeline's horizontal day-switching gestures. This is enforced by the `isTimelinePage` check in both swipe handlers.
 
@@ -364,24 +348,22 @@ Swipe navigation is explicitly disabled on the `/timeline` route to prevent conf
 
 **Implementation:** [website/components/navbar.tsx76](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L76-L76) [website/components/navbar.tsx81](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L81-L81) [website/components/navbar.tsx88](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L88-L88)
 
-### Mobile Bottom Bar Screen Real Estate
+### Mobile bottom bar screen real estate
 
 The mobile bottom navigation bar is fixed at the bottom of the screen with a height of approximately 80px (including margins). This reduces available screen space for page content on mobile devices.
 
 **Positioning:** `fixed bottom-6` with `max-w-md` and 90% width
 
-### Indicator Animation Dependencies
+### Indicator animation dependencies
 
 The mobile navbar's sliding indicator relies on DOM measurement APIs (`getBoundingClientRect`) which may not be immediately available during server-side rendering or initial hydration. A 50ms timeout is used to ensure layout stability before calculating positions.
 
 **Implementation:** [website/components/mobile-navbar.tsx46](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/mobile-navbar.tsx#L46-L46)
 
-### Browser Compatibility
+### Browser compatibility
 
 **Swipe Gestures:** Require modern touch event support (not supported in older browsers)
 
 **Backdrop Blur:** The `backdrop-blur-xl` effect requires browser support for CSS backdrop-filter property
 
 **Framer Motion:** Animations require JavaScript enabled; navigation remains functional without animations but loses visual polish
-
-**Sources:** [website/components/navbar.tsx75-98](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/navbar.tsx#L75-L98) [website/components/mobile-navbar.tsx29-53](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/website/components/mobile-navbar.tsx#L29-L53)

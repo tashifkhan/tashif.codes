@@ -1,33 +1,9 @@
-# Resume and Analysis Data
-
-<cite>
-**Referenced Files in This Document**
-- [schema.prisma](file://frontend/prisma/schema.prisma)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py)
-- [resume_analysis_routes.py](file://backend/app/routes/resume_analysis.py)
-- [process_resume.py](file://backend/app/services/process_resume.py)
-- [tailored_resume_routes.py](file://backend/app/routes/tailored_resume.py)
-- [resume_schemas.py](file://backend/app/models/resume/schemas.py)
-- [resume_data_schemas.py](file://backend/app/models/resume_data/schemas.py)
-- [tailored_resume_schemas.py](file://backend/app/models/tailored_resume/schemas.py)
-- [enrichment_schemas.py](file://backend/app/models/enrichment/schemas.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Resume and analysis data
 
 ## Introduction
-This document provides comprehensive documentation for the Resume and Analysis data models in TalentSync-Normies. It explains the Resume model with fields for user association, custom naming, raw text storage, upload metadata, and source tracking (UPLOADED vs MANUAL). It also documents the Analysis model with structured fields for personal information, professional links, predicted career field, skills analysis JSON, recommended roles array, and detailed sections for education, work experience, projects, publications, positions of responsibility, certifications, and achievements. The document covers the parent-child relationship for tailored resumes with cascade deletion policies, JSON field usage for flexible data structures, indexing strategies for performance optimization, and data lifecycle management. It further addresses resume versioning patterns, master resume tracking, analysis result storage mechanisms, validation rules, text search capabilities, and performance considerations for large text fields.
+This page provides detailed documentation for the Resume and Analysis data models in TalentSync-Normies. It explains the Resume model with fields for user association, custom naming, raw text storage, upload metadata, and source tracking (UPLOADED vs MANUAL). It also documents the Analysis model with structured fields for personal information, professional links, predicted career field, skills analysis JSON, recommended roles array, and detailed sections for education, work experience, projects, publications, positions of responsibility, certifications, and achievements. The document covers the parent-child relationship for tailored resumes with cascade deletion policies, JSON field usage for flexible data structures, indexing strategies for performance optimization, and data lifecycle management. It further addresses resume versioning patterns, master resume tracking, analysis result storage mechanisms, validation rules, text search capabilities, and performance considerations for large text fields.
 
-## Project Structure
+## Project structure
 The Resume and Analysis data models are defined in the Prisma schema and consumed by backend services and routes. The relevant files include:
 - Prisma schema defining models and indexes
 - Services orchestrating resume processing and analysis
@@ -59,27 +35,7 @@ RESUME_ANALYSIS --> PROCESS_RESUME
 TAILORED_ROUTE --> RESUME_ANALYSIS
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L81-L125)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L364)
-- [process_resume.py](file://backend/app/services/process_resume.py#L68-L117)
-- [tailored_resume_routes.py](file://backend/app/routes/tailored_resume.py#L1-L79)
-- [resume_schemas.py](file://backend/app/models/resume/schemas.py#L21-L157)
-- [resume_data_schemas.py](file://backend/app/models/resume_data/schemas.py#L310-L327)
-- [tailored_resume_schemas.py](file://backend/app/models/tailored_resume/schemas.py#L6-L18)
-- [enrichment_schemas.py](file://backend/app/models/enrichment/schemas.py#L45-L164)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L81-L125)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L364)
-- [process_resume.py](file://backend/app/services/process_resume.py#L68-L117)
-- [tailored_resume_routes.py](file://backend/app/routes/tailored_resume.py#L1-L79)
-- [resume_schemas.py](file://backend/app/models/resume/schemas.py#L21-L157)
-- [resume_data_schemas.py](file://backend/app/models/resume_data/schemas.py#L310-L327)
-- [tailored_resume_schemas.py](file://backend/app/models/tailored_resume/schemas.py#L6-L18)
-- [enrichment_schemas.py](file://backend/app/models/enrichment/schemas.py#L45-L164)
-
-## Core Components
+## Core components
 - Resume model
   - Fields: id, userId, customName, rawText, uploadDate, showInCentral, source, isMaster, parentId
   - Relations: belongs to User, optional Analysis, parent-child relationship via parentId with SetNull on child delete
@@ -95,10 +51,7 @@ These models support:
 - Master resume tracking and tailored resume hierarchy
 - Efficient querying via indexes
 
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L81-L125)
-
-## Architecture Overview
+## Architecture overview
 The system processes uploaded resumes, extracts and validates text, performs analysis, and stores structured results. The flow integrates file processing, LLM-based extraction, and persistence.
 
 ```mermaid
@@ -119,15 +72,9 @@ Service-->>Route : "ResumeUploadResponse"
 Route-->>Client : "Response"
 ```
 
-**Diagram sources**
-- [resume_analysis_routes.py](file://backend/app/routes/resume_analysis.py#L16-L25)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L157)
-- [process_resume.py](file://backend/app/services/process_resume.py#L68-L117)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L81-L125)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Resume Model
+### Resume model
 - Purpose: Store user-associated resume with raw text and metadata
 - Key fields
   - userId: foreign key to User
@@ -202,16 +149,7 @@ Resume "1" --> "many" Resume : "child (tailored)"
 Resume --> Resume : "parent via parentId"
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L16-L41)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L81-L98)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L100-L125)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L81-L98)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L100-L125)
-
-### Analysis Model
+### Analysis model
 - Purpose: Persist structured analysis results with flexible JSON sections
 - Core fields
   - Personal info: name, email, contact
@@ -252,13 +190,7 @@ class Analysis {
 }
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L100-L125)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L100-L125)
-
-### Parent-Child Relationship for Tailored Resumes
+### Parent-Child relationship for tailored resumes
 - Tailored resumes are children of a master resume
 - Deletion policy: child delete sets parentId to NULL (SetNull)
 - Master resume tracking: isMaster flag distinguishes primary resume per user
@@ -274,13 +206,7 @@ DeleteChild --> SetNull["parentId becomes NULL (SetNull)"]
 SetNull --> End(["Tailored Resume Disconnected"])
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L90-L95)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L90-L95)
-
-### JSON Field Usage and Structured Data
+### JSON field usage and structured data
 - JSON fields enable flexible storage of complex nested structures (e.g., lists of entries, proficiency data)
 - Validation and normalization are handled by Pydantic models:
   - ComprehensiveAnalysisData: aggregates all analysis sections
@@ -314,15 +240,7 @@ class ComprehensiveAnalysisData {
 }
 ```
 
-**Diagram sources**
-- [resume_schemas.py](file://backend/app/models/resume/schemas.py#L21-L42)
-- [resume_data_schemas.py](file://backend/app/models/resume_data/schemas.py#L114-L193)
-
-**Section sources**
-- [resume_schemas.py](file://backend/app/models/resume/schemas.py#L21-L42)
-- [resume_data_schemas.py](file://backend/app/models/resume_data/schemas.py#L114-L193)
-
-### Data Lifecycle Management
+### Data lifecycle management
 - Ingestion: file upload processed into raw text
 - Validation: checks for supported formats and resume keywords
 - Analysis: LLM-driven extraction into structured JSON
@@ -341,19 +259,7 @@ G --> H["Indexing (userId, isMaster)"]
 H --> I["Ready for Queries"]
 ```
 
-**Diagram sources**
-- [process_resume.py](file://backend/app/services/process_resume.py#L68-L117)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L157)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L81-L98)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L100-L125)
-
-**Section sources**
-- [process_resume.py](file://backend/app/services/process_resume.py#L68-L117)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L157)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L81-L98)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L100-L125)
-
-### Resume Versioning Patterns and Master Resume Tracking
+### Resume versioning patterns and master resume tracking
 - Master resume: identified by isMaster flag per user
 - Tailored resumes: children of a master resume via parentId
 - Versioning: achieved by creating new child resumes while preserving the master; deletion of a tailored resume does not affect the master (SetNull on parentId)
@@ -367,13 +273,7 @@ TailoredResume --> MasterResume : "Delete child (parentId set to NULL)"
 MasterResume --> [*]
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L89-L95)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L89-L95)
-
-### Analysis Result Storage Mechanisms
+### Analysis result storage mechanisms
 - Results are stored as JSON in dedicated fields for each section
 - A unified ComprehensiveAnalysisData model aggregates all sections for downstream use
 - Enrichment and regeneration workflows operate on this structured JSON
@@ -402,14 +302,7 @@ class ComprehensiveAnalysisData {
 }
 ```
 
-**Diagram sources**
-- [resume_schemas.py](file://backend/app/models/resume/schemas.py#L21-L42)
-
-**Section sources**
-- [resume_schemas.py](file://backend/app/models/resume/schemas.py#L21-L42)
-- [enrichment_schemas.py](file://backend/app/models/enrichment/schemas.py#L45-L164)
-
-### Data Validation Rules
+### Data validation rules
 - Resume validation ensures presence of typical resume keywords
 - Pydantic models validate and normalize JSON structures
 - Portfolio link aliasing accommodates varied LLM outputs
@@ -422,24 +315,12 @@ Normalize --> PortfolioAlias["Map portfolio alias"]
 PortfolioAlias --> Pass["Validated Output"]
 ```
 
-**Diagram sources**
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L96-L103)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L213-L221)
-
-**Section sources**
-- [process_resume.py](file://backend/app/services/process_resume.py#L93-L109)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L96-L103)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L213-L221)
-
-### Text Search Capabilities
+### Text search capabilities
 - rawText is stored as Text for large content
 - No explicit text search index is defined in the schema; consider adding GIN or trigram indexes for full-text search if needed
 - Current indexing focuses on userId and isMaster for filtering master resumes per user
 
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L85-L97)
-
-## Dependency Analysis
+## Dependency analysis
 The Resume and Analysis models depend on:
 - Prisma schema for database definitions and indexes
 - Backend services for processing and analysis
@@ -459,27 +340,7 @@ SERVICE --> PROCESSOR
 SERVICE --> PRISMA
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L81-L125)
-- [resume_analysis_routes.py](file://backend/app/routes/resume_analysis.py#L1-L68)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L364)
-- [process_resume.py](file://backend/app/services/process_resume.py#L68-L117)
-- [resume_schemas.py](file://backend/app/models/resume/schemas.py#L21-L157)
-- [resume_data_schemas.py](file://backend/app/models/resume_data/schemas.py#L310-L327)
-- [tailored_resume_schemas.py](file://backend/app/models/tailored_resume/schemas.py#L6-L18)
-- [enrichment_schemas.py](file://backend/app/models/enrichment/schemas.py#L45-L164)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L81-L125)
-- [resume_analysis_routes.py](file://backend/app/routes/resume_analysis.py#L1-L68)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L364)
-- [process_resume.py](file://backend/app/services/process_resume.py#L68-L117)
-- [resume_schemas.py](file://backend/app/models/resume/schemas.py#L21-L157)
-- [resume_data_schemas.py](file://backend/app/models/resume_data/schemas.py#L310-L327)
-- [tailored_resume_schemas.py](file://backend/app/models/tailored_resume/schemas.py#L6-L18)
-- [enrichment_schemas.py](file://backend/app/models/enrichment/schemas.py#L45-L164)
-
-## Performance Considerations
+## Performance considerations
 - Large text fields
   - rawText is stored as Text; consider partitioning or external storage for very large documents
   - Full-text search: add GIN/trigram indexes if frequent text searches are required
@@ -497,7 +358,7 @@ SERVICE --> PRISMA
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Unsupported file type or processing errors
   - The processor returns None for unsupported types; ensure file extensions are TXT, MD, PDF, or DOCX
 - Validation failures
@@ -508,12 +369,5 @@ SERVICE --> PRISMA
 - Portfolio aliasing
   - Portfolio field mapping handles various LLM output keys; ensure consistent alias handling
 
-**Section sources**
-- [process_resume.py](file://backend/app/services/process_resume.py#L68-L90)
-- [process_resume.py](file://backend/app/services/process_resume.py#L93-L109)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L96-L103)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L200-L208)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L278-L285)
-
 ## Conclusion
-The Resume and Analysis models in TalentSync-Normies provide a robust foundation for storing and managing resume data with flexible JSON structures. The schema supports master/tailored resume hierarchies, efficient user-based queries, and comprehensive analysis outputs. By leveraging Pydantic validation, structured JSON sections, and strategic indexing, the system balances flexibility with performance. Future enhancements could include full-text search indexes, denormalized fields for high-frequency queries, and improved cascading deletion policies for tailored resumes.
+The Resume and Analysis models in TalentSync-Normies provide a reliable foundation for storing and managing resume data with flexible JSON structures. The schema supports master/tailored resume hierarchies, efficient user-based queries, and detailed analysis outputs. By using Pydantic validation, structured JSON sections, and strategic indexing, the system balances flexibility with performance. Future enhancements could include full-text search indexes, denormalized fields for high-frequency queries, and improved cascading deletion policies for tailored resumes.

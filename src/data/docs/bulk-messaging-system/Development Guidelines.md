@@ -1,48 +1,9 @@
-# Development Guidelines
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://README.md)
-- [electron/package.json](file://electron/package.json)
-- [electron/eslint.config.js](file://electron/eslint.config.js)
-- [electron/vite.config.js](file://electron/vite.config.js)
-- [electron/electron-builder.json](file://electron/electron-builder.json)
-- [electron/src/ui/App.jsx](file://electron/src/ui/App.jsx)
-- [electron/src/ui/main.jsx](file://electron/src/ui/main.jsx)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js)
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js)
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [electron/src/components/GmailForm.jsx](file://electron/src/components/GmailForm.jsx)
-- [electron/src/components/SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx)
-- [python-backend/app.py](file://python-backend/app.py)
-- [python-backend/requirements.txt](file://python-backend/requirements.txt)
-- [.github/workflows/release.yml](file://.github/workflows/release.yml)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Testing Strategies](#testing-strategies)
-9. [Contribution Workflow](#contribution-workflow)
-10. [Development Environment Setup](#development-environment-setup)
-11. [Debugging Techniques](#debugging-techniques)
-12. [Continuous Integration and Deployment](#continuous-integration-and-deployment)
-13. [Code Review Standards](#code-review-standards)
-14. [Documentation Requirements](#documentation-requirements)
-15. [Quality Assurance Procedures](#quality-assurance-procedures)
-16. [Troubleshooting Guide](#troubleshooting-guide)
-17. [Conclusion](#conclusion)
+# Development guidelines
 
 ## Introduction
-This document provides comprehensive development guidelines for contributors and maintainers working on the Bulk Messaging System. It covers code style standards, component architecture, testing strategies, performance optimization, contribution workflow, environment setup, debugging, CI/CD processes, and quality assurance practices. The project combines an Electron desktop application with React for the UI, Python backend services for contact processing, and integrates with external APIs for WhatsApp and email services.
+This page provides detailed development guidelines for contributors and maintainers working on the Bulk Messaging System. It covers code style standards, component architecture, testing strategies, performance optimization, contribution workflow, environment setup, debugging, CI/CD processes, and quality assurance practices. The project combines an Electron desktop application with React for the UI, Python backend services for contact processing, and integrates with external APIs for WhatsApp and email services.
 
-## Project Structure
+## Project structure
 The repository is organized into distinct areas:
 - Electron application with React UI and Electron main/preload processes
 - Python backend for contact processing and validation
@@ -74,21 +35,7 @@ PBA --> PBReq
 GH --> EB
 ```
 
-**Diagram sources**
-- [electron/src/ui/App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [electron/src/ui/main.jsx](file://electron/src/ui/main.jsx#L1-L11)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L1-L371)
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [electron/electron-builder.json](file://electron/electron-builder.json#L1-L17)
-- [python-backend/app.py](file://python-backend/app.py#L1-L378)
-- [python-backend/requirements.txt](file://python-backend/requirements.txt#L1-L7)
-- [.github/workflows/release.yml](file://.github/workflows/release.yml#L1-L102)
-
-**Section sources**
-- [README.md](file://README.md#L198-L236)
-- [electron/package.json](file://electron/package.json#L1-L49)
-
-## Core Components
+## Core components
 - React UI and Application Shell
   - App.jsx renders the main application container and mounts BulkMailer.
   - main.jsx initializes the React root and renders App.
@@ -101,18 +48,7 @@ GH --> EB
 - Python Backend
   - app.py provides endpoints for contact upload, manual number parsing, and single number validation using Flask and pandas.
 
-**Section sources**
-- [electron/src/ui/App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [electron/src/ui/main.jsx](file://electron/src/ui/main.jsx#L1-L11)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L1-L371)
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [electron/src/components/GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [electron/src/components/SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [python-backend/app.py](file://python-backend/app.py#L1-L378)
-
-## Architecture Overview
+## Architecture overview
 The system follows a clear separation of concerns:
 - Renderer (React) handles UI and user interactions
 - Preload bridges secure IPC calls to the main process
@@ -141,15 +77,9 @@ Main-->>Preload : email-progress events
 Preload-->>UI : onProgress listeners
 ```
 
-**Diagram sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L102-L177)
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [electron/src/components/GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### React Component Architecture Guidelines
+### React component architecture guidelines
 - Prefer functional components with hooks for state and effects
 - Centralize cross-tab state in BulkMailer.jsx and pass down props to specialized forms
 - Use controlled components for inputs and derive derived state (e.g., recipient counts)
@@ -184,25 +114,10 @@ BulkMailer --> GmailForm
 BulkMailer --> SMTPForm
 ```
 
-**Diagram sources**
-- [electron/src/ui/App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [electron/src/components/GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [electron/src/components/SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-
-**Section sources**
-- [electron/src/ui/App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [electron/src/ui/main.jsx](file://electron/src/ui/main.jsx#L1-L11)
-- [electron/src/components/BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [electron/src/components/WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [electron/src/components/GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [electron/src/components/SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-
-### Electron Main Process and IPC
+### Electron main process and IPC
 - Security-first configuration: context isolation enabled, nodeIntegration disabled, preload script defines safe APIs
 - IPC channels for WhatsApp (client lifecycle, QR, status, send), Gmail (auth, token, send), and SMTP (send)
-- Robust error handling and cleanup on app close/quit
+- Reliable error handling and cleanup on app close/quit
 - Status updates propagated via ipcRenderer events to the renderer
 
 ```mermaid
@@ -218,22 +133,10 @@ Events --> Cleanup["Cleanup on window-all-closed<br/>and before-quit"]
 Cleanup --> End(["Exit"])
 ```
 
-**Diagram sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L20-L100)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L110-L177)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L179-L213)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L215-L262)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L264-L318)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L342-L371)
-
-**Section sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L1-L371)
-- [electron/src/electron/preload.js](file://electron/src/electron/preload.js#L1-L41)
-
-### Python Backend Services
+### Python backend services
 - Flask app with CORS enabled
 - Endpoints for health checks, file uploads, manual number parsing, and single number validation
-- Uses pandas for robust CSV/Excel parsing and regex-based phone number cleaning
+- Uses pandas for reliable CSV/Excel parsing and regex-based phone number cleaning
 - Secure file handling with allowed extensions and upload directory management
 
 ```mermaid
@@ -253,17 +156,7 @@ Validate["POST /validate-number"] --> Clean3["Clean number"]
 Clean3 --> Resp3["Return validity + cleaned number"]
 ```
 
-**Diagram sources**
-- [python-backend/app.py](file://python-backend/app.py#L225-L229)
-- [python-backend/app.py](file://python-backend/app.py#L232-L280)
-- [python-backend/app.py](file://python-backend/app.py#L283-L341)
-- [python-backend/app.py](file://python-backend/app.py#L343-L370)
-
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L1-L378)
-- [python-backend/requirements.txt](file://python-backend/requirements.txt#L1-L7)
-
-## Dependency Analysis
+## Dependency analysis
 - Electron dependencies include React, TailwindCSS, whatsapp-web.js, nodemailer, googleapis, and qrcode libraries
 - Vite is configured with React and Tailwind plugins, serving the React app locally and building to dist-react
 - electron-builder bundles the React and Electron resources into platform-specific distributables
@@ -281,20 +174,10 @@ Builder["electron-builder.json"] --> Files["files: dist-electron, dist-react"]
 Builder --> Targets["mac dmg, linux AppImage, win portable/msi"]
 ```
 
-**Diagram sources**
-- [electron/vite.config.js](file://electron/vite.config.js#L1-L17)
-- [electron/package.json](file://electron/package.json#L1-L49)
-- [electron/electron-builder.json](file://electron/electron-builder.json#L1-L17)
-
-**Section sources**
-- [electron/package.json](file://electron/package.json#L1-L49)
-- [electron/vite.config.js](file://electron/vite.config.js#L1-L17)
-- [electron/electron-builder.json](file://electron/electron-builder.json#L1-L17)
-
-## Performance Considerations
+## Performance considerations
 - Electron
   - Headless browser mode for WhatsApp client reduces overhead; ensure sandbox and GPU flags are configured appropriately
-  - Minimize heavy DOM rendering; leverage virtualized lists for large contact/email previews
+  - Minimize heavy DOM rendering; use virtualized lists for large contact/email previews
   - Debounce user input for large text areas to reduce re-renders
 - React
   - Use React.memo for components that render large lists (e.g., contact previews)
@@ -310,7 +193,7 @@ Builder --> Targets["mac dmg, linux AppImage, win portable/msi"]
 
 [No sources needed since this section provides general guidance]
 
-## Testing Strategies
+## Testing strategies
 - Unit Testing
   - React: Use a testing library to test pure functions and component logic (e.g., form validation, state transitions)
   - Python: Write pytest tests for app.py endpoints, ensuring coverage of parsing, validation, and error paths
@@ -323,16 +206,13 @@ Builder --> Targets["mac dmg, linux AppImage, win portable/msi"]
 
 [No sources needed since this section provides general guidance]
 
-## Contribution Workflow
+## Contribution workflow
 - Fork the repository and create feature branches with descriptive names
 - Follow code style standards enforced by ESLint
 - Add tests for new features and update documentation
 - Ensure cross-platform compatibility and thorough testing before opening a pull request
 
-**Section sources**
-- [README.md](file://README.md#L369-L384)
-
-## Development Environment Setup
+## Development environment setup
 - Prerequisites
   - Node.js 16+ and npm for the Electron app
   - Python 3.8+ for backend utilities
@@ -343,15 +223,10 @@ Builder --> Targets["mac dmg, linux AppImage, win portable/msi"]
   - Install Python backend dependencies in python-backend
   - Start the development server from the electron directory
 - Configuration
-  - Create a .env file in the electron directory with GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
+  - Create a.env file in the electron directory with GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
   - Configure SMTP settings for email sending
 
-**Section sources**
-- [README.md](file://README.md#L61-L98)
-- [README.md](file://README.md#L111-L118)
-- [README.md](file://README.md#L120-L133)
-
-## Debugging Techniques
+## Debugging techniques
 - Electron
   - Use DevTools in development mode; main process logs are visible in terminal
   - Inspect network requests and IPC traffic in DevTools
@@ -363,11 +238,7 @@ Builder --> Targets["mac dmg, linux AppImage, win portable/msi"]
   - Enable Flask debug mode for development
   - Validate file uploads and endpoint responses with curl or Postman
 
-**Section sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L34-L37)
-- [python-backend/app.py](file://python-backend/app.py#L372-L378)
-
-## Continuous Integration and Deployment
+## Continuous integration and deployment
 - GitHub Actions workflows
   - Release workflow builds Electron apps for macOS, Linux, and Windows
   - Distributables include platform-specific packages (DMG, AppImage, EXE, MSI, ZIP, TAR.GZ)
@@ -391,14 +262,7 @@ GH->>Dist : Upload artifacts
 GH->>GH : Create GitHub release with release notes
 ```
 
-**Diagram sources**
-- [.github/workflows/release.yml](file://.github/workflows/release.yml#L1-L102)
-
-**Section sources**
-- [.github/workflows/release.yml](file://.github/workflows/release.yml#L1-L102)
-- [README.md](file://README.md#L284-L332)
-
-## Code Review Standards
+## Code review standards
 - Code Style
   - Adhere to ESLint configuration for JavaScript/React
   - Use functional components with hooks and avoid class components
@@ -412,19 +276,12 @@ GH->>GH : Create GitHub release with release notes
   - Update README for new features and configuration changes
   - Comment complex logic and trade-offs
 
-**Section sources**
-- [README.md](file://README.md#L276-L283)
-- [electron/eslint.config.js](file://electron/eslint.config.js#L1-L34)
-
-## Documentation Requirements
+## Documentation requirements
 - Keep README updated with installation, configuration, and usage instructions
 - Document new endpoints, configuration options, and breaking changes
 - Provide troubleshooting sections for common issues
 
-**Section sources**
-- [README.md](file://README.md#L412-L455)
-
-## Quality Assurance Procedures
+## Quality assurance procedures
 - Automated Checks
   - Linting with ESLint
   - Building and packaging verification
@@ -435,11 +292,7 @@ GH->>GH : Create GitHub release with release notes
   - Audit context isolation and IPC exposure
   - Validate OAuth2 and SMTP credential handling
 
-**Section sources**
-- [README.md](file://README.md#L333-L341)
-- [electron/eslint.config.js](file://electron/eslint.config.js#L1-L34)
-
-## Troubleshooting Guide
+## Troubleshooting guide
 - Common Issues
   - WhatsApp QR code not loading: check internet connection and restart the app
   - Gmail authentication failure: verify OAuth2 credentials and API enablement
@@ -449,8 +302,5 @@ GH->>GH : Create GitHub release with release notes
   - Check README troubleshooting section
   - Review existing issues and create new ones with system information and error logs
 
-**Section sources**
-- [README.md](file://README.md#L412-L447)
-
 ## Conclusion
-This document consolidates development practices for the Bulk Messaging System. By following the outlined guidelines—code style, component architecture, testing, performance, contribution workflow, environment setup, debugging, CI/CD, code review, documentation, and QA—you can contribute effectively and maintain a high-quality, secure, and reliable application across Electron, React, and Python backend components.
+This page consolidates development practices for the Bulk Messaging System. By following the outlined guidelines, code style, component architecture, testing, performance, contribution workflow, environment setup, debugging, CI/CD, code review, documentation, and QA, you can contribute effectively and maintain a high-quality, secure, and reliable application across Electron, React, and Python backend components.

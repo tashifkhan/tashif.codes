@@ -1,32 +1,9 @@
-# Cleanup and Lifecycle Management
-
-<cite>
-**Referenced Files in This Document**
-- [main.js](file://electron/src/electron/main.js)
-- [utils.js](file://electron/src/electron/utils.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [package.json](file://electron/package.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Cleanup and lifecycle management
 
 ## Introduction
-This document provides comprehensive coverage of application lifecycle management and cleanup procedures for the WhatsApp bulk messaging application. It focuses on the WhatsApp cache and authentication file cleanup process, the application shutdown sequence, event handlers for graceful termination, forced cleanup mechanisms for corrupted or stuck sessions, error handling strategies, and platform-specific considerations for resource deallocation.
+This page provides detailed coverage of application lifecycle management and cleanup procedures for the WhatsApp bulk messaging application. It focuses on the WhatsApp cache and authentication file cleanup process, the application shutdown sequence, event handlers for graceful termination, forced cleanup mechanisms for corrupted or stuck sessions, error handling strategies, and platform-specific considerations for resource deallocation.
 
-## Project Structure
+## Project structure
 The application follows an Electron-based architecture with React frontend components and Node.js backend handlers. The lifecycle management spans the main process (application lifecycle), preload bridge (IPC communication), and renderer components (UI and user interactions).
 
 ```mermaid
@@ -52,20 +29,7 @@ Main --> SMTP
 Main --> Utils
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [utils.js](file://electron/src/electron/utils.js#L1-L5)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [package.json](file://electron/package.json#L1-L49)
-
-## Core Components
+## Core components
 This section documents the key components involved in lifecycle management and cleanup.
 
 - Application lifecycle controller: The main process manages application startup, window creation, and shutdown events.
@@ -79,13 +43,8 @@ Key responsibilities:
 - Forced cleanup: Handle scenarios where logout fails or sessions become corrupted.
 - Platform-specific handling: Different behavior on macOS versus Windows/Linux for app termination.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L53-L100)
-- [preload.js](file://electron/src/electron/preload.js#L23-L39)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L140-L153)
-
-## Architecture Overview
-The lifecycle management architecture integrates the main process, preload bridge, and renderer components to ensure robust cleanup and graceful shutdown.
+## Architecture overview
+The lifecycle management architecture integrates the main process, preload bridge, and renderer components to ensure reliable cleanup and graceful shutdown.
 
 ```mermaid
 sequenceDiagram
@@ -106,14 +65,9 @@ Preload-->>Renderer : {success, message}
 Renderer->>Renderer : Clear UI state (contacts, QR, status)
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L343-L371)
-- [preload.js](file://electron/src/electron/preload.js#L23-L39)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L290-L321)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### WhatsApp Cache and Authentication Cleanup
+### WhatsApp cache and authentication cleanup
 The application implements a dedicated helper function to remove WhatsApp cache and authentication directories. This ensures a fresh session on startup and after logout or forced cleanup.
 
 ```mermaid
@@ -129,18 +83,12 @@ CheckAuthExists --> |No| End(["Exit"])
 RemoveAuth --> End
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L320-L340)
-
 Key behaviors:
 - Resolves absolute paths for `.wwebjs_cache` and `.wwebjs_auth` directories.
 - Recursively removes directories with force flag to handle locked files.
 - Catches and logs errors during deletion without crashing the application.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L320-L340)
-
-### Application Shutdown Sequence
+### Application shutdown sequence
 The application defines two primary shutdown hooks: `before-quit` and `window-all-closed`. Both perform logout attempts and cleanup.
 
 ```mermaid
@@ -160,19 +108,13 @@ Main->>App : app.quit()
 end
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L66-L100)
-
 Shutdown steps:
 - Attempt logout from the WhatsApp client with error handling.
 - Clear cached client reference.
 - Remove WhatsApp cache and authentication directories.
 - On non-macOS platforms, explicitly quit the application.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L66-L100)
-
-### Event Handlers: before-quit and window-all-closed
+### Event handlers: before-quit and window-all-closed
 Both handlers ensure consistent cleanup regardless of how the user closes the application.
 
 - `before-quit`: Runs when the application is about to quit, performing logout and cleanup.
@@ -182,10 +124,7 @@ Platform-specific behavior:
 - macOS: The handler does not call `app.quit()` to support dock-based reopening.
 - Windows/Linux: Explicitly quits the application after cleanup.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L66-L100)
-
-### Forced Cleanup Mechanisms
+### Forced cleanup mechanisms
 The application implements forced cleanup for corrupted or stuck sessions through the logout IPC handler and startup cleanup.
 
 ```mermaid
@@ -201,18 +140,12 @@ ForceCleanup --> Notify
 Notify --> End(["Exit"])
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L343-L371)
-
 Forced cleanup features:
 - Even if logout throws an error, the client reference is cleared and cache/auth files are removed.
 - UI state is reset to reflect disconnection.
 - A "forced" status message is sent to the renderer.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L343-L371)
-
-### Error Handling Strategies
+### Error handling strategies
 The application employs layered error handling across lifecycle events and cleanup operations.
 
 - Try/catch around logout attempts to prevent crashes.
@@ -225,12 +158,7 @@ Recovery procedures:
 - Restart the application to reinitialize a fresh session.
 - Manually verify and remove cache/auth directories if necessary.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L68-L99)
-- [main.js](file://electron/src/electron/main.js#L345-L365)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L290-L321)
-
-### Platform-Specific Considerations
+### Platform-Specific considerations
 The application accounts for platform differences in lifecycle behavior.
 
 - macOS: The `window-all-closed` handler avoids calling `app.quit()` to allow the app to remain in the dock and reopen windows when activated.
@@ -238,10 +166,7 @@ The application accounts for platform differences in lifecycle behavior.
 
 These behaviors ensure consistent user experience across platforms while maintaining proper resource deallocation.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L81-L83)
-
-## Dependency Analysis
+## Dependency analysis
 Lifecycle management depends on several modules and handlers.
 
 ```mermaid
@@ -261,25 +186,12 @@ WhatsAppForm --> Preload
 BulkMailer --> WhatsAppForm
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [utils.js](file://electron/src/electron/utils.js#L1-L5)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [package.json](file://electron/package.json#L20-L31)
-
-## Performance Considerations
+## Performance considerations
 - Recursive directory removal is performed synchronously; consider asynchronous alternatives for large directories to avoid blocking the main thread.
 - Logout operations are awaited; ensure timeouts are configured appropriately to prevent indefinite hangs.
 - Rate limiting during mass messaging helps reduce server-side throttling and improves reliability.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Logout fails silently: Check console logs for error messages and retry logout. If repeated failures occur, perform forced cleanup.
 - Stuck session after crash: Manually remove `.wwebjs_cache` and `.wwebjs_auth` directories, then restart the application.
@@ -291,9 +203,5 @@ Diagnostic steps:
 - Confirm that cache/auth directories are removed after logout or forced cleanup.
 - Validate that UI state is cleared (QR code, status messages).
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L68-L99)
-- [main.js](file://electron/src/electron/main.js#L345-L365)
-
 ## Conclusion
-The application implements a robust lifecycle management system with comprehensive cleanup procedures for WhatsApp cache and authentication files. It provides graceful shutdown through `before-quit` and `window-all-closed` handlers, forced cleanup mechanisms for corrupted sessions, and platform-aware termination behavior. Error handling strategies ensure resilience, while the IPC bridge enables seamless coordination between the main process and renderer components.
+The application implements a reliable lifecycle management system with detailed cleanup procedures for WhatsApp cache and authentication files. It provides graceful shutdown through `before-quit` and `window-all-closed` handlers, forced cleanup mechanisms for corrupted sessions, and platform-aware termination behavior. Error handling strategies ensure resilience, while the IPC bridge enables smooth coordination between the main process and renderer components.

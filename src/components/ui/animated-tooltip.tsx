@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { useWebHaptics } from "web-haptics/react";
+import { trigger } from "@/lib/haptics";
 import {
 	motion,
 	useTransform,
@@ -34,7 +34,6 @@ export const AnimatedTooltip = ({
 		useTransform(x, [-100, 100], [-50, 50]),
 		springConfig
 	);
-	const { trigger } = useWebHaptics();
 
 	const handleMouseMove = (event: any) => {
 		if (animationFrameRef.current) {

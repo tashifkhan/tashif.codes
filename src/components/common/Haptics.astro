@@ -1,27 +1,9 @@
 ---
-// Shared haptic feedback wiring, included once in the base Layout. A single
-// delegated listener covers server-rendered markup, React islands, and
-// elements created after page load.
-//
-//   data-haptic                     → light tap
-//   data-haptic="<pattern>"         → any web-haptics pattern (medium, selection, …)
-//   data-haptic-back / -nav / -external → light tap
-//   data-haptic-social              → medium tap
+// Shared by the base layout and the standalone docs layout.
+// Defaults cover links and controls. data-haptic can override the semantic
+// pattern; "manual" delegates to an action handler, "off" silences a subtree.
 ---
-
 <script>
-	import { WebHaptics } from "web-haptics";
-
-	const haptics = new WebHaptics();
-	const selector =
-		"[data-haptic], [data-haptic-back], [data-haptic-nav], [data-haptic-external], [data-haptic-social]";
-
-	document.addEventListener("click", (e) => {
-		const el = (e.target as Element | null)?.closest<HTMLElement>(selector);
-		if (!el) return;
-		const pattern =
-			el.dataset.haptic ||
-			(el.dataset.hapticSocial !== undefined ? "medium" : "light");
-		haptics.trigger(pattern);
-	});
+	import { installHaptics } from "@/lib/haptics";
+	installHaptics();
 </script>

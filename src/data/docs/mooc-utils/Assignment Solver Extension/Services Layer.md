@@ -1,41 +1,13 @@
-# Services Layer
-
-<cite>
-**Referenced Files in This Document**
-- [index.js](file://assignment-solver/src/services/gemini/index.js)
-- [parser.js](file://assignment-solver/src/services/gemini/parser.js)
-- [schema.js](file://assignment-solver/src/services/gemini/schema.js)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js)
-- [messages.js](file://assignment-solver/src/core/messages.js)
-- [background/index.js](file://assignment-solver/src/background/index.js)
-- [handlers/gemini.js](file://assignment-solver/src/background/handlers/gemini.js)
-- [storage.js](file://assignment-solver/src/platform/storage.js)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js)
-- [tabs.js](file://assignment-solver/src/platform/tabs.js)
-- [content/index.js](file://assignment-solver/src/content/index.js)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Services layer
 
 ## Introduction
-This document describes the services layer responsible for business logic in the assignment solver extension. It covers:
+This page describes the services layer responsible for business logic in the assignment solver extension. It covers:
 - Gemini AI integration: API key management, model selection, request/response handling, and answer parsing
 - Local storage service for persisting user preferences and cached data
-- Service architecture using factory patterns, dependency injection, and robust error handling
+- Service architecture using factory patterns, dependency injection, and reliable error handling
 - Configuration options, rate limiting considerations, and integration examples with core extension components
 
-## Project Structure
+## Project structure
 The services layer is organized around two primary service factories:
 - Gemini service: orchestrates extraction and solving workflows with Google Generative Language API
 - Storage service: manages API keys, cached extractions, user answers, and model preferences
@@ -74,25 +46,7 @@ StorageSvc --> StorageAdapter
 Handlers --> GeminiSvc
 ```
 
-**Diagram sources**
-- [background/index.js](file://assignment-solver/src/background/index.js#L32-L42)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L12-L118)
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L60-L341)
-- [storage.js](file://assignment-solver/src/platform/storage.js#L12-L41)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [tabs.js](file://assignment-solver/src/platform/tabs.js#L12-L52)
-- [content/index.js](file://assignment-solver/src/content/index.js#L19-L96)
-
-**Section sources**
-- [background/index.js](file://assignment-solver/src/background/index.js#L32-L42)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L12-L118)
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L60-L341)
-- [storage.js](file://assignment-solver/src/platform/storage.js#L12-L41)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [tabs.js](file://assignment-solver/src/platform/tabs.js#L12-L52)
-- [content/index.js](file://assignment-solver/src/content/index.js#L19-L96)
-
-## Core Components
+## Core components
 - Gemini Service Factory
   - Builds content with HTML, images, and screenshots
   - Configures reasoning budgets per model family
@@ -112,19 +66,7 @@ Handlers --> GeminiSvc
   - Loads and saves API key and model preferences
   - Updates UI to reflect reasoning budget mapping
 
-**Section sources**
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L60-L341)
-- [parser.js](file://assignment-solver/src/services/gemini/parser.js#L11-L102)
-- [schema.js](file://assignment-solver/src/services/gemini/schema.js#L5-L135)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L12-L118)
-- [storage.js](file://assignment-solver/src/platform/storage.js#L12-L41)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [tabs.js](file://assignment-solver/src/platform/tabs.js#L12-L52)
-- [background/index.js](file://assignment-solver/src/background/index.js#L32-L117)
-- [handlers/gemini.js](file://assignment-solver/src/background/handlers/gemini.js#L12-L34)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L13-L127)
-
-## Architecture Overview
+## Architecture overview
 The services layer follows a factory pattern with explicit dependency injection. Background worker initializes platform adapters and services, then registers message handlers. Content scripts communicate via the runtime adapter. The Gemini service encapsulates API concerns and response parsing, while the storage service centralizes persistence.
 
 ```mermaid
@@ -147,15 +89,9 @@ Gemini-->>BG : structured result
 BG-->>UI : processed result
 ```
 
-**Diagram sources**
-- [background/index.js](file://assignment-solver/src/background/index.js#L32-L42)
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L145-L297)
-- [parser.js](file://assignment-solver/src/services/gemini/parser.js#L11-L102)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L73-L94)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Gemini Service Factory
+### Gemini service factory
 Responsibilities:
 - Build content parts from HTML, images, and screenshots
 - Configure thinking/budget reasoning per model family
@@ -169,7 +105,7 @@ Key behaviors:
 - Two transport modes:
   - callAPI: routed through background worker for UI-initiated requests
   - directAPICall: used by background worker to avoid message channel timeouts
-- Robust parsing with multiple fallbacks and truncation repair
+- Reliable parsing with multiple fallbacks and truncation repair
 
 ```mermaid
 flowchart TD
@@ -187,21 +123,7 @@ Valid --> |Yes| Return["Return structured result"]
 Valid --> |No| Error["Throw error with details"]
 ```
 
-**Diagram sources**
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L145-L297)
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L302-L339)
-- [parser.js](file://assignment-solver/src/services/gemini/parser.js#L11-L102)
-- [messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-- [handlers/gemini.js](file://assignment-solver/src/background/handlers/gemini.js#L15-L32)
-
-**Section sources**
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L60-L341)
-- [parser.js](file://assignment-solver/src/services/gemini/parser.js#L11-L102)
-- [schema.js](file://assignment-solver/src/services/gemini/schema.js#L5-L135)
-- [messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-- [handlers/gemini.js](file://assignment-solver/src/background/handlers/gemini.js#L12-L34)
-
-### Storage Service Factory
+### Storage service factory
 Responsibilities:
 - Persist and retrieve API key
 - Manage extraction cache with URL and timestamp
@@ -237,15 +159,7 @@ Export --> Full["getFullExtraction()"]
 Export --> AnswerOnly["getAnswerOnlyExport()"]
 ```
 
-**Diagram sources**
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L12-L118)
-- [storage.js](file://assignment-solver/src/platform/storage.js#L12-L41)
-
-**Section sources**
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L12-L118)
-- [storage.js](file://assignment-solver/src/platform/storage.js#L12-L41)
-
-### Background Worker and Handlers
+### Background worker and handlers
 Responsibilities:
 - Initialize logger and platform adapters
 - Create and wire services (Gemini, Screenshot)
@@ -276,18 +190,7 @@ Handler-->>Runtime : sendResponse(response)
 Runtime-->>UI : response
 ```
 
-**Diagram sources**
-- [background/index.js](file://assignment-solver/src/background/index.js#L65-L68)
-- [handlers/gemini.js](file://assignment-solver/src/background/handlers/gemini.js#L15-L32)
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L324-L339)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L19-L29)
-
-**Section sources**
-- [background/index.js](file://assignment-solver/src/background/index.js#L32-L117)
-- [handlers/gemini.js](file://assignment-solver/src/background/handlers/gemini.js#L12-L34)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-
-### UI Settings Controller
+### UI settings controller
 Responsibilities:
 - Load stored API key and model preferences into form controls
 - Save API key and model preferences to storage
@@ -297,11 +200,7 @@ Integration:
 - Depends on storage service for persistence
 - Drives model preference updates used by Gemini service
 
-**Section sources**
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L13-L127)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L70-L85)
-
-## Dependency Analysis
+## Dependency analysis
 The services layer uses a clean dependency injection pattern:
 - Background worker composes services with platform adapters
 - Gemini service depends on runtime adapter for messaging and on parser/schema for response handling
@@ -320,25 +219,7 @@ Settings["Settings Controller"] --> Storage
 Content["Content Script"] --> Runtime
 ```
 
-**Diagram sources**
-- [background/index.js](file://assignment-solver/src/background/index.js#L24-L42)
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L60-L341)
-- [parser.js](file://assignment-solver/src/services/gemini/parser.js#L11-L102)
-- [schema.js](file://assignment-solver/src/services/gemini/schema.js#L5-L135)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L12-L118)
-- [storage.js](file://assignment-solver/src/platform/storage.js#L12-L41)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L13-L127)
-- [content/index.js](file://assignment-solver/src/content/index.js#L19-L96)
-
-**Section sources**
-- [background/index.js](file://assignment-solver/src/background/index.js#L32-L42)
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L60-L341)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L12-L118)
-- [storage.js](file://assignment-solver/src/platform/storage.js#L12-L41)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L13-L127)
-- [content/index.js](file://assignment-solver/src/content/index.js#L19-L96)
-
-## Performance Considerations
+## Performance considerations
 - Thinking budget and reasoning levels
   - Gemini supports reasoning budgets for supported models; unsupported models skip thinking configuration
   - Budget mapping caps maximum thinking budget per reasoning level
@@ -354,13 +235,7 @@ Recommendations:
 - Monitor finish reasons and adjust reasoning levels to balance quality and cost
 - Cache extractions to reduce redundant API calls
 
-**Section sources**
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L32-L51)
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L112-L128)
-- [messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-- [handlers/gemini.js](file://assignment-solver/src/background/handlers/gemini.js#L20-L25)
-
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - API key errors
   - Ensure API key is saved via settings and retrieved by storage service
@@ -378,18 +253,12 @@ Operational tips:
 - Confirm background worker initialization and handler registration
 - Validate browser compatibility via platform adapters
 
-**Section sources**
-- [parser.js](file://assignment-solver/src/services/gemini/parser.js#L11-L102)
-- [messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-- [background/index.js](file://assignment-solver/src/background/index.js#L69-L102)
-- [content/index.js](file://assignment-solver/src/content/index.js#L80-L86)
-
 ## Conclusion
-The services layer cleanly separates AI orchestration, persistence, and platform integration through factory patterns and dependency injection. The Gemini service encapsulates API complexity with robust parsing and configuration, while the storage service centralizes user preferences and caches. The architecture supports cross-browser compatibility, resilient messaging, and extensible configuration for model selection and reasoning budgets.
+The services layer cleanly separates AI orchestration, persistence, and platform integration through factory patterns and dependency injection. The Gemini service encapsulates API complexity with reliable parsing and configuration, while the storage service centralizes user preferences and caches. The architecture supports cross-browser compatibility, resilient messaging, and extensible configuration for model selection and reasoning budgets.
 
 ## Appendices
 
-### Configuration Options
+### Configuration options
 - Model selection
   - Extraction model and solving model IDs
   - Reasoning levels: none, low, medium, high
@@ -398,21 +267,12 @@ The services layer cleanly separates AI orchestration, persistence, and platform
   - Solving model defaults to a supported 3.0-family model
   - Reasoning levels default to high for both tasks
 
-**Section sources**
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L70-L85)
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L16-L21)
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L151-L152)
-- [index.js](file://assignment-solver/src/services/gemini/index.js#L233-L234)
-
-### Rate Limiting Implementation
+### Rate limiting implementation
 - Client-side retry with backoff for transient connection errors
 - No explicit external API rate limiter is implemented in the services layer
 - Consider server-side quotas and adjust request frequency accordingly
 
-**Section sources**
-- [messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-
-### Integration Examples with Core Extension Components
+### Integration examples with core extension components
 - Settings controller
   - Saves API key and model preferences to storage service
   - Loads stored values into UI controls
@@ -422,8 +282,3 @@ The services layer cleanly separates AI orchestration, persistence, and platform
 - Content script
   - Receives UI commands and interacts with page DOM
   - Supports debug relaying for Gemini payloads
-
-**Section sources**
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L73-L94)
-- [background/index.js](file://assignment-solver/src/background/index.js#L32-L68)
-- [content/index.js](file://assignment-solver/src/content/index.js#L19-L96)

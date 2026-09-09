@@ -1,33 +1,7 @@
-# Course Search API
-
-<cite>
-**Referenced Files in This Document**
-- [main.py](file://notice-reminders/app/api/main.py)
-- [search.py](file://notice-reminders/app/api/routers/search.py)
-- [courses.py](file://notice-reminders/app/api/routers/courses.py)
-- [course_service.py](file://notice-reminders/app/services/course_service.py)
-- [swayam_service.py](file://notice-reminders/app/services/swayam_service.py)
-- [scrapers/__init__.py](file://notice-reminders/app/scrapers/__init__.py)
-- [models/course.py](file://notice-reminders/app/models/course.py)
-- [schemas/course.py](file://notice-reminders/app/schemas/course.py)
-- [domain/models.py](file://notice-reminders/app/domain/models.py)
-- [config.py](file://notice-reminders/app/core/config.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Course search API
 
 ## Introduction
-This document provides comprehensive API documentation for course discovery and search endpoints. It covers:
+This page provides detailed API documentation for course discovery and search endpoints. It covers:
 - Course search by keyword
 - Course listing and details retrieval
 - Course platform integration endpoints for Swayam and NPTEL
@@ -37,7 +11,7 @@ This document provides comprehensive API documentation for course discovery and 
 
 The backend is a FastAPI application exposing REST endpoints for search and course management, backed by a database and asynchronous scrapers for Swayam/NPTEL.
 
-## Project Structure
+## Project structure
 The course search API is implemented in the notice-reminders backend module. Key areas:
 - API routers define endpoints under /search and /courses
 - Services encapsulate business logic for search, caching, and platform integrations
@@ -76,23 +50,7 @@ SVC_COURSE --> SCHEMA
 SCRAPER --> DOMAIN
 ```
 
-**Diagram sources**
-- [main.py](file://notice-reminders/app/api/main.py#L17-L42)
-- [search.py](file://notice-reminders/app/api/routers/search.py#L1-L17)
-- [courses.py](file://notice-reminders/app/api/routers/courses.py#L1-L32)
-- [course_service.py](file://notice-reminders/app/services/course_service.py#L1-L66)
-- [swayam_service.py](file://notice-reminders/app/services/swayam_service.py#L1-L25)
-- [scrapers/__init__.py](file://notice-reminders/app/scrapers/__init__.py#L1-L170)
-- [models/course.py](file://notice-reminders/app/models/course.py#L1-L22)
-- [schemas/course.py](file://notice-reminders/app/schemas/course.py#L1-L19)
-- [domain/models.py](file://notice-reminders/app/domain/models.py#L1-L34)
-
-**Section sources**
-- [main.py](file://notice-reminders/app/api/main.py#L17-L42)
-- [search.py](file://notice-reminders/app/api/routers/search.py#L1-L17)
-- [courses.py](file://notice-reminders/app/api/routers/courses.py#L1-L32)
-
-## Core Components
+## Core components
 - FastAPI application factory registers CORS, database, and routers
 - Search endpoint: GET /search?q={query}
 - Course listing endpoint: GET /courses
@@ -110,15 +68,7 @@ Key behaviors:
 - Course details returns a single course by unique code or 404
 - Recently updated courses are filtered by a configurable cache TTL window
 
-**Section sources**
-- [course_service.py](file://notice-reminders/app/services/course_service.py#L17-L66)
-- [swayam_service.py](file://notice-reminders/app/services/swayam_service.py#L18-L24)
-- [scrapers/__init__.py](file://notice-reminders/app/scrapers/__init__.py#L38-L101)
-- [schemas/course.py](file://notice-reminders/app/schemas/course.py#L6-L19)
-- [models/course.py](file://notice-reminders/app/models/course.py#L7-L22)
-- [domain/models.py](file://notice-reminders/app/domain/models.py#L7-L33)
-
-## Architecture Overview
+## Architecture overview
 The API follows a layered architecture:
 - Routers expose HTTP endpoints
 - Services encapsulate domain logic and orchestrate external integrations
@@ -148,17 +98,9 @@ Service-->>Router : "list[Course]"
 Router-->>Client : "200 OK JSON"
 ```
 
-**Diagram sources**
-- [main.py](file://notice-reminders/app/api/main.py#L29-L35)
-- [search.py](file://notice-reminders/app/api/routers/search.py#L10-L16)
-- [course_service.py](file://notice-reminders/app/services/course_service.py#L17-L53)
-- [swayam_service.py](file://notice-reminders/app/services/swayam_service.py#L18-L20)
-- [scrapers/__init__.py](file://notice-reminders/app/scrapers/__init__.py#L38-L101)
-- [models/course.py](file://notice-reminders/app/models/course.py#L7-L22)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### API Endpoints
+### API endpoints
 
 #### GET /search
 - Purpose: Search courses by keyword
@@ -179,11 +121,6 @@ Notes:
 - Sorting is not applied by the endpoint; ordering depends on the underlying service and database
 - Pagination is not supported in this endpoint
 
-**Section sources**
-- [search.py](file://notice-reminders/app/api/routers/search.py#L10-L16)
-- [course_service.py](file://notice-reminders/app/services/course_service.py#L17-L53)
-- [schemas/course.py](file://notice-reminders/app/schemas/course.py#L6-L19)
-
 #### GET /courses
 - Purpose: List all courses
 - Query parameters: None
@@ -198,11 +135,6 @@ Example request:
 Response structure:
 - Same as /search
 
-**Section sources**
-- [courses.py](file://notice-reminders/app/api/routers/courses.py#L10-L15)
-- [course_service.py](file://notice-reminders/app/services/course_service.py#L55-L56)
-- [schemas/course.py](file://notice-reminders/app/schemas/course.py#L6-L19)
-
 #### GET /courses/{course_code}
 - Purpose: Retrieve course details by unique code
 - Path parameters:
@@ -216,11 +148,6 @@ Example request:
 
 Response structure:
 - Same as above
-
-**Section sources**
-- [courses.py](file://notice-reminders/app/api/routers/courses.py#L18-L31)
-- [course_service.py](file://notice-reminders/app/services/course_service.py#L58-L59)
-- [schemas/course.py](file://notice-reminders/app/schemas/course.py#L6-L19)
 
 ### CourseService
 Responsibilities:
@@ -249,12 +176,6 @@ Create --> Store
 Store --> Done(["Return stored list"])
 ```
 
-**Diagram sources**
-- [course_service.py](file://notice-reminders/app/services/course_service.py#L17-L53)
-
-**Section sources**
-- [course_service.py](file://notice-reminders/app/services/course_service.py#L11-L66)
-
 ### SwayamService
 Responsibilities:
 - Delegates course search to SwayamScraper
@@ -264,14 +185,11 @@ Integration details:
 - Uses SwayamScraper.search_courses for course listings
 - Uses SwayamScraper.get_announcements for announcements
 
-**Section sources**
-- [swayam_service.py](file://notice-reminders/app/services/swayam_service.py#L10-L25)
-
 ### SwayamScraper
 Responsibilities:
 - Asynchronously fetches and parses course listings from Swayam
 - Parses announcements from NPTEL or Swayam2 URLs
-- Applies robust parsing for dates and content
+- Applies reliable parsing for dates and content
 
 Search algorithm highlights:
 - Constructs URL with query parameter searchText
@@ -305,14 +223,7 @@ DOM-->>Scraper : "list[Announcement]"
 Scraper-->>Service : "list[Announcement]"
 ```
 
-**Diagram sources**
-- [swayam_service.py](file://notice-reminders/app/services/swayam_service.py#L18-L24)
-- [scrapers/__init__.py](file://notice-reminders/app/scrapers/__init__.py#L38-L117)
-
-**Section sources**
-- [scrapers/__init__.py](file://notice-reminders/app/scrapers/__init__.py#L14-L170)
-
-### Data Models and Schemas
+### Data models and schemas
 - Domain models (dataclasses):
   - Course: title, url, code, instructor, institute, nc_code
   - Announcement: title, date, content
@@ -357,17 +268,7 @@ CourseDB <.. CourseDomain : "persisted from"
 CourseResponse <.. CourseDB : "validated from"
 ```
 
-**Diagram sources**
-- [domain/models.py](file://notice-reminders/app/domain/models.py#L7-L33)
-- [models/course.py](file://notice-reminders/app/models/course.py#L7-L22)
-- [schemas/course.py](file://notice-reminders/app/schemas/course.py#L6-L19)
-
-**Section sources**
-- [domain/models.py](file://notice-reminders/app/domain/models.py#L7-L33)
-- [models/course.py](file://notice-reminders/app/models/course.py#L7-L22)
-- [schemas/course.py](file://notice-reminders/app/schemas/course.py#L6-L19)
-
-### Filtering, Sorting, and Pagination
+### Filtering, sorting, and pagination
 - Filtering:
   - No explicit filters are exposed by the current endpoints
   - Filtering can be implemented at the service level (e.g., by instructor, institute, or nc_code) by extending CourseService and adding router parameters
@@ -382,11 +283,7 @@ Recommendations:
 - Add query parameters for filters (e.g., instructor, institute, nc_code) and pagination (limit, offset)
 - Apply consistent sorting defaults and allow optional sort fields
 
-**Section sources**
-- [courses.py](file://notice-reminders/app/api/routers/courses.py#L10-L15)
-- [course_service.py](file://notice-reminders/app/services/course_service.py#L55-L56)
-
-### Platform Integration: Swayam and NPTEL
+### Platform integration: swayam and NPTEL
 - Swayam:
   - Course search via SwayamScraper.search_courses
   - Course code extracted from preview URL pattern
@@ -397,20 +294,12 @@ Recommendations:
   - Base URLs for Swayam and NPTEL are defined in Settings
   - Cache TTL for recently updated filtering is configurable
 
-**Section sources**
-- [scrapers/__init__.py](file://notice-reminders/app/scrapers/__init__.py#L18-L117)
-- [config.py](file://notice-reminders/app/core/config.py#L9-L12)
-
-### Result Formatting
+### Result formatting
 - All endpoints return JSON arrays for lists and single objects for details
 - CourseResponse mirrors the database model fields for consistency
-- Datetime fields are serialized by Pydantic’s from_attributes support
+- Datetime fields are serialized by Pydantic's from_attributes support
 
-**Section sources**
-- [schemas/course.py](file://notice-reminders/app/schemas/course.py#L6-L19)
-- [models/course.py](file://notice-reminders/app/models/course.py#L7-L22)
-
-## Dependency Analysis
+## Dependency analysis
 External dependencies and integration points:
 - HTTP client: httpx for asynchronous requests
 - HTML parsing: BeautifulSoup for structured extraction
@@ -430,18 +319,7 @@ CONFIG["Settings"] --> SWAYAM
 CONFIG --> SVC
 ```
 
-**Diagram sources**
-- [main.py](file://notice-reminders/app/api/main.py#L17-L42)
-- [course_service.py](file://notice-reminders/app/services/course_service.py#L13-L15)
-- [swayam_service.py](file://notice-reminders/app/services/swayam_service.py#L14-L16)
-- [scrapers/__init__.py](file://notice-reminders/app/scrapers/__init__.py#L7-L36)
-- [config.py](file://notice-reminders/app/core/config.py#L4-L32)
-
-**Section sources**
-- [main.py](file://notice-reminders/app/api/main.py#L1-L46)
-- [config.py](file://notice-reminders/app/core/config.py#L1-L32)
-
-## Performance Considerations
+## Performance considerations
 - Asynchronous scraping: httpx and BeautifulSoup enable concurrent fetching and parsing
 - Database upsert: Field-level comparison minimizes unnecessary writes
 - Sorting: Single-field ordering reduces CPU overhead
@@ -453,7 +331,7 @@ CONFIG --> SVC
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - 404 Not Found on /courses/{course_code}:
   - The requested course code does not exist in the database
@@ -468,18 +346,14 @@ Common issues and resolutions:
   - Increase concurrency or introduce caching for popular queries
   - Monitor database write operations during upsert
 
-**Section sources**
-- [courses.py](file://notice-reminders/app/api/routers/courses.py#L25-L29)
-- [scrapers/__init__.py](file://notice-reminders/app/scrapers/__init__.py#L103-L117)
-
 ## Conclusion
-The Course Search API provides a clean, extensible foundation for discovering and retrieving course information from Swayam and NPTEL. Current capabilities include keyword search, listing, and details retrieval with robust scraping and local caching. Future enhancements should focus on filtering, pagination, and improved caching strategies to scale performance and usability.
+The Course Search API provides a clean, extensible foundation for discovering and retrieving course information from Swayam and NPTEL. Current capabilities include keyword search, listing, and details retrieval with reliable scraping and local caching. Future enhancements should focus on filtering, pagination, and improved caching strategies to scale performance and usability.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### API Reference Summary
+### API reference summary
 - GET /search?q={query}
   - Returns: Array of CourseResponse
   - Notes: No pagination or sorting enforced
@@ -490,8 +364,3 @@ The Course Search API provides a clean, extensible foundation for discovering an
 
 Response fields:
 - id, code, title, url, instructor, institute, nc_code, created_at, updated_at
-
-**Section sources**
-- [search.py](file://notice-reminders/app/api/routers/search.py#L10-L16)
-- [courses.py](file://notice-reminders/app/api/routers/courses.py#L10-L31)
-- [schemas/course.py](file://notice-reminders/app/schemas/course.py#L6-L19)

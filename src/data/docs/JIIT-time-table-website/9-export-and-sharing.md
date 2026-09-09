@@ -1,6 +1,6 @@
-# Export & Sharing
+# Export & sharing
 
-This document covers the mechanisms for exporting schedules to various formats and sharing configurations between users. The system provides three primary sharing/export capabilities: downloadable images (PNG/PDF), Google Calendar synchronization, and URL-based configuration sharing.
+This page covers the mechanisms for exporting schedules to various formats and sharing configurations between users. The system provides three primary sharing/export capabilities: downloadable images (PNG/PDF), Google Calendar synchronization, and URL-based configuration sharing.
 
 For details on individual export mechanisms, see:
 
@@ -10,19 +10,19 @@ For details on individual export mechanisms, see:
 
 ---
 
-## Overview of Export & Sharing Architecture
+## Overview of export & sharing architecture
 
 The export and sharing system operates on the current schedule state, with special handling for edited schedules. All export operations use the `editedSchedule` if available, otherwise falling back to the base `schedule`.
 
 **Export & Sharing Flow**
 
-![Architecture Diagram](images/9-export-and-sharing_diagram_1.png)
+![Diagram 1](images/9-export-and-sharing_diagram_1.png)
 
 ---
 
-## Export Mechanism Entry Point
+## Export mechanism entry point
 
-The `ActionButtons` component serves as the primary UI for all export operations. It manages loading states, progress notifications, and routing between export types.
+The `ActionButtons` component is the primary UI for all export operations. It manages loading states, progress notifications, and routing between export types.
 
 | Export Type | Trigger Function | Output Format | Processing Library |
 | --- | --- | --- | --- |
@@ -40,13 +40,13 @@ The `ActionButtons` component serves as the primary UI for all export operations
 
 ---
 
-## Download Mode & Schedule Capture
+## Download mode & schedule capture
 
 The Timeline page implements a special download mode that prepares the schedule for capture. This mode is activated via the `download=1` query parameter.
 
 **Timeline Download Mode Configuration**
 
-![Architecture Diagram](images/9-export-and-sharing_diagram_2.png)
+![Diagram 2](images/9-export-and-sharing_diagram_2.png)
 
 **Download Mode Behavior**
 
@@ -69,7 +69,7 @@ When `isDownloadMode` is `true`:
 
 ---
 
-## Image Export Implementation
+## Image export implementation
 
 The download utilities provide PNG and PDF export by capturing the DOM as an image using the `html-to-image` library.
 
@@ -102,7 +102,7 @@ await toPng(element, {
 
 PDF export captures the schedule as an image, then embeds it in a landscape A4 document:
 
-![Architecture Diagram](images/9-export-and-sharing_diagram_3.png)
+![Diagram 3](images/9-export-and-sharing_diagram_3.png)
 
 The PDF dimensions are calculated to fit the schedule within A4 landscape format:
 
@@ -132,13 +132,13 @@ Both export functions support progress callbacks for user feedback:
 
 ---
 
-## Google Calendar Integration
+## Google calendar integration
 
 The Google Calendar integration creates recurring events from the schedule using OAuth 2.0 authentication and the Google Calendar API.
 
 **Calendar Sync Architecture**
 
-![Architecture Diagram](images/9-export-and-sharing_diagram_4.png)
+![Diagram 4](images/9-export-and-sharing_diagram_4.png)
 
 **OAuth 2.0 Flow**
 
@@ -238,19 +238,19 @@ This ensures that if some events fail to create, others still succeed. Failures 
 
 ---
 
-## URL Parameter Sharing
+## URL parameter sharing
 
 The application supports sharing schedules via URL parameters using the `nuqs` library for type-safe URL state synchronization. This enables users to share complete schedule configurations via links.
 
 **URL Parameter Structure**
 
-![Architecture Diagram](images/9-export-and-sharing_diagram_5.png)
+![Diagram 5](images/9-export-and-sharing_diagram_5.png)
 
 **Conflict Resolution Flow**
 
 When URL parameters are detected but a cached schedule already exists, the system presents a conflict resolution dialog:
 
-![Architecture Diagram](images/9-export-and-sharing_diagram_6.png)
+![Diagram 6](images/9-export-and-sharing_diagram_6.png)
 
 **Dialog Options**
 
@@ -297,13 +297,13 @@ This handles cases where codes might be concatenated or duplicated in URL parame
 
 ---
 
-## Export UI Integration
+## Export UI integration
 
 The `ActionButtons` component renders all export options with consistent styling and feedback:
 
 **Button Layout**
 
-![Architecture Diagram](images/9-export-and-sharing_diagram_7.png)
+![Diagram 7](images/9-export-and-sharing_diagram_7.png)
 
 **Loading State Handling**
 
@@ -333,7 +333,7 @@ Notifications are shown for:
 
 ---
 
-## Error Handling
+## Error handling
 
 All export mechanisms implement error handling with user feedback:
 
@@ -368,7 +368,7 @@ The Google Calendar integration handles errors at multiple levels:
 
 ---
 
-## Integration Points
+## Integration points
 
 The export and sharing system integrates with multiple application components:
 

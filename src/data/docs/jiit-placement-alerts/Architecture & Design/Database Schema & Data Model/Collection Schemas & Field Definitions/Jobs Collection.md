@@ -1,29 +1,9 @@
-# Jobs Collection
-
-<cite>
-**Referenced Files in This Document**
-- [superset_client.py](file://app/clients/superset_client.py)
-- [database_service.py](file://app/services/database_service.py)
-- [db_client.py](file://app/clients/db_client.py)
-- [structured_job_listings.json](file://app/data/structured_job_listings.json)
-- [placement_offers.json](file://app/data/placement_offers.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Jobs collection
 
 ## Introduction
-This document defines the Jobs collection schema used to store structured job profile data extracted from the SuperSet portal. It explains the job_id unique identifier field and its relationship to MongoDB's ObjectId, details the company and job_profile fields, job_description content storage, and the qualification_criteria embedded structure containing min_cgpa threshold, branches array, and batch_years array. It also covers the position_details structure with total_positions, job_location, and job_type enumeration, the compensation embedded document with base_salary, bonus, and currency fields, and timestamps for application_deadline, posted_at, and metadata timestamps. Validation rules, array field requirements, and example documents are provided to illustrate different job types and qualification criteria combinations.
+This page defines the Jobs collection schema used to store structured job profile data extracted from the SuperSet portal. It explains the job_id unique identifier field and its relationship to MongoDB's ObjectId, details the company and job_profile fields, job_description content storage, and the qualification_criteria embedded structure containing min_cgpa threshold, branches array, and batch_years array. It also covers the position_details structure with total_positions, job_location, and job_type enumeration, the compensation embedded document with base_salary, bonus, and currency fields, and timestamps for application_deadline, posted_at, and metadata timestamps. Validation rules, array field requirements, and example documents are provided to illustrate different job types and qualification criteria combinations.
 
-## Project Structure
+## Project structure
 The Jobs collection is part of the MongoDB database managed by the application. The schema is defined in the client layer and persisted through the database service.
 
 ```mermaid
@@ -41,17 +21,7 @@ DS --> DC
 DC --> JC
 ```
 
-**Diagram sources**
-- [superset_client.py](file://app/clients/superset_client.py#L63-L86)
-- [database_service.py](file://app/services/database_service.py#L229-L257)
-- [db_client.py](file://app/clients/db_client.py#L56-L56)
-
-**Section sources**
-- [superset_client.py](file://app/clients/superset_client.py#L63-L86)
-- [database_service.py](file://app/services/database_service.py#L229-L257)
-- [db_client.py](file://app/clients/db_client.py#L56-L56)
-
-## Core Components
+## Core components
 The Jobs collection schema is defined by the Job model and stored in MongoDB. The schema fields and their types are derived from the Job model and verified against sample data.
 
 - job_id: String (unique identifier for the job)
@@ -79,11 +49,7 @@ Validation rules and array requirements:
 - job_type must be one of the enumerated values
 - application_deadline must be greater than posted_at if both are present
 
-**Section sources**
-- [superset_client.py](file://app/clients/superset_client.py#L63-L86)
-- [structured_job_listings.json](file://app/data/structured_job_listings.json#L1-L800)
-
-## Architecture Overview
+## Architecture overview
 The Jobs collection is populated by extracting job data from SuperSet, structuring it into the Job model, and persisting it to MongoDB via the DatabaseService.
 
 ```mermaid
@@ -101,14 +67,9 @@ DB-->>DS : Acknowledgment
 DS-->>SS : Success status
 ```
 
-**Diagram sources**
-- [superset_client.py](file://app/clients/superset_client.py#L518-L541)
-- [database_service.py](file://app/services/database_service.py#L229-L257)
-- [db_client.py](file://app/clients/db_client.py#L56-L56)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Job Model Definition
+### Job model definition
 The Job model defines the schema for storing job data. It includes identifiers, descriptive fields, embedded qualification criteria, position details, compensation, and timestamps.
 
 ```mermaid
@@ -148,13 +109,7 @@ Job --> EligibilityMark : "contains"
 Job --> Document : "contains"
 ```
 
-**Diagram sources**
-- [superset_client.py](file://app/clients/superset_client.py#L48-L86)
-
-**Section sources**
-- [superset_client.py](file://app/clients/superset_client.py#L48-L86)
-
-### Jobs Collection Schema
+### Jobs collection schema
 The Jobs collection schema is derived from the Job model and validated against sample data. The schema includes the following fields:
 
 - job_id (String): Unique identifier for the job
@@ -184,11 +139,7 @@ Validation rules:
 - job_type must be one of the enumerated values
 - application_deadline must be greater than posted_at if both are present
 
-**Section sources**
-- [superset_client.py](file://app/clients/superset_client.py#L63-L86)
-- [structured_job_listings.json](file://app/data/structured_job_listings.json#L1-L800)
-
-### Example Documents
+### Example documents
 Below are example documents illustrating different job types and qualification criteria combinations:
 
 Example 1: Full-time job with CGPA threshold and branch eligibility
@@ -251,7 +202,7 @@ Example 3: Remote job with branch and batch eligibility
 {
   "job_id": "9b2d06d3-37d7-49ee-92cb-c161f8f6c8c1",
   "company": "Recruit CRM",
-  "job_profile": "Customer Success—Associate",
+  "job_profile": "Customer Success, Associate",
   "qualification_criteria": {
     "min_cgpa": 5.0,
     "branches": ["M.Tech (Integrated) - CSE", "B.Tech - CSE"],
@@ -275,10 +226,7 @@ Example 3: Remote job with branch and batch eligibility
   }
 }
 
-**Section sources**
-- [structured_job_listings.json](file://app/data/structured_job_listings.json#L1-L800)
-
-### Data Persistence Flow
+### Data persistence flow
 The Jobs collection is persisted through the DatabaseService, which handles upsert operations and maintains metadata timestamps.
 
 ```mermaid
@@ -291,13 +239,7 @@ Update --> Done(["Return success"])
 Insert --> Done
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L229-L257)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L229-L257)
-
-## Dependency Analysis
+## Dependency analysis
 The Jobs collection depends on the Job model and is persisted via the DatabaseService and DBClient.
 
 ```mermaid
@@ -311,23 +253,13 @@ DS --> DC
 DC --> JC
 ```
 
-**Diagram sources**
-- [superset_client.py](file://app/clients/superset_client.py#L63-L86)
-- [database_service.py](file://app/services/database_service.py#L229-L257)
-- [db_client.py](file://app/clients/db_client.py#L56-L56)
-
-**Section sources**
-- [superset_client.py](file://app/clients/superset_client.py#L63-L86)
-- [database_service.py](file://app/services/database_service.py#L229-L257)
-- [db_client.py](file://app/clients/db_client.py#L56-L56)
-
-## Performance Considerations
+## Performance considerations
 - Indexing: Create indexes on frequently queried fields such as job_id, company, and job_profile to improve query performance.
 - Field Selection: Use projection to limit returned fields when querying large collections.
 - Pagination: Implement pagination for listing jobs to avoid loading excessive data.
 - Batch Operations: Use bulk write operations when inserting or updating multiple job documents.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Missing job_id: Ensure job_id is present before upserting to avoid errors.
 - Duplicate job entries: Use job_id as the unique identifier to prevent duplicates.
@@ -335,9 +267,5 @@ Common issues and resolutions:
 - Incorrect timestamps: Verify that application_deadline is greater than posted_at if both are present.
 - Database connectivity: Confirm MongoDB connection and collection initialization.
 
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L229-L257)
-- [db_client.py](file://app/clients/db_client.py#L56-L56)
-
 ## Conclusion
-The Jobs collection schema provides a structured representation of job profiles extracted from SuperSet, enabling efficient storage, querying, and notification workflows. By adhering to the defined schema and validation rules, the system ensures data consistency and supports robust job posting and filtering capabilities.
+The Jobs collection schema provides a structured representation of job profiles extracted from SuperSet, enabling efficient storage, querying, and notification workflows. By adhering to the defined schema and validation rules, the system ensures data consistency and supports reliable job posting and filtering capabilities.

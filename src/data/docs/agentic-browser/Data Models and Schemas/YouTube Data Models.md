@@ -1,38 +1,7 @@
-# YouTube Data Models
-
-<cite>
-**Referenced Files in This Document**
-- [models/yt.py](file://models/yt.py)
-- [tools/youtube_utils/get_info.py](file://tools/youtube_utils/get_info.py)
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py)
-- [tools/youtube_utils/extract_id.py](file://tools/youtube_utils/extract_id.py)
-- [tools/youtube_utils/transcript_generator/__init__.py](file://tools/youtube_utils/transcript_generator/__init__.py)
-- [tools/youtube_utils/transcript_generator/clean.py](file://tools/youtube_utils/transcript_generator/clean.py)
-- [tools/youtube_utils/transcript_generator/duplicate.py](file://tools/youtube_utils/transcript_generator/duplicate.py)
-- [tools/youtube_utils/transcript_generator/srt.py](file://tools/youtube_utils/transcript_generator/srt.py)
-- [tools/youtube_utils/transcript_generator/timestamp.py](file://tools/youtube_utils/transcript_generator/timestamp.py)
-- [prompts/youtube.py](file://prompts/youtube.py)
-- [services/youtube_service.py](file://services/youtube_service.py)
-- [routers/youtube.py](file://routers/youtube.py)
-- [models/requests/video_info.py](file://models/requests/video_info.py)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py)
-- [models/response/subtitles.py](file://models/response/subtitles.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# YouTube data models
 
 ## Introduction
-This document describes the YouTube-related data models and processing pipeline used to extract, transform, and consume YouTube video metadata and transcripts. It covers:
+This page describes the YouTube-related data models and processing pipeline used to extract, transform, and consume YouTube video metadata and transcripts. It covers:
 - Data structures for video metadata and transcript data
 - Subtitle retrieval and transcript cleaning schemas
 - Validation and normalization patterns for YouTube URLs and video IDs
@@ -40,7 +9,7 @@ This document describes the YouTube-related data models and processing pipeline 
 - Error handling and fallback strategies during content extraction
 - Integration points with the YouTube service and prompt chain
 
-## Project Structure
+## Project structure
 The YouTube processing stack spans models, tools, prompts, services, and routers:
 - Data models define typed structures for video info and request/response payloads
 - Tools implement URL parsing, metadata extraction, subtitle retrieval, and transcript cleaning
@@ -89,34 +58,7 @@ YTSvc --> YTChain
 YTAPI --> YTSvc
 ```
 
-**Diagram sources**
-- [models/yt.py](file://models/yt.py#L5-L17)
-- [tools/youtube_utils/extract_id.py](file://tools/youtube_utils/extract_id.py#L8-L24)
-- [tools/youtube_utils/get_info.py](file://tools/youtube_utils/get_info.py#L11-L77)
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py#L8-L276)
-- [tools/youtube_utils/transcript_generator/__init__.py](file://tools/youtube_utils/transcript_generator/__init__.py#L11-L22)
-- [tools/youtube_utils/transcript_generator/clean.py](file://tools/youtube_utils/transcript_generator/clean.py#L22-L67)
-- [tools/youtube_utils/transcript_generator/duplicate.py](file://tools/youtube_utils/transcript_generator/duplicate.py#L4-L26)
-- [tools/youtube_utils/transcript_generator/srt.py](file://tools/youtube_utils/transcript_generator/srt.py#L4-L30)
-- [tools/youtube_utils/transcript_generator/timestamp.py](file://tools/youtube_utils/transcript_generator/timestamp.py#L10-L32)
-- [prompts/youtube.py](file://prompts/youtube.py#L37-L75)
-- [services/youtube_service.py](file://services/youtube_service.py#L8-L71)
-- [routers/youtube.py](file://routers/youtube.py#L15-L59)
-
-**Section sources**
-- [models/yt.py](file://models/yt.py#L1-L17)
-- [tools/youtube_utils/get_info.py](file://tools/youtube_utils/get_info.py#L1-L77)
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py#L1-L276)
-- [tools/youtube_utils/extract_id.py](file://tools/youtube_utils/extract_id.py#L1-L24)
-- [tools/youtube_utils/transcript_generator/__init__.py](file://tools/youtube_utils/transcript_generator/__init__.py#L1-L22)
-- [prompts/youtube.py](file://prompts/youtube.py#L1-L158)
-- [services/youtube_service.py](file://services/youtube_service.py#L1-L71)
-- [routers/youtube.py](file://routers/youtube.py#L1-L59)
-- [models/requests/video_info.py](file://models/requests/video_info.py#L1-L7)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L1-L8)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L1-L6)
-
-## Core Components
+## Core components
 - YTVideoInfo: Typed container for YouTube video metadata and optional transcript
 - VideoInfoRequest: Minimal request for video info endpoint
 - SubtitlesRequest: Request specifying URL and preferred subtitle language
@@ -127,24 +69,13 @@ YTAPI --> YTSvc
 - processed_transcript: Pipeline of transcript cleaning and normalization
 - youtube_chain: Prompt chain assembling context and invoking the LLM
 
-**Section sources**
-- [models/yt.py](file://models/yt.py#L5-L17)
-- [models/requests/video_info.py](file://models/requests/video_info.py#L5-L7)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L5-L8)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L4-L6)
-- [tools/youtube_utils/extract_id.py](file://tools/youtube_utils/extract_id.py#L8-L24)
-- [tools/youtube_utils/get_info.py](file://tools/youtube_utils/get_info.py#L11-L77)
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py#L8-L276)
-- [tools/youtube_utils/transcript_generator/__init__.py](file://tools/youtube_utils/transcript_generator/__init__.py#L11-L22)
-- [prompts/youtube.py](file://prompts/youtube.py#L37-L75)
-
-## Architecture Overview
+## Architecture overview
 End-to-end YouTube processing flow:
 - Router validates inputs and delegates to YouTubeService
 - Service either uses a direct file-based path (with Google GenAI) or invokes the prompt chain
 - Prompt chain fetches transcript via get_subtitle_content and processed_transcript
 - get_video_info enriches metadata and optionally attaches cleaned transcript
-- Tools handle URL parsing, subtitle retrieval, and robust fallbacks
+- Tools handle URL parsing, subtitle retrieval, and reliable fallbacks
 
 ```mermaid
 sequenceDiagram
@@ -170,16 +101,9 @@ Service-->>Client : answer
 end
 ```
 
-**Diagram sources**
-- [routers/youtube.py](file://routers/youtube.py#L15-L59)
-- [services/youtube_service.py](file://services/youtube_service.py#L8-L71)
-- [prompts/youtube.py](file://prompts/youtube.py#L37-L75)
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py#L8-L276)
-- [tools/youtube_utils/transcript_generator/__init__.py](file://tools/youtube_utils/transcript_generator/__init__.py#L11-L22)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Data Model: YTVideoInfo
+### Data model: YTVideoInfo
 YTVideoInfo defines the canonical video metadata structure used across the system. It includes:
 - title: Video title with default fallback
 - description: Video description
@@ -210,13 +134,7 @@ class YTVideoInfo {
 }
 ```
 
-**Diagram sources**
-- [models/yt.py](file://models/yt.py#L5-L17)
-
-**Section sources**
-- [models/yt.py](file://models/yt.py#L5-L17)
-
-### Data Model: Requests and Responses
+### Data model: requests and responses
 - VideoInfoRequest: Minimal payload requiring a URL for video info retrieval
 - SubtitlesRequest: Payload requiring a URL and optional language preference
 - SubtitlesResponse: Response carrying the extracted subtitles
@@ -235,17 +153,7 @@ class SubtitlesResponse {
 }
 ```
 
-**Diagram sources**
-- [models/requests/video_info.py](file://models/requests/video_info.py#L5-L7)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L5-L8)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L4-L6)
-
-**Section sources**
-- [models/requests/video_info.py](file://models/requests/video_info.py#L1-L7)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L1-L8)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L1-L6)
-
-### URL Parsing and Validation: extract_video_id
+### URL parsing and validation: extract_video_id
 The extract_video_id utility parses YouTube URLs and supports:
 - youtube.com/watch?v=VIDEO_ID
 - youtu.be/VIDEO_ID
@@ -260,13 +168,7 @@ HostCheck --> |Yes| Params["Extract query params or path tail"]
 Params --> ReturnID["Return VIDEO_ID or None"]
 ```
 
-**Diagram sources**
-- [tools/youtube_utils/extract_id.py](file://tools/youtube_utils/extract_id.py#L8-L24)
-
-**Section sources**
-- [tools/youtube_utils/extract_id.py](file://tools/youtube_utils/extract_id.py#L8-L24)
-
-### Metadata Extraction: get_video_info
+### Metadata extraction: get_video_info
 get_video_info uses yt-dlp to extract metadata and optionally attach a cleaned transcript:
 - Builds yt-dlp options to avoid downloads and warnings
 - Extracts metadata fields into YTVideoInfo-compatible dictionary
@@ -289,15 +191,7 @@ NoTranscript --> Attach
 Attach --> Return["Return YTVideoInfo"]
 ```
 
-**Diagram sources**
-- [tools/youtube_utils/get_info.py](file://tools/youtube_utils/get_info.py#L11-L77)
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py#L8-L276)
-- [tools/youtube_utils/transcript_generator/__init__.py](file://tools/youtube_utils/transcript_generator/__init__.py#L11-L22)
-
-**Section sources**
-- [tools/youtube_utils/get_info.py](file://tools/youtube_utils/get_info.py#L11-L77)
-
-### Subtitle Retrieval and Fallback: get_subtitle_content
+### Subtitle retrieval and fallback: get_subtitle_content
 Subtitle retrieval follows a prioritized strategy:
 - Single-pass attempt for preferred language (manual + auto-generated + auto-translated)
 - Alternative language selection from available tracks
@@ -319,13 +213,7 @@ GotAlt --> |No| Fallback
 Fallback --> ReturnWhisper["Return whisper transcript"]
 ```
 
-**Diagram sources**
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py#L8-L276)
-
-**Section sources**
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py#L8-L276)
-
-### Transcript Cleaning Pipeline: processed_transcript
+### Transcript cleaning pipeline: processed_transcript
 The processed_transcript pipeline normalizes and cleans raw subtitle text:
 - clean_srt_text: Removes SRT/VTT timestamp lines and artifacts
 - clean_timestamps_and_dedupe: Strips arrow-based timestamps and inline cues, deduplicates lines
@@ -341,21 +229,7 @@ Clean --> Dup["remove_sentence_repeats(text)"]
 Dup --> Out(["Cleaned transcript"])
 ```
 
-**Diagram sources**
-- [tools/youtube_utils/transcript_generator/__init__.py](file://tools/youtube_utils/transcript_generator/__init__.py#L11-L22)
-- [tools/youtube_utils/transcript_generator/srt.py](file://tools/youtube_utils/transcript_generator/srt.py#L4-L30)
-- [tools/youtube_utils/transcript_generator/timestamp.py](file://tools/youtube_utils/transcript_generator/timestamp.py#L10-L32)
-- [tools/youtube_utils/transcript_generator/clean.py](file://tools/youtube_utils/transcript_generator/clean.py#L22-L67)
-- [tools/youtube_utils/transcript_generator/duplicate.py](file://tools/youtube_utils/transcript_generator/duplicate.py#L4-L26)
-
-**Section sources**
-- [tools/youtube_utils/transcript_generator/__init__.py](file://tools/youtube_utils/transcript_generator/__init__.py#L11-L22)
-- [tools/youtube_utils/transcript_generator/srt.py](file://tools/youtube_utils/transcript_generator/srt.py#L4-L30)
-- [tools/youtube_utils/transcript_generator/timestamp.py](file://tools/youtube_utils/transcript_generator/timestamp.py#L10-L32)
-- [tools/youtube_utils/transcript_generator/clean.py](file://tools/youtube_utils/transcript_generator/clean.py#L22-L67)
-- [tools/youtube_utils/transcript_generator/duplicate.py](file://tools/youtube_utils/transcript_generator/duplicate.py#L4-L26)
-
-### Prompt Chain and Answer Generation: youtube_chain
+### Prompt chain and answer generation: youtube_chain
 The prompt chain composes context from fetched transcripts and invokes the LLM:
 - fetch_transcript: Retrieves and cleans transcript, handling known error conditions
 - get_context: Supplies transcript to the chain
@@ -374,17 +248,7 @@ TG-->>Chain : cleaned transcript
 Chain-->>Chain : prompt template + LLM invocation
 ```
 
-**Diagram sources**
-- [prompts/youtube.py](file://prompts/youtube.py#L37-L75)
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py#L8-L276)
-- [tools/youtube_utils/transcript_generator/__init__.py](file://tools/youtube_utils/transcript_generator/__init__.py#L11-L22)
-
-**Section sources**
-- [prompts/youtube.py](file://prompts/youtube.py#L37-L75)
-- [services/youtube_service.py](file://services/youtube_service.py#L8-L71)
-- [routers/youtube.py](file://routers/youtube.py#L15-L59)
-
-## Dependency Analysis
+## Dependency analysis
 - Router depends on YouTubeService for processing
 - YouTubeService depends on the prompt chain and optional GenAI SDK
 - Prompt chain depends on get_subtitle_content and processed_transcript
@@ -401,29 +265,13 @@ GetInfo["tools/youtube_utils/get_info.py"] --> Subs
 GetInfo --> TG
 ```
 
-**Diagram sources**
-- [routers/youtube.py](file://routers/youtube.py#L1-L59)
-- [services/youtube_service.py](file://services/youtube_service.py#L1-L71)
-- [prompts/youtube.py](file://prompts/youtube.py#L1-L158)
-- [tools/youtube_utils/get_info.py](file://tools/youtube_utils/get_info.py#L1-L77)
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py#L1-L276)
-- [tools/youtube_utils/transcript_generator/__init__.py](file://tools/youtube_utils/transcript_generator/__init__.py#L1-L22)
-
-**Section sources**
-- [routers/youtube.py](file://routers/youtube.py#L1-L59)
-- [services/youtube_service.py](file://services/youtube_service.py#L1-L71)
-- [prompts/youtube.py](file://prompts/youtube.py#L1-L158)
-- [tools/youtube_utils/get_info.py](file://tools/youtube_utils/get_info.py#L1-L77)
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py#L1-L276)
-- [tools/youtube_utils/transcript_generator/__init__.py](file://tools/youtube_utils/transcript_generator/__init__.py#L1-L22)
-
-## Performance Considerations
+## Performance considerations
 - Minimize redundant subtitle downloads by preferring single-pass retrieval and caching cleaned transcripts where appropriate
 - Use language prioritization to reduce fallback attempts
 - Favor CPU-based whisper models for resource-constrained environments
 - Avoid unnecessary file writes by cleaning temporary directories promptly after processing
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Video unavailable: Detected by known error messages and DownloadError variants; fallback to whisper transcription is triggered
 - Rate limiting (429): Detected and triggers whisper fallback
@@ -436,22 +284,17 @@ Operational checks:
 - Confirm yt-dlp and faster-whisper availability and permissions for temp directories
 - Validate URL formats supported by extract_video_id
 
-**Section sources**
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py#L80-L116)
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py#L201-L276)
-- [services/youtube_service.py](file://services/youtube_service.py#L20-L52)
-
 ## Conclusion
-The YouTube data model and processing pipeline provide a robust, layered approach to extracting and transforming YouTube content. The design emphasizes:
+The YouTube data model and processing pipeline provide a reliable, layered approach to extracting and transforming YouTube content. The design emphasizes:
 - Strongly typed data models for predictable consumption
-- Comprehensive subtitle retrieval with intelligent fallbacks
+- Detailed subtitle retrieval with intelligent fallbacks
 - A modular transcript cleaning pipeline for normalized content
 - Clear separation of concerns between routing, service orchestration, and tooling
 - Practical error handling and cleanup to maintain reliability
 
 ## Appendices
 
-### Data Model Reference
+### Data model reference
 
 - YTVideoInfo
   - title: string, default "Unknown"
@@ -481,12 +324,3 @@ Validation and normalization rules:
 - Transcript cleaning removes timestamps, cue tags, speaker tags, and duplicate lines
 - Error detection treats specific messages and prefixes as non-transcript errors
 - Fallback to whisper transcription ensures minimal failure impact
-
-**Section sources**
-- [models/yt.py](file://models/yt.py#L5-L17)
-- [models/requests/video_info.py](file://models/requests/video_info.py#L5-L7)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L5-L8)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L4-L6)
-- [tools/youtube_utils/extract_id.py](file://tools/youtube_utils/extract_id.py#L8-L24)
-- [tools/youtube_utils/transcript_generator/__init__.py](file://tools/youtube_utils/transcript_generator/__init__.py#L11-L22)
-- [tools/youtube_utils/get_subs.py](file://tools/youtube_utils/get_subs.py#L40-L67)

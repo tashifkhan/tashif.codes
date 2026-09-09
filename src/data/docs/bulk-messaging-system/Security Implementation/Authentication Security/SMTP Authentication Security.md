@@ -1,30 +1,9 @@
-# SMTP Authentication Security
-
-<cite>
-**Referenced Files in This Document**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx)
-- [package.json](file://electron/package.json)
-- [utils.js](file://electron/src/electron/utils.js)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# SMTP authentication security
 
 ## Introduction
-This document provides comprehensive security-focused documentation for SMTP authentication and transport within the application. It covers credential storage and encryption using electron-store, SSL/TLS enforcement for secure connections, server verification, and best practices for configuration and troubleshooting. The goal is to help developers and operators deploy secure SMTP functionality while minimizing risk exposure.
+This page provides detailed security-focused documentation for SMTP authentication and transport within the application. It covers credential storage and encryption using electron-store, SSL/TLS enforcement for secure connections, server verification, and best practices for configuration and troubleshooting. The goal is to help developers and operators deploy secure SMTP functionality while minimizing risk exposure.
 
-## Project Structure
+## Project structure
 The SMTP security implementation spans three primary areas:
 - Electron main process handler for SMTP operations
 - Frontend form for collecting SMTP configuration and credentials
@@ -39,19 +18,7 @@ Handler --> Store["electron-store<br/>secure config persistence"]
 Handler --> Nodemailer["nodemailer<br/>transport and TLS"]
 ```
 
-**Diagram sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [main.js](file://electron/src/electron/main.js#L107-L108)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-
-## Core Components
+## Core components
 - SMTP handler: Validates configuration, creates a secure transport, verifies connectivity, sends emails, and optionally persists non-sensitive configuration.
 - Preload bridge: Exposes a typed API surface to the renderer for SMTP operations.
 - Main process: Registers IPC handlers and manages Electron lifecycle.
@@ -63,13 +30,7 @@ Key security-relevant behaviors:
 - Connection verification: Calls verify() before sending to detect misconfiguration early.
 - Progress events: Emits real-time status updates for monitoring.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
-- [main.js](file://electron/src/electron/main.js#L107-L108)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L82-L162)
-
-## Architecture Overview
+## Architecture overview
 The SMTP workflow integrates frontend configuration collection, backend transport creation, and secure credential handling.
 
 ```mermaid
@@ -99,15 +60,9 @@ Main-->>Bridge : "resolve(result)"
 Bridge-->>UI : "update UI with results"
 ```
 
-**Diagram sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L288-L312)
-- [preload.js](file://electron/src/electron/preload.js#L10-L11)
-- [main.js](file://electron/src/electron/main.js#L107-L108)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### SMTP Handler Security Behavior
+### SMTP handler security behavior
 - Configuration validation: Ensures host, port, user, and pass are present before proceeding.
 - Optional credential persistence: When requested, stores host, port, secure flag, and user; intentionally excludes password.
 - Transport creation: Sets secure mode based on user selection and passes credentials; TLS options include rejectUnauthorized toggling.
@@ -133,13 +88,7 @@ Next --> |Yes| Delay["Rate limit delay"] --> Loop
 Next --> |No| Done(["Return success"])
 ```
 
-**Diagram sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-### Frontend SMTP Form Security Inputs
+### Frontend SMTP form security inputs
 - Host and Port: Text inputs for server address and numeric port.
 - Username/Email: Text input for authentication identity.
 - Password: Secure input masked by the browser.
@@ -149,20 +98,12 @@ Operational security notes:
 - The form disables inputs during sending to prevent mid-operation changes.
 - The form does not persist credentials; only the handler supports optional persistence of non-secret fields.
 
-**Section sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L82-L162)
-
-### Electron IPC and Security Model
+### Electron IPC and security model
 - Preload exposes a minimal API surface to the renderer, reducing attack surface.
 - IPC handlers are registered in the main process for SMTP operations.
 - The main process enforces context isolation and disables remote module.
 
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
-- [main.js](file://electron/src/electron/main.js#L20-L31)
-- [main.js](file://electron/src/electron/main.js#L107-L108)
-
-### Credential Storage and Encryption
+### Credential storage and encryption
 - Non-secret configuration is persisted using electron-store when the user opts-in.
 - Passwords are not persisted by design; the handler explicitly avoids storing the password field.
 - The store key used is a simple string; encryption behavior depends on the underlying electron-store implementation and platform keychain facilities.
@@ -170,13 +111,9 @@ Operational security notes:
 Recommendations:
 - Keep saveCredentials opt-in and off by default for most deployments.
 - Consider prompting users for explicit confirmation before saving configuration.
-- Ensure the application runs with appropriate permissions to leverage OS keychain integration where available.
+- Ensure the application runs with appropriate permissions to use OS keychain integration where available.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L22-L31)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L107-L110)
-
-### SSL/TLS Enforcement and Certificate Validation
+### SSL/TLS enforcement and certificate validation
 Observed behavior:
 - The transport is created with a secure flag based on user selection.
 - TLS options include a setting that controls certificate rejection behavior.
@@ -192,11 +129,7 @@ Best practice recommendations:
 - Avoid disabling certificate validation in production; keep TLS certificate rejection enabled.
 - Ensure the server presents a valid certificate chain recognized by the OS trust store.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L34-L45)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L47-L48)
-
-### SMTP Server Verification and Authentication Method Validation
+### SMTP server verification and authentication method validation
 - The handler calls a verification routine on the transport before sending emails.
 - Authentication credentials are supplied to the transport; errors during verification indicate misconfiguration or invalid credentials.
 
@@ -204,11 +137,7 @@ Operational guidance:
 - Run verification in development to catch configuration mistakes quickly.
 - Monitor progress events for failed attempts to diagnose server-side issues.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L47-L48)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L63-L72)
-
-### Security Best Practices for SMTP Configuration
+### Security best practices for SMTP configuration
 - Ports and TLS:
   - Use port 465 with implicit TLS when available.
   - Use port 587 with explicit TLS (STARTTLS) when 465 is not supported.
@@ -227,7 +156,7 @@ Operational guidance:
 
 [No sources needed since this section provides general guidance]
 
-## Dependency Analysis
+## Dependency analysis
 External libraries and their roles in SMTP security:
 - nodemailer: Creates and manages transports, handles authentication, and manages TLS.
 - electron-store: Provides local storage for non-secret configuration with platform-backed encryption where available.
@@ -241,26 +170,14 @@ Bridge --> Main["main.js"]
 Main --> Handler
 ```
 
-**Diagram sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L2)
-- [package.json](file://electron/package.json#L20-L31)
-- [preload.js](file://electron/src/electron/preload.js#L4-L11)
-- [main.js](file://electron/src/electron/main.js#L6-L7)
-
-**Section sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L2)
-- [preload.js](file://electron/src/electron/preload.js#L4-L11)
-- [main.js](file://electron/src/electron/main.js#L6-L7)
-
-## Performance Considerations
+## Performance considerations
 - Rate limiting: A configurable delay is applied between sends to avoid overwhelming the server and to reduce the chance of throttling.
 - Batch size: Consider chunking large recipient lists to balance throughput and reliability.
 - Connection reuse: The transport is created per operation; reusing a single transport could improve performance but requires careful error handling.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common SMTP authentication and connection issues:
 
 - Incomplete configuration
@@ -286,10 +203,5 @@ Common SMTP authentication and connection issues:
 - Progress monitoring
   - Use the emitted progress events to track per-recipient status and capture error messages for diagnostics.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L18-L20)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L47-L48)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L88-L98)
-
 ## Conclusion
-The application’s SMTP implementation emphasizes secure defaults and explicit user control. It validates configuration, verifies connectivity, and securely handles credentials by avoiding password persistence. For production, prefer secure connections with strict certificate validation, enforce STARTTLS, and apply robust credential policies. The modular architecture isolates sensitive operations in the main process and minimizes exposed surfaces through the preload bridge.
+The application's SMTP implementation emphasizes secure defaults and explicit user control. It validates configuration, verifies connectivity, and securely handles credentials by avoiding password persistence. For production, prefer secure connections with strict certificate validation, enforce STARTTLS, and apply reliable credential policies. The modular architecture isolates sensitive operations in the main process and minimizes exposed surfaces through the preload bridge.

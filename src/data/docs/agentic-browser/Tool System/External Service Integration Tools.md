@@ -1,41 +1,9 @@
-# External Service Integration Tools
-
-<cite>
-**Referenced Files in This Document**
-- [github_service.py](file://services/github_service.py)
-- [gmail_service.py](file://services/gmail_service.py)
-- [calendar_service.py](file://services/calendar_service.py)
-- [google_search_service.py](file://services/google_search_service.py)
-- [convertor.py](file://tools/github_crawler/convertor.py)
-- [fetch_latest_mails.py](file://tools/gmail/fetch_latest_mails.py)
-- [list_unread_emails.py](file://tools/gmail/list_unread_emails.py)
-- [mark_email_read.py](file://tools/gmail/mark_email_read.py)
-- [send_email.py](file://tools/gmail/send_email.py)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py)
-- [seach_agent.py](file://tools/google_search/seach_agent.py)
-- [github.py](file://routers/github.py)
-- [gmail.py](file://routers/gmail.py)
-- [calendar.py](file://routers/calendar.py)
-- [google_search.py](file://routers/google_search.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# External service integration tools
 
 ## Introduction
-This document explains the external service integration tools that connect the application to GitHub repositories, Gmail, Google Calendar, and Google search. It covers the service abstraction layer, authentication mechanisms, API integration patterns, request/response handling, error management, and practical usage examples. It also addresses rate limiting, API quotas, authentication security, and service-specific troubleshooting approaches.
+This page explains the external service integration tools that connect the application to GitHub repositories, Gmail, Google Calendar, and Google search. It covers the service abstraction layer, authentication mechanisms, API integration patterns, request/response handling, error management, and practical usage examples. It also addresses rate limiting, API quotas, authentication security, and service-specific troubleshooting approaches.
 
-## Project Structure
+## Project structure
 The integration is organized around four primary services:
 - GitHub crawler and summarization
 - Gmail operations (listing, fetching, marking read, sending)
@@ -82,43 +50,7 @@ S3 --> T3b
 S4 --> T4a
 ```
 
-**Diagram sources**
-- [github.py](file://routers/github.py#L1-L49)
-- [gmail.py](file://routers/gmail.py#L1-L149)
-- [calendar.py](file://routers/calendar.py#L1-L113)
-- [google_search.py](file://routers/google_search.py#L1-L39)
-- [github_service.py](file://services/github_service.py#L1-L109)
-- [gmail_service.py](file://services/gmail_service.py#L1-L56)
-- [calendar_service.py](file://services/calendar_service.py#L1-L38)
-- [google_search_service.py](file://services/google_search_service.py#L1-L31)
-- [convertor.py](file://tools/github_crawler/convertor.py#L1-L99)
-- [list_unread_emails.py](file://tools/gmail/list_unread_emails.py#L1-L75)
-- [fetch_latest_mails.py](file://tools/gmail/fetch_latest_mails.py#L1-L61)
-- [mark_email_read.py](file://tools/gmail/mark_email_read.py#L1-L49)
-- [send_email.py](file://tools/gmail/send_email.py#L1-L52)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L1-L52)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L1-L70)
-- [seach_agent.py](file://tools/google_search/seach_agent.py#L1-L84)
-
-**Section sources**
-- [github_service.py](file://services/github_service.py#L1-L109)
-- [gmail_service.py](file://services/gmail_service.py#L1-L56)
-- [calendar_service.py](file://services/calendar_service.py#L1-L38)
-- [google_search_service.py](file://services/google_search_service.py#L1-L31)
-- [convertor.py](file://tools/github_crawler/convertor.py#L1-L99)
-- [list_unread_emails.py](file://tools/gmail/list_unread_emails.py#L1-L75)
-- [fetch_latest_mails.py](file://tools/gmail/fetch_latest_mails.py#L1-L61)
-- [mark_email_read.py](file://tools/gmail/mark_email_read.py#L1-L49)
-- [send_email.py](file://tools/gmail/send_email.py#L1-L52)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L1-L52)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L1-L70)
-- [seach_agent.py](file://tools/google_search/seach_agent.py#L1-L84)
-- [github.py](file://routers/github.py#L1-L49)
-- [gmail.py](file://routers/gmail.py#L1-L149)
-- [calendar.py](file://routers/calendar.py#L1-L113)
-- [google_search.py](file://routers/google_search.py#L1-L39)
-
-## Core Components
+## Core components
 - GitHubService: Orchestrates repository ingestion, optional file attachment processing via a generative client, and LLM-driven answer generation.
 - GmailService: Provides list/unread, fetch latest, mark read, and send operations using access tokens.
 - CalendarService: Provides list events and create event operations using access tokens.
@@ -126,18 +58,12 @@ S4 --> T4a
 
 Each service exposes straightforward methods that wrap tool-level functions and handle exceptions consistently.
 
-**Section sources**
-- [github_service.py](file://services/github_service.py#L11-L109)
-- [gmail_service.py](file://services/gmail_service.py#L10-L56)
-- [calendar_service.py](file://services/calendar_service.py#L8-L38)
-- [google_search_service.py](file://services/google_search_service.py#L7-L31)
-
-## Architecture Overview
+## Architecture overview
 The system follows a layered architecture:
 - Routers define HTTP endpoints and validate inputs.
 - Services encapsulate business logic and orchestrate tool invocations.
 - Tools implement provider-specific API calls and return normalized results.
-- Logging and error propagation ensure robust operation.
+- Logging and error propagation ensure reliable operation.
 
 ```mermaid
 sequenceDiagram
@@ -156,27 +82,9 @@ Service-->>Router : "Result"
 Router-->>Client : "HTTP Response"
 ```
 
-**Diagram sources**
-- [github.py](file://routers/github.py#L16-L44)
-- [gmail.py](file://routers/gmail.py#L38-L148)
-- [calendar.py](file://routers/calendar.py#L32-L112)
-- [google_search.py](file://routers/google_search.py#L20-L38)
-- [github_service.py](file://services/github_service.py#L12-L108)
-- [gmail_service.py](file://services/gmail_service.py#L10-L55)
-- [calendar_service.py](file://services/calendar_service.py#L8-L37)
-- [google_search_service.py](file://services/google_search_service.py#L7-L30)
-- [convertor.py](file://tools/github_crawler/convertor.py#L62-L86)
-- [list_unread_emails.py](file://tools/gmail/list_unread_emails.py#L10-L48)
-- [fetch_latest_mails.py](file://tools/gmail/fetch_latest_mails.py#L4-L42)
-- [mark_email_read.py](file://tools/gmail/mark_email_read.py#L10-L28)
-- [send_email.py](file://tools/gmail/send_email.py#L20-L31)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L6-L23)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L6-L40)
-- [seach_agent.py](file://tools/google_search/seach_agent.py#L14-L62)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### GitHub Crawler Utilities
+### GitHub crawler utilities
 The GitHub crawler converts a repository URL into a structured representation suitable for LLM consumption. It normalizes URLs, ingests repository metadata and content, and truncates content to fit within token limits.
 
 Key behaviors:
@@ -197,19 +105,12 @@ Keep --> Build
 Build --> End(["Return InjestedContent"])
 ```
 
-**Diagram sources**
-- [convertor.py](file://tools/github_crawler/convertor.py#L35-L86)
-
 Implementation highlights:
 - URL normalization prevents invalid paths from being passed to ingestion.
 - Ingestion supports both async and synchronous modes with graceful fallback.
 - Content is truncated conservatively to preserve tree and summary while bounding payload size.
 
-**Section sources**
-- [convertor.py](file://tools/github_crawler/convertor.py#L29-L86)
-- [github_service.py](file://services/github_service.py#L12-L108)
-
-### Gmail Integration Tools
+### Gmail integration tools
 The Gmail service provides four operations:
 - List unread messages
 - Fetch latest messages
@@ -235,28 +136,12 @@ Service-->>Router : "Result"
 Router-->>Client : "HTTP JSON response"
 ```
 
-**Diagram sources**
-- [gmail.py](file://routers/gmail.py#L38-L148)
-- [gmail_service.py](file://services/gmail_service.py#L10-L55)
-- [list_unread_emails.py](file://tools/gmail/list_unread_emails.py#L10-L48)
-- [fetch_latest_mails.py](file://tools/gmail/fetch_latest_mails.py#L4-L42)
-- [mark_email_read.py](file://tools/gmail/mark_email_read.py#L10-L28)
-- [send_email.py](file://tools/gmail/send_email.py#L20-L31)
-
 Implementation highlights:
 - Access token is passed via Authorization header for all endpoints.
 - Requests include timeouts to avoid hanging operations.
 - Responses are normalized into lists of message metadata or send results.
 
-**Section sources**
-- [gmail_service.py](file://services/gmail_service.py#L10-L55)
-- [list_unread_emails.py](file://tools/gmail/list_unread_emails.py#L10-L48)
-- [fetch_latest_mails.py](file://tools/gmail/fetch_latest_mails.py#L4-L42)
-- [mark_email_read.py](file://tools/gmail/mark_email_read.py#L10-L28)
-- [send_email.py](file://tools/gmail/send_email.py#L20-L31)
-- [gmail.py](file://routers/gmail.py#L38-L148)
-
-### Calendar Management Tools
+### Calendar management tools
 Calendar operations support listing upcoming events and creating new events. Both rely on the Google Calendar API and require an access token.
 
 ```mermaid
@@ -276,24 +161,12 @@ Service-->>Router : "Result"
 Router-->>Client : "HTTP JSON response"
 ```
 
-**Diagram sources**
-- [calendar.py](file://routers/calendar.py#L32-L112)
-- [calendar_service.py](file://services/calendar_service.py#L8-L37)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L6-L23)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L6-L40)
-
 Implementation highlights:
 - ISO 8601 string validation for start/end times ensures compatibility with Google Calendar.
 - Listing events filters by time and orders by start time.
 - Creating events sets timezone to UTC and returns the created event resource.
 
-**Section sources**
-- [calendar_service.py](file://services/calendar_service.py#L8-L37)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L6-L23)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L6-L40)
-- [calendar.py](file://routers/calendar.py#L32-L112)
-
-### Google Search Capabilities
+### Google search capabilities
 The Google search service integrates with Tavily to perform web searches and return a list of results containing URL and content preview.
 
 ```mermaid
@@ -313,22 +186,12 @@ Service-->>Router : "Results"
 Router-->>Client : "HTTP JSON response"
 ```
 
-**Diagram sources**
-- [google_search.py](file://routers/google_search.py#L20-L38)
-- [google_search_service.py](file://services/google_search_service.py#L7-L30)
-- [seach_agent.py](file://tools/google_search/seach_agent.py#L14-L62)
-
 Implementation highlights:
 - Max results is configurable per request.
 - Results are normalized to include URL and content preview.
 - Unexpected response formats are handled gracefully with logging.
 
-**Section sources**
-- [google_search_service.py](file://services/google_search_service.py#L7-L30)
-- [seach_agent.py](file://tools/google_search/seach_agent.py#L14-L62)
-- [google_search.py](file://routers/google_search.py#L20-L38)
-
-## Dependency Analysis
+## Dependency analysis
 The service layer depends on tool modules that encapsulate provider-specific logic. Routers depend on services and enforce input validation and error translation to HTTP responses.
 
 ```mermaid
@@ -347,35 +210,7 @@ CalendarService --> CETool["tools/calendar/create_calender_events.py"]
 SearchService --> SATool["tools/google_search/seach_agent.py"]
 ```
 
-**Diagram sources**
-- [github.py](file://routers/github.py#L1-L49)
-- [gmail.py](file://routers/gmail.py#L1-L149)
-- [calendar.py](file://routers/calendar.py#L1-L113)
-- [google_search.py](file://routers/google_search.py#L1-L39)
-- [github_service.py](file://services/github_service.py#L1-L109)
-- [gmail_service.py](file://services/gmail_service.py#L1-L56)
-- [calendar_service.py](file://services/calendar_service.py#L1-L38)
-- [google_search_service.py](file://services/google_search_service.py#L1-L31)
-- [convertor.py](file://tools/github_crawler/convertor.py#L1-L99)
-- [list_unread_emails.py](file://tools/gmail/list_unread_emails.py#L1-L75)
-- [fetch_latest_mails.py](file://tools/gmail/fetch_latest_mails.py#L1-L61)
-- [mark_email_read.py](file://tools/gmail/mark_email_read.py#L1-L49)
-- [send_email.py](file://tools/gmail/send_email.py#L1-L52)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L1-L52)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L1-L70)
-- [seach_agent.py](file://tools/google_search/seach_agent.py#L1-L84)
-
-**Section sources**
-- [github.py](file://routers/github.py#L1-L49)
-- [gmail.py](file://routers/gmail.py#L1-L149)
-- [calendar.py](file://routers/calendar.py#L1-L113)
-- [google_search.py](file://routers/google_search.py#L1-L39)
-- [github_service.py](file://services/github_service.py#L1-L109)
-- [gmail_service.py](file://services/gmail_service.py#L1-L56)
-- [calendar_service.py](file://services/calendar_service.py#L1-L38)
-- [google_search_service.py](file://services/google_search_service.py#L1-L31)
-
-## Performance Considerations
+## Performance considerations
 - GitHub repository ingestion: Content is truncated to a bounded size to fit within model context windows. Large repositories may still exceed limits; prefer targeted questions or smaller subsets.
 - Gmail operations: Requests include timeouts to prevent long waits. Batch operations should be designed to avoid exceeding provider quotas.
 - Calendar operations: Listing events filters by current time and orders results; consider reducing max_results for performance.
@@ -383,7 +218,7 @@ SearchService --> SATool["tools/google_search/seach_agent.py"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Authentication failures
   - Ensure the access token is valid and not expired.
@@ -407,23 +242,14 @@ Common issues and resolutions:
   - Empty results: Adjust query or increase max_results.
   - Unexpected response format: Inspect tool logs for parsing anomalies.
 
-**Section sources**
-- [github_service.py](file://services/github_service.py#L23-L37)
-- [github_service.py](file://services/github_service.py#L99-L108)
-- [list_unread_emails.py](file://tools/gmail/list_unread_emails.py#L18-L19)
-- [fetch_latest_mails.py](file://tools/gmail/fetch_latest_mails.py#L12-L13)
-- [mark_email_read.py](file://tools/gmail/mark_email_read.py#L24-L27)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L35-L38)
-- [seach_agent.py](file://tools/google_search/seach_agent.py#L60-L62)
-
 ## Conclusion
-The external service integration layer cleanly separates concerns across routers, services, and tools. It standardizes authentication via access tokens, provides robust error handling, and offers practical workflows for GitHub crawling, Gmail operations, Calendar management, and web search. Following the guidance above will help ensure reliable, secure, and efficient integrations.
+The external service integration layer cleanly separates concerns across routers, services, and tools. It standardizes authentication via access tokens, provides reliable error handling, and offers practical workflows for GitHub crawling, Gmail operations, Calendar management, and web search. Following the guidance above will help ensure reliable, secure, and efficient integrations.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### API Endpoints and Usage Patterns
+### API endpoints and usage patterns
 - GitHub
   - Endpoint: POST /
   - Inputs: url, question, chat_history, optional attached_file_path
@@ -438,9 +264,3 @@ The external service integration layer cleanly separates concerns across routers
   - /calendar/create: Creates an event with summary, start_time, end_time, description.
 - Google Search
   - /google_search/: Performs a web search with query and max_results.
-
-**Section sources**
-- [github.py](file://routers/github.py#L16-L44)
-- [gmail.py](file://routers/gmail.py#L38-L148)
-- [calendar.py](file://routers/calendar.py#L32-L112)
-- [google_search.py](file://routers/google_search.py#L20-L38)

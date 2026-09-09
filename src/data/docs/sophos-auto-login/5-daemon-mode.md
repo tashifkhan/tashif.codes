@@ -1,4 +1,4 @@
-# Daemon Mode
+# Daemon mode
 
 The daemon mode allows you to run the auto-login process in the background without keeping a terminal window open. This feature is only available on Unix-like systems (Linux, macOS).
 
@@ -12,21 +12,23 @@ When running in daemon mode:
 
 ## Usage
 
-### Starting the Daemon
+### Starting the daemon
 
 ```bash
 python autologin.py --start --daemon
 ```
 
-### Checking Daemon Status
+### Checking daemon status
 
 You can check if the daemon is running using the `--status` argument:
 
 ```bash
 python autologin.py --status
+```
+
 ![Daemon Status](images/status.png)
 
-### Stopping the Daemon
+### Stopping the daemon
 
 ```bash
 python autologin.py --exit

@@ -1,20 +1,18 @@
-# API Reference
+# API reference
 
-## Purpose and Scope
+## Purpose and scope
 
-This document provides comprehensive reference documentation for all public classes, methods, constants, and interfaces exposed by the jsjiit library. It serves as the authoritative guide to the library's API surface, detailing the types, signatures, and purposes of all exported constructs.
+This page provides detailed reference documentation for all public classes, methods, constants, and interfaces exposed by the jsjiit library. It is the authoritative guide to the library's API surface, detailing the types, signatures, and purposes of all exported constructs.
 
 For implementation details and internal architecture, see [Architecture and Design](4-architecture-and-design). For step-by-step usage examples, see [Quick Start Guide](2.2-quick-start-guide). For detailed information about specific API categories, refer to the subsections below.
 
-**Sources:** [src/index.js1-32](https://github.com/codeblech/jsjiit/blob/d123b782/src/index.js#L1-L32)
-
 ---
 
-## Public API Surface
+## Public API surface
 
 The jsjiit library exports its entire public API through [src/index.js1-32](https://github.com/codeblech/jsjiit/blob/d123b782/src/index.js#L1-L32) All imports should be made from this module or its compiled distribution bundles.
 
-### Complete Export Table
+### Complete export table
 
 | Export Name | Type | Module | Purpose |
 | --- | --- | --- | --- |
@@ -36,31 +34,25 @@ The jsjiit library exports its entire public API through [src/index.js1-32](http
 | `SessionExpired` | Class | src/exceptions.js | Exception when session token expires |
 | `generate_local_name` | Function | src/encryption.js | Generates LocalName header for requests |
 
-**Sources:** [src/index.js1-32](https://github.com/codeblech/jsjiit/blob/d123b782/src/index.js#L1-L32)
-
 ---
 
-## API Architecture Diagram
+## API architecture diagram
 
 The following diagram illustrates the relationship between the primary API classes and their dependencies:
 
-![Architecture Diagram](images/3-api-reference_diagram_1.png)
-
-**Sources:** [src/index.js1-32](https://github.com/codeblech/jsjiit/blob/d123b782/src/index.js#L1-L32) [src/wrapper.js75-719](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L75-L719)
+![Diagram 1](images/3-api-reference_diagram_1.png)
 
 ---
 
-## WebPortal Class Overview
+## WebPortal class overview
 
 The `WebPortal` class is the primary interface for all portal interactions. It provides methods organized into functional categories.
 
-### Method Categories
+### Method categories
 
-![Architecture Diagram](images/3-api-reference_diagram_2.png)
+![Diagram 2](images/3-api-reference_diagram_2.png)
 
-**Sources:** [src/wrapper.js75-719](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L75-L719)
-
-### Method Reference Table
+### Method reference table
 
 | Method | Authentication Required | Return Type | Purpose |
 | --- | --- | --- | --- |
@@ -96,15 +88,13 @@ For detailed documentation of each method, see:
 * [Academic Records Methods](3.6-academic-records-methods)
 * [Feedback and Account Methods](3.7-feedback-and-account-methods)
 
-**Sources:** [src/wrapper.js168-719](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L168-L719) [README.md19-96](https://github.com/codeblech/jsjiit/blob/d123b782/README.md#L19-L96)
-
 ---
 
-## WebPortalSession Class
+## WebPortalSession class
 
 The `WebPortalSession` class represents an authenticated session with the JIIT web portal. It is created automatically by `WebPortal.student_login()` and should not be instantiated directly.
 
-### Session Properties
+### Session properties
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -121,39 +111,35 @@ The `WebPortalSession` class represents an authenticated session with the JIIT w
 | `name` | string | Student name |
 | `enrollmentno` | string | Enrollment number |
 
-### Session Methods
+### Session methods
 
 | Method | Return Type | Purpose |
 | --- | --- | --- |
 | `get_headers()` | `Promise<Object>` | Generates authentication headers for API requests |
 
-**Sources:** [src/wrapper.js25-70](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L25-L70)
-
 ---
 
-## Data Models
+## Data models
 
 The library provides typed data model classes to represent portal data structures. These classes parse and structure raw API responses.
 
-### Data Model Hierarchy
+### Data model hierarchy
 
-![Architecture Diagram](images/3-api-reference_diagram_3.png)
+![Diagram 3](images/3-api-reference_diagram_3.png)
 
 For complete documentation of data model properties and methods, see [Data Models](3.9-data-models).
 
-**Sources:** [src/attendance.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/attendance.js) [src/registration.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/registration.js) [src/exam.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/exam.js)
-
 ---
 
-## Error Handling
+## Error handling
 
 The library provides a hierarchy of exception classes for different error scenarios. All exceptions extend from `Error`.
 
-### Exception Hierarchy
+### Exception hierarchy
 
-![Architecture Diagram](images/3-api-reference_diagram_4.png)
+![Diagram 4](images/3-api-reference_diagram_4.png)
 
-### Exception Reference
+### Exception reference
 
 | Exception | Thrown By | When Thrown |
 | --- | --- | --- |
@@ -166,11 +152,9 @@ The library provides a hierarchy of exception classes for different error scenar
 
 For detailed error handling strategies and examples, see [Error Handling](3.8-error-handling).
 
-**Sources:** [src/exceptions.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/exceptions.js) [src/wrapper.js97-157](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L97-L157) [src/wrapper.js679-719](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L679-L719)
-
 ---
 
-## Constants and Utilities
+## Constants and utilities
 
 ### Constants
 
@@ -190,7 +174,7 @@ const DEFCAPTCHA = { captcha: "phw5n", hidden: "gmBctEffdSg=" }
 
 Default CAPTCHA bypass values used by `student_login()`. Defined in [src/wrapper.js20](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L20-L20)
 
-### Utility Functions
+### Utility functions
 
 #### generate\_local\_name()
 
@@ -200,25 +184,21 @@ async generate_local_name(): Promise<string>
 
 Generates a `LocalName` header value required for all API requests. This function is exported for advanced use cases but is typically called internally by the library. Defined in [src/encryption.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/encryption.js)
 
-**Sources:** [src/wrapper.js14-20](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L14-L20) [src/encryption.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/encryption.js) [src/index.js10](https://github.com/codeblech/jsjiit/blob/d123b782/src/index.js#L10-L10)
-
 ---
 
-## API Request Flow
+## API request flow
 
 The following diagram illustrates the typical request flow through the `WebPortal` class:
 
-![Architecture Diagram](images/3-api-reference_diagram_5.png)
-
-**Sources:** [src/wrapper.js97-157](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L97-L157) [src/wrapper.js679-719](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L679-L719)
+![Diagram 5](images/3-api-reference_diagram_5.png)
 
 ---
 
-## Authentication Decorator Pattern
+## Authentication decorator pattern
 
 All methods requiring authentication are decorated with the `authenticated` decorator. This pattern is implemented at [src/wrapper.js679-719](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L679-L719)
 
-### Authenticated Methods List
+### Authenticated methods list
 
 The following methods are automatically wrapped with authentication checks:
 
@@ -251,11 +231,9 @@ const authenticatedMethods = [
 
 Any attempt to call these methods without first calling `student_login()` will throw a `NotLoggedIn` exception.
 
-**Sources:** [src/wrapper.js692-719](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L692-L719)
-
 ---
 
-## Method Endpoint Mapping
+## Method endpoint mapping
 
 The following table maps `WebPortal` methods to their corresponding API endpoints for reference:
 
@@ -284,11 +262,9 @@ The following table maps `WebPortal` methods to their corresponding API endpoint
 | `get_subject_choices()` | `/studentchoiceprint/getsubjectpreference` |
 | `fill_feedback_form()` | `/feedbackformcontroller/getFeedbackEvent`, `/feedbackformcontroller/getGriddataForFeedback`, `/feedbackformcontroller/getIemQuestion`, `/feedbackformcontroller/savedatalist` |
 
-**Sources:** [src/wrapper.js168-670](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L168-L670)
-
 ---
 
-## Usage Pattern
+## Usage pattern
 
 The typical usage pattern for the jsjiit API follows this sequence:
 
@@ -326,20 +302,16 @@ All authenticated methods return Promises and should be awaited. Errors should b
 
 For complete usage examples, see [Quick Start Guide](2.2-quick-start-guide).
 
-**Sources:** [README.md21-96](https://github.com/codeblech/jsjiit/blob/d123b782/README.md#L21-L96) [src/wrapper.js75-81](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L75-L81)
-
 ---
 
-## Version and Compatibility
+## Version and compatibility
 
 The current API version is **0.0.23** as defined in package.json. The library targets ES2020+ browsers and is distributed as ES modules.
 
-### Import Paths
+### Import paths
 
 * **NPM**: `import { WebPortal } from 'jsjiit'`
 * **CDN (Production)**: `import { WebPortal } from 'https://cdn.jsdelivr.net/npm/jsjiit@0.0.23/dist/jsjiit.min.esm.js'`
 * **CDN (Development)**: `import { WebPortal } from 'https://cdn.jsdelivr.net/npm/jsjiit@0.0.23/dist/jsjiit.esm.js'`
 
 For installation instructions, see [Installation](2.1-installation).
-
-**Sources:** [README.md23-28](https://github.com/codeblech/jsjiit/blob/d123b782/README.md#L23-L28) [package.json](https://github.com/codeblech/jsjiit/blob/d123b782/package.json)

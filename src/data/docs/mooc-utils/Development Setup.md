@@ -1,46 +1,14 @@
-# Development Setup
-
-<cite>
-**Referenced Files in This Document**
-- [assignment-solver/package.json](file://assignment-solver/package.json)
-- [assignment-solver/vite.config.js](file://assignment-solver/vite.config.js)
-- [assignment-solver/manifest.config.js](file://assignment-solver/manifest.config.js)
-- [assignment-solver/README.md](file://assignment-solver/README.md)
-- [assignment-solver/public/sidepanel.html](file://assignment-solver/public/sidepanel.html)
-- [notice-reminders/pyproject.toml](file://notice-reminders/pyproject.toml)
-- [notice-reminders/main.py](file://notice-reminders/main.py)
-- [notice-reminders/app/core/config.py](file://notice-reminders/app/core/config.py)
-- [notice-reminders/README.md](file://notice-reminders/README.md)
-- [website/package.json](file://website/package.json)
-- [website/next.config.ts](file://website/next.config.ts)
-- [website/lib/api.ts](file://website/lib/api.ts)
-- [website/README.md](file://website/README.md)
-- [assignment-solver/.gitignore](file://assignment-solver/.gitignore)
-- [notice-reminders/.gitignore](file://notice-reminders/.gitignore)
-- [website/.gitignore](file://website/.gitignore)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Development setup
 
 ## Introduction
-This document provides a complete development environment setup guide for all three components of the project:
+This page provides a complete development environment setup guide for all three components of the project:
 - Browser Extension (Assignment Solver)
 - Backend API (Notice Reminders)
 - Website (Next.js frontend)
 
 It covers prerequisites, environment variables, dependency installation, local development server setup, build configuration, Python virtual environment setup, development workflow, debugging techniques, hot reload configurations, and best practices. It also includes troubleshooting guidance for common development issues.
 
-## Project Structure
+## Project structure
 The repository is organized as a monorepo with three distinct components:
 - assignment-solver: A cross-browser extension built with Vite and webextension-polyfill, generating separate Chrome and Firefox manifests.
 - notice-reminders: A FastAPI backend with Tortoise ORM, Aerich migrations, and Pydantic settings for configuration.
@@ -71,27 +39,10 @@ WEB_NEXT --> WEB_PKG
 NR_CFG --> NR_PY
 ```
 
-**Diagram sources**
-- [assignment-solver/package.json](file://assignment-solver/package.json#L1-L30)
-- [assignment-solver/vite.config.js](file://assignment-solver/vite.config.js#L1-L109)
-- [assignment-solver/manifest.config.js](file://assignment-solver/manifest.config.js#L1-L108)
-- [assignment-solver/public/sidepanel.html](file://assignment-solver/public/sidepanel.html#L1-L392)
-- [notice-reminders/pyproject.toml](file://notice-reminders/pyproject.toml#L1-L41)
-- [notice-reminders/main.py](file://notice-reminders/main.py#L1-L71)
-- [notice-reminders/app/core/config.py](file://notice-reminders/app/core/config.py#L1-L32)
-- [website/package.json](file://website/package.json#L1-L47)
-- [website/next.config.ts](file://website/next.config.ts#L1-L19)
-- [website/lib/api.ts](file://website/lib/api.ts#L1-L184)
-
-**Section sources**
-- [assignment-solver/package.json](file://assignment-solver/package.json#L1-L30)
-- [notice-reminders/pyproject.toml](file://notice-reminders/pyproject.toml#L1-L41)
-- [website/package.json](file://website/package.json#L1-L47)
-
-## Core Components
+## Core components
 This section outlines prerequisites, environment variables, dependency installation, and development server setup for each component.
 
-### Browser Extension (Assignment Solver)
+### Browser extension (assignment solver)
 - Prerequisites
   - Bun package manager
   - Gemini API key from Google AI Studio
@@ -110,17 +61,11 @@ This section outlines prerequisites, environment variables, dependency installat
   - Keep API keys local to the extension; do not commit secrets.
   - Use the provided scripts for linting and formatting.
 
-**Section sources**
-- [assignment-solver/README.md](file://assignment-solver/README.md#L24-L91)
-- [assignment-solver/package.json](file://assignment-solver/package.json#L6-L14)
-- [assignment-solver/vite.config.js](file://assignment-solver/vite.config.js#L54-L107)
-- [assignment-solver/manifest.config.js](file://assignment-solver/manifest.config.js#L14-L105)
-
-### Backend API (Notice Reminders)
+### Backend API (notice reminders)
 - Prerequisites
   - Python 3.12+
 - Environment variables
-  - Configuration is managed via Pydantic settings with a .env file.
+  - Configuration is managed via Pydantic settings with a.env file.
   - Key settings include database URL, CORS origins, JWT configuration, and optional SMTP/Telegram settings.
 - Dependency installation
   - Use uv to synchronize dependencies.
@@ -132,13 +77,7 @@ This section outlines prerequisites, environment variables, dependency installat
   - Enable reload flag for development.
 - Best practices
   - Use uv for reproducible environments.
-  - Keep secrets in .env and exclude from version control.
-
-**Section sources**
-- [notice-reminders/README.md](file://notice-reminders/README.md#L20-L56)
-- [notice-reminders/pyproject.toml](file://notice-reminders/pyproject.toml#L1-L41)
-- [notice-reminders/app/core/config.py](file://notice-reminders/app/core/config.py#L4-L32)
-- [notice-reminders/main.py](file://notice-reminders/main.py#L30-L66)
+  - Keep secrets in.env and exclude from version control.
 
 ### Website (Next.js)
 - Prerequisites
@@ -157,13 +96,7 @@ This section outlines prerequisites, environment variables, dependency installat
   - Do not use npm run dev per repository guidelines.
   - Ensure the backend is running for login and dashboard features.
 
-**Section sources**
-- [website/README.md](file://website/README.md#L20-L51)
-- [website/package.json](file://website/package.json#L5-L10)
-- [website/next.config.ts](file://website/next.config.ts#L3-L18)
-- [website/lib/api.ts](file://website/lib/api.ts#L16-L32)
-
-## Architecture Overview
+## Architecture overview
 The website communicates with the backend API. The extension interacts with external APIs (e.g., Gemini) and injects content into target pages. The backend manages users, subscriptions, and announcements.
 
 ```mermaid
@@ -185,15 +118,9 @@ API --> DB
 Ext --> API
 ```
 
-**Diagram sources**
-- [assignment-solver/public/sidepanel.html](file://assignment-solver/public/sidepanel.html#L1-L392)
-- [assignment-solver/vite.config.js](file://assignment-solver/vite.config.js#L54-L107)
-- [website/lib/api.ts](file://website/lib/api.ts#L16-L32)
-- [notice-reminders/main.py](file://notice-reminders/main.py#L54-L66)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Browser Extension (Assignment Solver)
+### Browser extension (assignment solver)
 - Build system
   - Vite with plugins to generate manifests and transform HTML for side panels.
   - Separate input entries for background, content, and UI.
@@ -219,17 +146,7 @@ DistFF --> Load
 Load --> Done(["Ready"])
 ```
 
-**Diagram sources**
-- [assignment-solver/vite.config.js](file://assignment-solver/vite.config.js#L54-L107)
-- [assignment-solver/manifest.config.js](file://assignment-solver/manifest.config.js#L14-L105)
-
-**Section sources**
-- [assignment-solver/vite.config.js](file://assignment-solver/vite.config.js#L1-L109)
-- [assignment-solver/manifest.config.js](file://assignment-solver/manifest.config.js#L1-L108)
-- [assignment-solver/public/sidepanel.html](file://assignment-solver/public/sidepanel.html#L1-L392)
-- [assignment-solver/README.md](file://assignment-solver/README.md#L74-L91)
-
-### Backend API (Notice Reminders)
+### Backend API (notice reminders)
 - Configuration
   - Pydantic settings with defaults and environment file loading.
 - Server startup
@@ -248,14 +165,6 @@ CLI->>Uvicorn : "run(..., reload=True)"
 Uvicorn->>App : "Serve app"
 App-->>Dev : "Server ready on host : port"
 ```
-
-**Diagram sources**
-- [notice-reminders/main.py](file://notice-reminders/main.py#L54-L66)
-
-**Section sources**
-- [notice-reminders/app/core/config.py](file://notice-reminders/app/core/config.py#L4-L32)
-- [notice-reminders/pyproject.toml](file://notice-reminders/pyproject.toml#L1-L41)
-- [notice-reminders/README.md](file://notice-reminders/README.md#L51-L56)
 
 ### Website (Next.js)
 - API client
@@ -279,16 +188,7 @@ API-->>UI : "Parsed data or throws"
 UI-->>User : "Rendered UI"
 ```
 
-**Diagram sources**
-- [website/lib/api.ts](file://website/lib/api.ts#L28-L53)
-- [website/next.config.ts](file://website/next.config.ts#L4-L15)
-
-**Section sources**
-- [website/lib/api.ts](file://website/lib/api.ts#L1-L184)
-- [website/next.config.ts](file://website/next.config.ts#L1-L19)
-- [website/README.md](file://website/README.md#L20-L51)
-
-## Dependency Analysis
+## Dependency analysis
 - assignment-solver
   - Vite, webextension-polyfill, ESLint, Prettier.
   - Aliases for internal modules simplify imports.
@@ -321,17 +221,7 @@ WEB --> PH["posthog-js"]
 WEB --> ZD["zod"]
 ```
 
-**Diagram sources**
-- [assignment-solver/package.json](file://assignment-solver/package.json#L15-L20)
-- [notice-reminders/pyproject.toml](file://notice-reminders/pyproject.toml#L7-L19)
-- [website/package.json](file://website/package.json#L11-L37)
-
-**Section sources**
-- [assignment-solver/package.json](file://assignment-solver/package.json#L15-L20)
-- [notice-reminders/pyproject.toml](file://notice-reminders/pyproject.toml#L7-L19)
-- [website/package.json](file://website/package.json#L11-L37)
-
-## Performance Considerations
+## Performance considerations
 - Browser Extension
   - Use watch mode for incremental builds.
   - Minimize heavy computations in content scripts; offload to background/service worker when possible.
@@ -340,12 +230,12 @@ WEB --> ZD["zod"]
   - Use migrations and caching TTL settings appropriately.
   - Monitor database queries and optimize ORM usage.
 - Website
-  - Leverage Next.js static generation and caching.
+  - Use Next.js static generation and caching.
   - Keep asset sizes reasonable; use Tailwind utilities efficiently.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Browser Extension
   - Could not get page HTML: Ensure you are on a supported assignment page and that it is fully loaded.
   - Question container not found: Re-extract questions; check console for errors.
@@ -360,15 +250,8 @@ WEB --> ZD["zod"]
   - Login/dashboard not working: Ensure the backend is running and NEXT_PUBLIC_API_URL points to the correct host/port.
   - PostHog not tracking: Verify rewrites are active in development.
 
-**Section sources**
-- [assignment-solver/README.md](file://assignment-solver/README.md#L259-L312)
-- [notice-reminders/app/core/config.py](file://notice-reminders/app/core/config.py#L14-L27)
-- [notice-reminders/main.py](file://notice-reminders/main.py#L42-L45)
-- [website/README.md](file://website/README.md#L27-L51)
-- [website/next.config.ts](file://website/next.config.ts#L4-L15)
-
 ## Conclusion
-By following this guide, you can set up a complete development environment across the browser extension, backend API, and website. Use the provided scripts and configurations for hot reload, linting, and formatting. Keep secrets secure, respect rate limits, and leverage the monorepo structure to iterate efficiently across components.
+By following this guide, you can set up a complete development environment across the browser extension, backend API, and website. Use the provided scripts and configurations for hot reload, linting, and formatting. Keep secrets secure, respect rate limits, and use the monorepo structure to iterate efficiently across components.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
@@ -380,8 +263,3 @@ By following this guide, you can set up a complete development environment acros
   - Browser Extension: Requires Bun and modern browsers.
   - Backend API: Requires Python 3.12+.
   - Website: Requires Node.js and Bun.
-
-**Section sources**
-- [notice-reminders/app/core/config.py](file://notice-reminders/app/core/config.py#L4-L32)
-- [website/README.md](file://website/README.md#L27-L33)
-- [assignment-solver/README.md](file://assignment-solver/README.md#L24-L28)

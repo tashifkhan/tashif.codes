@@ -1,32 +1,9 @@
-# Environment Variables
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://README.md)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [utils.js](file://electron/src/electron/utils.js)
-- [package.json](file://electron/package.json)
-- [vite.config.js](file://electron/vite.config.js)
-- [app.py](file://python-backend/app.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Environment variables
 
 ## Introduction
-This document provides comprehensive guidance for environment variables used across the application. It covers required variables (such as Google OAuth client credentials), service-specific credentials (Gmail and SMTP), optional configuration for development and runtime behavior, precedence and fallback mechanisms, security best practices, cross-platform considerations, and configuration templates for development, staging, and production.
+This page provides detailed guidance for environment variables used across the application. It covers required variables (such as Google OAuth client credentials), service-specific credentials (Gmail and SMTP), optional configuration for development and runtime behavior, precedence and fallback mechanisms, security best practices, cross-platform considerations, and configuration templates for development, staging, and production.
 
-## Project Structure
+## Project structure
 The application consists of:
 - Electron desktop app (main process and preload) with React UI
 - Python backend for contact processing and validation
@@ -59,24 +36,7 @@ VC --> |"Dev server"| DEV["localhost:5173"]
 PYAPP -. "Optional local dev" .- DEV
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [utils.js](file://electron/src/electron/utils.js#L1-L5)
-- [package.json](file://electron/package.json#L1-L49)
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
-- [app.py](file://python-backend/app.py#L1-L378)
-
-**Section sources**
-- [README.md](file://README.md#L111-L118)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [utils.js](file://electron/src/electron/utils.js#L1-L5)
-- [package.json](file://electron/package.json#L1-L49)
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
-- [app.py](file://python-backend/app.py#L1-L378)
-
-## Core Components
+## Core components
 - Required environment variables
   - GOOGLE_CLIENT_ID: Used by the Gmail OAuth flow to construct the OAuth2 client.
   - GOOGLE_CLIENT_SECRET: Used by the Gmail OAuth flow to construct the OAuth2 client.
@@ -87,16 +47,10 @@ PYAPP -. "Optional local dev" .- DEV
   - SMTP: Accepts host, port, user, pass, and secure flags at runtime; optional encrypted storage of partial config.
 
 Notes:
-- The project documentation instructs creating a .env file in the electron directory and loading dotenv in the Gmail handler module.
+- The project documentation instructs creating a.env file in the electron directory and loading dotenv in the Gmail handler module.
 - The Electron main process does not directly read environment variables; Gmail and SMTP handlers manage their own configuration needs.
 
-**Section sources**
-- [README.md](file://README.md#L111-L118)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [utils.js](file://electron/src/electron/utils.js#L1-L5)
-
-## Architecture Overview
+## Architecture overview
 The environment variable architecture centers on:
 - Dotenv loading for Electron main process modules
 - Runtime configuration for SMTP
@@ -115,16 +69,9 @@ Gmail-->>Main : "{success, error | token}"
 Main-->>UI : "Auth result"
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
+## Detailed component analysis
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [README.md](file://README.md#L111-L118)
-
-## Detailed Component Analysis
-
-### Gmail OAuth Environment Variables
+### Gmail OAuth environment variables
 - Purpose: Construct OAuth2 client for Gmail API.
 - Required variables:
   - GOOGLE_CLIENT_ID
@@ -154,14 +101,7 @@ StoreToken --> Done(["Success"])
 ReturnError --> Done
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [README.md](file://README.md#L111-L118)
-
-### SMTP Configuration
+### SMTP configuration
 - Purpose: Send emails via SMTP.
 - Required runtime configuration:
   - host, port, user, pass
@@ -190,13 +130,7 @@ Loop --> Done(["Success"])
 ReturnError --> Done
 ```
 
-**Diagram sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-
-### Development Mode and Logging
+### Development mode and logging
 - Purpose: Control development vs production behavior and logging verbosity.
 - Variable:
   - NODE_ENV
@@ -216,17 +150,7 @@ DevTools --> End(["Ready"])
 Prod --> End
 ```
 
-**Diagram sources**
-- [utils.js](file://electron/src/electron/utils.js#L1-L5)
-- [package.json](file://electron/package.json#L1-L49)
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
-
-**Section sources**
-- [utils.js](file://electron/src/electron/utils.js#L1-L5)
-- [package.json](file://electron/package.json#L1-L49)
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
-
-### Python Backend Environment
+### Python backend environment
 - Purpose: Local contact processing API.
 - Behavior:
   - The backend runs on a configurable port and serves endpoints for health checks and contact processing.
@@ -234,12 +158,9 @@ Prod --> End
 - Notes:
   - The Electron app can integrate with this backend when available; otherwise, it falls back to basic parsing.
 
-**Section sources**
-- [app.py](file://python-backend/app.py#L1-L378)
-
-## Dependency Analysis
+## Dependency analysis
 - Dotenv loading:
-  - The Gmail handler imports dotenv and expects a .env file in the working directory.
+  - The Gmail handler imports dotenv and expects a.env file in the working directory.
 - Electron scripts:
   - Development and production scripts set NODE_ENV using cross-env for cross-platform compatibility.
 - Handler dependencies:
@@ -256,31 +177,17 @@ GMH --> STORE["electron-store"]
 SMH["smtp-handler.js"] --> STORE
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [utils.js](file://electron/src/electron/utils.js#L1-L5)
-- [package.json](file://electron/package.json#L1-L49)
-
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [utils.js](file://electron/src/electron/utils.js#L1-L5)
-- [package.json](file://electron/package.json#L1-L49)
-
-## Performance Considerations
+## Performance considerations
 - Rate limiting:
   - Gmail and SMTP handlers implement delays between operations to respect provider limits and reduce risk of throttling.
 - Resource usage:
   - Development mode increases memory footprint due to dev tools and hot reload; production builds optimize for performance.
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L140-L214)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L50-L104)
-
-## Troubleshooting Guide
+## Troubleshooting guide
 Common environment variable issues and resolutions:
 - Missing Google OAuth credentials:
   - Symptom: Authentication fails early with a missing credentials error.
-  - Resolution: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are present in the .env file and loaded by dotenv.
+  - Resolution: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are present in the.env file and loaded by dotenv.
 - Incorrect NODE_ENV:
   - Symptom: Dev tools not opening or assets not loading.
   - Resolution: Set NODE_ENV to development for dev mode; otherwise defaults to production-like behavior.
@@ -292,21 +199,17 @@ Detection and validation:
 - Gmail handler explicitly checks for GOOGLE_* variables and returns a structured error if missing.
 - SMTP handler validates required fields and returns a clear error message for incomplete configuration.
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L30)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L17-L21)
-
 ## Conclusion
 The application relies on a small set of environment variables for secure service integration:
 - GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET for Gmail OAuth
 - Optional NODE_ENV for development control
 - Runtime SMTP configuration for email sending
 
-Best practices include storing secrets in .env files, avoiding hardcoded credentials, and leveraging electron-store for secure persistence of tokens and partial SMTP configs. Development scripts ensure cross-platform compatibility for environment variable handling.
+Best practices include storing secrets in.env files, avoiding hardcoded credentials, and using electron-store for secure persistence of tokens and partial SMTP configs. Development scripts ensure cross-platform compatibility for environment variable handling.
 
 ## Appendices
 
-### Configuration Templates
+### Configuration templates
 - Development (.env)
   - GOOGLE_CLIENT_ID=your_google_client_id
   - GOOGLE_CLIENT_SECRET=your_google_client_secret
@@ -317,33 +220,20 @@ Best practices include storing secrets in .env files, avoiding hardcoded credent
 
 Note: These templates reflect the variables currently used by the application. Adjust values according to your service providers and deployment targets.
 
-**Section sources**
-- [README.md](file://README.md#L111-L118)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L19-L36)
-- [utils.js](file://electron/src/electron/utils.js#L3-L5)
-
-### Security Best Practices
+### Security best practices
 - Credential storage
-  - Store secrets in .env files outside version control.
+  - Store secrets in.env files outside version control.
   - Use electron-store for encrypted persistence of tokens and partial SMTP configs.
 - Access control
-  - Restrict file permissions on .env and application directories.
+  - Restrict file permissions on.env and application directories.
 - Encryption requirements
-  - Rely on electron-store’s built-in encryption for persisted tokens.
+  - Rely on electron-store's built-in encryption for persisted tokens.
 - Least privilege
   - Grant only necessary scopes to OAuth clients.
   - Avoid saving passwords; rely on short-lived tokens where possible.
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L104-L105)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L22-L31)
-
-### Platform-Specific Notes
+### Platform-Specific notes
 - Cross-platform environment handling
   - Scripts use cross-env to normalize NODE_ENV across Windows, macOS, and Linux.
 - Asset loading differences
   - Development loads from localhost:5173; production loads bundled assets.
-
-**Section sources**
-- [package.json](file://electron/package.json#L8-L12)
-- [vite.config.js](file://electron/vite.config.js#L12-L15)

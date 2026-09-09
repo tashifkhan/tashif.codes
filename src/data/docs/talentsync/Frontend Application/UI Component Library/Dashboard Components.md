@@ -1,39 +1,9 @@
-# Dashboard Components
-
-<cite>
-**Referenced Files in This Document**
-- [Header.tsx](file://frontend/components/dashboard/Header.tsx)
-- [ActivityCenter.tsx](file://frontend/components/dashboard/ActivityCenter.tsx)
-- [FeatureCard.tsx](file://frontend/components/dashboard/FeatureCard.tsx)
-- [QuickActions.tsx](file://frontend/components/dashboard/QuickActions.tsx)
-- [QuickTips.tsx](file://frontend/components/dashboard/QuickTips.tsx)
-- [ResumesSection.tsx](file://frontend/components/dashboard/ResumesSection.tsx)
-- [StatsCard.tsx](file://frontend/components/dashboard/StatsCard.tsx)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx)
-- [page.tsx](file://frontend/app/dashboard/page.tsx)
-- [use-dashboard.ts](file://frontend/hooks/queries/use-dashboard.ts)
-- [dashboard.service.ts](file://frontend/services/dashboard.service.ts)
-- [dashboard.ts](file://frontend/types/dashboard.ts)
-- [navigation.ts](file://frontend/lib/navigation.ts)
-- [layout.tsx](file://frontend/app/layout.tsx)
-- [layout-content.tsx](file://frontend/app/layout-content.tsx)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Dashboard components
 
 ## Introduction
-This document provides comprehensive documentation for dashboard-specific components and layouts in the TalentSync application. It focuses on the Header component for navigation and greeting, ActivityCenter for user activity tracking, FeatureCard for feature presentation, QuickActions for rapid feature access, QuickTips for contextual help, ResumesSection for resume management, and StatsCard for analytics display. It also explains the ModalManager component for modal handling and state management, component composition patterns, data binding, and integration with the dashboard layout system. Examples of component usage, customization options, and responsive design considerations are included to guide both developers and designers.
+This page provides detailed documentation for dashboard-specific components and layouts in the TalentSync application. It focuses on the Header component for navigation and greeting, ActivityCenter for user activity tracking, FeatureCard for feature presentation, QuickActions for rapid feature access, QuickTips for contextual help, ResumesSection for resume management, and StatsCard for analytics display. It also explains the ModalManager component for modal handling and state management, component composition patterns, data binding, and integration with the dashboard layout system. Examples of component usage, customization options, and responsive design considerations are included to guide both developers and designers.
 
-## Project Structure
+## Project structure
 The dashboard components reside under the frontend/components/dashboard directory and are integrated into the main dashboard page located at frontend/app/dashboard/page.tsx. They rely on shared UI components from frontend/components/ui, service abstractions in frontend/services, and typed data models in frontend/types. The layout system is provided by the Next.js app router with a root layout and a content wrapper that manages navigation and sidebar behavior.
 
 ```mermaid
@@ -75,29 +45,7 @@ USE_DASHBOARD --> DASHBOARD_TYPES
 DASHBOARD_PAGE --> NAVIGATION
 ```
 
-**Diagram sources**
-- [layout.tsx](file://frontend/app/layout.tsx#L23-L51)
-- [layout-content.tsx](file://frontend/app/layout-content.tsx#L27-L33)
-- [page.tsx](file://frontend/app/dashboard/page.tsx#L89-L135)
-- [Header.tsx](file://frontend/components/dashboard/Header.tsx#L12-L57)
-- [ActivityCenter.tsx](file://frontend/components/dashboard/ActivityCenter.tsx#L37-L156)
-- [FeatureCard.tsx](file://frontend/components/dashboard/FeatureCard.tsx#L36-L101)
-- [QuickActions.tsx](file://frontend/components/dashboard/QuickActions.tsx#L8-L32)
-- [QuickTips.tsx](file://frontend/components/dashboard/QuickTips.tsx#L22-L89)
-- [ResumesSection.tsx](file://frontend/components/dashboard/ResumesSection.tsx#L23-L117)
-- [StatsCard.tsx](file://frontend/components/dashboard/StatsCard.tsx#L22-L65)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx#L104-L817)
-- [dashboard.service.ts](file://frontend/services/dashboard.service.ts#L4-L7)
-- [use-dashboard.ts](file://frontend/hooks/queries/use-dashboard.ts#L4-L12)
-- [dashboard.ts](file://frontend/types/dashboard.ts#L33-L38)
-- [navigation.ts](file://frontend/lib/navigation.ts#L72-L115)
-
-**Section sources**
-- [layout.tsx](file://frontend/app/layout.tsx#L23-L51)
-- [layout-content.tsx](file://frontend/app/layout-content.tsx#L27-L33)
-- [page.tsx](file://frontend/app/dashboard/page.tsx#L89-L135)
-
-## Core Components
+## Core components
 This section introduces each dashboard component, its purpose, props, and typical usage patterns.
 
 - Header: Displays a personalized greeting and current time with animated entrance effects.
@@ -109,17 +57,7 @@ This section introduces each dashboard component, its purpose, props, and typica
 - StatsCard: Visualizes metrics with progress indicators and optional click handlers.
 - ModalManager: Centralized modal manager for managing resumes, interviews, and cold mails with editing and deletion workflows.
 
-**Section sources**
-- [Header.tsx](file://frontend/components/dashboard/Header.tsx#L12-L57)
-- [ActivityCenter.tsx](file://frontend/components/dashboard/ActivityCenter.tsx#L37-L156)
-- [FeatureCard.tsx](file://frontend/components/dashboard/FeatureCard.tsx#L36-L101)
-- [QuickActions.tsx](file://frontend/components/dashboard/QuickActions.tsx#L8-L32)
-- [QuickTips.tsx](file://frontend/components/dashboard/QuickTips.tsx#L22-L89)
-- [ResumesSection.tsx](file://frontend/components/dashboard/ResumesSection.tsx#L23-L117)
-- [StatsCard.tsx](file://frontend/components/dashboard/StatsCard.tsx#L22-L65)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx#L104-L817)
-
-## Architecture Overview
+## Architecture overview
 The dashboard integrates UI components with data fetching and state management. The main dashboard page orchestrates:
 - Data fetching via a TanStack Query hook that calls a service abstraction.
 - State management for modals and editing/deletion flows.
@@ -156,22 +94,9 @@ Page->>Actions : Render quick actions
 Page->>Modals : Manage modals and edits
 ```
 
-**Diagram sources**
-- [page.tsx](file://frontend/app/dashboard/page.tsx#L123-L126)
-- [use-dashboard.ts](file://frontend/hooks/queries/use-dashboard.ts#L4-L12)
-- [dashboard.service.ts](file://frontend/services/dashboard.service.ts#L4-L7)
-- [dashboard.ts](file://frontend/types/dashboard.ts#L33-L38)
-- [Header.tsx](file://frontend/components/dashboard/Header.tsx#L12-L57)
-- [StatsCard.tsx](file://frontend/components/dashboard/StatsCard.tsx#L22-L65)
-- [ResumesSection.tsx](file://frontend/components/dashboard/ResumesSection.tsx#L23-L117)
-- [ActivityCenter.tsx](file://frontend/components/dashboard/ActivityCenter.tsx#L37-L156)
-- [QuickTips.tsx](file://frontend/components/dashboard/QuickTips.tsx#L22-L89)
-- [QuickActions.tsx](file://frontend/components/dashboard/QuickActions.tsx#L8-L32)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx#L104-L817)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Header Component
+### Header component
 Purpose:
 - Display a personalized greeting based on the time of day and show the current time.
 - Provide animated entrance effects using Framer Motion.
@@ -191,10 +116,7 @@ Customization options:
 Responsive considerations:
 - Text centering and spacing adapt to screen sizes.
 
-**Section sources**
-- [Header.tsx](file://frontend/components/dashboard/Header.tsx#L12-L57)
-
-### ActivityCenter Component
+### ActivityCenter component
 Purpose:
 - Present recent user activities with live indicators and empty-state actions.
 
@@ -216,11 +138,7 @@ Customization options:
 Responsive considerations:
 - Grid and flex layouts adjust for smaller screens.
 
-**Section sources**
-- [ActivityCenter.tsx](file://frontend/components/dashboard/ActivityCenter.tsx#L37-L156)
-- [dashboard.ts](file://frontend/types/dashboard.ts#L15-L21)
-
-### FeatureCard Component
+### FeatureCard component
 Purpose:
 - Showcase a feature with an icon, title, description, feature list, and a prominent call-to-action button.
 
@@ -248,10 +166,7 @@ Customization options:
 Responsive considerations:
 - Grid layouts and spacing adapt to breakpoints.
 
-**Section sources**
-- [FeatureCard.tsx](file://frontend/components/dashboard/FeatureCard.tsx#L36-L101)
-
-### QuickActions Component
+### QuickActions component
 Purpose:
 - Provide quick-access buttons to frequently used features with animated entrance.
 
@@ -268,11 +183,7 @@ Customization options:
 Responsive considerations:
 - Flex wrap ensures proper stacking on small screens.
 
-**Section sources**
-- [QuickActions.tsx](file://frontend/components/dashboard/QuickActions.tsx#L8-L32)
-- [navigation.ts](file://frontend/lib/navigation.ts#L72-L115)
-
-### QuickTips Component
+### QuickTips component
 Purpose:
 - Deliver contextual tips with gradient backgrounds and color-coded categories.
 
@@ -289,10 +200,7 @@ Customization options:
 Responsive considerations:
 - Responsive grid adjusts columns for tablet and desktop.
 
-**Section sources**
-- [QuickTips.tsx](file://frontend/components/dashboard/QuickTips.tsx#L22-L89)
-
-### ResumesSection Component
+### ResumesSection component
 Purpose:
 - List recent resumes with metadata and navigation to analysis pages.
 
@@ -313,11 +221,7 @@ Customization options:
 Responsive considerations:
 - Responsive grid with 1 column on mobile, 2 on tablet, 3 on desktop.
 
-**Section sources**
-- [ResumesSection.tsx](file://frontend/components/dashboard/ResumesSection.tsx#L23-L117)
-- [dashboard.ts](file://frontend/types/dashboard.ts#L23-L31)
-
-### StatsCard Component
+### StatsCard component
 Purpose:
 - Visualize metrics with progress indicators and optional click handlers.
 
@@ -344,10 +248,7 @@ Customization options:
 Responsive considerations:
 - Consistent padding and typography scaling.
 
-**Section sources**
-- [StatsCard.tsx](file://frontend/components/dashboard/StatsCard.tsx#L22-L65)
-
-### ModalManager Component
+### ModalManager component
 Purpose:
 - Centralized modal manager for managing resumes, interviews, and cold mails with editing and deletion workflows.
 
@@ -382,11 +283,7 @@ Customization options:
 Responsive considerations:
 - Scrollable modals with max-height constraints.
 
-**Section sources**
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx#L104-L817)
-- [dashboard.ts](file://frontend/types/dashboard.ts#L22-L53)
-
-## Dependency Analysis
+## Dependency analysis
 The dashboard components depend on shared UI primitives, typed data models, and service abstractions. The main dashboard page coordinates data fetching and state management, while components focus on presentation and user interactions.
 
 ```mermaid
@@ -418,36 +315,14 @@ QUERY --> TYPES
 PAGE --> NAV
 ```
 
-**Diagram sources**
-- [page.tsx](file://frontend/app/dashboard/page.tsx#L89-L135)
-- [Header.tsx](file://frontend/components/dashboard/Header.tsx#L12-L57)
-- [ActivityCenter.tsx](file://frontend/components/dashboard/ActivityCenter.tsx#L37-L156)
-- [FeatureCard.tsx](file://frontend/components/dashboard/FeatureCard.tsx#L36-L101)
-- [QuickActions.tsx](file://frontend/components/dashboard/QuickActions.tsx#L8-L32)
-- [QuickTips.tsx](file://frontend/components/dashboard/QuickTips.tsx#L22-L89)
-- [ResumesSection.tsx](file://frontend/components/dashboard/ResumesSection.tsx#L23-L117)
-- [StatsCard.tsx](file://frontend/components/dashboard/StatsCard.tsx#L22-L65)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx#L104-L817)
-- [dashboard.ts](file://frontend/types/dashboard.ts#L33-L38)
-- [dashboard.service.ts](file://frontend/services/dashboard.service.ts#L4-L7)
-- [use-dashboard.ts](file://frontend/hooks/queries/use-dashboard.ts#L4-L12)
-- [navigation.ts](file://frontend/lib/navigation.ts#L72-L115)
-
-**Section sources**
-- [page.tsx](file://frontend/app/dashboard/page.tsx#L89-L135)
-- [dashboard.ts](file://frontend/types/dashboard.ts#L33-L38)
-- [dashboard.service.ts](file://frontend/services/dashboard.service.ts#L4-L7)
-- [use-dashboard.ts](file://frontend/hooks/queries/use-dashboard.ts#L4-L12)
-- [navigation.ts](file://frontend/lib/navigation.ts#L72-L115)
-
-## Performance Considerations
+## Performance considerations
 - Lazy loading and virtualization: Consider virtualizing long lists in ActivityCenter and ResumesSection for large datasets.
 - Animation costs: Keep motion configurations minimal; avoid heavy transforms on many elements simultaneously.
 - Data fetching: Use efficient caching and pagination for activity feeds and resume lists.
 - Modal rendering: Unmount modals when closed to reduce DOM overhead.
 - Image optimization: Ensure any images used in cards are optimized and lazy-loaded.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Missing session or redirect loop: Verify authentication state and redirects in the dashboard page.
 - Empty activity or resume lists: Confirm data fetching hooks and service calls are successful.
@@ -455,10 +330,5 @@ Common issues and resolutions:
 - Editing conflicts: Validate that editing state is cleared after successful mutations.
 - Clipboard errors: Handle navigator.clipboard rejections gracefully with user feedback.
 
-**Section sources**
-- [page.tsx](file://frontend/app/dashboard/page.tsx#L160-L182)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx#L312-L373)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx#L682-L746)
-
 ## Conclusion
-The dashboard components form a cohesive system that combines data-driven presentation with interactive modals and responsive layouts. By leveraging shared UI primitives, typed data models, and service abstractions, the components maintain consistency and scalability. The main dashboard page orchestrates data fetching, state management, and component composition, enabling a smooth user experience across devices.
+The dashboard components form a cohesive system that combines data-driven presentation with interactive modals and responsive layouts. By using shared UI primitives, typed data models, and service abstractions, the components maintain consistency and scalability. The main dashboard page orchestrates data fetching, state management, and component composition, enabling a smooth user experience across devices.

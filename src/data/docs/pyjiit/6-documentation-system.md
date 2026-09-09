@@ -1,8 +1,8 @@
-# Documentation System
+# Documentation system
 
-## Purpose and Scope
+## Purpose and scope
 
-This document explains the automated documentation system for pyjiit, including how documentation is generated, built, deployed, and maintained. It covers the Sphinx-based documentation infrastructure, the GitHub Actions automation pipeline, and the integration with Python source code through autodoc.
+This page explains the automated documentation system for pyjiit, including how documentation is generated, built, deployed, and maintained. It covers the Sphinx-based documentation infrastructure, the GitHub Actions automation pipeline, and the integration with Python source code through autodoc.
 
 For detailed information about building documentation locally and Sphinx configuration, see [Building Documentation](6.1-building-documentation). For information about the automated deployment process to GitHub Pages, see [Documentation Deployment](6.2-documentation-deployment). For guidelines on contributing to documentation, see [Contributing to Documentation](6.3-contributing-to-documentation).
 
@@ -20,41 +20,35 @@ The documentation system has three primary components:
 | **Theme** | Furo 2024.8.6 | Provides modern, responsive styling |
 | **Deployment** | GitHub Actions + GitHub Pages | Automates build and hosting |
 
-**Sources:** [docs/conf.py](https://github.com/codelif/pyjiit/blob/0fe02955/docs/conf.py) [.github/workflows/documentation.yml](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/documentation.yml) [docs/requirements.txt](https://github.com/codelif/pyjiit/blob/0fe02955/docs/requirements.txt)
-
 ---
 
-## Documentation Architecture
+## Documentation architecture
 
 The documentation system is organized as a separate subsystem from the core library, with its own dependencies and build process. The following diagram shows the relationship between documentation sources, build tools, and output artifacts.
 
-### System Component Diagram
+### System component diagram
 
-![Architecture Diagram](images/6-documentation-system_diagram_1.png)
-
-**Sources:** [docs/conf.py1-49](https://github.com/codelif/pyjiit/blob/0fe02955/docs/conf.py#L1-L49) [.github/workflows/documentation.yml51-63](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/documentation.yml#L51-L63)
+![Diagram 1](images/6-documentation-system_diagram_1.png)
 
 ---
 
-## Build Process
+## Build process
 
 The documentation build process consists of multiple stages: dependency installation, Sphinx execution, and output preparation. The build is orchestrated by **Poetry** to manage dependencies and **sphinx-build** to generate HTML.
 
-### Documentation Build Flow
+### Documentation build flow
 
-![Architecture Diagram](images/6-documentation-system_diagram_2.png)
-
-**Sources:** [.github/workflows/documentation.yml42-54](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/documentation.yml#L42-L54) [docs/conf.py8-10](https://github.com/codelif/pyjiit/blob/0fe02955/docs/conf.py#L8-L10)
+![Diagram 2](images/6-documentation-system_diagram_2.png)
 
 ---
 
-## GitHub Actions Workflow
+## GitHub Actions workflow
 
 The documentation workflow is defined in `.github/workflows/documentation.yml` and implements a build-and-deploy pipeline with conditional deployment based on the branch.
 
-### Workflow Execution Diagram
+### Workflow execution diagram
 
-![Architecture Diagram](images/6-documentation-system_diagram_3.png)
+![Diagram 3](images/6-documentation-system_diagram_3.png)
 
 The workflow implements the following key features:
 
@@ -66,15 +60,13 @@ The workflow implements the following key features:
 | **Conditional Deploy** | `if: github.ref == 'refs/heads/main' && github.event_name == 'push'` | Only deploys production docs from main branch |
 | **Force Orphan** | `force_orphan: true` in deployment | Keeps gh-pages branch clean without history |
 
-**Sources:** [.github/workflows/documentation.yml1-64](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/documentation.yml#L1-L64)
-
 ---
 
-## Sphinx Configuration
+## Sphinx configuration
 
 The documentation system is configured through `docs/conf.py`, which defines project metadata, Sphinx extensions, theme settings, and build options.
 
-### Key Configuration Settings
+### Key configuration settings
 
 ```
 Project Information:
@@ -100,19 +92,17 @@ Build Settings:
    (adds parent directory to Python path for autodoc imports)
 ```
 
-The `sys.path.insert(0, os.path.abspath('..'))` statement at [docs/conf.py10](https://github.com/codelif/pyjiit/blob/0fe02955/docs/conf.py#L10-L10) is critical—it allows Sphinx's autodoc extension to import the `pyjiit` package from the repository root without requiring installation.
-
-**Sources:** [docs/conf.py1-49](https://github.com/codelif/pyjiit/blob/0fe02955/docs/conf.py#L1-L49)
+The `sys.path.insert(0, os.path.abspath('..'))` statement at [docs/conf.py10](https://github.com/codelif/pyjiit/blob/0fe02955/docs/conf.py#L10-L10) is critical, it allows Sphinx's autodoc extension to import the `pyjiit` package from the repository root without requiring installation.
 
 ---
 
-## API Documentation Structure
+## API documentation structure
 
 The API reference is structured in `docs/apiref.rst` using Sphinx's `autoclass` and `automodule` directives. These directives automatically extract docstrings from Python source files.
 
-### Autodoc Directive Mapping
+### Autodoc directive mapping
 
-![Architecture Diagram](images/6-documentation-system_diagram_4.png)
+![Diagram 4](images/6-documentation-system_diagram_4.png)
 
 The `:members:` option instructs autodoc to include all public methods, attributes, and nested classes. Docstrings are extracted from:
 
@@ -120,15 +110,13 @@ The `:members:` option instructs autodoc to include all public methods, attribut
 * Method docstrings (under `def method_name():`)
 * Module docstrings (at the top of `.py` files)
 
-**Sources:** [docs/apiref.rst1-24](https://github.com/codelif/pyjiit/blob/0fe02955/docs/apiref.rst#L1-L24)
-
 ---
 
-## Dependency Management
+## Dependency management
 
 Documentation dependencies are isolated in a Poetry dependency group called `docs`, separate from runtime dependencies. This allows developers to install only documentation tools when needed.
 
-### Documentation Dependencies
+### Documentation dependencies
 
 | Package | Version | Purpose |
 | --- | --- | --- |
@@ -139,13 +127,11 @@ Documentation dependencies are isolated in a Poetry dependency group called `doc
 
 Installation command: `poetry install --with docs` ([.github/workflows/documentation.yml49](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/documentation.yml#L49-L49))
 
-The `docs/requirements.txt` file exists as a standalone dependency declaration but is not used by the GitHub Actions workflow—Poetry manages all dependencies through `pyproject.toml`.
-
-**Sources:** [docs/requirements.txt1-2](https://github.com/codelif/pyjiit/blob/0fe02955/docs/requirements.txt#L1-L2) [.github/workflows/documentation.yml45-49](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/documentation.yml#L45-L49)
+The `docs/requirements.txt` file exists as a standalone dependency declaration but is not used by the GitHub Actions workflow, Poetry manages all dependencies through `pyproject.toml`.
 
 ---
 
-## Custom Domain Configuration
+## Custom domain configuration
 
 The documentation is served at a custom domain `pyjiit.codelif.in` through a `CNAME` file created during the build process. The workflow creates this file with a single command:
 
@@ -155,11 +141,9 @@ echo "pyjiit.codelif.in" > docs/_build/html/CNAME
 
 This file is deployed to the `gh-pages` branch alongside the HTML files. GitHub Pages reads this file to configure the custom domain. The domain must also be configured in the repository settings for the custom domain to work properly.
 
-**Sources:** [.github/workflows/documentation.yml54](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/documentation.yml#L54-L54)
-
 ---
 
-## Build Artifacts
+## Build artifacts
 
 The build process generates multiple artifacts in the `docs/_build/html/` directory:
 
@@ -175,10 +159,9 @@ docs/_build/html/
 │   └── fonts/
 ├── _sources/               (reStructuredText source files for reference)
 └── search.html             (search functionality)
+```
 
 The `force_orphan: true` setting in the deployment action ([.github/workflows/documentation.yml63](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/documentation.yml#L63-L63)) ensures the `gh-pages` branch contains only the latest documentation build without historical commits, keeping the repository size minimal.
-
-**Sources:** [.github/workflows/documentation.yml51-63](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/documentation.yml#L51-L63)
 
 ---
 

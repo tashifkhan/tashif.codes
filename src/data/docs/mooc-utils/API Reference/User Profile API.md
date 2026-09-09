@@ -1,39 +1,9 @@
-# User Profile API
-
-<cite>
-**Referenced Files in This Document**
-- [users.py](file://notice-reminders/app/api/routers/users.py)
-- [auth.py](file://notice-reminders/app/api/routers/auth.py)
-- [auth_core.py](file://notice-reminders/app/core/auth.py)
-- [config.py](file://notice-reminders/app/core/config.py)
-- [user_service.py](file://notice-reminders/app/services/user_service.py)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py)
-- [user_schema.py](file://notice-reminders/app/schemas/user.py)
-- [notification_channel_schema.py](file://notice-reminders/app/schemas/notification_channel.py)
-- [user_model.py](file://notice-reminders/app/models/user.py)
-- [notification_channel_model.py](file://notice-reminders/app/models/notification_channel.py)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py)
-- [auth_schema.py](file://notice-reminders/app/schemas/auth.py)
-- [frontend_api.ts](file://website/lib/api.ts)
-- [frontend_user_profile.tsx](file://website/components/notice-reminders/user-profile.tsx)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# User profile API
 
 ## Introduction
-This document provides comprehensive API documentation for user profile management within the notice-reminders system. It covers user registration via OTP, profile retrieval and updates, account deletion, and notification channel management. It also documents authentication and session handling, passwordless login via OTP, JWT access/refresh tokens, and cookie-based session persistence. Privacy and security considerations are addressed with respect to the implemented mechanisms, including token lifecycle, cookie attributes, and data protection controls.
+This page provides detailed API documentation for user profile management within the notice-reminders system. It covers user registration via OTP, profile retrieval and updates, account deletion, and notification channel management. It also documents authentication and session handling, passwordless login via OTP, JWT access/refresh tokens, and cookie-based session persistence. Privacy and security considerations are addressed with respect to the implemented mechanisms, including token lifecycle, cookie attributes, and data protection controls.
 
-## Project Structure
+## Project structure
 The user profile API is implemented as a FastAPI application with Pydantic schemas, Tortoise ORM models, and service layers. The frontend interacts with the backend through typed API helpers.
 
 ```mermaid
@@ -72,39 +42,7 @@ SAuth --> MUser
 SAuth --> MChan
 ```
 
-**Diagram sources**
-- [users.py](file://notice-reminders/app/api/routers/users.py#L1-L151)
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L1-L126)
-- [auth_core.py](file://notice-reminders/app/core/auth.py#L1-L72)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L1-L55)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L1-L32)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L1-L128)
-- [config.py](file://notice-reminders/app/core/config.py#L1-L32)
-- [user_model.py](file://notice-reminders/app/models/user.py#L1-L20)
-- [notification_channel_model.py](file://notice-reminders/app/models/notification_channel.py#L1-L26)
-- [user_schema.py](file://notice-reminders/app/schemas/user.py#L1-L24)
-- [notification_channel_schema.py](file://notice-reminders/app/schemas/notification_channel.py#L1-L22)
-- [auth_schema.py](file://notice-reminders/app/schemas/auth.py#L1-L26)
-- [frontend_api.ts](file://website/lib/api.ts#L69-L183)
-- [frontend_user_profile.tsx](file://website/components/notice-reminders/user-profile.tsx#L1-L189)
-
-**Section sources**
-- [users.py](file://notice-reminders/app/api/routers/users.py#L1-L151)
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L1-L126)
-- [auth_core.py](file://notice-reminders/app/core/auth.py#L1-L72)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L1-L55)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L1-L32)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L1-L128)
-- [config.py](file://notice-reminders/app/core/config.py#L1-L32)
-- [user_model.py](file://notice-reminders/app/models/user.py#L1-L20)
-- [notification_channel_model.py](file://notice-reminders/app/models/notification_channel.py#L1-L26)
-- [user_schema.py](file://notice-reminders/app/schemas/user.py#L1-L24)
-- [notification_channel_schema.py](file://notice-reminders/app/schemas/notification_channel.py#L1-L22)
-- [auth_schema.py](file://notice-reminders/app/schemas/auth.py#L1-L26)
-- [frontend_api.ts](file://website/lib/api.ts#L69-L183)
-- [frontend_user_profile.tsx](file://website/components/notice-reminders/user-profile.tsx#L1-L189)
-
-## Core Components
+## Core components
 - Authentication and Authorization
   - Access token verification and user resolution
   - Require-auth decorator for route protection
@@ -121,17 +59,7 @@ SAuth --> MChan
   - List user notification channels
   - Channel uniqueness per user-channel-address enforced by DB constraints
 
-**Section sources**
-- [auth_core.py](file://notice-reminders/app/core/auth.py#L14-L72)
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L15-L126)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L22-L128)
-- [config.py](file://notice-reminders/app/core/config.py#L22-L27)
-- [users.py](file://notice-reminders/app/api/routers/users.py#L17-L151)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L16-L36)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L8-L32)
-- [notification_channel_model.py](file://notice-reminders/app/models/notification_channel.py#L11-L26)
-
-## Architecture Overview
+## Architecture overview
 The system follows a layered architecture:
 - Routers handle HTTP requests and enforce authorization
 - Services encapsulate business logic and coordinate persistence
@@ -159,15 +87,9 @@ AuthAPI->>Cookies : Set access_token, refresh_token
 AuthAPI-->>Client : {user, is_new_user}
 ```
 
-**Diagram sources**
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L43-L76)
-- [auth_core.py](file://notice-reminders/app/core/auth.py#L14-L51)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L22-L94)
-- [config.py](file://notice-reminders/app/core/config.py#L22-L27)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Authentication Endpoints
+### Authentication endpoints
 - POST /auth/request-otp
   - Accepts email and sends OTP via configured email service
   - Returns whether user is new and OTP expiry timestamp
@@ -192,14 +114,7 @@ Security features:
 - Secure, HttpOnly, SameSite cookies with configurable security based on debug flag
 - JWT secret and algorithm configured via settings
 
-**Section sources**
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L43-L126)
-- [auth_core.py](file://notice-reminders/app/core/auth.py#L14-L51)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L22-L128)
-- [config.py](file://notice-reminders/app/core/config.py#L22-L27)
-- [auth_schema.py](file://notice-reminders/app/schemas/auth.py#L8-L26)
-
-### User Profile Endpoints
+### User profile endpoints
 - GET /users/{user_id}
   - Returns user profile if requester matches target user
 - PATCH /users/{user_id}
@@ -217,15 +132,7 @@ Data validation:
 - Pydantic schemas validate request payloads and serialize responses
 - Unique constraints on user, channel, and address prevent duplicates
 
-**Section sources**
-- [users.py](file://notice-reminders/app/api/routers/users.py#L17-L151)
-- [user_schema.py](file://notice-reminders/app/schemas/user.py#L6-L24)
-- [notification_channel_schema.py](file://notice-reminders/app/schemas/notification_channel.py#L6-L22)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L22-L36)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L11-L26)
-- [notification_channel_model.py](file://notice-reminders/app/models/notification_channel.py#L11-L26)
-
-### Frontend Integration
+### Frontend integration
 - Typed API helpers for OTP, auth, user, and channel operations
 - React component for user profile editing and channel listing
 - Uses TanStack Query for caching and optimistic updates
@@ -235,11 +142,7 @@ Example interactions:
 - Fetch current user, update profile fields, delete account
 - Add Telegram channel and list channels
 
-**Section sources**
-- [frontend_api.ts](file://website/lib/api.ts#L69-L183)
-- [frontend_user_profile.tsx](file://website/components/notice-reminders/user-profile.tsx#L35-L189)
-
-## Dependency Analysis
+## Dependency analysis
 ```mermaid
 classDiagram
 class User {
@@ -296,23 +199,7 @@ AuthService --> User : "creates/validates"
 AuthService --> Settings : "uses"
 ```
 
-**Diagram sources**
-- [user_model.py](file://notice-reminders/app/models/user.py#L8-L19)
-- [notification_channel_model.py](file://notice-reminders/app/models/notification_channel.py#L12-L25)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L12-L55)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L7-L32)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L17-L128)
-- [config.py](file://notice-reminders/app/core/config.py#L4-L32)
-
-**Section sources**
-- [user_model.py](file://notice-reminders/app/models/user.py#L1-L20)
-- [notification_channel_model.py](file://notice-reminders/app/models/notification_channel.py#L1-L26)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L1-L55)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L1-L32)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L1-L128)
-- [config.py](file://notice-reminders/app/core/config.py#L1-L32)
-
-## Performance Considerations
+## Performance considerations
 - Token lifetimes are short-lived for access tokens and medium-term for refresh tokens, reducing exposure windows
 - Unique constraints on notification channels avoid redundant entries and improve lookup performance
 - Pagination and ordering are not implemented in current endpoints; consider adding limits for large lists
@@ -320,7 +207,7 @@ AuthService --> Settings : "uses"
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Unauthorized access
   - Ensure access token is present and valid; check cookie presence for protected routes
@@ -335,12 +222,6 @@ Common issues and resolutions:
   - Address required for telegram channel
   - Unique constraint violations handled by returning existing channel
 
-**Section sources**
-- [auth_core.py](file://notice-reminders/app/core/auth.py#L14-L51)
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L78-L121)
-- [users.py](file://notice-reminders/app/api/routers/users.py#L91-L151)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L104-L121)
-
 ## Conclusion
 The user profile API provides a secure, validated interface for user management and notification channel administration. Authentication relies on OTP, JWT access tokens, and refresh tokens with cookie-based session persistence. The design emphasizes self-assertion, data validation, and integrity constraints to maintain data consistency and user privacy.
 
@@ -348,7 +229,7 @@ The user profile API provides a secure, validated interface for user management 
 
 ## Appendices
 
-### API Reference
+### API reference
 
 - Authentication
   - POST /auth/request-otp
@@ -381,14 +262,7 @@ The user profile API provides a secure, validated interface for user management 
   - GET /users/{user_id}/channels
     - Response: array of channel records
 
-**Section sources**
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L43-L126)
-- [users.py](file://notice-reminders/app/api/routers/users.py#L17-L151)
-- [auth_schema.py](file://notice-reminders/app/schemas/auth.py#L8-L26)
-- [user_schema.py](file://notice-reminders/app/schemas/user.py#L6-L24)
-- [notification_channel_schema.py](file://notice-reminders/app/schemas/notification_channel.py#L6-L22)
-
-### Data Validation Scenarios
+### Data validation scenarios
 - User update
   - Allowed fields: email, name, telegram_id, is_active
   - Only provided fields are updated
@@ -397,12 +271,7 @@ The user profile API provides a secure, validated interface for user management 
   - address required when channel is telegram
   - Unique constraint prevents duplicate user-channel-address combinations
 
-**Section sources**
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L22-L36)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L11-L26)
-- [notification_channel_model.py](file://notice-reminders/app/models/notification_channel.py#L22-L26)
-
-### Security and Privacy Notes
+### Security and privacy notes
 - Tokens and cookies
   - Access tokens are short-lived; refresh tokens are rotated on use
   - Cookies marked HttpOnly and SameSite lax; secure flag depends on debug setting

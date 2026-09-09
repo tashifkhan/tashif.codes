@@ -1,38 +1,14 @@
-# Email Processing Services
-
-<cite>
-**Referenced Files in This Document**
-- [email_notice_service.py](file://app/services/email_notice_service.py)
-- [placement_service.py](file://app/services/placement_service.py)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py)
-- [placement_notification_formatter.py](file://app/services/placement_notification_formatter.py)
-- [placement_policy_service.py](file://app/services/placement_policy_service.py)
-- [google_groups_client.py](file://app/clients/google_groups_client.py)
-- [database_service.py](file://app/services/database_service.py)
-- [main.py](file://app/main.py)
-- [config.py](file://app/core/config.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Email processing services
 
 ## Introduction
-This document explains the email processing services that power intelligent notice classification, content extraction, and standardized formatting for placement and general notices. It covers:
+This page explains the email processing services that power intelligent notice classification, content extraction, and standardized formatting for placement and general notices. It covers:
 - EmailNoticeService for general notice classification and extraction
 - PlacementService for LLM-powered placement offer extraction
 - Formatter services for content transformation and notification-ready output
 - Integration with Google Gemini LLMs, including prompt engineering and structured data extraction
 - The end-to-end pipeline from raw email ingestion to structured data storage and notification delivery
 
-## Project Structure
+## Project structure
 The email processing system is organized around modular services and clients:
 - Services: EmailNoticeService, PlacementService, NoticeFormatterService, PlacementNotificationFormatter, PlacementPolicyService
 - Clients: GoogleGroupsClient for email ingestion
@@ -71,27 +47,7 @@ NFS --> DB
 PNF --> DB
 ```
 
-**Diagram sources**
-- [main.py](file://app/main.py#L105-L242)
-- [google_groups_client.py](file://app/clients/google_groups_client.py#L19-L168)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L335-L798)
-- [placement_service.py](file://app/services/placement_service.py#L419-L805)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L792)
-- [placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L102-L380)
-- [placement_policy_service.py](file://app/services/placement_policy_service.py#L200-L588)
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-
-**Section sources**
-- [main.py](file://app/main.py#L105-L242)
-- [google_groups_client.py](file://app/clients/google_groups_client.py#L19-L168)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L335-L798)
-- [placement_service.py](file://app/services/placement_service.py#L419-L805)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L792)
-- [placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L102-L380)
-- [placement_policy_service.py](file://app/services/placement_policy_service.py#L200-L588)
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-
-## Core Components
+## Core components
 - EmailNoticeService: LLM-driven classification and extraction of general notices (announcements, job postings, webinars, hackathons, shortlistings, reminders, internship NOCs). Integrates with NoticeFormatterService for standardized formatting and PlacementPolicyService for policy updates.
 - PlacementService: Keyword-based classification plus LLM extraction for final placement offers, with privacy sanitization and structured validation.
 - NoticeFormatterService: LLM-based notice formatting pipeline (text extraction, classification, fuzzy matching, structured extraction, and message formatting) for general notices.
@@ -100,16 +56,7 @@ PNF --> DB
 - GoogleGroupsClient: IMAP-based email retrieval and forwarded metadata extraction.
 - DatabaseService: MongoDB operations for notices, jobs, placement offers, policies, and user management.
 
-**Section sources**
-- [email_notice_service.py](file://app/services/email_notice_service.py#L335-L798)
-- [placement_service.py](file://app/services/placement_service.py#L419-L805)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L792)
-- [placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L102-L380)
-- [placement_policy_service.py](file://app/services/placement_policy_service.py#L200-L588)
-- [google_groups_client.py](file://app/clients/google_groups_client.py#L19-L168)
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-
-## Architecture Overview
+## Architecture overview
 The system orchestrates email processing through a unified command that:
 1. Fetches unread email IDs
 2. Attempts PlacementService classification/extraction
@@ -142,28 +89,20 @@ CLI->>GGC : mark_as_read(email_id)
 end
 ```
 
-**Diagram sources**
-- [main.py](file://app/main.py#L105-L242)
-- [google_groups_client.py](file://app/clients/google_groups_client.py#L88-L168)
-- [placement_service.py](file://app/services/placement_service.py#L419-L805)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L636-L738)
-- [database_service.py](file://app/services/database_service.py#L274-L441)
-- [placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L304-L380)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### EmailNoticeService
 - Purpose: Classify and extract general notices from Google Groups emails using LLM prompts and LangGraph.
 - Key features:
   - LLM-based classification (no keyword filtering) with a dedicated prompt template
-  - Structured extraction into ExtractedNotice with comprehensive fields (job postings, webinars, hackathons, shortlistings, internship NOCs, reminders)
+  - Structured extraction into ExtractedNotice with detailed fields (job postings, webinars, hackathons, shortlistings, internship NOCs, reminders)
   - Retry logic with validation and error handling
   - Integration with NoticeFormatterService for standardized formatting
   - Special handling for placement policy updates via PlacementPolicyService
   - Creation of NoticeDocument for database storage and Telegram formatting
 - Processing pipeline:
   - Classify -> Extract -> Validate -> Display
-  - JSON extraction from LLM responses with robust error handling
+  - JSON extraction from LLM responses with reliable error handling
   - Advanced policy extraction with a secondary prompt for policy updates
 
 ```mermaid
@@ -182,26 +121,16 @@ PolicyFlow --> Done
 Reject --> Done
 ```
 
-**Diagram sources**
-- [email_notice_service.py](file://app/services/email_notice_service.py#L419-L738)
-- [placement_policy_service.py](file://app/services/placement_policy_service.py#L541-L588)
-- [database_service.py](file://app/services/database_service.py#L80-L104)
-
-**Section sources**
-- [email_notice_service.py](file://app/services/email_notice_service.py#L147-L327)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L335-L798)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L799-L1155)
-
 ### PlacementService
 - Purpose: Extract final placement offers from emails using keyword-based classification and LLM extraction.
 - Key features:
   - Keyword scoring for placement-related signals, company indicators, and negative filters
   - LLM extraction with structured validation and retry logic
   - Privacy sanitization to remove headers and forwarded metadata
-  - Enhanced validation (roles, students, packages)
+  - Improved validation (roles, students, packages)
   - Integration with PlacementNotificationFormatter for notification creation
 - Processing pipeline:
-  - Classify (keyword scoring) -> Extract (LLM) -> Validate & Enhance -> Sanitize Privacy -> Display
+  - Classify (keyword scoring) -> Extract (LLM) -> Validate & Improve -> Sanitize Privacy -> Display
 
 ```mermaid
 flowchart TD
@@ -216,15 +145,6 @@ Privacy --> Events["Emit events (new/update)"]
 Events --> Done(["Return PlacementOffer"])
 Reject --> Done
 ```
-
-**Diagram sources**
-- [placement_service.py](file://app/services/placement_service.py#L507-L805)
-- [placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L304-L380)
-
-**Section sources**
-- [placement_service.py](file://app/services/placement_service.py#L93-L143)
-- [placement_service.py](file://app/services/placement_service.py#L151-L246)
-- [placement_service.py](file://app/services/placement_service.py#L419-L805)
 
 ### NoticeFormatterService
 - Purpose: Standardize and format notices into notification-ready content using LLM prompts and LangGraph.
@@ -250,12 +170,6 @@ ExtractInfo --> Format["Format Message (Telegram style)"]
 Format --> Done(["Return formatted_message"])
 ```
 
-**Diagram sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L202-L792)
-
-**Section sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L792)
-
 ### PlacementNotificationFormatter
 - Purpose: Create notification-ready documents for placement events (new offers and updates).
 - Key features:
@@ -277,13 +191,6 @@ New --> Save["DatabaseService.save_notice"]
 Update --> Save
 Save --> Done(["Return NoticeDocument"])
 ```
-
-**Diagram sources**
-- [placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L304-L380)
-- [database_service.py](file://app/services/database_service.py#L80-L104)
-
-**Section sources**
-- [placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L102-L380)
 
 ### PlacementPolicyService
 - Purpose: Manage placement policy documents (Markdown, TOC, year extraction, CRUD).
@@ -307,14 +214,6 @@ Create --> Persist
 Persist --> Done(["Return PolicyDocument"])
 ```
 
-**Diagram sources**
-- [placement_policy_service.py](file://app/services/placement_policy_service.py#L541-L588)
-- [database_service.py](file://app/services/database_service.py#L741-L777)
-
-**Section sources**
-- [placement_policy_service.py](file://app/services/placement_policy_service.py#L23-L140)
-- [placement_policy_service.py](file://app/services/placement_policy_service.py#L200-L588)
-
 ### GoogleGroupsClient
 - Purpose: Decoupled email ingestion for Google Groups using IMAP.
 - Key features:
@@ -337,12 +236,6 @@ class GoogleGroupsClient {
 +extract_forwarded_sender(text) str
 }
 ```
-
-**Diagram sources**
-- [google_groups_client.py](file://app/clients/google_groups_client.py#L19-L465)
-
-**Section sources**
-- [google_groups_client.py](file://app/clients/google_groups_client.py#L19-L465)
 
 ### DatabaseService
 - Purpose: Centralized MongoDB operations for notices, jobs, placement offers, policies, and users.
@@ -375,13 +268,7 @@ class DatabaseService {
 }
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-
-## Dependency Analysis
+## Dependency analysis
 - EmailNoticeService depends on:
   - GoogleGroupsClient for email ingestion
   - NoticeFormatterService for standardized formatting
@@ -411,34 +298,16 @@ PNF --> DB
 GGC --> DB
 ```
 
-**Diagram sources**
-- [email_notice_service.py](file://app/services/email_notice_service.py#L335-L798)
-- [placement_service.py](file://app/services/placement_service.py#L419-L805)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L792)
-- [placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L102-L380)
-- [placement_policy_service.py](file://app/services/placement_policy_service.py#L200-L588)
-- [google_groups_client.py](file://app/clients/google_groups_client.py#L19-L168)
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-
-**Section sources**
-- [email_notice_service.py](file://app/services/email_notice_service.py#L335-L798)
-- [placement_service.py](file://app/services/placement_service.py#L419-L805)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L792)
-- [placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L102-L380)
-- [placement_policy_service.py](file://app/services/placement_policy_service.py#L200-L588)
-- [google_groups_client.py](file://app/clients/google_groups_client.py#L19-L168)
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-
-## Performance Considerations
+## Performance considerations
 - LLM calls: Both EmailNoticeService and PlacementService use LLMs for extraction. Consider rate limits and cost by batching and caching where appropriate.
 - Retry logic: PlacementService includes retry attempts for validation failures; EmailNoticeService retries on extraction errors up to a limit.
 - IMAP operations: Fetching and parsing emails can be I/O bound; process emails sequentially to avoid connection thrashing.
-- Database writes: Batch operations where possible; PlacementService’s save_placement_offers merges updates efficiently.
+- Database writes: Batch operations where possible; PlacementService's save_placement_offers merges updates efficiently.
 - Formatting: NoticeFormatterService performs multiple LLM calls; cache or reuse results when feasible.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - LLM JSON parsing failures:
   - PlacementService: Validates JSON and retries up to a maximum; check LLM prompt templates and content normalization.
@@ -452,12 +321,5 @@ Common issues and resolutions:
 - Daemon mode:
   - Safe printing is disabled in daemon mode; rely on logging to file for visibility.
 
-**Section sources**
-- [placement_service.py](file://app/services/placement_service.py#L663-L704)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L553-L568)
-- [google_groups_client.py](file://app/clients/google_groups_client.py#L63-L76)
-- [database_service.py](file://app/services/database_service.py#L80-L104)
-- [config.py](file://app/core/config.py#L145-L154)
-
 ## Conclusion
-The email processing services provide a robust, LLM-powered pipeline for extracting, classifying, validating, and formatting placement and general notices. The modular design enables clear separation of concerns, strong integration with MongoDB, and extensible formatting for notifications. The orchestration in main.py demonstrates a practical approach to handling mixed email sources and ensuring reliable persistence and delivery.
+The email processing services provide a reliable, LLM-powered pipeline for extracting, classifying, validating, and formatting placement and general notices. The modular design enables clear separation of concerns, strong integration with MongoDB, and extensible formatting for notifications. The orchestration in main.py demonstrates a practical approach to handling mixed email sources and ensuring reliable persistence and delivery.

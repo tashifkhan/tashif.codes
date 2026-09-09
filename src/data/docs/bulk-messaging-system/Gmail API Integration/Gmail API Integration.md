@@ -1,33 +1,9 @@
-# Gmail API Integration
-
-<cite>
-**Referenced Files in This Document**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [README.md](file://README.md)
-- [package.json](file://electron/package.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Gmail API integration
 
 ## Introduction
-This document provides comprehensive documentation for Gmail API integration and OAuth2 authentication within the desktop application. It covers the complete OAuth2 flow, including client ID/secret configuration, consent screen setup, and token management. It also explains email composition with HTML support, subject handling, and the current implementation limitations around attachments. The document details the bulk email sending implementation with rate limiting and progress tracking, and addresses token storage, refresh mechanisms, and credential security. Finally, it includes troubleshooting guidance for authentication failures, API quota issues, and permission problems, along with best practices for Gmail API usage and security considerations.
+This page provides detailed documentation for Gmail API integration and OAuth2 authentication within the desktop application. It covers the complete OAuth2 flow, including client ID/secret configuration, consent screen setup, and token management. It also explains email composition with HTML support, subject handling, and the current implementation limitations around attachments. The document details the bulk email sending implementation with rate limiting and progress tracking, and addresses token storage, refresh mechanisms, and credential security. Finally, it includes troubleshooting guidance for authentication failures, API quota issues, and permission problems, along with best practices for Gmail API usage and security considerations.
 
-## Project Structure
+## Project structure
 The Gmail integration is implemented across several modules:
 - Electron main process handlers for Gmail authentication and email sending
 - Preload bridge exposing secure IPC methods to the renderer
@@ -57,23 +33,7 @@ GM --> PR
 SM --> PR
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-
-## Core Components
+## Core components
 - Gmail OAuth2 Handler: Manages OAuth2 flow, token acquisition, and storage
 - Electron Main Process: Exposes IPC handlers for authentication and email sending
 - Preload Bridge: Provides secure IPC methods to renderer
@@ -88,15 +48,7 @@ Key implementation highlights:
 - Real-time progress tracking via IPC events
 - HTML email support in both Gmail API and SMTP modes
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L9-L130)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L60-L107)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-## Architecture Overview
+## Architecture overview
 The Gmail integration follows a multi-layered architecture with clear separation of concerns:
 
 ```mermaid
@@ -123,13 +75,6 @@ MM-->>PR : {success : true}
 PR-->>BM : {success : true}
 BM->>UI : Update authentication status
 ```
-
-**Diagram sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L91-L100)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L75-L107)
-- [preload.js](file://electron/src/electron/preload.js#L6-L9)
-- [main.js](file://electron/src/electron/main.js#L103-L103)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
 
 The bulk email sending flow:
 
@@ -159,16 +104,9 @@ PR-->>BM : {success : true, results}
 BM->>UI : Update results and completion status
 ```
 
-**Diagram sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L229-L254)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-- [preload.js](file://electron/src/electron/preload.js#L8-L21)
-- [main.js](file://electron/src/electron/main.js#L105-L105)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Gmail OAuth2 Handler
+### Gmail OAuth2 handler
 The OAuth2 handler manages the complete authentication flow:
 
 ```mermaid
@@ -190,9 +128,6 @@ CloseWindow --> End
 Success --> End
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-
 Key implementation details:
 - OAuth2 scopes configured for Gmail send capability
 - Redirect URI set to localhost callback
@@ -200,11 +135,8 @@ Key implementation details:
 - 5-minute timeout for authentication flow
 - Token storage using electron-store with automatic encryption
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L9-L130)
-
-### Gmail Form Component
-The Gmail form provides a comprehensive interface for email composition and bulk sending:
+### Gmail form component
+The Gmail form provides a detailed interface for email composition and bulk sending:
 
 ```mermaid
 classDiagram
@@ -229,10 +161,6 @@ GmailForm --> BulkMailer : "uses"
 BulkMailer --> GmailForm : "updates state"
 ```
 
-**Diagram sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L3-L18)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L10-L25)
-
 The form implements:
 - Real-time recipient count and status display
 - Email validation with regex pattern
@@ -240,12 +168,8 @@ The form implements:
 - Activity log with color-coded status indicators
 - Integration with authentication and sending flows
 
-**Section sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L149-L219)
-
-### Bulk Email Sending Implementation
-The bulk sending implementation includes comprehensive rate limiting and progress tracking:
+### Bulk email sending implementation
+The bulk sending implementation includes detailed rate limiting and progress tracking:
 
 ```mermaid
 flowchart TD
@@ -269,10 +193,6 @@ ShowError --> End([End])
 Complete --> End
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-
 Implementation characteristics:
 - Configurable delay between emails (default 1000ms)
 - Real-time progress updates via IPC events
@@ -280,11 +200,7 @@ Implementation characteristics:
 - Error handling with detailed error messages
 - Results aggregation for completion reporting
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-
-### Token Storage and Refresh Mechanisms
+### Token storage and refresh mechanisms
 The application implements secure token storage and management:
 
 ```mermaid
@@ -309,21 +225,13 @@ OAuth2Handler --> TokenStorage : "stores tokens"
 OAuth2Handler --> GmailAPI : "uses"
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L7-L13)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L132-L139)
-
 Token management features:
 - Automatic token persistence using electron-store
 - Token loading on subsequent sessions
 - OAuth2 client reinitialization with stored credentials
 - Secure storage with automatic encryption
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L7-L13)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L132-L139)
-
-## Dependency Analysis
+## Dependency analysis
 The Gmail integration relies on several key dependencies:
 
 ```mermaid
@@ -348,23 +256,12 @@ GF["GmailForm.jsx"] --> RE
 BM["BulkMailer.jsx"] --> RE
 ```
 
-**Diagram sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L6)
-- [main.js](file://electron/src/electron/main.js#L1-L12)
-- [preload.js](file://electron/src/electron/preload.js#L1-L2)
-
 External service dependencies:
 - Google OAuth2 endpoints for authentication
 - Gmail API v1 for email sending
 - Electron runtime for desktop application
 
-**Section sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L6)
-- [main.js](file://electron/src/electron/main.js#L1-L12)
-
-## Performance Considerations
+## Performance considerations
 The implementation includes several performance and reliability features:
 
 - Rate limiting: Configurable delays between email sends to avoid rate limits
@@ -379,14 +276,14 @@ Best practices for optimal performance:
 - Use efficient recipient list management
 - Implement proper error handling and retry logic for transient failures
 
-## Troubleshooting Guide
+## Troubleshooting guide
 
-### Authentication Failures
+### Authentication failures
 Common authentication issues and solutions:
 
 **Missing Environment Variables**
 - Symptom: Authentication returns error about missing client credentials
-- Solution: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set in .env file
+- Solution: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set in.env file
 - Verification: Check environment variable loading in OAuth2 handler
 
 **OAuth Consent Screen Issues**
@@ -399,11 +296,7 @@ Common authentication issues and solutions:
 - Solution: Check network connectivity and Google API availability
 - Verification: Review OAuth2 client configuration and scopes
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-- [README.md](file://README.md#L101-L118)
-
-### API Quota Issues
+### API quota issues
 Gmail API quota limitations and mitigation strategies:
 
 **Daily Quota Limits**
@@ -416,10 +309,7 @@ Gmail API quota limitations and mitigation strategies:
 - Solution: Increase delay between sends, implement exponential backoff
 - Prevention: Monitor API response headers for rate limit information
 
-**Section sources**
-- [README.md](file://README.md#L398-L402)
-
-### Permission Problems
+### Permission problems
 Permission-related issues and resolutions:
 
 **Insufficient Scopes**
@@ -432,10 +322,7 @@ Permission-related issues and resolutions:
 - Solution: Review Google Cloud Console API restrictions and account status
 - Verification: Confirm API is enabled and billing is properly configured
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L10-L42)
-
-### Security Considerations
+### Security considerations
 Security measures implemented in the application:
 
 **Credential Protection**
@@ -450,31 +337,27 @@ Security measures implemented in the application:
 - Network security for local development
 - Secure handling of user data
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L7-L13)
-- [README.md](file://README.md#L333-L340)
-
 ## Conclusion
-The Gmail API integration provides a robust, secure, and user-friendly solution for bulk email sending. The implementation successfully handles OAuth2 authentication, token management, and bulk email operations with comprehensive error handling and progress tracking. While the current implementation focuses on HTML email support and basic rate limiting, it provides a solid foundation for future enhancements including attachment support and advanced analytics.
+The Gmail API integration provides a reliable, secure, and user-friendly solution for bulk email sending. The implementation successfully handles OAuth2 authentication, token management, and bulk email operations with detailed error handling and progress tracking. While the current implementation focuses on HTML email support and basic rate limiting, it provides a solid foundation for future enhancements including attachment support and advanced analytics.
 
 The modular architecture ensures maintainability and extensibility, while security considerations are addressed through proper credential handling and secure storage mechanisms. The application demonstrates best practices for desktop application development with Electron, including proper separation of concerns and secure IPC communication.
 
 ## Appendices
 
-### Configuration Requirements
+### Configuration requirements
 - Google Cloud Console project with Gmail API enabled
 - OAuth2 client credentials with proper redirect URIs
 - Environment variables for client ID and secret
 - Electron store for token persistence
 
-### API Reference
+### API reference
 - Gmail API v1 users.messages.send endpoint
 - OAuth2 authorization and token endpoints
 - Google APIs Node.js client library
 
-### Future Enhancements
+### Future enhancements
 - Attachment support for email sending
 - Advanced analytics and delivery tracking
-- Enhanced error handling and retry mechanisms
+- Improved error handling and retry mechanisms
 - Multi-threaded sending for improved performance
 - Integration with Google Analytics for campaign monitoring

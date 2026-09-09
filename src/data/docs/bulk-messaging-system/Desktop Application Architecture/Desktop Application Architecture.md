@@ -1,43 +1,9 @@
-# Desktop Application Architecture
-
-<cite>
-**Referenced Files in This Document**
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [utils.js](file://electron/src/electron/utils.js)
-- [App.jsx](file://electron/src/ui/App.jsx)
-- [main.jsx](file://electron/src/ui/main.jsx)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx)
-- [pyodide.js](file://electron/src/utils/pyodide.js)
-- [parse_manual_numbers.py](file://electron/dist-react/py/parse_manual_numbers.py)
-- [vite.config.js](file://electron/vite.config.js)
-- [electron-builder.json](file://electron/electron-builder.json)
-- [package.json](file://electron/package.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Security Model](#security-model)
-9. [Build System](#build-system)
-10. [Component Interaction Diagrams](#component-interaction-diagrams)
-11. [Troubleshooting Guide](#troubleshooting-guide)
-12. [Conclusion](#conclusion)
+# Desktop application architecture
 
 ## Introduction
-This document describes the desktop application architecture built with Electron, React, and integrated Python utilities. It explains the separation between the main process and renderer process, secure IPC patterns, React component architecture, state management, security model, build system, and performance considerations.
+This page describes the desktop application architecture built with Electron, React, and integrated Python utilities. It explains the separation between the main process and renderer process, secure IPC patterns, React component architecture, state management, security model, build system, and performance considerations.
 
-## Project Structure
+## Project structure
 The project is organized into:
 - Electron main process and preload scripts under electron/src/electron
 - React UI under electron/src/ui and components under electron/src/components
@@ -81,42 +47,14 @@ M --> SM
 M --> D
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L1-L51)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [main.jsx](file://electron/src/ui/main.jsx#L1-L11)
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
-- [electron-builder.json](file://electron/electron-builder.json#L1-L17)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L51)
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
-- [electron-builder.json](file://electron/electron-builder.json#L1-L17)
-
-## Core Components
+## Core components
 - Main process: Creates the BrowserWindow, configures webPreferences, registers IPC handlers, manages lifecycle events, and orchestrates external integrations (Gmail, SMTP, WhatsApp).
 - Preload bridge: Exposes a controlled API surface to the renderer via contextBridge, enabling secure IPC invocations and event listeners.
 - Renderer (React): Stateless functional components manage UI state locally, delegate long-running tasks to the main process via IPC, and render real-time updates.
 - Handlers: Encapsulate business logic for Gmail OAuth, token storage, email sending, and SMTP transport verification and sending.
 - Utilities: Pyodide integration for parsing manual numbers using Python scripts bundled in dist-react.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L102-L177)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-
-## Architecture Overview
+## Architecture overview
 The system follows a strict main/renderer separation:
 - Main process runs privileged operations (filesystem, network APIs, external service integrations).
 - Renderer process renders UI and delegates heavy work to main via typed IPC channels.
@@ -152,15 +90,9 @@ H3 --> EVT
 EVT --> UI
 ```
 
-**Diagram sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [main.js](file://electron/src/electron/main.js#L102-L177)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Main Process Responsibilities
+### Main process responsibilities
 - Window creation with context isolation and secure defaults.
 - Registration of IPC handlers for Gmail, SMTP, and WhatsApp operations.
 - Lifecycle management: startup cleanup, window-all-closed, before-quit.
@@ -179,15 +111,7 @@ M-->>R : webContents.send("whatsapp-status", "Client ready!")
 M-->>R : webContents.send("whatsapp-qr", null)
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [preload.js](file://electron/src/electron/preload.js#L23-L40)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L20-L51)
-- [main.js](file://electron/src/electron/main.js#L102-L177)
-
-### Preload Bridge and Secure IPC
+### Preload bridge and secure IPC
 - Exposes a single electronAPI object with typed methods for Gmail, SMTP, file dialogs, and WhatsApp operations.
 - Uses ipcRenderer.invoke for request/response semantics and ipcRenderer.on for event streams.
 - Returns removal functions to detach listeners in components.
@@ -212,13 +136,7 @@ class PreloadBridge {
 }
 ```
 
-**Diagram sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-
-### Gmail Handler
+### Gmail handler
 - Implements OAuth2 flow with a dedicated BrowserWindow for consent.
 - Stores tokens securely using electron-store.
 - Sends emails via Gmail API with progress events.
@@ -244,15 +162,7 @@ GH-->>M : {success, results}
 M-->>R : {success, results}
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-
-### SMTP Handler
+### SMTP handler
 - Validates configuration, verifies transport, and sends emails with progress events.
 - Optionally persists partial SMTP config using electron-store.
 
@@ -270,13 +180,7 @@ Next --> |Yes| Delay["setTimeout(delay)"] --> SendLoop
 Next --> |No| Done["Return {success:true, results}"]
 ```
 
-**Diagram sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-
-### WhatsApp Integration
+### WhatsApp integration
 - Initializes a WhatsApp client with local authentication and headless puppeteer.
 - Emits QR code as a data URL and status updates to the renderer.
 - Supports importing contacts from CSV/Text and sending mass messages with rate limiting.
@@ -304,14 +208,7 @@ end
 M-->>R : {success, sent, failed}
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L110-L213)
-- [preload.js](file://electron/src/electron/preload.js#L23-L40)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L110-L262)
-
-### React + Electron Integration
+### React + electron integration
 - App initializes React DOM and renders BulkMailer.
 - BulkMailer coordinates state for Gmail, SMTP, and WhatsApp tabs.
 - Components subscribe to preload-provided event streams and call invoke methods for actions.
@@ -327,22 +224,7 @@ BM --> PY["pyodide.js"]
 BM --> PRE["preload.js (electronAPI)"]
 ```
 
-**Diagram sources**
-- [main.jsx](file://electron/src/ui/main.jsx#L1-L11)
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-
-**Section sources**
-- [main.jsx](file://electron/src/ui/main.jsx#L1-L11)
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-
-### Python Backend Utilities via Pyodide
+### Python backend utilities via pyodide
 - Loads Pyodide runtime and Python script dynamically.
 - Parses manual numbers using a Python utility and returns structured contacts.
 
@@ -358,17 +240,9 @@ G --> H["JSON.parse(resultJson)"]
 H --> I["Return {success, contacts, count}"]
 ```
 
-**Diagram sources**
-- [pyodide.js](file://electron/src/utils/pyodide.js#L5-L33)
-- [parse_manual_numbers.py](file://electron/dist-react/py/parse_manual_numbers.py#L1-L61)
-
-**Section sources**
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [parse_manual_numbers.py](file://electron/dist-react/py/parse_manual_numbers.py#L1-L61)
-
-## Dependency Analysis
+## Dependency analysis
 - Electron main depends on handlers and filesystem/dialogs.
-- Preload depends on Electron’s contextBridge and ipcRenderer.
+- Preload depends on Electron's contextBridge and ipcRenderer.
 - Renderer depends on React and the preload bridge.
 - Build system produces dist-react assets consumed by main process.
 
@@ -386,18 +260,7 @@ MAIN --> PRE["preload.js"]
 MAIN --> DIST["dist-react/"]
 ```
 
-**Diagram sources**
-- [package.json](file://electron/package.json#L1-L49)
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
-- [electron-builder.json](file://electron/electron-builder.json#L1-L17)
-- [main.js](file://electron/src/electron/main.js#L1-L51)
-
-**Section sources**
-- [package.json](file://electron/package.json#L1-L49)
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
-- [electron-builder.json](file://electron/electron-builder.json#L1-L17)
-
-## Performance Considerations
+## Performance considerations
 - Headless browser for WhatsApp with sandbox and GPU disabled to reduce overhead.
 - Rate limiting delays between messages to avoid throttling.
 - Event-driven progress updates to keep UI responsive.
@@ -406,7 +269,7 @@ MAIN --> DIST["dist-react/"]
 
 [No sources needed since this section provides general guidance]
 
-## Security Model
+## Security model
 - Context Isolation enabled in BrowserWindow webPreferences.
 - Node.js integration disabled; remote module disabled.
 - Preload script exposes only explicitly whitelisted methods via contextBridge.
@@ -414,24 +277,14 @@ MAIN --> DIST["dist-react/"]
 - Environment variables for OAuth secrets; token storage via electron-store.
 - Strict webSecurity enabled.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L24-L32)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L19-L36)
-
-## Build System
+## Build system
 - Vite builds the React frontend into dist-react with base "./" and outDir "dist-react".
 - Electron main entry configured in package.json; scripts orchestrate dev and prod flows.
 - electron-builder targets macOS DMG, Linux AppImage, and Windows portable/msi with appId and extra resources.
 
-**Section sources**
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
-- [package.json](file://electron/package.json#L7-L18)
-- [electron-builder.json](file://electron/electron-builder.json#L1-L17)
+## Component interaction diagrams
 
-## Component Interaction Diagrams
-
-### Gmail Workflow
+### Gmail workflow
 ```mermaid
 sequenceDiagram
 participant UI as "GmailForm.jsx"
@@ -457,14 +310,7 @@ P-->>BM : result
 BM-->>UI : update results
 ```
 
-**Diagram sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-- [preload.js](file://electron/src/electron/preload.js#L6-L8)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-
-### WhatsApp Workflow
+### WhatsApp workflow
 ```mermaid
 sequenceDiagram
 participant UI as "WhatsAppForm.jsx"
@@ -489,13 +335,7 @@ M-->>P : {success, sent, failed}
 P-->>BM : result
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L263-L415)
-- [preload.js](file://electron/src/electron/preload.js#L23-L40)
-- [main.js](file://electron/src/electron/main.js#L110-L213)
-
-### SMTP Workflow
+### SMTP workflow
 ```mermaid
 sequenceDiagram
 participant UI as "SMTPForm.jsx"
@@ -513,24 +353,12 @@ P-->>BM : result
 BM-->>UI : update results
 ```
 
-**Diagram sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L221-L261)
-- [preload.js](file://electron/src/electron/preload.js#L10-L11)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-## Troubleshooting Guide
+## Troubleshooting guide
 - WhatsApp QR not loading: Check status events and retry connection; inspect console for QR generation errors.
 - Gmail authentication timeout: Ensure environment variables are set and redirect URI matches; window closes after timeout.
 - SMTP verification failure: Confirm host/port/credentials; TLS settings; verify with transporter.verify().
 - File import issues: Validate CSV/Text formats; ensure proper column names for CSV parsing.
 - Dev vs Production: Development loads from Vite server; production loads from dist-react; confirm paths and existence.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L137-L147)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L63-L125)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L47-L48)
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-
 ## Conclusion
-This architecture cleanly separates concerns between main and renderer processes, enforces a secure IPC boundary via preload, and integrates React for UI with robust handlers for Gmail, SMTP, and WhatsApp. The build system leverages Vite and electron-builder for efficient development and cross-platform distribution. Following the outlined security and performance recommendations ensures a reliable, maintainable desktop application.
+This architecture cleanly separates concerns between main and renderer processes, enforces a secure IPC boundary via preload, and integrates React for UI with reliable handlers for Gmail, SMTP, and WhatsApp. The build system uses Vite and electron-builder for efficient development and cross-platform distribution. Following the outlined security and performance recommendations ensures a reliable, maintainable desktop application.

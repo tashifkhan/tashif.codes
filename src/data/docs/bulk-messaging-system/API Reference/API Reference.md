@@ -1,38 +1,7 @@
-# API Reference
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://README.md)
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx)
-- [package.json](file://electron/package.json)
-- [app.py](file://python-backend/app.py)
-- [extract_contacts.py](file://python-backend/extract_contacts.py)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py)
-- [validate_number.py](file://python-backend/validate_number.py)
-- [requirements.txt](file://python-backend/requirements.txt)
-- [localhost/app.py](file://localhost/app.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# API reference
 
 ## Introduction
-This document provides comprehensive API documentation for the desktop application’s public interfaces and endpoints. It covers:
+This page provides detailed API documentation for the desktop application's public interfaces and endpoints. It covers:
 - Electron Inter-Process Communication (IPC) APIs between the main and renderer processes, including message formats, event types, and communication patterns for WhatsApp, Gmail, and SMTP integrations.
 - Python backend Flask APIs for contact processing and validation, including HTTP methods, URL patterns, request/response schemas, and authentication requirements.
 - Real-time status updates via Electron IPC events and progress tracking for email operations.
@@ -41,7 +10,7 @@ This document provides comprehensive API documentation for the desktop applicati
 - Practical examples demonstrating common API usage scenarios and integration patterns.
 - API versioning, backwards compatibility, and deprecation policies.
 
-## Project Structure
+## Project structure
 The application consists of:
 - Electron main/renderer processes with React UI and IPC bridges.
 - Python backend utilities for contact extraction, validation, and manual number parsing.
@@ -75,37 +44,14 @@ PF --> VN
 LA -. "prototype endpoints" .-> MW
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [app.py](file://python-backend/app.py#L1-L378)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L1-L177)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L1-L61)
-- [validate_number.py](file://python-backend/validate_number.py#L1-L27)
-- [localhost/app.py](file://localhost/app.py#L1-L306)
-
-**Section sources**
-- [README.md](file://README.md#L43-L58)
-- [package.json](file://electron/package.json#L20-L31)
-- [requirements.txt](file://python-backend/requirements.txt#L1-L7)
-
-## Core Components
+## Core components
 - Electron IPC Bridge: Exposes typed methods to renderer for Gmail, SMTP, file operations, WhatsApp, and progress/event subscriptions.
 - Gmail Handler: Implements OAuth2 flow and sends emails via Gmail API with progress events.
 - SMTP Handler: Sends emails via SMTP with progress events and optional credential saving.
 - WhatsApp Client: Starts, authenticates, and sends messages to multiple contacts with status and QR events.
 - Python Flask APIs: Health checks, file upload and parsing, manual number parsing, and phone number validation.
 
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [app.py](file://python-backend/app.py#L225-L370)
-
-## Architecture Overview
+## Architecture overview
 The Electron app uses a secure IPC bridge to call main-process handlers that orchestrate external services. The renderer subscribes to real-time events for progress and status updates.
 
 ```mermaid
@@ -135,15 +81,9 @@ M-->>P : result
 P-->>R : result
 ```
 
-**Diagram sources**
-- [preload.js](file://electron/src/electron/preload.js#L6-L11)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Electron IPC APIs (Main ↔ Renderer)
+### Electron IPC APIs (main ↔ renderer)
 - Exposed methods via preload bridge:
   - Gmail: authenticateGmail, getGmailToken, sendEmail
   - SMTP: sendSMTPEmail
@@ -174,17 +114,7 @@ P-->>R : result
   - Methods return structured {success, error?} or {success, results[]} patterns.
   - Events carry error details for granular UI feedback.
 
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [main.js](file://electron/src/electron/main.js#L137-L176)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-- [main.js](file://electron/src/electron/main.js#L343-L371)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-### Gmail API (Electron Main)
+### Gmail API (electron main)
 - Endpoint: gmail-auth
   - Purpose: Initiate OAuth2 consent flow and persist tokens.
   - Returns: {success, error?}
@@ -205,11 +135,7 @@ P-->>R : result
 - Rate limiting:
   - Optional delay between emails configurable via payload.
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-
-### SMTP API (Electron Main)
+### SMTP API (electron main)
 - Endpoint: smtp-send
   - Purpose: Send bulk emails via SMTP with optional credential saving.
   - Payload: {smtpConfig, recipients[], subject, message, delay, saveCredentials?}
@@ -223,10 +149,7 @@ P-->>R : result
 - TLS verification:
   - Transport verifies connection before sending.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-### WhatsApp API (Electron Main)
+### WhatsApp API (electron main)
 - Endpoint: whatsapp-start-client
   - Purpose: Initialize and authenticate WhatsApp client.
   - Emits: whatsapp-status, whatsapp-qr, and lifecycle events.
@@ -248,13 +171,7 @@ P-->>R : result
   - status: initialization, ready, authenticated, disconnected, errors.
   - send-status: per-contact progress.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-- [main.js](file://electron/src/electron/main.js#L343-L371)
-
-### Python Backend Flask APIs
+### Python backend flask APIs
 - Health check
   - GET /health
   - Response: {"status": "healthy", "message": "..."}
@@ -280,13 +197,7 @@ P-->>R : result
   - Max content length: 16 MB
   - CORS enabled
 
-**Section sources**
-- [app.py](file://python-backend/app.py#L225-L229)
-- [app.py](file://python-backend/app.py#L232-L280)
-- [app.py](file://python-backend/app.py#L283-L341)
-- [app.py](file://python-backend/app.py#L343-L370)
-
-### Python Utilities (CLI)
+### Python utilities (CLI)
 - extract_contacts.py
   - CLI: python extract_contacts.py <file_path>
   - Output: JSON {success, contacts[], count}
@@ -297,12 +208,7 @@ P-->>R : result
   - CLI: python validate_number.py "<number>"
   - Output: JSON {valid, cleaned_number, original}
 
-**Section sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L160-L177)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L57-L61)
-- [validate_number.py](file://python-backend/validate_number.py#L22-L27)
-
-### Localhost Prototype APIs
+### Localhost prototype APIs
 - Login and signup
   - POST /api/login
   - POST /api/signup
@@ -312,15 +218,7 @@ P-->>R : result
   - POST /api/create_table/<username>
   - POST /api/tables/<username>
 
-**Section sources**
-- [localhost/app.py](file://localhost/app.py#L191-L206)
-- [localhost/app.py](file://localhost/app.py#L208-L224)
-- [localhost/app.py](file://localhost/app.py#L226-L233)
-- [localhost/app.py](file://localhost/app.py#L235-L264)
-- [localhost/app.py](file://localhost/app.py#L266-L284)
-- [localhost/app.py](file://localhost/app.py#L286-L301)
-
-## Dependency Analysis
+## Dependency analysis
 - Electron dependencies (selected):
   - whatsapp-web.js, qrcode, googleapis, nodemailer, electron-store
 - Python dependencies (selected):
@@ -341,15 +239,7 @@ P_req --> XL["xlrd"]
 P_req --> WZ["werkzeug"]
 ```
 
-**Diagram sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [requirements.txt](file://python-backend/requirements.txt#L1-L7)
-
-**Section sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [requirements.txt](file://python-backend/requirements.txt#L1-L7)
-
-## Performance Considerations
+## Performance considerations
 - Rate limiting:
   - Gmail/SMTP: configurable delay between emails via payload.
   - WhatsApp: internal delays applied between messages to avoid rate limits.
@@ -361,7 +251,7 @@ P_req --> WZ["werkzeug"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Gmail authentication failures:
   - Missing environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET).
   - Consent screen and redirect URI mismatch.
@@ -376,20 +266,14 @@ P_req --> WZ["werkzeug"]
   - Unsupported file types or encoding issues.
   - Regex-based parsing may fail for malformed inputs.
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [main.js](file://electron/src/electron/main.js#L137-L176)
-- [app.py](file://python-backend/app.py#L232-L280)
-
 ## Conclusion
-This API reference documents the Electron IPC and Python backend interfaces used by the desktop application. It outlines message formats, event types, authentication flows, and real-time progress reporting. The design emphasizes secure IPC, robust error handling, and configurable rate limiting to ensure reliable bulk messaging across Gmail, SMTP, and WhatsApp channels.
+This API reference documents the Electron IPC and Python backend interfaces used by the desktop application. It outlines message formats, event types, authentication flows, and real-time progress reporting. The design emphasizes secure IPC, reliable error handling, and configurable rate limiting to ensure reliable bulk messaging across Gmail, SMTP, and WhatsApp channels.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### API Versioning, Backwards Compatibility, and Deprecation
+### API versioning, backwards compatibility, and deprecation
 - Current state:
   - No explicit versioning scheme is evident in the repository.
   - API surfaces are stable but not versioned.
@@ -400,7 +284,7 @@ This API reference documents the Electron IPC and Python backend interfaces used
 
 [No sources needed since this section provides general guidance]
 
-### Practical Usage Examples
+### Practical usage examples
 
 - Electron IPC usage (renderer-side):
   - Subscribe to progress and status:
@@ -418,13 +302,3 @@ This API reference documents the Electron IPC and Python backend interfaces used
     - POST /parse-manual-numbers with JSON {numbers}.
   - Validate a single number:
     - POST /validate-number with JSON {number}.
-
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L18-L39)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L139)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [app.py](file://python-backend/app.py#L232-L280)
-- [app.py](file://python-backend/app.py#L283-L341)
-- [app.py](file://python-backend/app.py#L343-L370)

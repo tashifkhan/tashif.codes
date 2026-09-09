@@ -1,38 +1,9 @@
-# Telegram Bot API
-
-<cite>
-**Referenced Files in This Document**
-- [main.py](file://app/main.py)
-- [bot_server.py](file://app/servers/bot_server.py)
-- [webhook_server.py](file://app/servers/webhook_server.py)
-- [telegram_service.py](file://app/services/telegram_service.py)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py)
-- [database_service.py](file://app/services/database_service.py)
-- [config.py](file://app/core/config.py)
-- [db_client.py](file://app/clients/db_client.py)
-- [notification_service.py](file://app/services/notification_service.py)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py)
-- [API.md](file://docs/API.md)
-- [ARCHITECTURE.md](file://docs/ARCHITECTURE.md)
-- [CONFIGURATION.md](file://docs/CONFIGURATION.md)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Telegram bot API
 
 ## Introduction
-This document provides comprehensive documentation for the Telegram Bot API endpoints and command handlers. It covers user commands (/start, /stop, /status, /stats, /web), admin commands (/users, /boo, /fu, /logs), dual-mode operation (long-polling and webhook), command routing, user session management, subscription handling, MongoDB integration, and the message formatting system. Practical examples, error handling, and troubleshooting guidance are included.
+This page provides detailed documentation for the Telegram Bot API endpoints and command handlers. It covers user commands (/start, /stop, /status, /stats, /web), admin commands (/users, /boo, /fu, /logs), dual-mode operation (long-polling and webhook), command routing, user session management, subscription handling, MongoDB integration, and the message formatting system. Practical examples, error handling, and troubleshooting guidance are included.
 
-## Project Structure
+## Project structure
 The project is organized around a modular architecture with clear separation of concerns:
 - CLI entry point orchestrating servers and jobs
 - Telegram bot server with command handlers
@@ -77,29 +48,7 @@ CFG --> WEB
 CFG --> DB
 ```
 
-**Diagram sources**
-- [main.py](file://app/main.py#L37-L100)
-- [bot_server.py](file://app/servers/bot_server.py#L29-L82)
-- [webhook_server.py](file://app/servers/webhook_server.py#L69-L130)
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [notification_service.py](file://app/services/notification_service.py#L13-L41)
-- [telegram_service.py](file://app/services/telegram_service.py#L20-L52)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L19-L42)
-- [config.py](file://app/core/config.py#L18-L128)
-- [db_client.py](file://app/clients/db_client.py#L16-L41)
-
-**Section sources**
-- [main.py](file://app/main.py#L37-L100)
-- [bot_server.py](file://app/servers/bot_server.py#L29-L82)
-- [webhook_server.py](file://app/servers/webhook_server.py#L69-L130)
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [notification_service.py](file://app/services/notification_service.py#L13-L41)
-- [telegram_service.py](file://app/services/telegram_service.py#L20-L52)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L19-L42)
-- [config.py](file://app/core/config.py#L18-L128)
-- [db_client.py](file://app/clients/db_client.py#L16-L41)
-
-## Core Components
+## Core components
 - BotServer: Implements long-polling Telegram bot with command handlers for user and admin commands.
 - WebhookServer: FastAPI-based server exposing health, push subscription, notification, and stats endpoints.
 - DatabaseService: Wraps MongoDB operations for notices, jobs, placement offers, users, and policies.
@@ -108,17 +57,7 @@ CFG --> DB
 - AdminTelegramService: Provides admin-only commands with authentication via chat ID.
 - Configuration and DB Client: Centralized settings and MongoDB connectivity.
 
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L29-L82)
-- [webhook_server.py](file://app/servers/webhook_server.py#L69-L130)
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [telegram_service.py](file://app/services/telegram_service.py#L20-L52)
-- [notification_service.py](file://app/services/notification_service.py#L13-L41)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L19-L42)
-- [config.py](file://app/core/config.py#L18-L128)
-- [db_client.py](file://app/clients/db_client.py#L16-L41)
-
-## Architecture Overview
+## Architecture overview
 The system supports two operational modes:
 - Long-polling Telegram bot server (BotServer) with command handlers.
 - Webhook/FastAPI server (WebhookServer) with REST endpoints for health, push subscriptions, notifications, and stats.
@@ -154,28 +93,9 @@ DB-->>Admin : users
 Admin-->>User : user list
 ```
 
-**Diagram sources**
-- [bot_server.py](file://app/servers/bot_server.py#L87-L163)
-- [bot_server.py](file://app/servers/bot_server.py#L212-L244)
-- [bot_server.py](file://app/servers/bot_server.py#L246-L299)
-- [bot_server.py](file://app/servers/bot_server.py#L346-L361)
-- [bot_server.py](file://app/servers/bot_server.py#L191-L211)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L57-L108)
-- [database_service.py](file://app/services/database_service.py#L616-L669)
-- [database_service.py](file://app/services/database_service.py#L714-L729)
+## Detailed component analysis
 
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L87-L163)
-- [bot_server.py](file://app/servers/bot_server.py#L212-L244)
-- [bot_server.py](file://app/servers/bot_server.py#L246-L299)
-- [bot_server.py](file://app/servers/bot_server.py#L346-L361)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L57-L108)
-- [database_service.py](file://app/services/database_service.py#L616-L669)
-- [database_service.py](file://app/services/database_service.py#L714-L729)
-
-## Detailed Component Analysis
-
-### Telegram Bot Commands
+### Telegram bot commands
 
 #### /start
 - Purpose: Register user for notifications.
@@ -200,14 +120,6 @@ Bot-->>User : Already registered and active
 end
 ```
 
-**Diagram sources**
-- [bot_server.py](file://app/servers/bot_server.py#L87-L163)
-- [database_service.py](file://app/services/database_service.py#L616-L669)
-
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L87-L163)
-- [database_service.py](file://app/services/database_service.py#L616-L669)
-
 #### /stop
 - Purpose: Unsubscribe user from notifications.
 - Request: /stop
@@ -226,14 +138,6 @@ DB-->>Bot : success/failure
 Bot-->>User : Unsubscribed confirmation
 ```
 
-**Diagram sources**
-- [bot_server.py](file://app/servers/bot_server.py#L191-L211)
-- [database_service.py](file://app/services/database_service.py#L670-L682)
-
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L191-L211)
-- [database_service.py](file://app/services/database_service.py#L670-L682)
-
 #### /status
 - Purpose: Check subscription status.
 - Request: /status
@@ -251,14 +155,6 @@ Bot->>DB : get_user_by_id(user_id)
 DB-->>Bot : user data
 Bot-->>User : Status + metadata
 ```
-
-**Diagram sources**
-- [bot_server.py](file://app/servers/bot_server.py#L212-L244)
-- [database_service.py](file://app/services/database_service.py#L704-L713)
-
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L212-L244)
-- [database_service.py](file://app/services/database_service.py#L704-L713)
 
 #### /stats
 - Purpose: View placement statistics.
@@ -281,14 +177,6 @@ Stats-->>Bot : stats
 Bot-->>User : Markdown formatted stats
 ```
 
-**Diagram sources**
-- [bot_server.py](file://app/servers/bot_server.py#L246-L299)
-- [database_service.py](file://app/services/database_service.py#L501-L600)
-
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L246-L299)
-- [database_service.py](file://app/services/database_service.py#L501-L600)
-
 #### /web
 - Purpose: Get useful links to JIIT tools.
 - Request: /web
@@ -302,15 +190,9 @@ User->>Bot : "/web"
 Bot-->>User : HTML links
 ```
 
-**Diagram sources**
-- [bot_server.py](file://app/servers/bot_server.py#L346-L361)
+### Admin commands
 
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L346-L361)
-
-### Admin Commands
-
-#### Authentication and Permission Checks
+#### Authentication and permission checks
 - Admin commands are restricted to a specific chat ID configured in settings.
 - The AdminTelegramService validates the sender's chat ID against the configured admin chat ID.
 
@@ -323,13 +205,6 @@ Allow --> Execute["Execute admin command"]
 Execute --> End([Done])
 Deny --> End
 ```
-
-**Diagram sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L43-L56)
-
-**Section sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L43-L56)
-- [config.py](file://app/core/config.py#L39-L43)
 
 #### /users
 - Purpose: List all users and subscription stats.
@@ -346,14 +221,6 @@ Admin->>DB : get_all_users()
 DB-->>Admin : users
 Admin-->>User : User list (chunked if needed)
 ```
-
-**Diagram sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L57-L108)
-- [database_service.py](file://app/services/database_service.py#L694-L702)
-
-**Section sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L57-L108)
-- [database_service.py](file://app/services/database_service.py#L694-L702)
 
 #### /boo <message>
 - Purpose: Broadcast message to all active users or targeted user.
@@ -374,16 +241,6 @@ TG-->>AdminSvc : success/failure counts
 AdminSvc-->>Admin : Broadcast summary
 ```
 
-**Diagram sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L109-L192)
-- [telegram_service.py](file://app/services/telegram_service.py#L140-L172)
-- [database_service.py](file://app/services/database_service.py#L684-L692)
-
-**Section sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L109-L192)
-- [telegram_service.py](file://app/services/telegram_service.py#L140-L172)
-- [database_service.py](file://app/services/database_service.py#L684-L692)
-
 #### /fu and /scrapyyy
 - Purpose: Force immediate update from all sources and broadcast.
 - Request: /fu or /scrapyyy
@@ -400,14 +257,6 @@ Main-->>AdminSvc : Results (fetch + send)
 AdminSvc-->>Admin : Update + broadcast summary
 ```
 
-**Diagram sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L193-L248)
-- [main.py](file://app/main.py#L319-L335)
-
-**Section sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L193-L248)
-- [main.py](file://app/main.py#L319-L335)
-
 #### /logs [lines]
 - Purpose: View recent log entries.
 - Request: /logs [lines]
@@ -421,13 +270,7 @@ Admin->>AdminSvc : "/logs [lines]"
 AdminSvc-->>Admin : Last N lines of logs (HTML formatted)
 ```
 
-**Diagram sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L277-L349)
-
-**Section sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L277-L349)
-
-### Dual-Mode Operation: Long-Polling and Webhook
+### Dual-Mode operation: long-polling and webhook
 - Long-polling mode: BotServer initializes and runs an asynchronous polling loop.
 - Webhook mode: WebhookServer exposes endpoints for health, push subscriptions, notifications, and stats.
 
@@ -443,15 +286,7 @@ BPOLL --> |"Telegram updates"| BOT["Telegram Bot"]
 WAPI --> |"External integrations"| EXTERNAL["External Clients"]
 ```
 
-**Diagram sources**
-- [bot_server.py](file://app/servers/bot_server.py#L405-L453)
-- [webhook_server.py](file://app/servers/webhook_server.py#L139-L144)
-
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L405-L453)
-- [webhook_server.py](file://app/servers/webhook_server.py#L139-L144)
-
-### Command Routing Mechanism
+### Command routing mechanism
 - BotServer registers command handlers for user and admin commands.
 - Admin commands are conditionally registered when AdminTelegramService is available.
 
@@ -462,13 +297,7 @@ RegUser --> RegAdmin["Register admin commands:<br/>/users, /boo, /fu, /logs"]
 RegAdmin --> Ready["Handlers ready"]
 ```
 
-**Diagram sources**
-- [bot_server.py](file://app/servers/bot_server.py#L366-L404)
-
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L366-L404)
-
-### User Session Management and Subscription Handling
+### User session management and subscription handling
 - User registration and deactivation handled by DatabaseService.
 - Active user retrieval for broadcasting.
 
@@ -483,17 +312,7 @@ DB-->>User : success/failure
 DB-->>Other : get_active_users()
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L616-L669)
-- [database_service.py](file://app/services/database_service.py#L670-L682)
-- [database_service.py](file://app/services/database_service.py#L684-L692)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L616-L669)
-- [database_service.py](file://app/services/database_service.py#L670-L682)
-- [database_service.py](file://app/services/database_service.py#L684-L692)
-
-### MongoDB Integration
+### MongoDB integration
 - DBClient establishes and manages MongoDB connections.
 - DatabaseService encapsulates CRUD operations across collections: Notices, Jobs, PlacementOffers, Users, Policies, OfficialPlacementData.
 
@@ -522,15 +341,7 @@ class DatabaseService {
 DBClient --> DatabaseService : "provides collections"
 ```
 
-**Diagram sources**
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-
-**Section sources**
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-
-### Message Formatting System
+### Message formatting system
 - TelegramService converts Markdown to HTML/Telegram-compatible formats and handles long message splitting.
 - NoticeFormatterService formats notices using LLM-based extraction and structured templates.
 
@@ -543,16 +354,7 @@ Split --> Send["Send via TelegramService"]
 Send --> End([Delivered])
 ```
 
-**Diagram sources**
-- [telegram_service.py](file://app/services/telegram_service.py#L304-L351)
-- [telegram_service.py](file://app/services/telegram_service.py#L218-L254)
-
-**Section sources**
-- [telegram_service.py](file://app/services/telegram_service.py#L304-L351)
-- [telegram_service.py](file://app/services/telegram_service.py#L218-L254)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L392-L775)
-
-## Dependency Analysis
+## Dependency analysis
 The system exhibits strong dependency injection and separation of concerns:
 - BotServer depends on DatabaseService, NotificationService, TelegramService, AdminTelegramService, and PlacementStatsCalculatorService.
 - WebhookServer depends on DatabaseService, NotificationService, and TelegramService.
@@ -576,31 +378,13 @@ Web --> Cfg
 DB --> Cfg
 ```
 
-**Diagram sources**
-- [bot_server.py](file://app/servers/bot_server.py#L455-L507)
-- [webhook_server.py](file://app/servers/webhook_server.py#L69-L130)
-- [database_service.py](file://app/services/database_service.py#L28-L46)
-- [config.py](file://app/core/config.py#L156-L186)
-
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L455-L507)
-- [webhook_server.py](file://app/servers/webhook_server.py#L69-L130)
-- [database_service.py](file://app/services/database_service.py#L28-L46)
-- [config.py](file://app/core/config.py#L156-L186)
-
-## Performance Considerations
+## Performance considerations
 - Message chunking: TelegramService splits long messages (>4000 chars) and retries without formatting if needed.
 - Rate limiting: Broadcast loops include small delays to avoid rate limits.
 - Asynchronous polling: BotServer uses asyncio for non-blocking operations.
 - Database indexing: Recommended indexes on frequently queried fields (e.g., notices.id, users.user_id, placement_offers.company).
 
-**Section sources**
-- [telegram_service.py](file://app/services/telegram_service.py#L218-L254)
-- [telegram_service.py](file://app/services/telegram_service.py#L163-L172)
-- [bot_server.py](file://app/servers/bot_server.py#L405-L453)
-- [ARCHITECTURE.md](file://docs/ARCHITECTURE.md#L599-L613)
-
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Telegram bot token missing or invalid: Ensure TELEGRAM_BOT_TOKEN is set and valid.
 - Admin command unauthorized: Verify TELEGRAM_CHAT_ID matches the admin chat ID.
@@ -608,19 +392,12 @@ Common issues and resolutions:
 - Long message delivery failures: Messages are split automatically; if formatting fails, fallback to plain text.
 - Webhook endpoint not reachable: Confirm server is running and port is open.
 
-**Section sources**
-- [config.py](file://app/core/config.py#L34-L43)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L43-L56)
-- [db_client.py](file://app/clients/db_client.py#L42-L72)
-- [telegram_service.py](file://app/services/telegram_service.py#L101-L122)
-- [webhook_server.py](file://app/servers/webhook_server.py#L369-L387)
-
 ## Conclusion
-The Telegram Bot API provides robust user and admin command handling with dual-mode operation, comprehensive MongoDB integration, and a flexible notification routing system. The documented endpoints, commands, and workflows enable reliable deployment and maintenance of placement notifications across Telegram and web push channels.
+The Telegram Bot API provides reliable user and admin command handling with dual-mode operation, detailed MongoDB integration, and a flexible notification routing system. The documented endpoints, commands, and workflows enable reliable deployment and maintenance of placement notifications across Telegram and web push channels.
 
 ## Appendices
 
-### API Endpoints Summary
+### API endpoints summary
 - GET /health: Health check
 - POST /api/push/subscribe: Subscribe to web push
 - POST /api/push/unsubscribe: Unsubscribe from web push
@@ -634,10 +411,7 @@ The Telegram Bot API provides robust user and admin command handling with dual-m
 - GET /api/stats/users: Get user statistics
 - POST /webhook/update: Trigger update job via webhook
 
-**Section sources**
-- [webhook_server.py](file://app/servers/webhook_server.py#L172-L361)
-
-### Configuration Reference
+### Configuration reference
 Key environment variables:
 - MONGO_CONNECTION_STR: MongoDB connection URI
 - TELEGRAM_BOT_TOKEN: Telegram bot token
@@ -647,7 +421,3 @@ Key environment variables:
 - VAPID_PRIVATE_KEY, VAPID_PUBLIC_KEY, VAPID_EMAIL: Web push VAPID keys
 - WEBHOOK_PORT, WEBHOOK_HOST: Webhook server configuration
 - LOG_LEVEL, LOG_FILE: Logging configuration
-
-**Section sources**
-- [CONFIGURATION.md](file://docs/CONFIGURATION.md#L47-L127)
-- [config.py](file://app/core/config.py#L26-L122)

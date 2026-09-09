@@ -209,7 +209,7 @@ const totalComments = initialComments.reduce(
 				<div class="lg:hidden mt-5 flex items-center gap-2 flex-wrap">
 					<button
 						id="like-btn-mobile"
-						data-haptic="medium"
+						data-haptic="selection"
 						class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-border/60 bg-card/60 text-sm font-medium text-muted-foreground transition-all duration-200 hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
 					>
 						<Heart size={14} id="like-icon-mobile" />
@@ -341,7 +341,7 @@ const totalComments = initialComments.reduce(
 							>
 								<button
 									id="like-btn"
-									data-haptic="medium"
+									data-haptic="selection"
 									class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-border/60 text-sm font-medium text-muted-foreground transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
 								>
 									<Heart size={14} id="like-icon" />
@@ -467,6 +467,7 @@ const totalComments = initialComments.reduce(
 			tocHeadings,
 		}}
 	>
+		const haptic = (kind) => document.dispatchEvent(new CustomEvent("site:haptic", { detail: kind }));
 		const LIKED_KEY = `liked-${slug}`;
 		let viewCount = initialViews;
 		let likeCount = initialLikes;
@@ -740,11 +741,13 @@ const totalComments = initialComments.reduce(
 						: localStorage.removeItem(LIKED_KEY);
 					updateLikesUI();
 				} else {
-					isLiked = prevLiked;
+					haptic("error");
+				isLiked = prevLiked;
 					likeCount = prevCount;
 					updateLikesUI();
 				}
 			} catch (_) {
+				haptic("error");
 				isLiked = prevLiked;
 				likeCount = prevCount;
 				updateLikesUI();
@@ -848,7 +851,7 @@ const totalComments = initialComments.reduce(
 			submitReplyBtn.addEventListener("click", async () => {
 				const n = rName.value.trim();
 				const t = rText.value.trim();
-				if (!n || !t) return;
+				if (!n || !t) { haptic("error"); return; }
 				submitReplyBtn.disabled = true;
 				submitReplyBtn.textContent = "…";
 				try {
@@ -857,13 +860,19 @@ const totalComments = initialComments.reduce(
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({ name: n, text: t, parentId: comment.id }),
 					});
+					if (!res.ok) throw new Error("Reply failed");
 					if (res.ok) {
 						rName.value = "";
 						rText.value = "";
 						replyForm.classList.add("hidden");
+						haptic("success");
 						await refreshComments();
 					}
 				} catch (_) {
+					haptic("error");
+					rText.setCustomValidity("Could not post your reply. Please try again.");
+					rText.reportValidity();
+					rText.setCustomValidity("");
 				} finally {
 					submitReplyBtn.disabled = false;
 					submitReplyBtn.innerHTML =
@@ -925,6 +934,7 @@ const totalComments = initialComments.reduce(
 						errEl.textContent = "Please enter your name.";
 						errEl.classList.remove("hidden");
 					}
+					haptic("error");
 					document.getElementById("comment-name")?.focus();
 					return;
 				}
@@ -933,6 +943,7 @@ const totalComments = initialComments.reduce(
 						errEl.textContent = "Please write something.";
 						errEl.classList.remove("hidden");
 					}
+					haptic("error");
 					document.getElementById("comment-text")?.focus();
 					return;
 				}
@@ -950,18 +961,21 @@ const totalComments = initialComments.reduce(
 					if (res.ok) {
 						document.getElementById("comment-name").value = "";
 						document.getElementById("comment-text").value = "";
+						haptic("success");
 						await refreshComments();
 						document
 							.getElementById("comments-list")
 							?.scrollIntoView({ behavior: "smooth", block: "start" });
 					} else {
 						if (errEl) {
+							haptic("error");
 							errEl.textContent = "Failed to post. Please try again.";
 							errEl.classList.remove("hidden");
 						}
 					}
 				} catch (_) {
 					if (errEl) {
+						haptic("error");
 						errEl.textContent = "Network error.";
 						errEl.classList.remove("hidden");
 					}

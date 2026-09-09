@@ -1,30 +1,9 @@
-# Excel File Extraction
-
-<cite>
-**Referenced Files in This Document**
-- [extract_contacts.py](file://python-backend/extract_contacts.py)
-- [app.py](file://python-backend/app.py)
-- [requirements.txt](file://python-backend/requirements.txt)
-- [validate_number.py](file://python-backend/validate_number.py)
-- [cli_functions.py](file://localhost/cli_functions.py)
-- [beta_pandas.py](file://localhost/prototypes/beta_pandas.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Excel file extraction
 
 ## Introduction
-This document explains the Excel file contact extraction pipeline powered by pandas integration. It covers how the system detects phone number and name columns in Excel files (.xlsx and .xls), processes pandas DataFrames, handles NaN values and data types, and manages encoding considerations. It also documents fallback mechanisms when pandas encounters corrupted Excel files and provides examples of supported formats, column naming variations, and common issues.
+This page explains the Excel file contact extraction pipeline powered by pandas integration. It covers how the system detects phone number and name columns in Excel files (.xlsx and.xls), processes pandas DataFrames, handles NaN values and data types, and manages encoding considerations. It also documents fallback mechanisms when pandas encounters corrupted Excel files and provides examples of supported formats, column naming variations, and common issues.
 
-## Project Structure
+## Project structure
 The Excel extraction feature is implemented in two primary locations:
 - A standalone CLI script that extracts contacts from CSV, TXT, and Excel files
 - A Flask API that accepts uploads, routes to the same extraction logic, and returns structured results
@@ -48,20 +27,7 @@ CLIF --> APP
 BETA --> APP
 ```
 
-**Diagram sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L1-L177)
-- [app.py](file://python-backend/app.py#L1-L378)
-- [requirements.txt](file://python-backend/requirements.txt#L1-L7)
-- [validate_number.py](file://python-backend/validate_number.py#L1-L27)
-- [cli_functions.py](file://localhost/cli_functions.py#L1-L360)
-- [beta_pandas.py](file://localhost/prototypes/beta_pandas.py#L1-L50)
-
-**Section sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L1-L177)
-- [app.py](file://python-backend/app.py#L1-L378)
-- [requirements.txt](file://python-backend/requirements.txt#L1-L7)
-
-## Core Components
+## Core components
 - Phone number cleaning and normalization
   - Removes separators and validates digit count
   - Adds international prefix when applicable
@@ -76,16 +42,12 @@ BETA --> APP
   - Minimal return when extraction fails
 
 Key implementation references:
-- Phone cleaning: [clean_phone_number](file://python-backend/extract_contacts.py#L9-L22)
-- Excel extraction: [extract_contacts_from_excel](file://python-backend/extract_contacts.py#L121-L157)
-- Column detection: [keyword matching loop](file://python-backend/extract_contacts.py#L127-L135)
-- Row iteration and NaN handling: [row processing](file://python-backend/extract_contacts.py#L142-L154)
+- Phone cleaning: `clean_phone_number`
+- Excel extraction: `extract_contacts_from_excel`
+- Column detection: `keyword matching loop`
+- Row iteration and NaN handling: `row processing`
 
-**Section sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L9-L22)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L121-L157)
-
-## Architecture Overview
+## Architecture overview
 The system integrates pandas for Excel parsing and applies a consistent column detection and phone cleaning workflow across formats.
 
 ```mermaid
@@ -109,14 +71,9 @@ Extractor-->>API : "List of contacts"
 API-->>Client : "JSON response with contacts"
 ```
 
-**Diagram sources**
-- [app.py](file://python-backend/app.py#L232-L280)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L121-L157)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L9-L22)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Excel Column Detection Algorithm
+### Excel column detection algorithm
 The algorithm identifies phone and name columns using keyword matching against column names:
 - Phone keywords: ["phone", "number", "mobile", "cell", "tel"]
 - Name keywords: ["name", "contact", "person"]
@@ -154,16 +111,10 @@ UseNone --> BuildRows
 BuildRows --> End(["End"])
 ```
 
-**Diagram sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L121-L157)
-
-**Section sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L121-L157)
-
-### pandas DataFrame Processing Workflow
+### pandas DataFrame processing workflow
 - Reading Excel files
-  - Uses pandas to load .xlsx and .xls files
-  - Internally relies on installed engines (openpyxl for .xlsx, xlrd for .xls)
+  - Uses pandas to load.xlsx and.xls files
+  - Internally relies on installed engines (openpyxl for.xlsx, xlrd for.xls)
 - Iterating rows
   - Iterates over DataFrame rows to extract values
 - Handling NaN values
@@ -174,15 +125,11 @@ BuildRows --> End(["End"])
   - The extraction logic does not enforce encoding; pandas defaults apply
 
 References:
-- DataFrame creation: [pd.read_excel](file://python-backend/extract_contacts.py#L124)
-- Row iteration and NaN checks: [row processing](file://python-backend/extract_contacts.py#L142-L154)
-- Dependencies for engines: [requirements.txt](file://python-backend/requirements.txt#L3-L5)
+- DataFrame creation: `pd.read_excel`
+- Row iteration and NaN checks: `row processing`
+- Dependencies for engines: `requirements.txt`
 
-**Section sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L124-L154)
-- [requirements.txt](file://python-backend/requirements.txt#L3-L5)
-
-### Automatic Phone Number and Name Column Identification
+### Automatic phone number and name column identification
 - Phone column identification
   - Keywords searched in lowercase column names
   - First matching column is selected; otherwise first column
@@ -193,38 +140,29 @@ References:
   - If no columns match, the algorithm falls back to first/second columns
 
 References:
-- Keyword matching: [phone and name detection](file://python-backend/extract_contacts.py#L127-L140)
+- Keyword matching: `phone and name detection`
 
-**Section sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L127-L140)
-
-### Phone Number Cleaning and Validation
+### Phone number cleaning and validation
 - Removes separators and non-digits except plus sign
 - Strips leading zeros when not international
 - Adds plus sign for international-like numbers
 - Validates digit count to ensure realistic lengths
 
 References:
-- Cleaning logic: [clean_phone_number](file://python-backend/extract_contacts.py#L9-L22)
+- Cleaning logic: `clean_phone_number`
 
-**Section sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L9-L22)
-
-### Fallback Mechanisms for Corrupted Excel Files
+### Fallback mechanisms for corrupted excel files
 - The Excel extraction function wraps pandas loading in a try-except block
 - On failure, the function returns an empty list without raising errors
 - This prevents API crashes and allows graceful degradation
 
 References:
-- Exception handling: [try-except around pd.read_excel](file://python-backend/extract_contacts.py#L123-L156)
+- Exception handling: `try-except around pd.read_excel`
 
-**Section sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L123-L156)
-
-### Supported Excel Formats and Column Naming Variations
+### Supported excel formats and column naming variations
 - Supported formats
-  - .xlsx and .xls are supported via pandas read_excel
-  - Engines: openpyxl for .xlsx, xlrd for .xls
+  -.xlsx and.xls are supported via pandas read_excel
+  - Engines: openpyxl for.xlsx, xlrd for.xls
 - Column naming variations
   - Phone columns: "phone", "number", "mobile", "cell", "tel" (case-insensitive)
   - Name columns: "name", "contact", "person" (case-insensitive)
@@ -233,14 +171,10 @@ References:
   - If none match, the algorithm uses the first column as phone and second as name (if present)
 
 References:
-- Engines: [requirements.txt](file://python-backend/requirements.txt#L3-L5)
-- Keyword matching: [column detection](file://python-backend/extract_contacts.py#L127-L140)
+- Engines: `requirements.txt`
+- Keyword matching: `column detection`
 
-**Section sources**
-- [requirements.txt](file://python-backend/requirements.txt#L3-L5)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L127-L140)
-
-### Common Issues with Excel File Processing
+### Common issues with excel file processing
 - Empty or malformed Excel files
   - pandas may raise errors; the extractor catches and returns empty results
 - Missing expected columns
@@ -251,14 +185,10 @@ References:
   - The extractor does not enforce encoding; rely on pandas defaults
 
 References:
-- Error handling: [exception handling](file://python-backend/extract_contacts.py#L123-L156)
-- Engine-related errors: [EmptyDataError and KeyError examples](file://localhost/cli_functions.py#L134-L143)
+- Error handling: `exception handling`
+- Engine-related errors: `EmptyDataError and KeyError examples`
 
-**Section sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L123-L156)
-- [cli_functions.py](file://localhost/cli_functions.py#L134-L143)
-
-## Dependency Analysis
+## Dependency analysis
 The Excel extraction depends on pandas and its engines for reading Excel files.
 
 ```mermaid
@@ -272,15 +202,7 @@ REQ --> OP
 REQ --> XL
 ```
 
-**Diagram sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L1-L177)
-- [requirements.txt](file://python-backend/requirements.txt#L1-L7)
-
-**Section sources**
-- [requirements.txt](file://python-backend/requirements.txt#L1-L7)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L1-L177)
-
-## Performance Considerations
+## Performance considerations
 - Large Excel files
   - Reading and iterating rows scales linearly with the number of rows
   - Consider chunking or limiting rows for very large datasets
@@ -289,11 +211,11 @@ REQ --> XL
 - Memory usage
   - Entire DataFrame is loaded into memory; consider streaming alternatives for extremely large files
 - Engine choice
-  - openpyxl is efficient for .xlsx; xlrd for .xls; ensure correct engine is installed
+  - openpyxl is efficient for.xlsx; xlrd for.xls; ensure correct engine is installed
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Excel file not readable
   - Verify file format and engine installation
   - Confirm that the file is not password-protected or corrupted
@@ -305,12 +227,8 @@ REQ --> XL
   - Review separator characters and prefixes
 
 References:
-- Engine installation: [requirements.txt](file://python-backend/requirements.txt#L3-L5)
-- Validation logic: [clean_phone_number](file://python-backend/extract_contacts.py#L9-L22)
-
-**Section sources**
-- [requirements.txt](file://python-backend/requirements.txt#L3-L5)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L9-L22)
+- Engine installation: `requirements.txt`
+- Validation logic: `clean_phone_number`
 
 ## Conclusion
-The Excel contact extraction pipeline leverages pandas to read .xlsx and .xls files, applies robust keyword-based column detection, and cleans phone numbers consistently. It gracefully handles exceptions and provides fallback behavior for corrupted or misformatted files. By aligning column names with supported keywords and ensuring proper engine installation, users can reliably extract contacts from Excel spreadsheets.
+The Excel contact extraction pipeline uses pandas to read.xlsx and.xls files, applies reliable keyword-based column detection, and cleans phone numbers consistently. It gracefully handles exceptions and provides fallback behavior for corrupted or misformatted files. By aligning column names with supported keywords and ensuring proper engine installation, users can reliably extract contacts from Excel spreadsheets.

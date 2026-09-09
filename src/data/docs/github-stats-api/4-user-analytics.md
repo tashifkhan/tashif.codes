@@ -1,10 +1,10 @@
-# API Endpoints: User Analytics
+# API endpoints: user analytics
 
 Endpoints for retrieving statistics, language data, and contribution history for specific GitHub users.
 
 ---
 
-## 1. Get User's Programming Languages
+## 1. get user's programming languages
 
 Retrieves the programming languages used in a user's repositories.
 
@@ -12,7 +12,7 @@ Retrieves the programming languages used in a user's repositories.
 - **Query Parameters**:
   - `exclude` (Optional): Comma-separated list of languages to exclude (e.g., `Markdown,JSON,HTML`).
 
-### Example Request
+### Example request
 
 ```bash
 GET /tashifkhan/languages?exclude=HTML,CSS
@@ -35,7 +35,7 @@ GET /tashifkhan/languages?exclude=HTML,CSS
 
 ---
 
-## 2. Get User's Contribution History
+## 2. get user's contribution history
 
 Retrieves GitHub contribution history and statistics.
 
@@ -43,7 +43,7 @@ Retrieves GitHub contribution history and statistics.
 - **Query Parameters**:
   - `starting_year` (Optional): Starting year for history (defaults to account creation year).
 
-### Example Request
+### Example request
 
 ```bash
 GET /tashifkhan/contributions?starting_year=2022
@@ -66,9 +66,9 @@ Includes a year-by-year breakdown of contribution data.
 
 ---
 
-## 3. Get User's Complete Statistics
+## 3. get user's complete statistics
 
-Comprehensive statistics combining languages, streaks, and contribution counts.
+Detailed statistics combining languages, streaks, and contribution counts.
 
 - **Endpoint**: `GET /{username}/stats`
 - **Query Parameters**:
@@ -91,7 +91,7 @@ Comprehensive statistics combining languages, streaks, and contribution counts.
 
 ---
 
-## 4. Get and Increment Profile Views
+## 4. get and increment profile views
 
 Tracks and increments profile view counts.
 

@@ -1,32 +1,7 @@
-# NLP and Skill Extraction
-
-<cite>
-**Referenced Files in This Document**
-- [process_resume.py](file://backend/app/services/process_resume.py)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py)
-- [resume_analysis_routes.py](file://backend/app/routes/resume_analysis.py)
-- [json_extractor.py](file://backend/app/data/prompt/json_extractor.py)
-- [comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py)
-- [ats_analysis.py](file://backend/app/data/prompt/ats_analysis.py)
-- [schemas.py](file://backend/app/models/resume/schemas.py)
-- [skills.py](file://backend/app/data/skills.py)
-- [best_model.pkl](file://backend/app/model/best_model.pkl)
-- [tfidf.pkl](file://backend/app/model/tfidf.pkl)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# NLP and skill extraction
 
 ## Introduction
-This document describes the NLP and skill extraction subsystem powering resume analysis, structured data extraction, and predictive capabilities. It covers:
+This page describes the NLP and skill extraction subsystem powering resume analysis, structured data extraction, and predictive capabilities. It covers:
 - Document ingestion and preprocessing
 - Structured extraction via LLM prompts aligned to Pydantic schemas
 - JSON validation and normalization
@@ -34,9 +9,9 @@ This document describes the NLP and skill extraction subsystem powering resume a
 - TF-IDF vectorization for text similarity
 - Model versioning, fallback strategies, and performance optimization
 
-## Project Structure
+## Project structure
 The NLP subsystem spans three primary layers:
-- Routes: Expose endpoints for resume analysis and comprehensive extraction
+- Routes: Expose endpoints for resume analysis and detailed extraction
 - Services: Orchestrate document processing, LLM calls, and schema validation
 - Prompts and Models: Define extraction schemas, prompts, and ML assets
 
@@ -77,27 +52,7 @@ PR2 --> M1
 PR3 --> M2
 ```
 
-**Diagram sources**
-- [resume_analysis_routes.py](file://backend/app/routes/resume_analysis.py#L1-L68)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L342)
-- [process_resume.py](file://backend/app/services/process_resume.py#L12-L91)
-- [json_extractor.py](file://backend/app/data/prompt/json_extractor.py#L5-L84)
-- [comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py#L5-L173)
-- [ats_analysis.py](file://backend/app/data/prompt/ats_analysis.py#L4-L69)
-- [best_model.pkl](file://backend/app/model/best_model.pkl)
-- [tfidf.pkl](file://backend/app/model/tfidf.pkl)
-
-**Section sources**
-- [resume_analysis_routes.py](file://backend/app/routes/resume_analysis.py#L1-L68)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L342)
-- [process_resume.py](file://backend/app/services/process_resume.py#L12-L91)
-- [json_extractor.py](file://backend/app/data/prompt/json_extractor.py#L5-L84)
-- [comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py#L5-L173)
-- [ats_analysis.py](file://backend/app/data/prompt/ats_analysis.py#L4-L69)
-- [best_model.pkl](file://backend/app/model/best_model.pkl)
-- [tfidf.pkl](file://backend/app/model/tfidf.pkl)
-
-## Core Components
+## Core components
 - Document processing and fallback conversion for PDFs and office documents
 - Structured extraction using Pydantic-aligned prompts
 - JSON normalization and validation
@@ -105,15 +60,7 @@ PR3 --> M2
 - TF-IDF vectorization for text similarity
 - Schema-driven outputs for work experience, education, projects, skills, and more
 
-**Section sources**
-- [process_resume.py](file://backend/app/services/process_resume.py#L12-L91)
-- [json_extractor.py](file://backend/app/data/prompt/json_extractor.py#L5-L84)
-- [comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py#L5-L173)
-- [schemas.py](file://backend/app/models/resume/schemas.py#L21-L157)
-- [best_model.pkl](file://backend/app/model/best_model.pkl)
-- [tfidf.pkl](file://backend/app/model/tfidf.pkl)
-
-## Architecture Overview
+## Architecture overview
 End-to-end flow from upload to structured output and predictions:
 
 ```mermaid
@@ -137,17 +84,11 @@ Schema-->>Service : ResumeAnalysis model
 Service-->>Client : ResumeUploadResponse
 ```
 
-**Diagram sources**
-- [resume_analysis_routes.py](file://backend/app/routes/resume_analysis.py#L16-L25)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L144)
-- [process_resume.py](file://backend/app/services/process_resume.py#L68-L91)
-- [schemas.py](file://backend/app/models/resume/schemas.py#L51-L64)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Document Processing and Fallback Conversion
+### Document processing and fallback conversion
 - Converts TXT/MD/PDF/DOCX to plain text/markdown
-- Uses PyMuPDF and pymupdf4llm for robust parsing
+- Uses PyMuPDF and pymupdf4llm for reliable parsing
 - Falls back to Google GenAI multimodal conversion when PDF parsing fails and provider is Google/Gemini
 
 ```mermaid
@@ -166,14 +107,8 @@ Error --> End(["End"])
 Done --> End
 ```
 
-**Diagram sources**
-- [process_resume.py](file://backend/app/services/process_resume.py#L56-L91)
-
-**Section sources**
-- [process_resume.py](file://backend/app/services/process_resume.py#L12-L91)
-
-### Structured Extraction with Pydantic Schemas
-- Comprehensive analysis prompt defines a rich schema covering skills, work experience, projects, education, certifications, achievements, languages, and metadata
+### Structured extraction with Pydantic schemas
+- Detailed analysis prompt defines a rich schema covering skills, work experience, projects, education, certifications, achievements, languages, and metadata
 - JSON extractor prompt normalizes raw LLM outputs to a strict schema with validation rules
 - Both prompts are constructed as LangChain PromptTemplates and chained to the LLM
 
@@ -243,16 +178,7 @@ ComprehensiveAnalysisData --> UIDetailedWorkExperienceEntry
 ComprehensiveAnalysisData --> UIProjectEntry
 ```
 
-**Diagram sources**
-- [comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py#L14-L83)
-- [schemas.py](file://backend/app/models/resume/schemas.py#L21-L64)
-
-**Section sources**
-- [comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py#L5-L173)
-- [json_extractor.py](file://backend/app/data/prompt/json_extractor.py#L5-L84)
-- [schemas.py](file://backend/app/models/resume/schemas.py#L21-L64)
-
-### Career Path Prediction and Skill Gap Analysis
+### Career path prediction and skill gap analysis
 - Trained scikit-learn model (GradientBoostingClassifier) stored as best_model.pkl
 - Used to predict candidate roles and assist in skill gap analysis
 - Typical workflow:
@@ -270,33 +196,18 @@ D --> E["Generate skill gap report"]
 E --> F["Recommend remediation actions"]
 ```
 
-**Diagram sources**
-- [best_model.pkl](file://backend/app/model/best_model.pkl)
-- [tfidf.pkl](file://backend/app/model/tfidf.pkl)
-
-**Section sources**
-- [best_model.pkl](file://backend/app/model/best_model.pkl)
-- [tfidf.pkl](file://backend/app/model/tfidf.pkl)
-
-### TF-IDF Vectorization and Similarity
+### TF-IDF vectorization and similarity
 - TF-IDF vectors enable semantic similarity comparisons between candidate profiles and job descriptions
-- Used alongside trained classifier for comprehensive scoring and recommendations
+- Used alongside trained classifier for detailed scoring and recommendations
 
-**Section sources**
-- [tfidf.pkl](file://backend/app/model/tfidf.pkl)
-- [ats_analysis.py](file://backend/app/data/prompt/ats_analysis.py#L4-L69)
-
-### Skill Catalog and Normalization
+### Skill catalog and normalization
 - Canonical skill list maintained centrally for consistent extraction and matching
 - Supports normalization and enrichment during analysis
 
-**Section sources**
-- [skills.py](file://backend/app/data/skills.py#L1-L162)
-
-### API Endpoints and Workflows
+### API endpoints and workflows
 - File-based analysis: Upload resume, preprocess, clean, validate, and return structured data
-- Comprehensive analysis: Full extraction pipeline with rich schema alignment
-- Text-based analysis: Accept preformatted text and run comprehensive extraction
+- Detailed analysis: Full extraction pipeline with rich schema alignment
+- Text-based analysis: Accept preformatted text and run detailed extraction
 - Validation ensures robustness against malformed inputs
 
 ```mermaid
@@ -315,17 +226,7 @@ Schema-->>Service : validated model
 Service-->>Client : ComprehensiveAnalysisResponse
 ```
 
-**Diagram sources**
-- [resume_analysis_routes.py](file://backend/app/routes/resume_analysis.py#L28-L37)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L159-L225)
-- [comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py#L170-L173)
-- [schemas.py](file://backend/app/models/resume/schemas.py#L44-L48)
-
-**Section sources**
-- [resume_analysis_routes.py](file://backend/app/routes/resume_analysis.py#L1-L68)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L159-L225)
-
-## Dependency Analysis
+## Dependency analysis
 - Routes depend on services for orchestration
 - Services depend on:
   - Document processor for text extraction
@@ -344,34 +245,14 @@ Prompts --> LLM["LLM Provider"]
 Services --> Models["ML Models<br/>best_model.pkl<br/>tfidf.pkl"]
 ```
 
-**Diagram sources**
-- [resume_analysis_routes.py](file://backend/app/routes/resume_analysis.py#L1-L68)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L1-L30)
-- [process_resume.py](file://backend/app/services/process_resume.py#L1-L25)
-- [json_extractor.py](file://backend/app/data/prompt/json_extractor.py#L1-L3)
-- [comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py#L1-L3)
-- [schemas.py](file://backend/app/models/resume/schemas.py#L1-L18)
-- [best_model.pkl](file://backend/app/model/best_model.pkl)
-- [tfidf.pkl](file://backend/app/model/tfidf.pkl)
-
-**Section sources**
-- [resume_analysis_routes.py](file://backend/app/routes/resume_analysis.py#L1-L68)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L1-L30)
-- [process_resume.py](file://backend/app/services/process_resume.py#L1-L25)
-- [json_extractor.py](file://backend/app/data/prompt/json_extractor.py#L1-L3)
-- [comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py#L1-L3)
-- [schemas.py](file://backend/app/models/resume/schemas.py#L1-L18)
-- [best_model.pkl](file://backend/app/model/best_model.pkl)
-- [tfidf.pkl](file://backend/app/model/tfidf.pkl)
-
-## Performance Considerations
+## Performance considerations
 - Prefer plain text or markdown inputs to avoid heavy parsing overhead
 - Cache TF-IDF vectors and model predictions where feasible
 - Use streaming or chunked processing for long documents
 - Monitor LLM latency and apply retry/backoff strategies
 - Validate early to reduce downstream processing costs
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Unsupported file type: Ensure TXT/MD/PDF/DOCX; check extension handling
 - Empty or unreadable PDF: Trigger fallback conversion if provider supports it
@@ -384,10 +265,5 @@ Operational checks:
 - Validate Pydantic schema compliance for extracted data
 - Test TF-IDF and model loading independently
 
-**Section sources**
-- [process_resume.py](file://backend/app/services/process_resume.py#L12-L53)
-- [resume_analysis.py](file://backend/app/services/resume_analysis.py#L96-L103)
-- [schemas.py](file://backend/app/models/resume/schemas.py#L51-L64)
-
 ## Conclusion
-The NLP and skill extraction subsystem integrates robust document processing, schema-driven extraction, and trained ML models to deliver accurate, structured insights from resumes. By leveraging Pydantic schemas, validated prompts, and trained classifiers with TF-IDF similarity, it enables comprehensive analysis, career path prediction, and actionable skill gap recommendations while maintaining reliability through fallback strategies and validation.
+The NLP and skill extraction subsystem integrates reliable document processing, schema-driven extraction, and trained ML models to deliver accurate, structured insights from resumes. By using Pydantic schemas, validated prompts, and trained classifiers with TF-IDF similarity, it enables detailed analysis, career path prediction, and actionable skill gap recommendations while maintaining reliability through fallback strategies and validation.

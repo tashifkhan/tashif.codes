@@ -1,42 +1,17 @@
-# Content Processing Services
-
-<cite>
-**Referenced Files in This Document**
-- [placement_service.py](file://app/services/placement_service.py)
-- [email_notice_service.py](file://app/services/email_notice_service.py)
-- [official_placement_service.py](file://app/services/official_placement_service.py)
-- [placement_stats_calculator_service.py](file://app/services/placement_stats_calculator_service.py)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py)
-- [placement_notification_formatter.py](file://app/services/placement_notification_formatter.py)
-- [google_groups_client.py](file://app/clients/google_groups_client.py)
-- [database_service.py](file://app/services/database_service.py)
-- [config.py](file://app/core/config.py)
-- [__init__.py](file://app/services/__init__.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Content processing services
 
 ## Introduction
-This document provides comprehensive technical documentation for the content processing services that power intelligent data extraction and transformation across the system. These services are responsible for transforming raw, unstructured data from emails and official university sources into structured, actionable information for notification delivery. The focus areas include:
+This page provides detailed technical documentation for the content processing services that power intelligent data extraction and transformation across the system. These services are responsible for transforming raw, unstructured data from emails and official university sources into structured, actionable information for notification delivery. The focus areas include:
 
-- PlacementService: Extracting structured placement offer data from unstructured emails using Google Gemini LLM integration, with robust classification, extraction, validation, privacy sanitization, and retry mechanisms.
+- PlacementService: Extracting structured placement offer data from unstructured emails using Google Gemini LLM integration, with reliable classification, extraction, validation, privacy sanitization, and retry mechanisms.
 - EmailNoticeService: Classifying and extracting structured notices from general email sources, including placement policy updates and non-placement notices.
 - OfficialPlacementService: Scraping and processing placement data from official university websites.
 - PlacementStatsCalculatorService: Generating analytics and statistics from processed placement data, enabling insights across branches, companies, and package distributions.
 
 The documentation covers LLM integration patterns, data validation processes, content formatting workflows, and how these services collectively transform raw data into structured, actionable information for notification delivery.
 
-## Project Structure
-The content processing services are organized within the services layer, with clear separation of concerns and dependency injection support. The services leverage reusable clients for external integrations and centralized configuration management.
+## Project structure
+The content processing services are organized within the services layer, with clear separation of concerns and dependency injection support. The services use reusable clients for external integrations and centralized configuration management.
 
 ```mermaid
 graph TB
@@ -70,32 +45,18 @@ PNFS --> CFG
 NFS --> CFG
 ```
 
-**Diagram sources**
-- [__init__.py](file://app/services/__init__.py#L1-L23)
-- [config.py](file://app/core/config.py#L18-L186)
-
-**Section sources**
-- [__init__.py](file://app/services/__init__.py#L1-L23)
-- [config.py](file://app/core/config.py#L18-L186)
-
-## Core Components
+## Core components
 This section introduces the four primary content processing services and their responsibilities:
 
 - PlacementService: Orchestrates a LangGraph pipeline to classify, extract, validate, sanitize, and display placement offer data from emails using Google Gemini LLM.
 - EmailNoticeService: Processes general notices from email sources, including placement policy updates, with LLM-based classification and extraction.
 - OfficialPlacementService: Scrapes official university placement pages to extract structured data about batches, recruiters, and package distributions.
-- PlacementStatsCalculatorService: Computes comprehensive statistics from placement offers, including branch-wise, company-wise, and package distribution metrics.
+- PlacementStatsCalculatorService: Computes detailed statistics from placement offers, including branch-wise, company-wise, and package distribution metrics.
 
 Each service implements dependency injection for flexibility and testability, integrates with configuration management, and interacts with the database service for persistence.
 
-**Section sources**
-- [placement_service.py](file://app/services/placement_service.py#L419-L479)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L335-L393)
-- [official_placement_service.py](file://app/services/official_placement_service.py#L81-L106)
-- [placement_stats_calculator_service.py](file://app/services/placement_stats_calculator_service.py#L354-L391)
-
-## Architecture Overview
-The content processing architecture follows a modular, layered design with clear boundaries between services, clients, and core configuration. The services utilize LangGraph for workflow orchestration and Google Gemini for LLM-powered extraction and classification. External integrations are abstracted through dedicated clients, and configuration is centralized via environment variables.
+## Architecture overview
+The content processing architecture follows a modular, layered design with clear boundaries between services, clients, and core configuration. The services use LangGraph for workflow orchestration and Google Gemini for LLM-powered extraction and classification. External integrations are abstracted through dedicated clients, and configuration is centralized via environment variables.
 
 ```mermaid
 sequenceDiagram
@@ -118,22 +79,17 @@ DB-->>PS : "Success/Failure"
 PS-->>SRC : "Processed result"
 ```
 
-**Diagram sources**
-- [google_groups_client.py](file://app/clients/google_groups_client.py#L110-L168)
-- [placement_service.py](file://app/services/placement_service.py#L484-L506)
-- [database_service.py](file://app/services/database_service.py#L80-L105)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### PlacementService Analysis
-PlacementService implements a sophisticated LangGraph pipeline to process placement offers from emails. The pipeline consists of four stages: classification, extraction, validation, and privacy sanitization, each with robust error handling and retry logic.
+### PlacementService analysis
+PlacementService implements a sophisticated LangGraph pipeline to process placement offers from emails. The pipeline consists of four stages: classification, extraction, validation, and privacy sanitization, each with reliable error handling and retry logic.
 
 Key implementation patterns:
 - LangGraph workflow with conditional edges for decision-making
 - Pydantic models for strong data validation
 - LLM prompts designed for strict classification and extraction
 - Privacy sanitization to remove sensitive information
-- Retry mechanisms for robust extraction
+- Retry mechanisms for reliable extraction
 
 ```mermaid
 classDiagram
@@ -186,11 +142,6 @@ PlacementOffer --> Student : "contains"
 PlacementOffer --> RolePackage : "contains"
 ```
 
-**Diagram sources**
-- [placement_service.py](file://app/services/placement_service.py#L75-L86)
-- [placement_service.py](file://app/services/placement_service.py#L55-L68)
-- [placement_service.py](file://app/services/placement_service.py#L37-L44)
-
 LLM Integration Patterns:
 - Classification stage uses keyword-based scoring with confidence thresholds
 - Extraction stage employs structured prompts with strict schema enforcement
@@ -206,12 +157,9 @@ Data Validation Processes:
 Content Formatting Workflows:
 - Privacy-first approach strips sensitive information
 - Structured JSON output with standardized schema
-- Enhanced metadata including sender, time_sent, and rejection reasons
+- Improved metadata including sender, time_sent, and rejection reasons
 
-**Section sources**
-- [placement_service.py](file://app/services/placement_service.py#L419-L830)
-
-### EmailNoticeService Analysis
+### EmailNoticeService analysis
 EmailNoticeService processes general notices from email sources using a LangGraph pipeline with LLM-based classification and extraction. The service distinguishes between placement notices, policy updates, and general announcements.
 
 Key implementation patterns:
@@ -248,10 +196,6 @@ end
 ENS-->>SRC : "Processed result"
 ```
 
-**Diagram sources**
-- [email_notice_service.py](file://app/services/email_notice_service.py#L398-L418)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L435-L552)
-
 Notice Types and Extraction:
 - Announcement, job posting, shortlisting, update, webinar, reminder, hackathon, internship_noc
 - Structured extraction with type-specific fields and validation
@@ -262,14 +206,11 @@ Policy Update Processing:
 - Advanced LLM prompting for policy content
 - Integration with PlacementPolicyService for storage
 
-**Section sources**
-- [email_notice_service.py](file://app/services/email_notice_service.py#L335-L830)
-
-### OfficialPlacementService Analysis
+### OfficialPlacementService analysis
 OfficialPlacementService scrapes official university placement pages to extract structured data about batches, recruiters, and package distributions. The service focuses on parsing HTML content and converting it into standardized data models.
 
 Key implementation patterns:
-- HTML parsing with BeautifulSoup for robust content extraction
+- HTML parsing with BeautifulSoup for reliable content extraction
 - Data model validation using Pydantic
 - Batch processing across multiple tabs and content sections
 - Image URL normalization and metadata extraction
@@ -292,21 +233,14 @@ BuildResult --> SaveDB["Save to Database"]
 SaveDB --> End([Scrape Complete])
 ```
 
-**Diagram sources**
-- [official_placement_service.py](file://app/services/official_placement_service.py#L150-L208)
-- [official_placement_service.py](file://app/services/official_placement_service.py#L209-L374)
-
 Data Extraction Strategies:
 - Targeted selectors for main heading, introductory text, and recruiter logos
 - Batch navigation parsing with active state detection
 - Package distribution table extraction with category mapping
 - Pointer list extraction for placement achievements
 
-**Section sources**
-- [official_placement_service.py](file://app/services/official_placement_service.py#L81-L422)
-
-### PlacementStatsCalculatorService Analysis
-PlacementStatsCalculatorService computes comprehensive statistics from processed placement data, enabling insights across branches, companies, and package distributions. The service implements sophisticated aggregation logic with configurable enrollment ranges and student counts.
+### PlacementStatsCalculatorService analysis
+PlacementStatsCalculatorService computes detailed statistics from processed placement data, enabling insights across branches, companies, and package distributions. The service implements sophisticated aggregation logic with configurable enrollment ranges and student counts.
 
 Key implementation patterns:
 - Branch range resolution using enrollment number patterns
@@ -367,11 +301,6 @@ PlacementStatsCalculatorService --> CompanyStats : "computes"
 PlacementStatsCalculatorService --> PlacementStats : "returns"
 ```
 
-**Diagram sources**
-- [placement_stats_calculator_service.py](file://app/services/placement_stats_calculator_service.py#L109-L131)
-- [placement_stats_calculator_service.py](file://app/services/placement_stats_calculator_service.py#L133-L143)
-- [placement_stats_calculator_service.py](file://app/services/placement_stats_calculator_service.py#L144-L158)
-
 Statistical Computation Logic:
 - Enrollment range mapping for branch identification
 - Highest package per unique student for fair statistics
@@ -384,10 +313,7 @@ Filtering and Export Capabilities:
 - CSV export with standardized column headers
 - Search query support across multiple fields
 
-**Section sources**
-- [placement_stats_calculator_service.py](file://app/services/placement_stats_calculator_service.py#L354-L1034)
-
-## Dependency Analysis
+## Dependency analysis
 The content processing services exhibit clear dependency relationships and integration points:
 
 ```mermaid
@@ -428,12 +354,6 @@ NFS --> CFG
 PNFS --> CFG
 ```
 
-**Diagram sources**
-- [placement_service.py](file://app/services/placement_service.py#L468-L476)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L367-L387)
-- [official_placement_service.py](file://app/services/official_placement_service.py#L102-L104)
-- [placement_stats_calculator_service.py](file://app/services/placement_stats_calculator_service.py#L367-L383)
-
 Dependency Coupling and Cohesion:
 - High cohesion within each service around specific responsibilities
 - Low coupling through dependency injection and interface abstraction
@@ -446,11 +366,7 @@ Integration Points:
 - MongoDB for persistent storage
 - Web scraping for official placement data
 
-**Section sources**
-- [config.py](file://app/core/config.py#L18-L186)
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-
-## Performance Considerations
+## Performance considerations
 The content processing services implement several performance optimizations:
 
 - LangGraph workflow optimization: Parallel processing of independent nodes, minimal state copying, and efficient conditional routing
@@ -465,7 +381,7 @@ Best practices for deployment:
 - Asynchronous processing for independent notice processing
 - Monitoring and logging for performance metrics
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and their resolutions:
 
 **LLM Integration Issues:**
@@ -488,19 +404,14 @@ Common issues and their resolutions:
 - Collection initialization failures: Ensure database migrations are complete
 - Write operation errors: Check write permissions and document size limits
 
-**Section sources**
-- [config.py](file://app/core/config.py#L52-L57)
-- [google_groups_client.py](file://app/clients/google_groups_client.py#L63-L76)
-- [database_service.py](file://app/services/database_service.py#L80-L105)
-
 ## Conclusion
-The content processing services provide a robust, scalable foundation for transforming raw data into structured, actionable information. Through careful separation of concerns, LLM-powered intelligence, and comprehensive validation, these services enable reliable notification delivery across placement offers, general notices, and official placement data. The modular architecture supports easy maintenance, testing, and extension for future requirements.
+The content processing services provide a reliable, scalable foundation for transforming raw data into structured, actionable information. Through careful separation of concerns, LLM-powered intelligence, and detailed validation, these services enable reliable notification delivery across placement offers, general notices, and official placement data. The modular architecture supports easy maintenance, testing, and extension for future requirements.
 
 The services demonstrate best practices in:
 - LLM integration patterns with structured prompts and validation
 - Data validation using Pydantic models and confidence scoring
 - Privacy-preserving content processing and sanitization
-- Comprehensive analytics and reporting capabilities
+- Detailed analytics and reporting capabilities
 - Dependency injection and configuration management
 
-These components work together to create a comprehensive content processing pipeline that reliably transforms diverse data sources into consistent, useful information for notification systems.
+These components work together to create a detailed content processing pipeline that reliably transforms diverse data sources into consistent, useful information for notification systems.

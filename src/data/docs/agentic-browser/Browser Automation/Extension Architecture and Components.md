@@ -1,43 +1,16 @@
-# Extension Architecture and Components
-
-<cite>
-**Referenced Files in This Document**
-- [background.ts](file://extension/entrypoints/background.ts)
-- [content.ts](file://extension/entrypoints/content.ts)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx)
-- [AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts)
-- [executeAgent.ts](file://extension/entrypoints/utils/executeAgent.ts)
-- [parseAgentCommand.ts](file://extension/entrypoints/utils/parseAgentCommand.ts)
-- [agent-map.ts](file://extension/entrypoints/sidepanel/lib/agent-map.ts)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts)
-- [wxt.config.ts](file://extension/wxt.config.ts)
-- [package.json](file://extension/package.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Extension architecture and components
 
 ## Introduction
-This document explains the browser extension architecture and component interactions for the Open DIA project. It focuses on:
-- The content script’s role in executing browser actions
-- The background script’s coordination for cross-tab communication
+This page explains the browser extension architecture and component interactions for the Open DIA project. It focuses on:
+- The content script's role in executing browser actions
+- The background script's coordination for cross-tab communication
 - The side panel UI integration and agent orchestration
 - Message passing protocols between extension components and the main application
-- The AgentExecutor component’s role in coordinating agent actions and the content script’s execution environment
+- The AgentExecutor component's role in coordinating agent actions and the content script's execution environment
 - Examples of lifecycle management, permission handling, and security boundaries
 - Cross-browser compatibility considerations and extension manifest configuration
 
-## Project Structure
+## Project structure
 The extension is organized into entrypoints for background, content, and side panel UI, plus shared utilities for agent orchestration and messaging.
 
 ```mermaid
@@ -75,48 +48,14 @@ PKG --> AE
 PKG --> WS
 ```
 
-**Diagram sources**
-- [background.ts](file://extension/entrypoints/background.ts#L1-L1642)
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx#L1-L800)
-- [executeAgent.ts](file://extension/entrypoints/utils/executeAgent.ts#L1-L299)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-- [parseAgentCommand.ts](file://extension/entrypoints/utils/parseAgentCommand.ts#L1-L86)
-- [agent-map.ts](file://extension/entrypoints/sidepanel/lib/agent-map.ts#L1-L80)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L1-L133)
-- [wxt.config.ts](file://extension/wxt.config.ts#L1-L29)
-- [package.json](file://extension/package.json#L1-L40)
-
-**Section sources**
-- [background.ts](file://extension/entrypoints/background.ts#L1-L1642)
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx#L1-L800)
-- [executeAgent.ts](file://extension/entrypoints/utils/executeAgent.ts#L1-L299)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-- [parseAgentCommand.ts](file://extension/entrypoints/utils/parseAgentCommand.ts#L1-L86)
-- [agent-map.ts](file://extension/entrypoints/sidepanel/lib/agent-map.ts#L1-L80)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L1-L133)
-- [wxt.config.ts](file://extension/wxt.config.ts#L1-L29)
-- [package.json](file://extension/package.json#L1-L40)
-
-## Core Components
+## Core components
 - Background script: Central coordinator for cross-tab communication, tab state, and action dispatch. Handles message routing and executes browser-level commands.
 - Content script: Runs in-page to manipulate DOM and respond to action requests scoped to the active tab.
 - Side panel UI: React-based interface that orchestrates agent execution, manages sessions, and coordinates with background and content scripts.
 - Agent utilities: Parse slash commands, map agents/actions to endpoints, and execute agent requests with contextual page data.
 - WebSocket client: Provides a minimal client for real-time agent execution and progress updates.
 
-**Section sources**
-- [background.ts](file://extension/entrypoints/background.ts#L1-L1642)
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx#L1-L800)
-- [executeAgent.ts](file://extension/entrypoints/utils/executeAgent.ts#L1-L299)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L1-L133)
-
-## Architecture Overview
+## Architecture overview
 The extension follows a message-passing architecture:
 - Side panel initiates agent execution and sends commands to the background script.
 - Background script resolves actions, injects content scripts when needed, and coordinates tab-level operations.
@@ -139,15 +78,9 @@ UI->>WS : "Optional real-time execution"
 WS-->>UI : "Progress updates"
 ```
 
-**Diagram sources**
-- [background.ts](file://extension/entrypoints/background.ts#L428-L514)
-- [content.ts](file://extension/entrypoints/content.ts#L197-L213)
-- [AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx#L323-L516)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L61-L95)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Background Script Coordination
+### Background script coordination
 Responsibilities:
 - Listens for messages from side panel and content script
 - Coordinates tab state and cross-tab communication
@@ -185,14 +118,7 @@ Tool --> End
 Unknown --> End
 ```
 
-**Diagram sources**
-- [background.ts](file://extension/entrypoints/background.ts#L24-L128)
-- [background.ts](file://extension/entrypoints/background.ts#L428-L514)
-
-**Section sources**
-- [background.ts](file://extension/entrypoints/background.ts#L1-L1642)
-
-### Content Script Execution Environment
+### Content script execution environment
 Role:
 - Runs in-page to perform DOM-level actions
 - Responds to action requests from background script
@@ -219,13 +145,7 @@ Scroll --> Done
 Info --> Done
 ```
 
-**Diagram sources**
-- [content.ts](file://extension/entrypoints/content.ts#L220-L323)
-
-**Section sources**
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-
-### Side Panel UI Integration and AgentExecutor
+### Side panel UI integration and AgentExecutor
 Responsibilities:
 - Manages sessions, chat history, and UI state
 - Parses slash commands and maps to agent/action endpoints
@@ -261,20 +181,7 @@ CS-->>BG : "Action results"
 BG-->>UI : "Summary"
 ```
 
-**Diagram sources**
-- [AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx#L323-L516)
-- [parseAgentCommand.ts](file://extension/entrypoints/utils/parseAgentCommand.ts#L5-L86)
-- [executeAgent.ts](file://extension/entrypoints/utils/executeAgent.ts#L17-L299)
-- [background.ts](file://extension/entrypoints/background.ts#L428-L514)
-- [content.ts](file://extension/entrypoints/content.ts#L197-L213)
-
-**Section sources**
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx#L1-L800)
-- [parseAgentCommand.ts](file://extension/entrypoints/utils/parseAgentCommand.ts#L1-L86)
-- [executeAgent.ts](file://extension/entrypoints/utils/executeAgent.ts#L1-L299)
-
-### Agent Utilities and Mapping
+### Agent utilities and mapping
 - Command parsing: Supports agent selection, action selection, and completion stages
 - Endpoint mapping: Maps agent-action pairs to backend endpoints
 - Execution: Builds payloads with page context, chat history, and optional attachments
@@ -295,20 +202,10 @@ AgentExecutor --> CommandParser : "parses"
 AgentExecutor --> AgentMap : "maps"
 ```
 
-**Diagram sources**
-- [agent-map.ts](file://extension/entrypoints/sidepanel/lib/agent-map.ts#L1-L80)
-- [parseAgentCommand.ts](file://extension/entrypoints/utils/parseAgentCommand.ts#L1-L86)
-- [executeAgent.ts](file://extension/entrypoints/utils/executeAgent.ts#L1-L299)
-
-**Section sources**
-- [agent-map.ts](file://extension/entrypoints/sidepanel/lib/agent-map.ts#L1-L80)
-- [parseAgentCommand.ts](file://extension/entrypoints/utils/parseAgentCommand.ts#L1-L86)
-- [executeAgent.ts](file://extension/entrypoints/utils/executeAgent.ts#L1-L299)
-
-### WebSocket Client Integration
+### WebSocket client integration
 - Provides a simple API for real-time agent execution and progress updates
 - Emits connection status, progress, and result/error events
-- Used by the side panel to enhance agent execution UX
+- Used by the side panel to improve agent execution UX
 
 ```mermaid
 sequenceDiagram
@@ -325,13 +222,7 @@ UI->>WS : "stopAgent()"
 WS->>Server : "emit stop_agent"
 ```
 
-**Diagram sources**
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L61-L95)
-
-**Section sources**
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L1-L133)
-
-## Dependency Analysis
+## Dependency analysis
 External dependencies and their roles:
 - React ecosystem: UI rendering and state management
 - Socket.IO client: Real-time communication with agent server
@@ -353,28 +244,14 @@ AE --> React["react/react-dom"]
 AE --> MD["react-markdown/katex"]
 ```
 
-**Diagram sources**
-- [AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx#L1-L800)
-- [executeAgent.ts](file://extension/entrypoints/utils/executeAgent.ts#L1-L299)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-- [parseAgentCommand.ts](file://extension/entrypoints/utils/parseAgentCommand.ts#L1-L86)
-- [agent-map.ts](file://extension/entrypoints/sidepanel/lib/agent-map.ts#L1-L80)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L1-L133)
-- [background.ts](file://extension/entrypoints/background.ts#L1-L1642)
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-- [package.json](file://extension/package.json#L17-L32)
-
-**Section sources**
-- [package.json](file://extension/package.json#L1-L40)
-
-## Performance Considerations
+## Performance considerations
 - Minimize DOM queries and synthetic event dispatches; batch actions when possible
 - Use timeouts and listeners for tab operations to avoid blocking
 - Cache page context only when necessary; avoid large payloads
 - Debounce UI updates and progress reporting to reduce re-renders
 - Prefer browser APIs (tabs, scripting) over frequent polling
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Action not executing in content script:
   - Ensure the content script is injected and the tab is active
@@ -389,18 +266,12 @@ Common issues and resolutions:
   - Review manifest permissions and host permissions
   - Reinstall the extension after permission changes
 
-**Section sources**
-- [background.ts](file://extension/entrypoints/background.ts#L428-L514)
-- [content.ts](file://extension/entrypoints/content.ts#L197-L213)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L115-L155)
-- [wxt.config.ts](file://extension/wxt.config.ts#L8-L26)
-
 ## Conclusion
-The extension employs a clear separation of concerns: the background script coordinates cross-tab operations, the content script handles DOM-level actions, and the side panel orchestrates agent execution with real-time feedback. Utilities provide robust command parsing and context-aware agent execution. Permissions and manifest configuration enable broad site access and side panel integration. With careful attention to performance and error handling, the architecture supports scalable agent-driven browser automation.
+The extension employs a clear separation of concerns: the background script coordinates cross-tab operations, the content script handles DOM-level actions, and the side panel orchestrates agent execution with real-time feedback. Utilities provide reliable command parsing and context-aware agent execution. Permissions and manifest configuration enable broad site access and side panel integration. With careful attention to performance and error handling, the architecture supports scalable agent-driven browser automation.
 
 ## Appendices
 
-### Message Passing Protocols
+### Message passing protocols
 - Side panel to background:
   - Types: ACTIVATE_AI_FRAME, DEACTIVATE_AI_FRAME, GET_ACTIVE_TAB, GET_ALL_TABS, EXECUTE_ACTION, GEMINI_REQUEST, RUN_GENERATED_AGENT, EXECUTE_AGENT_TOOL
 - Background to content:
@@ -408,11 +279,7 @@ The extension employs a clear separation of concerns: the background script coor
 - Background to side panel:
   - Responses to all requests with success/error payloads
 
-**Section sources**
-- [background.ts](file://extension/entrypoints/background.ts#L24-L128)
-- [content.ts](file://extension/entrypoints/content.ts#L197-L213)
-
-### Lifecycle Management and Security Boundaries
+### Lifecycle management and security boundaries
 - Lifecycle:
   - Background script initializes listeners and tab tracking
   - Side panel activates/deactivates AI frames and manages sessions
@@ -422,24 +289,13 @@ The extension employs a clear separation of concerns: the background script coor
   - Background script bridges privileged APIs with page contexts
   - Manifest permissions define scope; host permissions grant broad access
 
-**Section sources**
-- [background.ts](file://extension/entrypoints/background.ts#L131-L156)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L54-L101)
-- [wxt.config.ts](file://extension/wxt.config.ts#L8-L26)
-
-### Cross-Browser Compatibility
+### Cross-Browser compatibility
 - Build targets:
   - Chrome MV3 and Firefox via WXT build flags
 - Differences:
   - Some APIs differ between browsers; use feature detection
   - Manifest keys and permissions may vary slightly
 
-**Section sources**
-- [package.json](file://extension/package.json#L7-L13)
-
-### Extension Manifest Configuration
+### Extension manifest configuration
 - Name, description, permissions, host permissions
 - Permissions include tabs, storage, scripting, identity, sidePanel, webNavigation, webRequest, cookies, bookmarks, history, clipboard, notifications, contextMenus, downloads
-
-**Section sources**
-- [wxt.config.ts](file://extension/wxt.config.ts#L5-L27)

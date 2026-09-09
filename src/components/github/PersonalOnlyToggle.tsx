@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useWebHaptics } from "web-haptics/react";
+import { trigger } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 export const PERSONAL_ONLY_STORAGE_KEY = "github_personal_only";
@@ -28,7 +28,6 @@ interface Props {
  */
 export default function PersonalOnlyToggle({ className }: Props) {
 	const [enabled, setEnabled] = useState(false);
-	const { trigger } = useWebHaptics();
 
 	useEffect(() => {
 		const saved = getPersonalOnlyPreference();

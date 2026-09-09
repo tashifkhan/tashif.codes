@@ -1,29 +1,9 @@
-# Manual Contact Entry Interface
-
-<cite>
-**Referenced Files in This Document**
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py)
-- [validate_number.py](file://python-backend/validate_number.py)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [pyodide.js](file://electron/src/utils/pyodide.js)
-- [README.md](file://README.md)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Manual contact entry interface
 
 ## Introduction
-This document describes the manual contact entry system used to add phone numbers directly into the application. It covers multi-format input parsing that supports various separators (newlines, commas, semicolons, pipes), intelligent detection of name-number pairs, real-time validation feedback, error handling for malformed entries, supported input formats with examples, optimal formatting guidance, and performance considerations for large batches.
+This page describes the manual contact entry system used to add phone numbers directly into the application. It covers multi-format input parsing that supports various separators (newlines, commas, semicolons, pipes), intelligent detection of name-number pairs, real-time validation feedback, error handling for malformed entries, supported input formats with examples, optimal formatting guidance, and performance considerations for large batches.
 
-## Project Structure
+## Project structure
 The manual contact entry spans the Electron frontend and Python backend:
 - Frontend: React component manages user input and displays real-time feedback.
 - Backend: Python module parses and validates manual entries.
@@ -37,20 +17,7 @@ Parser --> Validator["validate_number.py<br/>Number cleaning"]
 UI --> Logger["Activity Log<br/>Real-time feedback"]
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L1-L61)
-- [validate_number.py](file://python-backend/validate_number.py#L1-L27)
-
-**Section sources**
-- [README.md](file://README.md#L134-L161)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L315-L361)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L1-L61)
-- [validate_number.py](file://python-backend/validate_number.py#L1-L27)
-
-## Core Components
+## Core components
 - Manual input UI: Text area for entering contacts with examples and live count.
 - Pyodide bridge: Loads Pyodide runtime and Python script, executes parsing.
 - Parser: Splits input by multiple separators, detects name-number pairs, cleans numbers.
@@ -62,13 +29,7 @@ Key behaviors:
 - Real-time feedback: success counts, errors, and clearing actions.
 - Batch processing: processes all lines in a single operation.
 
-**Section sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L315-L361)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L26-L33)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L54)
-- [validate_number.py](file://python-backend/validate_number.py#L6-L19)
-
-## Architecture Overview
+## Architecture overview
 The manual entry flow connects the UI to Python parsing via Pyodide.
 
 ```mermaid
@@ -89,15 +50,9 @@ Bridge-->>UI : "Parsed contacts"
 UI->>UI : "Update contacts list and log"
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L41-L62)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L5-L33)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L54)
-- [validate_number.py](file://python-backend/validate_number.py#L6-L19)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Manual Input UI (React)
+### Manual input UI (React)
 Responsibilities:
 - Render textarea with examples and live line count.
 - Trigger parsing on submit.
@@ -112,19 +67,12 @@ Validation and feedback:
 Batch processing:
 - Processes all lines in one call to the parser.
 
-**Section sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L315-L361)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L41-L62)
-
-### Pyodide Bridge
+### Pyodide bridge
 Responsibilities:
 - Dynamically loads Pyodide runtime from CDN if not present.
 - Fetches and runs the Python parser script.
 - Escapes special characters for safe Python string injection.
 - Executes Python code asynchronously and returns JSON results.
-
-**Section sources**
-- [pyodide.js](file://electron/src/utils/pyodide.js#L5-L33)
 
 ### Parser: parse_manual_numbers.py
 Parsing algorithm:
@@ -143,9 +91,6 @@ Intelligent detection:
 Real-time feedback:
 - Returns structured result with success flag, contacts array, count, and message.
 
-**Section sources**
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L54)
-
 ### Validator: validate_number.py
 Number cleaning and validation:
 - Removes separators and non-digit characters except plus sign.
@@ -153,10 +98,7 @@ Number cleaning and validation:
 - Enforces digit-only length bounds suitable for international numbers.
 - Returns cleaned number or None if invalid.
 
-**Section sources**
-- [validate_number.py](file://python-backend/validate_number.py#L6-L19)
-
-### Supported Input Formats and Examples
+### Supported input formats and examples
 Supported separators:
 - Newlines: one contact per line.
 - Commas: comma-separated entries.
@@ -194,11 +136,7 @@ Optimal formatting guidance:
 - Include names alongside numbers when available for better labeling.
 - Avoid extra spaces around separators to reduce ambiguity.
 
-**Section sources**
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L24-L48)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L318-L326)
-
-### Real-time Validation Feedback and Error Handling
+### Real-time validation feedback and error handling
 Frontend feedback:
 - Logs success messages with contact counts.
 - Displays error messages for empty input or parsing failures.
@@ -213,11 +151,7 @@ Error handling:
 - Exceptions during parsing are caught and logged as errors.
 - Invalid numbers are ignored; only valid ones are included in the result.
 
-**Section sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L41-L62)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L45-L54)
-
-### Algorithm Flowchart
+### Algorithm flowchart
 ```mermaid
 flowchart TD
 Start(["Input received"]) --> Split["Split by separators:<br/>newline, comma, semicolon"]
@@ -239,10 +173,7 @@ Done --> |Yes| Loop
 Done --> |No| Return["Return success with contacts and count"]
 ```
 
-**Diagram sources**
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L54)
-
-## Dependency Analysis
+## Dependency analysis
 - UI depends on the Pyodide bridge for Python execution.
 - Pyodide bridge depends on the Python parser script.
 - Parser depends on the validator for number cleaning and validation.
@@ -255,19 +186,7 @@ BR --> PARSER["parse_manual_numbers.py"]
 PARSER --> VALIDATOR["validate_number.py"]
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L6)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L1-L61)
-- [validate_number.py](file://python-backend/validate_number.py#L1-L27)
-
-**Section sources**
-- [README.md](file://README.md#L223-L228)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L1-L61)
-- [validate_number.py](file://python-backend/validate_number.py#L1-L27)
-
-## Performance Considerations
+## Performance considerations
 - Parsing complexity: Linear in the number of input lines and characters.
 - Regex operations: Applied per entry; minimal overhead for typical batch sizes.
 - Memory usage: Stores validated contacts in memory; consider clearing old lists to manage growth.
@@ -280,7 +199,7 @@ PARSER --> VALIDATOR["validate_number.py"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Empty input submission:
   - The UI prevents submission when input is blank; ensure entries are present.
@@ -291,9 +210,5 @@ Common issues and resolutions:
 - Real-time feedback:
   - Check the activity log for success or error messages; use them to refine input.
 
-**Section sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L41-L62)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L16-L19)
-
 ## Conclusion
-The manual contact entry system provides a flexible, real-time way to add contacts using multiple separators and intelligent name-number pair detection. The UI offers immediate feedback, while the Python backend ensures robust number cleaning and validation. Following the recommended formatting practices helps achieve reliable parsing and optimal performance, especially for larger batches.
+The manual contact entry system provides a flexible, real-time way to add contacts using multiple separators and intelligent name-number pair detection. The UI offers immediate feedback, while the Python backend ensures reliable number cleaning and validation. Following the recommended formatting practices helps achieve reliable parsing and optimal performance, especially for larger batches.

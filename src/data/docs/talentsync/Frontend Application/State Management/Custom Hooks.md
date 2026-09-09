@@ -1,45 +1,14 @@
-# Custom Hooks
+# Custom hooks
 
-<cite>
-**Referenced Files in This Document**
-- [use-mobile.ts](file://frontend/hooks/use-mobile.ts)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts)
-- [use-haptics.ts](file://frontend/hooks/use-haptics.ts)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts)
-- [use-markdown.tsx](file://frontend/hooks/use-markdown.tsx)
-- [use-enrichment.ts](file://frontend/hooks/queries/use-enrichment.ts)
-- [use-improvement.ts](file://frontend/hooks/queries/use-improvement.ts)
-- [use-jd-editor.ts](file://frontend/hooks/queries/use-jd-editor.ts)
-- [haptics.ts](file://frontend/lib/haptics.ts)
-- [enrichment.ts](file://frontend/types/enrichment.ts)
-- [improvement.ts](file://frontend/types/improvement.ts)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts)
-</cite>
-
-## Update Summary
+## Update summary
 **Changes Made**
 - Added new section for haptics hook implementation
 - Updated project structure diagram to include haptics library
 - Added haptics hook documentation with intensity levels and user preferences
 - Updated dependency analysis to include haptics library integration
 
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
-
 ## Introduction
-This document explains the design and implementation of custom React hooks used across the application. It focuses on reusable logic patterns, hook composition, dependency management, and state encapsulation. Special attention is given to:
+This page explains the design and implementation of custom React hooks used across the application. It focuses on reusable logic patterns, hook composition, dependency management, and state encapsulation. Special attention is given to:
 - Responsive design hook use-mobile
 - Notification system hook use-toast
 - Haptic feedback system with use-haptics hook and haptics library
@@ -48,7 +17,7 @@ This document explains the design and implementation of custom React hooks used 
 - Controlled vs uncontrolled patterns, form handling, and UI state management
 - Testing, performance optimization, and debugging techniques
 
-## Project Structure
+## Project structure
 The custom hooks live under frontend/hooks and are organized by domain:
 - Device responsiveness: use-mobile.ts
 - Notifications: use-toast.ts
@@ -92,41 +61,7 @@ QJD --> T3
 UH --> HL
 ```
 
-**Diagram sources**
-- [use-mobile.ts](file://frontend/hooks/use-mobile.ts#L1-L20)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L1-L192)
-- [use-haptics.ts](file://frontend/hooks/use-haptics.ts#L1-L52)
-- [use-markdown.tsx](file://frontend/hooks/use-markdown.tsx#L1-L400)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L1-L486)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts#L1-L204)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L1-L215)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L1-L303)
-- [haptics.ts](file://frontend/lib/haptics.ts#L1-L81)
-- [use-enrichment.ts](file://frontend/hooks/queries/use-enrichment.ts#L1-L140)
-- [use-improvement.ts](file://frontend/hooks/queries/use-improvement.ts#L1-L60)
-- [use-jd-editor.ts](file://frontend/hooks/queries/use-jd-editor.ts#L1-L26)
-- [enrichment.ts](file://frontend/types/enrichment.ts#L1-L282)
-- [improvement.ts](file://frontend/types/improvement.ts#L1-L124)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts#L1-L61)
-
-**Section sources**
-- [use-mobile.ts](file://frontend/hooks/use-mobile.ts#L1-L20)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L1-L192)
-- [use-haptics.ts](file://frontend/hooks/use-haptics.ts#L1-L52)
-- [use-markdown.tsx](file://frontend/hooks/use-markdown.tsx#L1-L400)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L1-L486)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts#L1-L204)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L1-L215)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L1-L303)
-- [haptics.ts](file://frontend/lib/haptics.ts#L1-L81)
-- [use-enrichment.ts](file://frontend/hooks/queries/use-enrichment.ts#L1-L140)
-- [use-improvement.ts](file://frontend/hooks/queries/use-improvement.ts#L1-L60)
-- [use-jd-editor.ts](file://frontend/hooks/queries/use-jd-editor.ts#L1-L26)
-- [enrichment.ts](file://frontend/types/enrichment.ts#L1-L282)
-- [improvement.ts](file://frontend/types/improvement.ts#L1-L124)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts#L1-L61)
-
-## Core Components
+## Core components
 - useIsMobile: Detects mobile viewport and updates on resize. Encapsulates media query listener lifecycle.
 - useToast: Centralized toast notification manager with reducer-driven state, listener pattern, and auto-dismiss queues.
 - useHaptics: Haptic feedback manager with intensity levels and user preference persistence.
@@ -139,17 +74,7 @@ Key design patterns:
 - State encapsulation: Each wizard maintains a local finite state machine and exposes computed flags and helpers.
 - Haptic feedback: useHaptics provides consistent tactile feedback with semantic intensity levels and user preference management.
 
-**Section sources**
-- [use-mobile.ts](file://frontend/hooks/use-mobile.ts#L1-L20)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L1-L192)
-- [use-haptics.ts](file://frontend/hooks/use-haptics.ts#L1-L52)
-- [use-markdown.tsx](file://frontend/hooks/use-markdown.tsx#L1-L400)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L1-L486)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts#L1-L204)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L1-L215)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L1-L303)
-
-## Architecture Overview
+## Architecture overview
 The hooks integrate with React Query mutations and service layers. Wizard hooks orchestrate state transitions and delegate network tasks to mutations. Notifications and haptic feedback are centralized via useToast and useHaptics respectively.
 
 ```mermaid
@@ -177,20 +102,9 @@ W-->>UI : "error state + flags"
 end
 ```
 
-**Diagram sources**
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L240-L272)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts#L158-L189)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L149-L188)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L223-L243)
-- [use-enrichment.ts](file://frontend/hooks/queries/use-enrichment.ts#L16-L29)
-- [use-improvement.ts](file://frontend/hooks/queries/use-improvement.ts#L8-L31)
-- [use-jd-editor.ts](file://frontend/hooks/queries/use-jd-editor.ts#L10-L25)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L142-L169)
-- [use-haptics.ts](file://frontend/hooks/use-haptics.ts#L30-L51)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### useIsMobile: Responsive Design Hook
+### useIsMobile: responsive design hook
 Purpose:
 - Detect mobile viewport and update on resize.
 - Encapsulate media query listener lifecycle inside useEffect.
@@ -208,13 +122,7 @@ SetState --> Cleanup["On unmount, remove listener"]
 Cleanup --> End(["Unmount"])
 ```
 
-**Diagram sources**
-- [use-mobile.ts](file://frontend/hooks/use-mobile.ts#L8-L16)
-
-**Section sources**
-- [use-mobile.ts](file://frontend/hooks/use-mobile.ts#L1-L20)
-
-### useToast: Notification Manager
+### useToast: notification manager
 Purpose:
 - Provide a toast API with immutable state, reducer-driven updates, and listener subscriptions.
 
@@ -239,15 +147,7 @@ List-->>Comp : "setState(state')"
 Note over Hook : "Auto-remove after timeout"
 ```
 
-**Diagram sources**
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L133-L138)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L74-L127)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L171-L189)
-
-**Section sources**
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L1-L192)
-
-### useHaptics: Haptic Feedback Manager
+### useHaptics: haptic feedback manager
 Purpose:
 - Provide consistent tactile feedback for user interactions with different intensity levels and user preference management.
 
@@ -270,15 +170,7 @@ NoOp --> End(["Complete"])
 Persist --> End
 ```
 
-**Diagram sources**
-- [use-haptics.ts](file://frontend/hooks/use-haptics.ts#L30-L51)
-- [haptics.ts](file://frontend/lib/haptics.ts#L49-L67)
-
-**Section sources**
-- [use-haptics.ts](file://frontend/hooks/use-haptics.ts#L1-L52)
-- [haptics.ts](file://frontend/lib/haptics.ts#L1-L81)
-
-### use-markdown: Markdown Rendering Hook
+### use-markdown: Markdown rendering hook
 Purpose:
 - Parse Markdown to HTML, transform fenced code blocks and Mermaid diagrams into React components, and add GFM-style callouts and heading anchors.
 
@@ -299,21 +191,13 @@ ReplaceCode --> Output["renderedParts"]
 ReplaceMermaid --> Output
 ```
 
-**Diagram sources**
-- [use-markdown.tsx](file://frontend/hooks/use-markdown.tsx#L206-L214)
-- [use-markdown.tsx](file://frontend/hooks/use-markdown.tsx#L215-L371)
-- [use-markdown.tsx](file://frontend/hooks/use-markdown.tsx#L373-L396)
-
-**Section sources**
-- [use-markdown.tsx](file://frontend/hooks/use-markdown.tsx#L1-L400)
-
-### useEnrichmentWizard: Multi-step Enrichment Workflow
+### useEnrichmentWizard: multi-step enrichment workflow
 Purpose:
 - Manage a complex, multi-step enrichment flow: analyze -> answer questions -> generate enhancements -> preview -> refine rejected -> apply -> complete.
 
 Implementation highlights:
 - Uses useReducer to maintain a deterministic state machine.
-- Composes with React Query mutations: analyze, enhance, refine, apply.
+- Composes with React Query mutations: analyze, improve, refine, apply.
 - Exposes derived flags (canSubmitAnswers, canApplyEnhancements, counts) and actions (setAnswer, setPatchStatus, approveAll, refineRejected, applyEnhancements, reset).
 - Handles error extraction and user-friendly messages.
 
@@ -335,16 +219,7 @@ applying --> error : "APPLY_ERROR"
 error --> idle : "reset"
 ```
 
-**Diagram sources**
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L33-L209)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L237-L485)
-- [enrichment.ts](file://frontend/types/enrichment.ts#L146-L187)
-
-**Section sources**
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L1-L486)
-- [enrichment.ts](file://frontend/types/enrichment.ts#L1-L282)
-
-### useImprovementWizard: Resume Improvement Workflow
+### useImprovementWizard: resume improvement workflow
 Purpose:
 - Manage improvement flow: start -> improve -> preview -> apply -> complete (or error).
 
@@ -352,11 +227,7 @@ Implementation highlights:
 - Simpler reducer with fewer steps compared to enrichment wizard.
 - Composes with useImproveResume mutation and exposes isImproving/isApplying/hasPreview flags.
 
-**Section sources**
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts#L1-L204)
-- [improvement.ts](file://frontend/types/improvement.ts#L1-L124)
-
-### useJDEditWizard: JD-based Resume Editing Workflow
+### useJDEditWizard: JD-based resume editing workflow
 Purpose:
 - Manage editing flow: set fields -> start editing -> preview -> mark applying -> complete (or error).
 
@@ -364,11 +235,7 @@ Implementation highlights:
 - Uses a reducer to track field values and step transitions.
 - Exposes prefill and manual applying markers to coordinate with parent component's persistence.
 
-**Section sources**
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L1-L215)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts#L1-L61)
-
-### useRegenerateWizard: Item Regeneration Workflow
+### useRegenerateWizard: item regeneration workflow
 Purpose:
 - Manage regeneration flow: open -> select items -> set instruction -> generate -> preview -> apply -> complete.
 
@@ -376,11 +243,7 @@ Implementation highlights:
 - Tracks selected items, instruction length constraints, and error recovery with step-aware rollback.
 - Uses two mutations: regenerate and apply regenerated items.
 
-**Section sources**
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L1-L303)
-- [enrichment.ts](file://frontend/types/enrichment.ts#L189-L221)
-
-## Dependency Analysis
+## Dependency analysis
 - Wizard hooks depend on React Query mutations for network operations and on useToast/useHaptics for user feedback.
 - React Query hooks encapsulate service calls and define onSuccess/onError handlers that trigger toasts and invalidations.
 - useHaptics depends on the haptics library for cross-platform haptic feedback with semantic intensity levels.
@@ -401,33 +264,7 @@ URW["useRegenerateWizard.ts"] -.uses.-> UT
 UH["useHaptics.ts"] -.uses.-> HL["haptics.ts"]
 ```
 
-**Diagram sources**
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L240-L243)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts#L156)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L129)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L187-L188)
-- [use-enrichment.ts](file://frontend/hooks/queries/use-enrichment.ts#L1-L140)
-- [use-improvement.ts](file://frontend/hooks/queries/use-improvement.ts#L1-L60)
-- [use-jd-editor.ts](file://frontend/hooks/queries/use-jd-editor.ts#L1-L26)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L1-L192)
-- [use-haptics.ts](file://frontend/hooks/use-haptics.ts#L1-L52)
-- [haptics.ts](file://frontend/lib/haptics.ts#L1-L81)
-- [enrichment.ts](file://frontend/types/enrichment.ts#L1-L282)
-- [improvement.ts](file://frontend/types/improvement.ts#L1-L124)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts#L1-L61)
-
-**Section sources**
-- [use-enrichment.ts](file://frontend/hooks/queries/use-enrichment.ts#L1-L140)
-- [use-improvement.ts](file://frontend/hooks/queries/use-improvement.ts#L1-L60)
-- [use-jd-editor.ts](file://frontend/hooks/queries/use-jd-editor.ts#L1-L26)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L1-L192)
-- [use-haptics.ts](file://frontend/hooks/use-haptics.ts#L1-L52)
-- [haptics.ts](file://frontend/lib/haptics.ts#L1-L81)
-- [enrichment.ts](file://frontend/types/enrichment.ts#L1-L282)
-- [improvement.ts](file://frontend/types/improvement.ts#L1-L124)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts#L1-L61)
-
-## Performance Considerations
+## Performance considerations
 - Memoization: Wizard hooks memoize action creators with useCallback to prevent unnecessary prop updates and re-renders.
 - Stable references: Mutations returned by React Query hooks are stable; pass them as-is to child components.
 - State granularity: useReducer keeps state normalized and avoids spreading large objects into props.
@@ -436,7 +273,7 @@ UH["useHaptics.ts"] -.uses.-> HL["haptics.ts"]
 - Markdown rendering: Memoized MarkdownIt instance and selective replacement reduce re-computation.
 - Event listeners: useIsMobile attaches and detaches media query listeners in useEffect to avoid leaks.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and remedies:
 - Toast not appearing:
   - Ensure the hook is used client-side and that the provider is mounted.
@@ -454,16 +291,8 @@ Common issues and remedies:
 - Responsive detection:
   - Confirm the media query listener is attached and cleanup occurs on unmount.
 
-**Section sources**
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L171-L189)
-- [use-haptics.ts](file://frontend/hooks/use-haptics.ts#L30-L51)
-- [haptics.ts](file://frontend/lib/haptics.ts#L49-L67)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L135-L145)
-- [use-enrichment.ts](file://frontend/hooks/queries/use-enrichment.ts#L16-L29)
-- [use-mobile.ts](file://frontend/hooks/use-mobile.ts#L8-L16)
-
 ## Conclusion
-The custom hooks demonstrate robust patterns for building reusable, composable logic:
+The custom hooks demonstrate reliable patterns for building reusable, composable logic:
 - useIsMobile encapsulates responsive behavior cleanly.
 - useToast centralizes notifications with a reducer and listener model.
 - useHaptics provides consistent tactile feedback with semantic intensity levels and user preference management.
@@ -473,13 +302,13 @@ These patterns promote separation of concerns, testability, and maintainability 
 
 ## Appendices
 
-### Hook Composition Patterns
+### Hook composition patterns
 - Composition over inheritance: Wizard hooks compose with React Query and useToast/useHaptics rather than extending base classes.
 - Stable callbacks: Use useCallback to memoize event handlers and prevent re-renders.
 - Derived flags: Compute UI flags from state to simplify component logic.
 - Haptic feedback integration: Use useHaptics alongside other feedback mechanisms for consistent user experience.
 
-### Haptic Intensity Levels
+### Haptic intensity levels
 The haptics system provides seven semantic intensity levels:
 - selection: Lightest feedback for selections (8ms, 0.3 intensity)
 - light: Standard button/tap feedback (15ms, 0.4 intensity)
@@ -489,14 +318,14 @@ The haptics system provides seven semantic intensity levels:
 - error: Three-pulse for errors/warnings
 - tick: Very short pulse for slider steps (mapped to rigid preset)
 
-### Testing Strategies
+### Testing strategies
 - Unit tests for reducers: Validate state transitions for each action type.
 - Mock React Query: Spy on mutateAsync and assert calls with correct parameters.
 - Mock toast: Spy on useToast to verify toast invocations on success/error.
 - Mock haptics: Spy on useHaptics to verify haptic feedback triggers and intensity levels.
 - Component tests: Render components with mocked hooks and assert UI flags and behavior.
 
-### Debugging Techniques
+### Debugging techniques
 - Enable React DevTools Profiler to identify expensive renders.
 - Log state transitions in reducers to trace unexpected state changes.
 - Use browser devtools to inspect media query listener registrations and removals.

@@ -1,39 +1,9 @@
-# Data Models and Database Schema
-
-<cite>
-**Referenced Files in This Document**
-- [app/models/user.py](file://notice-reminders/app/models/user.py)
-- [app/models/course.py](file://notice-reminders/app/models/course.py)
-- [app/models/announcement.py](file://notice-reminders/app/models/announcement.py)
-- [app/models/subscription.py](file://notice-reminders/app/models/subscription.py)
-- [app/models/notification.py](file://notice-reminders/app/models/notification.py)
-- [app/models/notification_channel.py](file://notice-reminders/app/models/notification_channel.py)
-- [app/domain/models.py](file://notice-reminders/app/domain/models.py)
-- [app/core/database.py](file://notice-reminders/app/core/database.py)
-- [app/api/main.py](file://notice-reminders/app/api/main.py)
-- [app/services/user_service.py](file://notice-reminders/app/services/user_service.py)
-- [app/services/subscription_service.py](file://notice-reminders/app/services/subscription_service.py)
-- [app/services/notification_service.py](file://notice-reminders/app/services/notification_service.py)
-- [pyproject.toml](file://notice-reminders/pyproject.toml)
-- [main.py](file://notice-reminders/main.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Data models and database schema
 
 ## Introduction
-This document describes the data models and database schema used by the notice-reminders application. It focuses on the persistent entities (User, Course, Announcement, Subscription, Notification, and NotificationChannel), their relationships, constraints, indexes, and validation rules. It also explains the Tortoise ORM configuration, how migrations and schema generation work, and typical data access patterns via services. Business rules such as uniqueness constraints, referential integrity, and cascading behavior are documented alongside entity relationship diagrams and sample data structures.
+This page describes the data models and database schema used by the notice-reminders application. It focuses on the persistent entities (User, Course, Announcement, Subscription, Notification, and NotificationChannel), their relationships, constraints, indexes, and validation rules. It also explains the Tortoise ORM configuration, how migrations and schema generation work, and typical data access patterns via services. Business rules such as uniqueness constraints, referential integrity, and cascading behavior are documented alongside entity relationship diagrams and sample data structures.
 
-## Project Structure
+## Project structure
 The data models are defined under the models package and integrated into the FastAPI application via Tortoise ORM registration. The application supports both API and CLI modes, with the database initialized during application startup.
 
 ```mermaid
@@ -53,16 +23,7 @@ Services --> Models
 Models --> DB
 ```
 
-**Diagram sources**
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L17-L42)
-- [app/core/database.py](file://notice-reminders/app/core/database.py#L39-L53)
-
-**Section sources**
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L17-L42)
-- [app/core/database.py](file://notice-reminders/app/core/database.py#L7-L25)
-- [main.py](file://notice-reminders/main.py#L8-L66)
-
-## Core Components
+## Core components
 This section documents each persistent model, including fields, constraints, indexes, and relationships.
 
 - User
@@ -107,15 +68,7 @@ Validation rules and constraints observed in the models:
 - Boolean defaults set via default=value
 - Auto timestamps via auto_now_add/auto_now
 
-**Section sources**
-- [app/models/user.py](file://notice-reminders/app/models/user.py#L8-L19)
-- [app/models/course.py](file://notice-reminders/app/models/course.py#L8-L21)
-- [app/models/announcement.py](file://notice-reminders/app/models/announcement.py#L12-L24)
-- [app/models/subscription.py](file://notice-reminders/app/models/subscription.py#L13-L27)
-- [app/models/notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L12-L25)
-- [app/models/notification.py](file://notice-reminders/app/models/notification.py#L15-L36)
-
-## Architecture Overview
+## Architecture overview
 The application uses Tortoise ORM to define models and connect to a database. The FastAPI application registers Tortoise with a configuration that includes all model modules. SQLite is supported, and the database file path is created if it does not exist. Migrations are handled by Aerich, and schema generation is enabled in debug mode.
 
 ```mermaid
@@ -126,19 +79,9 @@ C --> D["Database<br/>SQLite / Postgres"]
 E["Aerich Migrations<br/>pyproject.toml"] -.-> D
 ```
 
-**Diagram sources**
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L37-L41)
-- [app/core/database.py](file://notice-reminders/app/core/database.py#L39-L53)
-- [pyproject.toml](file://notice-reminders/pyproject.toml#L10-L11)
+## Detailed component analysis
 
-**Section sources**
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L37-L41)
-- [app/core/database.py](file://notice-reminders/app/core/database.py#L39-L53)
-- [pyproject.toml](file://notice-reminders/pyproject.toml#L10-L11)
-
-## Detailed Component Analysis
-
-### Entity Relationship Diagram
+### Entity relationship diagram
 The following ER diagram shows the relationships among the six persistent models.
 
 ```mermaid
@@ -204,15 +147,7 @@ ANNOUNCEMENT ||--o{ NOTIFICATION : "triggers"
 NOTIFICATION_CHANNEL ||--o{ NOTIFICATION : "may send via"
 ```
 
-**Diagram sources**
-- [app/models/user.py](file://notice-reminders/app/models/user.py#L8-L19)
-- [app/models/course.py](file://notice-reminders/app/models/course.py#L8-L21)
-- [app/models/announcement.py](file://notice-reminders/app/models/announcement.py#L12-L24)
-- [app/models/subscription.py](file://notice-reminders/app/models/subscription.py#L13-L27)
-- [app/models/notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L12-L25)
-- [app/models/notification.py](file://notice-reminders/app/models/notification.py#L15-L36)
-
-### Domain Models vs ORM Models
+### Domain models vs ORM models
 The repository defines both domain dataclasses and ORM models. The domain models are lightweight data containers for parsing and transporting data outside the persistence layer.
 
 - Domain Course and Announcement
@@ -220,40 +155,28 @@ The repository defines both domain dataclasses and ORM models. The domain models
   - Fields: title, url, code, instructor, institute, nc_code; title, date, content respectively
   - Notes: These are not mapped to the database and are separate from the ORM Course model
 
-**Section sources**
-- [app/domain/models.py](file://notice-reminders/app/domain/models.py#L7-L33)
-
-### User Model
+### User model
 - Primary key: id
 - Unique indexes: email, telegram_id
 - Additional index: email
 - Validation: email and telegram_id constrained to be unique; CharField length limits apply
 - Timestamps: created_at, updated_at
 
-**Section sources**
-- [app/models/user.py](file://notice-reminders/app/models/user.py#L8-L19)
-
-### Course Model
+### Course model
 - Primary key: id
 - Unique index: code
 - Additional index: code
 - Validation: code constrained to be unique; CharField length limits apply
 - Timestamps: created_at, updated_at
 
-**Section sources**
-- [app/models/course.py](file://notice-reminders/app/models/course.py#L8-L21)
-
-### Announcement Model
+### Announcement model
 - Primary key: id
 - Foreign key: course (to Course)
 - Relationships: Announcement belongs to one Course; Course has many Announcements via related_name
 - Validation: CharField length limits; fetched_at auto timestamp
 - Timestamps: fetched_at
 
-**Section sources**
-- [app/models/announcement.py](file://notice-reminders/app/models/announcement.py#L12-L24)
-
-### Subscription Model
+### Subscription model
 - Primary key: id
 - Foreign keys: user (to User), course (to Course)
 - Relationships: User and Course each have many Subscriptions via related_name
@@ -261,10 +184,7 @@ The repository defines both domain dataclasses and ORM models. The domain models
 - Validation: is_active defaults to True; timestamps via auto_now_add
 - Timestamps: created_at
 
-**Section sources**
-- [app/models/subscription.py](file://notice-reminders/app/models/subscription.py#L13-L27)
-
-### NotificationChannel Model
+### NotificationChannel model
 - Primary key: id
 - Foreign key: user (to User)
 - Relationships: User has many NotificationChannels via related_name
@@ -272,10 +192,7 @@ The repository defines both domain dataclasses and ORM models. The domain models
 - Validation: is_active defaults to True; CharField length limits
 - Timestamps: created_at
 
-**Section sources**
-- [app/models/notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L12-L25)
-
-### Notification Model
+### Notification model
 - Primary key: id
 - Foreign keys: user (to User), subscription (to Subscription), announcement (to Announcement)
 - Optional foreign key: channel (to NotificationChannel)
@@ -283,10 +200,7 @@ The repository defines both domain dataclasses and ORM models. The domain models
 - Validation: is_read defaults to False; sent_at auto timestamp
 - Timestamps: sent_at
 
-**Section sources**
-- [app/models/notification.py](file://notice-reminders/app/models/notification.py#L15-L36)
-
-### Data Access Patterns and Business Rules
+### Data access patterns and business rules
 - User management
   - Listing, retrieving by id or email, updating attributes, deleting
   - Adding notification channels with deduplication on composite unique key
@@ -307,15 +221,7 @@ DB-->>Svc : "Subscription row"
 Note over Svc,DB : "On IntegrityError,<br/>return existing (user, course)"
 ```
 
-**Diagram sources**
-- [app/services/subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L9-L13)
-
-**Section sources**
-- [app/services/user_service.py](file://notice-reminders/app/services/user_service.py#L11-L54)
-- [app/services/subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L8-L22)
-- [app/services/notification_service.py](file://notice-reminders/app/services/notification_service.py#L7-L30)
-
-### Sample Data Structures
+### Sample data structures
 Representative rows for each table based on model definitions:
 
 - User
@@ -331,15 +237,7 @@ Representative rows for each table based on model definitions:
 - Notification
   - id, user_id, subscription_id, announcement_id, channel_id?, sent_at, is_read
 
-**Section sources**
-- [app/models/user.py](file://notice-reminders/app/models/user.py#L8-L19)
-- [app/models/course.py](file://notice-reminders/app/models/course.py#L8-L21)
-- [app/models/announcement.py](file://notice-reminders/app/models/announcement.py#L12-L24)
-- [app/models/subscription.py](file://notice-reminders/app/models/subscription.py#L13-L27)
-- [app/models/notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L12-L25)
-- [app/models/notification.py](file://notice-reminders/app/models/notification.py#L15-L36)
-
-## Dependency Analysis
+## Dependency analysis
 External dependencies relevant to data modeling and migrations:
 - tortoise-orm: ORM framework
 - aerich: migration tool
@@ -354,19 +252,13 @@ A --> D["email-validator"]
 A --> E["pydantic-settings"]
 ```
 
-**Diagram sources**
-- [pyproject.toml](file://notice-reminders/pyproject.toml#L7-L19)
-
-**Section sources**
-- [pyproject.toml](file://notice-reminders/pyproject.toml#L7-L19)
-
-## Performance Considerations
+## Performance considerations
 - Indexes: email and telegram_id on User; code on Course; consider adding indexes on frequently filtered fields (e.g., course_id on Announcement, user_id on Subscription/NotificationChannel/Notification).
 - Unique constraints: Composite unique_together on Subscription and NotificationChannel prevent duplicates and improve lookup performance.
 - Auto timestamps: Reduce manual timestamp handling and ensure consistent ordering in queries.
 - Query patterns: Prefer filtering by indexed fields and avoid N+1 queries by using select_related and prefetch_related where applicable.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Integrity errors on creation
   - Symptom: Duplicate entries when creating Subscription or NotificationChannel
@@ -378,20 +270,11 @@ Common issues and resolutions:
   - Symptom: Database file not found
   - Resolution: Ensure the configured SQLite path exists; the application creates parent directories if needed
 
-**Section sources**
-- [app/services/subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L9-L13)
-- [app/services/user_service.py](file://notice-reminders/app/services/user_service.py#L44-L54)
-- [app/core/database.py](file://notice-reminders/app/core/database.py#L39-L53)
-
 ## Conclusion
-The notice-reminders application employs a clear set of ORM models with explicit constraints and indexes to enforce data integrity and optimize common queries. The Tortoise ORM configuration integrates seamlessly with FastAPI, and migrations are managed via Aerich. Services encapsulate business logic for creating, querying, and managing entities while handling uniqueness and referential integrity constraints.
+The notice-reminders application employs a clear set of ORM models with explicit constraints and indexes to enforce data integrity and optimize common queries. The Tortoise ORM configuration integrates smoothly with FastAPI, and migrations are managed via Aerich. Services encapsulate business logic for creating, querying, and managing entities while handling uniqueness and referential integrity constraints.
 
 ## Appendices
 
-### Database Initialization and Registration
+### Database initialization and registration
 - The FastAPI application loads settings and registers Tortoise with a configuration that includes all model modules.
 - Schema generation is controlled by the debug setting; SQLite paths are created automatically if they do not exist.
-
-**Section sources**
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L37-L41)
-- [app/core/database.py](file://notice-reminders/app/core/database.py#L39-L53)

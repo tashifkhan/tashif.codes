@@ -1,37 +1,12 @@
-# SMTP Server Configuration
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://README.md)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [package.json](file://electron/package.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Provider-Specific SMTP Settings](#provider-specific-smtp-settings)
-7. [Security Configuration](#security-configuration)
-8. [Connection and Network Requirements](#connection-and-network-requirements)
-9. [Timeouts and Retry Mechanisms](#timeouts-and-retry-mechanisms)
-10. [Troubleshooting Guide](#troubleshooting-guide)
-11. [Configuration Examples](#configuration-examples)
-12. [Conclusion](#conclusion)
+# SMTP server configuration
 
 ## Introduction
 
-This document provides comprehensive SMTP server configuration and setup documentation for the bulk messaging application. It covers host configuration requirements, port selection guidelines, security protocol settings, TLS/SSL configuration options, certificate validation settings, provider-specific server settings for major email providers, firewall and network configuration requirements, connection timeout settings, retry mechanisms, and troubleshooting guides for common connection issues.
+This page provides detailed SMTP server configuration and setup documentation for the bulk messaging application. It covers host configuration requirements, port selection guidelines, security protocol settings, TLS/SSL configuration options, certificate validation settings, provider-specific server settings for major email providers, firewall and network configuration requirements, connection timeout settings, retry mechanisms, and troubleshooting guides for common connection issues.
 
-The application supports both Gmail API and SMTP server configurations, with a focus on secure email delivery through configurable transport protocols and robust error handling mechanisms.
+The application supports both Gmail API and SMTP server configurations, with a focus on secure email delivery through configurable transport protocols and reliable error handling mechanisms.
 
-## Project Structure
+## Project structure
 
 The SMTP functionality is implemented across several key components within the Electron application architecture:
 
@@ -59,37 +34,20 @@ MainProcess --> SMTPHandler
 SMTPHandler --> Handler
 ```
 
-**Diagram sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-
-**Section sources**
-- [README.md](file://README.md#L100-L133)
-- [package.json](file://electron/package.json#L20-L31)
-
-## Core Components
+## Core components
 
 The SMTP configuration system consists of several interconnected components that work together to provide secure email delivery capabilities:
 
-### SMTP Configuration Form
+### SMTP configuration form
 The user interface component allows users to configure SMTP server settings including host, port, username, password, and security options.
 
-### SMTP Handler
+### SMTP handler
 The backend handler manages the actual SMTP connection, authentication, and email sending process using Nodemailer.
 
-### IPC Communication Layer
+### IPC communication layer
 The Electron IPC system facilitates secure communication between the renderer process (UI) and main process (SMTP operations).
 
-**Section sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L67-L163)
-- [bulk-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [main.js](file://electron/src/electron/main.js#L107-L108)
-- [preload.js](file://electron/src/electron/preload.js#L10-L11)
-
-## Architecture Overview
+## Architecture overview
 
 The SMTP configuration follows a layered architecture with clear separation of concerns:
 
@@ -122,16 +80,11 @@ Preload-->>Mailer : Results
 Mailer-->>User : Progress Updates
 ```
 
-**Diagram sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L221-L261)
-- [main.js](file://electron/src/electron/main.js#L107-L108)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
+## Detailed component analysis
 
-## Detailed Component Analysis
+### SMTP configuration form component
 
-### SMTP Configuration Form Component
-
-The SMTP form component provides a comprehensive interface for configuring email server settings:
+The SMTP form component provides a detailed interface for configuring email server settings:
 
 ```mermaid
 classDiagram
@@ -162,17 +115,9 @@ SMTPForm --> SMTPConfig : "manages"
 SMTPForm --> EmailValidation : "uses"
 ```
 
-**Diagram sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L3-L18)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L16-L22)
+### SMTP handler implementation
 
-**Section sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L82-L162)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L149-L179)
-
-### SMTP Handler Implementation
-
-The SMTP handler manages the complete email sending process with robust error handling and progress tracking:
+The SMTP handler manages the complete email sending process with reliable error handling and progress tracking:
 
 ```mermaid
 flowchart TD
@@ -198,13 +143,7 @@ ReturnConnectionError --> End
 ReturnSuccess --> End
 ```
 
-**Diagram sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-### IPC Communication Layer
+### IPC communication layer
 
 The Electron IPC system provides secure communication between the renderer and main processes:
 
@@ -223,17 +162,9 @@ Main-->>Preload : Return Results
 Preload-->>Renderer : Return Results
 ```
 
-**Diagram sources**
-- [preload.js](file://electron/src/electron/preload.js#L10-L11)
-- [main.js](file://electron/src/electron/main.js#L107-L108)
+## Provider-Specific SMTP settings
 
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-
-## Provider-Specific SMTP Settings
-
-### Gmail SMTP Configuration
+### Gmail SMTP configuration
 
 Gmail requires specific configuration settings for secure SMTP access:
 
@@ -244,7 +175,7 @@ Gmail requires specific configuration settings for secure SMTP access:
 | Security | TLS/SSL | Use TLS for port 587, SSL for port 465 |
 | Authentication | App Password | Use App Password instead of regular password |
 
-### Outlook/Hotmail SMTP Configuration
+### Outlook/Hotmail SMTP configuration
 
 Microsoft Outlook requires specific SMTP settings:
 
@@ -255,7 +186,7 @@ Microsoft Outlook requires specific SMTP settings:
 | Security | TLS | Outlook requires TLS encryption |
 | Authentication | Standard Credentials | Use username and password |
 
-### Yahoo SMTP Configuration
+### Yahoo SMTP configuration
 
 Yahoo Mail requires specific SMTP configuration:
 
@@ -266,7 +197,7 @@ Yahoo Mail requires specific SMTP configuration:
 | Security | TLS/SSL | Use appropriate security protocol |
 | Authentication | Standard Credentials | Use Yahoo account credentials |
 
-### Custom SMTP Server Configuration
+### Custom SMTP server configuration
 
 For custom SMTP servers, the configuration follows standard patterns:
 
@@ -277,12 +208,9 @@ For custom SMTP servers, the configuration follows standard patterns:
 | Security | TLS | Recommended for security |
 | Authentication | Username/Password | Standard SMTP authentication |
 
-**Section sources**
-- [README.md](file://README.md#L122-L133)
+## Security configuration
 
-## Security Configuration
-
-### TLS/SSL Configuration Options
+### TLS/SSL configuration options
 
 The SMTP handler provides flexible security configuration options:
 
@@ -309,10 +237,7 @@ SMTPTransportConfig --> TLSSettings : "includes"
 SMTPTransportConfig --> SecurityProtocols : "uses"
 ```
 
-**Diagram sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L34-L45)
-
-### Certificate Validation Settings
+### Certificate validation settings
 
 The application provides certificate validation flexibility:
 
@@ -320,7 +245,7 @@ The application provides certificate validation flexibility:
 - **Custom CA Certificates**: Can be configured for enterprise environments
 - **Hostname Verification**: Server name verification for secure connections
 
-### Credential Storage and Security
+### Credential storage and security
 
 The application implements secure credential storage:
 
@@ -328,13 +253,9 @@ The application implements secure credential storage:
 - **Selective Storage**: Host, port, and user are stored; passwords are not saved
 - **Memory Management**: Credentials are loaded only when needed
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L22-L31)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L42-L44)
+## Connection and network requirements
 
-## Connection and Network Requirements
-
-### Firewall Configuration
+### Firewall configuration
 
 SMTP connections require specific firewall configurations:
 
@@ -359,10 +280,7 @@ Allow --> Port25
 Block -.-> SMTPClient
 ```
 
-**Diagram sources**
-- [README.md](file://README.md#L428-L433)
-
-### Network Requirements
+### Network requirements
 
 The application requires:
 
@@ -371,7 +289,7 @@ The application requires:
 - **Time Synchronization**: Accurate system time for certificate validation
 - **Proxy Support**: Optional proxy configuration for restricted networks
 
-### Rate Limiting and Throttling
+### Rate limiting and throttling
 
 The system implements intelligent rate limiting:
 
@@ -380,15 +298,11 @@ The system implements intelligent rate limiting:
 - **Provider Limits**: Respects provider-specific sending limits
 - **Backoff Strategies**: Gradual increase in delays for failed attempts
 
-**Section sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L277-L285)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L221-L261)
+## Timeouts and retry mechanisms
 
-## Timeouts and Retry Mechanisms
+### Connection timeouts
 
-### Connection Timeouts
-
-The SMTP handler implements comprehensive timeout mechanisms:
+The SMTP handler implements detailed timeout mechanisms:
 
 ```mermaid
 flowchart TD
@@ -406,7 +320,7 @@ MaxRetries --> |No| RetryAttempts
 MaxRetries --> |Yes| FinalFailure[Final Failure]
 ```
 
-### Retry Strategies
+### Retry strategies
 
 The system employs progressive retry strategies:
 
@@ -415,90 +329,82 @@ The system employs progressive retry strategies:
 - **Maximum Attempts**: Configurable maximum retry attempts
 - **Error Classification**: Different handling for different error types
 
-### Progress Tracking
+### Progress tracking
 
-Real-time progress tracking provides comprehensive feedback:
+Real-time progress tracking provides detailed feedback:
 
 - **Individual Email Status**: Success/failure for each recipient
 - **Overall Progress**: Percentage completion indicator
 - **Error Details**: Specific error messages for failed attempts
 - **Timing Information**: Delivery timestamps and durations
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L55-L98)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L261)
+## Troubleshooting guide
 
-## Troubleshooting Guide
+### Common SMTP connection issues
 
-### Common SMTP Connection Issues
-
-#### Authentication Failures
+#### Authentication failures
 - **Symptoms**: "Authentication failed" or "Invalid credentials"
-- **Solutions**: 
+- **Solutions**:
   - Verify username/password combination
   - Check for App Password requirements (Gmail)
   - Ensure two-factor authentication settings are correct
 
-#### Port Blocking Issues
+#### Port blocking issues
 - **Symptoms**: Connection timeouts or refused connections
 - **Solutions**:
   - Verify firewall allows outbound connections on configured port
   - Check with network administrator for blocked ports
   - Try alternative ports (587 vs 465)
 
-#### Certificate Validation Errors
+#### Certificate validation errors
 - **Symptoms**: "Certificate verification failed" errors
 - **Solutions**:
   - Check system date/time synchronization
   - Verify certificate chain validity
   - Consider enterprise certificate authority configuration
 
-#### DNS Resolution Problems
+#### DNS resolution problems
 - **Symptoms**: "Host not found" or "DNS resolution failed"
 - **Solutions**:
   - Verify SMTP server hostname spelling
   - Test DNS resolution using command line tools
   - Check network connectivity and DNS server configuration
 
-### Network Connectivity Failures
+### Network connectivity failures
 
-#### Proxy Configuration Issues
+#### Proxy configuration issues
 - **Symptoms**: Connection timeouts behind corporate firewalls
 - **Solutions**:
   - Configure proxy settings in network preferences
   - Verify proxy authentication requirements
   - Test proxy connectivity independently
 
-#### ISP Blocking Issues
+#### ISP blocking issues
 - **Symptoms**: Consistent connection failures to specific providers
 - **Solutions**:
   - Contact ISP to unblock SMTP ports
   - Use alternative SMTP providers
   - Configure SMTP over different ports
 
-### Performance and Rate Limiting Issues
+### Performance and rate limiting issues
 
-#### Excessive Rate Limiting
+#### Excessive rate limiting
 - **Symptoms**: Slow sending speeds or frequent delays
 - **Solutions**:
   - Adjust delay settings in configuration
   - Reduce batch sizes for large mailing lists
   - Implement staggered sending schedules
 
-#### Memory and Resource Issues
+#### Memory and resource issues
 - **Symptoms**: Application slowdown or crashes during bulk sending
 - **Solutions**:
   - Monitor system resources during operation
   - Reduce concurrent connections
   - Optimize email content size
 
-**Section sources**
-- [README.md](file://README.md#L412-L447)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L88-L98)
+## Configuration examples
 
-## Configuration Examples
-
-### Gmail SMTP Configuration Example
+### Gmail SMTP configuration example
 
 ```javascript
 const gmailSMTPConfig = {
@@ -510,7 +416,7 @@ const gmailSMTPConfig = {
 };
 ```
 
-### Outlook SMTP Configuration Example
+### Outlook SMTP configuration example
 
 ```javascript
 const outlookSMTPConfig = {
@@ -522,7 +428,7 @@ const outlookSMTPConfig = {
 };
 ```
 
-### Custom SMTP Configuration Example
+### Custom SMTP configuration example
 
 ```javascript
 const customSMTPConfig = {
@@ -534,7 +440,7 @@ const customSMTPConfig = {
 };
 ```
 
-### Enterprise SMTP Configuration Example
+### Enterprise SMTP configuration example
 
 ```javascript
 const enterpriseSMTPConfig = {
@@ -550,19 +456,15 @@ const enterpriseSMTPConfig = {
 };
 ```
 
-**Section sources**
-- [README.md](file://README.md#L122-L133)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L34-L45)
-
 ## Conclusion
 
-The SMTP server configuration system provides a comprehensive solution for secure email delivery with robust error handling, flexible security options, and extensive provider support. The implementation follows modern security practices while maintaining ease of use for end users.
+The SMTP server configuration system provides a detailed solution for secure email delivery with reliable error handling, flexible security options, and extensive provider support. The implementation follows modern security practices while maintaining ease of use for end users.
 
 Key strengths of the configuration system include:
 
 - **Flexible Security Options**: Support for TLS, SSL, and custom certificate validation
 - **Provider-Specific Optimizations**: Pre-configured settings for major email providers
-- **Robust Error Handling**: Comprehensive error reporting and recovery mechanisms
+- **Reliable Error Handling**: Detailed error reporting and recovery mechanisms
 - **Performance Optimization**: Intelligent rate limiting and progress tracking
 - **Security Best Practices**: Encrypted credential storage and secure communication
 

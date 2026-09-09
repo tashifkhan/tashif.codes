@@ -1,34 +1,7 @@
-# Local Development Server
-
-<cite>
-**Referenced Files in This Document**
-- [localhost/app.py](file://localhost/app.py)
-- [localhost/cli_functions.py](file://localhost/cli_functions.py)
-- [python-backend/app.py](file://python-backend/app.py)
-- [python-backend/requirements.txt](file://python-backend/requirements.txt)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js)
-- [electron/package.json](file://electron/package.json)
-- [electron/src/electron/utils.js](file://electron/src/electron/utils.js)
-- [python-backend/extract_contacts.py](file://python-backend/extract_contacts.py)
-- [python-backend/parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py)
-- [python-backend/validate_number.py](file://python-backend/validate_number.py)
-- [README.md](file://README.md)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Local development server
 
 ## Introduction
-This document explains the local development server implementation and command-line interface functions for the project. It covers:
+This page explains the local development server implementation and command-line interface functions for the project. It covers:
 - Flask development server configuration with debug mode, host binding, and port settings
 - CLI functions for local testing and development workflows
 - Development environment setup, including dependency installation and server startup procedures
@@ -36,7 +9,7 @@ This document explains the local development server implementation and command-l
 - The relationship between local development server and production deployment
 - Common development issues, environment variable configuration, and performance considerations for local testing
 
-## Project Structure
+## Project structure
 The project includes two local development servers and a set of Python utilities:
 - A Flask-based local development server for user management and file upload workflows
 - A separate Flask-based Python backend service for contact processing and validation
@@ -70,24 +43,7 @@ PApp --> PParse
 PApp --> PValidate
 ```
 
-**Diagram sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L34-L50)
-- [electron/src/electron/utils.js](file://electron/src/electron/utils.js#L3-L5)
-- [electron/package.json](file://electron/package.json#L7-L19)
-- [localhost/app.py](file://localhost/app.py#L305-L306)
-- [python-backend/app.py](file://python-backend/app.py#L372-L377)
-- [python-backend/requirements.txt](file://python-backend/requirements.txt#L1-L7)
-- [python-backend/extract_contacts.py](file://python-backend/extract_contacts.py#L160-L177)
-- [python-backend/parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L57-L61)
-- [python-backend/validate_number.py](file://python-backend/validate_number.py#L22-L27)
-
-**Section sources**
-- [README.md](file://README.md#L198-L236)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L34-L50)
-- [localhost/app.py](file://localhost/app.py#L305-L306)
-- [python-backend/app.py](file://python-backend/app.py#L372-L377)
-
-## Core Components
+## Core components
 - Local Flask development server (localhost/app.py): Provides HTML forms and JSON APIs for user registration/login, dynamic table creation, and file upload handling. It runs with debug mode enabled.
 - Python backend Flask service (python-backend/app.py): Offers health checks, file upload processing, contact extraction from CSV/Excel/TXT, manual number parsing, and phone number validation. It binds to host 0.0.0.0 and port 5034.
 - Electron main process (electron/src/electron/main.js): Launches the React/Vite dev server at http://localhost:5173 in development mode and loads the Electron window accordingly.
@@ -98,13 +54,7 @@ Key configuration highlights:
 - Python backend: debug=True, host="0.0.0.0", port=5034
 - Electron dev server: Vite dev server at http://localhost:5173
 
-**Section sources**
-- [localhost/app.py](file://localhost/app.py#L305-L306)
-- [python-backend/app.py](file://python-backend/app.py#L372-L377)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L34-L50)
-- [electron/package.json](file://electron/package.json#L7-L19)
-
-## Architecture Overview
+## Architecture overview
 The local development architecture integrates Electron, a React/Vite dev server, and two Flask services:
 - Electron main process detects development mode and loads the React dev server URL
 - The local Flask server handles user and file operations for the legacy UI
@@ -128,14 +78,9 @@ Backend-->>Electron : JSON responses
 Local-->>Electron : HTML/JSON responses
 ```
 
-**Diagram sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L34-L50)
-- [localhost/app.py](file://localhost/app.py#L46-L124)
-- [python-backend/app.py](file://python-backend/app.py#L225-L280)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Local Flask Development Server (localhost/app.py)
+### Local flask development server (localhost/app.py)
 - Purpose: Legacy UI and file upload workflows with user management and dynamic table creation
 - Flask configuration:
   - Debug mode enabled
@@ -159,13 +104,7 @@ RenderButtons --> End(["Response"])
 RenderError --> End
 ```
 
-**Diagram sources**
-- [localhost/app.py](file://localhost/app.py#L46-L76)
-
-**Section sources**
-- [localhost/app.py](file://localhost/app.py#L10-L306)
-
-### Python Backend Flask Service (python-backend/app.py)
+### Python backend flask service (python-backend/app.py)
 - Purpose: REST API for contact processing and validation
 - Flask configuration:
   - Debug mode enabled
@@ -194,13 +133,7 @@ Backend->>FS : Remove uploaded file
 Backend-->>Client : JSON {success, contacts, count}
 ```
 
-**Diagram sources**
-- [python-backend/app.py](file://python-backend/app.py#L232-L280)
-
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L10-L377)
-
-### Electron Development Server Integration
+### Electron development server integration
 - Development mode detection via environment variable
 - Loads React/Vite dev server at http://localhost:5173
 - Enables DevTools in development
@@ -217,16 +150,7 @@ Electron->>Vite : loadURL("http : //localhost : 5173")
 Vite-->>Electron : Ready
 ```
 
-**Diagram sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L34-L50)
-- [electron/src/electron/utils.js](file://electron/src/electron/utils.js#L3-L5)
-
-**Section sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L34-L50)
-- [electron/src/electron/utils.js](file://electron/src/electron/utils.js#L3-L5)
-- [electron/package.json](file://electron/package.json#L7-L19)
-
-### Python Utilities (CLI Functions)
+### Python utilities (CLI functions)
 - Purpose: Standalone CLI utilities for contact processing and validation
 - Functions:
   - Contact extraction from CSV/Excel/TXT
@@ -251,17 +175,7 @@ Output --> Exit
 PrintError --> Exit
 ```
 
-**Diagram sources**
-- [python-backend/extract_contacts.py](file://python-backend/extract_contacts.py#L160-L177)
-- [python-backend/parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L57-L61)
-- [python-backend/validate_number.py](file://python-backend/validate_number.py#22-L27)
-
-**Section sources**
-- [python-backend/extract_contacts.py](file://python-backend/extract_contacts.py#L1-L177)
-- [python-backend/parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L1-L61)
-- [python-backend/validate_number.py](file://python-backend/validate_number.py#L1-L27)
-
-## Dependency Analysis
+## Dependency analysis
 - Local Flask server depends on:
   - Flask, SQLAlchemy, Flask-CORS, Werkzeug
 - Python backend depends on:
@@ -284,19 +198,7 @@ EMain --> Electron["Electron"]
 EMain --> React["React"]
 ```
 
-**Diagram sources**
-- [localhost/app.py](file://localhost/app.py#L1-L14)
-- [python-backend/app.py](file://python-backend/app.py#L1-L11)
-- [python-backend/requirements.txt](file://python-backend/requirements.txt#L1-L7)
-- [electron/package.json](file://electron/package.json#L20-L47)
-
-**Section sources**
-- [localhost/app.py](file://localhost/app.py#L1-L14)
-- [python-backend/app.py](file://python-backend/app.py#L1-L11)
-- [python-backend/requirements.txt](file://python-backend/requirements.txt#L1-L7)
-- [electron/package.json](file://electron/package.json#L20-L47)
-
-## Performance Considerations
+## Performance considerations
 - Local Flask server:
   - Uses SQLite in-memory-like persistence; suitable for development
   - File uploads saved to filesystem; ensure adequate disk space
@@ -311,7 +213,7 @@ EMain --> React["React"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common development issues and resolutions:
 - Local Flask server not starting:
   - Ensure Python dependencies are installed
@@ -329,20 +231,14 @@ Common development issues and resolutions:
   - Ensure numbers meet length and format requirements
   - Use the validation endpoint to diagnose issues
 
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L17-L21)
-- [python-backend/app.py](file://python-backend/app.py#L232-L280)
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L34-L50)
-- [python-backend/validate_number.py](file://python-backend/validate_number.py#L6-L19)
-
 ## Conclusion
-The local development environment combines an Electron-based UI with two Flask services: a legacy local server for user and file operations, and a Python backend for contact processing and validation. Development workflows leverage Vite for rapid UI iteration, while the Python backend provides robust APIs for data preparation. Proper environment configuration and dependency management are essential for smooth local development and testing.
+The local development environment combines an Electron-based UI with two Flask services: a legacy local server for user and file operations, and a Python backend for contact processing and validation. Development workflows use Vite for rapid UI iteration, while the Python backend provides reliable APIs for data preparation. Proper environment configuration and dependency management are essential for smooth local development and testing.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### Development Environment Setup
+### Development environment setup
 - Install Electron dependencies:
   - Navigate to electron directory and run npm install
 - Install Python backend dependencies:
@@ -350,11 +246,7 @@ The local development environment combines an Electron-based UI with two Flask s
 - Start development server:
   - From electron directory, run npm run dev to launch both React/Vite and Electron
 
-**Section sources**
-- [README.md](file://README.md#L69-L98)
-- [README.md](file://README.md#L240-L274)
-
-### Local API Testing Examples
+### Local API testing examples
 - Health check:
   - GET http://localhost:5034/health
 - Upload and process contacts:
@@ -364,10 +256,7 @@ The local development environment combines an Electron-based UI with two Flask s
 - Validate phone number:
   - POST http://localhost:5034/validate-number with JSON payload
 
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L225-L370)
-
-### Relationship Between Local Development and Production Deployment
+### Relationship between local development and production deployment
 - Local development:
   - Electron dev server loads Vite dev server at http://localhost:5173
   - Local Flask server runs with debug mode enabled
@@ -377,17 +266,8 @@ The local development environment combines an Electron-based UI with two Flask s
   - Python backend can be deployed behind a reverse proxy or containerized
   - Local Flask server is intended for development and should not be used in production
 
-**Section sources**
-- [electron/src/electron/main.js](file://electron/src/electron/main.js#L34-L50)
-- [python-backend/app.py](file://python-backend/app.py#L372-L377)
-- [localhost/app.py](file://localhost/app.py#L305-L306)
-
-### Environment Variable Configuration
+### Environment variable configuration
 - Electron development:
   - NODE_ENV=development enables dev server loading
 - Python backend:
   - No explicit environment variables required; configure host/port in app.run()
-
-**Section sources**
-- [electron/src/electron/utils.js](file://electron/src/electron/utils.js#L3-L5)
-- [python-backend/app.py](file://python-backend/app.py#L372-L377)

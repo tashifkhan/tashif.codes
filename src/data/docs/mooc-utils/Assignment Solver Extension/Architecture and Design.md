@@ -1,44 +1,14 @@
-# Architecture and Design
-
-<cite>
-**Referenced Files in This Document**
-- [assignment-solver/src/background/index.js](file://assignment-solver/src/background/index.js)
-- [assignment-solver/src/background/router.js](file://assignment-solver/src/background/router.js)
-- [assignment-solver/src/content/index.js](file://assignment-solver/src/content/index.js)
-- [assignment-solver/src/content/extractor.js](file://assignment-solver/src/content/extractor.js)
-- [assignment-solver/src/content/applicator.js](file://assignment-solver/src/content/applicator.js)
-- [assignment-solver/src/ui/index.js](file://assignment-solver/src/ui/index.js)
-- [assignment-solver/src/ui/controllers/solve.js](file://assignment-solver/src/ui/controllers/solve.js)
-- [assignment-solver/src/core/messages.js](file://assignment-solver/src/core/messages.js)
-- [assignment-solver/src/platform/browser.js](file://assignment-solver/src/platform/browser.js)
-- [assignment-solver/src/platform/runtime.js](file://assignment-solver/src/platform/runtime.js)
-- [assignment-solver/src/platform/tabs.js](file://assignment-solver/src/platform/tabs.js)
-- [assignment-solver/src/platform/panel.js](file://assignment-solver/src/platform/panel.js)
-- [assignment-solver/src/services/gemini/index.js](file://assignment-solver/src/services/gemini/index.js)
-- [assignment-solver/manifest.json](file://assignment-solver/manifest.json)
-- [assignment-solver/public/sidepanel.html](file://assignment-solver/public/sidepanel.html)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Architecture and design
 
 ## Introduction
-This document describes the architecture and design of the Assignment Solver browser extension. The system consists of three primary components:
+This page describes the architecture and design of the Assignment Solver browser extension. The system consists of three primary components:
 - Background service worker (service worker): orchestrates messaging, coordinates tasks, and manages platform adapters.
 - Content script: interacts with the page DOM to extract assignment content, images, and apply answers.
 - UI side panel: provides a user interface for initiating solves, configuring preferences, and displaying results.
 
-The extension follows a modular, dependency injection-driven design with factory functions and platform adapters to ensure cross-browser compatibility. It implements a robust message-passing system and a three-phase pipeline: extraction, analyze (AI parsing), and apply (DOM manipulation). The design emphasizes resilience against transient connection failures and supports both Chrome and Firefox through a unified browser API wrapper.
+The extension follows a modular, dependency injection-driven design with factory functions and platform adapters to ensure cross-browser compatibility. It implements a reliable message-passing system and a three-phase pipeline: extraction, analyze (AI parsing), and apply (DOM manipulation). The design emphasizes resilience against transient connection failures and supports both Chrome and Firefox through a unified browser API wrapper.
 
-## Project Structure
+## Project structure
 The extension is organized around a clear separation of concerns:
 - background/: background service worker entry point, message routing, and platform adapters
 - content/: content script entry point and DOM interaction utilities
@@ -85,25 +55,7 @@ CNTIDX --> CNTAP
 UIHTML --> UIIDX
 ```
 
-**Diagram sources**
-- [assignment-solver/manifest.json](file://assignment-solver/manifest.json#L1-L44)
-- [assignment-solver/src/background/index.js](file://assignment-solver/src/background/index.js#L1-L135)
-- [assignment-solver/src/background/router.js](file://assignment-solver/src/background/router.js#L1-L59)
-- [assignment-solver/src/content/index.js](file://assignment-solver/src/content/index.js#L1-L99)
-- [assignment-solver/src/content/extractor.js](file://assignment-solver/src/content/extractor.js#L1-L241)
-- [assignment-solver/src/content/applicator.js](file://assignment-solver/src/content/applicator.js#L1-L221)
-- [assignment-solver/src/ui/index.js](file://assignment-solver/src/ui/index.js#L1-L113)
-- [assignment-solver/src/ui/controllers/solve.js](file://assignment-solver/src/ui/controllers/solve.js#L1-L778)
-- [assignment-solver/src/core/messages.js](file://assignment-solver/src/core/messages.js#L1-L96)
-- [assignment-solver/public/sidepanel.html](file://assignment-solver/public/sidepanel.html#L1-L392)
-
-**Section sources**
-- [assignment-solver/manifest.json](file://assignment-solver/manifest.json#L1-L44)
-- [assignment-solver/src/background/index.js](file://assignment-solver/src/background/index.js#L1-L135)
-- [assignment-solver/src/content/index.js](file://assignment-solver/src/content/index.js#L1-L99)
-- [assignment-solver/src/ui/index.js](file://assignment-solver/src/ui/index.js#L1-L113)
-
-## Core Components
+## Core components
 - Background service worker: initializes platform adapters, creates services, registers message handlers, and opens the side panel.
 - Content script: listens for messages, extracts page HTML and images, scrolls for screenshots, applies answers, and submits assignments.
 - UI side panel: waits for background readiness, initializes controllers, and coordinates the solve flow.
@@ -112,13 +64,7 @@ Key cross-cutting concerns:
 - Message types and retry logic: centralized in core/messages.js to ensure consistent communication semantics across components.
 - Platform adapters: unify Chrome/Firefox differences for runtime, tabs, panel, and browser detection.
 
-**Section sources**
-- [assignment-solver/src/background/index.js](file://assignment-solver/src/background/index.js#L1-L135)
-- [assignment-solver/src/content/index.js](file://assignment-solver/src/content/index.js#L1-L99)
-- [assignment-solver/src/ui/index.js](file://assignment-solver/src/ui/index.js#L1-L113)
-- [assignment-solver/src/core/messages.js](file://assignment-solver/src/core/messages.js#L1-L96)
-
-## Architecture Overview
+## Architecture overview
 The system uses a unidirectional message flow with explicit phases:
 1. UI triggers a solve operation.
 2. Background coordinates extraction, AI processing, and application.
@@ -158,16 +104,9 @@ RT-->>BG : "Success"
 BG-->>UI : "Final results"
 ```
 
-**Diagram sources**
-- [assignment-solver/src/ui/controllers/solve.js](file://assignment-solver/src/ui/controllers/solve.js#L44-L240)
-- [assignment-solver/src/background/index.js](file://assignment-solver/src/background/index.js#L44-L117)
-- [assignment-solver/src/content/index.js](file://assignment-solver/src/content/index.js#L19-L96)
-- [assignment-solver/src/services/gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L299-L341)
-- [assignment-solver/src/core/messages.js](file://assignment-solver/src/core/messages.js#L5-L23)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Background Service Worker
+### Background service worker
 Responsibilities:
 - Initialize platform adapters and services.
 - Register message handlers for extraction, screenshots, Gemini requests, answer application, and submission.
@@ -177,7 +116,7 @@ Responsibilities:
 Design highlights:
 - Dependency injection via factory functions for adapters and services.
 - Centralized message router ensures consistent async handling and response semantics.
-- Robust logging and error handling for cross-browser environments.
+- Reliable logging and error handling for cross-browser environments.
 
 ```mermaid
 flowchart TD
@@ -190,15 +129,7 @@ IconClick --> OpenPanel["Open side panel"]
 OpenPanel --> Ready(["Ready"])
 ```
 
-**Diagram sources**
-- [assignment-solver/src/background/index.js](file://assignment-solver/src/background/index.js#L24-L135)
-- [assignment-solver/src/background/router.js](file://assignment-solver/src/background/router.js#L14-L58)
-
-**Section sources**
-- [assignment-solver/src/background/index.js](file://assignment-solver/src/background/index.js#L1-L135)
-- [assignment-solver/src/background/router.js](file://assignment-solver/src/background/router.js#L1-L59)
-
-### Content Script
+### Content script
 Responsibilities:
 - Listen for messages from the background.
 - Extract page HTML and images, compute scroll info, scroll to positions, and apply answers.
@@ -206,7 +137,7 @@ Responsibilities:
 
 Design highlights:
 - Factory-based initialization of extractor and applicator.
-- Comprehensive DOM traversal and selection strategies for diverse NPTEL layouts.
+- Detailed DOM traversal and selection strategies for diverse NPTEL layouts.
 - Defensive image extraction with CORS handling and size filtering.
 
 ```mermaid
@@ -230,17 +161,7 @@ Submit --> Respond
 Debug --> Respond
 ```
 
-**Diagram sources**
-- [assignment-solver/src/content/index.js](file://assignment-solver/src/content/index.js#L19-L96)
-- [assignment-solver/src/content/extractor.js](file://assignment-solver/src/content/extractor.js#L21-L96)
-- [assignment-solver/src/content/applicator.js](file://assignment-solver/src/content/applicator.js#L21-L217)
-
-**Section sources**
-- [assignment-solver/src/content/index.js](file://assignment-solver/src/content/index.js#L1-L99)
-- [assignment-solver/src/content/extractor.js](file://assignment-solver/src/content/extractor.js#L1-L241)
-- [assignment-solver/src/content/applicator.js](file://assignment-solver/src/content/applicator.js#L1-L221)
-
-### UI Side Panel
+### UI side panel
 Responsibilities:
 - Initialize UI, controllers, and state managers.
 - Coordinate the solve lifecycle: extraction, AI processing, answer filling, and optional submission.
@@ -284,17 +205,7 @@ CT-->>BG : "Success"
 BG-->>UI : "Final results"
 ```
 
-**Diagram sources**
-- [assignment-solver/src/ui/index.js](file://assignment-solver/src/ui/index.js#L26-L51)
-- [assignment-solver/src/ui/controllers/solve.js](file://assignment-solver/src/ui/controllers/solve.js#L44-L240)
-- [assignment-solver/src/services/gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L145-L341)
-
-**Section sources**
-- [assignment-solver/src/ui/index.js](file://assignment-solver/src/ui/index.js#L1-L113)
-- [assignment-solver/src/ui/controllers/solve.js](file://assignment-solver/src/ui/controllers/solve.js#L1-L778)
-- [assignment-solver/public/sidepanel.html](file://assignment-solver/public/sidepanel.html#L1-L392)
-
-### Message Passing System
+### Message passing system
 Components communicate via a well-defined set of message types and a retry mechanism:
 - Types: PING, GET_PAGE_HTML, GET_PAGE_INFO, APPLY_ANSWERS, SUBMIT_ASSIGNMENT, EXTRACT_HTML, CAPTURE_FULL_PAGE, GEMINI_REQUEST, GEMINI_DEBUG, SCROLL_INFO, SCROLL_TO, TAB_UPDATED.
 - Retry logic: exponential backoff with connection error detection to handle transient failures, especially in Firefox.
@@ -310,13 +221,7 @@ E --> |Yes| F["Handle response"]
 B --> |No| F
 ```
 
-**Diagram sources**
-- [assignment-solver/src/core/messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-
-**Section sources**
-- [assignment-solver/src/core/messages.js](file://assignment-solver/src/core/messages.js#L1-L96)
-
-### Cross-Browser Compatibility Strategy
+### Cross-Browser compatibility strategy
 - Unified browser API: webextension-polyfill is used to expose a consistent browser.* API across Chrome and Firefox.
 - Feature detection: runtime detection of Chrome vs Firefox and availability of optional APIs.
 - Panel abstraction: a single adapter handles sidePanel (Chrome) and sidebarAction (Firefox) differences.
@@ -332,17 +237,7 @@ PANELAD --> FIREFOX
 BR --> PANELAD
 ```
 
-**Diagram sources**
-- [assignment-solver/src/platform/browser.js](file://assignment-solver/src/platform/browser.js#L1-L86)
-- [assignment-solver/src/platform/panel.js](file://assignment-solver/src/platform/panel.js#L16-L116)
-- [assignment-solver/manifest.json](file://assignment-solver/manifest.json#L1-L44)
-
-**Section sources**
-- [assignment-solver/src/platform/browser.js](file://assignment-solver/src/platform/browser.js#L1-L86)
-- [assignment-solver/src/platform/panel.js](file://assignment-solver/src/platform/panel.js#L1-L119)
-- [assignment-solver/manifest.json](file://assignment-solver/manifest.json#L1-L44)
-
-### Dependency Injection Pattern and Factory Functions
+### Dependency injection pattern and factory functions
 - Platform adapters: createRuntimeAdapter, createTabsAdapter, createScriptingAdapter, createPanelAdapter encapsulate browser differences.
 - Services: createGeminiService composes runtime and logger; createScreenshotService composes tabs and scripting.
 - Controllers: createSolveController, createDetectionController, createProgressController, createSettingsController accept dependencies via factories.
@@ -392,23 +287,7 @@ RuntimeAdapter <.. Extractor : "dependency"
 RuntimeAdapter <.. Applicator : "dependency"
 ```
 
-**Diagram sources**
-- [assignment-solver/src/platform/runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [assignment-solver/src/platform/tabs.js](file://assignment-solver/src/platform/tabs.js#L12-L52)
-- [assignment-solver/src/services/gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L60-L341)
-- [assignment-solver/src/platform/panel.js](file://assignment-solver/src/platform/panel.js#L16-L116)
-- [assignment-solver/src/content/extractor.js](file://assignment-solver/src/content/extractor.js#L12-L241)
-- [assignment-solver/src/content/applicator.js](file://assignment-solver/src/content/applicator.js#L12-L221)
-
-**Section sources**
-- [assignment-solver/src/platform/runtime.js](file://assignment-solver/src/platform/runtime.js#L1-L32)
-- [assignment-solver/src/platform/tabs.js](file://assignment-solver/src/platform/tabs.js#L1-L53)
-- [assignment-solver/src/platform/panel.js](file://assignment-solver/src/platform/panel.js#L1-L119)
-- [assignment-solver/src/services/gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L1-L342)
-- [assignment-solver/src/content/extractor.js](file://assignment-solver/src/content/extractor.js#L1-L241)
-- [assignment-solver/src/content/applicator.js](file://assignment-solver/src/content/applicator.js#L1-L221)
-
-### Data Flow Through Extraction-Analyze-Apply Phases
+### Data flow through extraction-analyze-apply phases
 - Extraction: UI requests page HTML and images; background forwards to content script; content script locates assignment containers and images; background captures full-page screenshots; Gemini extracts structured questions.
 - Analyze: UI requests AI analysis; Gemini parses extraction with images/screenshots; recursive splitting mitigates token limits; results merged.
 - Apply: UI fills answers; background sends APPLY_ANSWERS; content script applies selections/text; optional auto-submit triggers SUBMIT_ASSIGNMENT.
@@ -429,16 +308,7 @@ SPLITS --> |No| APPLY["APPLY_ANSWERS"]
 APPLY --> SUB["SUBMIT_ASSIGNMENT (optional)"]
 ```
 
-**Diagram sources**
-- [assignment-solver/src/ui/controllers/solve.js](file://assignment-solver/src/ui/controllers/solve.js#L252-L319)
-- [assignment-solver/src/ui/controllers/solve.js](file://assignment-solver/src/ui/controllers/solve.js#L481-L544)
-- [assignment-solver/src/services/gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L145-L341)
-
-**Section sources**
-- [assignment-solver/src/ui/controllers/solve.js](file://assignment-solver/src/ui/controllers/solve.js#L1-L778)
-- [assignment-solver/src/services/gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L1-L342)
-
-## Dependency Analysis
+## Dependency analysis
 The system exhibits loose coupling and high cohesion:
 - Background depends on platform adapters and services; handlers depend on adapters and logger.
 - Content script depends on extractor and applicator; both depend on logger.
@@ -463,24 +333,14 @@ CTRL --> GM
 CTRL --> RT
 ```
 
-**Diagram sources**
-- [assignment-solver/src/background/index.js](file://assignment-solver/src/background/index.js#L1-L19)
-- [assignment-solver/src/ui/index.js](file://assignment-solver/src/ui/index.js#L5-L16)
-- [assignment-solver/src/content/index.js](file://assignment-solver/src/content/index.js#L7-L11)
-
-**Section sources**
-- [assignment-solver/src/background/index.js](file://assignment-solver/src/background/index.js#L1-L135)
-- [assignment-solver/src/ui/index.js](file://assignment-solver/src/ui/index.js#L1-L113)
-- [assignment-solver/src/content/index.js](file://assignment-solver/src/content/index.js#L1-L99)
-
-## Performance Considerations
+## Performance considerations
 - Token limit handling: recursive splitting of HTML and questions reduces payload sizes to fit model constraints.
 - Image handling: filtering small images and skipping CORS-impacted images avoids unnecessary overhead.
 - Retry strategy: exponential backoff minimizes repeated failures and improves reliability on slower browsers.
 - Screenshot capture: targeted full-page capture reduces bandwidth and processing time.
 - DOM operations: batched application with progress updates prevents UI blocking.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and remedies:
 - Background not ready (Firefox): UI waits for PING response with retries; ensure extension reload and page refresh.
 - Message port errors: sendMessageWithRetry detects transient connection errors and retries; check network/API key validity.
@@ -488,12 +348,5 @@ Common issues and remedies:
 - CORS image extraction: skipped images are logged; verify image origins and avoid external resources when possible.
 - Panel opening failures: panel adapter handles Firefox vs Chrome differences; verify permissions and API availability.
 
-**Section sources**
-- [assignment-solver/src/ui/index.js](file://assignment-solver/src/ui/index.js#L26-L51)
-- [assignment-solver/src/core/messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-- [assignment-solver/src/ui/controllers/solve.js](file://assignment-solver/src/ui/controllers/solve.js#L276-L319)
-- [assignment-solver/src/content/extractor.js](file://assignment-solver/src/content/extractor.js#L109-L173)
-- [assignment-solver/src/platform/panel.js](file://assignment-solver/src/platform/panel.js#L33-L52)
-
 ## Conclusion
-The Assignment Solver extension demonstrates a clean, modular architecture with strong cross-browser compatibility. Its dependency injection and factory-based design enable easy testing and maintenance. The message-passing system, combined with robust retry logic and token-aware processing, delivers a reliable user experience across Chrome and Firefox. The UI’s progress tracking and results presentation enhance usability, while the content script’s DOM-centric operations ensure precise automation of assignment workflows.
+The Assignment Solver extension demonstrates a clean, modular architecture with strong cross-browser compatibility. Its dependency injection and factory-based design enable easy testing and maintenance. The message-passing system, combined with reliable retry logic and token-aware processing, delivers a reliable user experience across Chrome and Firefox. The UI's progress tracking and results presentation improve usability, while the content script's DOM-centric operations ensure precise automation of assignment workflows.

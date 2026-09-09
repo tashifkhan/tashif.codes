@@ -1,10 +1,10 @@
-# API Endpoints: Pull Requests & Organizations
+# API endpoints: pull requests & organizations
 
 Endpoints for tracking user contributions to their own projects and external organizations.
 
 ---
 
-## 1. Get User's Pull Requests (Own Repos)
+## 1. get user's pull requests (own repos)
 
 Returns all pull requests created by the user in their own repositories.
 
@@ -28,7 +28,7 @@ Returns all pull requests created by the user in their own repositories.
 
 ---
 
-## 2. Get Organizations Contributed To
+## 2. get organizations contributed to
 
 Returns organizations where the user has contributed via merged PRs.
 
@@ -49,7 +49,7 @@ Returns organizations where the user has contributed via merged PRs.
 
 ---
 
-## 3. Get PRs in Other Repositories
+## 3. get PRs in other repositories
 
 Returns pull requests opened by the user in external repositories (open source contributions).
 

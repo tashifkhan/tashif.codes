@@ -1,45 +1,10 @@
-# API Reference
-
-<cite>
-**Referenced Files in This Document**
-- [app/api/main.py](file://notice-reminders/app/api/main.py)
-- [app/api/routers/auth.py](file://notice-reminders/app/api/routers/auth.py)
-- [app/api/routers/courses.py](file://notice-reminders/app/api/routers/courses.py)
-- [app/api/routers/announcements.py](file://notice-reminders/app/api/routers/announcements.py)
-- [app/api/routers/search.py](file://notice-reminders/app/api/routers/search.py)
-- [app/api/routers/subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py)
-- [app/api/routers/users.py](file://notice-reminders/app/api/routers/users.py)
-- [app/api/routers/notifications.py](file://notice-reminders/app/api/routers/notifications.py)
-- [app/schemas/auth.py](file://notice-reminders/app/schemas/auth.py)
-- [app/schemas/user.py](file://notice-reminders/app/schemas/user.py)
-- [app/schemas/course.py](file://notice-reminders/app/schemas/course.py)
-- [app/schemas/announcement.py](file://notice-reminders/app/schemas/announcement.py)
-- [app/schemas/notification.py](file://notice-reminders/app/schemas/notification.py)
-- [app/schemas/subscription.py](file://notice-reminders/app/schemas/subscription.py)
-- [app/schemas/notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py)
-- [app/core/auth.py](file://notice-reminders/app/core/auth.py)
-- [app/core/config.py](file://notice-reminders/app/core/config.py)
-- [website/lib/api.ts](file://website/lib/api.ts)
-- [website/lib/types.ts](file://website/lib/types.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# API reference
 
 ## Introduction
-This document provides comprehensive API documentation for the Notice Reminders system. It covers all RESTful endpoints, including authentication (login via OTP, logout, session refresh), course search and management, announcement retrieval, subscription management, and user profile operations. For each endpoint, you will find HTTP methods, URL patterns, request/response schemas, authentication requirements, error codes, and example requests/responses. Additionally, it documents the API client implementation used by the website and highlights security and rate-limiting considerations.
+This page provides detailed API documentation for the Notice Reminders system. It covers all RESTful endpoints, including authentication (login via OTP, logout, session refresh), course search and management, announcement retrieval, subscription management, and user profile operations. For each endpoint, you will find HTTP methods, URL patterns, request/response schemas, authentication requirements, error codes, and example requests/responses. Additionally, it documents the API client implementation used by the website and highlights security and rate-limiting considerations.
 
-## Project Structure
-The API is implemented as a FastAPI application with modular routers grouped by domain. The website’s Next.js frontend consumes the API through a dedicated client that manages cookies and handles errors.
+## Project structure
+The API is implemented as a FastAPI application with modular routers grouped by domain. The website's Next.js frontend consumes the API through a dedicated client that manages cookies and handles errors.
 
 ```mermaid
 graph TB
@@ -96,32 +61,7 @@ W --> A
 T --> W
 ```
 
-**Diagram sources**
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L17-L42)
-- [app/api/routers/auth.py](file://notice-reminders/app/api/routers/auth.py#L12-L126)
-- [app/api/routers/courses.py](file://notice-reminders/app/api/routers/courses.py#L7-L32)
-- [app/api/routers/search.py](file://notice-reminders/app/api/routers/search.py#L7-L17)
-- [app/api/routers/announcements.py](file://notice-reminders/app/api/routers/announcements.py#L10-L33)
-- [app/api/routers/subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py#L13-L71)
-- [app/api/routers/users.py](file://notice-reminders/app/api/routers/users.py#L14-L151)
-- [app/api/routers/notifications.py](file://notice-reminders/app/api/routers/notifications.py#L10-L62)
-- [app/schemas/auth.py](file://notice-reminders/app/schemas/auth.py#L8-L26)
-- [app/schemas/user.py](file://notice-reminders/app/schemas/user.py#L6-L24)
-- [app/schemas/course.py](file://notice-reminders/app/schemas/course.py#L6-L19)
-- [app/schemas/announcement.py](file://notice-reminders/app/schemas/announcement.py#L6-L16)
-- [app/schemas/notification.py](file://notice-reminders/app/schemas/notification.py)
-- [app/schemas/subscription.py](file://notice-reminders/app/schemas/subscription.py)
-- [app/schemas/notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py)
-- [app/core/auth.py](file://notice-reminders/app/core/auth.py#L14-L72)
-- [app/core/config.py](file://notice-reminders/app/core/config.py#L4-L32)
-- [website/lib/api.ts](file://website/lib/api.ts#L16-L53)
-- [website/lib/types.ts](file://website/lib/types.ts#L1-L97)
-
-**Section sources**
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L17-L42)
-- [website/lib/api.ts](file://website/lib/api.ts#L16-L53)
-
-## Core Components
+## Core components
 - Authentication and Authorization
   - Access tokens are validated via a dependency that reads the access_token cookie and verifies JWT claims.
   - Decorators enforce authentication for protected endpoints.
@@ -132,13 +72,7 @@ T --> W
 - Settings
   - Token expirations, cache TTL, and external service URLs are configurable.
 
-**Section sources**
-- [app/core/auth.py](file://notice-reminders/app/core/auth.py#L14-L72)
-- [app/api/routers/auth.py](file://notice-reminders/app/api/routers/auth.py#L15-L41)
-- [app/core/config.py](file://notice-reminders/app/core/config.py#L4-L32)
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L21-L27)
-
-## Architecture Overview
+## Architecture overview
 The API follows a layered architecture:
 - Routers define endpoints and bind request/response schemas.
 - Services encapsulate business logic.
@@ -173,19 +107,9 @@ FE->>USERS : "PATCH /users/{id}"
 USERS-->>FE : "200 OK UserResponse"
 ```
 
-**Diagram sources**
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L29-L35)
-- [app/api/routers/auth.py](file://notice-reminders/app/api/routers/auth.py#L43-L76)
-- [app/api/routers/courses.py](file://notice-reminders/app/api/routers/courses.py#L10-L15)
-- [app/api/routers/announcements.py](file://notice-reminders/app/api/routers/announcements.py#L15-L32)
-- [app/api/routers/subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py#L16-L34)
-- [app/api/routers/notifications.py](file://notice-reminders/app/api/routers/notifications.py#L13-L20)
-- [app/api/routers/users.py](file://notice-reminders/app/api/routers/users.py#L41-L64)
-- [website/lib/api.ts](file://website/lib/api.ts#L76-L91)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Authentication Endpoints
+### Authentication endpoints
 - Base Path: /auth
 - Authentication Requirement:
   - request-otp: Not authenticated.
@@ -262,14 +186,7 @@ Security Notes:
 - Secure flag is enabled unless debug is true.
 - Access token expiration and refresh token expiration are configured in settings.
 
-**Section sources**
-- [app/api/routers/auth.py](file://notice-reminders/app/api/routers/auth.py#L43-L126)
-- [app/schemas/auth.py](file://notice-reminders/app/schemas/auth.py#L8-L26)
-- [app/schemas/user.py](file://notice-reminders/app/schemas/user.py#L13-L24)
-- [app/core/auth.py](file://notice-reminders/app/core/auth.py#L14-L51)
-- [app/core/config.py](file://notice-reminders/app/core/config.py#L22-L26)
-
-### Course Endpoints
+### Course endpoints
 - Base Path: /courses
 - Authentication: Not required for listing and retrieving by code.
 
@@ -297,11 +214,7 @@ Endpoints:
 Schemas:
 - CourseResponse: id (int), code (str), title (str), url (str), instructor (str), institute (str), nc_code (str), created_at (datetime), updated_at (datetime)
 
-**Section sources**
-- [app/api/routers/courses.py](file://notice-reminders/app/api/routers/courses.py#L10-L32)
-- [app/schemas/course.py](file://notice-reminders/app/schemas/course.py#L6-L19)
-
-### Course Search Endpoint
+### Course search endpoint
 - Base Path: /search
 - Authentication: Not required.
 
@@ -316,11 +229,7 @@ Endpoints:
   - Example Response:
     - 200 OK [{"id":1,"code":"CS101",...},...]
 
-**Section sources**
-- [app/api/routers/search.py](file://notice-reminders/app/api/routers/search.py#L10-L17)
-- [app/schemas/course.py](file://notice-reminders/app/schemas/course.py#L6-L19)
-
-### Course Announcement Retrieval
+### Course announcement retrieval
 - Base Path: /courses/{course_code}/announcements
 - Authentication: Required.
 
@@ -340,11 +249,7 @@ Endpoints:
 Schemas:
 - AnnouncementResponse: id (int), course_id (int), title (str), date (str), content (str), fetched_at (datetime)
 
-**Section sources**
-- [app/api/routers/announcements.py](file://notice-reminders/app/api/routers/announcements.py#L15-L32)
-- [app/schemas/announcement.py](file://notice-reminders/app/schemas/announcement.py#L6-L16)
-
-### Subscription Management
+### Subscription management
 - Base Path: /subscriptions
 - Authentication: Required.
 
@@ -389,11 +294,7 @@ Schemas:
 - SubscriptionCreate: course_code (string)
 - SubscriptionResponse: id (int), user_id (int), course_id (int), is_active (boolean), created_at (string)
 
-**Section sources**
-- [app/api/routers/subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py#L16-L71)
-- [app/schemas/subscription.py](file://notice-reminders/app/schemas/subscription.py)
-
-### User Profile and Channels
+### User profile and channels
 - Base Path: /users
 - Authentication: Required for all user endpoints.
 
@@ -403,7 +304,7 @@ Endpoints:
   - Path Parameters:
     - user_id: integer
   - Errors:
-    - 403 Forbidden if requesting another user’s data
+    - 403 Forbidden if requesting another user's data
     - 404 Not Found if user does not exist
   - Response: UserResponse
   - Example Request:
@@ -421,7 +322,7 @@ Endpoints:
     - telegram_id?: string
     - is_active?: boolean
   - Errors:
-    - 403 Forbidden if updating another user’s data
+    - 403 Forbidden if updating another user's data
     - 404 Not Found if user does not exist
   - Response: UserResponse
   - Example Request:
@@ -434,7 +335,7 @@ Endpoints:
   - Path Parameters:
     - user_id: integer
   - Errors:
-    - 403 Forbidden if deleting another user’s account
+    - 403 Forbidden if deleting another user's account
     - 404 Not Found if user does not exist
   - Status Codes:
     - 204 No Content
@@ -466,7 +367,7 @@ Endpoints:
   - Path Parameters:
     - user_id: integer
   - Errors:
-    - 403 Forbidden if listing another user’s channels
+    - 403 Forbidden if listing another user's channels
     - 404 Not Found if user does not exist
   - Response: array of NotificationChannelResponse
   - Example Request:
@@ -479,11 +380,6 @@ Schemas:
 - UserResponse: id (int), email (EmailStr), name (string?), telegram_id (string?), is_active (boolean), created_at (datetime), updated_at (datetime)
 - NotificationChannelCreate: channel ("email"|"telegram"), address (string), is_active (boolean?)
 - NotificationChannelResponse: id (int), user_id (int), channel ("email"|"telegram"), address (string), is_active (boolean), created_at (string)
-
-**Section sources**
-- [app/api/routers/users.py](file://notice-reminders/app/api/routers/users.py#L17-L151)
-- [app/schemas/user.py](file://notice-reminders/app/schemas/user.py#L6-L24)
-- [app/schemas/notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py)
 
 ### Notifications
 - Base Path: /notifications
@@ -503,7 +399,7 @@ Endpoints:
   - Path Parameters:
     - user_id: integer
   - Errors:
-    - 403 Forbidden if accessing another user’s notifications
+    - 403 Forbidden if accessing another user's notifications
   - Response: array of NotificationResponse
   - Example Request:
     - GET /notifications/users/1 with access_token cookie
@@ -525,11 +421,7 @@ Endpoints:
 Schemas:
 - NotificationResponse: id (int), user_id (int), subscription_id (int), announcement_id (int), channel_id (int|null), sent_at (string), is_read (boolean)
 
-**Section sources**
-- [app/api/routers/notifications.py](file://notice-reminders/app/api/routers/notifications.py#L13-L62)
-- [app/schemas/notification.py](file://notice-reminders/app/schemas/notification.py)
-
-## Dependency Analysis
+## Dependency analysis
 The API is composed of loosely coupled routers, each depending on services and schemas. Authentication is centralized via a dependency that validates access tokens and enforces protection via decorators.
 
 ```mermaid
@@ -575,29 +467,7 @@ NOTIF -.uses.-> CORE_AUTH
 CORE_AUTH --> CORE_CFG
 ```
 
-**Diagram sources**
-- [app/api/routers/auth.py](file://notice-reminders/app/api/routers/auth.py#L1-L126)
-- [app/api/routers/courses.py](file://notice-reminders/app/api/routers/courses.py#L1-L32)
-- [app/api/routers/search.py](file://notice-reminders/app/api/routers/search.py#L1-L17)
-- [app/api/routers/announcements.py](file://notice-reminders/app/api/routers/announcements.py#L1-L33)
-- [app/api/routers/subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py#L1-L71)
-- [app/api/routers/users.py](file://notice-reminders/app/api/routers/users.py#L1-L151)
-- [app/api/routers/notifications.py](file://notice-reminders/app/api/routers/notifications.py#L1-L62)
-- [app/schemas/auth.py](file://notice-reminders/app/schemas/auth.py#L1-L26)
-- [app/schemas/user.py](file://notice-reminders/app/schemas/user.py#L1-L24)
-- [app/schemas/course.py](file://notice-reminders/app/schemas/course.py#L1-L19)
-- [app/schemas/announcement.py](file://notice-reminders/app/schemas/announcement.py#L1-L16)
-- [app/schemas/notification.py](file://notice-reminders/app/schemas/notification.py)
-- [app/schemas/subscription.py](file://notice-reminders/app/schemas/subscription.py)
-- [app/schemas/notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py)
-- [app/core/auth.py](file://notice-reminders/app/core/auth.py#L1-L72)
-- [app/core/config.py](file://notice-reminders/app/core/config.py#L1-L32)
-
-**Section sources**
-- [app/core/auth.py](file://notice-reminders/app/core/auth.py#L14-L72)
-- [app/api/routers/auth.py](file://notice-reminders/app/api/routers/auth.py#L15-L41)
-
-## Performance Considerations
+## Performance considerations
 - Caching
   - Course search and announcement retrieval are cached with a configurable TTL to reduce repeated scraping and database load.
 - Token Expirations
@@ -610,18 +480,13 @@ Recommendations:
 - Use pagination if lists grow large.
 - Monitor cache hit rates for search and announcements.
 
-**Section sources**
-- [app/core/config.py](file://notice-reminders/app/core/config.py#L12-L12)
-- [app/api/routers/search.py](file://notice-reminders/app/api/routers/search.py#L15-L15)
-- [app/api/routers/announcements.py](file://notice-reminders/app/api/routers/announcements.py#L31-L31)
-
-## Troubleshooting Guide
+## Troubleshooting guide
 Common Errors and Causes:
 - 401 Unauthorized
   - Missing or invalid access_token cookie.
   - Expired access token.
 - 403 Forbidden
-  - Attempting to access another user’s data or resources.
+  - Attempting to access another user's data or resources.
 - 404 Not Found
   - Resource does not exist (course, subscription, notification).
 - 400 Bad Request
@@ -631,19 +496,12 @@ Frontend Client Behavior:
 - The client sends credentials with each request and throws a typed error on non-OK responses.
 - 204 No Content responses are handled explicitly.
 
-**Section sources**
-- [app/core/auth.py](file://notice-reminders/app/core/auth.py#L18-L51)
-- [app/api/routers/users.py](file://notice-reminders/app/api/routers/users.py#L24-L28)
-- [app/api/routers/subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py#L56-L68)
-- [app/api/routers/notifications.py](file://notice-reminders/app/api/routers/notifications.py#L46-L58)
-- [website/lib/api.ts](file://website/lib/api.ts#L18-L53)
-
 ## Conclusion
-The Notice Reminders API provides a cohesive set of endpoints for authentication, course discovery, announcements, subscriptions, and user/channel management. It leverages cookie-based sessions, JWT tokens, and strict authorization checks to maintain security while offering a straightforward developer experience. The website client integrates seamlessly with these endpoints, handling cookies and errors consistently.
+The Notice Reminders API provides a cohesive set of endpoints for authentication, course discovery, announcements, subscriptions, and user/channel management. It uses cookie-based sessions, JWT tokens, and strict authorization checks to maintain security while offering a straightforward developer experience. The website client integrates smoothly with these endpoints, handling cookies and errors consistently.
 
 ## Appendices
 
-### API Client Implementation Details
+### API client implementation details
 - Base URL
   - Determined by NEXT_PUBLIC_API_URL environment variable; defaults to http://localhost:8000.
 - Credentials
@@ -660,11 +518,7 @@ Key Functions:
 - Subscriptions: createSubscription, listSubscriptions, deleteSubscription
 - Notifications: listNotifications, markNotificationRead
 
-**Section sources**
-- [website/lib/api.ts](file://website/lib/api.ts#L16-L53)
-- [website/lib/types.ts](file://website/lib/types.ts#L1-L97)
-
-### Security and Rate Limiting Considerations
+### Security and rate limiting considerations
 - Cookies
   - access_token and refresh_token are httponly, with secure flag based on debug mode, sameSite lax, and path "/".
 - CORS
@@ -673,8 +527,3 @@ Key Functions:
   - Access token and refresh token expirations are configurable.
 - Rate Limiting
   - Not implemented at the API level in the provided code. Consider adding rate limiting at the gateway or middleware if needed.
-
-**Section sources**
-- [app/api/routers/auth.py](file://notice-reminders/app/api/routers/auth.py#L21-L40)
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L21-L27)
-- [app/core/config.py](file://notice-reminders/app/core/config.py#L22-L26)

@@ -1,31 +1,9 @@
-# Authentication State
-
-<cite>
-**Referenced Files in This Document**
-- [auth-options.ts](file://frontend/lib/auth-options.ts)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts)
-- [page.tsx](file://frontend/app/auth/page.tsx)
-- [proxy.ts](file://frontend/proxy.ts)
-- [page.tsx](file://frontend/app/select-role/page.tsx)
-- [page.tsx](file://frontend/app/account/page.tsx)
-- [route.ts](file://frontend/app/api/(db)/resumes/route.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Authentication state
 
 ## Introduction
-This document explains the authentication state management in the project, focusing on NextAuth.js integration, session management, and user state synchronization. It covers provider configuration (OAuth and credentials), JWT-based sessions, middleware-based access control, protected routes, role-based access control, and authentication guards. It also documents token refresh behavior, session persistence, and error handling, along with practical troubleshooting steps and security best practices.
+This page explains the authentication state management in the project, focusing on NextAuth.js integration, session management, and user state synchronization. It covers provider configuration (OAuth and credentials), JWT-based sessions, middleware-based access control, protected routes, role-based access control, and authentication guards. It also documents token refresh behavior, session persistence, and error handling, along with practical troubleshooting steps and security best practices.
 
-## Project Structure
+## Project structure
 Authentication spans the frontend Next.js app and the NextAuth route handler:
 - NextAuth configuration defines providers, callbacks, session strategy, and pages.
 - The NextAuth route handler exposes the NextAuth endpoint.
@@ -54,25 +32,7 @@ F --> E
 G --> D
 ```
 
-**Diagram sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L201)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [page.tsx](file://frontend/app/auth/page.tsx#L1-L933)
-- [page.tsx](file://frontend/app/select-role/page.tsx#L1-L157)
-- [proxy.ts](file://frontend/proxy.ts#L1-L74)
-- [page.tsx](file://frontend/app/account/page.tsx#L40-L356)
-- [route.ts](file://frontend/app/api/(db)/resumes/route.ts#L1-L38)
-
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L201)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [page.tsx](file://frontend/app/auth/page.tsx#L1-L933)
-- [page.tsx](file://frontend/app/select-role/page.tsx#L1-L157)
-- [proxy.ts](file://frontend/proxy.ts#L1-L74)
-- [page.tsx](file://frontend/app/account/page.tsx#L40-L356)
-- [route.ts](file://frontend/app/api/(db)/resumes/route.ts#L1-L38)
-
-## Core Components
+## Core components
 - NextAuth configuration:
   - Providers: credentials, Google, GitHub, Email.
   - Session strategy: JWT.
@@ -84,14 +44,7 @@ G --> D
 - Middleware: enforces authentication and role presence for protected routes.
 - Protected API routes: validate server-side session via getServerSession.
 
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L201)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [page.tsx](file://frontend/app/auth/page.tsx#L1-L933)
-- [proxy.ts](file://frontend/proxy.ts#L1-L74)
-- [route.ts](file://frontend/app/api/(db)/resumes/route.ts#L1-L38)
-
-## Architecture Overview
+## Architecture overview
 The authentication pipeline integrates client-side UI, NextAuth server, and middleware enforcement. The JWT strategy ensures session state is carried client-side and synchronized server-side.
 
 ```mermaid
@@ -116,16 +69,9 @@ NA-->>SRV : "Session user info"
 SRV-->>UI : "Resource data"
 ```
 
-**Diagram sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L201)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [page.tsx](file://frontend/app/auth/page.tsx#L145-L186)
-- [proxy.ts](file://frontend/proxy.ts#L4-L67)
-- [route.ts](file://frontend/app/api/(db)/resumes/route.ts#L8-L20)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### NextAuth Configuration and Providers
+### NextAuth configuration and providers
 - Providers:
   - Credentials: validates email/password, checks verification status, returns user with role and image.
   - Google/GitHub: OAuth providers configured via environment variables.
@@ -154,22 +100,11 @@ Token --> Session["Populate session with id/role/image"]
 Session --> Done(["Authenticated"])
 ```
 
-**Diagram sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L19-L55)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L98-L144)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L145-L195)
-
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L201)
-
-### NextAuth Route Handler
+### NextAuth route handler
 - Exposes NextAuth endpoint for all NextAuth routes.
 - Delegates all routing to NextAuth with the configured options.
 
-**Section sources**
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-
-### Frontend Authentication UI and Guards
+### Frontend authentication UI and guards
 - Sign-in page:
   - Uses NextAuth hooks to sign in with credentials or providers.
   - Handles unverified email errors and redirects to verification flow.
@@ -197,17 +132,7 @@ NA-->>Sel : "Refreshed session with role"
 MW->>U : "Allow or redirect based on token.role"
 ```
 
-**Diagram sources**
-- [page.tsx](file://frontend/app/auth/page.tsx#L145-L186)
-- [page.tsx](file://frontend/app/select-role/page.tsx#L33-L67)
-- [proxy.ts](file://frontend/proxy.ts#L14-L31)
-
-**Section sources**
-- [page.tsx](file://frontend/app/auth/page.tsx#L1-L933)
-- [page.tsx](file://frontend/app/select-role/page.tsx#L1-L157)
-- [page.tsx](file://frontend/app/account/page.tsx#L40-L356)
-
-### Middleware-Based Access Control
+### Middleware-Based access control
 - Enforces:
   - Public pages: home, auth, verification, reset-password, API, static assets, PostHog proxy.
   - Role gating: redirects authenticated users without a role to select-role; allows access to select-role only when unrole.
@@ -225,22 +150,13 @@ Role --> |No| ToRole["Redirect to /select-role"]
 Role --> |Yes| Allow
 ```
 
-**Diagram sources**
-- [proxy.ts](file://frontend/proxy.ts#L4-L67)
-
-**Section sources**
-- [proxy.ts](file://frontend/proxy.ts#L1-L74)
-
-### Protected API Routes
+### Protected API routes
 - Server-side session validation:
   - Uses getServerSession with the same NextAuth configuration.
   - Returns 401 Unauthorized if session is missing.
   - Loads user and role from the database for downstream logic.
 
-**Section sources**
-- [route.ts](file://frontend/app/api/(db)/resumes/route.ts#L8-L38)
-
-## Dependency Analysis
+## Dependency analysis
 - Frontend pages depend on NextAuth hooks and the NextAuth endpoint.
 - Middleware depends on NextAuth token availability and role presence.
 - Protected APIs depend on NextAuth configuration and server-side session retrieval.
@@ -256,31 +172,13 @@ API["app/api/(db)/resumes/route.ts"] --> CFG["lib/auth-options.ts"]
 EP --> CFG
 ```
 
-**Diagram sources**
-- [page.tsx](file://frontend/app/auth/page.tsx#L1-L933)
-- [page.tsx](file://frontend/app/select-role/page.tsx#L1-L157)
-- [page.tsx](file://frontend/app/account/page.tsx#L40-L356)
-- [proxy.ts](file://frontend/proxy.ts#L1-L74)
-- [route.ts](file://frontend/app/api/(db)/resumes/route.ts#L1-L38)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L201)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L201)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [page.tsx](file://frontend/app/auth/page.tsx#L1-L933)
-- [page.tsx](file://frontend/app/select-role/page.tsx#L1-L157)
-- [proxy.ts](file://frontend/proxy.ts#L1-L74)
-- [page.tsx](file://frontend/app/account/page.tsx#L40-L356)
-- [route.ts](file://frontend/app/api/(db)/resumes/route.ts#L1-L38)
-
-## Performance Considerations
+## Performance considerations
 - JWT strategy reduces server-side session storage overhead and enables client-side session state.
 - Callbacks perform database reads on sign-in and token refresh; keep database queries minimal and indexed.
 - Middleware runs on every request; avoid heavy computation in callbacks and middleware.
 - Prefer server-side session validation for sensitive endpoints to ensure robustness.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Unverified email prevents credentials sign-in:
   - The signIn callback redirects to the verification page if the user is not verified.
@@ -306,13 +204,5 @@ Security best practices:
 - Limit cookie attributes (sameSite, secure, httpOnly) according to deployment needs.
 - Monitor and log authentication events in development; disable debug in production.
 
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L37-L40)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L82-L96)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L122-L136)
-- [page.tsx](file://frontend/app/select-role/page.tsx#L52-L57)
-- [route.ts](file://frontend/app/api/(db)/resumes/route.ts#L10-L20)
-- [proxy.ts](file://frontend/proxy.ts#L36-L66)
-
 ## Conclusion
-The project implements a robust authentication system centered on NextAuth.js with JWT sessions, multiple providers, and middleware-driven access control. The configuration synchronizes user state across client and server, supports role-based navigation, and provides clear guards for protected routes and APIs. Following the troubleshooting and security recommendations will help maintain a reliable and secure authentication experience.
+The project implements a reliable authentication system centered on NextAuth.js with JWT sessions, multiple providers, and middleware-driven access control. The configuration synchronizes user state across client and server, supports role-based navigation, and provides clear guards for protected routes and APIs. Following the troubleshooting and security recommendations will help maintain a reliable and secure authentication experience.

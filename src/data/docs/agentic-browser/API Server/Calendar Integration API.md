@@ -1,33 +1,9 @@
-# Calendar Integration API
-
-<cite>
-**Referenced Files in This Document**
-- [api/main.py](file://api/main.py)
-- [routers/calendar.py](file://routers/calendar.py)
-- [services/calendar_service.py](file://services/calendar_service.py)
-- [tools/calendar/__init__.py](file://tools/calendar/__init__.py)
-- [tools/calendar/create_calender_events.py](file://tools/calendar/create_calender_events.py)
-- [tools/calendar/get_calender_events.py](file://tools/calendar/get_calender_events.py)
-- [extension/entrypoints/sidepanel/hooks/useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts)
-- [core/config.py](file://core/config.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Calendar integration API
 
 ## Introduction
-This document describes the Google Calendar integration API endpoints exposed by the application. It covers calendar event management capabilities including listing upcoming events and creating new events. The documentation specifies HTTP methods, URL patterns, request/response schemas, authentication requirements, and practical usage examples for automation and synchronization scenarios. It also explains calendar-specific authentication, timezone handling, and recurring event management considerations.
+This page describes the Google Calendar integration API endpoints exposed by the application. It covers calendar event management capabilities including listing upcoming events and creating new events. The documentation specifies HTTP methods, URL patterns, request/response schemas, authentication requirements, and practical usage examples for automation and synchronization scenarios. It also explains calendar-specific authentication, timezone handling, and recurring event management considerations.
 
-## Project Structure
+## Project structure
 The calendar integration is implemented as a FastAPI application with a dedicated router and service layer. Tools encapsulate direct Google Calendar API interactions. The frontend extension manages OAuth-based authentication and token lifecycle.
 
 ```mermaid
@@ -54,22 +30,7 @@ TI --> T2
 E --> A
 ```
 
-**Diagram sources**
-- [api/main.py](file://api/main.py#L14-L42)
-- [routers/calendar.py](file://routers/calendar.py#L1-L113)
-- [services/calendar_service.py](file://services/calendar_service.py#L1-L38)
-- [tools/calendar/get_calender_events.py](file://tools/calendar/get_calender_events.py#L1-L52)
-- [tools/calendar/create_calender_events.py](file://tools/calendar/create_calender_events.py#L1-L70)
-- [tools/calendar/__init__.py](file://tools/calendar/__init__.py#L1-L8)
-- [extension/entrypoints/sidepanel/hooks/useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L128-L208)
-
-**Section sources**
-- [api/main.py](file://api/main.py#L12-L42)
-- [routers/calendar.py](file://routers/calendar.py#L1-L113)
-- [services/calendar_service.py](file://services/calendar_service.py#L1-L38)
-- [tools/calendar/__init__.py](file://tools/calendar/__init__.py#L1-L8)
-
-## Core Components
+## Core components
 - Calendar Router: Exposes two endpoints under /api/calendar:
   - POST /events: Lists upcoming events for the authenticated user.
   - POST /create: Creates a new calendar event for the authenticated user.
@@ -79,14 +40,7 @@ E --> A
   - Create Event Tool: Calls the Google Calendar API to create a new event.
 - Frontend Authentication Hook: Manages OAuth with Google scopes including calendar access and exchanges authorization code for tokens.
 
-**Section sources**
-- [routers/calendar.py](file://routers/calendar.py#L32-L113)
-- [services/calendar_service.py](file://services/calendar_service.py#L8-L38)
-- [tools/calendar/get_calender_events.py](file://tools/calendar/get_calender_events.py#L6-L23)
-- [tools/calendar/create_calender_events.py](file://tools/calendar/create_calender_events.py#L6-L40)
-- [extension/entrypoints/sidepanel/hooks/useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L136-L145)
-
-## Architecture Overview
+## Architecture overview
 The API follows a layered architecture:
 - API Router validates requests and delegates to the Calendar Service.
 - Calendar Service invokes tools that call the Google Calendar API.
@@ -117,15 +71,9 @@ Service-->>Router : "event JSON"
 Router-->>Client : "JSON { result : \"created\", event : {...} }"
 ```
 
-**Diagram sources**
-- [routers/calendar.py](file://routers/calendar.py#L32-L113)
-- [services/calendar_service.py](file://services/calendar_service.py#L8-L38)
-- [tools/calendar/get_calender_events.py](file://tools/calendar/get_calender_events.py#L6-L23)
-- [tools/calendar/create_calender_events.py](file://tools/calendar/create_calender_events.py#L6-L40)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Calendar Router Endpoints
+### Calendar router endpoints
 - Base Path: /api/calendar
 - Authentication: Access token passed in request body for both endpoints.
 
@@ -164,19 +112,13 @@ Notes:
 - The router does not currently expose endpoints for updating or deleting events.
 - The router does not currently enforce calendar-specific scopes; it relies on the presence of access_token.
 
-**Section sources**
-- [routers/calendar.py](file://routers/calendar.py#L13-L113)
-
-### Calendar Service
+### Calendar service
 - list_events(access_token, max_results):
   - Delegates to get_calendar_events and returns the items array.
 - create_event(access_token, summary, start_time, end_time, description):
   - Delegates to create_calendar_event and returns the created event.
 
-**Section sources**
-- [services/calendar_service.py](file://services/calendar_service.py#L8-L38)
-
-### Tools: Google Calendar API Interactions
+### Tools: Google calendar API interactions
 - get_calendar_events(access_token, max_results):
   - Calls Google Calendar API to list upcoming events.
   - Uses Authorization header with Bearer token.
@@ -189,11 +131,7 @@ Notes:
   - Event payload includes summary, description, and start/end with dateTime and timeZone.
   - Returns the created event JSON or raises an exception on non-200 responses.
 
-**Section sources**
-- [tools/calendar/get_calender_events.py](file://tools/calendar/get_calender_events.py#L6-L23)
-- [tools/calendar/create_calender_events.py](file://tools/calendar/create_calender_events.py#L6-L40)
-
-### Frontend Authentication and Token Management
+### Frontend authentication and token management
 - OAuth Scopes:
   - Includes calendar scope for calendar access.
   - Uses browser.identity APIs to launch web auth flow and exchange authorization code for tokens.
@@ -204,12 +142,7 @@ Notes:
   - Stores user info and tokens in browser storage.
   - Provides manual refresh capability when refresh_token is available.
 
-**Section sources**
-- [extension/entrypoints/sidepanel/hooks/useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L136-L145)
-- [extension/entrypoints/sidepanel/hooks/useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L156-L170)
-- [extension/entrypoints/sidepanel/hooks/useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L271-L295)
-
-## Dependency Analysis
+## Dependency analysis
 ```mermaid
 graph LR
 API["api/main.py"] --> R["routers/calendar.py"]
@@ -219,21 +152,7 @@ S --> T2["tools/calendar/create_calender_events.py"]
 FE["extension/.../useAuth.ts"] --> API
 ```
 
-**Diagram sources**
-- [api/main.py](file://api/main.py#L14-L42)
-- [routers/calendar.py](file://routers/calendar.py#L1-L113)
-- [services/calendar_service.py](file://services/calendar_service.py#L1-L38)
-- [tools/calendar/get_calender_events.py](file://tools/calendar/get_calender_events.py#L1-L52)
-- [tools/calendar/create_calender_events.py](file://tools/calendar/create_calender_events.py#L1-L70)
-- [extension/entrypoints/sidepanel/hooks/useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L128-L208)
-
-**Section sources**
-- [api/main.py](file://api/main.py#L14-L42)
-- [routers/calendar.py](file://routers/calendar.py#L1-L113)
-- [services/calendar_service.py](file://services/calendar_service.py#L1-L38)
-- [tools/calendar/__init__.py](file://tools/calendar/__init__.py#L1-L8)
-
-## Performance Considerations
+## Performance considerations
 - Timeout Settings:
   - GET events: timeout 8 seconds.
   - POST create: timeout 10 seconds.
@@ -246,7 +165,7 @@ FE["extension/.../useAuth.ts"] --> API
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common Issues and Resolutions:
 - Missing access_token:
   - Symptom: HTTP 400 on both /events and /create.
@@ -261,22 +180,14 @@ Common Issues and Resolutions:
   - Symptom: Token exchange fails or user info fetch fails.
   - Resolution: Verify OAuth flow, scopes, and backend /exchange-code endpoint availability.
 
-**Section sources**
-- [routers/calendar.py](file://routers/calendar.py#L37-L38)
-- [routers/calendar.py](file://routers/calendar.py#L80-L84)
-- [routers/calendar.py](file://routers/calendar.py#L86-L91)
-- [tools/calendar/get_calender_events.py](file://tools/calendar/get_calender_events.py#L19-L22)
-- [tools/calendar/create_calender_events.py](file://tools/calendar/create_calender_events.py#L35-L38)
-- [extension/entrypoints/sidepanel/hooks/useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L162-L165)
-
 ## Conclusion
-The Calendar Integration API provides a focused interface for listing upcoming events and creating new events using Google Calendar’s REST API. It leverages a clean separation of concerns across router, service, and tool layers, while the frontend extension manages OAuth and token lifecycle. Future enhancements could include update/delete endpoints, improved timezone handling, and support for recurring events.
+The Calendar Integration API provides a focused interface for listing upcoming events and creating new events using Google Calendar's REST API. It uses a clean separation of concerns across router, service, and tool layers, while the frontend extension manages OAuth and token lifecycle. Future enhancements could include update/delete endpoints, improved timezone handling, and support for recurring events.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### API Reference
+### API reference
 
 - Base URL
   - /api/calendar
@@ -329,7 +240,7 @@ The Calendar Integration API provides a focused interface for listing upcoming e
 
 - Client Implementation Patterns
   - Frontend Integration:
-    - Use the extension’s OAuth flow to obtain and refresh tokens.
+    - Use the extension's OAuth flow to obtain and refresh tokens.
     - Store tokens securely and pass access_token with each API call.
   - Backend Integration:
     - Validate access_token presence and enforce rate limits.
@@ -337,9 +248,3 @@ The Calendar Integration API provides a focused interface for listing upcoming e
   - Automation Scenarios:
     - Event Scheduling Automation: Trigger POST /create with computed start_time and end_time.
     - Calendar Synchronization: Periodically call POST /events to sync events and reconcile duplicates.
-
-**Section sources**
-- [routers/calendar.py](file://routers/calendar.py#L32-L113)
-- [tools/calendar/create_calender_events.py](file://tools/calendar/create_calender_events.py#L23-L31)
-- [tools/calendar/get_calender_events.py](file://tools/calendar/get_calender_events.py#L11-L16)
-- [extension/entrypoints/sidepanel/hooks/useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L136-L145)

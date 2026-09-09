@@ -1,37 +1,9 @@
-# Database Design
-
-<cite>
-**Referenced Files in This Document**
-- [schema.prisma](file://frontend/prisma/schema.prisma)
-- [20250612211318_init/migration.sql](file://frontend/prisma/migrations/20250612211318_init/migration.sql)
-- [20250613172024_replace_file_url_with_raw_text/migration.sql](file://frontend/prisma/migrations/20250613172024_replace_file_url_with_raw_text/migration.sql)
-- [20250730160233_add_new_resume_fields/migration.sql](file://frontend/prisma/migrations/20250730160233_add_new_resume_fields/migration.sql)
-- [20251023102445_add_analysis_social_links/migration.sql](file://frontend/prisma/migrations/20251023102445_add_analysis_social_links/migration.sql)
-- [20251114000000_add_llm_config/migration.sql](file://frontend/prisma/migrations/20251114000000_add_llm_config/migration.sql)
-- [20260214000000_multi_llm_configs/migration.sql](file://frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql)
-- [20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql](file://frontend/prisma/migrations/20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql)
-- [migration_lock.toml](file://frontend/prisma/migrations/migration_lock.toml)
-- [seed.ts](file://frontend/prisma/seed.ts)
-- [prisma.ts](file://frontend/lib/prisma.ts)
-- [.env](file://frontend/.env)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Database design
 
 ## Introduction
-This document describes the PostgreSQL database design for TalentSync-Normies, implemented with Prisma ORM. It covers entity relationships, field definitions, data types, primary and foreign keys, indexes, and constraints. It also documents validation and business rules enforced at the database level, schema diagrams, sample data structures, data access patterns via Prisma, caching strategies, performance considerations, data lifecycle and retention, migration paths with Prisma Migrate, version management, rollback procedures, and security and access control through database permissions.
+This page describes the PostgreSQL database design for TalentSync-Normies, implemented with Prisma ORM. It covers entity relationships, field definitions, data types, primary and foreign keys, indexes, and constraints. It also documents validation and business rules enforced at the database level, schema diagrams, sample data structures, data access patterns via Prisma, caching strategies, performance considerations, data lifecycle and retention, migration paths with Prisma Migrate, version management, rollback procedures, and security and access control through database permissions.
 
-## Project Structure
+## Project structure
 The database schema is defined declaratively in Prisma and maintained through a series of SQL migrations. The runtime Prisma client is initialized in the frontend application.
 
 ```mermaid
@@ -73,27 +45,7 @@ Lock --> MultiLLM
 Lock --> Hierarchy
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L1-L262)
-- [20250612211318_init/migration.sql](file://frontend/prisma/migrations/20250612211318_init/migration.sql#L1-L187)
-- [20250613172024_replace_file_url_with_raw_text/migration.sql](file://frontend/prisma/migrations/20250613172024_replace_file_url_with_raw_text/migration.sql#L1-L96)
-- [20250730160233_add_new_resume_fields/migration.sql](file://frontend/prisma/migrations/20250730160233_add_new_resume_fields/migration.sql#L1-L6)
-- [20251023102445_add_analysis_social_links/migration.sql](file://frontend/prisma/migrations/20251023102445_add_analysis_social_links/migration.sql#L1-L6)
-- [20251114000000_add_llm_config/migration.sql](file://frontend/prisma/migrations/20251114000000_add_llm_config/migration.sql#L1-L27)
-- [20260214000000_multi_llm_configs/migration.sql](file://frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql#L1-L19)
-- [20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql](file://frontend/prisma/migrations/20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql#L1-L48)
-- [migration_lock.toml](file://frontend/prisma/migrations/migration_lock.toml#L1-L100)
-- [seed.ts](file://frontend/prisma/seed.ts#L1-L30)
-- [prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-- [.env](file://frontend/.env#L1-L27)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L1-L262)
-- [prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-- [seed.ts](file://frontend/prisma/seed.ts#L1-L30)
-- [.env](file://frontend/.env#L1-L27)
-
-## Core Components
+## Core components
 This section documents the core entities and their attributes, primary keys, foreign keys, indexes, and constraints as defined in the Prisma schema and migrations.
 
 - Role
@@ -214,17 +166,7 @@ This section documents the core entities and their attributes, primary keys, for
   - Unique index: token
   - Constraints: composite primary key
 
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L10-L262)
-- [20250612211318_init/migration.sql](file://frontend/prisma/migrations/20250612211318_init/migration.sql#L1-L187)
-- [20250613172024_replace_file_url_with_raw_text/migration.sql](file://frontend/prisma/migrations/20250613172024_replace_file_url_with_raw_text/migration.sql#L1-L96)
-- [20250730160233_add_new_resume_fields/migration.sql](file://frontend/prisma/migrations/20250730160233_add_new_resume_fields/migration.sql#L1-L6)
-- [20251023102445_add_analysis_social_links/migration.sql](file://frontend/prisma/migrations/20251023102445_add_analysis_social_links/migration.sql#L1-L6)
-- [20251114000000_add_llm_config/migration.sql](file://frontend/prisma/migrations/20251114000000_add_llm_config/migration.sql#L1-L27)
-- [20260214000000_multi_llm_configs/migration.sql](file://frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql#L1-L19)
-- [20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql](file://frontend/prisma/migrations/20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql#L1-L48)
-
-## Architecture Overview
+## Architecture overview
 The database architecture centers around a central User entity with multiple associated entities for resumes, analysis, communications, interviews, and identity/access management. Prisma enforces referential integrity and indexes defined in the schema and migrations.
 
 ```mermaid
@@ -248,15 +190,9 @@ USER ||--o{ LLMCONFIG : "owns"
 RESUME }o--|| RESUME : "parent_child"
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L10-L262)
-- [20250612211318_init/migration.sql](file://frontend/prisma/migrations/20250612211318_init/migration.sql#L1-L187)
-- [20250613172024_replace_file_url_with_raw_text/migration.sql](file://frontend/prisma/migrations/20250613172024_replace_file_url_with_raw_text/migration.sql#L1-L96)
-- [20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql](file://frontend/prisma/migrations/20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql#L1-L48)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Users and Identity Management
+### Users and identity management
 - Purpose: Central identity and role management with OAuth support and session tokens.
 - Key validations:
   - email is unique for local accounts.
@@ -283,21 +219,7 @@ Token->>DB : "UPDATE confirmedAt"
 Token->>User : "SET isVerified=true"
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L16-L41)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L61-L69)
-- [20250613172024_replace_file_url_with_raw_text/migration.sql](file://frontend/prisma/migrations/20250613172024_replace_file_url_with_raw_text/migration.sql#L23-L33)
-- [20250613172024_replace_file_url_with_raw_text/migration.sql](file://frontend/prisma/migrations/20250613172024_replace_file_url_with_raw_text/migration.sql#L35-L61)
-- [20250613172024_replace_file_url_with_raw_text/migration.sql](file://frontend/prisma/migrations/20250613172024_replace_file_url_with_raw_text/migration.sql#L63-L68)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L16-L41)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L61-L69)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L228-L253)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L255-L261)
-- [20250613172024_replace_file_url_with_raw_text/migration.sql](file://frontend/prisma/migrations/20250613172024_replace_file_url_with_raw_text/migration.sql#L23-L96)
-
-### Resumes and Analysis
+### Resumes and analysis
 - Purpose: Store resume text, hierarchy, and structured analysis results.
 - Key validations:
   - Resume.rawText is required.
@@ -317,17 +239,7 @@ UpsertAnalysis --> UpdateTimestamp["Set Analysis.updatedAt"]
 UpdateTimestamp --> End(["Ready for retrieval"])
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L81-L98)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L100-L125)
-- [20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql](file://frontend/prisma/migrations/20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql#L1-L48)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L81-L98)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L100-L125)
-- [20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql](file://frontend/prisma/migrations/20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql#L1-L48)
-
-### Communication Records (Cold Mail and Cover Letters)
+### Communication records (cold mail and cover letters)
 - Purpose: Track generated emails and cover letters for candidates.
 - Key validations:
   - Requests are owned by User; Responses link back to their Request.
@@ -352,18 +264,6 @@ Client->>Req : "List requests"
 Req->>DB : "SELECT * WHERE userId=..."
 Resp->>DB : "SELECT * WHERE requestId=..."
 ```
-
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L149-L174)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L166-L174)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L176-L201)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L194-L201)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L149-L174)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L176-L201)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L166-L174)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L194-L201)
 
 ### Interviews
 - Purpose: Manage interview setups and candidate answers.
@@ -391,15 +291,7 @@ IR->>DB : "SELECT * WHERE userId=..."
 IA->>DB : "SELECT * WHERE requestId=..."
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L203-L226)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L218-L226)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L203-L226)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L218-L226)
-
-### LLM Configurations
+### LLM configurations
 - Purpose: Store per-user LLM provider configuration with multiple named configs and an active flag.
 - Key validations:
   - Compound unique constraint on userId + label.
@@ -419,17 +311,7 @@ E --> F
 F --> G["Index: userId+isActive"]
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L43-L59)
-- [20251114000000_add_llm_config/migration.sql](file://frontend/prisma/migrations/20251114000000_add_llm_config/migration.sql#L1-L27)
-- [20260214000000_multi_llm_configs/migration.sql](file://frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql#L1-L19)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L43-L59)
-- [20251114000000_add_llm_config/migration.sql](file://frontend/prisma/migrations/20251114000000_add_llm_config/migration.sql#L1-L27)
-- [20260214000000_multi_llm_configs/migration.sql](file://frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql#L1-L19)
-
-## Dependency Analysis
+## Dependency analysis
 - Internal dependencies:
   - Resume depends on User; Analysis depends on Resume; InterviewAnswer depends on InterviewRequest; Responses depend on their Requests.
   - LlmConfig depends on User with CASCADE delete.
@@ -459,19 +341,7 @@ User --> LlmConfig["LlmConfig"]
 Resume --> ResumeChild["Resume (child)"]
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L10-L262)
-- [20250612211318_init/migration.sql](file://frontend/prisma/migrations/20250612211318_init/migration.sql#L1-L187)
-- [20250613172024_replace_file_url_with_raw_text/migration.sql](file://frontend/prisma/migrations/20250613172024_replace_file_url_with_raw_text/migration.sql#L1-L96)
-- [20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql](file://frontend/prisma/migrations/20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql#L1-L48)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L10-L262)
-- [20250612211318_init/migration.sql](file://frontend/prisma/migrations/20250612211318_init/migration.sql#L1-L187)
-- [20250613172024_replace_file_url_with_raw_text/migration.sql](file://frontend/prisma/migrations/20250613172024_replace_file_url_with_raw_text/migration.sql#L1-L96)
-- [20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql](file://frontend/prisma/migrations/20260222132919_add_resume_source_hierarchy_and_analysis_updated_at/migration.sql#L1-L48)
-
-## Performance Considerations
+## Performance considerations
 - Indexes
   - Unique indexes on email, token, provider+providerAccountId, sessionToken, and composite token fields optimize lookups and enforce uniqueness efficiently.
   - Composite indexes on userId+isMaster for Resume and userId+isActive for LlmConfig enable targeted queries without scanning entire tables.
@@ -493,7 +363,7 @@ Resume --> ResumeChild["Resume (child)"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Migration conflicts
   - If migrations fail due to lock contention, check migration_lock.toml and resolve conflicting migrations.
   - Re-run migrations after ensuring the database is reachable and credentials are correct.
@@ -506,19 +376,14 @@ Resume --> ResumeChild["Resume (child)"]
 - Token expiration
   - EmailVerificationToken and PasswordResetToken have explicit expiry times; handle expired tokens gracefully in the application.
 
-**Section sources**
-- [migration_lock.toml](file://frontend/prisma/migrations/migration_lock.toml#L1-L100)
-- [.env](file://frontend/.env#L1-L27)
-- [prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-
 ## Conclusion
-The TalentSync-Normies database design leverages Prisma ORM to define a clean, normalized schema with strong referential integrity and carefully chosen indexes. The design supports core workflows: user identity and sessions, resume ingestion and analysis, communication generation, interview orchestration, and configurable LLM settings. Migrations track schema evolution, while environment-driven configuration ensures secure deployment. The documented access patterns, caching strategies, and troubleshooting steps provide a practical foundation for reliable operation.
+The TalentSync-Normies database design uses Prisma ORM to define a clean, normalized schema with strong referential integrity and carefully chosen indexes. The design supports core workflows: user identity and sessions, resume ingestion and analysis, communication generation, interview orchestration, and configurable LLM settings. Migrations track schema evolution, while environment-driven configuration ensures secure deployment. The documented access patterns, caching strategies, and troubleshooting steps provide a practical foundation for reliable operation.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### Data Lifecycle and Retention
+### Data lifecycle and retention
 - Users and identity data: retain indefinitely; anonymization or deletion requests should cascade to related records per privacy policy.
 - Resumes and rawText: retain per user preference; provide deletion controls; consider archiving older versions.
 - Analysis: keep latest per resume; historical snapshots can be archived separately.
@@ -528,7 +393,7 @@ The TalentSync-Normies database design leverages Prisma ORM to define a clean, n
 
 [No sources needed since this section provides general guidance]
 
-### Data Security and Access Control
+### Data security and access control
 - Database permissions
   - Use least-privilege roles for application connections.
   - Separate read-only reporting users from application write users.
@@ -543,7 +408,7 @@ The TalentSync-Normies database design leverages Prisma ORM to define a clean, n
 
 [No sources needed since this section provides general guidance]
 
-### Prisma Migrate, Versioning, and Rollback
+### Prisma migrate, versioning, and rollback
 - Apply migrations
   - Run migration commands against the configured DATABASE_URL.
   - Review migration_lock.toml to detect concurrent migration attempts.
@@ -555,7 +420,3 @@ The TalentSync-Normies database design leverages Prisma ORM to define a clean, n
   - Prefer safe downgrades where possible; otherwise, recreate schema and re-seed.
 - Seeding
   - Use seed.ts to initialize default roles and other static data.
-
-**Section sources**
-- [seed.ts](file://frontend/prisma/seed.ts#L1-L30)
-- [migration_lock.toml](file://frontend/prisma/migrations/migration_lock.toml#L1-L100)

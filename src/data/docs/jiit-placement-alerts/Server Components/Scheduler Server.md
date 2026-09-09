@@ -1,34 +1,9 @@
-# Scheduler Server
-
-<cite>
-**Referenced Files in This Document**
-- [scheduler_server.py](file://app/servers/scheduler_server.py)
-- [update_runner.py](file://app/runners/update_runner.py)
-- [notification_runner.py](file://app/runners/notification_runner.py)
-- [config.py](file://app/core/config.py)
-- [daemon.py](file://app/core/daemon.py)
-- [main.py](file://app/main.py)
-- [database_service.py](file://app/services/database_service.py)
-- [db_client.py](file://app/clients/db_client.py)
-- [pyproject.toml](file://app/pyproject.toml)
-- [requirements.txt](file://app/requirements.txt)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Scheduler server
 
 ## Introduction
-This document explains the Scheduler Server component responsible for automated job execution using APScheduler. It covers scheduler configuration, job scheduling patterns, and automated update workflows. It documents the UpdateRunner coordination for data collection from SuperSet portal, email processing, and official website scraping, as well as the NotificationRunner for distributing notifications across Telegram and web push channels. The guide also addresses job lifecycle management, error handling and retry mechanisms, cron job configurations, integration with external services, startup procedures, logging, and performance optimization for automated workflows.
+This page explains the Scheduler Server component responsible for automated job execution using APScheduler. It covers scheduler configuration, job scheduling patterns, and automated update workflows. It documents the UpdateRunner coordination for data collection from SuperSet portal, email processing, and official website scraping, as well as the NotificationRunner for distributing notifications across Telegram and web push channels. The guide also addresses job lifecycle management, error handling and retry mechanisms, cron job configurations, integration with external services, startup procedures, logging, and performance optimization for automated workflows.
 
-## Project Structure
+## Project structure
 The Scheduler Server is implemented as a dedicated asynchronous server that schedules and executes periodic tasks independently from the Telegram bot server. It integrates with runner modules and services to fetch data, process it, and distribute notifications.
 
 ```mermaid
@@ -65,20 +40,7 @@ SS --> CFG
 SS --> DMN
 ```
 
-**Diagram sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L33-L387)
-- [update_runner.py](file://app/runners/update_runner.py#L21-L278)
-- [notification_runner.py](file://app/runners/notification_runner.py#L21-L160)
-- [database_service.py](file://app/services/database_service.py#L16-L200)
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [config.py](file://app/core/config.py#L18-L254)
-- [daemon.py](file://app/core/daemon.py#L114-L233)
-
-**Section sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L1-L14)
-- [main.py](file://app/main.py#L61-L85)
-
-## Core Components
+## Core components
 - SchedulerServer: Manages APScheduler, defines cron-triggered jobs, and orchestrates update and notification workflows.
 - UpdateRunner: Coordinates fetching and processing updates from SuperSet and local email sources.
 - NotificationRunner: Sends unsent notices via Telegram and/or Web Push channels.
@@ -86,16 +48,7 @@ SS --> DMN
 - Settings and Logging: Centralized configuration and logging setup for scheduler-specific logs.
 - Daemon Utilities: Provide daemonization and PID file management for long-running scheduler processes.
 
-**Section sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L33-L387)
-- [update_runner.py](file://app/runners/update_runner.py#L21-L278)
-- [notification_runner.py](file://app/runners/notification_runner.py#L21-L160)
-- [database_service.py](file://app/services/database_service.py#L16-L200)
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [config.py](file://app/core/config.py#L18-L254)
-- [daemon.py](file://app/core/daemon.py#L114-L233)
-
-## Architecture Overview
+## Architecture overview
 The Scheduler Server uses APScheduler to schedule two primary jobs:
 - Periodic update job: Executes every hour from 00:00 to 23:00 IST, mirroring the legacy update-and-send behavior.
 - Daily official placement scrape: Runs at 12:00 PM IST to update official placement data.
@@ -121,14 +74,7 @@ NR->>WS : send notifications (if enabled)
 SS->>SS : run_official_placement_scrape() (daily at 12 : 00 PM IST)
 ```
 
-**Diagram sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L78-L317)
-- [update_runner.py](file://app/runners/update_runner.py#L56-L148)
-- [notification_runner.py](file://app/runners/notification_runner.py#L60-L115)
-- [database_service.py](file://app/services/database_service.py#L69-L147)
-- [db_client.py](file://app/clients/db_client.py#L42-L79)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### SchedulerServer
 - Responsibilities:
@@ -163,12 +109,6 @@ Loop --> |No| Shutdown["shutdown()<br/>scheduler.shutdown()"]
 Shutdown --> End(["Stopped"])
 ```
 
-**Diagram sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L326-L363)
-
-**Section sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L33-L387)
-
 ### UpdateRunner
 - Responsibilities:
   - Authenticate to SuperSet using stored credentials.
@@ -198,13 +138,6 @@ I --> J["format notices with job_enricher callback"]
 J --> K["save_notice(formatted)"]
 I --> L["upsert_structured_job(enriched_job)"]
 ```
-
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L56-L237)
-
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L21-L278)
-- [database_service.py](file://app/services/database_service.py#L69-L147)
 
 ### NotificationRunner
 - Responsibilities:
@@ -240,14 +173,8 @@ end
 NS-->>NR : results
 ```
 
-**Diagram sources**
-- [notification_runner.py](file://app/runners/notification_runner.py#L60-L115)
-
-**Section sources**
-- [notification_runner.py](file://app/runners/notification_runner.py#L21-L160)
-
-### Email Processing Orchestration (Scheduler Context)
-The scheduler’s email update job mirrors the legacy email processing logic:
+### Email processing orchestration (scheduler context)
+The scheduler's email update job mirrors the legacy email processing logic:
 - Fetch unread email IDs.
 - For each email:
   - Attempt to process as a placement offer via PlacementService.
@@ -273,13 +200,7 @@ Mark --> Loop
 Loop --> Done(["return summary"])
 ```
 
-**Diagram sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L118-L237)
-
-**Section sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L118-L237)
-
-### Official Placement Website Scraping
+### Official placement website scraping
 Daily job at 12:00 PM IST scrapes official placement data and persists it to the database.
 
 ```mermaid
@@ -296,13 +217,7 @@ DS->>DBC : MongoDB operations
 SS-->>AP : completion log
 ```
 
-**Diagram sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L239-L273)
-
-**Section sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L239-L273)
-
-## Dependency Analysis
+## Dependency analysis
 - External dependencies:
   - APScheduler for scheduling.
   - Pytz for timezone handling.
@@ -329,20 +244,7 @@ SS --> CFG["Settings & Logging"]
 SS --> DMN["Daemon Utilities"]
 ```
 
-**Diagram sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L24-L30)
-- [update_runner.py](file://app/runners/update_runner.py#L12-L16)
-- [notification_runner.py](file://app/runners/notification_runner.py#L11-L16)
-- [database_service.py](file://app/services/database_service.py#L12-L14)
-- [db_client.py](file://app/clients/db_client.py#L29-L30)
-- [config.py](file://app/core/config.py#L18-L254)
-- [daemon.py](file://app/core/daemon.py#L114-L233)
-
-**Section sources**
-- [pyproject.toml](file://app/pyproject.toml#L7-L26)
-- [requirements.txt](file://app/requirements.txt#L7-L81)
-
-## Performance Considerations
+## Performance considerations
 - Minimize redundant API calls:
   - Pre-fetch existing notice and job IDs to filter new items efficiently.
   - Enrich only new jobs with detailed information.
@@ -357,7 +259,7 @@ SS --> DMN["Daemon Utilities"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Scheduler not starting:
   - Verify daemon mode and logging initialization.
   - Confirm timezone is set to Asia/Kolkata and cron expressions are valid.
@@ -372,11 +274,5 @@ SS --> DMN["Daemon Utilities"]
 - Email processing issues:
   - Inspect unread email IDs retrieval and per-email processing logs.
 
-**Section sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L326-L363)
-- [config.py](file://app/core/config.py#L188-L254)
-- [daemon.py](file://app/core/daemon.py#L114-L233)
-- [database_service.py](file://app/services/database_service.py#L47-L80)
-
 ## Conclusion
-The Scheduler Server provides a robust, decoupled mechanism for automated data collection and notification distribution. By leveraging APScheduler, it schedules frequent updates and a daily official placement scrape, coordinating with runner modules and services to maintain a clean separation of concerns. Proper configuration, logging, and daemonization support enable reliable operation in production environments.
+The Scheduler Server provides a reliable, decoupled mechanism for automated data collection and notification distribution. By using APScheduler, it schedules frequent updates and a daily official placement scrape, coordinating with runner modules and services to maintain a clean separation of concerns. Proper configuration, logging, and daemonization support enable reliable operation in production environments.

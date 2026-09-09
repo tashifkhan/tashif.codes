@@ -1,35 +1,9 @@
-# SMTP Authentication
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://README.md)
-- [package.json](file://electron/package.json)
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx)
-- [electron-builder.json](file://electron/electron-builder.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# SMTP authentication
 
 ## Introduction
-This document explains SMTP authentication methods and credential management in the application. It covers username/password authentication, encrypted credential storage, OAuth2 Gmail authentication, and best practices for secure operation. It also documents common failure scenarios, troubleshooting steps, and step-by-step setup guides for popular email providers.
+This page explains SMTP authentication methods and credential management in the application. It covers username/password authentication, encrypted credential storage, OAuth2 Gmail authentication, and best practices for secure operation. It also documents common failure scenarios, troubleshooting steps, and step-by-step setup guides for popular email providers.
 
-## Project Structure
+## Project structure
 The application is an Electron + React desktop app with dedicated modules for authentication and email sending:
 - Electron main process handles IPC, Gmail OAuth2, and SMTP operations
 - Renderer components manage UI and user interactions
@@ -66,19 +40,7 @@ GmailHandler --> Store
 SMTPHandler --> Store
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L103-L108)
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-
-**Section sources**
-- [README.md](file://README.md#L1-L455)
-- [package.json](file://electron/package.json#L1-L49)
-
-## Core Components
+## Core components
 - Gmail OAuth2 authentication flow with browser window and token persistence
 - SMTP username/password authentication with optional encrypted credential saving
 - Encrypted credential storage using electron-store
@@ -86,19 +48,13 @@ SMTPHandler --> Store
 - UI components for configuring and sending emails
 
 Key implementation references:
-- Gmail OAuth2: [handleGmailAuth](file://electron/src/electron/gmail-handler.js#L15-L130), [handleSendEmail](file://electron/src/electron/gmail-handler.js#L141-L214)
-- SMTP send: [handleSMTPSend](file://electron/src/electron/smtp-handler.js#L6-L105)
-- Credential storage: [Store initialization](file://electron/src/electron/smtp-handler.js#L4), [getSavedSMTPConfig](file://electron/src/electron/smtp-handler.js#L107-L110)
-- IPC exposure: [preload.js](file://electron/src/electron/preload.js#L4-L21)
-- UI orchestration: [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L261)
+- Gmail OAuth2: `handleGmailAuth`, `handleSendEmail`
+- SMTP send: `handleSMTPSend`
+- Credential storage: `Store initialization`, `getSavedSMTPConfig`
+- IPC exposure: `preload.js`
+- UI orchestration: `BulkMailer.jsx`
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-
-## Architecture Overview
+## Architecture overview
 The renderer invokes main-process methods via IPC. The main process performs authentication and sends emails, persisting credentials securely when requested.
 
 ```mermaid
@@ -117,15 +73,9 @@ Main-->>Preload : result
 Preload-->>UI : result
 ```
 
-**Diagram sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L91-L107)
-- [preload.js](file://electron/src/electron/preload.js#L6-L7)
-- [main.js](file://electron/src/electron/main.js#L103-L105)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### SMTP Username/Password Authentication
+### SMTP username/password authentication
 SMTP authentication uses nodemailer with explicit credentials. The handler validates configuration, optionally persists non-sensitive SMTP metadata, creates a transporter, verifies connectivity, and sends emails with progress updates.
 
 ```mermaid
@@ -164,17 +114,7 @@ Security considerations:
 - TLS verification occurs before sending
 - Self-signed certificate verification can be disabled for testing environments
 
-**Diagram sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L288-L312)
-- [preload.js](file://electron/src/electron/preload.js#L10-L11)
-- [main.js](file://electron/src/electron/main.js#L108)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-
-### Gmail OAuth2 Authentication
+### Gmail OAuth2 authentication
 The application uses Google OAuth2 with a browser window for consent and token exchange. Tokens are stored securely and reused for sending emails.
 
 ```mermaid
@@ -204,21 +144,10 @@ Token lifecycle:
 - Token is attached to Gmail API client for sending
 - Self-signed certificate verification disabled for API transport
 
-**Diagram sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L91-L107)
-- [preload.js](file://electron/src/electron/preload.js#L6-L7)
-- [main.js](file://electron/src/electron/main.js#L103-L105)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-
-### Credential Storage and Security
+### Credential storage and security
 - SMTP metadata (host, port, secure flag, user) can be saved when requested; passwords are intentionally omitted
 - Gmail tokens are stored securely in encrypted local storage
-- Electron’s contextBridge exposes only safe IPC methods to renderer
+- Electron's contextBridge exposes only safe IPC methods to renderer
 
 ```mermaid
 flowchart TD
@@ -240,17 +169,7 @@ Security controls:
 - Renderer cannot access Node.js APIs directly due to context isolation
 - Only whitelisted IPC methods are exposed
 
-**Diagram sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L22-L31)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L104-L104)
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
-
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L22-L31)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L104-L104)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-
-### UI Integration and Workflows
+### UI integration and workflows
 - BulkMailer orchestrates form rendering and validation
 - SMTPForm collects host/port/user/pass and triggers send
 - GmailForm manages OAuth flow and sends emails via API
@@ -269,18 +188,7 @@ GmailUI->>Preload : invoke("gmail-auth"/"send-email", data)
 Preload-->>Manager : results and progress events
 ```
 
-**Diagram sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L417-L481)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L288-L312)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L91-L107)
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
-
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-
-## Dependency Analysis
+## Dependency analysis
 External libraries and their roles:
 - nodemailer: SMTP transport and sending
 - googleapis: Gmail API client and OAuth2 flow
@@ -295,15 +203,7 @@ GmailHandler --> Store["electron-store"]
 SMTPHandler --> Store
 ```
 
-**Diagram sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L2)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L3-L4)
-- [package.json](file://electron/package.json#L20-L31)
-
-**Section sources**
-- [package.json](file://electron/package.json#L1-L49)
-
-## Performance Considerations
+## Performance considerations
 - Rate limiting: configurable delay between emails to avoid throttling and detection
 - Connection verification: SMTP verify reduces failures mid-batch
 - Batch progress: real-time updates minimize perceived latency
@@ -311,7 +211,7 @@ SMTPHandler --> Store
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 
 Common SMTP errors and resolutions:
 - Invalid credentials
@@ -342,46 +242,28 @@ Credential storage issues:
   - Ensure electron-store is installed and initialized
   - Check permissions for app data directory
 
-**Section sources**
-- [README.md](file://README.md#L412-L447)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
 ## Conclusion
-The application supports both SMTP username/password and Gmail OAuth2 authentication. SMTP credentials are not persisted, while Gmail tokens are stored securely. The UI provides guided workflows, progress tracking, and robust error handling. Follow the provider-specific setup guides and best practices to maintain secure, reliable email delivery.
+The application supports both SMTP username/password and Gmail OAuth2 authentication. SMTP credentials are not persisted, while Gmail tokens are stored securely. The UI provides guided workflows, progress tracking, and reliable error handling. Follow the provider-specific setup guides and best practices to maintain secure, reliable email delivery.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### Step-by-Step: Gmail SMTP (App Password)
+### Step-by-Step: gmail SMTP (app password)
 - Obtain App Password from Google account settings
 - Use host: smtp.gmail.com, port: 587 (TLS), secure: false
 - Enter username and App Password in SMTP form
 - Optionally save non-sensitive SMTP metadata
 
-**Section sources**
-- [README.md](file://README.md#L120-L127)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L82-L162)
-
-### Step-by-Step: Outlook SMTP
+### Step-by-Step: outlook SMTP
 - Host: smtp-mail.outlook.com, Port: 587, Secure: false (TLS)
 - Enter username and password in SMTP form
 - Optionally save non-sensitive SMTP metadata
 
-**Section sources**
-- [README.md](file://README.md#L128-L133)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L82-L162)
-
-### Best Practices for Credential Security
+### Best practices for credential security
 - Prefer OAuth2 where available (Gmail)
 - Use app-specific passwords for SMTP providers
 - Limit saved metadata; never persist passwords
 - Regularly rotate credentials and monitor usage
 - Enforce rate limits and validate inputs
 - Keep dependencies updated and review security advisories
-
-**Section sources**
-- [README.md](file://README.md#L333-L341)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L22-L31)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L104-L104)

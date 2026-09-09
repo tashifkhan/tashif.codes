@@ -1,32 +1,7 @@
-# ATS Evaluation API
-
-<cite>
-**Referenced Files in This Document**
-- [routes/ats.py](file://backend/app/routes/ats.py)
-- [services/ats.py](file://backend/app/services/ats.py)
-- [services/ats_evaluator/graph.py](file://backend/app/services/ats_evaluator/graph.py)
-- [services/ats_evaluator/__init__.py](file://backend/app/services/ats_evaluator/__init__.py)
-- [models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py)
-- [models/schemas.py](file://backend/app/models/schemas.py)
-- [data/prompt/jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py)
-- [services/process_resume.py](file://backend/app/services/process_resume.py)
-- [agents/web_content_agent.py](file://backend/app/agents/web_content_agent.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# ATS evaluation API
 
 ## Introduction
-This document describes the Applicant Tracking System (ATS) evaluation functionality exposed by the backend API. It covers:
+This page describes the Applicant Tracking System (ATS) evaluation functionality exposed by the backend API. It covers:
 - Job description processing endpoints (text-based and file-based)
 - Resume scanning pipeline and supported formats
 - Keyword matching logic and scoring methodology
@@ -34,9 +9,9 @@ This document describes the Applicant Tracking System (ATS) evaluation functiona
 - Bulk evaluation capabilities, filtering, and result aggregation
 - Practical optimization workflows and integration patterns
 
-The system evaluates a candidate’s resume against a job description using a structured 100-point rubric, returning a numeric score, reasons, and actionable suggestions.
+The system evaluates a candidate's resume against a job description using a structured 100-point rubric, returning a numeric score, reasons, and actionable suggestions.
 
-## Project Structure
+## Project structure
 The ATS evaluation feature spans routing, service orchestration, prompt-driven evaluation, and document processing utilities.
 
 ```mermaid
@@ -66,27 +41,7 @@ M1 --> S
 M2 --> R
 ```
 
-**Diagram sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [services/ats.py](file://backend/app/services/ats.py#L1-L214)
-- [services/ats_evaluator/graph.py](file://backend/app/services/ats_evaluator/graph.py#L1-L209)
-- [services/process_resume.py](file://backend/app/services/process_resume.py#L1-L117)
-- [agents/web_content_agent.py](file://backend/app/agents/web_content_agent.py#L1-L23)
-- [models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L1-L44)
-- [models/schemas.py](file://backend/app/models/schemas.py#L1-L191)
-- [data/prompt/jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L1-L184)
-
-**Section sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [services/ats.py](file://backend/app/services/ats.py#L1-L214)
-- [services/ats_evaluator/graph.py](file://backend/app/services/ats_evaluator/graph.py#L1-L209)
-- [services/process_resume.py](file://backend/app/services/process_resume.py#L1-L117)
-- [agents/web_content_agent.py](file://backend/app/agents/web_content_agent.py#L1-L23)
-- [models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L1-L44)
-- [models/schemas.py](file://backend/app/models/schemas.py#L1-L191)
-- [data/prompt/jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L1-L184)
-
-## Core Components
+## Core components
 - Endpoints
   - Text-based evaluation endpoint: POST /ats/evaluate
   - File-based evaluation endpoint: POST /ats/evaluate (multipart/form-data)
@@ -107,14 +62,7 @@ Key behaviors:
 - Fetches job description from a URL if provided
 - Normalizes evaluator output into a standardized response
 
-**Section sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L22-L48)
-- [routes/ats.py](file://backend/app/routes/ats.py#L50-L131)
-- [routes/ats.py](file://backend/app/routes/ats.py#L133-L184)
-- [models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L33-L44)
-- [models/schemas.py](file://backend/app/models/schemas.py#L158-L161)
-
-## Architecture Overview
+## Architecture overview
 The evaluation pipeline:
 1. Receive request via FastAPI router
 2. Parse and validate payload
@@ -146,17 +94,9 @@ G-->>S : JSON result (score, reasons, suggestions)
 S-->>C : JDEvaluatorResponse
 ```
 
-**Diagram sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L50-L184)
-- [services/ats.py](file://backend/app/services/ats.py#L22-L214)
-- [services/process_resume.py](file://backend/app/services/process_resume.py#L68-L91)
-- [agents/web_content_agent.py](file://backend/app/agents/web_content_agent.py#L4-L22)
-- [services/ats_evaluator/graph.py](file://backend/app/services/ats_evaluator/graph.py#L116-L202)
-- [data/prompt/jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L1-L184)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Endpoint: POST /ats/evaluate (Text-based)
+### Endpoint: POST /ats/evaluate (text-based)
 - Accepts JSON body or form-encoded payload
 - Validates presence of either jd_text or jd_link
 - Supports optional company_name and company_website enrichment
@@ -167,17 +107,11 @@ Behavior highlights:
 - Converts uploaded JD files to text when provided
 - Delegates to service layer for evaluation
 
-**Section sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L50-L131)
-
-### Endpoint: POST /ats/evaluate (File-based)
+### Endpoint: POST /ats/evaluate (file-based)
 - Accepts multipart/form-data with resume_file and optional jd_file/jd_text/jd_link
 - Validates allowed JD file extensions
 - Reads and converts resume and optional JD files to text
 - Enforces that a job description source is provided
-
-**Section sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L133-L184)
 
 ### Service: ats_evaluate_service
 Responsibilities:
@@ -191,10 +125,7 @@ Key validations and error handling:
 - HTTP 400 for invalid inputs or missing JD source
 - HTTP 500 for retrieval failures or JSON parsing errors
 
-**Section sources**
-- [services/ats.py](file://backend/app/services/ats.py#L22-L214)
-
-### Evaluation Graph: ATSEvaluatorGraph and evaluate_ats
+### Evaluation graph: ATSEvaluatorGraph and evaluate_ats
 - Initializes LLM (prefers shared provider; falls back to Gemini)
 - Optionally binds Tavily search tool if available
 - Formats prompt with resume, JD, company name, and company website content
@@ -218,14 +149,7 @@ class evaluate_ats {
 ATSEvaluatorGraph <.. evaluate_ats : "instantiated and invoked"
 ```
 
-**Diagram sources**
-- [services/ats_evaluator/graph.py](file://backend/app/services/ats_evaluator/graph.py#L41-L114)
-- [services/ats_evaluator/graph.py](file://backend/app/services/ats_evaluator/graph.py#L116-L202)
-
-**Section sources**
-- [services/ats_evaluator/graph.py](file://backend/app/services/ats_evaluator/graph.py#L1-L209)
-
-### Prompt Template: jd_evaluator
+### Prompt template: jd_evaluator
 - Defines a 100-point rubric across categories:
   - Technical Skills & Experience Match (30)
   - Career Progression & Achievements (25)
@@ -242,10 +166,7 @@ Scoring methodology:
 - Cap final score at 100 and round to integer
 - Produce reasons and suggestions aligned to the rubric
 
-**Section sources**
-- [data/prompt/jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L1-L184)
-
-### Document Processing: process_document
+### Document processing: process_document
 Capabilities:
 - Converts PDF, DOC, DOCX to Markdown for parsing
 - Falls back to Google GenAI multimodal conversion when needed
@@ -256,20 +177,13 @@ Supported formats:
 - Resume: TXT, MD, PDF, DOC, DOCX
 - Job Description: TXT, MD, PDF, DOC, DOCX
 
-**Section sources**
-- [services/process_resume.py](file://backend/app/services/process_resume.py#L68-L91)
-- [services/process_resume.py](file://backend/app/services/process_resume.py#L93-L117)
-
-### Web Content Retrieval: web_content_agent
+### Web content retrieval: web_content_agent
 - Fetches markdown content from a URL using a third-party service
 - Returns empty string on failure or empty content
 
 Used when jd_link is provided instead of jd_text.
 
-**Section sources**
-- [agents/web_content_agent.py](file://backend/app/agents/web_content_agent.py#L4-L22)
-
-### Response Schema: JDEvaluatorResponse
+### Response schema: JDEvaluatorResponse
 Fields:
 - success: Boolean
 - message: String
@@ -279,11 +193,7 @@ Fields:
 
 Normalization ensures robustness when evaluator returns JSON or narrative.
 
-**Section sources**
-- [models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L33-L44)
-- [services/ats.py](file://backend/app/services/ats.py#L174-L191)
-
-## Dependency Analysis
+## Dependency analysis
 - Routes depend on:
   - process_document for file parsing
   - web_content_agent for JD link retrieval
@@ -307,25 +217,7 @@ Service --> Models["models/ats_evaluator/schemas.py"]
 Models --> Routes
 ```
 
-**Diagram sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [services/ats.py](file://backend/app/services/ats.py#L1-L214)
-- [services/ats_evaluator/graph.py](file://backend/app/services/ats_evaluator/graph.py#L1-L209)
-- [models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L1-L44)
-- [data/prompt/jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L1-L184)
-- [services/process_resume.py](file://backend/app/services/process_resume.py#L1-L117)
-- [agents/web_content_agent.py](file://backend/app/agents/web_content_agent.py#L1-L23)
-
-**Section sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [services/ats.py](file://backend/app/services/ats.py#L1-L214)
-- [services/ats_evaluator/graph.py](file://backend/app/services/ats_evaluator/graph.py#L1-L209)
-- [models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L1-L44)
-- [data/prompt/jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L1-L184)
-- [services/process_resume.py](file://backend/app/services/process_resume.py#L1-L117)
-- [agents/web_content_agent.py](file://backend/app/agents/web_content_agent.py#L1-L23)
-
-## Performance Considerations
+## Performance considerations
 - LLM invocation cost and latency dominate evaluation time; consider:
   - Using a shared LLM provider to reduce cold-starts
   - Limiting concurrent evaluations during peak loads
@@ -337,7 +229,7 @@ Models --> Routes
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Missing job description source
   - Ensure either jd_text or jd_link is provided
@@ -353,22 +245,14 @@ Common issues and resolutions:
 
 Operational logs capture company_name, presence of JD text/link, and raw outputs to aid debugging.
 
-**Section sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L80-L95)
-- [routes/ats.py](file://backend/app/routes/ats.py#L158-L168)
-- [services/ats.py](file://backend/app/services/ats.py#L45-L59)
-- [services/process_resume.py](file://backend/app/services/process_resume.py#L21-L32)
-- [services/ats.py](file://backend/app/services/ats.py#L124-L140)
-- [services/ats.py](file://backend/app/services/ats.py#L175-L179)
-
 ## Conclusion
-The ATS evaluation API provides a robust, extensible pipeline to assess resume-JD alignment using a structured 100-point rubric. It supports flexible input formats, optional enrichment, and produces actionable insights. Integrations can leverage the standardized response schema to power dashboards, bulk scoring, and automated optimization workflows.
+The ATS evaluation API provides a reliable, extensible pipeline to assess resume-JD alignment using a structured 100-point rubric. It supports flexible input formats, optional enrichment, and produces actionable insights. Integrations can use the standardized response schema to power dashboards, bulk scoring, and automated optimization workflows.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### API Reference
+### API reference
 
 - Endpoint: POST /ats/evaluate
   - Body (JSON or multipart/form-data)
@@ -393,12 +277,7 @@ The ATS evaluation API provides a robust, extensible pipeline to assess resume-J
     - company_name: string (optional)
     - company_website: string (optional)
 
-**Section sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L50-L131)
-- [routes/ats.py](file://backend/app/routes/ats.py#L133-L184)
-- [models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L33-L44)
-
-### Scoring Methodology and Weight Assignment
+### Scoring methodology and weight assignment
 - Categories and approximate weights:
   - Technical Skills & Experience Match: 30%
   - Career Progression & Achievements: 25%
@@ -411,29 +290,19 @@ The ATS evaluation API provides a robust, extensible pipeline to assess resume-J
   - Penalties (e.g., inconsistencies, unprofessional contact info, obvious misrepresentations)
 - Final score capped at 100 and rounded to integer
 
-**Section sources**
-- [data/prompt/jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L38-L118)
-
-### Keyword Matching Logic
+### Keyword matching logic
 - Extract required and preferred keywords from the JD
 - Match exact terms and common synonyms/equivalents
 - Count close equivalents as partial matches with documented mappings
 - Penalize generic resumes; reward customization to the JD
 - Provide specific reasons and suggestions for missing or mismatched keywords
 
-**Section sources**
-- [data/prompt/jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L28-L36)
-- [data/prompt/jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L120-L130)
-
-### Formatting Compatibility Checks
+### Formatting compatibility checks
 - Resume content must include typical sections (e.g., Experience, Education, Skills)
 - Resume text validated heuristically to ensure structure
 - No specific ATS field enforcement; focus on semantic alignment and presentation quality
 
-**Section sources**
-- [services/process_resume.py](file://backend/app/services/process_resume.py#L93-L109)
-
-### Bulk ATS Evaluation and Aggregation
+### Bulk ATS evaluation and aggregation
 - Recommended pattern:
   - Iterate over a batch of resumes and a single job description
   - Store per-resume JDEvaluatorResponse entries
@@ -447,7 +316,7 @@ The ATS evaluation API provides a robust, extensible pipeline to assess resume-J
 
 [No sources needed since this section provides general guidance]
 
-### Practical Optimization Workflows
+### Practical optimization workflows
 - Workflow 1: Tailored Resume Generation
   - Use suggestions to rewrite resume sections
   - Re-run evaluation to measure improvements
@@ -460,7 +329,7 @@ The ATS evaluation API provides a robust, extensible pipeline to assess resume-J
 
 [No sources needed since this section provides general guidance]
 
-### Integration with External ATS Systems
+### Integration with external ATS systems
 - Use the standardized JDEvaluatorResponse to integrate with:
   - Internal ATS scoring dashboards
   - Pre-screening filters (e.g., minimum score thresholds)

@@ -27,7 +27,7 @@ import { scaleBand } from "@tanstack/charts/scales/band";
 import { scaleLinear } from "@tanstack/charts/scales/linear";
 import { scalePoint } from "@tanstack/charts/scales/point";
 import { tooltip } from "@tanstack/charts/tooltip";
-import { useWebHaptics } from "web-haptics/react";
+import { trigger } from "@/lib/haptics";
 
 // Theme tokens shared by every TanStack chart on this page
 const CHART_THEME = {
@@ -718,7 +718,6 @@ export default function ProjectStatsDashboard() {
 	const [period, setPeriod] = useState<string>("0");
 	const [granularity, setGranularity] = useState<Granularity>("week");
 	const [retryToken, setRetryToken] = useState<number>(0);
-	const { trigger } = useWebHaptics();
 	const API_PREFIX = "/projects/stats/api";
 
 	const API_BASE = useMemo(() => {
@@ -950,6 +949,7 @@ export default function ProjectStatsDashboard() {
 
 				<div className="flex flex-col sm:flex-row gap-3">
 					<Select
+						onOpenChange={() => trigger("light")}
 						value={selectedSlug}
 						onValueChange={(v) => {
 							trigger("selection");
@@ -957,7 +957,7 @@ export default function ProjectStatsDashboard() {
 							setSelectedSlug(v);
 						}}
 					>
-						<SelectTrigger className="w-full sm:w-[240px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
+						<SelectTrigger data-haptic="manual" className="w-full sm:w-[240px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
 							<SelectValue placeholder="Select Project" />
 						</SelectTrigger>
 						<SelectContent className="bg-card border-border">
@@ -974,6 +974,7 @@ export default function ProjectStatsDashboard() {
 					</Select>
 
 					<Select
+						onOpenChange={() => trigger("light")}
 						value={period}
 						onValueChange={(v) => {
 							trigger("selection");
@@ -981,7 +982,7 @@ export default function ProjectStatsDashboard() {
 							setPeriod(v);
 						}}
 					>
-						<SelectTrigger className="w-full sm:w-[160px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
+						<SelectTrigger data-haptic="manual" className="w-full sm:w-[160px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
 							<Calendar className="w-3.5 h-3.5 mr-2 text-primary/60" />
 							<SelectValue placeholder="Period" />
 						</SelectTrigger>
@@ -995,13 +996,14 @@ export default function ProjectStatsDashboard() {
 					</Select>
 
 					<Select
+						onOpenChange={() => trigger("light")}
 						value={granularity}
 						onValueChange={(v) => {
 							trigger("selection");
 							setGranularity(v as Granularity);
 						}}
 					>
-						<SelectTrigger className="w-full sm:w-[140px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
+						<SelectTrigger data-haptic="manual" className="w-full sm:w-[140px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
 							<Activity className="w-3.5 h-3.5 mr-2 text-primary/60" />
 							<SelectValue placeholder="Group by" />
 						</SelectTrigger>

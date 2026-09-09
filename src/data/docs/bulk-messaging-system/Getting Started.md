@@ -1,35 +1,4 @@
-# Getting Started
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://README.md)
-- [package.json](file://electron/package.json)
-- [requirements.txt](file://python-backend/requirements.txt)
-- [main.js](file://electron/src/electron/main.js)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [vite.config.js](file://electron/vite.config.js)
-- [electron-builder.json](file://electron/electron-builder.json)
-- [app.py](file://python-backend/app.py)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Prerequisites](#prerequisites)
-3. [Installation](#installation)
-4. [Environment Configuration](#environment-configuration)
-5. [Initial Setup Workflow](#initial-setup-workflow)
-6. [Quick Start Examples](#quick-start-examples)
-7. [Architecture Overview](#architecture-overview)
-8. [Detailed Component Analysis](#detailed-component-analysis)
-9. [Dependency Analysis](#dependency-analysis)
-10. [Troubleshooting Guide](#troubleshooting-guide)
-11. [Verification Steps](#verification-steps)
-12. [Next Steps](#next-steps)
+# Getting started
 
 ## Introduction
 This guide helps you set up and run the WhatsappBulkMessaging desktop application. It covers prerequisites, installation, environment configuration, initial setup, quick start examples for each messaging service, troubleshooting, and verification steps. The application combines an Electron + React frontend with a Python backend for advanced contact processing.
@@ -43,9 +12,6 @@ Ensure your system meets these requirements before installing:
 - SMTP server credentials (if using SMTP method)
 
 These prerequisites are documented in the project's Getting Started section.
-
-**Section sources**
-- [README.md](file://README.md#L61-L67)
 
 ## Installation
 Follow these step-by-step instructions to install the application:
@@ -76,12 +42,7 @@ Follow these step-by-step instructions to install the application:
 
 This starts both the React development server and the Electron main process concurrently.
 
-**Section sources**
-- [README.md](file://README.md#L69-L97)
-- [package.json](file://electron/package.json#L7-L18)
-- [requirements.txt](file://python-backend/requirements.txt#L1-L7)
-
-## Environment Configuration
+## Environment configuration
 Configure environment variables for Gmail API authentication:
 
 1. Create a `.env` file in the `electron` directory with your Google OAuth2 credentials:
@@ -94,12 +55,7 @@ Configure environment variables for Gmail API authentication:
 
 These configurations enable secure OAuth2 authentication for Gmail API integration.
 
-**Section sources**
-- [README.md](file://README.md#L111-L118)
-- [README.md](file://README.md#L101-L109)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L29)
-
-## Initial Setup Workflow
+## Initial setup workflow
 Connect to WhatsApp using QR code authentication:
 
 1. Open the application and navigate to the WhatsApp tab.
@@ -125,29 +81,14 @@ WA-->>Main : ready/authenticated events
 Main-->>UI : emit("whatsapp-status", "ready/Authenticated")
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L14-L18)
-- [preload.js](file://electron/src/electron/preload.js#L23-L39)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-
-**Section sources**
-- [README.md](file://README.md#L136-L143)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L176-L278)
-
-## Quick Start Examples
-### WhatsApp Messaging
+## Quick start examples
+### WhatsApp messaging
 1. Connect to WhatsApp using the QR code workflow described above.
 2. Import contacts via CSV/Excel or add numbers manually.
 3. Compose your message, optionally using `{{name}}` for personalization.
 4. Set a delay between messages and click "Send Mass Messages".
 
 The Electron main process sends messages using the WhatsApp Web client and reports progress.
-
-**Section sources**
-- [README.md](file://README.md#L136-L160)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L433-L490)
 
 ### Gmail API
 1. Navigate to the Gmail tab.
@@ -157,11 +98,6 @@ The Electron main process sends messages using the WhatsApp Web client and repor
 5. Set the delay between emails and click "Send Bulk Email".
 
 The Gmail handler manages OAuth2 flow and sends emails via the Gmail API.
-
-**Section sources**
-- [README.md](file://README.md#L164-L171)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L61-L101)
 
 ### SMTP
 1. Navigate to the SMTP tab.
@@ -173,12 +109,7 @@ The Gmail handler manages OAuth2 flow and sends emails via the Gmail API.
 
 The SMTP handler validates configuration, connects to the server, and sends emails.
 
-**Section sources**
-- [README.md](file://README.md#L173-L180)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L66-L163)
-
-## Architecture Overview
+## Architecture overview
 The application follows a hybrid architecture combining Electron + React for the UI and Python for backend utilities.
 
 ```mermaid
@@ -208,19 +139,9 @@ UI --> PyAPI
 PyAPI --> Utils
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L1-L50)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L20)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L10)
-- [app.py](file://python-backend/app.py#L1-L20)
+## Detailed component analysis
 
-**Section sources**
-- [README.md](file://README.md#L43-L57)
-- [package.json](file://electron/package.json#L20-L31)
-
-## Detailed Component Analysis
-
-### Electron Main Process
+### Electron main process
 The main process orchestrates:
 - Window creation and development vs production loading
 - IPC handlers for Gmail, SMTP, and WhatsApp
@@ -239,15 +160,7 @@ QR --> UI["Renderer Receives QR"]
 Ready --> UI
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L20-L100)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L100)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-
-### Gmail Handler
+### Gmail handler
 Handles OAuth2 authentication and email sending:
 - Validates environment variables
 - Opens browser window for consent
@@ -273,37 +186,21 @@ Handler->>GmailAPI : users.messages.send()
 Handler-->>UI : progress events
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L3-L18)
-
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L139)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L227)
-
-### SMTP Handler
+### SMTP handler
 Manages SMTP configuration and sending:
 - Validates SMTP config
 - Saves credentials securely (excluding password)
 - Verifies connection
 - Sends emails with rate limiting and progress reporting
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L66-L163)
-
-### Python Backend API
+### Python backend API
 Provides contact processing utilities:
 - Upload and parse CSV/Excel/Text files
 - Clean and validate phone numbers
 - Parse manually entered numbers
 - Validate individual numbers
 
-**Section sources**
-- [app.py](file://python-backend/app.py#L225-L378)
-
-## Dependency Analysis
+## Dependency analysis
 Key dependencies and their roles:
 
 ```mermaid
@@ -329,15 +226,7 @@ Nodemailer -.-> Python
 Googleapis -.-> Python
 ```
 
-**Diagram sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [requirements.txt](file://python-backend/requirements.txt#L1-L7)
-
-**Section sources**
-- [package.json](file://electron/package.json#L20-L47)
-- [requirements.txt](file://python-backend/requirements.txt#L1-L7)
-
-## Troubleshooting Guide
+## Troubleshooting guide
 Common installation and runtime issues:
 
 - **WhatsApp QR Code Not Loading**
@@ -365,10 +254,7 @@ Additional checks:
 - Ensure environment variables are correctly set
 - Verify development server runs on port 5173
 
-**Section sources**
-- [README.md](file://README.md#L412-L446)
-
-## Verification Steps
+## Verification steps
 After completing setup, verify your installation:
 
 1. **Development Server**
@@ -395,12 +281,7 @@ After completing setup, verify your installation:
    - Test contact parsing endpoints
    - Verify response formats
 
-**Section sources**
-- [vite.config.js](file://electron/vite.config.js#L12-L15)
-- [main.js](file://electron/src/electron/main.js#L34-L50)
-- [README.md](file://README.md#L136-L180)
-
-## Next Steps
+## Next steps
 Once verified, explore advanced features:
 - Customize message templates
 - Configure rate limiting and delays
@@ -409,7 +290,3 @@ Once verified, explore advanced features:
 - Package the application for distribution using electron-builder
 
 Build targets are configured for macOS, Windows, and Linux distributions.
-
-**Section sources**
-- [README.md](file://README.md#L342-L353)
-- [electron-builder.json](file://electron/electron-builder.json#L1-L17)

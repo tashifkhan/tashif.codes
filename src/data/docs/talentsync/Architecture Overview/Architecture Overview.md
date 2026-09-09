@@ -1,39 +1,9 @@
-# Architecture Overview
-
-<cite>
-**Referenced Files in This Document**
-- [readme.md](file://readme.md)
-- [docker-compose.yaml](file://docker-compose.yaml)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml)
-- [backend/app/main.py](file://backend/app/main.py)
-- [backend/pyproject.toml](file://backend/pyproject.toml)
-- [backend/Dockerfile](file://backend/Dockerfile)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py)
-- [frontend/package.json](file://frontend/package.json)
-- [frontend/Dockerfile](file://frontend/Dockerfile)
-- [frontend/next.config.js](file://frontend/next.config.js)
-- [frontend/lib/auth-options.ts](file://frontend/lib/auth-options.ts)
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma)
-- [backend/.env](file://backend/.env)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Architecture overview
 
 ## Introduction
-This document presents the architectural overview of the TalentSync-Normies microservices platform. The system integrates a modern frontend built with Next.js, a high-performance backend powered by FastAPI, a LangChain-based AI/ML orchestration service, and a PostgreSQL database. It is containerized with Docker and orchestrated via Docker Compose for development and production deployments. The architecture emphasizes scalability, maintainability, and cloud readiness with AWS as the target platform.
+This page presents the architectural overview of the TalentSync-Normies microservices platform. The system integrates a modern frontend built with Next.js, a high-performance backend powered by FastAPI, a LangChain-based AI/ML orchestration service, and a PostgreSQL database. It is containerized with Docker and orchestrated via Docker Compose for development and production deployments. The architecture emphasizes scalability, maintainability, and cloud readiness with AWS as the target platform.
 
-## Project Structure
+## Project structure
 The repository is organized into three primary areas:
 - Frontend: Next.js application with TypeScript, Prisma ORM, and PWA support
 - Backend: FastAPI microservice implementing route-based APIs and LangChain integrations
@@ -50,15 +20,7 @@ FE --> |"HTTP API"| BE
 BE --> |"SQL"| DB
 ```
 
-**Diagram sources**
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-
-**Section sources**
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [frontend/Dockerfile](file://frontend/Dockerfile#L1-L110)
-- [backend/Dockerfile](file://backend/Dockerfile#L1-L33)
-
-## Core Components
+## Core components
 - Frontend (Next.js)
   - Built with React and TypeScript, styled with Tailwind CSS
   - Authentication via NextAuth.js with multiple providers (OAuth, credentials, email)
@@ -76,17 +38,7 @@ BE --> |"SQL"| DB
   - Prisma schema defines core entities: User, Role, Resume, Analysis, Interview, and related request/response entities
   - Migrations managed via Prisma CLI
 
-**Section sources**
-- [frontend/package.json](file://frontend/package.json#L1-L114)
-- [frontend/lib/auth-options.ts](file://frontend/lib/auth-options.ts#L1-L202)
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L1-L262)
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py#L1-L94)
-- [backend/Dockerfile](file://backend/Dockerfile#L1-L33)
-- [frontend/Dockerfile](file://frontend/Dockerfile#L1-L110)
-
-## Architecture Overview
+## Architecture overview
 The system follows a classic three-tier pattern with clear separation of concerns:
 - Presentation Layer: Next.js frontend serving dynamic UI and handling authentication
 - Application Layer: FastAPI backend implementing business logic and integrating AI/ML
@@ -113,14 +65,9 @@ Next --> |"HTTP /api/*"| API
 API --> PG
 ```
 
-**Diagram sources**
-- [frontend/lib/auth-options.ts](file://frontend/lib/auth-options.ts#L1-L202)
-- [backend/app/main.py](file://backend/app/main.py#L157-L203)
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L1-L262)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Frontend (Next.js) Authentication and Routing
+### Frontend (Next.js) authentication and routing
 - Authentication
   - NextAuth.js configured with Prisma adapter and multiple providers (Google, GitHub, Email, Credentials)
   - Session strategy uses JWT; callbacks manage user roles, verification status, and profile synchronization
@@ -147,17 +94,7 @@ FE->>BE : "Call /api/v*/ endpoint with auth headers"
 BE-->>FE : "Response data"
 ```
 
-**Diagram sources**
-- [frontend/lib/auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L16-L41)
-- [backend/app/main.py](file://backend/app/main.py#L157-L203)
-
-**Section sources**
-- [frontend/lib/auth-options.ts](file://frontend/lib/auth-options.ts#L1-L202)
-- [frontend/next.config.js](file://frontend/next.config.js#L1-L90)
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L1-L262)
-
-### Backend (FastAPI) API Surface and Middleware
+### Backend (FastAPI) API surface and middleware
 - API Versioning
   - v1 and v2 route sets expose features like resume analysis, ATS evaluation, cover letter generation, hiring assistant, and tailored resume creation
 - Middleware
@@ -176,20 +113,12 @@ RouterSel --> Handler["Route Handler"]
 Handler --> Response(["HTTP Response"])
 ```
 
-**Diagram sources**
-- [backend/app/main.py](file://backend/app/main.py#L71-L154)
-- [backend/app/main.py](file://backend/app/main.py#L157-L203)
-
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-- [backend/Dockerfile](file://backend/Dockerfile#L1-L33)
-
-### AI/ML Orchestration with LangChain
+### AI/ML orchestration with LangChain
 - LLM Factory
   - Provider-agnostic factory supports OpenAI, Anthropic, Google Gemini, Ollama, OpenRouter, and DeepSeek
   - Temperature handling varies by provider/model
 - JSON Parsing Helpers
-  - Robust extraction and parsing of structured JSON from LLM responses
+  - Reliable extraction and parsing of structured JSON from LLM responses
 - Configuration
   - Environment-driven provider selection and API keys
 
@@ -208,16 +137,7 @@ class LLMHelpers {
 LLMFactory --> LLMHelpers : "used by"
 ```
 
-**Diagram sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L31-L107)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L148-L176)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py#L30-L94)
-
-**Section sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py#L1-L94)
-
-### Database Schema and ORM
+### Database schema and ORM
 - Entities
   - Role, User, Resume, Analysis, InterviewRequest/Answer, Recruiter, tokens, and accounts/sessions
 - Relationships
@@ -241,13 +161,7 @@ USER ||--o{ ACCOUNT : "auth_providers"
 USER ||--o{ SESSION : "sessions"
 ```
 
-**Diagram sources**
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L10-L262)
-
-**Section sources**
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L1-L262)
-
-## Dependency Analysis
+## Dependency analysis
 - Technology Stack Decisions
   - Frontend: Next.js for SSR/SSG, Prisma for ORM, NextAuth for auth, Tailwind for styling
   - Backend: FastAPI for performance and automatic OpenAPI docs, LangChain for AI/ML orchestration
@@ -287,17 +201,7 @@ FA --> LG
 FA --> PG
 ```
 
-**Diagram sources**
-- [frontend/package.json](file://frontend/package.json#L17-L85)
-- [backend/pyproject.toml](file://backend/pyproject.toml#L7-L33)
-- [docker-compose.yaml](file://docker-compose.yaml#L4-L17)
-
-**Section sources**
-- [frontend/package.json](file://frontend/package.json#L1-L114)
-- [backend/pyproject.toml](file://backend/pyproject.toml#L1-L42)
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-
-## Performance Considerations
+## Performance considerations
 - Container Images
   - Multi-stage Docker builds reduce image sizes and attack surface
   - Frontend uses slim base images for production runtime
@@ -310,7 +214,7 @@ FA --> PG
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Authentication Issues
   - Verify NEXTAUTH_URL and NEXTAUTH_SECRET in environment
   - Ensure EMAIL_* and OAuth credentials are set for Email and provider-based sign-in
@@ -324,12 +228,6 @@ FA --> PG
   - In development, frontend exposes port 3000; backend listens on 8000
   - Production compose uses external network for reverse proxy integration
 
-**Section sources**
-- [backend/.env](file://backend/.env#L1-L26)
-- [frontend/lib/auth-options.ts](file://frontend/lib/auth-options.ts#L57-L76)
-- [docker-compose.yaml](file://docker-compose.yaml#L51-L68)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L77-L83)
-
 ## Conclusion
 TalentSync-Normies employs a clean microservices architecture with a Next.js frontend, FastAPI backend, LangChain-powered AI/ML orchestration, and PostgreSQL for persistence. Docker and Docker Compose streamline local development and production deployments. The design balances developer productivity, scalability, and cloud readiness, with clear service boundaries and observable data flows.
 
@@ -337,7 +235,7 @@ TalentSync-Normies employs a clean microservices architecture with a Next.js fro
 
 ## Appendices
 
-### Deployment Topology and Infrastructure
+### Deployment topology and infrastructure
 - Local Development
   - Docker Compose brings up db, backend, and frontend with shared network
   - Frontend publishes port 3000; backend on 8000
@@ -366,15 +264,7 @@ P2 --> P1
 P3 -.-> RP
 ```
 
-**Diagram sources**
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-
-**Section sources**
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-
-### Cross-Cutting Concerns
+### Cross-Cutting concerns
 - Authentication
   - NextAuth.js with Prisma adapter and multiple providers
 - API Gateway and Load Balancing
@@ -382,9 +272,3 @@ P3 -.-> RP
 - Monitoring and Observability
   - Structured request/response logging in backend
   - PostHog instrumentation configured in frontend
-
-**Section sources**
-- [frontend/lib/auth-options.ts](file://frontend/lib/auth-options.ts#L1-L202)
-- [backend/app/main.py](file://backend/app/main.py#L83-L131)
-- [frontend/next.config.js](file://frontend/next.config.js#L1-L90)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L102-L105)

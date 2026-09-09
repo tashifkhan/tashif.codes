@@ -1,41 +1,11 @@
-# Notification System
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://notice-reminders/README.md)
-- [main.py](file://notice-reminders/app/api/main.py)
-- [notifications.py](file://notice-reminders/app/api/routers/notifications.py)
-- [notification.py](file://notice-reminders/app/models/notification.py)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py)
-- [notification.py](file://notice-reminders/app/schemas/notification.py)
-- [notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py)
-- [user.py](file://notice-reminders/app/models/user.py)
-- [subscription.py](file://notice-reminders/app/models/subscription.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Notification system
 
 ## Introduction
-This document describes the notification delivery system for the notice reminders application. It explains the multi-channel notification architecture, real-time alert mechanisms, and notification scheduling. It documents the notification service implementation, channel-specific delivery logic, and retry mechanisms. It also covers notification templates, personalization options, and delivery status tracking. Finally, it lists API endpoints for notification queries, delivery logs, and channel management, and provides examples of notification workflows, channel configurations, and troubleshooting common delivery issues.
+This page describes the notification delivery system for the notice reminders application. It explains the multi-channel notification architecture, real-time alert mechanisms, and notification scheduling. It documents the notification service implementation, channel-specific delivery logic, and retry mechanisms. It also covers notification templates, personalization options, and delivery status tracking. Finally, it lists API endpoints for notification queries, delivery logs, and channel management, and provides examples of notification workflows, channel configurations, and troubleshooting common delivery issues.
 
 The project is a FastAPI-based backend with Tortoise ORM for persistence. Notifications are stored in the database and associated with users, subscriptions, and channels. The system currently supports listing notifications, marking them as read, and managing notification channels.
 
-**Section sources**
-- [README.md](file://notice-reminders/README.md#L1-L56)
-
-## Project Structure
+## Project structure
 The notification system resides in the notice-reminders package under app/. The structure relevant to notifications includes:
 - Models: define the data schema for notifications, channels, users, and subscriptions
 - Services: encapsulate business logic for creating notifications and managing channels
@@ -72,22 +42,7 @@ NS --> NR
 NCS --> NCR
 ```
 
-**Diagram sources**
-- [notifications.py](file://notice-reminders/app/api/routers/notifications.py#L1-L62)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L1-L31)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L1-L32)
-- [notification.py](file://notice-reminders/app/models/notification.py#L1-L37)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L1-L26)
-- [user.py](file://notice-reminders/app/models/user.py#L1-L20)
-- [subscription.py](file://notice-reminders/app/models/subscription.py#L1-L28)
-- [notification.py](file://notice-reminders/app/schemas/notification.py#L1-L17)
-- [notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py#L1-L22)
-
-**Section sources**
-- [main.py](file://notice-reminders/app/api/main.py#L1-L46)
-- [README.md](file://notice-reminders/README.md#L1-L56)
-
-## Core Components
+## Core components
 - Notification model: stores notification records linked to a user, subscription, optional channel, and timestamp; tracks read/unread state
 - NotificationChannel model: stores per-user channels (e.g., email, Telegram) with address and activation flag
 - NotificationService: creates notifications and manages listing and read-state updates
@@ -99,14 +54,7 @@ Key capabilities:
 - Delivery status tracking via is_read flag
 - User-scoped access control enforced in API
 
-**Section sources**
-- [notification.py](file://notice-reminders/app/models/notification.py#L14-L37)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L11-L26)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L7-L31)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L7-L32)
-- [notifications.py](file://notice-reminders/app/api/routers/notifications.py#L13-L62)
-
-## Architecture Overview
+## Architecture overview
 The notification architecture follows a layered design:
 - API layer: FastAPI routers handle requests and delegate to services
 - Service layer: NotificationService and NotificationChannelService encapsulate business logic
@@ -127,13 +75,9 @@ Service-->>API : List of Notification
 API-->>Client : 200 OK with NotificationResponse[]
 ```
 
-**Diagram sources**
-- [notifications.py](file://notice-reminders/app/api/routers/notifications.py#L13-L20)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L21-L25)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Notification Model and Relationships
+### Notification model and relationships
 The Notification model links to User, Subscription, and optionally NotificationChannel. It captures when a notification was sent and whether it has been read. This design enables:
 - Per-user delivery logs
 - Association with specific course announcements via Subscription
@@ -180,19 +124,7 @@ SUBSCRIPTION ||--o{ NOTIFICATION : "generates"
 NOTIFICATION_CHANNEL ||--o{ NOTIFICATION : "delivers to"
 ```
 
-**Diagram sources**
-- [notification.py](file://notice-reminders/app/models/notification.py#L14-L37)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L11-L26)
-- [user.py](file://notice-reminders/app/models/user.py#L7-L20)
-- [subscription.py](file://notice-reminders/app/models/subscription.py#L12-L28)
-
-**Section sources**
-- [notification.py](file://notice-reminders/app/models/notification.py#L14-L37)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L11-L26)
-- [user.py](file://notice-reminders/app/models/user.py#L7-L20)
-- [subscription.py](file://notice-reminders/app/models/subscription.py#L12-L28)
-
-### NotificationService Implementation
+### NotificationService implementation
 Responsibilities:
 - Create notifications linking a subscription and announcement to a user and optional channel
 - List all notifications for a user ordered by sent_at descending
@@ -218,14 +150,7 @@ class Notification {
 NotificationService --> Notification : "creates/queries"
 ```
 
-**Diagram sources**
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L7-L31)
-- [notification.py](file://notice-reminders/app/models/notification.py#L14-L37)
-
-**Section sources**
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L7-L31)
-
-### NotificationChannelService Implementation
+### NotificationChannelService implementation
 Responsibilities:
 - List channels for a user
 - Create a channel with deduplication via unique constraint
@@ -249,14 +174,7 @@ class NotificationChannel {
 NotificationChannelService --> NotificationChannel : "manages"
 ```
 
-**Diagram sources**
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L7-L32)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L11-L26)
-
-**Section sources**
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L7-L32)
-
-### API Endpoints for Notifications
+### API endpoints for notifications
 Endpoints:
 - GET /notifications: List notifications for the authenticated user
 - GET /notifications/users/{user_id}: List notifications for a specific user (owner-only)
@@ -284,14 +202,7 @@ Service-->>API : Notification
 API-->>Client : 200 OK with NotificationResponse
 ```
 
-**Diagram sources**
-- [notifications.py](file://notice-reminders/app/api/routers/notifications.py#L39-L62)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L27-L31)
-
-**Section sources**
-- [notifications.py](file://notice-reminders/app/api/routers/notifications.py#L13-L62)
-
-### Channel Management Endpoints
+### Channel management endpoints
 While the notification endpoints focus on listing and read-state updates, channel management is supported via NotificationChannelService. The service provides:
 - Listing channels for a user
 - Creating channels with deduplication
@@ -299,10 +210,7 @@ While the notification endpoints focus on listing and read-state updates, channe
 
 Note: Dedicated API endpoints for channel management are not present in the current code. Channel operations are handled programmatically via the service layer.
 
-**Section sources**
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L7-L32)
-
-### Real-Time Alerts and Scheduling
+### Real-Time alerts and scheduling
 Current implementation:
 - Notifications are created upon event occurrence (e.g., new announcements)
 - No explicit scheduler or queue workers are implemented
@@ -316,7 +224,7 @@ Recommendations for future enhancements:
 
 [No sources needed since this section provides general guidance]
 
-### Templates and Personalization
+### Templates and personalization
 Current implementation:
 - Notification creation is straightforward and does not include templating
 - Personalization is minimal (only user association)
@@ -328,7 +236,7 @@ Recommendations for future enhancements:
 
 [No sources needed since this section provides general guidance]
 
-## Dependency Analysis
+## Dependency analysis
 The notification system exhibits clean separation of concerns:
 - API depends on services for business logic
 - Services depend on models for persistence
@@ -347,21 +255,7 @@ API --> SCH["NotificationResponse Schema"]
 CHSVC --> CHSCHEMA["NotificationChannelCreate/Response Schema"]
 ```
 
-**Diagram sources**
-- [notifications.py](file://notice-reminders/app/api/routers/notifications.py#L1-L62)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L1-L31)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L1-L32)
-- [notification.py](file://notice-reminders/app/models/notification.py#L1-L37)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L1-L26)
-- [user.py](file://notice-reminders/app/models/user.py#L1-L20)
-- [subscription.py](file://notice-reminders/app/models/subscription.py#L1-L28)
-- [notification.py](file://notice-reminders/app/schemas/notification.py#L1-L17)
-- [notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py#L1-L22)
-
-**Section sources**
-- [main.py](file://notice-reminders/app/api/main.py#L1-L46)
-
-## Performance Considerations
+## Performance considerations
 - Indexing: Ensure foreign keys and frequently queried fields (e.g., user_id, sent_at) are indexed
 - Pagination: For large notification histories, implement pagination in list endpoints
 - Caching: Cache recent notifications per user for read-heavy workloads
@@ -370,32 +264,27 @@ CHSVC --> CHSCHEMA["NotificationChannelCreate/Response Schema"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Access denied when listing notifications for another user:
   - Cause: Ownership check fails
   - Resolution: Ensure the authenticated user matches the requested user_id
-  - Reference: [notifications.py](file://notice-reminders/app/api/routers/notifications.py#L30-L38)
+  - Reference: `notifications.py`
 
 - Notification not found when marking as read:
   - Cause: Invalid notification_id or wrong user
   - Resolution: Verify notification exists and belongs to the authenticated user
-  - Reference: [notifications.py](file://notice-reminders/app/api/routers/notifications.py#L46-L58)
+  - Reference: `notifications.py`
 
 - Duplicate channel entries:
   - Cause: Unique constraint violation on (user, channel, address)
   - Resolution: Use service create method which handles duplicates; or query existing channel
-  - Reference: [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L25-L26), [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L17-L26)
+  - Reference: `notification_channel.py`, `notification_channel_service.py`
 
 - Channel disabled:
   - Cause: is_active is False
   - Resolution: Re-enable the channel via disable/enable operations
-  - Reference: [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L28-L31)
-
-**Section sources**
-- [notifications.py](file://notice-reminders/app/api/routers/notifications.py#L30-L58)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L25-L26)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L17-L31)
+  - Reference: `notification_channel_service.py`
 
 ## Conclusion
 The notification system provides a solid foundation for storing and retrieving notifications, associating them with users and subscriptions, and tracking read/unread status. Multi-channel support is modeled via NotificationChannel, and access control is enforced at the API level. Future enhancements should focus on asynchronous delivery, retry mechanisms, scheduling, templating, and real-time alerts to improve scalability and user experience.
@@ -404,24 +293,24 @@ The notification system provides a solid foundation for storing and retrieving n
 
 ## Appendices
 
-### API Endpoints Summary
+### API endpoints summary
 - GET /notifications
   - Description: List notifications for the authenticated user
   - Response: Array of NotificationResponse
-  - Reference: [notifications.py](file://notice-reminders/app/api/routers/notifications.py#L13-L20)
+  - Reference: `notifications.py`
 
 - GET /notifications/users/{user_id}
   - Description: List notifications for a specific user (owner-only)
   - Response: Array of NotificationResponse
-  - Reference: [notifications.py](file://notice-reminders/app/api/routers/notifications.py#L23-L36)
+  - Reference: `notifications.py`
 
 - PATCH /notifications/{notification_id}/read
   - Description: Mark a notification as read (owner-only)
   - Response: NotificationResponse
-  - Reference: [notifications.py](file://notice-reminders/app/api/routers/notifications.py#L39-L62)
+  - Reference: `notifications.py`
 
-### Notification Workflow Example
-- A new announcement triggers creation of a Notification linked to the user’s Subscription
+### Notification workflow example
+- A new announcement triggers creation of a Notification linked to the user's Subscription
 - Optionally, associate a NotificationChannel to track delivery
 - Users can list notifications and mark them as read via the API
 
@@ -438,13 +327,7 @@ Read --> Update["Update is_read via NotificationService.mark_read()"]
 Update --> End(["Done"])
 ```
 
-**Diagram sources**
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L8-L19)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L27-L31)
-- [notification.py](file://notice-reminders/app/models/notification.py#L14-L37)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L11-L26)
-
-### Channel Configuration Example
+### Channel configuration example
 - Create a channel for a user with a specific channel type and address
 - Channels are unique per user, channel type, and address
 - Disable a channel to stop delivery without deleting it
@@ -468,8 +351,3 @@ DB-->>Service : Channel
 Service-->>API : Channel
 API-->>Client : ChannelResponse
 ```
-
-**Diagram sources**
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L11-L26)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L28-L31)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L11-L26)

@@ -1,39 +1,14 @@
-# Administrative Services
-
-<cite>
-**Referenced Files in This Document**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py)
-- [web_push_service.py](file://app/services/web_push_service.py)
-- [email_notice_service.py](file://app/services/email_notice_service.py)
-- [config.py](file://app/core/config.py)
-- [daemon.py](file://app/core/daemon.py)
-- [bot_server.py](file://app/servers/bot_server.py)
-- [webhook_server.py](file://app/servers/webhook_server.py)
-- [telegram_service.py](file://app/services/telegram_service.py)
-- [notification_service.py](file://app/services/notification_service.py)
-- [google_groups_client.py](file://app/clients/google_groups_client.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Administrative services
 
 ## Introduction
-This document describes the administrative services that manage system operations, user communications, and external integrations. It focuses on:
+This page describes the administrative services that manage system operations, user communications, and external integrations. It focuses on:
 - AdminTelegramService for administrative bot commands, permission enforcement, and system control
 - WebPushService for VAPID-secured browser push notifications, subscription management, and delivery
 - EmailNoticeService for processing general notices via Google Groups, LLM-based classification/extraction, and distribution
 
 It also covers configuration, security considerations, subscription workflows, and how these services integrate with the broader notification ecosystem.
 
-## Project Structure
+## Project structure
 The administrative services live under app/services and are integrated with app/servers, app/clients, and app/core. The primary entry points are:
 - Telegram bot server for user/admin commands
 - Webhook server for external integrations and push subscription APIs
@@ -71,34 +46,12 @@ Bot --> Cfg
 Hook --> Cfg
 ```
 
-**Diagram sources**
-- [bot_server.py](file://app/servers/bot_server.py#L455-L507)
-- [webhook_server.py](file://app/servers/webhook_server.py#L69-L131)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L19-L42)
-- [telegram_service.py](file://app/services/telegram_service.py#L20-L51)
-- [notification_service.py](file://app/services/notification_service.py#L13-L40)
-- [web_push_service.py](file://app/services/web_push_service.py#L27-L79)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L335-L393)
-- [google_groups_client.py](file://app/clients/google_groups_client.py#L19-L51)
-- [config.py](file://app/core/config.py#L18-L128)
-- [daemon.py](file://app/core/daemon.py#L24-L73)
-
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L455-L507)
-- [webhook_server.py](file://app/servers/webhook_server.py#L69-L131)
-- [config.py](file://app/core/config.py#L18-L128)
-
-## Core Components
+## Core components
 - AdminTelegramService: Enforces admin-only commands, authenticates administrators, and executes administrative actions such as user listing, broadcast messaging, scraping triggers, scheduler control, and log viewing.
 - WebPushService: Implements the INotificationChannel protocol for web push, manages VAPID authentication, broadcasts to all users, and handles subscription CRUD operations.
 - EmailNoticeService: Processes non-placement notices from Google Groups using a LangGraph pipeline, classifies and extracts structured data via LLM, formats notices, and persists them to the database.
 
-**Section sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L19-L42)
-- [web_push_service.py](file://app/services/web_push_service.py#L27-L79)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L335-L393)
-
-## Architecture Overview
+## Architecture overview
 The administrative services operate within two primary servers:
 - Telegram Bot Server: Hosts user-facing commands and admin commands routed through AdminTelegramService.
 - Webhook Server: Exposes REST endpoints for push subscriptions, notifications, and statistics; integrates NotificationService and WebPushService.
@@ -125,16 +78,7 @@ AdminSvc-->>Admin : Access denied message
 end
 ```
 
-**Diagram sources**
-- [bot_server.py](file://app/servers/bot_server.py#L379-L401)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L43-L55)
-- [telegram_service.py](file://app/services/telegram_service.py#L140-L172)
-
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L366-L404)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L43-L108)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### AdminTelegramService
 Responsibilities:
@@ -175,18 +119,6 @@ Kill --> End
 Logs --> End
 ```
 
-**Diagram sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L43-L108)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L109-L192)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L193-L248)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L249-L276)
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L277-L349)
-- [daemon.py](file://app/core/daemon.py#L75-L111)
-
-**Section sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L43-L349)
-- [daemon.py](file://app/core/daemon.py#L59-L111)
-
 ### WebPushService
 Responsibilities:
 - Implements INotificationChannel protocol for web push
@@ -203,7 +135,7 @@ Configuration and Security:
 
 Delivery Workflow:
 - Broadcast: Iterates active users and their push subscriptions, sending individual pushes
-- Per-user: Retrieves user’s subscriptions and sends to each
+- Per-user: Retrieves user's subscriptions and sends to each
 - Error handling: Removes invalid/expired subscriptions on 404/410 responses
 
 ```mermaid
@@ -229,18 +161,6 @@ end
 WP-->>Notif : Results (success, failed, total)
 Notif-->>Hook : NotifyResponse
 ```
-
-**Diagram sources**
-- [webhook_server.py](file://app/servers/webhook_server.py#L244-L264)
-- [notification_service.py](file://app/services/notification_service.py#L61-L91)
-- [web_push_service.py](file://app/services/web_push_service.py#L120-L155)
-- [web_push_service.py](file://app/services/web_push_service.py#L157-L193)
-
-**Section sources**
-- [web_push_service.py](file://app/services/web_push_service.py#L27-L79)
-- [web_push_service.py](file://app/services/web_push_service.py#L120-L155)
-- [web_push_service.py](file://app/services/web_push_service.py#L157-L193)
-- [webhook_server.py](file://app/servers/webhook_server.py#L186-L238)
 
 ### EmailNoticeService
 Responsibilities:
@@ -274,24 +194,7 @@ Reject --> End
 Mark --> End
 ```
 
-**Diagram sources**
-- [email_notice_service.py](file://app/services/email_notice_service.py#L636-L697)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L419-L433)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L435-L569)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L570-L590)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L592-L607)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L728-L738)
-
-**Section sources**
-- [email_notice_service.py](file://app/services/email_notice_service.py#L335-L393)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L419-L569)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L570-L590)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L592-L607)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L636-L697)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L728-L738)
-- [google_groups_client.py](file://app/clients/google_groups_client.py#L88-L168)
-
-## Dependency Analysis
+## Dependency analysis
 - AdminTelegramService depends on:
   - Settings for admin chat ID
   - DatabaseService for user and log operations
@@ -323,21 +226,7 @@ Bot["BotServer"] --> Admin
 Bot --> Tele
 ```
 
-**Diagram sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L29-L38)
-- [web_push_service.py](file://app/services/web_push_service.py#L37-L58)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L346-L380)
-- [webhook_server.py](file://app/servers/webhook_server.py#L113-L127)
-- [bot_server.py](file://app/servers/bot_server.py#L492-L495)
-
-**Section sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L29-L38)
-- [web_push_service.py](file://app/services/web_push_service.py#L37-L58)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L346-L380)
-- [webhook_server.py](file://app/servers/webhook_server.py#L113-L127)
-- [bot_server.py](file://app/servers/bot_server.py#L492-L495)
-
-## Performance Considerations
+## Performance considerations
 - AdminTelegramService:
   - Uses run_in_executor for legacy update workflows to avoid blocking the event loop
   - Splits long messages for Telegram replies
@@ -351,7 +240,7 @@ Bot --> Tele
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Admin commands failing:
   - Verify admin chat ID configuration and that the sender matches
@@ -365,17 +254,10 @@ Common issues and resolutions:
   - Validate LLM API key and model availability
   - Check for malformed emails or missing required fields triggering retries
 
-**Section sources**
-- [admin_telegram_service.py](file://app/services/admin_telegram_service.py#L43-L55)
-- [web_push_service.py](file://app/services/web_push_service.py#L62-L69)
-- [web_push_service.py](file://app/services/web_push_service.py#L185-L193)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L655-L660)
-- [email_notice_service.py](file://app/services/email_notice_service.py#L553-L569)
-
 ## Conclusion
 The administrative services provide a cohesive administrative and communication backbone:
 - AdminTelegramService secures and automates system control and user operations
-- WebPushService delivers secure, scalable browser notifications with robust error handling
+- WebPushService delivers secure, scalable browser notifications with reliable error handling
 - EmailNoticeService transforms unstructured emails into structured notices with LLM-powered intelligence
 
 They integrate cleanly with the configuration and daemon utilities, enabling reliable operation across Telegram, web push, and email channels.

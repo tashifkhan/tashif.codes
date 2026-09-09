@@ -1,34 +1,9 @@
-# State Management
-
-<cite>
-**Referenced Files in This Document**
-- [state.js](file://assignment-solver/src/ui/state.js)
-- [index.js](file://assignment-solver/src/ui/index.js)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js)
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js)
-- [elements.js](file://assignment-solver/src/ui/elements.js)
-- [storage.js](file://assignment-solver/src/services/storage/index.js)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js)
-- [storage_adapter.js](file://assignment-solver/src/platform/storage.js)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# State management
 
 ## Introduction
-This document explains the state management system used in the assignment-solver UI. It covers the global state architecture, reactive updates, and persistence mechanisms. It documents the state manager factory, initialization patterns, and update triggers. It also describes how state changes propagate to UI components to drive re-renders, and how the system integrates with external data sources such as browser storage and the extension runtime. Finally, it provides guidance on mutation patterns, observer-style updates, synchronization with external systems, persistence strategies, memory management, and performance considerations for state-heavy applications.
+This page explains the state management system used in the assignment-solver UI. It covers the global state architecture, reactive updates, and persistence mechanisms. It documents the state manager factory, initialization patterns, and update triggers. It also describes how state changes propagate to UI components to drive re-renders, and how the system integrates with external data sources such as browser storage and the extension runtime. Finally, it provides guidance on mutation patterns, observer-style updates, synchronization with external systems, persistence strategies, memory management, and performance considerations for state-heavy applications.
 
-## Project Structure
+## Project structure
 The state management lives in the assignment-solver UI module. The primary state container is created in a dedicated module and consumed by controllers that orchestrate user interactions, progress updates, settings, and detection. Persistence is handled by a storage service backed by a browser storage adapter. Communication with the extension runtime is abstracted behind a runtime adapter.
 
 ```mermaid
@@ -57,22 +32,7 @@ SOLVE --> RT
 DC --> RT
 ```
 
-**Diagram sources**
-- [state.js](file://assignment-solver/src/ui/state.js#L9-L40)
-- [elements.js](file://assignment-solver/src/ui/elements.js#L9-L45)
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js#L12-L163)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L13-L127)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L15-L110)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L21-L30)
-- [storage.js](file://assignment-solver/src/services/storage/index.js#L12-L118)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [storage_adapter.js](file://assignment-solver/src/platform/storage.js#L12-L41)
-
-**Section sources**
-- [state.js](file://assignment-solver/src/ui/state.js#L1-L41)
-- [index.js](file://assignment-solver/src/ui/index.js#L54-L112)
-
-## Core Components
+## Core components
 - State Manager Factory: Creates a private state object and exposes typed getters/setters plus a reset method. This is the single source of truth for UI state.
 - Controllers: Encapsulate UI logic and side effects. They mutate state via the state manager and update the DOM through the elements registry.
 - Elements Registry: Centralized access to DOM nodes used by controllers.
@@ -86,14 +46,7 @@ Key responsibilities:
 - Storage: Persist and retrieve structured data with timestamps and metadata.
 - Adapters: Enable cross-browser compatibility and testability.
 
-**Section sources**
-- [state.js](file://assignment-solver/src/ui/state.js#L9-L40)
-- [elements.js](file://assignment-solver/src/ui/elements.js#L9-L45)
-- [storage.js](file://assignment-solver/src/services/storage/index.js#L12-L118)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [storage_adapter.js](file://assignment-solver/src/platform/storage.js#L12-L41)
-
-## Architecture Overview
+## Architecture overview
 The system follows a unidirectional data flow:
 - Initialization: The UI entry point creates adapters, services, state, and controllers. It wires event listeners and starts detection.
 - Mutations: Controllers call state setters and storage methods to change state and persist data.
@@ -127,17 +80,9 @@ SOLVE->>SM : "setIsProcessing(false)"
 SOLVE->>PROG : "hideProgress()"
 ```
 
-**Diagram sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L54-L112)
-- [state.js](file://assignment-solver/src/ui/state.js#L9-L40)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L44-L240)
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js#L140-L161)
-- [storage.js](file://assignment-solver/src/services/storage/index.js#L32-L51)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L19-L21)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### State Manager Factory
+### State manager factory
 The state manager is a factory that returns a small API over a private state object. It exposes:
 - Getters for isProcessing, extraction, and currentStep
 - Setters for the same fields
@@ -162,13 +107,7 @@ class StateManager {
 }
 ```
 
-**Diagram sources**
-- [state.js](file://assignment-solver/src/ui/state.js#L9-L40)
-
-**Section sources**
-- [state.js](file://assignment-solver/src/ui/state.js#L9-L40)
-
-### State Initialization Patterns
+### State initialization patterns
 Initialization occurs in the UI entry point:
 - Create adapters (storage and runtime)
 - Create services (storage and Gemini)
@@ -191,13 +130,7 @@ BindEvents --> InitDetection["Initialize detection"]
 InitDetection --> End(["Ready"])
 ```
 
-**Diagram sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L54-L112)
-
-**Section sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L54-L112)
-
-### State Update Triggers and Propagation
+### State update triggers and propagation
 State updates are triggered by:
 - User actions (solve button click)
 - Background messages (tab updates)
@@ -231,19 +164,7 @@ DET->>DET : "checkCurrentPage()"
 DET->>DET : "showAssignmentInfo()/showEmptyState()"
 ```
 
-**Diagram sources**
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L44-L240)
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js#L140-L161)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L95-L108)
-- [storage.js](file://assignment-solver/src/services/storage/index.js#L32-L51)
-- [state.js](file://assignment-solver/src/ui/state.js#L18-L30)
-
-**Section sources**
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L44-L240)
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js#L140-L161)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L95-L108)
-
-### State Observers and Reactivity
+### State observers and reactivity
 There is no explicit observer pattern. Reactivity is achieved by:
 - Direct DOM updates in controllers
 - State setters that replace the internal state object reference
@@ -254,11 +175,7 @@ Controllers observe state changes indirectly by:
 - Updating UI based on state transitions
 - Listening to runtime events to refresh UI state
 
-**Section sources**
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js#L21-L51)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L102-L107)
-
-### State Mutations
+### State mutations
 Common mutation patterns:
 - Toggle processing flag: setIsProcessing(true/false)
 - Replace extraction payload: setExtraction(result)
@@ -267,11 +184,7 @@ Common mutation patterns:
 
 These mutations are performed by controllers in response to user actions or external events.
 
-**Section sources**
-- [state.js](file://assignment-solver/src/ui/state.js#L18-L30)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L56-L180)
-
-### State Synchronization with External Data Sources
+### State synchronization with external data sources
 - Storage synchronization:
   - Save API key and preferences via storage service
   - Cache extractions with timestamps and URL metadata
@@ -298,17 +211,7 @@ SA-->>ST : "{currentExtraction}"
 ST-->>SOLVE : "data"
 ```
 
-**Diagram sources**
-- [storage.js](file://assignment-solver/src/services/storage/index.js#L17-L51)
-- [storage_adapter.js](file://assignment-solver/src/platform/storage.js#L19-L39)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L569-L583)
-
-**Section sources**
-- [storage.js](file://assignment-solver/src/services/storage/index.js#L17-L51)
-- [storage_adapter.js](file://assignment-solver/src/platform/storage.js#L19-L39)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L569-L583)
-
-### State Persistence Strategies
+### State persistence strategies
 - API key and preferences: stored under dedicated keys with defaults when missing
 - Extraction cache: stores last extraction with URL and timestamp for quick retrieval
 - User answers: stored separately and combined with extractions for export
@@ -319,10 +222,7 @@ Best practices:
 - Clear caches when appropriate (e.g., after submission)
 - Use structured keys to avoid collisions
 
-**Section sources**
-- [storage.js](file://assignment-solver/src/services/storage/index.js#L17-L116)
-
-## Dependency Analysis
+## Dependency analysis
 The UI entry point composes all collaborators and passes them to controllers. Controllers depend on:
 - State manager for UI state
 - Storage service for persistence
@@ -346,19 +246,7 @@ SC --> ST
 DC --> RT
 ```
 
-**Diagram sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L54-L112)
-- [state.js](file://assignment-solver/src/ui/state.js#L9-L40)
-- [storage.js](file://assignment-solver/src/services/storage/index.js#L12-L118)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js#L12-L163)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L13-L127)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L15-L110)
-
-**Section sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L54-L112)
-
-## Performance Considerations
+## Performance considerations
 - Minimize DOM updates: Controllers update DOM directly; batch related updates (e.g., progress count and fill width) together.
 - Debounce or throttle frequent UI updates: For long-running loops (e.g., filling answers), consider increasing delays slightly to reduce churn.
 - Avoid unnecessary state churn: Only call setters when values change to prevent redundant UI work.
@@ -374,19 +262,13 @@ DC --> RT
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and remedies:
 - Background not ready: The UI waits for a readiness signal before proceeding. If it fails, the app continues with warnings. Verify background script availability and message routing.
 - API key missing: The solve flow checks for an API key and prompts the settings controller if absent.
 - MAX_TOKENS errors: The solve controller splits HTML or questions recursively until successful or depth limit reached. Review model preferences and consider reducing input size.
 - Extraction failures: Ensure the page is an assignment page; verify extraction results and debug payloads sent to the background.
 - Progress stuck: Ensure progress controller steps are marked done and progress is reset appropriately.
-
-**Section sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L26-L51)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L50-L54)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L276-L285)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L503-L516)
 
 ## Conclusion
 The assignment-solver UI employs a minimal, explicit state management approach:
@@ -396,4 +278,4 @@ The assignment-solver UI employs a minimal, explicit state management approach:
 - Runtime communication is abstracted via a runtime adapter
 - There is no framework-level re-render; UI updates are imperative and efficient
 
-This design keeps state changes predictable, reduces boilerplate, and enables straightforward testing and debugging. For state-heavy applications, adopt the patterns here: centralized state via factories, imperative DOM updates, robust persistence, and adapter-based external integrations.
+This design keeps state changes predictable, reduces boilerplate, and enables straightforward testing and debugging. For state-heavy applications, adopt the patterns here: centralized state via factories, imperative DOM updates, reliable persistence, and adapter-based external integrations.

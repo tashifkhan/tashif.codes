@@ -1,31 +1,9 @@
-# Search Integration API
-
-<cite>
-**Referenced Files in This Document**
-- [api/main.py](file://api/main.py)
-- [routers/google_search.py](file://routers/google_search.py)
-- [services/google_search_service.py](file://services/google_search_service.py)
-- [tools/google_search/seach_agent.py](file://tools/google_search/seach_agent.py)
-- [core/config.py](file://core/config.py)
-- [pyproject.toml](file://pyproject.toml)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Search integration API
 
 ## Introduction
-This document describes the Google Search integration API endpoints that enable web search operations, query processing, and result management. It covers HTTP method and URL patterns, request/response schemas, authentication requirements, and practical examples for search automation. The system integrates FastAPI routes, a service layer, and a Tavily-powered search pipeline to deliver structured search results suitable for downstream processing.
+This page describes the Google Search integration API endpoints that enable web search operations, query processing, and result management. It covers HTTP method and URL patterns, request/response schemas, authentication requirements, and practical examples for search automation. The system integrates FastAPI routes, a service layer, and a Tavily-powered search pipeline to deliver structured search results suitable for downstream processing.
 
-## Project Structure
+## Project structure
 The search integration spans three primary layers:
 - API routing: Defines the endpoint and request validation
 - Service layer: Orchestrates search execution and logging
@@ -39,35 +17,18 @@ Service --> Pipeline["web_search_pipeline()<br/>TavilySearch"]
 Pipeline --> Tavily["External Tavily API"]
 ```
 
-**Diagram sources**
-- [api/main.py](file://api/main.py#L34-L34)
-- [routers/google_search.py](file://routers/google_search.py#L20-L38)
-- [services/google_search_service.py](file://services/google_search_service.py#L7-L30)
-- [tools/google_search/seach_agent.py](file://tools/google_search/seach_agent.py#L14-L62)
-
-**Section sources**
-- [api/main.py](file://api/main.py#L12-L42)
-- [routers/google_search.py](file://routers/google_search.py#L1-L39)
-- [services/google_search_service.py](file://services/google_search_service.py#L1-L31)
-- [tools/google_search/seach_agent.py](file://tools/google_search/seach_agent.py#L1-L84)
-
-## Core Components
+## Core components
 - Endpoint: POST /api/google-search
 - Request body: SearchRequest with query and max_results
 - Response body: Dictionary containing results array
 - Authentication: Not enforced by the endpoint; however, external search provider credentials are required
 
 Key implementation references:
-- Route definition and dependency injection: [routers/google_search.py](file://routers/google_search.py#L20-L38)
-- Service orchestration and logging: [services/google_search_service.py](file://services/google_search_service.py#L7-L30)
-- Search pipeline using Tavily: [tools/google_search/seach_agent.py](file://tools/google_search/seach_agent.py#L14-L62)
+- Route definition and dependency injection: `routers/google_search.py`
+- Service orchestration and logging: `services/google_search_service.py`
+- Search pipeline using Tavily: `tools/google_search/seach_agent.py`
 
-**Section sources**
-- [routers/google_search.py](file://routers/google_search.py#L11-L38)
-- [services/google_search_service.py](file://services/google_search_service.py#L7-L30)
-- [tools/google_search/seach_agent.py](file://tools/google_search/seach_agent.py#L14-L62)
-
-## Architecture Overview
+## Architecture overview
 The search flow begins at the FastAPI route, which validates the request, delegates to the service layer, and executes the Tavily-backed pipeline. Results are normalized into a consistent structure and returned to the caller.
 
 ```mermaid
@@ -89,14 +50,9 @@ Note over R,S : "Validation and error handling occur here"
 Note over S,P : "Logging and normalization happen in service and pipeline"
 ```
 
-**Diagram sources**
-- [routers/google_search.py](file://routers/google_search.py#L20-L38)
-- [services/google_search_service.py](file://services/google_search_service.py#L7-L30)
-- [tools/google_search/seach_agent.py](file://tools/google_search/seach_agent.py#L14-L62)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Endpoint Definition
+### Endpoint definition
 - Method: POST
 - Path: /api/google-search
 - Request body: SearchRequest
@@ -114,10 +70,7 @@ Behavior:
 - Wraps results in a standardized dictionary
 - Converts unexpected errors to 500 with logged details
 
-**Section sources**
-- [routers/google_search.py](file://routers/google_search.py#L11-L38)
-
-### Service Layer
+### Service layer
 Responsibilities:
 - Accepts query and max_results
 - Logs incoming request and outcomes
@@ -125,10 +78,7 @@ Responsibilities:
 - Normalizes empty/no results to an empty list
 - Propagates exceptions after logging
 
-**Section sources**
-- [services/google_search_service.py](file://services/google_search_service.py#L7-L30)
-
-### Search Pipeline (Tavily)
+### Search pipeline (tavily)
 - Initializes a TavilySearch tool with a default topic
 - Updates max_results per invocation
 - Executes a query and normalizes results
@@ -139,10 +89,7 @@ Responsibilities:
 - Handles both dict and list response formats from the underlying tool
 - Returns an empty list on unexpected formats or exceptions
 
-**Section sources**
-- [tools/google_search/seach_agent.py](file://tools/google_search/seach_agent.py#L14-L62)
-
-### Authentication and Configuration
+### Authentication and configuration
 - Endpoint-level authentication: Not enforced by the route
 - External provider credentials:
   - GOOGLE_API_KEY environment variable is loaded via configuration
@@ -151,12 +98,7 @@ Responsibilities:
 
 Note: Ensure environment variables are configured for the external search provider to function correctly.
 
-**Section sources**
-- [core/config.py](file://core/config.py#L13-L14)
-- [pyproject.toml](file://pyproject.toml#L25-L25)
-- [tools/google_search/seach_agent.py](file://tools/google_search/seach_agent.py#L10-L11)
-
-## Dependency Analysis
+## Dependency analysis
 The search integration depends on:
 - FastAPI router registration under /api/google-search
 - GoogleSearchService for orchestration
@@ -171,24 +113,13 @@ C --> D["tools/google_search/seach_agent.py<br/>web_search_pipeline()"]
 D --> E["langchain-tavily<br/>TavilySearch"]
 ```
 
-**Diagram sources**
-- [api/main.py](file://api/main.py#L34-L34)
-- [routers/google_search.py](file://routers/google_search.py#L1-L8)
-- [services/google_search_service.py](file://services/google_search_service.py#L1-L4)
-- [tools/google_search/seach_agent.py](file://tools/google_search/seach_agent.py#L5-L11)
-- [pyproject.toml](file://pyproject.toml#L25-L25)
-
-**Section sources**
-- [api/main.py](file://api/main.py#L14-L42)
-- [pyproject.toml](file://pyproject.toml#L7-L29)
-
-## Performance Considerations
+## Performance considerations
 - Result limit: max_results controls the number of items returned; tune for latency vs. comprehensiveness trade-offs
 - Logging overhead: Each request logs at info level; adjust logging level in production environments
 - External dependency: Tavily response time and rate limits apply; implement retries and circuit-breaking as needed
 - Memory footprint: Results are materialized as lists; avoid excessively large max_results for constrained environments
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Missing query parameter: Returns 400; ensure query is provided
 - Empty results: Verify external provider credentials and query correctness
@@ -200,17 +131,12 @@ Operational checks:
 - Validate GOOGLE_API_KEY environment variable is set
 - Review service logs for info/warning/error entries
 
-**Section sources**
-- [routers/google_search.py](file://routers/google_search.py#L25-L38)
-- [services/google_search_service.py](file://services/google_search_service.py#L10-L30)
-- [tools/google_search/seach_agent.py](file://tools/google_search/seach_agent.py#L32-L62)
-
 ## Conclusion
 The Google Search integration provides a streamlined POST endpoint for web search queries, with a service layer that logs and orchestrates a Tavily-backed pipeline. Requests are validated, results are normalized, and the system is designed for straightforward automation. Ensure proper configuration of external provider credentials and monitor logs for operational insights.
 
 ## Appendices
 
-### API Reference
+### API reference
 
 - Base URL
   - http://localhost:5454 (default development host/port)
@@ -231,20 +157,13 @@ Example request:
 
 Example response:
 - Status: 200 OK
-- Body: {"results": [{"url": "...", "md_body_content": "...", "title": "..."}, ...]}
+- Body: {"results": [{"url": "...", "md_body_content": "...", "title": "..."},...]}
 
 Error responses:
 - 400 Bad Request: Missing query
 - 500 Internal Server Error: Unhandled exception in pipeline/service
 
-**Section sources**
-- [api/main.py](file://api/main.py#L10-L12)
-- [api/main.py](file://api/main.py#L34-L34)
-- [routers/google_search.py](file://routers/google_search.py#L11-L38)
-- [services/google_search_service.py](file://services/google_search_service.py#L7-L30)
-- [tools/google_search/seach_agent.py](file://tools/google_search/seach_agent.py#L14-L62)
-
-### Client Implementation Patterns
+### Client implementation patterns
 - Direct HTTP client
   - Send POST to /api/google-search with JSON body
   - Parse results array for downstream processing

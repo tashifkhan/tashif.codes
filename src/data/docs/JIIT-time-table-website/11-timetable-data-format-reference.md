@@ -1,22 +1,20 @@
-# Timetable Data Format Reference
+# Timetable data format reference
 
-## Purpose and Scope
+## Purpose and scope
 
-This document defines the JSON data formats used for timetable and academic calendar storage in the JIIT Time Table application. It covers the structure of timetable JSON files, academic calendar JSON files, directory organization, API endpoints for data access, and the data generation pipeline using `json_creater.py`.
+This page defines the JSON data formats used for timetable and academic calendar storage in the JIIT Time Table application. It covers the structure of timetable JSON files, academic calendar JSON files, directory organization, API endpoints for data access, and the data generation pipeline using `json_creater.py`.
 
 For information about how this data is processed by Python modules, see [Python Processing Pipeline](4.2-python-processing-pipeline). For details on how the data is consumed by React components, see [Data Model & Types](3.4-data-model-and-types).
 
-**Sources:** [README.md1-138](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L1-L138)
-
 ---
 
-## Data Directory Structure
+## Data directory structure
 
 All static JSON data is stored in the `/public/data/` directory, organized hierarchically by data type, academic period, and campus variant.
 
-![Architecture Diagram](images/11-timetable-data-format-reference_diagram_1.png)
+![Diagram 1](images/11-timetable-data-format-reference_diagram_1.png)
 
-### Directory Organization
+### Directory organization
 
 | Directory Path | Purpose | Contents |
 | --- | --- | --- |
@@ -28,13 +26,11 @@ All static JSON data is stored in the `/public/data/` directory, organized hiera
 | `/public/data/calender/2526/` | Academic year 2025-26 | `calender.json` |
 | `/public/modules/` | Python processing modules | `BE128_creator.py`, `BE62_creator.py` |
 
-**Sources:** [README.md68-97](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L68-L97)
-
 ---
 
-## Timetable JSON Format
+## Timetable JSON format
 
-### File Naming Convention
+### File naming convention
 
 Timetable files follow the pattern: `<campus>.json` where campus is one of:
 
@@ -42,7 +38,7 @@ Timetable files follow the pattern: `<campus>.json` where campus is one of:
 * `128` - 128 Campus (Noida Sector 128)
 * `BCA` - BCA Program (available only for ODD semesters)
 
-### Access Paths
+### Access paths
 
 Timetable JSON files are accessed via the following URL pattern:
 
@@ -58,11 +54,11 @@ Examples:
 * `/data/time-table/EVEN25/62.json`
 * `/data/time-table/EVEN25/128.json`
 
-### Data Structure
+### Data structure
 
-![Architecture Diagram](images/11-timetable-data-format-reference_diagram_2.png)
+![Diagram 2](images/11-timetable-data-format-reference_diagram_2.png)
 
-### Subject Object Schema
+### Subject object schema
 
 Each subject in the timetable JSON follows this structure:
 
@@ -74,7 +70,7 @@ Each subject in the timetable JSON follows this structure:
 | `type` | `string` | Class type (Lecture/Lab/Tutorial) | `"Lecture"`, `"Lab"`, `"Tutorial"` |
 | `slots` | `string[]` | Array of time slot identifiers | `["L1", "L2", "L3"]` |
 
-### Time Slot Identifiers
+### Time slot identifiers
 
 Time slots use standard JIIT notation:
 
@@ -82,7 +78,7 @@ Time slots use standard JIIT notation:
 * Lab slots: `LA1`, `LA2`, `LB1`, `LB2`, `LC1`, `LC2`, etc.
 * Tutorial slots: `T1`, `T2`, `T3`, etc.
 
-### Example Timetable JSON Structure
+### Example timetable JSON structure
 
 ```
 {
@@ -118,17 +114,15 @@ Time slots use standard JIIT notation:
 }
 ```
 
-**Sources:** [README.md56-64](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L56-L64) [README.md68-97](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L68-L97)
-
 ---
 
-## Academic Calendar JSON Format
+## Academic calendar JSON format
 
-### File Naming Convention
+### File naming convention
 
 Academic calendar files are named `calender.json` (note the spelling variant) and organized by academic year.
 
-### Access Paths
+### Access paths
 
 Academic calendar JSON files are accessed via:
 
@@ -143,7 +137,7 @@ Examples:
 
 Note: The 2425 directory uses `calendar.json` while 2526 uses `calender.json` (inconsistent spelling in the codebase).
 
-### Event Object Schema
+### Event object schema
 
 Each event in the academic calendar follows this structure:
 
@@ -155,7 +149,7 @@ Each event in the academic calendar follows this structure:
 | `description` | `string` (optional) | Event details | `"Mid-term exams for all branches"` |
 | `category` | `string` | Event category | `"Examination"`, `"Holiday"`, `"Event"` |
 
-### Example Academic Calendar JSON Structure
+### Example academic calendar JSON structure
 
 ```
 [
@@ -182,7 +176,7 @@ Each event in the academic calendar follows this structure:
 ]
 ```
 
-### Event Categories
+### Event categories
 
 Common event categories include:
 
@@ -192,29 +186,27 @@ Common event categories include:
 * `"Registration"` - Course registration periods
 * `"Academic"` - Semester start/end dates
 
-**Sources:** [README.md12-13](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L12-L13) [README.md74-78](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L74-L78)
-
 ---
 
-## Data Access Endpoints
+## Data access endpoints
 
 The application serves timetable and calendar data as static JSON files through predictable URL patterns.
 
-![Architecture Diagram](images/11-timetable-data-format-reference_diagram_3.png)
+![Diagram 3](images/11-timetable-data-format-reference_diagram_3.png)
 
-### Timetable Endpoints
+### Timetable endpoints
 
 | Endpoint Pattern | Parameters | Returns |
 | --- | --- | --- |
 | `/data/time-table/<SEMESTER>/<CAMPUS>.json` | `SEMESTER`: `ODD25`, `EVEN25` `CAMPUS`: `62`, `128`, `BCA` | Timetable JSON for specified semester and campus |
 
-### Academic Calendar Endpoints
+### Academic calendar endpoints
 
 | Endpoint Pattern | Parameters | Returns |
 | --- | --- | --- |
 | `/data/calender/<YEAR>/calender.json` | `YEAR`: `2425`, `2526`, etc. | Academic calendar events array |
 
-### cURL Examples
+### cURL examples
 
 Fetch 62 campus timetable for Odd 2025 semester:
 
@@ -234,11 +226,9 @@ Fetch academic calendar for 2025-26:
 curl https://simple-timetable.tashif.codes/data/calender/2526/calender.json
 ```
 
-**Sources:** [README.md53-64](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L53-L64)
-
 ---
 
-## Data Generation Pipeline
+## Data generation pipeline
 
 The timetable and calendar data is generated from Excel files using external parsers and a Streamlit application (`json_creater.py`).
 
@@ -263,7 +253,7 @@ The `json_creater.py` file is a Streamlit application that converts Excel files 
 4. JSON files are written to `/public/data/` directory
 5. Files are committed to repository for deployment
 
-### External Parser Dependencies
+### External parser dependencies
 
 The data generation relies on two external parser projects:
 
@@ -272,17 +262,15 @@ The data generation relies on two external parser projects:
 | **JIIT Time Table Parser** | [github.com/tashifkhan/JIIT-time-table-parser](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/github.com/tashifkhan/JIIT-time-table-parser) | Extracts timetable data from Excel files |
 | **JIIT Academic Calendar Parser** | [github.com/tashifkhan/JIIT-Academic-Calender](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/github.com/tashifkhan/JIIT-Academic-Calender) | Extracts academic calendar events from Excel files |
 
-**Sources:** [README.md12-16](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L12-L16) [README.md71](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L71-L71) [README.md190-202](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L190-L202)
-
 ---
 
-## Data Consumption Flow
+## Data consumption flow
 
 The JSON data flows through multiple layers of the application from storage to display.
 
-![Architecture Diagram](images/11-timetable-data-format-reference_diagram_4.png)
+![Diagram 4](images/11-timetable-data-format-reference_diagram_4.png)
 
-### Data Loading Process
+### Data loading process
 
 1. **Initial Request:** React component requests timetable data for specific semester/campus
 2. **Service Worker Interception:** Request intercepted by service worker (`sw.js`)
@@ -290,7 +278,7 @@ The JSON data flows through multiple layers of the application from storage to d
 4. **Network Fallback:** If not cached, fetch from network
 5. **Cache Update:** Store fetched data in cache for offline access
 
-### Data Processing Pipeline
+### Data processing pipeline
 
 1. **User Input:** User selects campus, year, branch, batch via `ScheduleForm`
 2. **JSON Retrieval:** Appropriate JSON file fetched via service worker
@@ -299,7 +287,7 @@ The JSON data flows through multiple layers of the application from storage to d
 5. **React Rendering:** Processed schedule returned to React components
 6. **Display:** `ScheduleDisplay` renders color-coded timetable
 
-### Academic Calendar Flow
+### Academic calendar flow
 
 1. **Calendar Selection:** User navigates to academic calendar page
 2. **JSON Fetch:** Calendar JSON fetched for selected academic year
@@ -307,15 +295,13 @@ The JSON data flows through multiple layers of the application from storage to d
 4. **Display:** Events shown in calendar grid or list view
 5. **Export:** Optional sync to Google Calendar via Google Calendar API
 
-**Sources:** [README.md140-146](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L140-L146) [README.md56-64](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L56-L64)
-
 ---
 
-## JSON Schema Validation
+## JSON schema validation
 
 While the application does not enforce strict schema validation, the expected structure is implicitly defined by the Python processing modules and React components.
 
-### Timetable JSON Expected Structure
+### Timetable JSON expected structure
 
 ```
 // TypeScript type definition (inferred from usage)
@@ -336,7 +322,7 @@ type Subject = {
 }
 ```
 
-### Academic Calendar JSON Expected Structure
+### Academic calendar JSON expected structure
 
 ```
 // TypeScript type definition (inferred from usage)
@@ -351,7 +337,7 @@ type CalendarEvent = {
 }
 ```
 
-### Data Integrity Requirements
+### Data integrity requirements
 
 | Requirement | Timetable JSON | Calendar JSON |
 | --- | --- | --- |
@@ -362,15 +348,13 @@ type CalendarEvent = {
 | **Nested Structure** | Year → Branch → Batch → Subjects | Flat array |
 | **Empty Values** | Not allowed | `description` can be empty |
 
-**Sources:** [README.md68-97](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L68-L97)
-
 ---
 
-## Caching and Offline Access
+## Caching and offline access
 
 The service worker implements aggressive caching for JSON data to enable offline functionality.
 
-### Cache Strategy
+### Cache strategy
 
 | Resource Type | Strategy | Cache Name | TTL |
 | --- | --- | --- | --- |
@@ -378,7 +362,7 @@ The service worker implements aggressive caching for JSON data to enable offline
 | Calendar JSON | NetworkFirst → CacheFirst | `workbox-precache-v2` | Build-time precache |
 | Static assets | Precache | `workbox-precache-v2` | Indefinite |
 
-### Precache Manifest
+### Precache manifest
 
 During build, Next.js with `@ducanh2912/next-pwa` generates a precache manifest that includes all JSON data files:
 
@@ -400,7 +384,7 @@ During build, Next.js with `@ducanh2912/next-pwa` generates a precache manifest 
 ]
 ```
 
-### Offline Behavior
+### Offline behavior
 
 When offline:
 
@@ -410,17 +394,15 @@ When offline:
 4. Google Calendar sync is disabled (requires network)
 5. Export functions (PDF/PNG) continue to work
 
-**Sources:** [README.md21](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L21-L21) [README.md96](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L96-L96)
-
 ---
 
-## Updating Timetable Data
+## Updating timetable data
 
 When new semester data becomes available, the update process is:
 
-![Architecture Diagram](images/11-timetable-data-format-reference_diagram_5.png)
+![Diagram 5](images/11-timetable-data-format-reference_diagram_5.png)
 
-### Update Checklist
+### Update checklist
 
 * Obtain latest timetable Excel files from JIIT
 * Run JIIT Time Table Parser on Excel files
@@ -434,11 +416,9 @@ When new semester data becomes available, the update process is:
 * Verify service worker updates on live site
 * Test offline functionality with new data
 
-**Sources:** [README.md12-16](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L12-L16) [README.md71](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L71-L71)
-
 ---
 
-## Common Data Issues and Troubleshooting
+## Common data issues and troubleshooting
 
 | Issue | Symptom | Solution |
 | --- | --- | --- |
@@ -451,7 +431,7 @@ When new semester data becomes available, the update process is:
 | **JSON Syntax Error** | Application fails to load | Validate JSON syntax using linter |
 | **Inconsistent Structure** | Some years/branches broken | Ensure all levels follow hierarchy: year → branch → batch → subjects |
 
-### Validation Commands
+### Validation commands
 
 Check JSON validity:
 
@@ -462,5 +442,3 @@ jq empty public/data/time-table/ODD25/62.json
 # Validate calendar JSON
 jq empty public/data/calender/2526/calender.json
 ```
-
-**Sources:** [README.md215-223](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L215-L223)

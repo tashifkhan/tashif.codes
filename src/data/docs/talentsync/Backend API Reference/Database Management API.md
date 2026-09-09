@@ -1,33 +1,9 @@
-# Database Management API
-
-<cite>
-**Referenced Files in This Document**
-- [backend/app/main.py](file://backend/app/main.py)
-- [backend/app/routes/postgres.py](file://backend/app/routes/postgres.py)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py)
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma)
-- [frontend/lib/prisma.ts](file://frontend/lib/prisma.ts)
-- [frontend/app/api/(db)/resumes/route.ts](file://frontend/app/api/(db)/resumes/route.ts)
-- [frontend/app/api/(db)/interviews/route.ts](file://frontend/app/api/(db)/interviews/route.ts)
-- [frontend/app/api/(db)/cold-mails/route.ts](file://frontend/app/api/(db)/cold-mails/route.ts)
-- [frontend/app/api/(db)/cover-letters/route.ts](file://frontend/app/api/(db)/cover-letters/route.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Database management API
 
 ## Introduction
-This document provides comprehensive API documentation for database management operations across the TalentSync application. It focuses on CRUD endpoints for major entities including users, resumes, analyses, interviews, and communications (cold mails and cover letters). It also explains query parameters, filtering, pagination, sorting, validation rules, referential integrity, bulk operations, transactions, and data consistency patterns. Practical examples and performance optimization techniques are included to guide developers integrating with the system.
+This page provides detailed API documentation for database management operations across the TalentSync application. It focuses on CRUD endpoints for major entities including users, resumes, analyses, interviews, and communications (cold mails and cover letters). It also explains query parameters, filtering, pagination, sorting, validation rules, referential integrity, bulk operations, transactions, and data consistency patterns. Practical examples and performance optimization techniques are included to guide developers integrating with the system.
 
-## Project Structure
+## Project structure
 The database layer is primarily implemented in the frontend using Prisma ORM against a PostgreSQL database. Backend services orchestrate higher-level operations (e.g., resume analysis), while frontend API routes expose database-backed endpoints for clients. The backend FastAPI application wires routing and middleware, and the Prisma schema defines entity models and relationships.
 
 ```mermaid
@@ -54,23 +30,7 @@ LR --> P
 P --> M
 ```
 
-**Diagram sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L202)
-- [backend/app/routes/postgres.py](file://backend/app/routes/postgres.py#L1-L27)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L345-L364)
-- [frontend/lib/prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L1-L262)
-- [frontend/app/api/(db)/resumes/route.ts](file://frontend/app/api/(db)/resumes/route.ts#L1-L312)
-- [frontend/app/api/(db)/interviews/route.ts](file://frontend/app/api/(db)/interviews/route.ts#L1-L151)
-- [frontend/app/api/(db)/cold-mails/route.ts](file://frontend/app/api/(db)/cold-mails/route.ts#L1-L139)
-- [frontend/app/api/(db)/cover-letters/route.ts](file://frontend/app/api/(db)/cover-letters/route.ts#L1-L130)
-
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L202)
-- [frontend/lib/prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L1-L262)
-
-## Core Components
+## Core components
 - Backend FastAPI application registers routers and middleware, exposing database-related endpoints under API versions and tagging them appropriately.
 - Frontend API routes implement authentication checks, role-based visibility, and database operations via Prisma.
 - Prisma schema defines entities, relations, indexes, and constraints that enforce referential integrity and performance characteristics.
@@ -81,14 +41,7 @@ Key responsibilities:
 - Sorting and ordering: queries order results by timestamps for predictable retrieval.
 - Filtering: role-based filters limit central data visibility to admins/recruiters.
 
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L202)
-- [frontend/app/api/(db)/resumes/route.ts](file://frontend/app/api/(db)/resumes/route.ts#L8-L107)
-- [frontend/app/api/(db)/interviews/route.ts](file://frontend/app/api/(db)/interviews/route.ts#L6-L78)
-- [frontend/app/api/(db)/cold-mails/route.ts](file://frontend/app/api/(db)/cold-mails/route.ts#L6-L66)
-- [frontend/app/api/(db)/cover-letters/route.ts](file://frontend/app/api/(db)/cover-letters/route.ts#L6-L61)
-
-## Architecture Overview
+## Architecture overview
 The system follows a layered architecture:
 - Presentation layer: Next.js API routes handle HTTP requests and delegate to Prisma.
 - Persistence layer: Prisma client connects to PostgreSQL using credentials from environment variables.
@@ -124,14 +77,7 @@ Route-->>Client : Success
 end
 ```
 
-**Diagram sources**
-- [frontend/app/api/(db)/resumes/route.ts](file://frontend/app/api/(db)/resumes/route.ts#L8-L206)
-- [frontend/app/api/(db)/interviews/route.ts](file://frontend/app/api/(db)/interviews/route.ts#L6-L150)
-- [frontend/app/api/(db)/cold-mails/route.ts](file://frontend/app/api/(db)/cold-mails/route.ts#L6-L139)
-- [frontend/app/api/(db)/cover-letters/route.ts](file://frontend/app/api/(db)/cover-letters/route.ts#L6-L130)
-- [frontend/lib/prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### Users
 - Purpose: Store identities, roles, and related authentication records.
@@ -142,10 +88,6 @@ end
 Operational notes:
 - Authentication middleware ensures requests originate from authenticated sessions.
 - Authorization logic restricts data visibility based on role.
-
-**Section sources**
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L16-L41)
-- [frontend/app/api/(db)/resumes/route.ts](file://frontend/app/api/(db)/resumes/route.ts#L10-L38)
 
 ### Resumes
 - Purpose: Persist uploaded or manually entered resume metadata and derived analysis.
@@ -172,12 +114,6 @@ Data validation and constraints:
 - Foreign key cascade for analysis deletion
 - Composite index supports frequent queries
 
-**Section sources**
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L81-L98)
-- [frontend/app/api/(db)/resumes/route.ts](file://frontend/app/api/(db)/resumes/route.ts#L8-L107)
-- [frontend/app/api/(db)/resumes/route.ts](file://frontend/app/api/(db)/resumes/route.ts#L109-L206)
-- [frontend/app/api/(db)/resumes/route.ts](file://frontend/app/api/(db)/resumes/route.ts#L208-L312)
-
 ### Analyses
 - Purpose: Store structured extraction results derived from resumes.
 - Key attributes: unique association with a resume, personal info, skills, education, work experience, projects, languages, predicted field, timestamps.
@@ -185,10 +121,6 @@ Data validation and constraints:
 
 Constraints:
 - Unique constraint on resumeId enforces one analysis per resume.
-
-**Section sources**
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L100-L125)
-- [frontend/app/api/(db)/resumes/route.ts](file://frontend/app/api/(db)/resumes/route.ts#L173-L186)
 
 ### Interviews
 - Purpose: Track interview sessions with generated questions and user-provided answers.
@@ -207,12 +139,7 @@ Data consistency:
 - JSON questions may be string or mixed; defensive transformation ensures compatibility
 - Matching uses normalized comparison for robustness
 
-**Section sources**
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L203-L226)
-- [frontend/app/api/(db)/interviews/route.ts](file://frontend/app/api/(db)/interviews/route.ts#L6-L78)
-- [frontend/app/api/(db)/interviews/route.ts](file://frontend/app/api/(db)/interviews/route.ts#L80-L150)
-
-### Cold Mails
+### Cold mails
 - Purpose: Manage cold email generation requests and generated responses.
 - Key attributes: requester identity, recipient/company details, key points, timestamps.
 - Relationships: one-to-many responses; responses ordered by creation time.
@@ -225,12 +152,7 @@ CRUD endpoints:
 - DELETE /api/(db)/cold-mails?id={id}
   - Transaction: deletes responses first, then the request
 
-**Section sources**
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L149-L174)
-- [frontend/app/api/(db)/cold-mails/route.ts](file://frontend/app/api/(db)/cold-mails/route.ts#L6-L66)
-- [frontend/app/api/(db)/cold-mails/route.ts](file://frontend/app/api/(db)/cold-mails/route.ts#L68-L139)
-
-### Cover Letters
+### Cover letters
 - Purpose: Manage cover letter generation requests and generated responses.
 - Key attributes: requester identity, recipient/company details, optional job description and URLs, timestamps.
 - Relationships: one-to-many responses; responses ordered by creation time.
@@ -243,12 +165,7 @@ CRUD endpoints:
 - DELETE /api/(db)/cover-letters?id={id}
   - Transaction: deletes responses first, then the request
 
-**Section sources**
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L176-L201)
-- [frontend/app/api/(db)/cover-letters/route.ts](file://frontend/app/api/(db)/cover-letters/route.ts#L6-L61)
-- [frontend/app/api/(db)/cover-letters/route.ts](file://frontend/app/api/(db)/cover-letters/route.ts#L63-L130)
-
-### Backend PostgreSQL Routes (Database Views)
+### Backend PostgreSQL routes (database views)
 - Purpose: Expose curated database views for resumes categorized by predicted field.
 - Endpoints:
   - GET /api/v1/resumes/
@@ -257,11 +174,7 @@ CRUD endpoints:
 Notes:
 - Current implementation returns placeholder data; intended to integrate with actual database queries.
 
-**Section sources**
-- [backend/app/routes/postgres.py](file://backend/app/routes/postgres.py#L11-L27)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L345-L364)
-
-## Dependency Analysis
+## Dependency analysis
 Entity relationships and constraints are defined in the Prisma schema. The following diagram highlights primary relationships among core entities.
 
 ```mermaid
@@ -382,10 +295,7 @@ USER ||--o{ COVER_LETTER_REQUEST : "owns"
 COVER_LETTER_REQUEST ||--o{ COVER_LETTER_RESPONSE : "generates"
 ```
 
-**Diagram sources**
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma#L10-L262)
-
-## Performance Considerations
+## Performance considerations
 - Indexing: Composite index on Resume(userId, isMaster) improves lookup performance for master resumes per user.
 - Sorting: Queries sort by timestamps to provide consistent ordering; consider adding pagination for large result sets.
 - Transactions: Deletion sequences ensure referential integrity and reduce orphaned records.
@@ -394,7 +304,7 @@ COVER_LETTER_REQUEST ||--o{ COVER_LETTER_RESPONSE : "generates"
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Authentication failures: Ensure a valid session exists; endpoints return 401 when session email is missing.
 - Authorization failures: Admins/recruiters can only view central resumes; regular users can only access their own resumes.
@@ -402,13 +312,5 @@ Common issues and resolutions:
 - Transaction failures: If deletion fails mid-transaction, verify referential integrity and retry.
 - Validation errors: PATCH requires a non-empty custom name; empty names produce 400 responses.
 
-**Section sources**
-- [frontend/app/api/(db)/resumes/route.ts](file://frontend/app/api/(db)/resumes/route.ts#L10-L38)
-- [frontend/app/api/(db)/resumes/route.ts](file://frontend/app/api/(db)/resumes/route.ts#L123-L135)
-- [frontend/app/api/(db)/resumes/route.ts](file://frontend/app/api/(db)/resumes/route.ts#L226-L248)
-- [frontend/app/api/(db)/interviews/route.ts](file://frontend/app/api/(db)/interviews/route.ts#L80-L112)
-- [frontend/app/api/(db)/cold-mails/route.ts](file://frontend/app/api/(db)/cold-mails/route.ts#L91-L100)
-- [frontend/app/api/(db)/cover-letters/route.ts](file://frontend/app/api/(db)/cover-letters/route.ts#L85-L93)
-
 ## Conclusion
-The database management APIs provide secure, role-aware CRUD operations for resumes, analyses, interviews, and communications. They leverage Prisma for type-safe queries, enforce referential integrity via transactions, and offer predictable sorting. Extending pagination, selective field loading, and caching will further improve performance. Integrating backend PostgreSQL routes with real database queries will complete the data access layer.
+The database management APIs provide secure, role-aware CRUD operations for resumes, analyses, interviews, and communications. They use Prisma for type-safe queries, enforce referential integrity via transactions, and offer predictable sorting. Extending pagination, selective field loading, and caching will further improve performance. Integrating backend PostgreSQL routes with real database queries will complete the data access layer.

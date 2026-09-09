@@ -1,30 +1,7 @@
-# Authentication System
-
-<cite>
-**Referenced Files in This Document**
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts)
-- [SignInScreen.tsx](file://extension/entrypoints/sidepanel/components/SignInScreen.tsx)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx)
-- [ProfileSidebar.tsx](file://extension/entrypoints/sidepanel/components/ProfileSidebar.tsx)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx)
-- [main.py](file://api/main.py)
-- [github.py](file://routers/github.py)
-- [github_service.py](file://services/github_service.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Authentication system
 
 ## Introduction
-This document explains the Authentication System for the Agentic Browser extension. It focuses on:
+This page explains the Authentication System for the Agentic Browser extension. It focuses on:
 - The useAuth hook that manages user authentication state, token handling, and session management
 - The SignInScreen component that provides login interfaces for Google OAuth and a demo GitHub flow
 - The authentication flow from initial login through token refresh cycles
@@ -32,8 +9,8 @@ This document explains the Authentication System for the Agentic Browser extensi
 - Examples of authentication state management, error handling, and security considerations
 - Backend integration points and token validation processes
 
-## Project Structure
-The authentication system spans the extension’s side panel (React + browser APIs) and the backend (FastAPI). The key files are:
+## Project structure
+The authentication system spans the extension's side panel (React + browser APIs) and the backend (FastAPI). The key files are:
 - Hook for authentication state and token lifecycle
 - Login UI component
 - Application shell that renders the login screen or settings based on auth state
@@ -65,23 +42,7 @@ B_API --> B_Router
 B_Router --> B_Service
 ```
 
-**Diagram sources**
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L11-L25)
-- [SignInScreen.tsx](file://extension/entrypoints/sidepanel/components/SignInScreen.tsx#L17-L17)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L17-L42)
-- [ProfileSidebar.tsx](file://extension/entrypoints/sidepanel/components/ProfileSidebar.tsx#L149-L207)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L992-L1032)
-- [main.py](file://api/main.py#L12-L40)
-- [github.py](file://routers/github.py#L1-L49)
-- [github_service.py](file://services/github_service.py#L11-L109)
-
-**Section sources**
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L11-L25)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L17-L42)
-- [SignInScreen.tsx](file://extension/entrypoints/sidepanel/components/SignInScreen.tsx#L17-L17)
-- [main.py](file://api/main.py#L12-L40)
-
-## Core Components
+## Core components
 - useAuth hook
   - Initializes auth state from browser local storage
   - Detects token age and refreshes automatically when appropriate
@@ -96,14 +57,7 @@ B_Router --> B_Service
 - Settings UI
   - Displays token info and exposes manual refresh and logout actions
 
-**Section sources**
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L17-L42)
-- [SignInScreen.tsx](file://extension/entrypoints/sidepanel/components/SignInScreen.tsx#L17-L17)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L157-L165)
-- [ProfileSidebar.tsx](file://extension/entrypoints/sidepanel/components/ProfileSidebar.tsx#L149-L207)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L992-L1032)
-
-## Architecture Overview
+## Architecture overview
 The authentication flow integrates browser identity APIs, a backend service, and local storage. The diagram below maps the actual code paths.
 
 ```mermaid
@@ -127,15 +81,9 @@ Backend-->>Hook : "{access_token, expires_in}"
 Hook->>Store : "update googleUser"
 ```
 
-**Diagram sources**
-- [SignInScreen.tsx](file://extension/entrypoints/sidepanel/components/SignInScreen.tsx#L194-L249)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L128-L207)
-- [main.py](file://api/main.py#L12-L40)
-- [github.py](file://routers/github.py#L1-L49)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### useAuth Hook
+### useAuth hook
 The hook encapsulates:
 - Initialization from browser storage
 - Automatic token refresh based on token age
@@ -171,19 +119,7 @@ StatusExpire --> DoneInit
 StatusValid --> DoneInit
 ```
 
-**Diagram sources**
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L60-L126)
-
-**Section sources**
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L17-L42)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L60-L126)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L128-L207)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L210-L236)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L238-L242)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L244-L269)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L271-L295)
-
-### SignInScreen Component
+### SignInScreen component
 The component renders:
 - A hero section with animated visuals
 - Two login buttons:
@@ -200,15 +136,7 @@ class SignInScreen {
 }
 ```
 
-**Diagram sources**
-- [SignInScreen.tsx](file://extension/entrypoints/sidepanel/components/SignInScreen.tsx#L12-L17)
-- [SignInScreen.tsx](file://extension/entrypoints/sidepanel/components/SignInScreen.tsx#L193-L291)
-
-**Section sources**
-- [SignInScreen.tsx](file://extension/entrypoints/sidepanel/components/SignInScreen.tsx#L17-L17)
-- [SignInScreen.tsx](file://extension/entrypoints/sidepanel/components/SignInScreen.tsx#L193-L291)
-
-### App Shell Integration
+### App shell integration
 The App component:
 - Consumes useAuth to determine whether to render SignInScreen or UnifiedSettingsMenu
 - Handles first-time setup redirection based on a storage flag
@@ -227,17 +155,7 @@ Hook-->>App : "updated user state"
 App->>App : "render SignInScreen or Settings"
 ```
 
-**Diagram sources**
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L11-L25)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L45-L49)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L24-L42)
-
-**Section sources**
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L11-L25)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L45-L49)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L24-L42)
-
-### Settings UI (Tokens and Actions)
+### Settings UI (tokens and actions)
 The settings UI surfaces:
 - Access token visibility toggle
 - Refresh token visibility toggle (blurred)
@@ -262,15 +180,7 @@ class ProfileSidebar {
 }
 ```
 
-**Diagram sources**
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L992-L1032)
-- [ProfileSidebar.tsx](file://extension/entrypoints/sidepanel/components/ProfileSidebar.tsx#L149-L207)
-
-**Section sources**
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L992-L1032)
-- [ProfileSidebar.tsx](file://extension/entrypoints/sidepanel/components/ProfileSidebar.tsx#L149-L207)
-
-## Dependency Analysis
+## Dependency analysis
 - Frontend-to-backend dependencies
   - useAuth.ts calls backend endpoints for token exchange and refresh
   - App.tsx depends on useAuth for rendering decisions
@@ -290,22 +200,7 @@ Settings["UnifiedSettingsMenu.tsx"] --> Hook
 Sidebar["ProfileSidebar.tsx"] --> Hook
 ```
 
-**Diagram sources**
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L72-L89)
-- [main.py](file://api/main.py#L12-L40)
-- [github.py](file://routers/github.py#L1-L49)
-- [github_service.py](file://services/github_service.py#L11-L109)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L11-L25)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L992-L1032)
-- [ProfileSidebar.tsx](file://extension/entrypoints/sidepanel/components/ProfileSidebar.tsx#L149-L207)
-
-**Section sources**
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L72-L89)
-- [main.py](file://api/main.py#L12-L40)
-- [github.py](file://routers/github.py#L1-L49)
-- [github_service.py](file://services/github_service.py#L11-L109)
-
-## Performance Considerations
+## Performance considerations
 - Token refresh threshold
   - The hook refreshes tokens before they reach a configured age threshold, reducing latency during requests
 - Local storage synchronization
@@ -315,7 +210,7 @@ Sidebar["ProfileSidebar.tsx"] --> Hook
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Authentication cancelled or denied
   - The hook detects cancellation/denial keywords and shows a user-friendly alert
@@ -326,22 +221,17 @@ Common issues and resolutions:
 - Manual refresh unavailable
   - If no refresh token is present, the UI disables manual refresh and prompts re-login
 
-**Section sources**
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L190-L207)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L191-L204)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L271-L295)
-
-## Security Considerations
+## Security considerations
 - Token storage
   - Tokens are stored in browser local storage; consider encrypting sensitive fields for production
 - Token exposure
   - The settings UI supports toggling token visibility; use caution when sharing screens
 - Refresh token handling
-  - Refresh tokens enable seamless renewal; ensure secure transport and storage
+  - Refresh tokens enable smooth renewal; ensure secure transport and storage
 - OAuth consent
   - The Google OAuth flow requests offline access and broad scopes; review and minimize scopes as needed
 
 [No sources needed since this section provides general guidance]
 
 ## Conclusion
-The Authentication System combines a React hook, a browser-native OAuth flow, and a backend service to deliver a robust login experience. It supports automatic token refresh, manual refresh, logout, and persistent session state across browser restarts via local storage. The UI components provide clear feedback and controls for token management, while the backend routes integrate with services that consume authenticated tokens.
+The Authentication System combines a React hook, a browser-native OAuth flow, and a backend service to deliver a reliable login experience. It supports automatic token refresh, manual refresh, logout, and persistent session state across browser restarts via local storage. The UI components provide clear feedback and controls for token management, while the backend routes integrate with services that consume authenticated tokens.

@@ -86,7 +86,7 @@ const title = titleLabel
 </Button>
 
 <script>
-	import { WebHaptics } from "web-haptics";
+	import { trigger } from "@/lib/haptics";
 	import {
 		TAB_IDS,
 		DEFAULT_TAB,
@@ -96,8 +96,6 @@ const title = titleLabel
 		stripTabParams,
 		type TabId,
 	} from "../lib/tabs";
-
-	const haptics = new WebHaptics();
 
 	function getTabEl(id: TabId) {
 		return document.getElementById(`${id}-tab`);
@@ -163,7 +161,7 @@ const title = titleLabel
 				// Also stops Astro's ClientRouter from navigating for real: it
 				// bails out on already-defaultPrevented clicks.
 				event.preventDefault();
-				haptics.trigger("selection");
+				if (tab.getAttribute("aria-current") !== "page") trigger("selection");
 				navigateToTab(id);
 				scrollToTabTop();
 			});
@@ -460,13 +458,13 @@ const title = titleLabel
 		});
 
 		welcomeDismiss?.addEventListener("click", () => {
-			haptics.trigger("light");
+			trigger("light");
 			localStorage.setItem(WELCOME_KEY, "1");
 			applyWelcomeState(true);
 		});
 
 		welcomeRestoreBtn?.addEventListener("click", () => {
-			haptics.trigger("light");
+			trigger("light");
 			localStorage.removeItem(WELCOME_KEY);
 			applyWelcomeState(false);
 		});
@@ -484,7 +482,7 @@ const title = titleLabel
 
 			chips.forEach((chip) =>
 				chip.addEventListener('click', () => {
-					haptics.trigger('light');
+					trigger('light');
 					const willOpen = chip.getAttribute('aria-expanded') !== 'true';
 					chips.forEach((other) => {
 						other.setAttribute('aria-expanded', 'false');
@@ -500,7 +498,7 @@ const title = titleLabel
 
 		// Open Projects button (in GitHub Star Lists callout)
 		document.querySelector('[data-open-projects]')?.addEventListener('click', () => {
-			haptics.trigger('light');
+			trigger('light');
 			navigateToTab('projects');
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 		});
@@ -527,7 +525,7 @@ const title = titleLabel
 			window.addEventListener("scroll", onScroll, { passive: true });
 			onScroll();
 			scrollBtn.addEventListener("click", () => {
-				haptics.trigger("light");
+				trigger("light");
 				window.scrollTo({ top: 0, behavior: "smooth" });
 			});
 		}
@@ -563,7 +561,7 @@ const title = titleLabel
 
 			if (!email || !messageRaw) {
 				if (statusEl) statusEl.textContent = "Email & message are required.";
-					haptics.trigger("error");
+					trigger("error");
 					return;
 				}
 
@@ -571,7 +569,7 @@ const title = titleLabel
 			if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
 				if (statusEl)
 					statusEl.textContent = "Please provide a valid email address.";
-					haptics.trigger("error");
+					trigger("error");
 					return;
 				}
 
@@ -590,7 +588,7 @@ const title = titleLabel
 				const mailto = `mailto:tashif@duck.com?subject=${encodeURIComponent(subject)}&body=${body}`;
 
 				if (statusEl) statusEl.textContent = "Opening your email client...";
-				haptics.trigger("success");
+				trigger("light");
 				window.location.href = mailto;
 			});
 		}

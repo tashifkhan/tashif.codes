@@ -1,36 +1,9 @@
-# Deployment & Operations
-
-<cite>
-**Referenced Files in This Document**
-- [main.py](file://app/main.py)
-- [config.py](file://app/core/config.py)
-- [daemon.py](file://app/core/daemon.py)
-- [bot_server.py](file://app/servers/bot_server.py)
-- [scheduler_server.py](file://app/servers/scheduler_server.py)
-- [webhook_server.py](file://app/servers/webhook_server.py)
-- [docker-compose.dev.yaml](file://app/docker-compose.dev.yaml)
-- [pyproject.toml](file://app/pyproject.toml)
-- [requirements.txt](file://app/requirements.txt)
-- [daily-run.yml.legacy](file://.github/workflows/daily-run.yml.legacy)
-- [noon-run.yml.legacy](file://.github/workflows/noon-run.yml.legacy)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Deployment & operations
 
 ## Introduction
-This document provides comprehensive deployment and operations guidance for the SuperSet Telegram Notification Bot. It covers production deployment strategies across local machines/VPS, Docker, and cloud platforms (Heroku, Railway, Render). It also documents daemon mode configuration, process management, monitoring approaches, CI/CD pipelines, infrastructure requirements, scaling, performance optimization, maintenance, logging, backups, disaster recovery, and security hardening.
+This page provides detailed deployment and operations guidance for the SuperSet Telegram Notification Bot. It covers production deployment strategies across local machines/VPS, Docker, and cloud platforms (Heroku, Railway, Render). It also documents daemon mode configuration, process management, monitoring approaches, CI/CD pipelines, infrastructure requirements, scaling, performance optimization, maintenance, logging, backups, disaster recovery, and security hardening.
 
-## Project Structure
+## Project structure
 The application is organized around a modular CLI entry point and three primary runtime servers:
 - Telegram bot server for user commands and admin controls
 - Scheduler server for automated update jobs
@@ -62,23 +35,7 @@ BOT --> DAE
 SCH --> DAE
 ```
 
-**Diagram sources**
-- [main.py](file://app/main.py#L370-L632)
-- [config.py](file://app/core/config.py#L156-L254)
-- [daemon.py](file://app/core/daemon.py#L114-L251)
-- [bot_server.py](file://app/servers/bot_server.py#L29-L519)
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L33-L388)
-- [webhook_server.py](file://app/servers/webhook_server.py#L69-L387)
-
-**Section sources**
-- [main.py](file://app/main.py#L1-L632)
-- [config.py](file://app/core/config.py#L1-L254)
-- [daemon.py](file://app/core/daemon.py#L1-L251)
-- [bot_server.py](file://app/servers/bot_server.py#L1-L519)
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L1-L388)
-- [webhook_server.py](file://app/servers/webhook_server.py#L1-L387)
-
-## Core Components
+## Core components
 - CLI entry point orchestrates commands for bot, scheduler, webhook, update, send, official, and daemon control.
 - Configuration module centralizes environment-driven settings with type safety and logging setup.
 - Daemon utilities manage Unix-style daemonization, PID tracking, and graceful stop.
@@ -89,15 +46,7 @@ Key operational capabilities:
 - Logging configuration supports both console and file outputs, with daemon-aware behavior.
 - Separate servers enable horizontal scaling and independent management.
 
-**Section sources**
-- [main.py](file://app/main.py#L370-L632)
-- [config.py](file://app/core/config.py#L156-L254)
-- [daemon.py](file://app/core/daemon.py#L114-L251)
-- [bot_server.py](file://app/servers/bot_server.py#L29-L519)
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L33-L388)
-- [webhook_server.py](file://app/servers/webhook_server.py#L69-L387)
-
-## Architecture Overview
+## Architecture overview
 The system comprises three cooperating servers and a shared configuration layer. The CLI routes commands to appropriate server factories, which inject services and clients. The scheduler coordinates recurring tasks, while the webhook server exposes REST endpoints for external integrations.
 
 ```mermaid
@@ -118,17 +67,9 @@ BOT --> DAE
 SCH --> DAE
 ```
 
-**Diagram sources**
-- [main.py](file://app/main.py#L370-L632)
-- [config.py](file://app/core/config.py#L156-L254)
-- [daemon.py](file://app/core/daemon.py#L114-L251)
-- [bot_server.py](file://app/servers/bot_server.py#L29-L519)
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L33-L388)
-- [webhook_server.py](file://app/servers/webhook_server.py#L69-L387)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### CLI and Command Dispatch
+### CLI and command dispatch
 - Provides unified entry point for running servers, triggering updates, sending notifications, and managing daemons.
 - Supports daemon mode flags for bot and scheduler commands.
 - Includes legacy mode for backward compatibility.
@@ -137,22 +78,16 @@ Operational implications:
 - Use daemon mode for long-running processes to detach from terminals.
 - Use verbose mode for debugging during development.
 
-**Section sources**
-- [main.py](file://app/main.py#L370-L632)
-
-### Configuration Management
+### Configuration management
 - Centralized settings via typed configuration with environment variable loading.
 - Logging initialization supports file and stream handlers, with daemon-aware suppression of stdout.
 - Provides helpers for safe printing and caching settings.
 
 Operational implications:
-- Store secrets in environment variables or .env files.
+- Store secrets in environment variables or.env files.
 - Adjust log levels and file paths per environment.
 
-**Section sources**
-- [config.py](file://app/core/config.py#L156-L254)
-
-### Daemon Utilities
+### Daemon utilities
 - Implements true Unix daemonization with double-fork, PID file management, and signal handling.
 - Provides stop and status utilities for controlled lifecycle management.
 - Redirects stdio to log files in daemon mode.
@@ -161,10 +96,7 @@ Operational implications:
 - PID files are stored under a dedicated data directory.
 - Graceful termination uses SIGTERM with fallback to SIGKILL.
 
-**Section sources**
-- [daemon.py](file://app/core/daemon.py#L114-L251)
-
-### Telegram Bot Server
+### Telegram bot server
 - Handles user commands, admin functions, and statistics queries.
 - Integrates with database and notification services.
 - Runs in polling mode with graceful shutdown.
@@ -173,10 +105,7 @@ Operational implications:
 - Requires Telegram bot token and optional chat ID.
 - Can run as a standalone server or as a daemon.
 
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L29-L519)
-
-### Scheduler Server
+### Scheduler server
 - Runs automated update jobs at multiple times per day and daily official placement scraping.
 - Mirrors the legacy update flow: fetch SuperSet and emails, then send notifications.
 - Uses an async scheduler with timezone-aware cron jobs.
@@ -185,10 +114,7 @@ Operational implications:
 - Ideal for running as a separate daemon process.
 - Schedules align with IST business hours plus midnight.
 
-**Section sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L33-L388)
-
-### Webhook Server (FastAPI)
+### Webhook server (FastAPI)
 - Exposes health checks, push subscription endpoints, notification dispatch, and statistics.
 - Supports CORS and dependency injection for services.
 - Can run standalone or behind reverse proxies/load balancers.
@@ -197,10 +123,7 @@ Operational implications:
 - Configure CORS origins for production.
 - Use HTTPS and authentication for sensitive endpoints.
 
-**Section sources**
-- [webhook_server.py](file://app/servers/webhook_server.py#L69-L387)
-
-### Sequence: Scheduled Update Flow
+### Sequence: scheduled update flow
 ```mermaid
 sequenceDiagram
 participant SCH as "SchedulerServer"
@@ -215,11 +138,7 @@ SCH->>NOT : "send_updates(telegram=True, web=False)"
 NOT-->>SCH : "Send results"
 ```
 
-**Diagram sources**
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L78-L117)
-- [scheduler_server.py](file://app/servers/scheduler_server.py#L118-L237)
-
-## Dependency Analysis
+## Dependency analysis
 Runtime dependencies are declared via pyproject.toml and pinned in requirements.txt. The application relies on:
 - Asynchronous scheduling and Telegram integration
 - FastAPI and Uvicorn for the webhook server
@@ -236,15 +155,7 @@ PY --> APP
 REQ --> APP
 ```
 
-**Diagram sources**
-- [pyproject.toml](file://app/pyproject.toml#L1-L27)
-- [requirements.txt](file://app/requirements.txt#L1-L81)
-
-**Section sources**
-- [pyproject.toml](file://app/pyproject.toml#L1-L27)
-- [requirements.txt](file://app/requirements.txt#L1-L81)
-
-## Performance Considerations
+## Performance considerations
 - Use daemon mode for persistent servers to avoid terminal ties and improve reliability.
 - Tune logging levels to reduce I/O overhead in production.
 - For the webhook server, deploy behind a reverse proxy and enable HTTP/2 and compression.
@@ -254,7 +165,7 @@ REQ --> APP
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common operational issues and remedies:
 - Daemon fails to start or leaves stale PID files: verify permissions and cleanup stale PID files.
 - Logging not visible in daemon mode: confirm log file paths and permissions.
@@ -262,24 +173,18 @@ Common operational issues and remedies:
 - Webhook server errors: check CORS configuration and service availability.
 - Scheduler jobs failing: review logs for exceptions and resource limits.
 
-**Section sources**
-- [daemon.py](file://app/core/daemon.py#L59-L112)
-- [config.py](file://app/core/config.py#L188-L254)
-- [bot_server.py](file://app/servers/bot_server.py#L405-L453)
-- [webhook_server.py](file://app/servers/webhook_server.py#L139-L144)
-
 ## Conclusion
-The SuperSet Telegram Notification Bot is designed for modular, scalable deployment across local, containerized, and cloud environments. By leveraging daemon mode, centralized configuration, and separate servers, operators can achieve reliable, maintainable operations with clear separation of concerns.
+The SuperSet Telegram Notification Bot is designed for modular, scalable deployment across local, containerized, and cloud environments. By using daemon mode, centralized configuration, and separate servers, operators can achieve reliable, maintainable operations with clear separation of concerns.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### A. Production Deployment Strategies
+### A. production deployment strategies
 
 - Local machine/VPS
   - Install Python 3.12+ and dependencies.
-  - Configure environment variables and .env file.
+  - Configure environment variables and.env file.
   - Start servers in daemon mode using CLI commands.
   - Use systemd or similar supervisors for automatic restarts.
 
@@ -295,7 +200,7 @@ The SuperSet Telegram Notification Bot is designed for modular, scalable deploym
 
 [No sources needed since this section provides general guidance]
 
-### B. Infrastructure Requirements
+### B. infrastructure requirements
 - Compute: Minimal single-core CPU and 512 MB RAM for basic operation; scale based on traffic and processing volume.
 - Storage: Persistent storage for MongoDB data and logs.
 - Networking: Outbound access to Telegram, email providers, and external APIs; inbound access for webhook server if exposed publicly.
@@ -303,22 +208,22 @@ The SuperSet Telegram Notification Bot is designed for modular, scalable deploym
 
 [No sources needed since this section provides general guidance]
 
-### C. Scaling Considerations
+### C. scaling considerations
 - Horizontal scaling: Run multiple instances of each server behind a load balancer (for webhook server).
 - Vertical scaling: Increase CPU/RAM for periods of heavy email processing or notification bursts.
 - Queue-based processing: Offload heavy workloads to background workers or queues if growth demands it.
 
 [No sources needed since this section provides general guidance]
 
-### D. Monitoring and Observability
+### D. monitoring and observability
 - Logs: Centralize logs from daemonized processes and webhook server to a log aggregation system.
 - Metrics: Track job durations, error rates, and throughput.
-- Health checks: Use webhook server’s health endpoints for readiness/liveness probes.
+- Health checks: Use webhook server's health endpoints for readiness/liveness probes.
 - Alerts: Configure alerts for failed jobs, high error rates, and resource exhaustion.
 
 [No sources needed since this section provides general guidance]
 
-### E. CI/CD Pipeline Setup
+### E. CI/CD pipeline setup
 - Existing workflows demonstrate scheduled runs using GitHub Actions with uv for dependency management and environment variable injection.
 - Extend workflows to include linting, unit/integration tests, and deployment stages.
 
@@ -331,15 +236,7 @@ B --> E["Inject secrets"]
 D --> F["Publish results/logs"]
 ```
 
-**Diagram sources**
-- [daily-run.yml.legacy](file://.github/workflows/daily-run.yml.legacy#L1-L72)
-- [noon-run.yml.legacy](file://.github/workflows/noon-run.yml.legacy#L1-L58)
-
-**Section sources**
-- [daily-run.yml.legacy](file://.github/workflows/daily-run.yml.legacy#L1-L72)
-- [noon-run.yml.legacy](file://.github/workflows/noon-run.yml.legacy#L1-L58)
-
-### F. Maintenance Procedures
+### F. maintenance procedures
 - Regularly rotate secrets and update dependencies.
 - Review and prune old logs and stale PID files.
 - Validate database connectivity and indexes periodically.
@@ -347,21 +244,21 @@ D --> F["Publish results/logs"]
 
 [No sources needed since this section provides general guidance]
 
-### G. Log Management
+### G. log management
 - Use file logging with rotation in production.
 - Ensure daemon mode does not suppress critical logs.
 - Forward logs to centralized systems for retention and analysis.
 
 [No sources needed since this section provides general guidance]
 
-### H. Backup and Disaster Recovery
+### H. backup and disaster recovery
 - Back up MongoDB data regularly and test restoration procedures.
-- Maintain .env and configuration backups.
+- Maintain.env and configuration backups.
 - Document recovery playbooks for each server and data store.
 
 [No sources needed since this section provides general guidance]
 
-### I. Security Hardening
+### I. security hardening
 - Enforce HTTPS for webhook server and external integrations.
 - Restrict CORS origins to trusted domains.
 - Use strong secrets and rotate them regularly.
@@ -370,25 +267,19 @@ D --> F["Publish results/logs"]
 
 [No sources needed since this section provides general guidance]
 
-### J. SSL/TLS and Access Control
+### J. SSL/TLS and access control
 - Obtain TLS certificates for webhook server domain.
 - Use environment variables for VAPID keys and Telegram tokens.
 - Restrict admin commands to authorized users only.
 
 [No sources needed since this section provides general guidance]
 
-### K. Example Runtime Commands
+### K. example runtime commands
 - Start bot in background: python main.py bot -d
 - Start scheduler in background: python main.py scheduler -d
 - Check daemon status: python main.py status
 - Stop a daemon: python main.py stop bot
 - Run webhook server: python main.py webhook --host 0.0.0.0 --port 8000
 
-**Section sources**
-- [main.py](file://app/main.py#L370-L632)
-
-### L. Docker Compose Reference
+### L. Docker compose reference
 - MongoDB service with exposed port and mounted volume for persistence.
-
-**Section sources**
-- [docker-compose.dev.yaml](file://app/docker-compose.dev.yaml#L1-L15)

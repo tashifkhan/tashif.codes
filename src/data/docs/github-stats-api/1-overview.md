@@ -1,6 +1,6 @@
-# GitHub Analytics Dashboard & API
+# GitHub analytics dashboard & API
 
-An interactive dashboard and comprehensive API for in-depth analysis of GitHub user statistics.
+An interactive dashboard and detailed API for in-depth analysis of GitHub user statistics.
 
 ## Overview
 
@@ -12,12 +12,12 @@ The GitHub Analytics Dashboard provides a visual and data-driven look at any Git
 - **Repository Metadata**: Details on pinned, top-starred, and all public repositories.
 - **Engagement**: Pull requests, organization contributions, and recent commit history.
 
-## Live Access
+## Live access
 
 - **Dashboard**: [github-stats.tashif.codes](https://github-stats.tashif.codes)
 - **Source Code**: [GitHub Repository](https://github.com/tashifkhan/GitHub-Stats-API.git)
 
-## API Documentation
+## API documentation
 
 While this documentation provides a section-wise breakdown, you can also explore the API interactively:
 

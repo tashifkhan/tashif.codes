@@ -1,39 +1,9 @@
-# Notice Reminders Components
-
-<cite>
-**Referenced Files in This Document**
-- [add-subscription.tsx](file://website/components/notice-reminders/add-subscription.tsx)
-- [notification-inbox.tsx](file://website/components/notice-reminders/notification-inbox.tsx)
-- [signup-flow.tsx](file://website/components/notice-reminders/signup-flow.tsx)
-- [subscription-manager.tsx](file://website/components/notice-reminders/subscription-manager.tsx)
-- [user-profile.tsx](file://website/components/notice-reminders/user-profile.tsx)
-- [api.ts](file://website/lib/api.ts)
-- [types.ts](file://website/lib/types.ts)
-- [auth-context.tsx](file://website/lib/auth-context.tsx)
-- [providers.tsx](file://website/lib/providers.tsx)
-- [layout.tsx](file://website/app/layout.tsx)
-- [dashboard/page.tsx](file://website/app/notice-reminders/dashboard/page.tsx)
-- [login/page.tsx](file://website/app/notice-reminders/login/page.tsx)
-- [button.tsx](file://website/components/ui/button.tsx)
-- [card.tsx](file://website/components/ui/card.tsx)
-- [input.tsx](file://website/components/ui/input.tsx)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Notice reminders components
 
 ## Introduction
-This document provides comprehensive documentation for the notice reminders UI components that power course subscription management, notification delivery, user authentication, and account settings. It explains component props, state management, API integration patterns, and user interaction flows. It also covers form handling, validation rules, loading states, error handling, component composition with shared UI components, and integration with the backend API. Examples of component usage and customization options are included to help developers integrate and extend the functionality effectively.
+This page provides detailed documentation for the notice reminders UI components that power course subscription management, notification delivery, user authentication, and account settings. It explains component props, state management, API integration patterns, and user interaction flows. It also covers form handling, validation rules, loading states, error handling, component composition with shared UI components, and integration with the backend API. Examples of component usage and customization options are included to help developers integrate and extend the functionality effectively.
 
-## Project Structure
+## Project structure
 The notice reminders UI components live under the website application in the notice-reminders directory. They rely on a shared UI component library and a typed API client to communicate with the backend service. Authentication state is managed globally via a context provider, and React Query is used for caching and optimistic updates.
 
 ```mermaid
@@ -89,28 +59,7 @@ SUBMAN --> CARD
 PROFILE --> CARD
 ```
 
-**Diagram sources**
-- [layout.tsx](file://website/app/layout.tsx#L81-L98)
-- [providers.tsx](file://website/lib/providers.tsx#L10-L41)
-- [auth-context.tsx](file://website/lib/auth-context.tsx#L21-L88)
-- [dashboard/page.tsx](file://website/app/notice-reminders/dashboard/page.tsx#L13-L51)
-- [login/page.tsx](file://website/app/notice-reminders/login/page.tsx#L19-L157)
-- [add-subscription.tsx](file://website/components/notice-reminders/add-subscription.tsx#L23-L163)
-- [notification-inbox.tsx](file://website/components/notice-reminders/notification-inbox.tsx#L23-L156)
-- [signup-flow.tsx](file://website/components/notice-reminders/signup-flow.tsx#L65-L638)
-- [subscription-manager.tsx](file://website/components/notice-reminders/subscription-manager.tsx#L33-L260)
-- [user-profile.tsx](file://website/components/notice-reminders/user-profile.tsx#L35-L318)
-- [api.ts](file://website/lib/api.ts#L1-L184)
-- [types.ts](file://website/lib/types.ts#L1-L97)
-- [button.tsx](file://website/components/ui/button.tsx#L1-L54)
-- [input.tsx](file://website/components/ui/input.tsx#L1-L21)
-- [card.tsx](file://website/components/ui/card.tsx#L1-L95)
-
-**Section sources**
-- [layout.tsx](file://website/app/layout.tsx#L81-L98)
-- [providers.tsx](file://website/lib/providers.tsx#L10-L41)
-
-## Core Components
+## Core components
 This section summarizes the five notice reminders components and their primary responsibilities.
 
 - AddSubscription: Allows users to search for courses and create new subscriptions.
@@ -119,16 +68,9 @@ This section summarizes the five notice reminders components and their primary r
 - SubscriptionManager: Lists active subscriptions, previews course announcements, and allows cancellation.
 - UserProfile: Manages user profile updates and notification channels, and supports account deletion.
 
-Each component integrates with the shared UI library and the typed API client, leveraging React Query for caching and optimistic updates.
+Each component integrates with the shared UI library and the typed API client, using React Query for caching and optimistic updates.
 
-**Section sources**
-- [add-subscription.tsx](file://website/components/notice-reminders/add-subscription.tsx#L23-L163)
-- [notification-inbox.tsx](file://website/components/notice-reminders/notification-inbox.tsx#L23-L156)
-- [signup-flow.tsx](file://website/components/notice-reminders/signup-flow.tsx#L65-L638)
-- [subscription-manager.tsx](file://website/components/notice-reminders/subscription-manager.tsx#L33-L260)
-- [user-profile.tsx](file://website/components/notice-reminders/user-profile.tsx#L35-L318)
-
-## Architecture Overview
+## Architecture overview
 The components follow a unidirectional data flow:
 - Authentication state is provided globally and consumed by pages and components.
 - Components use React Query hooks to fetch and mutate data.
@@ -162,19 +104,9 @@ Query-->>Comp : onSuccess -> invalidate subscriptions
 Comp-->>User : Toast success and close dialog
 ```
 
-**Diagram sources**
-- [dashboard/page.tsx](file://website/app/notice-reminders/dashboard/page.tsx#L26-L26)
-- [add-subscription.tsx](file://website/components/notice-reminders/add-subscription.tsx#L37-L60)
-- [api.ts](file://website/lib/api.ts#L94-L106)
+## Detailed component analysis
 
-**Section sources**
-- [auth-context.tsx](file://website/lib/auth-context.tsx#L21-L88)
-- [providers.tsx](file://website/lib/providers.tsx#L10-L41)
-- [api.ts](file://website/lib/api.ts#L1-L184)
-
-## Detailed Component Analysis
-
-### AddSubscription Component
+### AddSubscription component
 Purpose: Enable users to search for courses and create subscriptions.
 
 Key behaviors:
@@ -226,18 +158,7 @@ ErrorToast --> End(["End"])
 Close --> End
 ```
 
-**Diagram sources**
-- [add-subscription.tsx](file://website/components/notice-reminders/add-subscription.tsx#L31-L72)
-- [api.ts](file://website/lib/api.ts#L94-L106)
-
-**Section sources**
-- [add-subscription.tsx](file://website/components/notice-reminders/add-subscription.tsx#L23-L163)
-- [api.ts](file://website/lib/api.ts#L94-L106)
-- [button.tsx](file://website/components/ui/button.tsx#L1-L54)
-- [card.tsx](file://website/components/ui/card.tsx#L1-L95)
-- [input.tsx](file://website/components/ui/input.tsx#L1-L21)
-
-### NotificationInbox Component
+### NotificationInbox component
 Purpose: Display notifications and allow users to mark them as read.
 
 Key behaviors:
@@ -291,16 +212,7 @@ Query-->>Comp : Invalidate ["notifications"]
 Comp-->>User : Updated UI with read state
 ```
 
-**Diagram sources**
-- [notification-inbox.tsx](file://website/components/notice-reminders/notification-inbox.tsx#L26-L41)
-- [api.ts](file://website/lib/api.ts#L135-L147)
-
-**Section sources**
-- [notification-inbox.tsx](file://website/components/notice-reminders/notification-inbox.tsx#L23-L156)
-- [api.ts](file://website/lib/api.ts#L135-L147)
-- [card.tsx](file://website/components/ui/card.tsx#L1-L95)
-
-### SignupFlow Component
+### SignupFlow component
 Purpose: End-to-end user onboarding with course selection, account setup, OTP verification, and channel configuration.
 
 Key behaviors:
@@ -356,21 +268,7 @@ OTPError --> Verify
 Success --> End(["End"])
 ```
 
-**Diagram sources**
-- [signup-flow.tsx](file://website/components/notice-reminders/signup-flow.tsx#L65-L206)
-- [auth-context.tsx](file://website/lib/auth-context.tsx#L41-L49)
-- [api.ts](file://website/lib/api.ts#L150-L165)
-
-**Section sources**
-- [signup-flow.tsx](file://website/components/notice-reminders/signup-flow.tsx#L65-L638)
-- [auth-context.tsx](file://website/lib/auth-context.tsx#L21-L97)
-- [api.ts](file://website/lib/api.ts#L150-L165)
-- [types.ts](file://website/lib/types.ts#L66-L75)
-- [button.tsx](file://website/components/ui/button.tsx#L1-L54)
-- [input.tsx](file://website/components/ui/input.tsx#L1-L21)
-- [card.tsx](file://website/components/ui/card.tsx#L1-L95)
-
-### SubscriptionManager Component
+### SubscriptionManager component
 Purpose: Manage active subscriptions, expand to preview announcements, and cancel subscriptions.
 
 Key behaviors:
@@ -432,16 +330,7 @@ Query1-->>Comp : Invalidate ["subscriptions"]
 Comp-->>User : Updated list
 ```
 
-**Diagram sources**
-- [subscription-manager.tsx](file://website/components/notice-reminders/subscription-manager.tsx#L37-L52)
-- [api.ts](file://website/lib/api.ts#L108-L116)
-
-**Section sources**
-- [subscription-manager.tsx](file://website/components/notice-reminders/subscription-manager.tsx#L33-L260)
-- [api.ts](file://website/lib/api.ts#L76-L116)
-- [card.tsx](file://website/components/ui/card.tsx#L1-L95)
-
-### UserProfile Component
+### UserProfile component
 Purpose: Allow users to edit profile details, manage notification channels, and delete their account.
 
 Key behaviors:
@@ -501,16 +390,7 @@ Backend-->>API : 204 No Content
 API-->>Comp : onSuccess -> onLogout()
 ```
 
-**Diagram sources**
-- [user-profile.tsx](file://website/components/notice-reminders/user-profile.tsx#L45-L63)
-- [api.ts](file://website/lib/api.ts#L59-L73)
-
-**Section sources**
-- [user-profile.tsx](file://website/components/notice-reminders/user-profile.tsx#L35-L318)
-- [api.ts](file://website/lib/api.ts#L59-L73)
-- [card.tsx](file://website/components/ui/card.tsx#L1-L95)
-
-## Dependency Analysis
+## Dependency analysis
 The components share a common dependency graph rooted in the API client and shared UI components. Authentication state is centralized, and React Query manages caching and invalidation.
 
 ```mermaid
@@ -555,21 +435,7 @@ PROFILE --> UI_CARD
 API --> TYPES
 ```
 
-**Diagram sources**
-- [providers.tsx](file://website/lib/providers.tsx#L10-L41)
-- [auth-context.tsx](file://website/lib/auth-context.tsx#L21-L88)
-- [api.ts](file://website/lib/api.ts#L1-L184)
-- [types.ts](file://website/lib/types.ts#L1-L97)
-- [button.tsx](file://website/components/ui/button.tsx#L1-L54)
-- [input.tsx](file://website/components/ui/input.tsx#L1-L21)
-- [card.tsx](file://website/components/ui/card.tsx#L1-L95)
-
-**Section sources**
-- [providers.tsx](file://website/lib/providers.tsx#L10-L41)
-- [api.ts](file://website/lib/api.ts#L1-L184)
-- [types.ts](file://website/lib/types.ts#L1-L97)
-
-## Performance Considerations
+## Performance considerations
 - Debounced search: AddSubscription and SignupFlow debounce user input to minimize network requests.
 - Query caching: React Query caches responses with a 60-second stale time and disables window focus refetch by default.
 - Optimistic updates: Mutations invalidate queries to keep UI in sync without waiting for server responses.
@@ -578,7 +444,7 @@ API --> TYPES
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Authentication errors: Ensure the auth context is initialized and the user is loaded before rendering protected components.
 - Network failures: The API client throws a typed error with status and message; display user-friendly messages and retry logic.
@@ -586,10 +452,5 @@ Common issues and resolutions:
 - Stale data: React Query invalidates queries on success; if data does not update, check query keys and invalidation logic.
 - Toast notifications: Ensure the Toaster provider is mounted in the app layout.
 
-**Section sources**
-- [auth-context.tsx](file://website/lib/auth-context.tsx#L21-L88)
-- [api.ts](file://website/lib/api.ts#L18-L53)
-- [providers.tsx](file://website/lib/providers.tsx#L10-L41)
-
 ## Conclusion
-The notice reminders components provide a cohesive, reusable set of UI elements for course subscription management, notifications, authentication, and user settings. By leveraging shared UI components, a typed API client, and React Query, the system achieves predictable state management, responsive interactions, and maintainable code. Developers can extend and customize these components to fit evolving requirements while preserving consistent behavior and user experience.
+The notice reminders components provide a cohesive, reusable set of UI elements for course subscription management, notifications, authentication, and user settings. By using shared UI components, a typed API client, and React Query, the system achieves predictable state management, responsive interactions, and maintainable code. Developers can extend and customize these components to fit evolving requirements while preserving consistent behavior and user experience.

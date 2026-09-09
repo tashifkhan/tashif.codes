@@ -1,32 +1,9 @@
-# Update Flow Processing
-
-<cite>
-**Referenced Files in This Document**
-- [update_runner.py](file://app/runners/update_runner.py)
-- [superset_client.py](file://app/clients/superset_client.py)
-- [config.py](file://app/core/config.py)
-- [database_service.py](file://app/services/database_service.py)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py)
-- [main.py](file://app/main.py)
-- [db_client.py](file://app/clients/db_client.py)
-- [ARCHITECTURE.md](file://docs/ARCHITECTURE.md)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Update flow processing
 
 ## Introduction
-This document provides comprehensive technical documentation for the update flow processing system that powers data ingestion from the SuperSet portal. The system orchestrates multi-user authentication, credential management, and efficient data processing with deduplication and LLM-powered notice matching. It implements a callback-based enricher pattern to optimize API calls by enriching only new jobs while reusing existing enriched data.
+This page provides detailed technical documentation for the update flow processing system that powers data ingestion from the SuperSet portal. The system orchestrates multi-user authentication, credential management, and efficient data processing with deduplication and LLM-powered notice matching. It implements a callback-based enricher pattern to optimize API calls by enriching only new jobs while reusing existing enriched data.
 
-## Project Structure
+## Project structure
 The update flow spans several key modules within the application architecture:
 
 ```mermaid
@@ -57,25 +34,14 @@ DATABASE_SERVICE --> DB_CLIENT
 CONFIG --> UPDATE_RUNNER
 ```
 
-**Diagram sources**
-- [main.py](file://app/main.py#L98-L102)
-- [update_runner.py](file://app/runners/update_runner.py#L21-L55)
-- [superset_client.py](file://app/clients/superset_client.py#L88-L120)
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [config.py](file://app/core/config.py#L18-L31)
-
-**Section sources**
-- [main.py](file://app/main.py#L98-L102)
-- [ARCHITECTURE.md](file://docs/ARCHITECTURE.md#L296-L331)
-
-## Core Components
+## Core components
 The update flow processing system consists of four primary components working in concert:
 
 ### UpdateRunner
 The central orchestrator responsible for the complete update lifecycle, implementing dependency injection for testability and resource management.
 
 ### SupersetClientService
-Handles SuperSet portal authentication, data fetching, and job enrichment operations with comprehensive error handling and retry logic.
+Handles SuperSet portal authentication, data fetching, and job enrichment operations with detailed error handling and retry logic.
 
 ### DatabaseService
 Provides MongoDB operations with deduplication strategies, efficient ID lookups, and transaction-safe operations for notices and jobs.
@@ -83,13 +49,7 @@ Provides MongoDB operations with deduplication strategies, efficient ID lookups,
 ### NoticeFormatterService
 Implements LLM-powered notice processing with callback-based job enrichment and structured content formatting.
 
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L21-L55)
-- [superset_client.py](file://app/clients/superset_client.py#L88-L120)
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L62)
-
-## Architecture Overview
+## Architecture overview
 The update flow follows a sequential processing pattern optimized for performance and reliability:
 
 ```mermaid
@@ -122,15 +82,9 @@ Runner->>DB : upsert_structured_job(job)
 Runner-->>CLI : {"notices" : count, "jobs" : count}
 ```
 
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L56-L148)
-- [superset_client.py](file://app/clients/superset_client.py#L174-L200)
-- [database_service.py](file://app/services/database_service.py#L69-L78)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L795-L800)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Authentication and Credential Management
+### Authentication and credential management
 The system supports multi-user SuperSet authentication through secure credential handling:
 
 ```mermaid
@@ -151,17 +105,9 @@ LogError --> End([End])
 ReturnUsers --> End
 ```
 
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L74-L89)
-- [superset_client.py](file://app/clients/superset_client.py#L174-L200)
-
 The authentication process validates credentials from the configuration, attempts login for each user, and collects successful sessions for subsequent operations. Error handling ensures partial failures don't halt the entire authentication process.
 
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L74-L89)
-- [superset_client.py](file://app/clients/superset_client.py#L136-L173)
-
-### Deduplication Strategy
+### Deduplication strategy
 The system implements efficient deduplication using database-backed ID lookups:
 
 ```mermaid
@@ -183,18 +129,10 @@ SkipJob --> End
 ProcessJob --> End
 ```
 
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L93-L97)
-- [database_service.py](file://app/services/database_service.py#L69-L78)
-
 The deduplication strategy queries the database for all existing notice and job IDs, then filters incoming data to process only new records. This approach minimizes unnecessary API calls and reduces processing overhead.
 
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L93-L97)
-- [database_service.py](file://app/services/database_service.py#L69-L78)
-
-### Notice Processing Workflow
-The notice processing pipeline leverages LLM-powered matching with callback-based enrichment:
+### Notice processing workflow
+The notice processing pipeline uses LLM-powered matching with callback-based enrichment:
 
 ```mermaid
 sequenceDiagram
@@ -216,21 +154,13 @@ Formatter->>DB : save_notice(formatted)
 DB-->>Runner : Success
 ```
 
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L150-L222)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L321-L348)
-
 The callback-based enricher pattern optimizes API usage by:
 1. Checking if a job is already enriched in memory
 2. Using existing enriched data when available
 3. Fetching details only for truly new jobs
 4. Persisting enriched data back to the database
 
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L150-L222)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L321-L348)
-
-### Job Enrichment Strategy
+### Job enrichment strategy
 The system implements a tiered enrichment approach to minimize API calls:
 
 ```mermaid
@@ -246,18 +176,10 @@ CacheResult --> ProcessJobs
 ProcessJobs --> End([End])
 ```
 
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L118-L135)
-- [superset_client.py](file://app/clients/superset_client.py#L518-L569)
-
 The enrichment strategy processes only new jobs while reusing existing enriched data, significantly reducing API call volume and improving performance.
 
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L118-L135)
-- [superset_client.py](file://app/clients/superset_client.py#L518-L569)
-
-### Error Handling and Logging
-The system implements comprehensive error handling across all processing stages:
+### Error handling and logging
+The system implements detailed error handling across all processing stages:
 
 ```mermaid
 flowchart TD
@@ -271,21 +193,13 @@ LogSuccess --> End([End])
 ContinueOps --> End
 ```
 
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L83-L85)
-- [update_runner.py](file://app/runners/update_runner.py#L218-L221)
-
 Error handling follows a consistent pattern:
 - Authentication failures are logged but don't halt processing
 - Individual notice processing errors are caught and logged
 - Job enrichment errors are handled gracefully
 - All operations use structured logging with context information
 
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L83-L85)
-- [update_runner.py](file://app/runners/update_runner.py#L218-L221)
-
-## Dependency Analysis
+## Dependency analysis
 The update flow demonstrates excellent separation of concerns through dependency injection:
 
 ```mermaid
@@ -326,64 +240,42 @@ UpdateRunner --> NoticeFormatterService : "uses"
 NoticeFormatterService --> SupersetClientService : "callback"
 ```
 
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L21-L55)
-- [superset_client.py](file://app/clients/superset_client.py#L88-L120)
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L62)
-
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L21-L55)
-- [superset_client.py](file://app/clients/superset_client.py#L88-L120)
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L62)
-
-## Performance Considerations
+## Performance considerations
 The update flow implements several optimization strategies:
 
-### API Call Minimization
+### API call minimization
 - **Batch Operations**: Fetches all notices and jobs in single operations
 - **Selective Enrichment**: Processes only new jobs requiring API calls
 - **Callback Caching**: Reuses enriched data through callback mechanism
 
-### Memory Management
+### Memory management
 - **Lazy Loading**: Jobs are enriched only when needed
 - **Efficient Lookups**: Uses sets for O(1) ID existence checks
 - **Streaming Processing**: Processes data sequentially to avoid memory pressure
 
-### Database Optimization
+### Database optimization
 - **Index Utilization**: Efficient ID lookups using database indexes
 - **Upsert Operations**: Atomic updates prevent race conditions
 - **Connection Pooling**: Reused database connections reduce overhead
 
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L93-L97)
-- [superset_client.py](file://app/clients/superset_client.py#L518-L569)
-- [database_service.py](file://app/services/database_service.py#L218-L227)
+## Troubleshooting guide
 
-## Troubleshooting Guide
-
-### Common Authentication Issues
+### Common authentication issues
 - **Credential Format**: Ensure `SUPERSET_CREDENTIALS` is properly formatted JSON array
 - **Network Connectivity**: Verify access to SuperSet portal from deployment environment
 - **Rate Limiting**: Monitor for API rate limiting during bulk authentication
 
-### Processing Failures
+### Processing failures
 - **Notice Processing**: Check individual notice IDs in logs for specific failure points
 - **Job Enrichment**: Verify that new job IDs are being properly identified
 - **Database Connectivity**: Confirm MongoDB connection and collection accessibility
 
-### Performance Issues
+### Performance issues
 - **Memory Usage**: Monitor memory consumption during large batch processing
 - **API Throttling**: Implement appropriate delays between API calls
 - **Database Performance**: Ensure proper indexing on frequently queried fields
 
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L83-L85)
-- [config.py](file://app/core/config.py#L45-L50)
-- [database_service.py](file://app/services/database_service.py#L69-L78)
-
 ## Conclusion
-The update flow processing system demonstrates robust architecture design with comprehensive error handling, efficient resource utilization, and scalable processing capabilities. The multi-user authentication, deduplication strategy, and callback-based enrichment pattern work together to provide reliable data ingestion from SuperSet portal while maintaining optimal performance and reliability.
+The update flow processing system demonstrates reliable architecture design with detailed error handling, efficient resource utilization, and scalable processing capabilities. The multi-user authentication, deduplication strategy, and callback-based enrichment pattern work together to provide reliable data ingestion from SuperSet portal while maintaining optimal performance and reliability.
 
 The system's modular design enables easy maintenance, testing, and extension for future enhancements. The documented patterns and strategies provide a solid foundation for understanding and extending the update flow processing capabilities.

@@ -1,41 +1,9 @@
-# Prompts and Prompt Engineering
-
-<cite>
-**Referenced Files in This Document**
-- [prompts/react.py](file://prompts/react.py)
-- [prompts/browser_use.py](file://prompts/browser_use.py)
-- [prompts/github.py](file://prompts/github.py)
-- [prompts/website.py](file://prompts/website.py)
-- [prompts/youtube.py](file://prompts/youtube.py)
-- [prompts/prompt_injection_validator.py](file://prompts/prompt_injection_validator.py)
-- [agents/react_agent.py](file://agents/react_agent.py)
-- [agents/react_tools.py](file://agents/react_tools.py)
-- [services/react_agent_service.py](file://services/react_agent_service.py)
-- [routers/react_agent.py](file://routers/react_agent.py)
-- [routers/browser_use.py](file://routers/browser_use.py)
-- [routers/github.py](file://routers/github.py)
-- [routers/website.py](file://routers/website.py)
-- [routers/youtube.py](file://routers/youtube.py)
-- [core/llm.py](file://core/llm.py)
-- [core/config.py](file://core/config.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Prompts and prompt engineering
 
 ## Introduction
-This document explains the Prompts and Prompt Engineering system used across the platform. It covers how domain-specific prompts are organized and managed for different agent capabilities, including React agents, browser automation, GitHub integration, website analysis, and YouTube processing. It also documents the prompt injection validation system, security measures, prompt optimization techniques, template system design, dynamic prompt generation patterns, and the relationship between prompts and agent behavior, tool selection, and response quality. Finally, it provides best practices, A/B testing approaches, performance optimization, versioning and localization considerations, debugging techniques, and guidelines for creating effective prompts.
+This page explains the Prompts and Prompt Engineering system used across the platform. It covers how domain-specific prompts are organized and managed for different agent capabilities, including React agents, browser automation, GitHub integration, website analysis, and YouTube processing. It also documents the prompt injection validation system, security measures, prompt optimization techniques, template system design, dynamic prompt generation patterns, and the relationship between prompts and agent behavior, tool selection, and response quality. Finally, it provides best practices, A/B testing approaches, performance optimization, versioning and localization considerations, debugging techniques, and guidelines for creating effective prompts.
 
-## Project Structure
+## Project structure
 The prompt system is organized by domain and capability:
 - Domain prompts live under prompts/ and define reusable prompt templates and chains.
 - Agent orchestration lives under agents/ and integrates tools and prompts into workflows.
@@ -83,43 +51,7 @@ PY --> CL
 PV --> CL
 ```
 
-**Diagram sources**
-- [prompts/react.py](file://prompts/react.py#L1-L21)
-- [prompts/browser_use.py](file://prompts/browser_use.py#L1-L138)
-- [prompts/github.py](file://prompts/github.py#L1-L110)
-- [prompts/website.py](file://prompts/website.py#L1-L115)
-- [prompts/youtube.py](file://prompts/youtube.py#L1-L158)
-- [prompts/prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [agents/react_agent.py](file://agents/react_agent.py#L1-L191)
-- [agents/react_tools.py](file://agents/react_tools.py#L1-L721)
-- [services/react_agent_service.py](file://services/react_agent_service.py#L1-L154)
-- [routers/react_agent.py](file://routers/react_agent.py#L1-L57)
-- [routers/browser_use.py](file://routers/browser_use.py#L1-L51)
-- [routers/github.py](file://routers/github.py#L1-L49)
-- [routers/website.py](file://routers/website.py#L1-L43)
-- [routers/youtube.py](file://routers/youtube.py#L1-L59)
-- [core/llm.py](file://core/llm.py#L1-L215)
-- [core/config.py](file://core/config.py#L1-L26)
-
-**Section sources**
-- [prompts/react.py](file://prompts/react.py#L1-L21)
-- [prompts/browser_use.py](file://prompts/browser_use.py#L1-L138)
-- [prompts/github.py](file://prompts/github.py#L1-L110)
-- [prompts/website.py](file://prompts/website.py#L1-L115)
-- [prompts/youtube.py](file://prompts/youtube.py#L1-L158)
-- [prompts/prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [agents/react_agent.py](file://agents/react_agent.py#L1-L191)
-- [agents/react_tools.py](file://agents/react_tools.py#L1-L721)
-- [services/react_agent_service.py](file://services/react_agent_service.py#L1-L154)
-- [routers/react_agent.py](file://routers/react_agent.py#L1-L57)
-- [routers/browser_use.py](file://routers/browser_use.py#L1-L51)
-- [routers/github.py](file://routers/github.py#L1-L49)
-- [routers/website.py](file://routers/website.py#L1-L43)
-- [routers/youtube.py](file://routers/youtube.py#L1-L59)
-- [core/llm.py](file://core/llm.py#L1-L215)
-- [core/config.py](file://core/config.py#L1-L26)
-
-## Core Components
+## Core components
 - Prompt templates and chains:
   - React agent prompt template for tool-use orchestration.
   - Browser automation script generator prompt with explicit JSON action plan and strict rules.
@@ -135,23 +67,7 @@ PV --> CL
 - Endpoints:
   - Routers for React agent, browser automation, GitHub, website, and YouTube workflows.
 
-**Section sources**
-- [prompts/react.py](file://prompts/react.py#L1-L21)
-- [prompts/browser_use.py](file://prompts/browser_use.py#L1-L138)
-- [prompts/github.py](file://prompts/github.py#L1-L110)
-- [prompts/website.py](file://prompts/website.py#L1-L115)
-- [prompts/youtube.py](file://prompts/youtube.py#L1-L158)
-- [prompts/prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [core/llm.py](file://core/llm.py#L1-L215)
-- [agents/react_agent.py](file://agents/react_agent.py#L1-L191)
-- [agents/react_tools.py](file://agents/react_tools.py#L1-L721)
-- [routers/react_agent.py](file://routers/react_agent.py#L1-L57)
-- [routers/browser_use.py](file://routers/browser_use.py#L1-L51)
-- [routers/github.py](file://routers/github.py#L1-L49)
-- [routers/website.py](file://routers/website.py#L1-L43)
-- [routers/youtube.py](file://routers/youtube.py#L1-L59)
-
-## Architecture Overview
+## Architecture overview
 The prompt architecture follows a layered design:
 - Templates define the instruction and context framing for each domain.
 - Chains assemble templates with LLM clients and output parsers.
@@ -182,19 +98,9 @@ Service-->>Router : "Response"
 Router-->>Client : "Answer"
 ```
 
-**Diagram sources**
-- [routers/react_agent.py](file://routers/react_agent.py#L1-L57)
-- [services/react_agent_service.py](file://services/react_agent_service.py#L1-L154)
-- [agents/react_agent.py](file://agents/react_agent.py#L1-L191)
-- [agents/react_tools.py](file://agents/react_tools.py#L1-L721)
-- [prompts/github.py](file://prompts/github.py#L1-L110)
-- [prompts/website.py](file://prompts/website.py#L1-L115)
-- [prompts/youtube.py](file://prompts/youtube.py#L1-L158)
-- [core/llm.py](file://core/llm.py#L1-L215)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### React Agent Prompt Template
+### React agent prompt template
 - Purpose: Defines the system role and tool-use instructions for the React agent.
 - Structure: Provides a structured template with placeholders for tools and question.
 - Integration: Used by the React agent graph to maintain conversation context and tool selection.
@@ -207,15 +113,7 @@ Question --> Build["Build ChatPromptTemplate"]
 Build --> Ready["Ready for Agent Execution"]
 ```
 
-**Diagram sources**
-- [prompts/react.py](file://prompts/react.py#L1-L21)
-- [agents/react_agent.py](file://agents/react_agent.py#L1-L191)
-
-**Section sources**
-- [prompts/react.py](file://prompts/react.py#L1-L21)
-- [agents/react_agent.py](file://agents/react_agent.py#L1-L191)
-
-### Browser Automation Script Generator
+### Browser automation script generator
 - Purpose: Generates precise JSON action plans for Chrome extension automation.
 - Structure: Explicit action vocabulary, strict JSON output rules, selector prioritization, and search URL construction patterns.
 - Chain: Uses a ChatPromptTemplate with a system message and user input, connected to an LLM client and string parser.
@@ -234,15 +132,7 @@ Parser-->>Executor : "Parsed JSON actions"
 Executor-->>User : "Executed automation"
 ```
 
-**Diagram sources**
-- [prompts/browser_use.py](file://prompts/browser_use.py#L1-L138)
-- [core/llm.py](file://core/llm.py#L1-L215)
-
-**Section sources**
-- [prompts/browser_use.py](file://prompts/browser_use.py#L1-L138)
-- [core/llm.py](file://core/llm.py#L1-L215)
-
-### GitHub Integration Prompt
+### GitHub integration prompt
 - Purpose: Answer questions about a GitHub repository using repository context.
 - Structure: Repository summary, file tree, relevant file content, chat history, and explicit guidelines.
 - Chain: RunnableParallel that merges inputs, applies PromptTemplate, and connects to LLM and parser.
@@ -256,15 +146,7 @@ LLM --> Parser["StrOutputParser"]
 Parser --> Output["Answer"]
 ```
 
-**Diagram sources**
-- [prompts/github.py](file://prompts/github.py#L1-L110)
-- [core/llm.py](file://core/llm.py#L1-L215)
-
-**Section sources**
-- [prompts/github.py](file://prompts/github.py#L1-L110)
-- [agents/react_tools.py](file://agents/react_tools.py#L1-L721)
-
-### Website Analysis Prompt
+### Website analysis prompt
 - Purpose: Answer questions about a website using both server-fetched and client-rendered contexts.
 - Structure: Clear guidance on context precedence, formatting rules, and scope limitations.
 - Chain: RunnableParallel that merges server/client contexts, question, and chat history.
@@ -281,17 +163,9 @@ LLM --> Parser["StrOutputParser"]
 Parser --> Answer["Answer"]
 ```
 
-**Diagram sources**
-- [prompts/website.py](file://prompts/website.py#L1-L115)
-- [core/llm.py](file://core/llm.py#L1-L215)
-
-**Section sources**
-- [prompts/website.py](file://prompts/website.py#L1-L115)
-- [agents/react_tools.py](file://agents/react_tools.py#L1-L721)
-
-### YouTube Processing Prompt
+### YouTube processing prompt
 - Purpose: Answer questions about a YouTube video using metadata and transcripts.
-- Structure: Guidelines for summaries, statistics, sentiment, and recommendations; robust error handling for transcript retrieval.
+- Structure: Guidelines for summaries, statistics, sentiment, and recommendations; reliable error handling for transcript retrieval.
 - Chain: RunnableParallel that fetches transcript context and feeds PromptTemplate.
 
 ```mermaid
@@ -305,15 +179,7 @@ LLM --> Parser["StrOutputParser"]
 Parser --> Answer["Answer"]
 ```
 
-**Diagram sources**
-- [prompts/youtube.py](file://prompts/youtube.py#L1-L158)
-- [core/llm.py](file://core/llm.py#L1-L215)
-
-**Section sources**
-- [prompts/youtube.py](file://prompts/youtube.py#L1-L158)
-- [agents/react_tools.py](file://agents/react_tools.py#L1-L721)
-
-### Prompt Injection Validation System
+### Prompt injection validation system
 - Purpose: Detect potential prompt injection attempts in markdown inputs.
 - Structure: Simple classification prompt returning a boolean safety signal.
 - Integration: Can be used as a pre-processing step to sanitize inputs before invoking domain prompts.
@@ -326,13 +192,7 @@ Decision --> |true| Proceed["Proceed to Chain"]
 Decision --> |false| Block["Block or Sanitize Input"]
 ```
 
-**Diagram sources**
-- [prompts/prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-
-**Section sources**
-- [prompts/prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-
-### Relationship Between Prompts and Agent Behavior
+### Relationship between prompts and agent behavior
 - Tool selection: The React agent graph binds tools and decides when to execute them based on prompts and model reasoning.
 - Response quality: Domain-specific prompts guide the model to focus on relevant context windows and adhere to formatting and scope rules.
 - Dynamic generation: Tools dynamically construct inputs for domain prompts, enabling adaptive behavior based on runtime context (e.g., client HTML, chat history).
@@ -360,18 +220,7 @@ ReactAgent --> Tools : "selects and executes"
 Tools --> Chains : "invokes"
 ```
 
-**Diagram sources**
-- [agents/react_agent.py](file://agents/react_agent.py#L1-L191)
-- [agents/react_tools.py](file://agents/react_tools.py#L1-L721)
-- [prompts/github.py](file://prompts/github.py#L1-L110)
-- [prompts/website.py](file://prompts/website.py#L1-L115)
-- [prompts/youtube.py](file://prompts/youtube.py#L1-L158)
-
-**Section sources**
-- [agents/react_agent.py](file://agents/react_agent.py#L1-L191)
-- [agents/react_tools.py](file://agents/react_tools.py#L1-L721)
-
-## Dependency Analysis
+## Dependency analysis
 - Prompt-to-chain mapping:
   - GitHub prompt maps to GitHub chain.
   - Website prompt maps to website chain.
@@ -398,19 +247,7 @@ Tools --> WC
 Tools --> YC
 ```
 
-**Diagram sources**
-- [prompts/github.py](file://prompts/github.py#L1-L110)
-- [prompts/website.py](file://prompts/website.py#L1-L115)
-- [prompts/youtube.py](file://prompts/youtube.py#L1-L158)
-- [prompts/browser_use.py](file://prompts/browser_use.py#L1-L138)
-- [agents/react_tools.py](file://agents/react_tools.py#L1-L721)
-- [core/llm.py](file://core/llm.py#L1-L215)
-
-**Section sources**
-- [agents/react_tools.py](file://agents/react_tools.py#L1-L721)
-- [core/llm.py](file://core/llm.py#L1-L215)
-
-## Performance Considerations
+## Performance considerations
 - Asynchronous tool invocation:
   - Tools use threads for blocking operations to avoid blocking the event loop during prompt execution.
 - RunnableParallel composition:
@@ -422,7 +259,7 @@ Tools --> YC
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Prompt injection detection:
   - Use the injection validator prompt to flag unsafe inputs before invoking domain prompts.
 - Error handling in chains:
@@ -432,14 +269,6 @@ Tools --> YC
 - Environment configuration:
   - Ensure provider credentials and base URLs are configured; initialization failures indicate misconfiguration.
 
-**Section sources**
-- [prompts/prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [prompts/github.py](file://prompts/github.py#L85-L110)
-- [prompts/youtube.py](file://prompts/youtube.py#L145-L158)
-- [services/react_agent_service.py](file://services/react_agent_service.py#L1-L154)
-- [routers/react_agent.py](file://routers/react_agent.py#L1-L57)
-- [core/llm.py](file://core/llm.py#L1-L215)
-
 ## Conclusion
 The prompt system is modular, provider-agnostic, and tailored to distinct domains. By structuring prompts around clear context windows, enforcing strict formatting, and integrating them with asynchronous tooling and agent orchestration, the system achieves reliable, high-quality responses. Security is addressed through explicit validation prompts and careful input handling. Performance is optimized through parallel composition and efficient chain design. The architecture supports future enhancements such as A/B testing, localization, and versioning.
 
@@ -447,7 +276,7 @@ The prompt system is modular, provider-agnostic, and tailored to distinct domain
 
 ## Appendices
 
-### Prompt Engineering Best Practices
+### Prompt engineering best practices
 - Define clear roles and constraints in system prompts.
 - Use structured context windows and explicit formatting rules.
 - Enforce output constraints (e.g., JSON-only) to reduce ambiguity.
@@ -456,7 +285,7 @@ The prompt system is modular, provider-agnostic, and tailored to distinct domain
 
 [No sources needed since this section provides general guidance]
 
-### A/B Testing Approaches
+### A/B testing approaches
 - Maintain multiple prompt variants per domain.
 - Randomize variant selection at request time.
 - Track response quality metrics and latency.
@@ -464,7 +293,7 @@ The prompt system is modular, provider-agnostic, and tailored to distinct domain
 
 [No sources needed since this section provides general guidance]
 
-### Performance Optimization
+### Performance optimization
 - Use RunnableParallel to merge inputs efficiently.
 - Cache compiled agent graphs and chains where appropriate.
 - Prefer streaming or chunked processing for long contexts.
@@ -472,14 +301,14 @@ The prompt system is modular, provider-agnostic, and tailored to distinct domain
 
 [No sources needed since this section provides general guidance]
 
-### Prompt Versioning and Localization
+### Prompt versioning and localization
 - Version prompts alongside semantic versioning of features.
 - Store prompt variants in separate files or branches for controlled rollouts.
 - Localize prompts by adapting examples and cultural references while preserving structure.
 
 [No sources needed since this section provides general guidance]
 
-### Debugging Techniques
+### Debugging techniques
 - Log raw inputs and outputs for each chain.
 - Use small, reproducible test cases with minimal context.
 - Validate prompt injection risks before production deployment.

@@ -1,42 +1,15 @@
-# WhatsApp Event System
-
-<cite>
-**Referenced Files in This Document**
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [App.jsx](file://electron/src/ui/App.jsx)
-- [pyodide.js](file://electron/src/utils/pyodide.js)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [System Architecture](#system-architecture)
-3. [Event Types and Payloads](#event-types-and-payloads)
-4. [Client Lifecycle Events](#client-lifecycle-events)
-5. [QR Code Events](#qr-code-events)
-6. [Mass Messaging Events](#mass-messaging-events)
-7. [Event Listener Implementation](#event-listener-implementation)
-8. [State Management Integration](#state-management-integration)
-9. [Event Ordering and Concurrency](#event-ordering-and-concurrency)
-10. [Error Handling and Propagation](#error-handling-and-propagation)
-11. [Performance Considerations](#performance-considerations)
-12. [Memory Leak Prevention](#memory-leak-prevention)
-13. [Troubleshooting Guide](#troubleshooting-guide)
-14. [Conclusion](#conclusion)
+# WhatsApp event system
 
 ## Introduction
 
-The WhatsApp Event System is a comprehensive real-time event emission framework built for the Electron-based bulk messaging application. This system enables seamless communication between the main process (where WhatsApp Web integration occurs) and the renderer process (where the React UI displays real-time status updates).
+The WhatsApp Event System is a detailed real-time event emission framework built for the Electron-based bulk messaging application. This system enables smooth communication between the main process (where WhatsApp Web integration occurs) and the renderer process (where the React UI displays real-time status updates).
 
 The system provides three primary event categories:
 - **Client Lifecycle Events**: Covering initialization, authentication, and disconnection states
 - **QR Code Events**: Managing QR code generation and display for authentication
 - **Mass Messaging Events**: Real-time progress tracking during bulk message operations
 
-## System Architecture
+## System architecture
 
 The event system follows Electron's IPC (Inter-Process Communication) pattern with a clear separation of concerns:
 
@@ -70,45 +43,33 @@ style Main fill:#2196F3
 style Client fill:#FF9800
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
+## Event types and payloads
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-
-## Event Types and Payloads
-
-### Event Categories
+### Event categories
 
 The system emits three distinct event types with specific payload characteristics:
 
-#### 1. Client Lifecycle Events (`whatsapp-status`)
+#### 1. client lifecycle events (`whatsapp-status`)
 - **Purpose**: Real-time status updates for WhatsApp client lifecycle
 - **Payload Type**: String message describing current state
 - **Frequency**: Variable (as events occur)
 - **Timing**: Immediate notification upon state change
 
-#### 2. QR Code Events (`whatsapp-qr`)
+#### 2. QR code events (`whatsapp-qr`)
 - **Purpose**: QR code data for authentication
 - **Payload Type**: Data URL string (image data) or null
 - **Frequency**: Generated when QR becomes available
 - **Timing**: Generated asynchronously after QR event from client
 
-#### 3. Mass Messaging Events (`whatsapp-send-status`)
+#### 3. mass messaging events (`whatsapp-send-status`)
 - **Purpose**: Progress tracking for bulk message operations
 - **Payload Type**: String progress messages
 - **Frequency**: Multiple updates per operation
 - **Timing**: Real-time during message sending process
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L137-L176)
-- [preload.js](file://electron/src/electron/preload.js#L28-L39)
+## Client lifecycle events
 
-## Client Lifecycle Events
-
-### Event Emission Flow
+### Event emission flow
 
 The client lifecycle events follow a predictable sequence during WhatsApp client initialization:
 
@@ -143,11 +104,7 @@ Events-->>Preload : 'whatsapp-qr' event (null)
 Preload-->>UI : onWhatsAppStatus & onWhatsAppQR callbacks
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L111-L177)
-- [preload.js](file://electron/src/electron/preload.js#L28-L31)
-
-### Lifecycle States
+### Lifecycle states
 
 The system manages the following client states:
 
@@ -160,12 +117,9 @@ The system manages the following client states:
 | `Ready` | Client fully operational | `whatsapp-status` with readiness message |
 | `Disconnected` | Client lost connection | `whatsapp-status` with disconnection reason |
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L117-L176)
+## QR code events
 
-## QR Code Events
-
-### QR Code Generation Process
+### QR code generation process
 
 The QR code system operates through a two-stage process:
 
@@ -188,10 +142,7 @@ QRGen --> DataURL
 DataURL --> SendQR
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L137-L148)
-
-### QR Code Payload Schema
+### QR code payload schema
 
 | Property | Type | Description | Example |
 |----------|------|-------------|---------|
@@ -199,9 +150,9 @@ DataURL --> SendQR
 | `dataUrl` | String \| null | Base64 encoded image data | `"data:image/png;base64,iVBOR..."` |
 | `status` | String | Current authentication status | `"Scan QR code"` |
 
-### QR Code Display Integration
+### QR code display integration
 
-The UI component handles QR code display with robust error handling:
+The UI component handles QR code display with reliable error handling:
 
 ```mermaid
 stateDiagram-v2
@@ -217,16 +168,9 @@ Ready --> Disconnected : Connection Lost
 Disconnected --> Initializing : Reconnect
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L177-L253)
+## Mass messaging events
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L137-L148)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L205-L253)
-
-## Mass Messaging Events
-
-### Event Emission Pattern
+### Event emission pattern
 
 The mass messaging system provides granular progress tracking:
 
@@ -255,11 +199,7 @@ Main->>Preload : send('whatsapp-send-status', 'Complete : Sent : X, Failed : Y')
 Preload-->>UI : Final progress update
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L368-L415)
-
-### Progress Event Payloads
+### Progress event payloads
 
 | Event Type | Payload Format | Purpose |
 |------------|----------------|---------|
@@ -269,13 +209,9 @@ Preload-->>UI : Final progress update
 | `whatsapp-send-status` | `"Failed to send to +1234567890: Error message"` | General failure |
 | `whatsapp-send-status` | `"Mass messaging complete. Sent: X, Failed: Y"` | Operation completion |
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L368-L415)
+## Event listener implementation
 
-## Event Listener Implementation
-
-### Renderer Process Integration
+### Renderer process integration
 
 The event listeners are implemented in the BulkMailer component with proper cleanup:
 
@@ -310,11 +246,7 @@ BulkMailer --> WhatsAppForm : "passes props"
 EventListeners --> BulkMailer : "callback functions"
 ```
 
-**Diagram sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-
-### Listener Registration Pattern
+### Listener registration pattern
 
 The event listeners follow a consistent registration and cleanup pattern:
 
@@ -343,14 +275,11 @@ return () => {
 };
 ```
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
+## State management integration
 
-## State Management Integration
+### React state synchronization
 
-### React State Synchronization
-
-The event system integrates seamlessly with React's state management:
+The event system integrates smoothly with React's state management:
 
 ```mermaid
 flowchart LR
@@ -376,11 +305,7 @@ Contacts --> UI
 Message --> UI
 ```
 
-**Diagram sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L28-L33)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L64-L75)
-
-### UI Component State Mapping
+### UI component state mapping
 
 | Event Type | State Variable | UI Impact |
 |------------|----------------|-----------|
@@ -389,13 +314,9 @@ Message --> UI
 | `whatsapp-send-status` | `waResults` | Adds progress entries to activity log |
 | `whatsapp-send-status` | `waStatus` | Updates current operation status |
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L28-L50)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L64-L114)
+## Event ordering and concurrency
 
-## Event Ordering and Concurrency
-
-### Event Ordering Guarantees
+### Event ordering guarantees
 
 The system maintains strict event ordering through several mechanisms:
 
@@ -403,7 +324,7 @@ The system maintains strict event ordering through several mechanisms:
 2. **State Consistency**: React state updates ensure UI reflects current state
 3. **Cleanup Mechanisms**: Proper listener cleanup prevents stale event handling
 
-### Concurrency Considerations
+### Concurrency considerations
 
 The system handles concurrent operations safely:
 
@@ -432,10 +353,7 @@ style Msg2 fill:#FF9800
 style Msg3 fill:#2196F3
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-
-### Race Condition Prevention
+### Race condition prevention
 
 The system prevents race conditions through:
 
@@ -443,12 +361,9 @@ The system prevents race conditions through:
 - **Sequential Message Processing**: Messages are sent one at a time with delays
 - **Proper Cleanup**: Event listeners are removed when components unmount
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L179-L213)
+## Error handling and propagation
 
-## Error Handling and Propagation
-
-### Error Propagation Pattern
+### Error propagation pattern
 
 Errors propagate through the system with appropriate handling:
 
@@ -469,11 +384,7 @@ SendErr --> StatusEvt
 QRGenErr --> StatusEvt
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L174-L176)
-- [main.js](file://electron/src/electron/main.js#L162-L164)
-
-### Error Handling Strategies
+### Error handling strategies
 
 | Error Type | Handler | Response |
 |------------|---------|----------|
@@ -483,12 +394,9 @@ QRGenErr --> StatusEvt
 | Message Send Failure | `whatsapp-send-status` | Individual failure report |
 | Client Disconnection | `whatsapp-status` | Disconnection reason and reset |
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L162-L176)
+## Performance considerations
 
-## Performance Considerations
-
-### Event Frequency Optimization
+### Event frequency optimization
 
 The system optimizes event frequency to balance responsiveness with performance:
 
@@ -496,7 +404,7 @@ The system optimizes event frequency to balance responsiveness with performance:
 - **Status Events**: Moderate frequency (state transitions)
 - **Progress Events**: High frequency during bulk operations (every 3-5 seconds)
 
-### Memory Management
+### Memory management
 
 The system implements several memory management strategies:
 
@@ -504,7 +412,7 @@ The system implements several memory management strategies:
 - **Client Instance Management**: Single client instance prevents memory leaks
 - **QR Data Handling**: QR images are cleared when no longer needed
 
-### Rate Limiting Implementation
+### Rate limiting implementation
 
 The mass messaging system includes built-in rate limiting:
 
@@ -512,14 +420,11 @@ The mass messaging system includes built-in rate limiting:
 - **5-second delay** for failed attempts
 - **Individual contact processing** prevents overwhelming the API
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L199-L209)
+## Memory leak prevention
 
-## Memory Leak Prevention
+### Listener cleanup pattern
 
-### Listener Cleanup Pattern
-
-The system implements comprehensive listener cleanup:
+The system implements detailed listener cleanup:
 
 ```mermaid
 sequenceDiagram
@@ -535,10 +440,7 @@ Clean->>List : Remove all listeners
 List->>Comp : Listeners removed
 ```
 
-**Diagram sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-
-### Cleanup Implementation
+### Cleanup implementation
 
 The cleanup mechanism ensures no memory leaks:
 
@@ -556,12 +458,9 @@ return () => {
 };
 ```
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
+## Troubleshooting guide
 
-## Troubleshooting Guide
-
-### Common Issues and Solutions
+### Common issues and solutions
 
 | Issue | Symptoms | Solution |
 |-------|----------|----------|
@@ -570,7 +469,7 @@ return () => {
 | Messages Not Sending | Progress shows failures | Check contact registration, verify message format |
 | UI Not Updating | Status remains static | Verify event listeners are registered, check console errors |
 
-### Debugging Event Flow
+### Debugging event flow
 
 To debug event flow issues:
 
@@ -579,7 +478,7 @@ To debug event flow issues:
 3. **Verify Event Registration**: Ensure listeners are properly registered
 4. **Test Individual Events**: Isolate specific event types for testing
 
-### Performance Monitoring
+### Performance monitoring
 
 Monitor system performance through:
 
@@ -588,19 +487,15 @@ Monitor system performance through:
 - **UI Responsiveness**: Measure UI update latency
 - **Error Rates**: Track error occurrence frequency
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L46-L50)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L24-L35)
-
 ## Conclusion
 
-The WhatsApp Event System provides a robust, real-time communication framework between the Electron main process and renderer process. Through carefully designed event types, proper state management integration, and comprehensive error handling, the system delivers reliable WhatsApp Web integration with excellent user experience.
+The WhatsApp Event System provides a reliable, real-time communication framework between the Electron main process and renderer process. Through carefully designed event types, proper state management integration, and detailed error handling, the system delivers reliable WhatsApp Web integration with excellent user experience.
 
 Key strengths of the system include:
 
 - **Predictable Event Flow**: Clear lifecycle management with proper ordering guarantees
 - **Real-time Updates**: Immediate UI feedback for all user actions
-- **Error Resilience**: Comprehensive error handling with graceful degradation
+- **Error Resilience**: Detailed error handling with graceful degradation
 - **Performance Optimization**: Efficient event processing with rate limiting
 - **Memory Safety**: Automatic cleanup prevents memory leaks
 - **Extensible Design**: Modular architecture supports future enhancements

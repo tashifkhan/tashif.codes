@@ -1,41 +1,9 @@
-# Usage Guide
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://assignment-solver/README.md)
-- [sidepanel.html](file://assignment-solver/public/sidepanel.html)
-- [index.js](file://assignment-solver/src/ui/index.js)
-- [elements.js](file://assignment-solver/src/ui/elements.js)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js)
-- [state.js](file://assignment-solver/src/ui/state.js)
-- [background/index.js](file://assignment-solver/src/background/index.js)
-- [content/index.js](file://assignment-solver/src/content/index.js)
-- [extractor.js](file://assignment-solver/src/content/extractor.js)
-- [applicator.js](file://assignment-solver/src/content/applicator.js)
-- [gemini/index.js](file://assignment-solver/src/services/gemini/index.js)
-- [browser.js](file://assignment-solver/src/platform/browser.js)
-- [page.tsx](file://website/app/assignment-solver/page.tsx)
-- [extension-download.tsx](file://website/components/assignment-solver/extension-download.tsx)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Usage guide
 
 ## Introduction
 This guide explains how to use the Assignment Solver browser extension for MOOC platforms like NPTEL and SWAYAM. It covers both Manual Mode (recommended for learning) and Auto Mode (full automation), including step-by-step workflows, supported question types, configuration options, and best practices.
 
-## Project Structure
+## Project structure
 The extension consists of:
 - A side panel UI (React-like structure in HTML/CSS/JS) for user controls
 - A background service worker orchestrating tasks and messaging
@@ -53,18 +21,7 @@ UI --> Settings["Settings Modal<br/>(API key, model prefs)"]
 UI --> Progress["Progress Steps<br/>(Extract → Analyze → Fill → Submit)"]
 ```
 
-**Diagram sources**
-- [sidepanel.html](file://assignment-solver/public/sidepanel.html#L1-L392)
-- [index.js](file://assignment-solver/src/ui/index.js#L1-L113)
-- [background/index.js](file://assignment-solver/src/background/index.js#L1-L135)
-- [content/index.js](file://assignment-solver/src/content/index.js#L1-L99)
-- [gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L1-L342)
-
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L142-L160)
-- [sidepanel.html](file://assignment-solver/public/sidepanel.html#L1-L392)
-
-## Core Components
+## Core components
 - UI entry and initialization: Sets up logging, adapters, services, state, and controllers; waits for background readiness; initializes event listeners and assignment detection.
 - Controllers:
   - Solve controller: Orchestrates extraction, AI solving, answer filling, and optional submission.
@@ -75,17 +32,7 @@ UI --> Progress["Progress Steps<br/>(Extract → Analyze → Fill → Submit)"]
 - Gemini service: Builds prompts, attaches images/screenshots, and calls the Gemini API.
 - Platform adapters: Unified browser API access for Chrome/Firefox.
 
-**Section sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L1-L113)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L1-L778)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L1-L128)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L1-L111)
-- [background/index.js](file://assignment-solver/src/background/index.js#L1-L135)
-- [content/index.js](file://assignment-solver/src/content/index.js#L1-L99)
-- [gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L1-L342)
-- [browser.js](file://assignment-solver/src/platform/browser.js#L1-L86)
-
-## Architecture Overview
+## Architecture overview
 End-to-end flow from UI to page automation:
 
 ```mermaid
@@ -121,15 +68,9 @@ UI->>User : Show results, prompt manual submit
 end
 ```
 
-**Diagram sources**
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L44-L240)
-- [background/index.js](file://assignment-solver/src/background/index.js#L44-L117)
-- [content/index.js](file://assignment-solver/src/content/index.js#L20-L96)
-- [gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L145-L297)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Manual Mode (Recommended for Learning)
+### Manual mode (recommended for learning)
 Manual Mode lets you review each question, get hints, choose answers, and apply them one by one.
 
 Basic steps:
@@ -166,18 +107,7 @@ NextQ --> |No| SubmitOnly["Click Submit Assignment Only"]
 SubmitOnly --> End(["Review Results"])
 ```
 
-**Diagram sources**
-- [README.md](file://assignment-solver/README.md#L109-L122)
-- [sidepanel.html](file://assignment-solver/public/sidepanel.html#L64-L94)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L675-L775)
-- [applicator.js](file://assignment-solver/src/content/applicator.js#L21-L48)
-
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L102-L122)
-- [sidepanel.html](file://assignment-solver/public/sidepanel.html#L64-L94)
-- [applicator.js](file://assignment-solver/src/content/applicator.js#L21-L194)
-
-### Auto Mode (Full Automation)
+### Auto mode (full automation)
 Auto Mode automatically solves all questions, fills answers, and submits (optional).
 
 Basic steps:
@@ -203,17 +133,7 @@ Process --> Results["Show Results Summary"]
 Results --> End(["Done"])
 ```
 
-**Diagram sources**
-- [README.md](file://assignment-solver/README.md#L123-L133)
-- [sidepanel.html](file://assignment-solver/public/sidepanel.html#L64-L94)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L44-L240)
-
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L123-L133)
-- [sidepanel.html](file://assignment-solver/public/sidepanel.html#L64-L94)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L44-L240)
-
-### Supported Question Types and Application
+### Supported question types and application
 - Single Choice: The content script clicks the correct radio button.
 - Multi Choice: The content script checks all correct checkboxes and unchecks wrong ones.
 - Fill-in-the-Blank: The content script types the answer and triggers input/change events.
@@ -235,15 +155,7 @@ class Extractor {
 Applicator <.. Extractor : "works with DOM"
 ```
 
-**Diagram sources**
-- [applicator.js](file://assignment-solver/src/content/applicator.js#L12-L221)
-- [extractor.js](file://assignment-solver/src/content/extractor.js#L12-L241)
-
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L134-L141)
-- [applicator.js](file://assignment-solver/src/content/applicator.js#L21-L194)
-
-### Configuration Options
+### Configuration options
 - API Key Management:
   - Store your Gemini API key in the Settings modal.
   - The key is persisted locally and never sent to third-party servers.
@@ -261,27 +173,14 @@ Settings --> Reasoning["Set Reasoning Levels"]
 UI["Main Panel"] --> AutoSubmit["Toggle Auto-Submit"]
 ```
 
-**Diagram sources**
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L73-L94)
-- [sidepanel.html](file://assignment-solver/public/sidepanel.html#L192-L380)
-
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L240-L258)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L1-L128)
-- [sidepanel.html](file://assignment-solver/public/sidepanel.html#L192-L380)
-
-### Best Practices for Optimal Results
+### Best practices for optimal results
 - Use Manual Mode for learning: Review AI hints and reasoning to understand concepts.
 - Keep the assignment page fully loaded before extracting.
 - Prefer stable models for extraction and higher-performance models for solving.
 - If rate limits occur, reduce concurrent operations or upgrade your API quota.
 - For platforms with custom UI components, apply answers one by one to isolate issues.
 
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L253-L289)
-- [gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L14-L51)
-
-## Dependency Analysis
+## Dependency analysis
 - UI depends on:
   - State manager for processing flags and extraction data
   - Settings controller for API key and model preferences
@@ -313,18 +212,7 @@ CS["Content Script"] --> Extractor["Extractor"]
 CS --> Applicator["Applicator"]
 ```
 
-**Diagram sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L54-L112)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L74-L84)
-- [background/index.js](file://assignment-solver/src/background/index.js#L24-L42)
-- [content/index.js](file://assignment-solver/src/content/index.js#L15-L17)
-
-**Section sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L1-L113)
-- [background/index.js](file://assignment-solver/src/background/index.js#L1-L135)
-- [content/index.js](file://assignment-solver/src/content/index.js#L1-L99)
-
-## Performance Considerations
+## Performance considerations
 - Rate limiting:
   - 500 ms delay between answer API calls
   - 200 ms delay between DOM operations
@@ -335,12 +223,7 @@ CS --> Applicator["Applicator"]
 - Model selection:
   - Choose models aligned with your needs and quotas.
 
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L253-L257)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L252-L319)
-- [gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L112-L132)
-
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Could not get page HTML:
   - Ensure you are on an actual assignment page and it is fully loaded.
@@ -356,24 +239,16 @@ Common issues and resolutions:
   - Wait a few minutes before retrying.
   - Consider upgrading your API quota or reducing the number of questions per session.
 
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L259-L289)
-
 ## Conclusion
-The Assignment Solver extension automates MOOC assignment completion while offering Manual Mode for deeper learning. By configuring your API key and models, you can tailor the extension to your workflow—either reviewing AI hints and answers step-by-step or fully automating extraction, solving, and submission.
+The Assignment Solver extension automates MOOC assignment completion while offering Manual Mode for deeper learning. By configuring your API key and models, you can tailor the extension to your workflow, either reviewing AI hints and answers step-by-step or fully automating extraction, solving, and submission.
 
 ## Appendices
 
-### Installation and Setup
+### Installation and setup
 - Install the extension from the Chrome Web Store or load it manually from GitHub releases.
 - After installation, open the side panel, go to Settings, enter your Gemini API key, and save.
 
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L30-L73)
-- [extension-download.tsx](file://website/components/assignment-solver/extension-download.tsx#L13-L114)
-- [page.tsx](file://website/app/assignment-solver/page.tsx#L21-L43)
-
-### UI Controls Reference
+### UI controls reference
 - Main panel:
   - Solve Assignment: Start the full automation pipeline.
   - Auto-submit answers: Toggle automatic submission.
@@ -382,7 +257,3 @@ The Assignment Solver extension automates MOOC assignment completion while offer
   - Extraction Model and Solving Model: Choose models and reasoning levels.
 - Progress steps:
   - Extract → Analyze → Fill → Submit
-
-**Section sources**
-- [sidepanel.html](file://assignment-solver/public/sidepanel.html#L64-L147)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L73-L94)

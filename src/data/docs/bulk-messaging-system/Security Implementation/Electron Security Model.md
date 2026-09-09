@@ -1,38 +1,9 @@
-# Electron Security Model
-
-<cite>
-**Referenced Files in This Document**
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [utils.js](file://electron/src/electron/utils.js)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx)
-- [package.json](file://electron/package.json)
-- [vite.config.js](file://electron/vite.config.js)
-- [electron-builder.json](file://electron/electron-builder.json)
-- [README.md](file://README.md)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Electron security model
 
 ## Introduction
-This document provides comprehensive security documentation for the Electron application’s security model. It focuses on context isolation configuration, nodeIntegration and webPreferences hardening, preload script security architecture, IPC communication patterns, webSecurity implications, remote module restrictions, sandboxing techniques, privilege separation between main and renderer processes, and best practices for secure Electron development. It also covers vulnerability mitigation strategies, compliance considerations, and common pitfalls with prevention methods.
+This page provides detailed security documentation for the Electron application's security model. It focuses on context isolation configuration, nodeIntegration and webPreferences hardening, preload script security architecture, IPC communication patterns, webSecurity implications, remote module restrictions, sandboxing techniques, privilege separation between main and renderer processes, and best practices for secure Electron development. It also covers vulnerability mitigation strategies, compliance considerations, and common pitfalls with prevention methods.
 
-## Project Structure
+## Project structure
 The Electron application follows a clear separation of concerns:
 - Main process: Initializes BrowserWindow, configures webPreferences, registers IPC handlers, and manages external integrations (WhatsApp, Gmail, SMTP).
 - Renderer process: React UI that communicates with the main process via a controlled preload bridge.
@@ -64,17 +35,7 @@ CB --> API
 API --> UI
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L20-L51)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L120)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L13)
-
-## Core Components
+## Core components
 - Context Isolation: Enabled in BrowserWindow webPreferences to prevent renderer access to Node.js APIs.
 - Node Integration: Disabled to eliminate direct Node.js access in the renderer.
 - Remote Module: Disabled to prevent unsafe remote object exposure.
@@ -88,11 +49,7 @@ Security implications:
 - Disabling remote module eliminates potential RCE vectors via remote.require.
 - Preload bridge ensures only explicitly exposed methods reach the renderer.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L24-L30)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-
-## Architecture Overview
+## Architecture overview
 The security architecture relies on strict privilege separation:
 - Main process: Executes privileged operations, manages external services, and validates inputs.
 - Renderer process: UI-only, with no direct access to Node.js or Electron internals.
@@ -119,17 +76,12 @@ MP-->>PB : result
 PB-->>UI : result
 ```
 
-**Diagram sources**
-- [preload.js](file://electron/src/electron/preload.js#L6-L8)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-- [main.js](file://electron/src/electron/main.js#L103-L105)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Context Isolation and webPreferences Hardening
+### Context isolation and webPreferences hardening
 - Context Isolation: Enabled to prevent renderer scripts from accessing Node.js globals.
 - Node Integration: Disabled to eliminate direct Node.js usage in the renderer.
-- Remote Module: Disabled to avoid exposing Electron’s remote APIs.
+- Remote Module: Disabled to avoid exposing Electron's remote APIs.
 - webSecurity: Enabled to enforce same-origin policy and reduce XSS attack surface.
 - Preload Path: Explicitly configured to load the secure preload script.
 
@@ -138,10 +90,7 @@ Security benefits:
 - Renderer cannot tamper with main process objects.
 - Cross-origin resource access is restricted.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L24-L30)
-
-### Preload Script Security Architecture
+### Preload script security architecture
 The preload script exposes a controlled API surface:
 - Uses contextBridge to attach electronAPI to the window object.
 - Exposes only explicit IPC invocations and event listeners.
@@ -161,13 +110,7 @@ ReturnAPI --> Cleanup["Provide cleanup functions for listeners"]
 Cleanup --> End(["Secure Bridge Ready"])
 ```
 
-**Diagram sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-
-### IPC Communication Security Patterns
+### IPC communication security patterns
 - ipcMain.handle registrations in main process centralize privileged operations.
 - Renderer invokes IPC using ipcRenderer.invoke for request-response semantics.
 - Event-driven updates (e.g., WhatsApp status) use ipcRenderer.on with cleanup.
@@ -191,15 +134,7 @@ MP-->>PB : status updates
 PB-->>UI : status updates
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L111-L177)
-- [preload.js](file://electron/src/electron/preload.js#L24-L39)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L102-L177)
-- [preload.js](file://electron/src/electron/preload.js#L18-L39)
-
-### Gmail Handler Security
+### Gmail handler security
 - OAuth2 flow runs in a dedicated BrowserWindow with context isolation.
 - Redirect handling validates the OAuth callback and exchanges code for tokens.
 - Tokens are stored securely using electron-store.
@@ -210,11 +145,7 @@ Security benefits:
 - Token exchange occurs in main process with environment variable validation.
 - Progress events are sent via event.sender to avoid exposing internal state.
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-
-### SMTP Handler Security
+### SMTP handler security
 - Validates SMTP configuration before creating transport.
 - Supports TLS verification and optional certificate bypass for self-signed certs.
 - Stores partial SMTP config (without password) when requested.
@@ -225,11 +156,7 @@ Security benefits:
 - Partial credential storage avoids plaintext passwords.
 - Controlled rate limiting reduces risk of throttling or blocking.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L107-L110)
-
-### Renderer UI Integration and Security
+### Renderer UI integration and security
 - BulkMailer listens for WhatsApp status and QR updates via electronAPI.
 - UI components validate inputs and display sanitized progress.
 - Event listeners are cleaned up on component unmount.
@@ -239,11 +166,7 @@ Security benefits:
 - Input validation reduces risk of malformed data reaching main process.
 - Cleanup prevents memory leaks and unintended event subscriptions.
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L24-L35)
-
-### Sandbox and Privilege Separation
+### Sandbox and privilege separation
 - The application does not enable BrowserWindow sandbox option in the provided code.
 - Security relies on context isolation, disabled nodeIntegration, disabled remote module, and webSecurity.
 - External service integrations (WhatsApp Web, Gmail API, SMTP) are executed in the main process.
@@ -253,10 +176,7 @@ Security implications:
 - The current configuration mitigates most common renderer-side vulnerabilities.
 - Consider enabling sandbox for additional defense-in-depth.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L24-L30)
-
-## Dependency Analysis
+## Dependency analysis
 External dependencies relevant to security:
 - electron-store: Provides encrypted local storage for tokens and configs.
 - googleapis: Used for Gmail API authentication and sending.
@@ -273,43 +193,28 @@ GH --> GA["googleapis"]
 SH --> NM["nodemailer"]
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L1-L12)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L5)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L4)
-- [package.json](file://electron/package.json#L20-L31)
-
-**Section sources**
-- [package.json](file://electron/package.json#L20-L31)
-
-## Performance Considerations
+## Performance considerations
 - Rate limiting delays between sends reduce provider throttling and improve reliability.
 - QR code generation and rendering occur in main process to avoid heavy work in renderer.
 - Event-driven progress updates keep UI responsive without blocking.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common security-related issues and resolutions:
 - Renderer cannot access Node.js APIs: Ensure context isolation is enabled and nodeIntegration is disabled.
 - IPC methods missing: Verify preload bridge exposes the method and renderer checks availability before invoking.
 - OAuth redirect failures: Confirm redirect URI matches configuration and window is created with context isolation.
 - SMTP TLS errors: Validate host/port/security settings and certificate configuration.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L24-L30)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L74-L125)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L34-L45)
-
 ## Conclusion
-The application implements a robust Electron security model by leveraging context isolation, disabling nodeIntegration and remote module, enforcing webSecurity, and using a minimal preload bridge. IPC handlers in the main process encapsulate all privileged operations, while the renderer remains UI-only. Additional hardening measures such as enabling sandbox and stricter CSP could further strengthen the model. Adhering to the best practices outlined below will help maintain a secure and compliant application.
+The application implements a reliable Electron security model by using context isolation, disabling nodeIntegration and remote module, enforcing webSecurity, and using a minimal preload bridge. IPC handlers in the main process encapsulate all privileged operations, while the renderer remains UI-only. Additional hardening measures such as enabling sandbox and stricter CSP could further strengthen the model. Adhering to the best practices outlined below will help maintain a secure and compliant application.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### Security Best Practices for Electron Applications
+### Security best practices for electron applications
 - Keep Electron and dependencies updated to benefit from security patches.
 - Use context isolation, disable nodeIntegration, disable remote module, and enable webSecurity.
 - Implement a minimal preload bridge and validate all IPC payloads.
@@ -322,11 +227,8 @@ The application implements a robust Electron security model by leveraging contex
 
 [No sources needed since this section provides general guidance]
 
-### Compliance Considerations
+### Compliance considerations
 - Follow platform-specific guidelines for desktop app distribution.
 - Ensure adherence to provider terms (Gmail, WhatsApp, SMTP).
 - Implement data retention and deletion policies.
 - Provide privacy notices and user controls for data handling.
-
-**Section sources**
-- [README.md](file://README.md#L391-L411)

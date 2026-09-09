@@ -1,41 +1,9 @@
-# Side Panel UI Components
-
-<cite>
-**Referenced Files in This Document**
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx)
-- [ProfileSidebar.tsx](file://extension/entrypoints/sidepanel/components/ProfileSidebar.tsx)
-- [ResponseSection.tsx](file://extension/entrypoints/sidepanel/components/ResponseSection.tsx)
-- [LoadingScreen.tsx](file://extension/entrypoints/sidepanel/components/LoadingScreen.tsx)
-- [SignInScreen.tsx](file://extension/entrypoints/sidepanel/components/SignInScreen.tsx)
-- [CuteTextInput.tsx](file://extension/entrypoints/sidepanel/components/CuteTextInput.tsx)
-- [ApiKeySection.tsx](file://extension/entrypoints/sidepanel/components/ApiKeySection.tsx)
-- [SettingsSection.tsx](file://extension/entrypoints/sidepanel/components/SettingsSection.tsx)
-- [WebSocketStatus.tsx](file://extension/entrypoints/sidepanel/components/WebSocketStatus.tsx)
-- [select.tsx](file://extension/entrypoints/sidepanel/components/ui/select.tsx)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts)
-- [useTabManagement.ts](file://extension/entrypoints/sidepanel/hooks/useTabManagement.ts)
-- [useWebSocket.ts](file://extension/entrypoints/sidepanel/hooks/useWebSocket.ts)
-- [App.css](file://extension/entrypoints/sidepanel/App.css)
-- [index.html](file://extension/entrypoints/sidepanel/index.html)
-- [main.tsx](file://extension/entrypoints/sidepanel/main.tsx)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Side panel UI components
 
 ## Introduction
-This document provides comprehensive documentation for the Side Panel UI Components of the Agentic Browser extension. It focuses on the main App.tsx component structure, state management, and component composition patterns. It details the UnifiedSettingsMenu for configuration management, ProfileSidebar for user information display, ResponseSection for showing agent responses, and LoadingScreen for user feedback. The guide explains component hierarchy, prop passing, state synchronization, and styling approaches. It includes examples of component usage, customization options, and responsive design considerations. It also documents the integration with React hooks for authentication, tab management, and WebSocket communication, along with accessibility features, cross-browser styling compatibility, and performance optimization strategies.
+This page provides detailed documentation for the Side Panel UI Components of the Agentic Browser extension. It focuses on the main App.tsx component structure, state management, and component composition patterns. It details the UnifiedSettingsMenu for configuration management, ProfileSidebar for user information display, ResponseSection for showing agent responses, and LoadingScreen for user feedback. The guide explains component hierarchy, prop passing, state synchronization, and styling approaches. It includes examples of component usage, customization options, and responsive design considerations. It also documents the integration with React hooks for authentication, tab management, and WebSocket communication, along with accessibility features, cross-browser styling compatibility, and performance optimization strategies.
 
-## Project Structure
+## Project structure
 The Side Panel UI resides under the extension entrypoint sidepanel and follows a feature-based organization:
 - App.tsx orchestrates authentication, tab management, WebSocket integration, and renders the primary UI.
 - Components are grouped under components/ with reusable UI primitives under components/ui/.
@@ -89,32 +57,7 @@ SIGNIN --> INPUT
 APP --> CSS
 ```
 
-**Diagram sources**
-- [index.html](file://extension/entrypoints/sidepanel/index.html#L1-L20)
-- [main.tsx](file://extension/entrypoints/sidepanel/main.tsx#L1-L10)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L1-L1194)
-- [ProfileSidebar.tsx](file://extension/entrypoints/sidepanel/components/ProfileSidebar.tsx#L1-L326)
-- [ResponseSection.tsx](file://extension/entrypoints/sidepanel/components/ResponseSection.tsx#L1-L15)
-- [LoadingScreen.tsx](file://extension/entrypoints/sidepanel/components/LoadingScreen.tsx#L1-L18)
-- [SignInScreen.tsx](file://extension/entrypoints/sidepanel/components/SignInScreen.tsx#L1-L414)
-- [CuteTextInput.tsx](file://extension/entrypoints/sidepanel/components/CuteTextInput.tsx#L1-L81)
-- [ApiKeySection.tsx](file://extension/entrypoints/sidepanel/components/ApiKeySection.tsx#L1-L25)
-- [SettingsSection.tsx](file://extension/entrypoints/sidepanel/components/SettingsSection.tsx#L1-L111)
-- [WebSocketStatus.tsx](file://extension/entrypoints/sidepanel/components/WebSocketStatus.tsx#L1-L36)
-- [select.tsx](file://extension/entrypoints/sidepanel/components/ui/select.tsx#L1-L186)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-- [useTabManagement.ts](file://extension/entrypoints/sidepanel/hooks/useTabManagement.ts#L1-L94)
-- [useWebSocket.ts](file://extension/entrypoints/sidepanel/hooks/useWebSocket.ts#L1-L49)
-- [App.css](file://extension/entrypoints/sidepanel/App.css#L1-L349)
-
-**Section sources**
-- [index.html](file://extension/entrypoints/sidepanel/index.html#L1-L20)
-- [main.tsx](file://extension/entrypoints/sidepanel/main.tsx#L1-L10)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [App.css](file://extension/entrypoints/sidepanel/App.css#L1-L349)
-
-## Core Components
+## Core components
 This section outlines the primary UI components and their responsibilities:
 - UnifiedSettingsMenu: Centralized configuration hub supporting profile, credentials, API keys, base URL, WebSocket preferences, and connection status.
 - ProfileSidebar: Displays user profile details, token information, and actions for manual refresh/logout.
@@ -128,21 +71,9 @@ This section outlines the primary UI components and their responsibilities:
 Key integration points:
 - App.tsx manages global state (authentication, tab info, API key, WebSocket connection, conversation stats) and passes props to child components.
 - Hooks encapsulate browser APIs and external services (OAuth, tabs, WebSocket client).
-- Styling leverages CSS modules and global styles for consistent theming.
+- Styling uses CSS modules and global styles for consistent theming.
 
-**Section sources**
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L1-L1194)
-- [ProfileSidebar.tsx](file://extension/entrypoints/sidepanel/components/ProfileSidebar.tsx#L1-L326)
-- [ResponseSection.tsx](file://extension/entrypoints/sidepanel/components/ResponseSection.tsx#L1-L15)
-- [LoadingScreen.tsx](file://extension/entrypoints/sidepanel/components/LoadingScreen.tsx#L1-L18)
-- [SignInScreen.tsx](file://extension/entrypoints/sidepanel/components/SignInScreen.tsx#L1-L414)
-- [CuteTextInput.tsx](file://extension/entrypoints/sidepanel/components/CuteTextInput.tsx#L1-L81)
-- [SettingsSection.tsx](file://extension/entrypoints/sidepanel/components/SettingsSection.tsx#L1-L111)
-- [WebSocketStatus.tsx](file://extension/entrypoints/sidepanel/components/WebSocketStatus.tsx#L1-L36)
-- [select.tsx](file://extension/entrypoints/sidepanel/components/ui/select.tsx#L1-L186)
-
-## Architecture Overview
+## Architecture overview
 The Side Panel UI follows a unidirectional data flow:
 - App.tsx initializes hooks and state, then conditionally renders either LoadingScreen, SignInScreen, or the main UI with AgentExecutor and settings/profile panels.
 - Hooks manage browser-specific integrations (storage, tabs, identity, WebSocket).
@@ -166,15 +97,9 @@ App->>App : Render UI based on auth state
 App-->>User : UnifiedSettingsMenu / ProfileSidebar / ResponseSection
 ```
 
-**Diagram sources**
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-- [useTabManagement.ts](file://extension/entrypoints/sidepanel/hooks/useTabManagement.ts#L1-L94)
-- [useWebSocket.ts](file://extension/entrypoints/sidepanel/hooks/useWebSocket.ts#L1-L49)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### App.tsx: Orchestrator and State Hub
+### App.tsx: orchestrator and state hub
 Responsibilities:
 - Authentication lifecycle: initialize, refresh tokens, handle login/logout.
 - Tab management: track active tab and update on changes.
@@ -199,11 +124,7 @@ Accessibility and cross-browser compatibility:
 - Relies on browser APIs (storage, identity, tabs) and applies minimal DOM manipulation.
 - Global CSS ensures consistent styling across browsers.
 
-**Section sources**
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [App.css](file://extension/entrypoints/sidepanel/App.css#L1-L349)
-
-### UnifiedSettingsMenu: Configuration Management
+### UnifiedSettingsMenu: configuration management
 Responsibilities:
 - Hosts two tabs: Settings and Profile.
 - Settings tab: model selection, API key management, base URL, Google/JIIT connections, WebSocket auto-connect toggle.
@@ -222,15 +143,7 @@ Styling and UX:
 - Glass-morphism design with backdrop blur and gradient backgrounds.
 - Interactive elements include hover/focus states and subtle animations.
 
-**Section sources**
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L1-L1194)
-- [CuteTextInput.tsx](file://extension/entrypoints/sidepanel/components/CuteTextInput.tsx#L1-L81)
-- [ApiKeySection.tsx](file://extension/entrypoints/sidepanel/components/ApiKeySection.tsx#L1-L25)
-- [SettingsSection.tsx](file://extension/entrypoints/sidepanel/components/SettingsSection.tsx#L1-L111)
-- [WebSocketStatus.tsx](file://extension/entrypoints/sidepanel/components/WebSocketStatus.tsx#L1-L36)
-- [select.tsx](file://extension/entrypoints/sidepanel/components/ui/select.tsx#L1-L186)
-
-### ProfileSidebar: User Information Display
+### ProfileSidebar: user information display
 Responsibilities:
 - Displays user avatar, name, email, and browser info.
 - Shows token age/expiry and optional token visibility toggles.
@@ -244,32 +157,20 @@ Styling:
 - Absolute positioning with shadow and gradient borders.
 - Collapsible advanced details section using native details/summary.
 
-**Section sources**
-- [ProfileSidebar.tsx](file://extension/entrypoints/sidepanel/components/ProfileSidebar.tsx#L1-L326)
-
-### ResponseSection: Agent Response Display
+### ResponseSection: agent response display
 Responsibilities:
 - Renders agent responses in a scrollable container with monospace-friendly styling.
 
 Usage:
 - Receives response string from App.tsx and conditionally renders when present.
 
-**Section sources**
-- [ResponseSection.tsx](file://extension/entrypoints/sidepanel/components/ResponseSection.tsx#L1-L15)
-- [App.css](file://extension/entrypoints/sidepanel/App.css#L165-L176)
-
-### LoadingScreen and SignInScreen: Authentication Flow
+### LoadingScreen and SignInScreen: authentication flow
 - LoadingScreen: Minimal header and loading message while auth resolves.
 - SignInScreen: Animated onboarding with OAuth options and feature highlights.
 
 Both screens integrate with useAuth hooks to trigger login flows and update state.
 
-**Section sources**
-- [LoadingScreen.tsx](file://extension/entrypoints/sidepanel/components/LoadingScreen.tsx#L1-L18)
-- [SignInScreen.tsx](file://extension/entrypoints/sidepanel/components/SignInScreen.tsx#L1-L414)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-
-### CuteTextInput: Reusable Input Component
+### CuteTextInput: reusable input component
 Features:
 - Focus state with animated underline.
 - Enter key submission support.
@@ -278,24 +179,14 @@ Features:
 Integration:
 - Used within UnifiedSettingsMenu for API key/base URL inputs.
 
-**Section sources**
-- [CuteTextInput.tsx](file://extension/entrypoints/sidepanel/components/CuteTextInput.tsx#L1-L81)
-
-### SettingsSection and WebSocketStatus: Compact Controls
+### SettingsSection and WebSocketStatus: compact controls
 - SettingsSection: Collapsible settings with API key input and WebSocket connection toggle.
 - WebSocketStatus: Simple indicator and reconnect button.
 
-**Section sources**
-- [SettingsSection.tsx](file://extension/entrypoints/sidepanel/components/SettingsSection.tsx#L1-L111)
-- [WebSocketStatus.tsx](file://extension/entrypoints/sidepanel/components/WebSocketStatus.tsx#L1-L36)
-
-### select.tsx: UI Primitive
+### select.tsx: UI primitive
 - Provides a styled Select component set built on Radix UI with consistent theming and accessibility.
 
-**Section sources**
-- [select.tsx](file://extension/entrypoints/sidepanel/components/ui/select.tsx#L1-L186)
-
-## Dependency Analysis
+## Dependency analysis
 Component and hook dependencies:
 - App.tsx depends on useAuth, useTabManagement, and useWebSocket.
 - UnifiedSettingsMenu depends on browser storage/localStorage and the WebSocket client.
@@ -320,55 +211,20 @@ Profile --> Input
 Response --> CSS["App.css"]
 ```
 
-**Diagram sources**
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-- [useTabManagement.ts](file://extension/entrypoints/sidepanel/hooks/useTabManagement.ts#L1-L94)
-- [useWebSocket.ts](file://extension/entrypoints/sidepanel/hooks/useWebSocket.ts#L1-L49)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L1-L1194)
-- [ProfileSidebar.tsx](file://extension/entrypoints/sidepanel/components/ProfileSidebar.tsx#L1-L326)
-- [ResponseSection.tsx](file://extension/entrypoints/sidepanel/components/ResponseSection.tsx#L1-L15)
-- [CuteTextInput.tsx](file://extension/entrypoints/sidepanel/components/CuteTextInput.tsx#L1-L81)
-- [ApiKeySection.tsx](file://extension/entrypoints/sidepanel/components/ApiKeySection.tsx#L1-L25)
-- [SettingsSection.tsx](file://extension/entrypoints/sidepanel/components/SettingsSection.tsx#L1-L111)
-- [WebSocketStatus.tsx](file://extension/entrypoints/sidepanel/components/WebSocketStatus.tsx#L1-L36)
-- [select.tsx](file://extension/entrypoints/sidepanel/components/ui/select.tsx#L1-L186)
-- [App.css](file://extension/entrypoints/sidepanel/App.css#L1-L349)
-
-**Section sources**
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L1-L1194)
-- [ProfileSidebar.tsx](file://extension/entrypoints/sidepanel/components/ProfileSidebar.tsx#L1-L326)
-- [ResponseSection.tsx](file://extension/entrypoints/sidepanel/components/ResponseSection.tsx#L1-L15)
-- [CuteTextInput.tsx](file://extension/entrypoints/sidepanel/components/CuteTextInput.tsx#L1-L81)
-- [SettingsSection.tsx](file://extension/entrypoints/sidepanel/components/SettingsSection.tsx#L1-L111)
-- [WebSocketStatus.tsx](file://extension/entrypoints/sidepanel/components/WebSocketStatus.tsx#L1-L36)
-- [select.tsx](file://extension/entrypoints/sidepanel/components/ui/select.tsx#L1-L186)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-- [useTabManagement.ts](file://extension/entrypoints/sidepanel/hooks/useTabManagement.ts#L1-L94)
-- [useWebSocket.ts](file://extension/entrypoints/sidepanel/hooks/useWebSocket.ts#L1-L49)
-- [App.css](file://extension/entrypoints/sidepanel/App.css#L1-L349)
-
-## Performance Considerations
+## Performance considerations
 - Minimize re-renders by lifting state to App.tsx and passing only necessary props down.
 - Debounce or throttle frequent updates (e.g., storage change listeners).
 - Use lazy initialization for heavy resources (e.g., WebSocket client setup).
 - Keep component trees shallow; avoid deep nesting of styled containers.
 - Prefer CSS transitions for animations rather than JavaScript-driven ones.
-- Utilize browser storage efficiently; batch writes and avoid excessive reads.
+- Use browser storage efficiently; batch writes and avoid excessive reads.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Authentication failures: Verify backend service availability and OAuth configuration. Check alerts emitted during login flows.
 - WebSocket disconnections: Confirm auto-connect preference and network connectivity; use the reconnect button in settings.
 - Tab updates not reflected: Ensure tab listeners are registered and cleaned up properly.
 - Styling inconsistencies: Confirm global fonts are loaded and CSS selectors match component classes.
 
-**Section sources**
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L128-L208)
-- [useWebSocket.ts](file://extension/entrypoints/sidepanel/hooks/useWebSocket.ts#L19-L48)
-- [useTabManagement.ts](file://extension/entrypoints/sidepanel/hooks/useTabManagement.ts#L14-L81)
-- [App.css](file://extension/entrypoints/sidepanel/App.css#L344-L349)
-
 ## Conclusion
-The Side Panel UI Components form a cohesive, modular system centered around App.tsx. They leverage React hooks for cross-cutting concerns, maintain consistent styling through global CSS, and provide intuitive controls for configuration and user profile management. The architecture supports scalability, accessibility, and cross-browser compatibility while keeping performance considerations front-of-mind.
+The Side Panel UI Components form a cohesive, modular system centered around App.tsx. They use React hooks for cross-cutting concerns, maintain consistent styling through global CSS, and provide intuitive controls for configuration and user profile management. The architecture supports scalability, accessibility, and cross-browser compatibility while keeping performance considerations front-of-mind.

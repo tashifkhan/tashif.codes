@@ -1,46 +1,17 @@
-# Contact Management System
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://README.md)
-- [extract_contacts.py](file://python-backend/extract_contacts.py)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py)
-- [validate_number.py](file://python-backend/validate_number.py)
-- [app.py](file://python-backend/app.py)
-- [pyodide.js](file://electron/src/utils/pyodide.js)
-- [parse_manual_numbers.py](file://electron/dist-react/py/parse_manual_numbers.py)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py)
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [App.jsx](file://electron/src/ui/App.jsx)
-- [cli_functions.py](file://localhost/cli_functions.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Contact management system
 
 ## Introduction
-This document describes the contact management and processing system for importing, validating, normalizing, and managing contacts for bulk messaging. It covers:
+This page describes the contact management and processing system for importing, validating, normalizing, and managing contacts for bulk messaging. It covers:
 - Multi-format contact import (CSV, Excel, and text files) with automatic format detection
 - Phone number validation and normalization including country code handling
 - Manual contact entry interface with real-time validation feedback
 - Duplicate detection and removal algorithms
 - Pyodide runtime integration for browser-based Python execution
-- Comprehensive error handling for invalid formats, encoding issues, and malformed data
+- Detailed error handling for invalid formats, encoding issues, and malformed data
 - Export capabilities for processed contacts and validation results
 - Performance considerations for large contact lists and memory optimization strategies
 
-## Project Structure
+## Project structure
 The system is composed of:
 - Electron desktop application with React UI
 - Python backend utilities for contact extraction and validation
@@ -76,25 +47,7 @@ APP --> PN
 APP --> VN
 ```
 
-**Diagram sources**
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [app.py](file://python-backend/app.py#L1-L378)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L1-L177)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L1-L61)
-- [validate_number.py](file://python-backend/validate_number.py#L1-L27)
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-
-**Section sources**
-- [README.md](file://README.md#L198-L236)
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [app.py](file://python-backend/app.py#L1-L378)
-
-## Core Components
+## Core components
 - Contact extraction utilities:
   - CSV, Excel, and text file parsers with automatic column detection and phone number cleaning
 - Manual number parser:
@@ -108,15 +61,7 @@ APP --> VN
 - React UI:
   - Provides manual entry interface, import controls, and real-time feedback
 
-**Section sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L25-L177)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L61)
-- [validate_number.py](file://python-backend/validate_number.py#L6-L27)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L5-L33)
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L41-L62)
-
-## Architecture Overview
+## Architecture overview
 The system supports two primary flows:
 - Desktop import via Electron main process (CSV/Excel/TXT) with local parsing
 - Browser-based manual entry via Pyodide (Python executed in the renderer)
@@ -138,15 +83,9 @@ Util-->>UI : validation results
 UI-->>User : display contacts with validation feedback
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L41-L62)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L26-L33)
-- [parse_manual_numbers.py](file://electron/dist-react/py/parse_manual_numbers.py#L22-L61)
-- [validate_number.py](file://python-backend/validate_number.py#L22-L27)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Contact Import Pipeline (Desktop)
+### Contact import pipeline (desktop)
 The Electron main process handles file selection and parsing for CSV and TXT. Excel support is present but not used in the current UI flow.
 
 ```mermaid
@@ -167,17 +106,7 @@ Util-->>UI : validation results
 UI-->>User : Display contacts preview
 ```
 
-**Diagram sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L323-L366)
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L61)
-- [validate_number.py](file://python-backend/validate_number.py#L22-L27)
-
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L323-L366)
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-
-### Phone Number Validation and Normalization
+### Phone number validation and normalization
 Phone numbers are normalized by removing separators, ensuring a leading plus for international numbers, and enforcing digit-only length constraints. The same logic is applied in both Python utilities and the browser via Pyodide.
 
 ```mermaid
@@ -197,17 +126,7 @@ Skip --> End(["Return None"])
 Valid --> End
 ```
 
-**Diagram sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L9-L22)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L6-L19)
-- [validate_number.py](file://python-backend/validate_number.py#L6-L19)
-
-**Section sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L9-L22)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L6-L19)
-- [validate_number.py](file://python-backend/validate_number.py#L6-L19)
-
-### Manual Contact Entry Interface
+### Manual contact entry interface
 The manual entry interface supports:
 - Text area input with examples for formats
 - Real-time validation feedback
@@ -228,16 +147,7 @@ Form->>Form : Append to waContacts
 Form-->>User : Show preview and success message
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L41-L62)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L26-L33)
-- [parse_manual_numbers.py](file://electron/dist-react/py/parse_manual_numbers.py#L22-L61)
-
-**Section sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L315-L361)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L26-L33)
-
-### Duplicate Detection and Removal
+### Duplicate detection and removal
 The system does not implement explicit duplicate detection in the provided code. To maintain data integrity, consider:
 - Using a set keyed by normalized phone numbers for deduplication
 - Optional name-aware deduplication if names are present
@@ -245,7 +155,7 @@ The system does not implement explicit duplicate detection in the provided code.
 
 [No sources needed since this section provides general guidance]
 
-### Pyodide Runtime Integration
+### Pyodide runtime integration
 Pyodide is dynamically loaded and used to execute Python scripts in the renderer process. The loader fetches the script and runs it asynchronously.
 
 ```mermaid
@@ -264,24 +174,17 @@ Py-->>UI : JSON string
 UI-->>Caller : Parsed result
 ```
 
-**Diagram sources**
-- [pyodide.js](file://electron/src/utils/pyodide.js#L5-L33)
-- [parse_manual_numbers.py](file://electron/dist-react/py/parse_manual_numbers.py#L22-L61)
-
-**Section sources**
-- [pyodide.js](file://electron/src/utils/pyodide.js#L5-L33)
-
-### Export Capabilities
+### Export capabilities
 The system currently focuses on ingestion and validation. Export functionality for processed contacts and validation results is not implemented in the provided code. To add export:
 - Provide CSV/JSON download options for the current contact list
 - Include validation status and normalized numbers in exports
 
 [No sources needed since this section provides general guidance]
 
-## Dependency Analysis
+## Dependency analysis
 The contact processing pipeline depends on:
 - Electron main process for file I/O and IPC
-- Python utilities for robust parsing and validation
+- Python utilities for reliable parsing and validation
 - Pyodide for browser-side Python execution
 - React components for UI and user interaction
 
@@ -296,21 +199,7 @@ APP --> PN["parse_manual_numbers.py"]
 APP --> VN["validate_number.py"]
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [app.py](file://python-backend/app.py#L1-L378)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L1-L177)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L1-L61)
-- [validate_number.py](file://python-backend/validate_number.py#L1-L27)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [app.py](file://python-backend/app.py#L1-L378)
-
-## Performance Considerations
+## Performance considerations
 - Large CSV/Excel parsing:
   - Prefer streaming parsers for very large files to reduce memory usage
   - Validate and normalize incrementally
@@ -326,7 +215,7 @@ APP --> VN["validate_number.py"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Unsupported file types:
   - Ensure CSV, TXT, XLSX, or XLS formats
@@ -339,11 +228,5 @@ Common issues and resolutions:
 - Electron IPC errors:
   - Verify preload exposure and handler registration
 
-**Section sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L160-L177)
-- [app.py](file://python-backend/app.py#L232-L280)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L5-L24)
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-
 ## Conclusion
-The contact management system provides robust ingestion and validation of phone numbers across multiple formats, with flexible manual entry and browser-based Python execution via Pyodide. While explicit duplicate detection is not implemented, the normalized phone number approach supports efficient deduplication strategies. Extending the system with export capabilities and enhancing duplicate handling would further improve usability and data quality.
+The contact management system provides reliable ingestion and validation of phone numbers across multiple formats, with flexible manual entry and browser-based Python execution via Pyodide. While explicit duplicate detection is not implemented, the normalized phone number approach supports efficient deduplication strategies. Extending the system with export capabilities and improving duplicate handling would further improve usability and data quality.

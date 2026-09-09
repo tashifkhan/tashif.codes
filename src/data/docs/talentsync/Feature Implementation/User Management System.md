@@ -1,34 +1,9 @@
-# User Management System
-
-<cite>
-**Referenced Files in This Document**
-- [auth-options.ts](file://frontend/lib/auth-options.ts)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts)
-- [schema.prisma](file://frontend/prisma/schema.prisma)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts)
-- [update-role/route.ts](file://frontend/app/api/auth/update-role/route.ts)
-- [auth/page.tsx](file://frontend/app/auth/page.tsx)
-- [select-role/page.tsx](file://frontend/app/select-role/page.tsx)
-- [account/page.tsx](file://frontend/app/account/page.tsx)
-- [prisma.ts](file://frontend/lib/prisma.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# User management system
 
 ## Introduction
-This document describes the User Management System built with NextAuth.js, covering authentication providers, session management, role-based access control, and profile management. It explains the end-to-end user lifecycle from registration and email verification through login and role assignment, and documents the frontend components that enable user interactions. The backend integrates NextAuth.js with Prisma ORM to manage users, sessions, roles, and tokens, while the frontend provides intuitive UIs for authentication, profile editing, and role selection.
+This page describes the User Management System built with NextAuth.js, covering authentication providers, session management, role-based access control, and profile management. It explains the end-to-end user lifecycle from registration and email verification through login and role assignment, and documents the frontend components that enable user interactions. The backend integrates NextAuth.js with Prisma ORM to manage users, sessions, roles, and tokens, while the frontend provides intuitive UIs for authentication, profile editing, and role selection.
 
-## Project Structure
+## Project structure
 The user management functionality spans the frontend Next.js application and the Prisma schema:
 - NextAuth.js configuration and API routes for authentication
 - Prisma schema defining users, roles, sessions, and related tokens
@@ -61,23 +36,7 @@ H --> I
 B --> I
 ```
 
-**Diagram sources**
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L1-L202)
-- [auth/page.tsx](file://frontend/app/auth/page.tsx#L1-L933)
-- [select-role/page.tsx](file://frontend/app/select-role/page.tsx#L1-L157)
-- [account/page.tsx](file://frontend/app/account/page.tsx#L1-L498)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L1-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L1-L84)
-- [update-role/route.ts](file://frontend/app/api/auth/update-role/route.ts#L1-L65)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L1-L262)
-
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L1-L202)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L1-L262)
-
-## Core Components
+## Core components
 - NextAuth.js configuration with multiple providers (credentials, Google, GitHub, email)
 - JWT-based session strategy with callbacks for session and token synchronization
 - Prisma adapter for user and session persistence
@@ -87,16 +46,7 @@ B --> I
 - Frontend authentication UI supporting OAuth and credentials login, plus registration with role selection
 - Frontend role selection UI and account management UI for profile and security controls
 
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L68-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L9-L84)
-- [update-role/route.ts](file://frontend/app/api/auth/update-role/route.ts#L6-L65)
-- [auth/page.tsx](file://frontend/app/auth/page.tsx#L145-L275)
-- [select-role/page.tsx](file://frontend/app/select-role/page.tsx#L33-L67)
-- [account/page.tsx](file://frontend/app/account/page.tsx#L74-L153)
-
-## Architecture Overview
+## Architecture overview
 The system uses NextAuth.js for authentication and Prisma for data persistence. The auth options define providers, callbacks, and session strategy. The frontend pages integrate with NextAuth hooks and call backend APIs for registration, verification, and role updates.
 
 ```mermaid
@@ -119,15 +69,9 @@ NA-->>FE : "Session established"
 FE->>U : "Redirect to dashboard"
 ```
 
-**Diagram sources**
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L16-L41)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### NextAuth.js Integration and Session Management
+### NextAuth.js integration and session management
 - Providers: Credentials, Google, GitHub, Email
 - Session strategy: JWT
 - Callbacks:
@@ -149,14 +93,7 @@ AutoVerify --> CaptureImage
 CaptureImage --> ReturnTrue["Allow sign-in"]
 ```
 
-**Diagram sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L98-L144)
-
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-
-### Authentication Flow: Registration, Verification, Login
+### Authentication flow: registration, verification, login
 - Registration:
   - Validates input, checks existing user and role, hashes password, creates user and verification token in a transaction, and attempts to send a verification email
 - Email Verification:
@@ -180,18 +117,7 @@ U->>NA : "Sign in with credentials/OAuth"
 NA-->>U : "Authenticated session"
 ```
 
-**Diagram sources**
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L68-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L9-L84)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L19-L56)
-- [auth/page.tsx](file://frontend/app/auth/page.tsx#L188-L275)
-
-**Section sources**
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L68-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L9-L84)
-- [auth/page.tsx](file://frontend/app/auth/page.tsx#L188-L275)
-
-### Role-Based Access Control and Role Selection
+### Role-Based access control and role selection
 - Roles are stored in the Role model and linked to users via roleId
 - On OAuth sign-in, users are auto-verified; on credentials sign-in, email verification is enforced
 - After initial sign-in, users land on a role selection page where they choose "User" or "Recruiter"
@@ -208,18 +134,7 @@ UpdateRole --> RefreshSession["Refresh session with new role"]
 RefreshSession --> Dashboard
 ```
 
-**Diagram sources**
-- [select-role/page.tsx](file://frontend/app/select-role/page.tsx#L19-L67)
-- [update-role/route.ts](file://frontend/app/api/auth/update-role/route.ts#L6-L65)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L159-L195)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L10-L28)
-- [select-role/page.tsx](file://frontend/app/select-role/page.tsx#L33-L67)
-- [update-role/route.ts](file://frontend/app/api/auth/update-role/route.ts#L6-L65)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L159-L195)
-
-### Profile Management Features
+### Profile management features
 - Avatar management:
   - For email-authenticated users, an upload component allows custom avatar URLs
   - OAuth users use profile images from their OAuth provider
@@ -254,16 +169,7 @@ User --> Role : "belongsTo"
 User --> Session : "hasMany"
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L16-L41)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L10-L14)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L247-L253)
-
-**Section sources**
-- [account/page.tsx](file://frontend/app/account/page.tsx#L244-L271)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L145-L158)
-
-### Frontend Components for Authentication and Profile Management
+### Frontend components for authentication and profile management
 - Authentication page:
   - Tabs for login and register
   - OAuth buttons for Google and GitHub
@@ -277,12 +183,7 @@ User --> Session : "hasMany"
   - Manages avatar (upload for email users)
   - Initiates password reset and account deletion
 
-**Section sources**
-- [auth/page.tsx](file://frontend/app/auth/page.tsx#L145-L275)
-- [select-role/page.tsx](file://frontend/app/select-role/page.tsx#L33-L67)
-- [account/page.tsx](file://frontend/app/account/page.tsx#L74-L153)
-
-### Database Schema for Users, Sessions, and Roles
+### Database schema for users, sessions, and roles
 - Role model defines unique role names and links to users
 - User model includes optional password hash for credentials, email verification flag, optional role linkage, and profile fields
 - Session model stores session tokens and expiry
@@ -314,15 +215,7 @@ ROLE ||--o{ USER : "has many"
 USER ||--o{ SESSION : "has many"
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L10-L14)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L16-L41)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L247-L253)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L10-L262)
-
-### Implementing Custom Authentication Providers and Extending Capabilities
+### Implementing custom authentication providers and extending capabilities
 - Custom provider integration:
   - Add a new provider in the NextAuth options array and implement authorize logic to validate credentials and return a user object with id, email, name, image, and role
 - Extending user capabilities:
@@ -332,7 +225,7 @@ USER ||--o{ SESSION : "has many"
 
 [No sources needed since this section provides general guidance]
 
-## Dependency Analysis
+## Dependency analysis
 - NextAuth.js depends on the Prisma adapter and the configured providers
 - Backend APIs depend on Prisma client for database operations
 - Frontend pages depend on NextAuth hooks and call backend endpoints
@@ -350,21 +243,7 @@ REG["Registration API"] --> PC
 VER["Verification API"] --> PC
 ```
 
-**Diagram sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-- [auth/page.tsx](file://frontend/app/auth/page.tsx#L145-L275)
-- [select-role/page.tsx](file://frontend/app/select-role/page.tsx#L33-L67)
-- [account/page.tsx](file://frontend/app/account/page.tsx#L74-L153)
-- [update-role/route.ts](file://frontend/app/api/auth/update-role/route.ts#L6-L65)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L68-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L9-L84)
-
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-
-## Performance Considerations
+## Performance considerations
 - Use JWT-based sessions to avoid frequent database reads
 - Keep token refresh callbacks minimal; fetch only necessary user fields
 - Batch database operations (e.g., registration transaction) to reduce round-trips
@@ -372,20 +251,15 @@ VER["Verification API"] --> PC
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Email verification failures:
   - Ensure the verification token exists, is unexpired, and not already confirmed
 - Credentials login blocked:
-  - Verify that the user’s email is marked as verified before allowing sign-in
+  - Verify that the user's email is marked as verified before allowing sign-in
 - Role update errors:
   - Confirm the incoming roleId maps to a valid Role name in the database
 - OAuth sign-in issues:
   - Confirm provider credentials are configured and user image/profile picture is captured when missing
 
-**Section sources**
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L14-L66)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L122-L136)
-- [update-role/route.ts](file://frontend/app/api/auth/update-role/route.ts#L26-L45)
-
 ## Conclusion
-The User Management System integrates NextAuth.js with Prisma to provide robust authentication, email verification, role-based access control, and profile management. The frontend offers intuitive UIs for registration, verification, role selection, and account settings, while the backend ensures secure and reliable user lifecycle management. Extensibility is supported through custom providers and schema enhancements.
+The User Management System integrates NextAuth.js with Prisma to provide reliable authentication, email verification, role-based access control, and profile management. The frontend offers intuitive UIs for registration, verification, role selection, and account settings, while the backend ensures secure and reliable user lifecycle management. Extensibility is supported through custom providers and schema enhancements.

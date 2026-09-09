@@ -1,33 +1,9 @@
-# Database Schema & Data Model
-
-<cite>
-**Referenced Files in This Document**
-- [DATABASE.md](file://docs/DATABASE.md)
-- [db_client.py](file://app/clients/db_client.py)
-- [database_service.py](file://app/services/database_service.py)
-- [notification_service.py](file://app/services/notification_service.py)
-- [notification_runner.py](file://app/runners/notification_runner.py)
-- [update_runner.py](file://app/runners/update_runner.py)
-- [config.py](file://app/core/config.py)
-- [docker-compose.dev.yaml](file://app/docker-compose.dev.yaml)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Database schema & data model
 
 ## Introduction
-This document provides comprehensive data model documentation for the MongoDB-based storage system used by the SuperSet Telegram Notification Bot. It defines the five primary collections (Notices, Jobs, PlacementOffers, Users, OfficialPlacementData), their field definitions, data types, validation rules, and relationships. It also explains how the schema supports real-time notifications and historical analytics, outlines index strategies for performance, describes upsert logic to prevent duplicates, and documents the event generation system for tracking changes.
+This page provides detailed data model documentation for the MongoDB-based storage system used by the SuperSet Telegram Notification Bot. It defines the five primary collections (Notices, Jobs, PlacementOffers, Users, OfficialPlacementData), their field definitions, data types, validation rules, and relationships. It also explains how the schema supports real-time notifications and historical analytics, outlines index strategies for performance, describes upsert logic to prevent duplicates, and documents the event generation system for tracking changes.
 
-## Project Structure
+## Project structure
 The database layer is implemented as a thin client-service abstraction:
 - DBClient: Establishes the MongoDB connection and exposes typed collection handles.
 - DatabaseService: Implements domain-specific operations (existence checks, upserts, stats, event emission).
@@ -61,19 +37,7 @@ DC --> U
 DC --> OPD
 ```
 
-**Diagram sources**
-- [db_client.py](file://app/clients/db_client.py#L42-L104)
-- [database_service.py](file://app/services/database_service.py#L28-L45)
-- [notification_runner.py](file://app/runners/notification_runner.py#L28-L115)
-- [notification_service.py](file://app/services/notification_service.py#L21-L91)
-
-**Section sources**
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [notification_runner.py](file://app/runners/notification_runner.py#L21-L115)
-- [notification_service.py](file://app/services/notification_service.py#L13-L91)
-
-## Core Components
+## Core components
 - DatabaseClient: Manages connection and exposes collections for Notices, Jobs, PlacementOffers, Users, Policies, and OfficialPlacementData.
 - DatabaseService: Provides CRUD and operational helpers, including duplicate prevention, upsert logic, and event generation for placement offers.
 - NotificationService: Orchestrates sending unsent notices to Telegram and Web Push channels.
@@ -86,12 +50,7 @@ Key responsibilities:
 - Users: Subscription and preference management.
 - OfficialPlacementData: Aggregated statistics snapshots.
 
-**Section sources**
-- [db_client.py](file://app/clients/db_client.py#L42-L104)
-- [database_service.py](file://app/services/database_service.py#L56-L200)
-- [notification_service.py](file://app/services/notification_service.py#L93-L167)
-
-## Architecture Overview
+## Architecture overview
 The system follows a layered architecture:
 - Clients: DBClient encapsulates MongoDB connectivity.
 - Services: DatabaseService implements domain logic and deduplication/upserts.
@@ -118,14 +77,9 @@ N-->>DB : "Insertion result"
 DB-->>CR : "Success/Failure"
 ```
 
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L56-L148)
-- [database_service.py](file://app/services/database_service.py#L80-L105)
-- [db_client.py](file://app/clients/db_client.py#L82-L83)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Notices Collection
+### Notices collection
 Purpose: Store all types of notifications (job postings, announcements, updates) with delivery tracking.
 
 Schema highlights:
@@ -147,12 +101,7 @@ Real-time and history:
 - Delivery flags enable real-time routing.
 - created_at supports chronological queries and historical analysis.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L32-L94)
-- [DATABASE.md](file://docs/DATABASE.md#L430-L435)
-- [database_service.py](file://app/services/database_service.py#L56-L105)
-
-### Jobs Collection
+### Jobs collection
 Purpose: Structured job listings extracted from SuperSet.
 
 Schema highlights:
@@ -172,12 +121,7 @@ Upsert logic:
 Typical document structure:
 - Includes company, job_title, description, criteria, position details, compensation, deadlines, and timestamps.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L98-L162)
-- [DATABASE.md](file://docs/DATABASE.md#L437-L441)
-- [database_service.py](file://app/services/database_service.py#L205-L257)
-
-### PlacementOffers Collection
+### PlacementOffers collection
 Purpose: Extracted and structured placement offer data from emails.
 
 Schema highlights:
@@ -198,12 +142,7 @@ Upsert logic and event generation:
 Typical document structure:
 - Company, role, package, students, statuses, and timestamps.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L169-L244)
-- [DATABASE.md](file://docs/DATABASE.md#L443-L447)
-- [database_service.py](file://app/services/database_service.py#L274-L441)
-
-### Users Collection
+### Users collection
 Purpose: Store user subscription data and preferences.
 
 Schema highlights:
@@ -220,11 +159,7 @@ Validation rules:
 Typical document structure:
 - User identity, preferences, web push subscriptions, metadata, and activity timestamps.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L252-L324)
-- [DATABASE.md](file://docs/DATABASE.md#L449-L453)
-
-### OfficialPlacementData Collection
+### OfficialPlacementData collection
 Purpose: Store aggregated placement statistics from official sources.
 
 Schema highlights:
@@ -241,12 +176,7 @@ Validation rules:
 Typical document structure:
 - Snapshot metadata, overall stats, branch-wise, company-wise, sector-wise, and timestamps.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L331-L418)
-- [DATABASE.md](file://docs/DATABASE.md#L455-L457)
-- [database_service.py](file://app/services/database_service.py#L443-L484)
-
-### Relationships Between Collections
+### Relationships between collections
 - Notices may reference Jobs via enrichment/linking during formatting; Jobs are linked by company and identifiers.
 - PlacementOffers are independent snapshots; they can be correlated with Users via web push subscriptions for notifications.
 - OfficialPlacementData is a standalone statistics snapshot collection.
@@ -288,14 +218,7 @@ PLACEMENT_OFFERS ||--o{ USERS : "notifications via webpush"
 OFFICIAL_PLACEMENT_DATA ||--o{ OFFICIAL_PLACEMENT_DATA : "snapshot by timestamp"
 ```
 
-**Diagram sources**
-- [DATABASE.md](file://docs/DATABASE.md#L32-L94)
-- [DATABASE.md](file://docs/DATABASE.md#L98-L162)
-- [DATABASE.md](file://docs/DATABASE.md#L169-L244)
-- [DATABASE.md](file://docs/DATABASE.md#L252-L324)
-- [DATABASE.md](file://docs/DATABASE.md#L331-L418)
-
-## Architecture Overview
+## Architecture overview
 End-to-end flow for fetching, formatting, storing, and notifying about placement offers:
 
 ```mermaid
@@ -324,15 +247,9 @@ WP-->>NS : "Results"
 NS-->>DB : "mark_as_sent(_id)"
 ```
 
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L56-L148)
-- [database_service.py](file://app/services/database_service.py#L274-L441)
-- [notification_service.py](file://app/services/notification_service.py#L93-L167)
-- [notification_runner.py](file://app/runners/notification_runner.py#L60-L115)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Notices Upsert and Duplicate Prevention
+### Notices upsert and duplicate prevention
 - Existence check by id before insertion prevents duplicates.
 - Delivery flags track Telegram and Web Push delivery with timestamps.
 - Chronological sorting by createdAt ensures FIFO processing.
@@ -352,20 +269,10 @@ FailDup --> End
 Success --> End
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L80-L105)
-- [database_service.py](file://app/services/database_service.py#L56-L67)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L56-L105)
-
-### Jobs Upsert Logic
+### Jobs upsert logic
 - Existence check by job_id; if present, replace with merged fields and updated_at; otherwise insert with saved_at.
 
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L205-L257)
-
-### PlacementOffers Upsert and Event Generation
+### PlacementOffers upsert and event generation
 - Merge roles and students; compute newly added students; emit events for new offers and updates.
 - Events include company, offer_id, offer_data, roles, total_students, and metadata.
 
@@ -389,27 +296,15 @@ Done --> |No| Loop
 Done --> |Yes| Return["Return counts and events"]
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L274-L441)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L274-L441)
-
-### Users Management
+### Users management
 - Add or reactivate users with is_active flag and timestamps.
 - Deactivate users (soft delete) and query active users for broadcasting.
 
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L616-L682)
-
-### OfficialPlacementData Upsert with Content Hash
+### OfficialPlacementData upsert with content hash
 - Compute content hash excluding scrape_timestamp and content_hash.
 - Compare with latest document; if unchanged, update scrape_timestamp; otherwise insert new.
 
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L443-L484)
-
-## Dependency Analysis
+## Dependency analysis
 - DBClient depends on environment configuration for the MongoDB connection string.
 - DatabaseService depends on DBClient for collection handles.
 - Runners depend on DatabaseService and channel services for orchestration.
@@ -426,19 +321,7 @@ NS --> CH1["TelegramService"]
 NS --> CH2["WebPushService"]
 ```
 
-**Diagram sources**
-- [config.py](file://app/core/config.py#L26-L31)
-- [db_client.py](file://app/clients/db_client.py#L21-L30)
-- [database_service.py](file://app/services/database_service.py#L28-L45)
-- [notification_runner.py](file://app/runners/notification_runner.py#L28-L104)
-
-**Section sources**
-- [config.py](file://app/core/config.py#L18-L31)
-- [db_client.py](file://app/clients/db_client.py#L21-L30)
-- [database_service.py](file://app/services/database_service.py#L28-L45)
-- [notification_runner.py](file://app/runners/notification_runner.py#L28-L104)
-
-## Performance Considerations
+## Performance considerations
 Indexing strategy:
 - Notices: unique id, sent_to_telegram, sent_to_webpush, created_at, source+category.
 - Jobs: unique job_id, company, application_deadline, qualification_criteria.branches.
@@ -450,13 +333,9 @@ Recommendations:
 - Use targeted projections to reduce payload sizes.
 - Prefer bulk operations for inserts and updates.
 - Consider TTL indexes for temporary logs or audit trails.
-- Leverage connection pooling via PyMongo’s default pool.
+- Use connection pooling via PyMongo's default pool.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L425-L458)
-- [DATABASE.md](file://docs/DATABASE.md#L560-L614)
-
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Connection failures: Verify MONGO_CONNECTION_STR environment variable and network reachability.
 - Missing collections: Ensure DBClient.connect() succeeds and collections are initialized.
@@ -469,17 +348,12 @@ Operational checks:
 - Use explain plans to analyze slow queries.
 - Monitor unsent notices and adjust batching limits.
 
-**Section sources**
-- [db_client.py](file://app/clients/db_client.py#L42-L79)
-- [database_service.py](file://app/services/database_service.py#L56-L78)
-- [DATABASE.md](file://docs/DATABASE.md#L504-L558)
-
 ## Conclusion
-The MongoDB schema is designed to support both real-time notifications and historical analytics. Unique identifiers and targeted indexes optimize duplicate prevention and query performance. Upsert logic and event generation ensure robust data ingestion and change tracking. The layered architecture cleanly separates concerns, enabling maintainable and testable operations.
+The MongoDB schema is designed to support both real-time notifications and historical analytics. Unique identifiers and targeted indexes optimize duplicate prevention and query performance. Upsert logic and event generation ensure reliable data ingestion and change tracking. The layered architecture cleanly separates concerns, enabling maintainable and testable operations.
 
 ## Appendices
 
-### Index Creation Commands
+### Index creation commands
 ```javascript
 // Notices
 db.Notices.createIndex({ id: 1 }, { unique: true });
@@ -511,10 +385,7 @@ db.OfficialPlacementData.createIndex({ data_id: 1 }, { unique: true });
 db.OfficialPlacementData.createIndex({ timestamp: -1 });
 ```
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L429-L457)
-
-### Environment Configuration
+### Environment configuration
 - MONGO_CONNECTION_STR: MongoDB connection string.
 - TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID: Telegram configuration.
 - SUPERSET_CREDENTIALS: JSON list of SuperSet credentials.
@@ -524,11 +395,5 @@ db.OfficialPlacementData.createIndex({ timestamp: -1 });
 - WEBHOOK_PORT, WEBHOOK_HOST: Webhook server settings.
 - DAEMON_MODE, LOG_LEVEL, LOG_FILE, SCHEDULER_LOG_FILE: Logging and daemon settings.
 
-**Section sources**
-- [config.py](file://app/core/config.py#L18-L87)
-
-### Development Database Setup
+### Development database setup
 - Docker Compose service initializes a local MongoDB instance with credentials and persistent volume.
-
-**Section sources**
-- [docker-compose.dev.yaml](file://app/docker-compose.dev.yaml#L1-L14)
