@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/repo",
-    "timestamp": 1788288702000,
+    "timestamp": 1788931544000,
     "categories": {
       "Development": {
         "name": {
@@ -503,7 +503,7 @@
         ],
         "changelog": "https://github.com/tashifkhan/delhi-metro/releases",
         "issueTracker": "https://github.com/tashifkhan/delhi-metro/issues",
-        "lastUpdated": 1788288693000,
+        "lastUpdated": 1788931534000,
         "license": "MIT",
         "sourceCode": "https://github.com/tashifkhan/delhi-metro",
         "webSite": "https://tashif.codes",
@@ -528,6 +528,60 @@
         "preferredSigner": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
       },
       "versions": {
+        "9d9b1c60f720566c1295a9bed6268a81143545dbe22dee8504b4c1bb159cf182": {
+          "added": 1788931534000,
+          "file": {
+            "name": "/codes.tashif.delhimetro_27.apk",
+            "sha256": "9d9b1c60f720566c1295a9bed6268a81143545dbe22dee8504b4c1bb159cf182",
+            "size": 97664881
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a",
+              "armeabi-v7a",
+              "x86",
+              "x86_64"
+            ],
+            "versionName": "1.5.2",
+            "versionCode": 27,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+              },
+              {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW"
+              },
+              {
+                "name": "android.permission.VIBRATE"
+              },
+              {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE"
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              }
+            ]
+          }
+        },
         "860b743ef0f9a69798deb4348da603f86b3c125895aac2746fece4d1e9e2579b": {
           "added": 1788288693000,
           "file": {
@@ -617,57 +671,6 @@
               },
               {
                 "name": "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
-              },
-              {
-                "name": "android.permission.SYSTEM_ALERT_WINDOW"
-              },
-              {
-                "name": "android.permission.VIBRATE"
-              },
-              {
-                "name": "android.permission.WRITE_EXTERNAL_STORAGE"
-              },
-              {
-                "name": "android.permission.ACCESS_NETWORK_STATE"
-              },
-              {
-                "name": "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-              }
-            ]
-          }
-        },
-        "318328dd853239f76b23a72572d1b0ee81dde11934f90523b6cf06fc0c22747c": {
-          "added": 1785219860000,
-          "file": {
-            "name": "/codes.tashif.delhimetro_20.apk",
-            "sha256": "318328dd853239f76b23a72572d1b0ee81dde11934f90523b6cf06fc0c22747c",
-            "size": 94789807
-          },
-          "manifest": {
-            "nativecode": [
-              "arm64-v8a",
-              "armeabi-v7a",
-              "x86",
-              "x86_64"
-            ],
-            "versionName": "1.3.0",
-            "versionCode": 20,
-            "usesSdk": {
-              "minSdkVersion": 24,
-              "targetSdkVersion": 36
-            },
-            "signer": {
-              "sha256": [
-                "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
-              ]
-            },
-            "usesPermission": [
-              {
-                "name": "android.permission.INTERNET"
-              },
-              {
-                "name": "android.permission.READ_EXTERNAL_STORAGE",
-                "maxSdkVersion": 32
               },
               {
                 "name": "android.permission.SYSTEM_ALERT_WINDOW"
