@@ -204,7 +204,7 @@ function generateSiteOgSvg({
 	tags = [],
 	footerRight = "https://tashif.codes",
 }) {
-	const titleLines = wrapText(title, 34, 2);
+	const titleLines = wrapText(title, 32, 2);
 	const titleFontSize = titleLines.length > 1 || title.length > 24 ? 44 : 54;
 	const titleY = titleLines.length > 1 ? 168 : 180;
 	const descY = titleY + titleLines.length * (titleFontSize + 8) + 8;
@@ -304,7 +304,7 @@ function generateSiteOgSvg({
   <line x1="28" y1="102" x2="1172" y2="102" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
 
   <!-- Hero Content -->
-  <text x="66" y="${titleY}" fill="#ffffff" font-family="DM Sans" font-size="${titleFontSize}" font-weight="bold" letter-spacing="-0.02em">
+  <text x="66" y="${titleY}" fill="#ffffff" font-family="Lexend" font-size="${titleFontSize}" font-weight="bold" letter-spacing="-0.02em">
     ${titleLines.map((line, idx) => `<tspan x="66" dy="${idx === 0 ? 0 : titleFontSize + 6}">${escapeXml(line)}</tspan>`).join("")}
   </text>
 
