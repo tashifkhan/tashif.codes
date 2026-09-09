@@ -1,10 +1,10 @@
-# API Endpoints: Dashboard Details
+# API endpoints: dashboard details
 
 Detailed metadata endpoints for repositories, stars, pins, and commits.
 
 ---
 
-## 1. Get User's Repository Details
+## 1. get user's repository details
 
 Retrieves detailed info for each public repository, including README content.
 
@@ -28,7 +28,7 @@ Retrieves detailed info for each public repository, including README content.
 
 ---
 
-## 2. Get User's Stars Information
+## 2. get user's stars information
 
 Retrieves stars stats and detailed repository info sorted by star count.
 
@@ -51,7 +51,7 @@ Retrieves stars stats and detailed repository info sorted by star count.
 
 ---
 
-## 3. Get User's Pinned Repositories
+## 3. get user's pinned repositories
 
 Retrieves a user's pinned repositories via the GraphQL API.
 
@@ -61,7 +61,7 @@ Retrieves a user's pinned repositories via the GraphQL API.
 
 ---
 
-## 4. Get User's Starred Lists
+## 4. get user's starred lists
 
 Retrieves public Starred Lists created by a user.
 
@@ -71,7 +71,7 @@ Retrieves public Starred Lists created by a user.
 
 ---
 
-## 5. Get User's Commit History
+## 5. get user's commit history
 
 Retrieves all commits made by the user across all owned repositories.
 

@@ -1,8 +1,8 @@
-# Command-Line Usage
+# Command-Line usage
 
 The script supports various command-line arguments for automation and management.
 
-## Available Arguments
+## Available arguments
 
 | Argument                         | Description                                                                  |
 | -------------------------------- | ---------------------------------------------------------------------------- |

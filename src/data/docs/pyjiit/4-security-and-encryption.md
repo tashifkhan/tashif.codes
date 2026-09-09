@@ -1,6 +1,6 @@
-# Security and Encryption
+# Security and encryption
 
-## Purpose and Scope
+## Purpose and scope
 
 This page provides an overview of the security and encryption mechanisms used in pyjiit to communicate securely with the JIIT Webportal API. It covers the encryption module architecture, how encryption is integrated into API requests, and the daily key rotation system.
 
@@ -8,7 +8,7 @@ For detailed information about the encryption implementation, see [Encryption Sy
 
 ---
 
-## Security Model Overview
+## Security model overview
 
 The pyjiit library implements a custom encryption scheme that was reverse-engineered from the JIIT Webportal. All communication with the API uses HTTPS transport security, with an additional application-layer encryption scheme for sensitive payloads.
 
@@ -21,21 +21,17 @@ The security model has two primary components:
 
 Both components rely on a shared secret encryption key that rotates daily at 00:00 IST. The encryption is asymmetric in nature: pyjiit encrypts outgoing payloads and decrypts incoming responses, but does not implement the server-side key generation logic.
 
-**Sources:** [pyjiit/encryption.py1-50](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py#L1-L50) [pyjiit/wrapper.py3](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py#L3-L3) [pyjiit/wrapper.py61-68](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py#L61-L68)
-
 ---
 
-## Encryption Module Architecture
+## Encryption module architecture
 
 The encryption functionality is centralized in the `pyjiit.encryption` module, which provides functions for encrypting, decrypting, and transforming payloads between JSON and encrypted base64 formats.
 
-### Encryption Module Components
+### Encryption module components
 
-![Architecture Diagram](images/4-security-and-encryption_diagram_1.png)
+![Diagram 1](images/4-security-and-encryption_diagram_1.png)
 
-**Sources:** [pyjiit/encryption.py7-45](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py#L7-L45) [pyjiit/utils.py5-19](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/utils.py#L5-L19)
-
-### Function Reference
+### Function reference
 
 | Function | Input | Output | Purpose |
 | --- | --- | --- | --- |
@@ -46,21 +42,17 @@ The encryption functionality is centralized in the `pyjiit.encryption` module, w
 | `serialize_payload(payload)` | Dictionary | Base64 string | JSON → encrypted → base64 |
 | `deserialize_payload(payload)` | Base64 string | Dictionary | Base64 → decrypted → JSON |
 
-**Sources:** [pyjiit/encryption.py9-44](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py#L9-L44)
-
 ---
 
-## Integration with API Client
+## Integration with API client
 
 The `Webportal` class in `pyjiit.wrapper` uses the encryption module at multiple points in the request lifecycle. Not all API requests require encrypted payloads, but all requests require the `LocalName` header.
 
-### Encryption Usage in Webportal
+### Encryption usage in webportal
 
-![Architecture Diagram](images/4-security-and-encryption_diagram_2.png)
+![Diagram 2](images/4-security-and-encryption_diagram_2.png)
 
-**Sources:** [pyjiit/wrapper.py111-143](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py#L111-L143) [pyjiit/wrapper.py82-108](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py#L82-L108) [pyjiit/wrapper.py61-68](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py#L61-L68)
-
-### Encrypted vs Unencrypted Payloads
+### Encrypted vs unencrypted payloads
 
 The following table shows which API methods require payload encryption:
 
@@ -81,17 +73,15 @@ The following table shows which API methods require payload encryption:
 | `set_password()` | No | **Required** | Plain JSON, but authenticated |
 | `get_student_bank_info()` | No | **Required** | Plain JSON, authenticated |
 
-**Sources:** [pyjiit/wrapper.py111-489](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py#L111-L489)
-
 ---
 
-## Daily Key Rotation Mechanism
+## Daily key rotation mechanism
 
 The encryption key is derived from the current date in IST timezone and rotates automatically at midnight. This provides a time-based security boundary where encrypted payloads are only valid for the day they were created.
 
-### Key Generation Algorithm
+### Key generation algorithm
 
-![Architecture Diagram](images/4-security-and-encryption_diagram_3.png)
+![Diagram 3](images/4-security-and-encryption_diagram_3.png)
 
 **Example:** For December 15, 2024 (Sunday, weekday=0):
 
@@ -99,11 +89,9 @@ The encryption key is derived from the current date in IST timezone and rotates 
 * Date sequence: `1` + `1` + `2` + `0` + `5` + `2` + `4` = `"1120524"`
 * Final key: `"qa8y1120524ty1pn"` (32 characters = 32 bytes when encoded)
 
-**Sources:** [pyjiit/encryption.py9-11](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py#L9-L11) [pyjiit/utils.py5-13](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/utils.py#L5-L13)
+### Key rotation timeline
 
-### Key Rotation Timeline
-
-![Architecture Diagram](images/4-security-and-encryption_diagram_4.png)
+![Diagram 4](images/4-security-and-encryption_diagram_4.png)
 
 **Security Implications:**
 
@@ -112,15 +100,13 @@ The encryption key is derived from the current date in IST timezone and rotates 
 * Key compromise on one day does not affect other days
 * The fixed prefix (`qa8y`) and suffix (`ty1pn`) are constant across all days
 
-**Sources:** [pyjiit/encryption.py9-11](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py#L9-L11) [pyjiit/utils.py5-13](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/utils.py#L5-L13)
-
 ---
 
-## LocalName Header Generation
+## LocalName header generation
 
 Every API request to the JIIT Webportal requires a `LocalName` header, regardless of whether the payload is encrypted. This header contains an encrypted random sequence with a date component.
 
-### LocalName Construction
+### LocalName construction
 
 The `generate_local_name()` function creates the header value using:
 
@@ -129,11 +115,9 @@ The `generate_local_name()` function creates the header value using:
 3. **Random suffix:** 5 random alphanumeric characters
 4. **Encryption:** The combined string is encrypted and base64-encoded
 
-![Architecture Diagram](images/4-security-and-encryption_diagram_5.png)
+![Diagram 5](images/4-security-and-encryption_diagram_5.png)
 
-**Sources:** [pyjiit/encryption.py13-17](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py#L13-L17) [pyjiit/utils.py16-19](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/utils.py#L16-L19)
-
-### Usage in HTTP Requests
+### Usage in HTTP requests
 
 The `LocalName` header is injected into every request by the `__hit()` method:
 
@@ -158,11 +142,9 @@ def get_headers(self):
     }
 ```
 
-**Sources:** [pyjiit/wrapper.py61-68](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py#L61-L68) [pyjiit/wrapper.py82-99](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py#L82-L99)
-
 ---
 
-## Cryptographic Constants
+## Cryptographic constants
 
 The encryption module uses fixed cryptographic constants defined at the module level:
 
@@ -178,11 +160,9 @@ The **fixed IV** is used for all encryption operations. While this is generally 
 2. The `LocalName` header providing per-request uniqueness
 3. This being the scheme implemented by the JIIT Webportal itself
 
-**Sources:** [pyjiit/encryption.py7](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py#L7-L7) [pyjiit/encryption.py11](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py#L11-L11)
-
 ---
 
-## Encryption Dependencies
+## Encryption dependencies
 
 The encryption module depends on the `pycryptodome` library for AES implementation:
 
@@ -196,5 +176,3 @@ from Crypto.Util.Padding import pad, unpad
 * `AES.new(key, AES.MODE_CBC, iv)` - Creates cipher instance [pyjiit/encryption.py21](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py#L21-L21)
 * `pad(data, 16)` - PKCS7 padding to 16-byte blocks [pyjiit/encryption.py29](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py#L29-L29)
 * `unpad(data, 16)` - Removes PKCS7 padding [pyjiit/encryption.py25](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py#L25-L25)
-
-**Sources:** [pyjiit/encryption.py1-2](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py#L1-L2) [pyjiit/encryption.py20-29](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py#L20-L29)

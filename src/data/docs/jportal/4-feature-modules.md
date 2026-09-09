@@ -1,6 +1,6 @@
-# Feature Modules
+# Feature modules
 
-## Purpose and Scope
+## Purpose and scope
 
 This page provides an overview of JPortal's five core feature modules: **Attendance**, **Grades**, **Exams**, **Subjects**, and **Profile**. It documents the common architecture patterns, integration mechanisms, and data flow shared across these modules. For detailed documentation of each individual module's functionality and components, see:
 
@@ -15,31 +15,31 @@ For navigation and UI infrastructure, see [Theme & Navigation Components](5.2-th
 
 ---
 
-## Feature Module Architecture
+## Feature module architecture
 
-### Module Coordination
+### Module coordination
 
-All feature modules are coordinated by the `AuthenticatedApp` component, which serves as the central state management hub. Each module is rendered as a route and receives its state and data access layer as props.
+All feature modules are coordinated by the `AuthenticatedApp` component, which is the central state management hub. Each module is rendered as a route and receives its state and data access layer as props.
 
 **Feature Module Integration Architecture**
 
-![Architecture Diagram](images/4-feature-modules_diagram_1.png)
+![Diagram 1](images/4-feature-modules_diagram_1.png)
 
 ---
 
-### Data Access Layer
+### Data access layer
 
-All feature modules access data through the `w` prop, which contains either a `WebPortal` or `MockWebPortal` instance depending on authentication mode. This abstraction enables seamless switching between real and demo modes without changing component code.
+All feature modules access data through the `w` prop, which contains either a `WebPortal` or `MockWebPortal` instance depending on authentication mode. This abstraction enables smooth switching between real and demo modes without changing component code.
 
 **Data Access Pattern**
 
-![Architecture Diagram](images/4-feature-modules_diagram_2.png)
+![Diagram 2](images/4-feature-modules_diagram_2.png)
 
 ---
 
-## Common Patterns
+## Common patterns
 
-### State Management Pattern
+### State management pattern
 
 Feature modules follow a consistent state management pattern where state is lifted to `AuthenticatedApp` and passed down as props. This creates extensive props drilling but centralizes state management.
 
@@ -53,11 +53,11 @@ Feature modules follow a consistent state management pattern where state is lift
 
 **State Flow Pattern**
 
-![Architecture Diagram](images/4-feature-modules_diagram_3.png)
+![Diagram 3](images/4-feature-modules_diagram_3.png)
 
 ---
 
-### Data Fetching Pattern
+### Data fetching pattern
 
 All feature modules follow a similar data fetching lifecycle:
 
@@ -68,17 +68,17 @@ All feature modules follow a similar data fetching lifecycle:
 
 **Common Data Fetching Flow**
 
-![Architecture Diagram](images/4-feature-modules_diagram_4.png)
+![Diagram 4](images/4-feature-modules_diagram_4.png)
 
 ---
 
-### Semester Selection Pattern
+### Semester selection pattern
 
 Four of the five modules (all except Profile) implement semester selection with consistent UI and behavior:
 
 **Semester Selection Component Structure**
 
-![Architecture Diagram](images/4-feature-modules_diagram_5.png)
+![Diagram 5](images/4-feature-modules_diagram_5.png)
 
 **Implementation Examples:**
 
@@ -91,7 +91,7 @@ Four of the five modules (all except Profile) implement semester selection with 
 
 ---
 
-### Tab-Based Navigation Pattern
+### Tab-Based navigation pattern
 
 Three modules (Attendance, Grades, and optionally others) use Radix UI Tabs for internal navigation between different views of the same data:
 
@@ -104,17 +104,17 @@ Three modules (Attendance, Grades, and optionally others) use Radix UI Tabs for 
 
 **Tab Implementation Example (Attendance)**
 
-![Architecture Diagram](images/4-feature-modules_diagram_6.png)
+![Diagram 6](images/4-feature-modules_diagram_6.png)
 
 ---
 
-## Loading State Management
+## Loading state management
 
 Feature modules implement consistent loading state patterns with separate loading indicators for different data layers:
 
 **Loading State Hierarchy**
 
-![Architecture Diagram](images/4-feature-modules_diagram_7.png)
+![Diagram 7](images/4-feature-modules_diagram_7.png)
 
 **Module-Specific Loading States:**
 
@@ -127,9 +127,9 @@ Feature modules implement consistent loading state patterns with separate loadin
 
 ---
 
-## Feature Module Summary
+## Feature module summary
 
-### Module Capabilities Matrix
+### Module capabilities matrix
 
 | Feature | Route | Primary API Methods | Key Components | Caching Strategy |
 | --- | --- | --- | --- | --- |
@@ -141,17 +141,17 @@ Feature modules implement consistent loading state patterns with separate loadin
 
 ---
 
-### Module Dependencies
+### Module dependencies
 
 **Common Dependencies Across All Modules:**
 
-![Architecture Diagram](images/4-feature-modules_diagram_8.png)
+![Diagram 8](images/4-feature-modules_diagram_8.png)
 
 ---
 
-## Integration Points
+## Integration points
 
-### AuthenticatedApp Coordination
+### AuthenticatedApp coordination
 
 The `AuthenticatedApp` component coordinates all feature modules through:
 
@@ -162,11 +162,11 @@ The `AuthenticatedApp` component coordinates all feature modules through:
 
 **AuthenticatedApp Component Structure:**
 
-![Architecture Diagram](images/4-feature-modules_diagram_9.png)
+![Diagram 9](images/4-feature-modules_diagram_9.png)
 
 ---
 
-### Props Drilling Architecture
+### Props drilling architecture
 
 The current architecture uses extensive props drilling from `AuthenticatedApp` to feature modules. Each module receives 10-20+ props:
 

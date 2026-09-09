@@ -1,6 +1,6 @@
-# Development Guide
+# Development guide
 
-## Purpose and Scope
+## Purpose and scope
 
 This guide is intended for developers who want to contribute to, modify, or extend the jsjiit library. It covers the complete development workflow from initial setup through testing and release.
 
@@ -22,32 +22,28 @@ Before beginning development, ensure you have the following installed:
 
 The project uses ES modules exclusively, as indicated by `"type": "module"` in [package.json8](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L8-L8)
 
-**Sources:** [package.json1-62](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L1-L62) [run\_server1-24](https://github.com/codeblech/jsjiit/blob/d123b782/run_server#L1-L24)
-
 ---
 
-## Development Workflow Overview
+## Development workflow overview
 
-![Architecture Diagram](images/7-development-guide_diagram_1.png)
+![Diagram 1](images/7-development-guide_diagram_1.png)
 
 **Diagram: Complete development workflow from setup to deployment**
 
 This workflow represents the iterative development cycle. The edit-test loop is typically executed multiple times before building and committing changes.
 
-**Sources:** [package.json12-16](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L12-L16) [test.html1-92](https://github.com/codeblech/jsjiit/blob/d123b782/test.html#L1-L92) [run\_server1-24](https://github.com/codeblech/jsjiit/blob/d123b782/run_server#L1-L24)
-
 ---
 
-## Local Development Environment Setup
+## Local development environment setup
 
-### 1. Clone the Repository
+### 1. clone the repository
 
 ```
 git clone https://github.com/codeblech/jsjiit.git
 cd jsjiit
 ```
 
-### 2. Install Dependencies
+### 2. install dependencies
 
 ```
 npm install
@@ -58,7 +54,7 @@ This installs the development dependencies defined in [package.json57-60](https:
 * `esbuild@0.24.0` - Bundler for creating distribution files
 * `jsdoc@4.0.4` - Documentation generator
 
-### 3. Directory Structure
+### 3. directory structure
 
 After installation, the repository structure is:
 
@@ -86,13 +82,11 @@ jsjiit/
 
 The `dist/` and `docs/` directories are generated during the build process and excluded from version control but included in npm packages (dist only).
 
-**Sources:** [package.json9-11](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L9-L11) [package.json26-29](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L26-L29)
-
 ---
 
-## Running the Local Test Environment
+## Running the local test environment
 
-### Starting the HTTPS Server
+### Starting the HTTPS server
 
 The jsjiit library requires HTTPS to interact with the JIIT WebPortal (due to CORS and secure context requirements). Use the provided test server:
 
@@ -129,15 +123,13 @@ import { WebPortal, LoginError } from "./src/index.js"
 
 This direct source import allows testing changes immediately without rebuilding.
 
-**Sources:** [run\_server1-24](https://github.com/codeblech/jsjiit/blob/d123b782/run_server#L1-L24) [test.html1-92](https://github.com/codeblech/jsjiit/blob/d123b782/test.html#L1-L92)
-
 ---
 
-## Testing Your Changes
+## Testing your changes
 
-### Manual Testing Workflow
+### Manual testing workflow
 
-![Architecture Diagram](images/7-development-guide_diagram_2.png)
+![Diagram 2](images/7-development-guide_diagram_2.png)
 
 **Diagram: Testing cycle showing immediate feedback without rebuild**
 
@@ -156,7 +148,7 @@ console.log(attendance);
 
 Uncomment and modify these sections to test specific functionality. Add your own test cases as needed.
 
-### Console Output Inspection
+### Console output inspection
 
 All test results are logged to the browser console. Use browser DevTools to:
 
@@ -165,19 +157,17 @@ All test results are logged to the browser console. Use browser DevTools to:
 * Debug error conditions
 * Check network requests in the Network tab
 
-**Sources:** [test.html17-89](https://github.com/codeblech/jsjiit/blob/d123b782/test.html#L17-L89)
-
 ---
 
-## Working with Source Code
+## Working with source code
 
-### Module Organization
+### Module organization
 
-![Architecture Diagram](images/7-development-guide_diagram_3.png)
+![Diagram 3](images/7-development-guide_diagram_3.png)
 
 **Diagram: Source module dependency graph showing code entities**
 
-### Adding New Functionality
+### Adding new functionality
 
 When adding features:
 
@@ -186,7 +176,7 @@ When adding features:
 3. **Export from src/index.js** if the functionality is public-facing
 4. **Test using test.html** before building
 
-### Example: Adding a New Enum
+### Example: adding a new enum
 
 Reference [src/feedback.js1-12](https://github.com/codeblech/jsjiit/blob/d123b782/src/feedback.js#L1-L12) for the pattern:
 
@@ -201,13 +191,11 @@ Object.freeze(MyEnum);
 export default MyEnum;
 ```
 
-**Sources:** [src/feedback.js1-12](https://github.com/codeblech/jsjiit/blob/d123b782/src/feedback.js#L1-L12)
-
 ---
 
-## Building the Library
+## Building the library
 
-### Running the Build
+### Running the build
 
 ```
 npm run build
@@ -215,7 +203,7 @@ npm run build
 
 This executes the `build` script defined in [package.json15](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L15-L15) which runs `node build.mjs`.
 
-### Build Output
+### Build output
 
 The build process creates two bundles in the `dist/` directory:
 
@@ -224,7 +212,7 @@ The build process creates two bundles in the `dist/` directory:
 | `jsjiit.min.esm.js` | Production bundle | Yes | Yes (.map file) |
 | `jsjiit.esm.js` | Development bundle | No | Yes (.map file) |
 
-### Build Configuration
+### Build configuration
 
 The `build.mjs` script uses esbuild with these key settings:
 
@@ -234,7 +222,7 @@ The `build.mjs` script uses esbuild with these key settings:
 * **Entry point:** [package.json5](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L5-L5) (`src/index.js`)
 * **Output:** Both minified and non-minified versions
 
-### npm Prepare Hook
+### npm prepare hook
 
 The build automatically runs before publishing due to the `prepare` script in [package.json16](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L16-L16):
 
@@ -244,11 +232,9 @@ The build automatically runs before publishing due to the `prepare` script in [p
 
 This ensures the `dist/` directory is always up-to-date when publishing to npm.
 
-**Sources:** [package.json12-16](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L12-L16)
-
 ---
 
-## Generating Documentation
+## Generating documentation
 
 ### Running JSDoc
 
@@ -262,11 +248,11 @@ This executes the `docs` script ([package.json14](https://github.com/codeblech/j
 jsdoc -c jsdoc.conf.json --verbose
 ```
 
-### Documentation Output
+### Documentation output
 
 Generated documentation is placed in `./docs/jsjiit/{version}/` where `{version}` is extracted from [package.json3](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L3-L3)
 
-### JSDoc Comments
+### JSDoc comments
 
 All public APIs must include JSDoc comments. Example structure:
 
@@ -285,19 +271,17 @@ async function myFunction(paramName) {
 
 For detailed JSDoc configuration, see [JSDoc Configuration](6.1-jsdoc-configuration).
 
-**Sources:** [package.json14](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L14-L14)
-
 ---
 
-## Release Process
+## Release process
 
-### Version Management
+### Version management
 
-![Architecture Diagram](images/7-development-guide_diagram_4.png)
+![Diagram 4](images/7-development-guide_diagram_4.png)
 
 **Diagram: Release pipeline from version bump to distribution**
 
-### Step-by-Step Release
+### Step-by-Step release
 
 1. **Update version** in [package.json3](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L3-L3)
    ```
@@ -306,34 +290,27 @@ For detailed JSDoc configuration, see [JSDoc Configuration](6.1-jsdoc-configurat
    npm version minor  # 0.0.23 -> 0.1.0
    npm version major  # 0.0.23 -> 1.0.0
    ```
-   ```
 2. **Commit and tag**
 
-   ```
    ```
    git add package.json
    git commit -m "Bump version to 0.0.24"
    git tag v0.0.24
    ```
-   ```
 3. **Push to repository**
 
    ```
-   ```
    git push origin main --tags
-   ```
    ```
 4. **Publish to npm**
 
    ```
-   ```
    npm publish
-   ```
    ```
 
    The `prepare` hook ([package.json16](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L16-L16)) automatically builds the library before publishing.
 
-### Automated Processes
+### Automated processes
 
 Once pushed to GitHub:
 
@@ -341,7 +318,7 @@ Once pushed to GitHub:
 * **npm registry** makes the package available at `https://www.npmjs.com/package/jsjiit`
 * **jsdelivr CDN** automatically mirrors the package from npm within minutes
 
-### Package Files
+### Package files
 
 Only specific files are published to npm, as defined by the `files` field in [package.json26-29](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L26-L29):
 
@@ -350,20 +327,18 @@ Only specific files are published to npm, as defined by the `files` field in [pa
 
 Test files, certificates, and other development artifacts are excluded.
 
-**Sources:** [package.json16](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L16-L16) [package.json26-29](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L26-L29)
-
 ---
 
-## Development Best Practices
+## Development best practices
 
-### Code Style
+### Code style
 
 * Use **ES modules** syntax (`import`/`export`)
 * Target **ES2020** for modern browser compatibility
 * Add **JSDoc comments** to all exported functions and classes
 * Use **consistent naming conventions** (camelCase for functions, PascalCase for classes)
 
-### Testing Checklist
+### Testing checklist
 
 Before committing changes:
 
@@ -375,7 +350,7 @@ Before committing changes:
 * Run `npm run docs` successfully (if JSDoc comments changed)
 * Verify no TypeScript/import errors in browser console
 
-### Common Pitfalls
+### Common pitfalls
 
 | Issue | Cause | Solution |
 | --- | --- | --- |
@@ -385,13 +360,11 @@ Before committing changes:
 | JSDoc generation fails | Invalid JSDoc syntax | Validate JSDoc comments |
 | Certificate warnings | Self-signed cert | Normal for local dev, accept warning |
 
-**Sources:** [package.json8](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L8-L8) [test.html20](https://github.com/codeblech/jsjiit/blob/d123b782/test.html#L20-L20) [run\_server1-24](https://github.com/codeblech/jsjiit/blob/d123b782/run_server#L1-L24)
-
 ---
 
 ## Troubleshooting
 
-### Server Won't Start
+### Server won't start
 
 **Problem:** `./run_server` fails with permission error
 
@@ -402,13 +375,13 @@ chmod +x run_server
 ./run_server
 ```
 
-### Browser Can't Load Modules
+### Browser can't load modules
 
 **Problem:** `Uncaught SyntaxError: Cannot use import statement outside a module`
 
 **Solution:** Ensure you're accessing via HTTPS server, not `file://` protocol. The library uses ES modules which require HTTP(S).
 
-### Build Fails
+### Build fails
 
 **Problem:** `npm run build` produces errors
 
@@ -418,7 +391,7 @@ chmod +x run_server
 2. Reinstall dependencies: `rm -rf node_modules && npm install`
 3. Check for syntax errors in source files
 
-### Documentation Not Generating
+### Documentation not generating
 
 **Problem:** `npm run docs` fails
 
@@ -428,13 +401,11 @@ chmod +x run_server
 2. Check `jsdoc.conf.json` for configuration errors
 3. Verify `node_modules/jsdoc` exists
 
-**Sources:** [run\_server1-24](https://github.com/codeblech/jsjiit/blob/d123b782/run_server#L1-L24) [package.json57-60](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L57-L60)
-
 ---
 
-## Quick Reference
+## Quick reference
 
-### Essential Commands
+### Essential commands
 
 | Command | Purpose |
 | --- | --- |
@@ -444,7 +415,7 @@ chmod +x run_server
 | `npm run docs` | Generate API documentation |
 | `npm run prepare` | Run build (auto-runs before publish) |
 
-### Key Files for Development
+### Key files for development
 
 | File | Purpose | Should Edit |
 | --- | --- | --- |
@@ -455,7 +426,7 @@ chmod +x run_server
 | `package.json` | Project metadata | Yes - for versions/scripts |
 | `jsdoc.conf.json` | Documentation config | Rarely |
 
-### Package Configuration Reference
+### Package configuration reference
 
 From [package.json1-62](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L1-L62):
 
@@ -463,5 +434,3 @@ From [package.json1-62](https://github.com/codeblech/jsjiit/blob/d123b782/packag
 * **Exports:** Specifies `dist/jsjiit.esm.js` for both import and require
 * **Type:** `"module"` - enables ES module syntax throughout
 * **DevDependencies:** esbuild (bundler), jsdoc (docs generator)
-
-**Sources:** [package.json1-62](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L1-L62) [test.html1-92](https://github.com/codeblech/jsjiit/blob/d123b782/test.html#L1-L92) [run\_server1-24](https://github.com/codeblech/jsjiit/blob/d123b782/run_server#L1-L24)

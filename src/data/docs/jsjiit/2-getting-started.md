@@ -1,10 +1,10 @@
-# Getting Started
+# Getting started
 
 This page provides an overview of how to install and begin using the jsjiit library. It covers prerequisites, the basic workflow for integrating jsjiit into your application, and the fundamental concepts you need to understand before making API calls to the JIIT Web Portal.
 
 For detailed installation instructions across different environments, see [Installation](2.1-installation). For working code examples and hands-on tutorials, see [Quick Start Guide](2.2-quick-start-guide).
 
-## Purpose and Scope
+## Purpose and scope
 
 The jsjiit library is a browser-compatible JavaScript wrapper for the JIIT (Jaypee Institute of Information Technology) Web Portal. It enables programmatic access to portal features including attendance tracking, grade retrieval, exam schedules, and academic records. The library handles authentication (including CAPTCHA bypass), request encryption, and response parsing automatically.
 
@@ -19,7 +19,7 @@ For detailed API method documentation, see [API Reference](3-api-reference). For
 
 ## Prerequisites
 
-### Runtime Environment
+### Runtime environment
 
 The jsjiit library requires a modern browser environment with ES2020+ support. Specifically:
 
@@ -30,9 +30,7 @@ The jsjiit library requires a modern browser environment with ES2020+ support. S
 | Module System | ES modules (`import`/`export`) |
 | Environment | Browser (not Node.js compatible) |
 
-**Sources:** [package.json1-61](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L1-L61) [README.md1-113](https://github.com/codeblech/jsjiit/blob/d123b782/README.md#L1-L113)
-
-### Development Dependencies
+### Development dependencies
 
 If you plan to build from source or contribute to the library, you will need:
 
@@ -45,19 +43,15 @@ If you plan to build from source or contribute to the library, you will need:
 
 **Note:** These are only required for library development. End users who import the pre-built bundles do not need these dependencies.
 
-**Sources:** [package.json57-60](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L57-L60)
-
-## Distribution and Entry Points
+## Distribution and entry points
 
 The jsjiit library is distributed through multiple channels, each serving different use cases:
 
-![Architecture Diagram](images/2-getting-started_diagram_1.png)
+![Diagram 1](images/2-getting-started_diagram_1.png)
 
 **Distribution Entry Points**
 
-**Sources:** [package.json5-8](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L5-L8) [package.json22-25](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L22-L25) [README.md23-24](https://github.com/codeblech/jsjiit/blob/d123b782/README.md#L23-L24)
-
-### Package Configuration
+### Package configuration
 
 The [package.json5-8](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L5-L8) defines multiple entry points to support different import scenarios:
 
@@ -70,19 +64,15 @@ The [package.json5-8](https://github.com/codeblech/jsjiit/blob/d123b782/package.
 
 **Note:** All entry points resolve to the same ES module bundle. The library uses [package.json8](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L8-L8) `"type": "module"` to indicate it is ES module-based.
 
-**Sources:** [package.json5-8](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L5-L8) [package.json22-25](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L22-L25)
-
-## Core Workflow
+## Core workflow
 
 The typical workflow for using jsjiit follows this sequence:
 
-![Architecture Diagram](images/2-getting-started_diagram_2.png)
+![Diagram 2](images/2-getting-started_diagram_2.png)
 
 **Workflow Phases**
 
-**Sources:** [README.md23-96](https://github.com/codeblech/jsjiit/blob/d123b782/README.md#L23-L96) [src/index.js1-8](https://github.com/codeblech/jsjiit/blob/d123b782/src/index.js#L1-L8)
-
-### 1. Import Phase
+### 1. import phase
 
 You import the `WebPortal` class from the distributed bundle. The library exports this class from [src/index.js1-8](https://github.com/codeblech/jsjiit/blob/d123b782/src/index.js#L1-L8) which re-exports from [src/wrapper.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js)
 
@@ -92,7 +82,7 @@ Example import statement from [README.md23-24](https://github.com/codeblech/jsji
 import { WebPortal } from 'https://cdn.jsdelivr.net/npm/jsjiit@0.0.23/dist/jsjiit.min.esm.js';
 ```
 
-### 2. Instantiation Phase
+### 2. instantiation phase
 
 Create a new instance of the `WebPortal` class:
 
@@ -102,7 +92,7 @@ const portal = new WebPortal();
 
 At this point, no network requests have been made. The instance is ready to authenticate.
 
-### 3. Authentication Phase
+### 3. authentication phase
 
 Call the `student_login()` method with credentials:
 
@@ -117,7 +107,7 @@ This method:
 * Establishes an authenticated session
 * Returns a `WebPortalSession` instance
 
-### 4. Data Retrieval Phase
+### 4. data retrieval phase
 
 Once authenticated, use the session methods to retrieve data:
 
@@ -129,25 +119,21 @@ const exams = await portal.get_exam_events(semester);
 
 All data exchange with the portal is encrypted and automatically handled by the library.
 
-**Sources:** [README.md32-96](https://github.com/codeblech/jsjiit/blob/d123b782/README.md#L32-L96)
-
-## Core Classes and Module Structure
+## Core classes and module structure
 
 The library exposes several classes through [src/index.js1-8](https://github.com/codeblech/jsjiit/blob/d123b782/src/index.js#L1-L8) Understanding their relationships helps you use the library effectively:
 
-![Architecture Diagram](images/2-getting-started_diagram_3.png)
+![Diagram 3](images/2-getting-started_diagram_3.png)
 
 **Primary Classes**
 
-**Sources:** [src/index.js1-8](https://github.com/codeblech/jsjiit/blob/d123b782/src/index.js#L1-L8) [src/wrapper.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js) [src/attendance.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/attendance.js) [src/registration.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/registration.js) [src/exam.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/exam.js) [src/exceptions.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/exceptions.js) [src/feedback.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/feedback.js)
-
-### WebPortal Class
+### WebPortal class
 
 Defined in [src/wrapper.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js) this is your initial entry point. The `WebPortal` class has a single primary method:
 
 * **`student_login(username, password)`** - Authenticates with the portal and returns a `WebPortalSession` instance
 
-### WebPortalSession Class
+### WebPortalSession class
 
 Also defined in [src/wrapper.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js) this class contains all methods for retrieving data from the portal after authentication. Key method categories include:
 
@@ -161,7 +147,7 @@ Also defined in [src/wrapper.js](https://github.com/codeblech/jsjiit/blob/d123b7
 
 For complete method documentation, see [API Reference](3-api-reference).
 
-### Domain Model Classes
+### Domain model classes
 
 These classes represent structured data returned by API methods:
 
@@ -174,7 +160,7 @@ These classes represent structured data returned by API methods:
 
 For detailed documentation of these models, see [Data Models](3.9-data-models).
 
-### Exception Classes
+### Exception classes
 
 Defined in [src/exceptions.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/exceptions.js) these custom exceptions provide specific error handling:
 
@@ -185,19 +171,15 @@ Defined in [src/exceptions.js](https://github.com/codeblech/jsjiit/blob/d123b782
 
 For error handling strategies, see [Error Handling](3.8-error-handling).
 
-**Sources:** [src/index.js1-8](https://github.com/codeblech/jsjiit/blob/d123b782/src/index.js#L1-L8) [src/wrapper.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js) [src/attendance.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/attendance.js) [src/registration.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/registration.js) [src/exam.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/exam.js) [src/exceptions.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/exceptions.js)
-
-## Installation Overview
+## Installation overview
 
 The jsjiit library can be installed through multiple methods depending on your project structure:
 
-![Architecture Diagram](images/2-getting-started_diagram_4.png)
+![Diagram 4](images/2-getting-started_diagram_4.png)
 
 **Installation Method Selection**
 
-**Sources:** [README.md23-24](https://github.com/codeblech/jsjiit/blob/d123b782/README.md#L23-L24) [package.json1-61](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L1-L61)
-
-### Quick Installation Reference
+### Quick installation reference
 
 | Use Case | Installation Method | Import Statement |
 | --- | --- | --- |
@@ -208,9 +190,7 @@ The jsjiit library can be installed through multiple methods depending on your p
 
 For complete installation instructions including environment-specific setup, see [Installation](2.1-installation).
 
-**Sources:** [README.md23-24](https://github.com/codeblech/jsjiit/blob/d123b782/README.md#L23-L24) [package.json2-3](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L2-L3)
-
-## Basic Usage Pattern
+## Basic usage pattern
 
 Here is the minimal code required to authenticate and retrieve data from the portal:
 
@@ -247,13 +227,11 @@ This pattern demonstrates:
 3. Authentication must succeed before calling any data retrieval methods
 4. The library handles encryption, decryption, and error handling automatically
 
-For more comprehensive examples including error handling and multiple API methods, see [Quick Start Guide](2.2-quick-start-guide).
+For more detailed examples including error handling and multiple API methods, see [Quick Start Guide](2.2-quick-start-guide).
 
-**Sources:** [README.md32-55](https://github.com/codeblech/jsjiit/blob/d123b782/README.md#L32-L55)
+## Security and encryption
 
-## Security and Encryption
-
-The jsjiit library implements AES-CBC encryption for all portal communications. As a user of the library, you do not need to handle encryption directly—it is managed transparently by the `WebPortalSession` class.
+The jsjiit library implements AES-CBC encryption for all portal communications. As a user of the library, you do not need to handle encryption directly, it is managed transparently by the `WebPortalSession` class.
 
 Key security features:
 
@@ -264,9 +242,7 @@ Key security features:
 
 For detailed information about the encryption implementation, see [Encryption and Security](4.2-encryption-and-security).
 
-**Sources:** [README.md4](https://github.com/codeblech/jsjiit/blob/d123b782/README.md#L4-L4) [README.md13](https://github.com/codeblech/jsjiit/blob/d123b782/README.md#L13-L13)
-
-## Next Steps
+## Next steps
 
 After understanding the basic concepts on this page:
 
@@ -286,5 +262,3 @@ After understanding the basic concepts on this page:
 | Handle authentication errors | [Error Handling](3.8-error-handling) |
 | Learn about the architecture | [Architecture and Design](4-architecture-and-design) |
 | Contribute to development | [Development Guide](7-development-guide) |
-
-**Sources:** [README.md1-113](https://github.com/codeblech/jsjiit/blob/d123b782/README.md#L1-L113) [package.json1-61](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L1-L61)

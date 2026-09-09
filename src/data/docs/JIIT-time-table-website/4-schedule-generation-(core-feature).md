@@ -1,26 +1,24 @@
-# Schedule Generation (Core Feature)
+# Schedule generation (core feature)
 
-## Purpose and Scope
+## Purpose and scope
 
-This document describes the primary feature of the JIIT Timetable website: the personalized schedule generation pipeline. This process transforms user inputs (campus, year, batch, and elective selections) into a customized weekly timetable by executing Python parsing logic client-side via Pyodide WASM.
+This page describes the primary feature of the JIIT Timetable website: the personalized schedule generation pipeline. This process transforms user inputs (campus, year, batch, and elective selections) into a customized weekly timetable by executing Python parsing logic client-side via Pyodide WASM.
 
 For information about the user interface components that collect this input, see [Schedule Form & User Input](4.1-schedule-form-and-user-input). For details on how Python modules parse and filter timetable data, see [Python Processing Pipeline](4.2-python-processing-pipeline). For how the generated schedule is displayed and edited, see [Schedule Display & Editing](4.3-schedule-display-and-editing).
 
 ---
 
-## High-Level Generation Flow
+## High-Level generation flow
 
 The schedule generation process follows a client-side pipeline that eliminates the need for a backend server. User selections flow through React components, trigger Pyodide initialization if needed, execute Python processing, and return a formatted timetable stored in both React state and localStorage.
 
-### Schedule Generation Sequence
+### Schedule generation sequence
 
-![Architecture Diagram](images/4-schedule-generation-(core-feature)_diagram_1.png)
-
-**Sources:** [src/App.tsx115-229](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L115-L229) [public/\_creator.py423-531](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L423-L531)
+![Diagram 1](images/4-schedule-generation-(core-feature)_diagram_1.png)
 
 ---
 
-## Component Responsibilities
+## Component responsibilities
 
 The schedule generation pipeline distributes responsibilities across multiple code entities to maintain separation of concerns.
 
@@ -34,21 +32,17 @@ The schedule generation pipeline distributes responsibilities across multiple co
 | **UserContext** | `userContext.tsx` | Global state management for schedule and editedSchedule |
 | **localStorage** | Browser API | Persist schedule and parameters across sessions |
 
-**Sources:** [src/App.tsx1-841](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L1-L841) [src/components/schedule-form.tsx1-793](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/schedule-form.tsx#L1-L793)
-
 ---
 
-## User Input Collection
+## User input collection
 
 The `ScheduleForm` component collects four required inputs from users, with campus-specific validation rules enforced before submission.
 
-### Input Fields and Validation
+### Input fields and validation
 
-![Architecture Diagram](images/4-schedule-generation-(core-feature)_diagram_2.png)
+![Diagram 2](images/4-schedule-generation-(core-feature)_diagram_2.png)
 
-**Sources:** [src/components/schedule-form.tsx364-399](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/schedule-form.tsx#L364-L399) [src/components/schedule-form.tsx507-588](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/schedule-form.tsx#L507-L588)
-
-### Campus-Specific Batch Validation
+### Campus-Specific batch validation
 
 The form enforces strict batch format rules before allowing submission:
 
@@ -75,9 +69,7 @@ else if (campus === "BCA") {
 }
 ```
 
-**Sources:** [src/components/schedule-form.tsx367-386](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/schedule-form.tsx#L367-L386)
-
-### Elective Selection with Fuzzy Search
+### Elective selection with fuzzy search
 
 For year > 1, students select elective subjects through the `SubjectSelector` modal, which implements combined exact and fuzzy search using `Fuse.js`:
 
@@ -88,21 +80,17 @@ For year > 1, students select elective subjects through the `SubjectSelector` mo
 3. Exact matches that start with the search term are prioritized
 4. Results are deduplicated by subject code
 
-**Sources:** [src/components/schedule-form.tsx38-219](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/schedule-form.tsx#L38-L219) [src/components/schedule-form.tsx47-105](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/schedule-form.tsx#L47-L105)
-
 ---
 
-## Python Function Selection Logic
+## Python function selection logic
 
 When `handleSubmit` is called, the `App` component determines which Python function to invoke based on campus and year parameters. This mapping ensures the correct parsing logic is applied to each timetable structure.
 
-### Function Selection Algorithm
+### Function selection algorithm
 
-![Architecture Diagram](images/4-schedule-generation-(core-feature)_diagram_3.png)
+![Diagram 3](images/4-schedule-generation-(core-feature)_diagram_3.png)
 
-**Sources:** [src/App.tsx115-152](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L115-L152) [src/App.tsx154-229](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L154-L229)
-
-### Function Mapping Table
+### Function mapping table
 
 | Campus | Year | Python Function | File Location |
 | --- | --- | --- | --- |
@@ -113,9 +101,7 @@ When `handleSubmit` is called, the `App` component determines which Python funct
 | BCA | 1 | `bca_creator_year1` | `_creator.py:1357-1448` |
 | BCA | 2-3 | `bca_creator` | `_creator.py:1247-1355` |
 
-**Sources:** [src/App.tsx124-139](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L124-L139)
-
-### Double Execution for First Run
+### Double execution for first run
 
 The system executes the Python function twice on the first invocation to account for Pyodide warm-up behavior:
 
@@ -128,19 +114,15 @@ if (numExecutions === 0) {
 }
 ```
 
-**Sources:** [src/App.tsx194-204](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L194-L204)
-
 ---
 
-## Python Processing Pipeline
+## Python processing pipeline
 
 Each Python creator function follows a consistent processing pattern: parse the timetable JSON structure, extract batch and subject information from activity strings, filter classes based on user enrollment, and format time slots into a standardized structure.
 
-### Core Processing Pattern
+### Core processing pattern
 
-**Sources:** [public/\_creator.py423-531](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L423-L531) [public/\_creator.py949-1059](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L949-L1059)
-
-### Batch String Parsing
+### Batch string parsing
 
 The `parse_batch_numbers` function handles diverse batch format specifications found in timetable data:
 
@@ -154,9 +136,7 @@ The `parse_batch_numbers` function handles diverse batch format specifications f
 * Concatenated ranges: `"A15A17"` → `["A15", "A17"]`
 * Empty string: `""` → `["A", "B", "C", "D", "G", "H"]` (all default batches)
 
-**Sources:** [public/\_creator.py8-94](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L8-L94)
-
-### Activity String Extraction
+### Activity string extraction
 
 Each class entry in the timetable JSON is a formatted string containing batch, subject code, and location information. The system uses regex-based extractors to parse these components:
 
@@ -170,15 +150,13 @@ Each class entry in the timetable JSON is a formatted string containing batch, s
 | `subject_extractor` | Text inside first `()` | `"(CS101)"` → `"CS101"` |
 | `location_extractor` | Text after `-` before `/` | `"-G7/Faculty"` → `"G7"` |
 
-**Sources:** [public/\_creator.py158-218](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L158-L218)
-
 ---
 
-## Batch Filtering and Elective Matching
+## Batch filtering and elective matching
 
 The system distinguishes between core subjects (mandatory for all students in a batch) and elective subjects (selected by individual students). Different filtering logic applies to each category.
 
-### Elective Detection Logic
+### Elective detection logic
 
 The `is_elective` function determines whether a subject should be treated as an elective based on batch characteristics:
 
@@ -210,9 +188,7 @@ def is_elective(extracted_batch: str, subject_code: str,
     return False
 ```
 
-**Sources:** [public/\_creator.py96-129](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L96-L129)
-
-### Batch Inclusion Check
+### Batch inclusion check
 
 The `is_batch_included` function determines if a user's batch matches the class batch specification:
 
@@ -222,9 +198,7 @@ The `is_batch_included` function determines if a user's batch matches the class 
 2. Exact match: user batch `"A6"` matches timetable batch `["A6"]`
 3. Prefix match: user batch `"A6"` matches timetable batch `["A"]`
 
-**Sources:** [public/\_creator.py131-156](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L131-L156)
-
-### Elective Enrollment Verification
+### Elective enrollment verification
 
 For year > 1, the `is_enrolled_subject` function matches user-selected elective codes against extracted subject codes, handling multiple code format variations:
 
@@ -236,39 +210,33 @@ For year > 1, the `is_enrolled_subject` function matches user-selected elective 
 * Prefix combinations: `full_code[:2] + code`, `full_code[3:]`, `full_code[2:]`
 * Extended patterns: `full_code[:5] + code`, `full_code[2:5] + code`
 
-**Sources:** [public/\_creator.py255-308](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L255-L308)
-
 ---
 
-## Time Slot Formatting
+## Time slot formatting
 
 The `process_timeslot` function converts timetable time strings into standardized 24-hour format, handling various input formats and special cases.
 
-### Time Format Conversion
+### Time format conversion
 
-![Architecture Diagram](images/4-schedule-generation-(core-feature)_diagram_4.png)
+![Diagram 4](images/4-schedule-generation-(core-feature)_diagram_4.png)
 
-**Sources:** [public/\_creator.py364-421](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L364-L421) [public/\_creator.py345-362](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L345-L362)
-
-### Special Time Handling Cases
+### Special time handling cases
 
 | Case | Input Example | Output | Logic |
 | --- | --- | --- | --- |
 | **NOON keyword** | `"12 NOON-1:00 PM"` | `"12:00-13:00"` | Replace NOON with 12:00 PM |
 | **Practical extension** | `"8:00-9:00 AM"` (type=P) | `"08:00-10:00"` | Add 1 hour to end time |
 | **Midnight correction** | `"00:00-01:00"` | `"12:00-01:00"` | Start time set to 12:00 |
-| **Minute rounding** | `"10:00-10:50"` | `"10:00-11:00"` | Round :50 to next hour |
+| **Minute rounding** | `"10:00-10:50"` | `"10:00-11:00"` | Round:50 to next hour |
 | **Missing colon** | `"1100"` | `"11:00"` | Insert colon at position 2 |
-
-**Sources:** [public/\_creator.py364-421](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L364-L421)
 
 ---
 
-## Subject Name Resolution
+## Subject name resolution
 
 The system maintains a mapping between subject codes and full names in the `subjects` JSON array. The `subject_name_extractor` function resolves codes to human-readable names.
 
-### Code Matching Strategy
+### Code matching strategy
 
 ```
 def subject_name_extractor(subjects_dict: dict, code: str) -> str:
@@ -299,15 +267,13 @@ def subject_name_extractor(subjects_dict: dict, code: str) -> str:
     return code  # Return code if no match found
 ```
 
-**Sources:** [public/\_creator.py220-253](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L220-L253) [public/\_creator.py704-737](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L704-L737)
-
 ---
 
-## Result Structure and Storage
+## Result structure and storage
 
 After Python processing completes, the schedule is structured as a nested dictionary and stored in multiple locations for different purposes.
 
-### Output Data Structure
+### Output data structure
 
 The `YourTietable` interface defines the returned schedule format:
 
@@ -349,17 +315,13 @@ interface YourTietable {
 }
 ```
 
-**Sources:** [src/App.tsx28-36](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L28-L36) [public/\_creator.py520-525](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L520-L525)
-
-### Storage Locations
+### Storage locations
 
 The generated schedule is persisted in three locations:
 
-![Architecture Diagram](images/4-schedule-generation-(core-feature)_diagram_5.png)
+![Diagram 5](images/4-schedule-generation-(core-feature)_diagram_5.png)
 
-**Sources:** [src/App.tsx205-223](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L205-L223) [src/App.tsx84-95](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L84-L95) [src/App.tsx105-109](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L105-L109)
-
-### Context Update Flow
+### Context update flow
 
 When the schedule is set in `UserContext`, all consuming components automatically re-render:
 
@@ -368,15 +330,13 @@ When the schedule is set in `UserContext`, all consuming components automaticall
 3. **Timeline** updates the calendar view (if user navigates there)
 4. **Compare** uses the schedule for comparison (if invoked)
 
-**Sources:** [src/App.tsx557-590](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L557-L590) [src/context/userContext.tsx](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/context/userContext.tsx) (referenced)
-
 ---
 
-## URL Parameter Handling
+## URL parameter handling
 
 The system supports shareable URLs that encode schedule parameters. When a URL contains parameters that differ from cached data, a conflict resolution dialog appears.
 
-### URL Parameter Sync
+### URL parameter sync
 
 The `nuqs` library manages URL query parameters as React state:
 
@@ -390,21 +350,17 @@ const [_selectedSubjects, setSelectedSubjects] = useQueryState(
 );
 ```
 
-**Sources:** [src/App.tsx231-247](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L231-L247)
+### Conflict resolution
 
-### Conflict Resolution
-
-![Architecture Diagram](images/4-schedule-generation-(core-feature)_diagram_6.png)
-
-**Sources:** [src/App.tsx273-359](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L273-L359) [src/components/url-params-dialog.tsx](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/url-params-dialog.tsx) (referenced)
+![Diagram 6](images/4-schedule-generation-(core-feature)_diagram_6.png)
 
 ---
 
-## Error Handling and Edge Cases
+## Error handling and edge cases
 
 The generation pipeline includes error handling at multiple stages to ensure graceful degradation.
 
-### Error Categories
+### Error categories
 
 | Error Type | Location | Handling Strategy |
 | --- | --- | --- |
@@ -415,9 +371,7 @@ The generation pipeline includes error handling at multiple stages to ensure gra
 | **Empty timetable JSON** | Python functions | Return empty formatted\_timetable `{}` |
 | **Pyodide load failure** | `initializePyodide` | Error logged, generation blocked |
 
-**Sources:** [src/App.tsx149-151](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L149-L151) [src/App.tsx223-225](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L223-L225) [src/components/schedule-form.tsx367-386](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/schedule-form.tsx#L367-L386) [public/\_creator.py418-420](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/_creator.py#L418-L420)
-
-### First Execution Workaround
+### First execution workaround
 
 Pyodide exhibits warm-up behavior where the first execution may return incorrect results. The system compensates by executing twice on the first run:
 
@@ -430,11 +384,9 @@ if (numExecutions === 0) {
 }
 ```
 
-**Sources:** [src/App.tsx194-204](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L194-L204)
-
 ---
 
-## Performance Characteristics
+## Performance characteristics
 
 The schedule generation process has distinct performance phases:
 
@@ -453,26 +405,20 @@ The schedule generation process has distinct performance phases:
 3. Python module loaded once and retained in Pyodide memory
 4. Schedule cached in localStorage for instant page reloads
 
-**Sources:** [src/utils/pyodide.ts](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/utils/pyodide.ts) (referenced), [src/App.tsx111-113](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L111-L113)
-
 ---
 
-## Integration Points
+## Integration points
 
 The schedule generation feature integrates with other system components:
 
-### Downstream Consumers
+### Downstream consumers
 
-![Architecture Diagram](images/4-schedule-generation-(core-feature)_diagram_7.png)
+![Diagram 7](images/4-schedule-generation-(core-feature)_diagram_7.png)
 
-**Sources:** [src/App.tsx557-590](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L557-L590) [src/components/schedule-display.tsx](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/schedule-display.tsx) (referenced), [src/pages/timeline.tsx](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/pages/timeline.tsx) (referenced)
-
-### State Management Flow
+### State management flow
 
 1. **Generation**: `schedule` set in UserContext
 2. **Display**: Components read `schedule` via `useContext(UserContext)`
 3. **Editing**: User edits create `editedSchedule` entries
 4. **Rendering**: Display components merge `schedule` + `editedSchedule`
 5. **Persistence**: Both saved to localStorage on changes
-
-**Sources:** [src/context/userContext.tsx](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/context/userContext.tsx) (referenced), [src/App.tsx56](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L56-L56)

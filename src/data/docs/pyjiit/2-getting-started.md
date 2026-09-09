@@ -1,4 +1,4 @@
-# Getting Started
+# Getting started
 
 - [docs/usage.rst](https://github.com/codelif/pyjiit/blob/0fe02955/docs/usage.rst)
 - [poetry.lock](https://github.com/codelif/pyjiit/blob/0fe02955/poetry.lock)
@@ -6,7 +6,7 @@
 
 This page provides an overview of how to install pyjiit, understand its core components, and make your first API calls to the JIIT Webportal. It introduces the basic workflow and concepts needed to use the library effectively.
 
-For detailed installation instructions and dependency management, see [Installation](2.1-installation). For a comprehensive walkthrough with complete code examples, see [Quick Start Guide](2.2-quick-start-guide). For in-depth coverage of the authentication process, see [Authentication Flow](2.3-authentication-flow).
+For detailed installation instructions and dependency management, see [Installation](2.1-installation). For a detailed walkthrough with complete code examples, see [Quick Start Guide](2.2-quick-start-guide). For in-depth coverage of the authentication process, see [Authentication Flow](2.3-authentication-flow).
 
 ---
 
@@ -38,11 +38,9 @@ Before installing pyjiit, ensure your system meets the following requirements:
 
 The library uses Poetry for dependency management, but end users install via pip from PyPI.
 
-**Sources:** [pyproject.toml8-12](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L8-L12)
-
 ---
 
-## Installation Overview
+## Installation overview
 
 Install pyjiit from PyPI using pip:
 
@@ -57,23 +55,19 @@ This installs the library and its two core dependencies:
 
 The package is distributed through PyPI and can be installed in any Python 3.9+ environment. For detailed installation options, virtual environment setup, and troubleshooting, see [Installation](2.1-installation).
 
-**Sources:** [docs/usage.rst6-13](https://github.com/codelif/pyjiit/blob/0fe02955/docs/usage.rst#L6-L13) [pyproject.toml1-12](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L1-L12)
-
 ---
 
-## Basic Usage Workflow
+## Basic usage workflow
 
 The following diagram illustrates the typical workflow from installation to making authenticated API calls:
 
-### User Journey: Installation to First API Call
+### User journey: installation to first API call
 
-![Architecture Diagram](images/2-getting-started_diagram_1.png)
-
-**Sources:** [docs/usage.rst16-44](https://github.com/codelif/pyjiit/blob/0fe02955/docs/usage.rst#L16-L44)
+![Diagram 1](images/2-getting-started_diagram_1.png)
 
 ---
 
-## Your First API Call
+## Your first API call
 
 Here's a minimal working example demonstrating the core workflow:
 
@@ -112,17 +106,15 @@ This example demonstrates:
 3. **Session verification**: Accessing the `session` attribute populated after login
 4. **Data retrieval**: Calling authenticated methods that return structured data models
 
-**Sources:** [docs/usage.rst30-44](https://github.com/codelif/pyjiit/blob/0fe02955/docs/usage.rst#L30-L44) [docs/usage.rst71-108](https://github.com/codelif/pyjiit/blob/0fe02955/docs/usage.rst#L71-L108)
-
 ---
 
-## Core Components and Their Roles
+## Core components and their roles
 
 Understanding the key classes and modules helps you navigate the library effectively:
 
-### Component Architecture Map
+### Component architecture map
 
-![Architecture Diagram](images/2-getting-started_diagram_2.png)
+![Diagram 2](images/2-getting-started_diagram_2.png)
 
 **Key Classes:**
 
@@ -136,13 +128,11 @@ Understanding the key classes and modules helps you navigate the library effecti
 | `ExamEvent`             | [pyjiit/exam.py4-17](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/exam.py#L4-L17)               | Represents individual exam schedule entries               |
 | `CAPTCHA`               | [pyjiit/default.py5-10](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/default.py#L5-L10)         | Pre-filled captcha object for authentication              |
 
-**Sources:** [pyproject.toml1-12](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L1-L12) [docs/usage.rst19-28](https://github.com/codelif/pyjiit/blob/0fe02955/docs/usage.rst#L19-L28)
-
 ---
 
-## Key Concepts
+## Key concepts
 
-### Sessions and Authentication
+### Sessions and authentication
 
 Authentication in pyjiit involves a two-phase process:
 
@@ -159,7 +149,7 @@ All authenticated methods use the `@authenticated` decorator to verify an active
 
 **See [Authentication Flow](2.3-authentication-flow) for detailed coverage of the authentication process.**
 
-### Encrypted Communication
+### Encrypted communication
 
 All API requests and responses are encrypted using AES-CBC with daily key rotation:
 
@@ -169,7 +159,7 @@ All API requests and responses are encrypted using AES-CBC with daily key rotati
 
 The encryption is transparent to users; all serialization/deserialization happens automatically within the `Webportal` class.
 
-### Data Models
+### Data models
 
 API responses are parsed into typed data model objects for structured access:
 
@@ -187,7 +177,7 @@ exams = w.get_exam_schedule()
 
 Each data model provides convenient methods like `latest_header()` and `latest_semester()` for common operations.
 
-### Exception Handling
+### Exception handling
 
 The library defines a hierarchy of exceptions for fine-grained error handling:
 
@@ -209,13 +199,11 @@ except NotLoggedIn:
     w.student_login(username, password, captcha)
 ```
 
-**For comprehensive exception documentation, see [Exception Handling](3.4-exception-handling).**
-
-**Sources:** [docs/usage.rst138-142](https://github.com/codelif/pyjiit/blob/0fe02955/docs/usage.rst#L138-L142) [pyjiit/exceptions.py1-34](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/exceptions.py#L1-L34)
+**For detailed exception documentation, see [Exception Handling](3.4-exception-handling).**
 
 ---
 
-## Method Categories
+## Method categories
 
 The `Webportal` class provides methods organized by functionality:
 
@@ -230,13 +218,11 @@ The `Webportal` class provides methods organized by functionality:
 
 All authenticated methods will raise `NotLoggedIn` if called before `student_login()`.
 
-**Sources:** [pyjiit/wrapper.py157-803](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py#L157-L803)
-
 ---
 
-## Quick Reference: Common Operations
+## Quick reference: common operations
 
-### Retrieve Attendance
+### Retrieve attendance
 
 ```
 meta = w.get_attendance_meta()
@@ -247,7 +233,7 @@ attendance_data = w.get_attendance(header, semester)
 
 **Note:** The `get_attendance()` call may take >10 seconds due to server-side processing.
 
-### Get Exam Schedule
+### Get exam schedule
 
 ```
 exams = w.get_exam_schedule()
@@ -255,7 +241,7 @@ for exam in exams:
     print(f"{exam.subject_desc}: {exam.exam_date} at {exam.exam_time}")
 ```
 
-### Get Registered Subjects
+### Get registered subjects
 
 ```
 semesters = w.get_registered_semesters()
@@ -265,11 +251,9 @@ for subject in registrations.subjects:
     print(f"{subject.subject_code}: {subject.subject_desc}")
 ```
 
-**Sources:** [docs/usage.rst71-133](https://github.com/codelif/pyjiit/blob/0fe02955/docs/usage.rst#L71-L133)
-
 ---
 
-## Next Steps
+## Next steps
 
 Now that you understand the basic workflow, proceed to:
 
@@ -277,10 +261,8 @@ Now that you understand the basic workflow, proceed to:
 - **[Quick Start Guide](2.2-quick-start-guide)** - Complete walkthrough with multiple examples and best practices
 - **[Authentication Flow](2.3-authentication-flow)** - Deep dive into the two-phase authentication process and session management
 
-For comprehensive API documentation, see:
+For detailed API documentation, see:
 
 - **[Webportal Class](3.1-webportal-class)** - Complete method reference
 - **[Data Models](3.3-data-models)** - Detailed documentation of all data structures
 - **[Exception Handling](3.4-exception-handling)** - Exception hierarchy and error handling patterns
-
-**Sources:** [docs/usage.rst1-145](https://github.com/codelif/pyjiit/blob/0fe02955/docs/usage.rst#L1-L145) [pyproject.toml1-28](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L1-L28)

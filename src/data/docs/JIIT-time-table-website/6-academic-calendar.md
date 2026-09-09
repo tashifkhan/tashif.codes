@@ -1,10 +1,8 @@
-# Academic Calendar
+# Academic calendar
 
-## Purpose and Scope
+## Purpose and scope
 
 The Academic Calendar feature displays institutional events, holidays, and important dates for JIIT academic sessions. It provides a chronological timeline view with filtering capabilities and Google Calendar synchronization. For information about personal timetable scheduling, see [Schedule Generation](4-schedule-generation-(core-feature)). For exporting personal schedules to Google Calendar, see [Google Calendar Integration](9.1-google-calendar-integration).
-
-**Sources:** [src/components/academic-calendar.tsx1-414](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L1-L414)
 
 ---
 
@@ -12,17 +10,15 @@ The Academic Calendar feature displays institutional events, holidays, and impor
 
 The academic calendar system loads event data from static JSON files organized by academic year and renders them in an interactive timeline. Users can view past and upcoming events, filter by holidays, and sync all events to their Google Calendar account.
 
-### System Architecture
+### System architecture
 
-![Architecture Diagram](images/6-academic-calendar_diagram_1.png)
-
-**Sources:** [src/components/academic-calendar.tsx20-54](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L20-L54) [src/utils/calendar-AC.ts21-107](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/utils/calendar-AC.ts#L21-L107)
+![Diagram 1](images/6-academic-calendar_diagram_1.png)
 
 ---
 
-## Data Model
+## Data model
 
-### CalendarEvent Type
+### CalendarEvent type
 
 The calendar system expects event data in the following structure:
 
@@ -43,15 +39,13 @@ type CalendarEvent = {
 
 The component automatically detects holidays by checking if `summary.startsWith("Holiday -")` and applies special styling.
 
-**Sources:** [src/utils/calendar-AC.ts9-13](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/utils/calendar-AC.ts#L9-L13) [src/components/academic-calendar.tsx260-261](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L260-L261)
-
 ---
 
-## Component State Management
+## Component state management
 
-### State Variables
+### State variables
 
-![Architecture Diagram](images/6-academic-calendar_diagram_2.png)
+![Diagram 2](images/6-academic-calendar_diagram_2.png)
 
 | State Variable | Type | Purpose |
 | --- | --- | --- |
@@ -65,32 +59,28 @@ The component automatically detects holidays by checking if `summary.startsWith(
 | `eventRefs` | `HTMLDivElement[]` | Refs for auto-scroll functionality |
 | `upcomingDividerRef` | `HTMLDivElement` | Ref to "Upcoming Events" divider |
 
-**Sources:** [src/components/academic-calendar.tsx7-18](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L7-L18)
-
 ---
 
-## Data Loading Pipeline
+## Data loading pipeline
 
-### Year Selection and Data Fetching
+### Year selection and data fetching
 
-![Architecture Diagram](images/6-academic-calendar_diagram_3.png)
+![Diagram 3](images/6-academic-calendar_diagram_3.png)
 
 The component uses different filename conventions based on the year:
 
 * Year `2425`: Loads `calendar.json` (correct spelling)
 * Other years: Loads `calender.json` (alternate spelling)
 
-**Sources:** [src/components/academic-calendar.tsx28-54](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L28-L54)
-
 ---
 
-## Event Processing and Display Logic
+## Event processing and display logic
 
-### Event Categorization
+### Event categorization
 
 The component processes events through several transformations:
 
-![Architecture Diagram](images/6-academic-calendar_diagram_4.png)
+![Diagram 4](images/6-academic-calendar_diagram_4.png)
 
 **Code Implementation:**
 
@@ -126,13 +116,11 @@ const eventsToShow = [
 ];
 ```
 
-**Sources:** [src/components/academic-calendar.tsx56-83](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L56-L83)
-
 ---
 
-## UI Features
+## UI features
 
-### Timeline View
+### Timeline view
 
 The timeline uses an alternating left-right layout for desktop (responsive single-column for mobile):
 
@@ -145,9 +133,7 @@ The timeline uses an alternating left-right layout for desktop (responsive singl
 | Past Events | Reduced opacity (75%) and muted colors | De-emphasize historical data |
 | "Upcoming Events" Divider | Horizontal line with badge | Clear separation point |
 
-**Sources:** [src/components/academic-calendar.tsx253-378](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L253-L378)
-
-### Auto-Scroll Behavior
+### Auto-Scroll behavior
 
 On year change, the component automatically scrolls to the first upcoming event:
 
@@ -167,19 +153,15 @@ useEffect(() => {
 }, [selectedYear]);
 ```
 
-**Sources:** [src/components/academic-calendar.tsx85-104](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L85-L104)
-
 ---
 
-## Google Calendar Synchronization
+## Google calendar synchronization
 
-### OAuth Flow
+### OAuth flow
 
-![Architecture Diagram](images/6-academic-calendar_diagram_5.png)
+![Diagram 5](images/6-academic-calendar_diagram_5.png)
 
-**Sources:** [src/components/academic-calendar.tsx106-128](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L106-L128) [src/utils/calendar-AC.ts21-107](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/utils/calendar-AC.ts#L21-L107)
-
-### Event Transformation
+### Event transformation
 
 The `addAcademicCalendarEvents` function transforms calendar events into Google Calendar API format:
 
@@ -210,13 +192,11 @@ const calendarEvents = events.map(event => ({
 | `transparency` | `'transparent'` | Events don't show as "busy" |
 | `colorId` | `'11'` (holidays) or `'1'` (default) | Visual distinction in calendar |
 
-**Sources:** [src/utils/calendar-AC.ts38-52](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/utils/calendar-AC.ts#L38-L52)
-
 ---
 
-## Interactive Controls
+## Interactive controls
 
-### Year Selector
+### Year selector
 
 ```
 <select
@@ -238,9 +218,7 @@ const calendarEvents = events.map(event => ({
 
 Changing the year triggers a complete data reload and resets the visible past events count.
 
-**Sources:** [src/components/academic-calendar.tsx182-202](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L182-L202)
-
-### Holiday Filter Button
+### Holiday filter button
 
 Fixed-position button that toggles between all events and holidays only:
 
@@ -261,9 +239,7 @@ Fixed-position button that toggles between all events and holidays only:
 </button>
 ```
 
-**Sources:** [src/components/academic-calendar.tsx381-397](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L381-L397)
-
-### Load Previous Events Button
+### Load previous events button
 
 Displays at the top of the timeline when past events exist but are hidden:
 
@@ -287,13 +263,11 @@ Displays at the top of the timeline when past events exist but are hidden:
 )}
 ```
 
-**Sources:** [src/components/academic-calendar.tsx211-236](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L211-L236)
-
 ---
 
-## Error Handling
+## Error handling
 
-### Data Loading Errors
+### Data loading errors
 
 The component includes basic error handling for year availability fetching:
 
@@ -320,9 +294,7 @@ const [availableYears, setAvailableYears] = useState([
 ]);
 ```
 
-**Sources:** [src/components/academic-calendar.tsx28-43](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L28-L43)
-
-### Google Calendar Sync Errors
+### Google calendar sync errors
 
 The `addAcademicCalendarEvents` function returns detailed error information:
 
@@ -342,13 +314,11 @@ Error scenarios handled:
 
 All errors are caught and returned in the response object, with user-facing alerts displaying the error message.
 
-**Sources:** [src/utils/calendar-AC.ts15-19](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/utils/calendar-AC.ts#L15-L19) [src/components/academic-calendar.tsx118-125](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L118-L125)
-
 ---
 
-## Loading States
+## Loading states
 
-### Initial Load
+### Initial load
 
 ```
 if (isDataLoading) {
@@ -380,9 +350,7 @@ if (isDataLoading) {
 
 Displays animated bouncing dots with loading message while fetching calendar data.
 
-**Sources:** [src/components/academic-calendar.tsx130-159](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L130-L159)
-
-### Calendar Sync Loading
+### Calendar sync loading
 
 ```
 <button
@@ -395,13 +363,11 @@ Displays animated bouncing dots with loading message while fetching calendar dat
 
 Button text changes and becomes disabled during Google Calendar sync operation.
 
-**Sources:** [src/components/academic-calendar.tsx399-410](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L399-L410)
-
 ---
 
 ## Summary
 
-The Academic Calendar system provides a comprehensive view of institutional events through:
+The Academic Calendar system provides a detailed view of institutional events through:
 
 1. **Data Management**: Static JSON files organized by year with automatic fetching
 2. **Timeline Visualization**: Chronological display with past/upcoming separation
@@ -411,5 +377,3 @@ The Academic Calendar system provides a comprehensive view of institutional even
 6. **Responsive Design**: Adapts layout from desktop zigzag to mobile single-column
 
 The component is self-contained with minimal external dependencies, relying primarily on React state management and the Google Calendar API for synchronization functionality.
-
-**Sources:** [src/components/academic-calendar.tsx1-414](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/academic-calendar.tsx#L1-L414) [src/utils/calendar-AC.ts1-108](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/utils/calendar-AC.ts#L1-L108)

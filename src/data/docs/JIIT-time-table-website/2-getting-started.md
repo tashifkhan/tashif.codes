@@ -1,8 +1,8 @@
-# Getting Started
+# Getting started
 
-This document guides developers through setting up the JIIT Personalized Timetable Creator development environment, running the application locally, and understanding the core project structure and build system. For information about the overall system architecture and how components interact, see [System Architecture](3-system-architecture). For specific feature implementation details, see [Schedule Generation](4-schedule-generation-(core-feature)).
+This page guides developers through setting up the JIIT Personalized Timetable Creator development environment, running the application locally, and understanding the core project structure and build system. For information about the overall system architecture and how components interact, see [System Architecture](3-system-architecture). For specific feature implementation details, see [Schedule Generation](4-schedule-generation-(core-feature)).
 
-## Purpose and Scope
+## Purpose and scope
 
 This page covers:
 
@@ -26,9 +26,9 @@ The following tools are required before beginning development:
 
 **Note**: Python is NOT required for local development. The application uses Pyodide (Python compiled to WebAssembly) which runs entirely in the browser. The external Python Streamlit app mentioned in [README.md71](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L71-L71) is only used for data preparation and is not part of the development workflow.
 
-## Installation Steps
+## Installation steps
 
-### 1. Clone the Repository
+### 1. clone the repository
 
 ```
 git clone https://github.com/tashifkhan/JIIT-time-table-website
@@ -46,7 +46,7 @@ JIIT-time-table-website/
 └── tsconfig.json    # TypeScript compiler settings
 ```
 
-### 2. Install Dependencies
+### 2. install dependencies
 
 Using **bun** (recommended for faster installation):
 
@@ -71,7 +71,7 @@ This command reads `package.json` and installs all required dependencies into `n
 
 The `node_modules/` directory is excluded from version control via [.gitignore10](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/.gitignore#L10-L10)
 
-### 3. Run the Development Server
+### 3. run the development server
 
 ```
 bun dev
@@ -96,11 +96,11 @@ The development server provides:
 * **TypeScript compilation**: Type checking occurs in real-time
 * **Asset serving**: Files in `public/` are served at the root path
 
-## Application Entry Point Flow
+## Application entry point flow
 
 The following diagram shows how the application initializes when the development server starts, mapping natural language concepts to actual code entities:
 
-![Architecture Diagram](images/2-getting-started_diagram_1.png)
+![Diagram 1](images/2-getting-started_diagram_1.png)
 
 **Component Initialization Order**:
 
@@ -115,13 +115,13 @@ The following diagram shows how the application initializes when the development
 9. **[main.tsx33](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/main.tsx#L33-L33)**: `Navbar` renders persistent navigation
 10. **[main.tsx35-49](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/main.tsx#L35-L49)**: `Routes` defines path-to-component mappings
 
-## Project Structure
+## Project structure
 
 The repository follows a standard React TypeScript project layout with specific directories for static assets and data:
 
-![Architecture Diagram](images/2-getting-started_diagram_2.png)
+![Diagram 2](images/2-getting-started_diagram_2.png)
 
-### Directory Breakdown
+### Directory breakdown
 
 | Path | Purpose | Key Files |
 | --- | --- | --- |
@@ -136,11 +136,11 @@ The repository follows a standard React TypeScript project layout with specific 
 | **`src/App.tsx`** | Main schedule creator page component | Primary user interface (see [Schedule Generation](4-schedule-generation-(core-feature))) |
 | **`src/main.tsx`** | Application entry point | Routing and provider setup |
 
-## Build System Configuration
+## Build system configuration
 
 The application uses **Vite** as its build tool, configured via `vite.config.ts`. Key characteristics:
 
-### Development Mode
+### Development mode
 
 When running `bun dev` or `npm run dev`:
 
@@ -150,7 +150,7 @@ When running `bun dev` or `npm run dev`:
 * **TypeScript**: Compiled on-the-fly without type checking (use separate `tsc --noEmit` for type validation)
 * **Asset serving**: Files in `public/` served at `/` path
 
-### Production Build
+### Production build
 
 The `bun run build` or `npm run build` command:
 
@@ -162,7 +162,7 @@ The `bun run build` or `npm run build` command:
 
 The `dist/` directory is excluded from version control via [.gitignore11](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/.gitignore#L11-L11)
 
-### Deployment Configuration
+### Deployment configuration
 
 The [vercel.json1-16](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/vercel.json#L1-L16) file configures deployment on Vercel:
 
@@ -174,7 +174,7 @@ This configuration ensures:
 * Analytics tracking works without CORS issues
 * Direct URL access to routes like `/timeline` or `/compare-timetables` loads the SPA correctly
 
-## Environment Variables
+## Environment variables
 
 The application uses environment variables for external service configuration. Create a `.env` file in the project root (excluded from version control via [.gitignore25](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/.gitignore#L25-L25)):
 
@@ -190,13 +190,13 @@ VITE_PUBLIC_POSTHOG_KEY=your_posthog_api_key_here
 
 **Note**: Google Calendar API credentials are configured client-side during the OAuth flow, not via environment variables. See [Google Calendar Integration](9.1-google-calendar-integration) for details.
 
-## Development Workflow
+## Development workflow
 
 The typical development cycle follows this pattern:
 
-![Architecture Diagram](images/2-getting-started_diagram_3.png)
+![Diagram 3](images/2-getting-started_diagram_3.png)
 
-### Recommended Development Practices
+### Recommended development practices
 
 1. **File Watching**: The dev server automatically detects changes to:
 
@@ -218,7 +218,7 @@ The typical development cycle follows this pattern:
    * `http://localhost:5173/academic-calendar` - Institutional calendar
    * `http://localhost:5173/mess-menu` - Dining schedule
 
-## Accessing Static Data
+## Accessing static data
 
 During development, static JSON files in `public/data/` are accessible at the root path:
 
@@ -240,11 +240,11 @@ curl https://simple-timetable.tashif.codes/data/time-table/ODD25/62.json
 curl https://simple-timetable.tashif.codes/data/calender/2526/calender.json
 ```
 
-## Troubleshooting Common Issues
+## Troubleshooting common issues
 
 | Issue | Symptom | Solution |
 | --- | --- | --- |
-| **Port already in use** | `EADDRINUSE: address already in use :::5173` | Kill process on port 5173 or use `--port 3000` flag |
+| **Port already in use** | `EADDRINUSE: address already in use:::5173` | Kill process on port 5173 or use `--port 3000` flag |
 | **Module not found** | Import errors after adding dependencies | Run `bun i` or `npm i` again |
 | **TypeScript errors** | Red squiggles in editor | Restart TypeScript server in editor or run `tsc --noEmit` |
 | **WASM loading failure** | Pyodide initialization errors | Check browser console, ensure WebAssembly is supported |
@@ -253,7 +253,7 @@ curl https://simple-timetable.tashif.codes/data/calender/2526/calender.json
 
 **Browser Compatibility**: Modern browsers with WebAssembly support are required [README.md220](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/README.md#L220-L220) Verify support at `chrome://flags` (Chrome) or `about:config` (Firefox).
 
-## Next Steps
+## Next steps
 
 After successfully running the development server:
 

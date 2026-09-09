@@ -1,10 +1,10 @@
-# Development Guide
+# Development guide
 
 This guide provides information for developers contributing to JPortal. It covers code organization patterns, architectural decisions, development workflow, and best practices used throughout the codebase. For information about building and deploying the application, see [Build & Deployment](6-build-and-deployment). For details about the mock data system used in demo mode, see [Mock Data System](7.1-mock-data-system). For step-by-step instructions on adding new features, see [Adding New Features](7.2-adding-new-features).
 
 ---
 
-## Project Setup
+## Project setup
 
 ### Prerequisites
 
@@ -20,7 +20,7 @@ cd jportal
 npm install
 ```
 
-### Development Commands
+### Development commands
 
 | Command | Purpose |
 | --- | --- |
@@ -30,13 +30,11 @@ npm install
 | `npm run lint` | Run ESLint on codebase |
 | `npm run deploy` | Deploy to GitHub Pages (runs predeploy build) |
 
-**Sources:** [package.json7-13](https://github.com/codeblech/jportal/blob/4df0fde4/package.json#L7-L13)
-
 ---
 
-## Technology Stack
+## Technology stack
 
-### Core Dependencies
+### Core dependencies
 
 | Library | Version | Purpose |
 | --- | --- | --- |
@@ -46,7 +44,7 @@ npm install
 | Tailwind CSS | ^4.1.12 | Utility-first CSS framework |
 | TypeScript | ^5.9.2 | Type checking (dev) |
 
-### Key Libraries
+### Key libraries
 
 | Library | Purpose |
 | --- | --- |
@@ -60,13 +58,11 @@ npm install
 | jsjiit | JIIT portal API integration (loaded via CDN) |
 | Pyodide | Python runtime in browser (for PDF parsing) |
 
-**Sources:** [package.json15-43](https://github.com/codeblech/jportal/blob/4df0fde4/package.json#L15-L43)
-
 ---
 
-## Code Organization
+## Code organization
 
-### Directory Structure
+### Directory structure
 
 ```
 jportal/
@@ -98,25 +94,21 @@ jportal/
 └── index.html                      # HTML shell
 ```
 
-**Sources:** [App.jsx1-16](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L1-L16)
-
 ---
 
-## Application Entry Point and Routing
+## Application entry point and routing
 
-### Main Entry Flow
+### Main entry flow
 
-![Architecture Diagram](images/7-development-guide_diagram_1.png)
+![Diagram 1](images/7-development-guide_diagram_1.png)
 
 The application uses `HashRouter` for GitHub Pages compatibility. The `App` component implements authentication-based routing: unauthenticated users see `Login`, while authenticated users access `AuthenticatedApp`. The `/stats` route is publicly accessible.
 
-**Sources:** [App.jsx243-376](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L243-L376)
-
 ---
 
-## Authentication System
+## Authentication system
 
-### Portal Instance Pattern
+### Portal instance pattern
 
 JPortal uses a **dual-mode architecture** with two portal instances created at module level:
 
@@ -128,35 +120,29 @@ const mockPortal = new MockWebPortal(); // Local mock implementation
 const activePortal = isDemoMode ? mockPortal : realPortal;
 ```
 
-Both portals implement the same interface (methods like `get_attendance()`, `get_grades()`, etc.), allowing seamless mode switching.
+Both portals implement the same interface (methods like `get_attendance()`, `get_grades()`, etc.), allowing smooth mode switching.
 
-**Sources:** [App.jsx18-250](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L18-L250)
+### Authentication state flow
 
-### Authentication State Flow
-
-![Architecture Diagram](images/7-development-guide_diagram_2.png)
+![Diagram 2](images/7-development-guide_diagram_2.png)
 
 The authentication flow automatically attempts login on mount if credentials exist in `localStorage`. Manual login stores credentials for future auto-login. Demo mode bypasses authentication and uses `MockWebPortal`.
 
-**Sources:** [App.jsx252-298](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L252-L298) [Login.jsx24-95](https://github.com/codeblech/jportal/blob/4df0fde4/Login.jsx#L24-L95)
-
 ---
 
-## State Management Architecture
+## State management architecture
 
-### Multi-Layer State Pattern
+### Multi-Layer state pattern
 
 JPortal uses a **centralized state hub** pattern where `AuthenticatedApp` maintains state for all feature modules and passes it down via props.
 
-#### State Layers Diagram
+#### State layers diagram
 
-![Architecture Diagram](images/7-development-guide_diagram_3.png)
+![Diagram 3](images/7-development-guide_diagram_3.png)
 
 This pattern involves **extensive props drilling** where state and setter functions are passed through component hierarchies. All feature components receive the `w` prop (portal instance) as their primary data source.
 
-**Sources:** [App.jsx32-101](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L32-L101)
-
-### State Initialization Patterns
+### State initialization patterns
 
 Feature modules follow a consistent pattern for state initialization:
 
@@ -177,19 +163,17 @@ const [attendanceGoal, setAttendanceGoal] = useState(() => {
 });
 ```
 
-**Sources:** [App.jsx33-56](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L33-L56)
-
 ---
 
-## Feature Module Patterns
+## Feature module patterns
 
-### Standard Feature Module Structure
+### Standard feature module structure
 
 All feature modules follow a similar structure:
 
-![Architecture Diagram](images/7-development-guide_diagram_4.png)
+![Diagram 4](images/7-development-guide_diagram_4.png)
 
-### Common Props Pattern
+### Common props pattern
 
 Every feature module receives:
 
@@ -202,19 +186,17 @@ Every feature module receives:
 | Selection | `selectedSem`, `selectedExamSem` | Current selection |
 | UI State | `activeTab`, `isLoading`, `isOpen` | Component-specific UI state |
 
-**Sources:** [App.jsx110-214](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L110-L214)
-
 ---
 
-## Portal API Integration Pattern
+## Portal API integration pattern
 
-### The `w` Prop
+### The `w` prop
 
 All feature components receive a `w` prop which is either `realPortal` or `mockPortal`. This abstraction allows identical code to work in both real and demo modes.
 
-![Architecture Diagram](images/7-development-guide_diagram_5.png)
+![Diagram 5](images/7-development-guide_diagram_5.png)
 
-### API Call Pattern
+### API call pattern
 
 Feature modules typically follow this pattern when fetching data:
 
@@ -239,19 +221,17 @@ useEffect(() => {
 }, [selectedOption, w]);
 ```
 
-**Sources:** [App.jsx250](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L250-L250)
-
 ---
 
-## Component Communication Patterns
+## Component communication patterns
 
-### Props Drilling
+### Props drilling
 
 JPortal uses **props drilling** for component communication. State is maintained in `AuthenticatedApp` and passed down to feature components and their children.
 
-![Architecture Diagram](images/7-development-guide_diagram_6.png)
+![Diagram 6](images/7-development-guide_diagram_6.png)
 
-### Alternative: Global State (Theme)
+### Alternative: global state (theme)
 
 The theme system uses **Zustand** for global state, avoiding props drilling:
 
@@ -268,13 +248,11 @@ const { themeState, setThemeState } = useThemeStore();
 
 This demonstrates that JPortal uses **different patterns for different concerns**: props drilling for feature state, Zustand for theme, and potential for TanStack Query for server state.
 
-**Sources:** [App.jsx102-218](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L102-L218)
-
 ---
 
-## Local Storage Usage
+## Local storage usage
 
-### Persisted Data
+### Persisted data
 
 | Key | Type | Purpose | Managed By |
 | --- | --- | --- | --- |
@@ -283,7 +261,7 @@ This demonstrates that JPortal uses **different patterns for different concerns*
 | `attendanceGoal` | string (number) | Target attendance percentage | Attendance module |
 | Theme data | object | Current theme preset and mode | Theme system |
 
-### Credential Storage Pattern
+### Credential storage pattern
 
 ```
 // Store on successful login
@@ -299,13 +277,11 @@ localStorage.removeItem("username");
 localStorage.removeItem("password");
 ```
 
-**Sources:** [Login.jsx54-55](https://github.com/codeblech/jportal/blob/4df0fde4/Login.jsx#L54-L55) [App.jsx253-280](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L253-L280)
-
 ---
 
-## Error Handling Patterns
+## Error handling patterns
 
-### Login Error Handling
+### Login error handling
 
 The application uses custom error types from the `jsjiit` library:
 
@@ -325,7 +301,7 @@ try {
 }
 ```
 
-### User Feedback
+### User feedback
 
 JPortal uses **Sonner** for toast notifications with custom styling:
 
@@ -346,13 +322,11 @@ JPortal uses **Sonner** for toast notifications with custom styling:
 />
 ```
 
-**Sources:** [Login.jsx64-76](https://github.com/codeblech/jportal/blob/4df0fde4/Login.jsx#L64-L76) [App.jsx320-333](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L320-L333)
-
 ---
 
-## Development Best Practices
+## Development best practices
 
-### Code Style Conventions
+### Code style conventions
 
 1. **Component Files**: Use `.jsx` extension for React components
 2. **Utility Files**: Use `.ts` extension for TypeScript utilities
@@ -361,7 +335,7 @@ JPortal uses **Sonner** for toast notifications with custom styling:
 5. **Loading States**: Use `is[Feature]Loading` pattern (e.g., `isAttendanceMetaLoading`)
 6. **Boolean Props**: Use `is*` or `has*` prefixes (e.g., `isOpen`, `hasError`)
 
-### Component Structure
+### Component structure
 
 Follow this pattern for feature components:
 
@@ -398,7 +372,7 @@ export default function FeatureName({
 }
 ```
 
-### Prop Passing
+### Prop passing
 
 When passing many props to a component, use object destructuring and group related props:
 
@@ -423,30 +397,26 @@ When passing many props to a component, use object destructuring and group relat
 />
 ```
 
-**Sources:** [App.jsx110-141](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L110-L141)
-
 ---
 
-## Routing and Navigation
+## Routing and navigation
 
-### Route Structure
+### Route structure
 
-![Architecture Diagram](images/7-development-guide_diagram_7.png)
+![Diagram 7](images/7-development-guide_diagram_7.png)
 
-### Navigation Components
+### Navigation components
 
 * **Header**: Fixed at top, contains theme selector and logout button
 * **Navbar**: Fixed at bottom, contains navigation links to 5 main routes
 
 Both use hash-based routing (`#/attendance`, `#/grades`, etc.) for GitHub Pages compatibility.
 
-**Sources:** [App.jsx107-369](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L107-L369)
-
 ---
 
-## Linting and Code Quality
+## Linting and code quality
 
-### ESLint Configuration
+### ESLint configuration
 
 The project uses ESLint with React-specific plugins:
 
@@ -462,13 +432,11 @@ Run linting with:
 npm run lint
 ```
 
-**Sources:** [package.json45-51](https://github.com/codeblech/jportal/blob/4df0fde4/package.json#L45-L51)
-
 ---
 
-## Development Workflow
+## Development workflow
 
-### Local Development
+### Local development
 
 1. **Start dev server**: `npm run dev`
 2. **Open browser**: Navigate to `http://localhost:5173` (or shown port)
@@ -476,7 +444,7 @@ npm run lint
 4. **Test in demo mode**: Use "Try Demo" button on login
 5. **Test real mode**: Use actual JIIT credentials (if available)
 
-### Testing Both Modes
+### Testing both modes
 
 To verify feature compatibility with both portal implementations:
 
@@ -485,7 +453,7 @@ To verify feature compatibility with both portal implementations:
 3. Test with real mode (requires JIIT credentials)
 4. Ensure identical behavior in both modes
 
-### Pre-Deployment Checklist
+### Pre-Deployment checklist
 
 * Run `npm run lint` - No linting errors
 * Test all features in demo mode
@@ -496,13 +464,11 @@ To verify feature compatibility with both portal implementations:
 * Build succeeds: `npm run build`
 * Preview build: `npm run preview`
 
-**Sources:** [package.json8-13](https://github.com/codeblech/jportal/blob/4df0fde4/package.json#L8-L13)
-
 ---
 
-## Common Development Tasks
+## Common development tasks
 
-### Adding a New UI Component
+### Adding a new UI component
 
 1. Create component in `src/components/ui/`
 2. Use Radix UI primitives if applicable
@@ -510,13 +476,13 @@ To verify feature compatibility with both portal implementations:
 4. Use CSS variables for theme compatibility
 5. Export from component file
 
-### Modifying Theme
+### Modifying theme
 
 1. Edit presets in `src/lib/theme-presets.ts`
 2. Add new CSS variables in `src/index.css`
 3. Use variables via Tailwind: `bg-background`, `text-foreground`
 
-### Adding a New Route
+### Adding a new route
 
 1. Add state to `AuthenticatedApp` component
 2. Create component in `src/components/`
@@ -524,7 +490,7 @@ To verify feature compatibility with both portal implementations:
 4. Add navigation link to `Navbar.jsx` (if needed)
 5. Pass necessary props including `w`
 
-### Working with Portal API
+### Working with portal API
 
 When adding new data fetching:
 
@@ -545,13 +511,11 @@ useEffect(() => {
 
 Ensure `MockWebPortal` implements the same method for demo mode.
 
-**Sources:** [App.jsx32-219](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L32-L219)
-
 ---
 
-## Debugging Tips
+## Debugging tips
 
-### Check Portal Mode
+### Check portal mode
 
 Add console logs to verify which portal is active:
 
@@ -560,7 +524,7 @@ console.log('Portal mode:', isDemoMode ? 'Demo' : 'Real');
 console.log('Portal instance:', w);
 ```
 
-### Inspect State
+### Inspect state
 
 Use React DevTools to inspect `AuthenticatedApp` state:
 
@@ -568,7 +532,7 @@ Use React DevTools to inspect `AuthenticatedApp` state:
 * Check state values before and after API calls
 * Verify prop propagation
 
-### Network Requests
+### Network requests
 
 * **Real mode**: Check Network tab for JIIT portal requests
 * **Demo mode**: No network requests, data from `fakedata.json`
@@ -581,7 +545,7 @@ Check Application > Local Storage in DevTools:
 * Check `attendanceGoal` value
 * Inspect theme data
 
-### Common Issues
+### Common issues
 
 | Issue | Likely Cause | Solution |
 | --- | --- | --- |
@@ -589,5 +553,3 @@ Check Application > Local Storage in DevTools:
 | Data not loading | Missing semester selection | Check if `selectedSem` is set |
 | Props undefined | Missing prop in component | Check prop drilling chain |
 | Theme not applying | CSS variables not defined | Check `index.css` for variables |
-
-**Sources:** [App.jsx252-288](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L252-L288)

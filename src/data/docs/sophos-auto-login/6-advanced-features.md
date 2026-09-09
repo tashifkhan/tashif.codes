@@ -1,6 +1,6 @@
-# Advanced Features
+# Advanced features
 
-## Automatic ID Switching
+## Automatic ID switching
 
 The script automatically switches to the next available ID in the database if:
 
@@ -9,15 +9,15 @@ The script automatically switches to the next available ID in the database if:
 
 This ensures uninterrupted connectivity.
 
-## Internet Connection Check
+## Internet connection check
 
 The script periodically checks for internet connectivity every 90 seconds. If the internet connection is lost, the script will attempt to log in again.
 
-## Scheduled Re-login
+## Scheduled re-login
 
 To ensure continuous connectivity, the script performs a scheduled re-login every 30 minutes, even if the internet connection is active.
 
-## Creating an Executable
+## Creating an executable
 
 To create a standalone executable from the Python script:
 

@@ -1,18 +1,16 @@
-# Build & Deployment
+# Build & deployment
 
-This document covers the build pipeline, production optimization, Progressive Web App (PWA) configuration, and deployment process for JPortal. It explains how source code is transformed into production-ready assets and deployed to GitHub Pages.
+This page covers the build pipeline, production optimization, Progressive Web App (PWA) configuration, and deployment process for JPortal. It explains how source code is transformed into production-ready assets and deployed to GitHub Pages.
 
 For detailed information about PWA-specific features like service workers, offline caching, and installation capabilities, see [PWA Configuration](6.1-pwa-configuration). For development commands, local testing, and contribution workflows, see [Development Workflow](6.2-development-workflow).
 
 ---
 
-## Build System Architecture
+## Build system architecture
 
 JPortal uses **Vite** as its build tool, providing fast development server startup, Hot Module Replacement (HMR), and optimized production builds. The build system is configured via `vite.config.ts` and integrates with TypeScript, React, and PWA tooling.
 
-**Sources:** [jportal/vite.config.ts1-100](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L1-L100) [jportal/package.json1-67](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L1-L67)
-
-### Build Tool Stack
+### Build tool stack
 
 | Tool | Purpose | Configuration |
 | --- | --- | --- |
@@ -24,19 +22,15 @@ JPortal uses **Vite** as its build tool, providing fast development server start
 | **VitePWA Plugin** | Progressive Web App generation | `vite.config.ts` VitePWA block |
 | **SVGR Plugin** | SVG to React component conversion | `vite-plugin-svgr` |
 
-**Sources:** [jportal/package.json45-65](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L45-L65) [jportal/vite.config.ts14-74](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L14-L74)
+---
+
+## Build pipeline flow
+
+![Diagram 1](images/6-build-and-deployment_diagram_1.png)
 
 ---
 
-## Build Pipeline Flow
-
-![Architecture Diagram](images/6-build-and-deployment_diagram_1.png)
-
-**Sources:** [jportal/vite.config.ts9-99](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L9-L99) [jportal/package.json8-13](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L8-L13)
-
----
-
-## NPM Scripts
+## NPM scripts
 
 The build and deployment process is orchestrated through npm scripts defined in `package.json`:
 
@@ -44,26 +38,22 @@ The build and deployment process is orchestrated through npm scripts defined in 
 | --- | --- | --- |
 | `dev` | `vite` | Start Vite development server with HMR |
 | `build` | `vite build` | Create production build in `dist/` directory |
-| `lint` | `eslint .` | Run ESLint on codebase |
+| `lint` | `eslint.` | Run ESLint on codebase |
 | `preview` | `vite preview` | Preview production build locally |
 | `predeploy` | `npm run build` | Hook that runs before `deploy` to ensure fresh build |
 | `deploy` | `gh-pages -d dist` | Deploy `dist/` folder to GitHub Pages |
 
-**Sources:** [jportal/package.json7-13](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L7-L13)
+### Build command execution
 
-### Build Command Execution
-
-![Architecture Diagram](images/6-build-and-deployment_diagram_2.png)
-
-**Sources:** [jportal/package.json9](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L9-L9) [jportal/vite.config.ts1-99](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L1-L99)
+![Diagram 2](images/6-build-and-deployment_diagram_2.png)
 
 ---
 
-## Vite Configuration
+## Vite configuration
 
 The core build configuration is defined in `vite.config.ts`. Key settings include:
 
-### Base Configuration
+### Base configuration
 
 ```
 // Base path for deployed application
@@ -71,8 +61,6 @@ base: "/jportal/"
 ```
 
 This sets the base URL for the deployed application on GitHub Pages. All asset paths are prefixed with `/jportal/`.
-
-**Sources:** [jportal/vite.config.ts13](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L13-L13) [jportal/package.json6](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L6-L6)
 
 ### Plugins
 
@@ -82,9 +70,7 @@ This sets the base URL for the deployed application on GitHub Pages. All asset p
 | `vite-plugin-svgr` | Import SVGs as React components | Default configuration |
 | `vite-plugin-pwa` | PWA manifest and service worker generation | Extensive configuration (see [#6.1](6.1-pwa-configuration)) |
 
-**Sources:** [jportal/vite.config.ts14-74](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L14-L74)
-
-### Path Aliases
+### Path aliases
 
 ```
 resolve: {
@@ -96,9 +82,7 @@ resolve: {
 
 This allows imports like `import { Button } from "@/components/ui/button"` instead of relative paths.
 
-**Sources:** [jportal/vite.config.ts75-79](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L75-L79)
-
-### Development Server Proxy
+### Development server proxy
 
 The dev server includes a proxy configuration for Cloudflare Analytics API:
 
@@ -124,15 +108,13 @@ server: {
 
 This proxies requests from `/api/cloudflare/*` to `https://api.cloudflare.com/*` with authentication headers injected from environment variables.
 
-**Sources:** [jportal/vite.config.ts80-97](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L80-L97)
-
 ---
 
-## PWA Build Configuration
+## PWA build configuration
 
 The VitePWA plugin generates Progressive Web App assets during the build process. High-level configuration:
 
-### Service Worker Strategy
+### Service worker strategy
 
 | Setting | Value | Purpose |
 | --- | --- | --- |
@@ -140,9 +122,7 @@ The VitePWA plugin generates Progressive Web App assets during the build process
 | `injectRegister` | `"auto"` | Auto-inject service worker registration code |
 | `devOptions.enabled` | `true` | Enable PWA in development mode |
 
-**Sources:** [jportal/vite.config.ts18-22](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L18-L22)
-
-### Workbox Caching Configuration
+### Workbox caching configuration
 
 ```
 workbox: {
@@ -153,9 +133,7 @@ workbox: {
 
 This configuration allows caching large files like Python wheel files (`.whl`) required for the PDF parsing functionality via Pyodide.
 
-**Sources:** [jportal/vite.config.ts23-25](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L23-L25)
-
-### Critical Pre-cached Assets
+### Critical pre-cached assets
 
 The following assets are explicitly pre-cached for offline functionality:
 
@@ -165,21 +143,17 @@ The following assets are explicitly pre-cached for offline functionality:
 | jiit\_marks wheel | `/jportal/artifact/jiit_marks-0.2.0-py3-none-any.whl` | Custom marks parsing library |
 | PyMuPDF wheel | `/jportal/artifact/PyMuPDF-1.24.12-cp311-abi3-emscripten_3_1_32_wasm32.whl` | PDF parsing library |
 
-**Sources:** [jportal/vite.config.ts38-42](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L38-L42) [jportal/index.html17](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/index.html#L17-L17)
-
 For detailed PWA configuration including manifest structure and caching strategies, see [PWA Configuration](6.1-pwa-configuration).
 
 ---
 
-## Deployment Process
+## Deployment process
 
 JPortal is deployed to **GitHub Pages** using the `gh-pages` npm package. The deployment is automated through npm scripts.
 
-![Architecture Diagram](images/6-build-and-deployment_diagram_3.png)
+![Diagram 3](images/6-build-and-deployment_diagram_3.png)
 
-**Sources:** [jportal/package.json6-13](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L6-L13)
-
-### Deployment Steps
+### Deployment steps
 
 1. **Developer triggers deployment:**
 
@@ -205,9 +179,7 @@ JPortal is deployed to **GitHub Pages** using the `gh-pages` npm package. The de
    * Deploys static files to `https://codeblech.github.io/jportal`
    * Application accessible at this URL
 
-**Sources:** [jportal/package.json12-13](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L12-L13)
-
-### Deployment Configuration
+### Deployment configuration
 
 | Setting | Value | Source |
 | --- | --- | --- |
@@ -216,11 +188,9 @@ JPortal is deployed to **GitHub Pages** using the `gh-pages` npm package. The de
 | Target branch | `gh-pages` | `gh-pages` default |
 | Source directory | `dist` | `deploy` script |
 
-**Sources:** [jportal/package.json6](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L6-L6) [jportal/vite.config.ts13](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L13-L13)
-
 ---
 
-## Build Artifacts Structure
+## Build artifacts structure
 
 After running `npm run build`, the `dist/` directory contains:
 
@@ -242,9 +212,7 @@ dist/
     └── PyMuPDF-*.whl            # Python wheel for PDF parsing
 ```
 
-**Sources:** [jportal/vite.config.ts23-73](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L23-L73) [jportal/index.html5-71](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/index.html#L5-L71)
-
-### HTML Entry Point
+### HTML entry point
 
 The production `index.html` is generated from the source template with:
 
@@ -253,9 +221,7 @@ The production `index.html` is generated from the source template with:
 * Minification: Whitespace removed, comments stripped
 * Module script injection: Bundled JavaScript files linked
 
-**Sources:** [jportal/index.html1-25](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/index.html#L1-L25)
-
-### JavaScript Bundles
+### JavaScript bundles
 
 Vite creates optimized JavaScript bundles with:
 
@@ -265,9 +231,7 @@ Vite creates optimized JavaScript bundles with:
 * **Hash-based naming:** Cache busting via content hashes
 * **Source maps:** Generated for production debugging (optional)
 
-**Sources:** [jportal/vite.config.ts9](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L9-L9)
-
-### CSS Bundles
+### CSS bundles
 
 CSS processing includes:
 
@@ -277,15 +241,13 @@ CSS processing includes:
 * **CSS custom properties:** Theme variables preserved
 * **Hash-based naming:** Cache invalidation
 
-**Sources:** [jportal/package.json47-60](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L47-L60)
-
 ---
 
-## External Asset Loading
+## External asset loading
 
 JPortal loads several external assets that are critical for functionality:
 
-### Google Fonts
+### Google fonts
 
 Fonts are loaded dynamically based on the active theme using the `DynamicFontLoader` component:
 
@@ -302,9 +264,7 @@ loadGoogleFont(family: string, weights: string[]): void
 
 Default font weights loaded: `400`, `500`, `600`, `700`
 
-**Sources:** [jportal/src/utils/fonts.ts1-35](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/utils/fonts.ts#L1-L35) [jportal/src/components/DynamicFontLoader.tsx1-34](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/DynamicFontLoader.tsx#L1-L34)
-
-### Pyodide Runtime
+### Pyodide runtime
 
 The Pyodide JavaScript runtime is loaded from CDN in the HTML:
 
@@ -314,9 +274,7 @@ The Pyodide JavaScript runtime is loaded from CDN in the HTML:
 
 This enables running Python code in the browser for PDF parsing functionality in the Grades module.
 
-**Sources:** [jportal/index.html17](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/index.html#L17-L17)
-
-### Cloudflare Web Analytics
+### Cloudflare web analytics
 
 Analytics tracking is injected via Cloudflare's beacon script:
 
@@ -326,13 +284,11 @@ Analytics tracking is injected via Cloudflare's beacon script:
 </script>
 ```
 
-**Sources:** [jportal/index.html14-16](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/index.html#L14-L16)
-
 ---
 
-## Build Optimization Techniques
+## Build optimization techniques
 
-### Code Splitting Strategy
+### Code splitting strategy
 
 JPortal uses React Router's lazy loading for route-based code splitting:
 
@@ -346,9 +302,7 @@ JPortal uses React Router's lazy loading for route-based code splitting:
 
 This reduces initial bundle size and improves Time to Interactive (TTI).
 
-**Sources:** [jportal/vite.config.ts9](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L9-L9)
-
-### Asset Optimization
+### Asset optimization
 
 | Asset Type | Optimization | Tool |
 | --- | --- | --- |
@@ -358,9 +312,7 @@ This reduces initial bundle size and improves Time to Interactive (TTI).
 | Images | Copied as-is to `dist/` | Vite static asset handling |
 | Python wheels | Pre-cached in service worker | VitePWA |
 
-**Sources:** [jportal/vite.config.ts14-25](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L14-L25)
-
-### Caching Strategy
+### Caching strategy
 
 Three-tier caching approach:
 
@@ -368,11 +320,9 @@ Three-tier caching approach:
 2. **Service worker cache:** Offline-first caching via Workbox
 3. **CDN cache:** External assets cached by providers
 
-**Sources:** [jportal/vite.config.ts23-37](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L23-L37)
-
 ---
 
-## Environment Variables
+## Environment variables
 
 The build process supports environment variables through Vite's `loadEnv`:
 
@@ -388,11 +338,9 @@ Currently used variables:
 
 Environment variables prefixed with `VITE_` are exposed to client-side code.
 
-**Sources:** [jportal/vite.config.ts10-89](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L10-L89) [.gitignore36](https://github.com/codeblech/jportal/blob/4df0fde4/.gitignore#L36-L36)
-
 ---
 
-## Ignored Files
+## Ignored files
 
 The `.gitignore` file excludes build artifacts and temporary files:
 
@@ -406,11 +354,9 @@ The `.gitignore` file excludes build artifacts and temporary files:
 | `*.local` | Local environment files |
 | `*.env` | Environment variable files |
 
-**Sources:** [.gitignore1-36](https://github.com/codeblech/jportal/blob/4df0fde4/.gitignore#L1-L36)
-
 ---
 
-## Performance Metrics
+## Performance metrics
 
 Typical build output characteristics:
 
@@ -422,14 +368,10 @@ Typical build output characteristics:
 | Asset hash length | 8 characters | For cache invalidation |
 | Service worker size | ~5-10KB | Workbox runtime included |
 
-**Sources:** [jportal/vite.config.ts24](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L24-L24)
-
 ---
 
-## Build Configuration Files
+## Build configuration files
 
 Key configuration files in the repository:
 
-![Architecture Diagram](images/6-build-and-deployment_diagram_4.png)
-
-**Sources:** [jportal/vite.config.ts1-100](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/vite.config.ts#L1-L100) [jportal/package.json1-67](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L1-L67)
+![Diagram 4](images/6-build-and-deployment_diagram_4.png)

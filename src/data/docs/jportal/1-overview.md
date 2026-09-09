@@ -1,8 +1,8 @@
 # Overview
 
-## Purpose and Scope
+## Purpose and scope
 
-This document introduces JPortal, a Progressive Web Application (PWA) that serves as a modern replacement for the JIIT Web Portal. It covers the application's purpose, key features, technology stack, and high-level architecture.
+This page introduces JPortal, a Progressive Web Application (PWA) that is a modern replacement for the JIIT Web Portal. It covers the application's purpose, key features, technology stack, and high-level architecture.
 
 For detailed setup and deployment instructions, see [Getting Started](2-getting-started). For in-depth architecture discussions, see [Architecture Overview](3-architecture-overview). For information about individual features, see [Feature Modules](4-feature-modules).
 
@@ -19,9 +19,7 @@ JPortal is a client-side Progressive Web App designed to provide JIIT students w
 
 The application is hosted on GitHub Pages at `https://codeblech.github.io/jportal` and deployed automatically via GitHub Actions.
 
-**Sources:** [README.md1-61](https://github.com/codeblech/jportal/blob/4df0fde4/README.md#L1-L61) [jportal/package.json1-67](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L1-L67)
-
-## Key Features
+## Key features
 
 JPortal provides five primary feature modules accessible to authenticated users:
 
@@ -34,20 +32,18 @@ JPortal provides five primary feature modules accessible to authenticated users:
 | **Profile** | Student information | Personal, academic, contact, family, and address data |
 | **Analytics** | Usage statistics | Cloudflare analytics dashboard (public access) |
 
-### Authentication Modes
+### Authentication modes
 
 The application supports two authentication modes, managed through the `App` component:
 
 1. **Real Mode** - Authenticates against the official JIIT Web Portal using the `WebPortal` class from `jsjiit` library
 2. **Demo Mode** - Uses `MockWebPortal` with static data from `fakedata.json` for testing and demonstration
 
-**Sources:** [jportal/src/App.jsx1-377](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/App.jsx#L1-L377) [README.md22-55](https://github.com/codeblech/jportal/blob/4df0fde4/README.md#L22-L55)
+## Technology stack
 
-## Technology Stack
+### Core framework
 
-### Core Framework
-
-![Architecture Diagram](images/1-overview_diagram_1.png)
+![Diagram 1](images/1-overview_diagram_1.png)
 
 **Key Dependencies Table**
 
@@ -60,43 +56,37 @@ The application supports two authentication modes, managed through the `App` com
 | Toast Notifications | `sonner` | 2.0.7 | Toast notifications |
 | PDF Parsing | Pyodide + PyMuPDF | - | Client-side PDF processing |
 
-**Sources:** [jportal/package.json15-44](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L15-L44)
+## High-Level architecture
 
-## High-Level Architecture
+### Application entry point and authentication flow
 
-### Application Entry Point and Authentication Flow
+![Diagram 2](images/1-overview_diagram_2.png)
 
-![Architecture Diagram](images/1-overview_diagram_2.png)
-
-The `App` component ([App.jsx243-376](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L243-L376)) serves as the authentication gatekeeper:
+The `App` component ([App.jsx243-376](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L243-L376)) is the authentication gatekeeper:
 
 1. On mount, attempts auto-login using stored credentials via `localStorage` ([App.jsx252-288](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L252-L288))
 2. Renders `LoginWrapper` for unauthenticated users
 3. Renders `AuthenticatedApp` for authenticated users
 4. Passes the appropriate portal instance (`realPortal` or `mockPortal`) as the `w` prop
 
-**Sources:** [jportal/src/App.jsx1-377](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/App.jsx#L1-L377)
+### Feature module organization
 
-### Feature Module Organization
+![Diagram 3](images/1-overview_diagram_3.png)
 
-![Architecture Diagram](images/1-overview_diagram_3.png)
-
-The `AuthenticatedApp` component manages all authenticated routes and serves as a central state hub. It maintains separate state slices for each feature module and passes them down via props (props drilling pattern). Each feature component receives:
+The `AuthenticatedApp` component manages all authenticated routes and is a central state hub. It maintains separate state slices for each feature module and passes them down via props (props drilling pattern). Each feature component receives:
 
 * The `w` prop (portal instance)
 * State variables specific to that feature
 * State setter functions
 * Shared UI state (loading, error states)
 
-**Sources:** [jportal/src/App.jsx32-219](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/App.jsx#L32-L219)
+## Application data flow
 
-## Application Data Flow
+### Portal abstraction layer
 
-### Portal Abstraction Layer
+The application uses a **strategy pattern** for data access, allowing smooth switching between real and demo modes:
 
-The application uses a **strategy pattern** for data access, allowing seamless switching between real and demo modes:
-
-![Architecture Diagram](images/1-overview_diagram_4.png)
+![Diagram 4](images/1-overview_diagram_4.png)
 
 All feature components interact with the portal through a uniform interface, calling methods like:
 
@@ -108,9 +98,7 @@ All feature components interact with the portal through a uniform interface, cal
 
 This abstraction enables offline development and testing while maintaining production compatibility.
 
-**Sources:** [jportal/src/App.jsx18-29](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/App.jsx#L18-L29) [jportal/src/App.jsx250](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/App.jsx#L250-L250)
-
-### State Persistence
+### State persistence
 
 State persistence is handled through multiple mechanisms:
 
@@ -121,13 +109,11 @@ State persistence is handled through multiple mechanisms:
 | Theme Configuration | Zustand store (persisted) | Theme system components |
 | API Response Cache | Component state | Feature module state variables |
 
-**Sources:** [jportal/src/App.jsx53-61](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/App.jsx#L53-L61) [jportal/src/components/Login.jsx54-55](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/Login.jsx#L54-L55)
-
-## PWA Architecture
+## PWA architecture
 
 JPortal is configured as a Progressive Web App using the VitePWA plugin:
 
-### Service Worker and Caching Strategy
+### Service worker and caching strategy
 
 The application implements offline-first capabilities through:
 
@@ -135,7 +121,7 @@ The application implements offline-first capabilities through:
 2. **Pyodide Runtime Caching** - Python runtime and wheel files for PDF parsing
 3. **Manifest Configuration** - App metadata, icons, and theme colors
 
-### Installation Targets
+### Installation targets
 
 | Platform | Installation Method |
 | --- | --- |
@@ -145,9 +131,7 @@ The application implements offline-first capabilities through:
 
 The PWA configuration enables JPortal to function as a standalone application without requiring app store distribution.
 
-**Sources:** [README.md39-44](https://github.com/codeblech/jportal/blob/4df0fde4/README.md#L39-L44)
-
-## Theme System Overview
+## Theme system overview
 
 JPortal features an advanced theming system with:
 
@@ -159,17 +143,15 @@ JPortal features an advanced theming system with:
 
 The theme system integrates throughout the application via the `ThemeProvider`, `ThemeSelector`, and `DynamicFontLoader` components. For detailed theme architecture, see [Theme System](3.4-theme-system).
 
-**Sources:** [jportal/src/App.jsx12-14](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/App.jsx#L12-L14) High-level diagram analysis
-
-## Navigation Structure
+## Navigation structure
 
 The application uses React Router DOM with hash-based routing (`HashRouter`):
 
-### Public Routes
+### Public routes
 
 * `/stats` - Cloudflare Analytics Dashboard (no authentication required)
 
-### Protected Routes (require authentication)
+### Protected routes (require authentication)
 
 * `/` - Redirects to `/attendance`
 * `/attendance` - Attendance tracking
@@ -183,9 +165,7 @@ Navigation is provided through:
 * **Header** - Theme selector, logout button (top of screen)
 * **Navbar** - Bottom navigation with 5 route links
 
-**Sources:** [jportal/src/App.jsx107-216](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/App.jsx#L107-L216)
-
-## Getting Started
+## Getting started
 
 To begin using or developing JPortal:
 
@@ -195,5 +175,3 @@ To begin using or developing JPortal:
 * For UI component documentation, see [UI Components](5-ui-components)
 * For build and deployment processes, see [Build & Deployment](6-build-and-deployment)
 * For development guidelines, see [Development Guide](7-development-guide)
-
-**Sources:** README.md, package.json, App.jsx comprehensive analysis

@@ -1,27 +1,25 @@
-# UI Components
+# UI components
 
-## Purpose and Scope
+## Purpose and scope
 
-This document provides an overview of JPortal's UI component architecture, including the component hierarchy, styling infrastructure, and integration patterns. For detailed documentation of specific component types, see:
+This page provides an overview of JPortal's UI component architecture, including the component hierarchy, styling infrastructure, and integration patterns. For detailed documentation of specific component types, see:
 
 * Custom feature components like `AttendanceCard` and `CircleProgress` → [Custom Feature Components](5.1-custom-feature-components)
 * Navigation and theme-related components → [Theme & Navigation Components](5.2-theme-and-navigation-components)
 * Base Radix UI wrapper components → [Base UI Components](5.3-base-ui-components)
 * Styling system details → [Styling System](5.4-styling-system)
 
-## Component Architecture Overview
+## Component architecture overview
 
 JPortal implements a **three-layer component architecture** that combines accessibility-focused primitives with custom domain-specific components.
 
-### Component Hierarchy Diagram
+### Component hierarchy diagram
 
-![Architecture Diagram](images/5-ui-components_diagram_1.png)
+![Diagram 1](images/5-ui-components_diagram_1.png)
 
-**Sources:** [jportal/src/components/AttendanceCard.jsx1-359](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/AttendanceCard.jsx#L1-L359) [jportal/src/components/CircleProgress.jsx1-53](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/CircleProgress.jsx#L1-L53) [jportal/src/components/SubjectInfoCard.jsx1-26](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/SubjectInfoCard.jsx#L1-L26) [jportal/src/components/Profile.jsx1-157](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/Profile.jsx#L1-L157) [jportal/src/components/ui/tabs.jsx1-42](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/ui/tabs.jsx#L1-L42) [jportal/package.json15-43](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L15-L43)
+## UI library stack
 
-## UI Library Stack
-
-### Dependency Matrix
+### Dependency matrix
 
 | Layer | Library | Version | Purpose | Files |
 | --- | --- | --- | --- | --- |
@@ -34,9 +32,7 @@ JPortal implements a **three-layer component architecture** that combines access
 | **Variants** | `class-variance-authority` | ^0.7.0 | Component variant management | Wrapper components |
 | **Utilities** | `clsx`, `tailwind-merge` | Latest | Class name manipulation | Utility functions |
 
-**Sources:** [jportal/package.json15-43](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L15-L43)
-
-### Component Import Patterns
+### Component import patterns
 
 The codebase follows consistent import patterns across all feature components:
 
@@ -60,17 +56,13 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { cn } from "@/lib/utils"
 ```
 
-**Sources:** [jportal/src/components/AttendanceCard.jsx1-5](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/AttendanceCard.jsx#L1-L5) [jportal/src/components/ui/tabs.jsx1-4](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/ui/tabs.jsx#L1-L4) [jportal/src/components/Profile.jsx1-4](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/Profile.jsx#L1-L4)
+## Component categories
 
-## Component Categories
+### Category breakdown by function
 
-### Category Breakdown by Function
+![Diagram 2](images/5-ui-components_diagram_2.png)
 
-![Architecture Diagram](images/5-ui-components_diagram_2.png)
-
-**Sources:** [jportal/src/components/AttendanceCard.jsx7-13](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/AttendanceCard.jsx#L7-L13) [jportal/src/components/SubjectInfoCard.jsx1-26](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/SubjectInfoCard.jsx#L1-L26) [jportal/src/components/CircleProgress.jsx3](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/CircleProgress.jsx#L3-L3) [jportal/src/components/Navbar.jsx8-15](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/Navbar.jsx#L8-L15)
-
-### Component Prop Patterns
+### Component prop patterns
 
 JPortal components follow consistent prop patterns across feature modules:
 
@@ -82,17 +74,13 @@ JPortal components follow consistent prop patterns across feature modules:
 | **Wrapper Components** | `className`, `children`, Radix-specific props | All `ui/` components accept `className` for style overrides |
 | **Navigation Components** | Route configuration via constants | `Navbar` uses local `navItems` array with paths and icons |
 
-**Sources:** [jportal/src/components/AttendanceCard.jsx7-13](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/AttendanceCard.jsx#L7-L13) [jportal/src/components/CircleProgress.jsx3](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/CircleProgress.jsx#L3-L3) [jportal/src/components/Profile.jsx6](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/Profile.jsx#L6-L6) [jportal/src/components/Navbar.jsx9-15](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/Navbar.jsx#L9-L15)
+## Styling infrastructure
 
-## Styling Infrastructure
+### CSS architecture layers
 
-### CSS Architecture Layers
+![Diagram 3](images/5-ui-components_diagram_3.png)
 
-![Architecture Diagram](images/5-ui-components_diagram_3.png)
-
-**Sources:** [jportal/src/index.css1-240](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/index.css#L1-L240)
-
-### Key CSS Variable Groups
+### Key CSS variable groups
 
 The styling system defines several groups of CSS custom properties in [jportal/src/index.css7-88](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/index.css#L7-L88):
 
@@ -106,9 +94,7 @@ The styling system defines several groups of CSS custom properties in [jportal/s
 | **Typography** | `--font-sans`, `--font-serif`, `--font-mono` | Font family definitions |
 | **Spacing** | `--radius`, `--spacing`, `--shadow-*` | Layout and visual depth |
 
-**Sources:** [jportal/src/index.css7-160](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/index.css#L7-L160)
-
-### Component Styling Example
+### Component styling example
 
 The `CircleProgress` component demonstrates the integration of CSS variables with inline SVG styling:
 
@@ -128,11 +114,9 @@ The `CircleProgress` component demonstrates the integration of CSS variables wit
 </text>
 ```
 
-**Sources:** [jportal/src/components/CircleProgress.jsx23-48](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/CircleProgress.jsx#L23-L48)
+## Key design patterns
 
-## Key Design Patterns
-
-### Pattern 1: Sheet-Based Detail Views
+### Pattern 1: sheet-based detail views
 
 Multiple feature components use the `Sheet` component (Radix Dialog) for displaying detailed information in a bottom drawer:
 
@@ -142,7 +126,7 @@ Multiple feature components use the `Sheet` component (Radix Dialog) for display
 * Sheet opens with `open={selectedSubject?.name === subject.name}`: [jportal/src/components/AttendanceCard.jsx131-137](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/AttendanceCard.jsx#L131-L137)
 * Sheet content uses snap scrolling for calendar and chart sections: [jportal/src/components/AttendanceCard.jsx140-351](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/AttendanceCard.jsx#L140-L351)
 
-### Pattern 2: Responsive Sizing with Tailwind
+### Pattern 2: responsive sizing with Tailwind
 
 Components use Tailwind's responsive breakpoint modifiers extensively:
 
@@ -158,9 +142,7 @@ Components use Tailwind's responsive breakpoint modifiers extensively:
 </p>
 ```
 
-**Sources:** [jportal/src/components/AttendanceCard.jsx109](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/AttendanceCard.jsx#L109-L109) [jportal/src/components/Navbar.jsx39-41](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/Navbar.jsx#L39-L41)
-
-### Pattern 3: Data Visualization Integration
+### Pattern 3: data visualization integration
 
 Feature components integrate Recharts with theme variables for consistent styling:
 
@@ -181,9 +163,7 @@ Feature components integrate Recharts with theme variables for consistent stylin
 </LineChart>
 ```
 
-**Sources:** [jportal/src/components/AttendanceCard.jsx301-347](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/AttendanceCard.jsx#L301-L347)
-
-### Pattern 4: State-Driven UI with Loading States
+### Pattern 4: state-driven UI with loading states
 
 All page-level components implement loading states while fetching data:
 
@@ -203,9 +183,7 @@ if (loading) {
 return <div>...</div>
 ```
 
-**Sources:** [jportal/src/components/Profile.jsx7-37](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/Profile.jsx#L7-L37)
-
-### Pattern 5: Utility Function for Class Merging
+### Pattern 5: utility function for class merging
 
 The `cn()` utility (from `@/lib/utils`) is used throughout wrapper components to merge Tailwind classes with Radix UI classes:
 
@@ -223,17 +201,13 @@ const TabsList = React.forwardRef(({ className, ...props }, ref) => (
 ))
 ```
 
-**Sources:** [jportal/src/components/ui/tabs.jsx8-16](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/ui/tabs.jsx#L8-L16)
+## Component communication patterns
 
-## Component Communication Patterns
+### Props drilling architecture
 
-### Props Drilling Architecture
+![Diagram 4](images/5-ui-components_diagram_4.png)
 
-![Architecture Diagram](images/5-ui-components_diagram_4.png)
-
-**Sources:** [jportal/src/components/AttendanceCard.jsx7-13](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/AttendanceCard.jsx#L7-L13) [jportal/src/components/CircleProgress.jsx3](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/CircleProgress.jsx#L3-L3) [jportal/src/components/Profile.jsx6](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/Profile.jsx#L6-L6)
-
-### Event Handler Patterns
+### Event handler patterns
 
 Feature components implement consistent event handling patterns:
 
@@ -244,7 +218,7 @@ Feature components implement consistent event handling patterns:
 | **Loading state management** | Set loading before/after async operations | [jportal/src/components/AttendanceCard.jsx25-27](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/AttendanceCard.jsx#L25-L27) |
 | **State cleanup on close** | Reset selected subject when sheet closes | [jportal/src/components/AttendanceCard.jsx133-135](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/AttendanceCard.jsx#L133-L135) |
 
-## Component Accessibility Features
+## Component accessibility features
 
 All wrapper components in the `ui/` directory inherit accessibility features from Radix UI primitives:
 
@@ -254,5 +228,3 @@ All wrapper components in the `ui/` directory inherit accessibility features fro
 * **Screen Reader Support**: Semantic HTML and labels for assistive technologies
 
 The wrapper components preserve these features while adding custom styling via the `className` prop pattern.
-
-**Sources:** [jportal/src/components/ui/tabs.jsx1-42](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/ui/tabs.jsx#L1-L42) [jportal/package.json17-19](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/package.json#L17-L19)

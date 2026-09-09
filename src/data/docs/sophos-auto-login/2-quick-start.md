@@ -1,6 +1,6 @@
-# Quick Start
+# Quick start
 
-## Using Pre-built Executable
+## Using pre-built executable
 
 You can download the latest pre-built executable from the [Releases](https://github.com/tashifkhan/sophos-auto-login/releases) section without installing Python or any dependencies:
 
@@ -16,7 +16,7 @@ You can download the latest pre-built executable from the [Releases](https://git
       - Extract the downloaded `autologin-linux.zip` file.
       - Open Terminal, navigate to the extraction location and run `./autologin`.
 
-## Building from Source
+## Building from source
 
 If you prefer to run the Python script directly:
 

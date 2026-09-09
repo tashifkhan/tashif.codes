@@ -7,13 +7,11 @@
 - [pyjiit/init.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/init.py)
 - [pyproject.toml](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml)
 
-## Purpose and Scope
+## Purpose and scope
 
-This document provides a high-level introduction to **pyjiit**, a Python library for programmatic access to the JIIT Webportal system. It covers what pyjiit is, its architectural design, core components, and how data flows through the system. This overview is intended for developers who want to understand the library's structure before using it or contributing to it.
+This page provides a high-level introduction to **pyjiit**, a Python library for programmatic access to the JIIT Webportal system. It covers what pyjiit is, its architectural design, core components, and how data flows through the system. This overview is intended for developers who want to understand the library's structure before using it or contributing to it.
 
 For detailed API reference, see [Core API Reference](3-core-api-reference). For installation and usage instructions, see [Getting Started](2-getting-started). For information about the encryption mechanisms, see [Security and Encryption](4-security-and-encryption).
-
-**Sources:** [README.rst1-46](https://github.com/codelif/pyjiit/blob/0fe02955/README.rst#L1-L46) [pyproject.toml1-28](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L1-L28)
 
 ---
 
@@ -23,7 +21,7 @@ For detailed API reference, see [Core API Reference](3-core-api-reference). For 
 
 The library reverse-engineers the webportal's proprietary encryption scheme to communicate with the backend APIs at `webportal.jiit.ac.in:6011`. It abstracts the complexity of payload encryption, session management, and API authentication behind a simple Python interface.
 
-### Primary Use Cases
+### Primary use cases
 
 | Use Case                | Description                                                                               |
 | ----------------------- | ----------------------------------------------------------------------------------------- |
@@ -32,17 +30,15 @@ The library reverse-engineers the webportal's proprietary encryption scheme to c
 | **Registration Data**   | Access course registration information and registered subjects                            |
 | **Session Management**  | Handle authentication, token generation, and session lifecycle                            |
 
-**Sources:** [README.rst1-18](https://github.com/codelif/pyjiit/blob/0fe02955/README.rst#L1-L18) [pyproject.toml1-6](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L1-L6)
-
 ---
 
-## Core Components
+## Core components
 
 pyjiit is organized into four primary subsystems that work together to provide its functionality:
 
-![Architecture Diagram](images/1-overview_diagram_1.png)
+![Diagram 1](images/1-overview_diagram_1.png)
 
-### Component Descriptions
+### Component descriptions
 
 | Component             | File Path                                                                                                                                                                                                                                                                                                                                                           | Purpose                                                                                                                                                  |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -53,17 +49,15 @@ pyjiit is organized into four primary subsystems that work together to provide i
 | **Exceptions**        | [pyjiit/exceptions.py1-18](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/exceptions.py#L1-L18)                                                                                                                                                                                                                                                             | Custom exception hierarchy for error handling; includes `APIError`, `LoginError`, `SessionError`, `SessionExpired`, `NotLoggedIn`, and `AccountAPIError` |
 | **Utilities**         | [pyjiit/utils.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/utils.py)                                                                                                                                                                                                                                                                                  | Helper functions for date sequence generation and random character sequences used in encryption                                                          |
 
-**Sources:** [pyjiit/\_\_init\_\_.py1-2](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/__init__.py#L1-L2) [pyproject.toml9-12](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L9-L12) [README.rst9-18](https://github.com/codelif/pyjiit/blob/0fe02955/README.rst#L9-L18)
-
 ---
 
-## System Architecture
+## System architecture
 
 The following diagram shows how the core components interact during a typical API request flow:
 
-![Architecture Diagram](images/1-overview_diagram_2.png)
+![Diagram 2](images/1-overview_diagram_2.png)
 
-### Authentication Flow
+### Authentication flow
 
 The authentication process uses a two-phase approach:
 
@@ -72,7 +66,7 @@ The authentication process uses a two-phase approach:
 
 Both phases require encrypted payloads and a `LocalName` header. The encryption key rotates daily at 00:00 IST.
 
-### Data Retrieval Pattern
+### Data retrieval pattern
 
 All data retrieval methods follow a consistent pattern:
 
@@ -83,13 +77,11 @@ All data retrieval methods follow a consistent pattern:
 5. Raw JSON is parsed into a structured `Data Model` object
 6. Structured object returned to application
 
-**Sources:** [pyjiit/wrapper.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py) [pyjiit/encryption.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py) [README.rst12-16](https://github.com/codelif/pyjiit/blob/0fe02955/README.rst#L12-L16)
-
 ---
 
-## Key Abstractions
+## Key abstractions
 
-### Webportal Class
+### Webportal class
 
 The `Webportal` class (defined in [pyjiit/wrapper.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py)) is the primary interface for all interactions with the JIIT Webportal. It provides methods for:
 
@@ -101,7 +93,7 @@ The `Webportal` class (defined in [pyjiit/wrapper.py](https://github.com/codelif
 
 The class maintains an internal `WebportalSession` object that tracks authentication state and tokens.
 
-### WebportalSession Class
+### WebportalSession class
 
 The `WebportalSession` class (defined in [pyjiit/wrapper.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py)) encapsulates session state including:
 
@@ -112,7 +104,7 @@ The `WebportalSession` class (defined in [pyjiit/wrapper.py](https://github.com/
 
 Sessions can expire (typically after HTTP 401 responses), at which point methods raise `SessionExpired` exceptions.
 
-### Data Models
+### Data models
 
 Data model classes provide structured, type-safe access to API responses:
 
@@ -123,17 +115,15 @@ Data model classes provide structured, type-safe access to API responses:
 
 All data models provide a `from_json()` class method for construction from API responses.
 
-### Exception Hierarchy
+### Exception hierarchy
 
 The exception hierarchy (defined in [pyjiit/exceptions.py1-18](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/exceptions.py#L1-L18)) provides granular error handling:
 
-![Architecture Diagram](images/1-overview_diagram_3.png)
-
-**Sources:** [pyjiit/exceptions.py1-18](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/exceptions.py#L1-L18) [pyjiit/wrapper.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py)
+![Diagram 3](images/1-overview_diagram_3.png)
 
 ---
 
-## Encryption and Security
+## Encryption and security
 
 pyjiit implements a proprietary encryption scheme reverse-engineered from the JIIT Webportal. The encryption system uses:
 
@@ -145,8 +135,6 @@ pyjiit implements a proprietary encryption scheme reverse-engineered from the JI
 The encryption key is generated using the pattern: `"qa8y" + date_sequence + "ty1pn"`, where `date_sequence` is derived from the current date. Keys rotate at 00:00 IST, providing a 24-hour validity window.
 
 For detailed information about the encryption implementation, see [Security and Encryption](4-security-and-encryption).
-
-**Sources:** [pyjiit/encryption.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py) [README.rst33-34](https://github.com/codelif/pyjiit/blob/0fe02955/README.rst#L33-L34)
 
 ---
 
@@ -161,11 +149,9 @@ pyjiit has minimal runtime dependencies:
 
 The library requires Python 3.9 or higher. Development dependencies (for documentation) include Sphinx and the Furo theme.
 
-**Sources:** [pyproject.toml8-12](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L8-L12) [pyproject.toml19-21](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L19-L21)
-
 ---
 
-## Distribution and Documentation
+## Distribution and documentation
 
 pyjiit is distributed through:
 
@@ -180,5 +166,3 @@ The project uses:
 - **GitHub Actions** for automated testing, documentation builds, and PyPI publishing
 
 For information about building and deploying documentation, see [Documentation System](6-documentation-system). For information about the CI/CD pipeline, see [Deployment and CI/CD](7-deployment-and-cicd).
-
-**Sources:** [pyproject.toml1-6](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L1-L6) [pyproject.toml14-16](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L14-L16) [README.rst6](https://github.com/codelif/pyjiit/blob/0fe02955/README.rst#L6-L6)

@@ -4,7 +4,7 @@ This Python script automates the login process for a Sophos internet web authent
 
 [Download Latest Release](https://github.com/tashifkhan/sophos-auto-login/releases)
 
-## Documentation Sections
+## Documentation sections
 
 - [Overview](1-overview)
 - [Quick Start](2-quick-start)
@@ -23,7 +23,7 @@ This Python script automates the login process for a Sophos internet web authent
 - **Credential Management** - Add, edit, delete, import, and export credentials.
 - **Interactive Menu** - User-friendly menu for managing credentials and starting the auto-login process.
 - **CSV Import/Export** - Easily import/export credentials to/from a CSV file.
-- **Auto-Logout Handling** - Ensures seamless reconnection by automatically logging in when disconnected.
+- **Auto-Logout Handling** - Ensures smooth reconnection by automatically logging in when disconnected.
 - **Cross-Platform Compatibility** - Works on both Windows and Unix-based systems.
 - **Daemon Mode** - Run the auto-login process in the background (Unix-like systems only).
 - **Connection Check** - Periodically checks for internet connectivity and logs in if disconnected.

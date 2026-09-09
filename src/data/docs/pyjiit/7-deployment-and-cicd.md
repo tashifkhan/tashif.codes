@@ -1,6 +1,6 @@
 # Deployment and CI/CD
 
-This document explains how the pyjiit package is built, versioned, and published to the Python Package Index (PyPI). It covers the automated CI/CD workflows using GitHub Actions and the Poetry-based build system.
+This page explains how the pyjiit package is built, versioned, and published to the Python Package Index (PyPI). It covers the automated CI/CD workflows using GitHub Actions and the Poetry-based build system.
 
 **Scope**: This page focuses on package deployment to PyPI. For documentation deployment to GitHub Pages, see [Documentation Deployment](6.2-documentation-deployment). For local development setup and dependency management, see [Build System and Dependencies](5.2-build-system-and-dependencies).
 
@@ -15,15 +15,15 @@ The pyjiit project uses a streamlined deployment strategy consisting of:
 3. **GitHub Releases** as the primary trigger for deployments
 4. **Manual workflow dispatch** as a fallback trigger
 
-The deployment process is fully automated—creating a GitHub release automatically builds and publishes the package to PyPI without manual intervention.
+The deployment process is fully automated, creating a GitHub release automatically builds and publishes the package to PyPI without manual intervention.
 
 ---
 
-## Build System Configuration
+## Build system configuration
 
 The package build system is defined in `pyproject.toml` using modern Python packaging standards (PEP 621). The configuration specifies the build backend as Poetry, which handles dependency resolution, packaging, and publishing.
 
-### Package Metadata
+### Package metadata
 
 | Field | Value |
 | --- | --- |
@@ -51,7 +51,7 @@ The project separates runtime dependencies from development dependencies:
 
 Runtime dependencies are defined in [pyproject.toml9-12](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L9-L12) Documentation dependencies are in a separate `docs` group at [pyproject.toml19-21](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L19-L21) which keeps the production installation lean.
 
-### Build Backend
+### Build backend
 
 The build system configuration specifies `poetry-core` as the build backend:
 
@@ -65,15 +65,15 @@ This allows Poetry to build source distributions (`.tar.gz`) and wheel distribut
 
 ---
 
-## PyPI Publishing Workflow
+## PyPI publishing workflow
 
 The automated publishing workflow is defined in `.github/workflows/python-publish.yml`. This workflow handles the complete build and publish process when triggered.
 
-### Workflow Triggers
+### Workflow triggers
 
 The workflow can be triggered by two mechanisms:
 
-![Architecture Diagram](images/7-deployment-and-cicd_diagram_1.png)
+![Diagram 1](images/7-deployment-and-cicd_diagram_1.png)
 
 **Primary Trigger**: GitHub release publication [.github/workflows/python-publish.yml3-5](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/python-publish.yml#L3-L5)
 
@@ -83,18 +83,18 @@ When a release is published on GitHub, the workflow automatically executes. This
 
 The workflow can be manually triggered from the GitHub Actions UI, useful for hotfixes or testing the deployment process.
 
-### Workflow Permissions
+### Workflow permissions
 
 The workflow is granted `contents: write` permission [.github/workflows/python-publish.yml9-10](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/python-publish.yml#L9-L10) which allows it to:
 
 * Read repository contents during checkout
 * Write release artifacts if needed
 
-### Workflow Execution Steps
+### Workflow execution steps
 
 The publishing job runs on `ubuntu-latest` and executes the following steps:
 
-![Architecture Diagram](images/7-deployment-and-cicd_diagram_2.png)
+![Diagram 2](images/7-deployment-and-cicd_diagram_2.png)
 
 **Detailed Step Breakdown**:
 
@@ -107,7 +107,7 @@ The publishing job runs on `ubuntu-latest` and executes the following steps:
 | 5. Configure Token | Sets PyPI authentication token from `secrets.PYPI_API_KEY` | [.github/workflows/python-publish.yml27](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/python-publish.yml#L27-L27) |
 | 6. Build & Publish | Executes `poetry publish --build` to build and upload | [.github/workflows/python-publish.yml28](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/python-publish.yml#L28-L28) |
 
-### Authentication and Secrets
+### Authentication and secrets
 
 The workflow authenticates to PyPI using an API token stored in GitHub Secrets:
 
@@ -117,7 +117,7 @@ The workflow authenticates to PyPI using an API token stored in GitHub Secrets:
 
 This token must be generated from PyPI's account settings and added to the repository's GitHub Secrets. Poetry reads this configured token when executing `poetry publish`.
 
-### Build and Upload Process
+### Build and upload process
 
 The `poetry publish --build` command performs two operations:
 
@@ -131,7 +131,7 @@ The `--build` flag ensures that the latest code is packaged before upload, preve
 
 ---
 
-## Version Management
+## Version management
 
 Package versioning follows semantic versioning with alpha release indicators:
 
@@ -144,11 +144,11 @@ The version is manually updated in `pyproject.toml` before creating a GitHub rel
 
 ---
 
-## Complete CI/CD Pipeline
+## Complete CI/CD pipeline
 
 The following diagram shows the complete deployment pipeline from code changes to PyPI publication:
 
-![Architecture Diagram](images/7-deployment-and-cicd_diagram_3.png)
+![Diagram 3](images/7-deployment-and-cicd_diagram_3.png)
 
 **Pipeline Characteristics**:
 
@@ -159,11 +159,11 @@ The following diagram shows the complete deployment pipeline from code changes t
 
 ---
 
-## Release Process
+## Release process
 
 To deploy a new version of pyjiit to PyPI, follow this process:
 
-### Step 1: Update Version
+### Step 1: update version
 
 Edit the version field in `pyproject.toml`:
 
@@ -173,7 +173,7 @@ version = "0.1.0a9"  # Increment as appropriate
 
 Location: [pyproject.toml3](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml#L3-L3)
 
-### Step 2: Commit and Push
+### Step 2: commit and push
 
 ```
 git add pyproject.toml
@@ -181,7 +181,7 @@ git commit -m "Bump version to 0.1.0a9"
 git push origin main
 ```
 
-### Step 3: Create GitHub Release
+### Step 3: create GitHub release
 
 1. Navigate to the repository's Releases page
 2. Click "Draft a new release"
@@ -189,7 +189,7 @@ git push origin main
 4. Set the release title and description
 5. Click "Publish release"
 
-### Step 4: Automated Deployment
+### Step 4: automated deployment
 
 The `python-publish.yml` workflow executes automatically:
 
@@ -197,7 +197,7 @@ The `python-publish.yml` workflow executes automatically:
 * Publishes to PyPI using the configured token
 * Package becomes available via `pip install pyjiit` within minutes
 
-### Manual Deployment Alternative
+### Manual deployment alternative
 
 If needed, the workflow can be manually triggered:
 
@@ -211,7 +211,7 @@ The manual trigger uses [.github/workflows/python-publish.yml7-8](https://github
 
 ---
 
-## Workflow Comparison
+## Workflow comparison
 
 The pyjiit project has two primary GitHub Actions workflows with different purposes:
 
@@ -230,7 +230,7 @@ Both workflows use Poetry for dependency management but serve distinct purposes 
 
 ---
 
-## Dependency Lock File
+## Dependency lock file
 
 While `poetry.lock` is not included in the provided files, it plays a critical role in the deployment process:
 
@@ -243,21 +243,21 @@ The lock file ensures that the package built in CI/CD uses the same dependency v
 
 ---
 
-## Security Considerations
+## Security considerations
 
-### Token Security
+### Token security
 
 * PyPI API token stored as GitHub Secret `PYPI_API_KEY`
 * Token never appears in logs or workflow outputs
 * Token scope should be limited to the `pyjiit` package on PyPI
 
-### Permission Model
+### Permission model
 
 * Workflow has `contents: write` permission [.github/workflows/python-publish.yml10](https://github.com/codelif/pyjiit/blob/0fe02955/.github/workflows/python-publish.yml#L10-L10)
 * Only repository maintainers can create releases that trigger deployment
 * Manual workflow dispatch requires repository write access
 
-### Package Integrity
+### Package integrity
 
 * Published packages are immutable on PyPI (cannot be replaced)
 * Each version can only be published once

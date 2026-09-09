@@ -1,12 +1,12 @@
-# Development Guide
+# Development guide
 
-This document provides comprehensive instructions for developers working on the JIIT Timetable Creator. It covers environment setup, development workflows, modifying Python processing logic, managing timetable data, and deployment procedures.
+This page provides detailed instructions for developers working on the JIIT Timetable Creator. It covers environment setup, development workflows, modifying Python processing logic, managing timetable data, and deployment procedures.
 
 For information about the system architecture, see [System Architecture](3-system-architecture). For details on specific features, refer to pages [4](4-schedule-generation-(core-feature)) through [10](10-navigation-and-mobile-experience).
 
 ---
 
-## Environment Setup
+## Environment setup
 
 ### Prerequisites
 
@@ -19,7 +19,7 @@ The following software must be installed on your development machine:
 | Python | 3.8+ | For data preparation scripts |
 | Git | Latest | Version control |
 
-### Installation Steps
+### Installation steps
 
 **Step 1: Clone Repository**
 
@@ -68,13 +68,13 @@ Access the application in a browser and confirm:
 
 ---
 
-## Project Structure Reference
+## Project structure reference
 
 The codebase is organized into distinct layers with clear separation of concerns:
 
-![Architecture Diagram](images/12-development-guide_diagram_1.png)
+![Diagram 1](images/12-development-guide_diagram_1.png)
 
-### Key Directories
+### Key directories
 
 | Directory | Purpose | Key Files |
 | --- | --- | --- |
@@ -88,13 +88,13 @@ The codebase is organized into distinct layers with clear separation of concerns
 
 ---
 
-## Development Workflow
+## Development workflow
 
-### Development Cycle
+### Development cycle
 
-![Architecture Diagram](images/12-development-guide_diagram_2.png)
+![Diagram 2](images/12-development-guide_diagram_2.png)
 
-### Hot Module Replacement
+### Hot module replacement
 
 The development server uses Vite's HMR (Hot Module Replacement). Changes to the following trigger automatic reloads:
 
@@ -103,7 +103,7 @@ The development server uses Vite's HMR (Hot Module Replacement). Changes to the 
 * **TypeScript** (`.ts`): Compiles and updates affected modules
 * **Python Files** (`_creator.py`): Requires manual page refresh to reload Pyodide
 
-### Debugging Tools
+### Debugging tools
 
 **Browser Console Logging**
 
@@ -131,13 +131,13 @@ Monitor these requests:
 
 ---
 
-## Adding New Features
+## Adding new features
 
-### Feature Addition Workflow
+### Feature addition workflow
 
-![Architecture Diagram](images/12-development-guide_diagram_3.png)
+![Diagram 3](images/12-development-guide_diagram_3.png)
 
-### Example: Adding a New Page
+### Example: adding a new page
 
 **Step 1: Create Component File**
 
@@ -178,7 +178,7 @@ Update [src/components/navbar.tsx](https://github.com/tashifkhan/JIIT-time-table
 
 If feature requires global state, update [src/context/userContext.ts](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/context/userContext.ts) and [src/context/userContextProvider.tsx](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/context/userContextProvider.tsx)
 
-### Example: Adding New Timetable Processing Logic
+### Example: adding new timetable processing logic
 
 **Step 1: Define Python Function**
 
@@ -218,13 +218,13 @@ The existing `callPythonFunction` at [src/App.tsx141-146](https://github.com/tas
 
 ---
 
-## Modifying Python Modules
+## Modifying Python modules
 
-### Python Module Architecture
+### Python module architecture
 
-![Architecture Diagram](images/12-development-guide_diagram_4.png)
+![Diagram 4](images/12-development-guide_diagram_4.png)
 
-### Understanding Python Functions
+### Understanding Python functions
 
 **Function Naming Convention**
 
@@ -256,7 +256,7 @@ The existing `callPythonFunction` at [src/App.tsx141-146](https://github.com/tas
    * Converts time formats: "9:00 AM-10:00 AM" → ("09:00", "10:00")
    * Handles special cases like "NOON" and missing AM/PM indicators
 
-### Modifying Existing Functions
+### Modifying existing functions
 
 **Example: Updating Batch Parsing Logic**
 
@@ -282,7 +282,7 @@ patterns = [
 ]
 ```
 
-### Testing Python Changes
+### Testing Python changes
 
 **Method 1: Browser Console Testing**
 
@@ -314,13 +314,13 @@ Run: `python test_parser.py`
 
 ---
 
-## Creating and Updating Timetable Data
+## Creating and updating timetable data
 
-### Data Preparation Pipeline
+### Data preparation pipeline
 
-![Architecture Diagram](images/12-development-guide_diagram_5.png)
+![Diagram 5](images/12-development-guide_diagram_5.png)
 
-### JSON Data Schema
+### JSON data schema
 
 Timetable JSON files follow this structure:
 
@@ -382,7 +382,7 @@ Examples:
 | `P` | Practical | +1 hour from end time |
 | `C` | Combined | Standard (50 min) |
 
-### Using the Streamlit Data Creator
+### Using the streamlit data creator
 
 **Step 1: Install Dependencies**
 
@@ -417,7 +417,7 @@ public/data/time-table/ODD25/128.json
 public/data/time-table/ODD25/BCA.json
 ```
 
-### Manual JSON Editing
+### Manual JSON editing
 
 For minor corrections, edit JSON files directly:
 
@@ -444,7 +444,7 @@ For minor corrections, edit JSON files directly:
 ]
 ```
 
-### Adding New Semester Data
+### Adding new semester data
 
 To add a new semester (e.g., EVEN26):
 
@@ -462,9 +462,9 @@ fetch("/data/time-table/EVEN26/62.json")
 
 ---
 
-## Testing and Quality Assurance
+## Testing and quality assurance
 
-### Testing Checklist
+### Testing checklist
 
 **Unit Testing (Manual)**
 
@@ -480,7 +480,7 @@ fetch("/data/time-table/EVEN26/62.json")
 
 Test the complete workflow:
 
-![Architecture Diagram](images/12-development-guide_diagram_6.png)
+![Diagram 6](images/12-development-guide_diagram_6.png)
 
 1. Fill schedule form with valid data
 2. Verify schedule generates correctly
@@ -502,7 +502,7 @@ Test in these browsers:
 | Mobile Chrome | Latest | High |
 | Mobile Safari | Latest | High |
 
-### Common Issues and Fixes
+### Common issues and fixes
 
 **Issue: Pyodide Not Loading**
 
@@ -538,13 +538,13 @@ Fix:
 
 ---
 
-## Build and Deployment
+## Build and deployment
 
-### Build Process
+### Build process
 
-![Architecture Diagram](images/12-development-guide_diagram_7.png)
+![Diagram 7](images/12-development-guide_diagram_7.png)
 
-### Local Production Build
+### Local production build
 
 **Step 1: Build Application**
 
@@ -613,7 +613,7 @@ The [vercel.json1-16](https://github.com/tashifkhan/JIIT-time-table-website/blob
 }
 ```
 
-### Environment Variables
+### Environment variables
 
 No environment variables are required for basic deployment. For analytics:
 
@@ -623,7 +623,7 @@ No environment variables are required for basic deployment. For analytics:
 
 Set in Vercel dashboard under Project Settings → Environment Variables.
 
-### PWA Deployment
+### PWA deployment
 
 The application includes Progressive Web App support via [public/service-worker.js](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/service-worker.js) and [public/manifest.json](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/manifest.json)
 
@@ -644,7 +644,7 @@ When modifying cached resources, update version in [public/service-worker.js](ht
 const CACHE_VERSION = 'v2.0.0'; // Increment version
 ```
 
-### Post-Deployment Verification
+### Post-Deployment verification
 
 **Checklist**
 
@@ -668,9 +668,9 @@ Use Vercel Analytics and PostHog (if configured) to monitor:
 
 ---
 
-## Code Style Guidelines
+## Code style guidelines
 
-### TypeScript/React Conventions
+### TypeScript/React conventions
 
 **Component Structure**
 
@@ -712,7 +712,7 @@ export const Component: React.FC<Props> = ({ data, onSubmit }) => {
 | Types/Interfaces | PascalCase | `YourTietable` |
 | Files | kebab-case | `schedule-form.tsx` |
 
-### Python Conventions
+### Python conventions
 
 Follow PEP 8 standards:
 
@@ -737,11 +737,11 @@ def parse_batch_numbers(batch_input: str) -> list[str]:
 
 ---
 
-## Contributing Workflow
+## Contributing workflow
 
-### Pull Request Process
+### Pull request process
 
-![Architecture Diagram](images/12-development-guide_diagram_8.png)
+![Diagram 8](images/12-development-guide_diagram_8.png)
 
 **Step-by-Step Guide**
 
@@ -769,7 +769,7 @@ def parse_batch_numbers(batch_input: str) -> list[str]:
 
    ```
    ```
-   git add .
+   git add.
    git commit -m "feat: add descriptive feature name"
    ```
    ```
@@ -796,7 +796,7 @@ def parse_batch_numbers(batch_input: str) -> list[str]:
    * Screenshots if UI changes
    * Testing steps performed
 
-### Code Review Guidelines
+### Code review guidelines
 
 Reviewers check for:
 
@@ -808,9 +808,9 @@ Reviewers check for:
 
 ---
 
-## Advanced Topics
+## Advanced topics
 
-### Adding New Campus Support
+### Adding new campus support
 
 To add support for a new campus (e.g., Campus 227):
 
@@ -852,7 +852,7 @@ Create `public/data/time-table/ODD25/227.json` following the schema.
 
 Add "227" to campus dropdown in [src/components/schedule-form.tsx](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/schedule-form.tsx)
 
-### Optimizing Pyodide Load Time
+### Optimizing pyodide load time
 
 Pyodide initialization is ~10MB download. Optimization strategies:
 
@@ -865,7 +865,7 @@ Pyodide initialization is ~10MB download. Optimization strategies:
 4. **Use CDN with HTTP/2**
    Pyodide CDN already uses HTTP/2 for faster parallel downloads
 
-### Implementing Custom Export Formats
+### Implementing custom export formats
 
 To add new export format (e.g., iCal):
 

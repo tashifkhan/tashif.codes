@@ -1,6 +1,6 @@
-# Build and Distribution
+# Build and distribution
 
-This document provides a comprehensive overview of the build system and distribution pipeline for the jsjiit library. It covers how source code is transformed into distributable artifacts, packaged for npm, and made available through various consumption channels.
+This page provides a detailed overview of the build system and distribution pipeline for the jsjiit library. It covers how source code is transformed into distributable artifacts, packaged for npm, and made available through various consumption channels.
 
 For detailed information about the build script implementation, see [Build System](5.1-build-system). For package metadata and configuration, see [Package Configuration](5.2-package-configuration). For dependency management details, see [Dependency Management](5.3-dependency-management).
 
@@ -17,15 +17,13 @@ The jsjiit library uses an automated build and distribution pipeline that transf
 
 The build process is triggered automatically during package installation via the npm `prepare` lifecycle hook, ensuring that consumers always receive pre-built artifacts.
 
-**Sources:** [package.json1-61](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L1-L61) [build.mjs1-37](https://github.com/codeblech/jsjiit/blob/d123b782/build.mjs#L1-L37)
-
 ---
 
-## Build Pipeline Architecture
+## Build pipeline architecture
 
 The following diagram illustrates the complete build and distribution flow from source code to consumable artifacts:
 
-![Architecture Diagram](images/5-build-and-distribution_diagram_1.png)
+![Diagram 1](images/5-build-and-distribution_diagram_1.png)
 
 **Build Script Execution Flow**
 
@@ -44,15 +42,13 @@ Both builds share common configuration defined in [build.mjs3-9](https://github.
 | `sourcemap` | `true` | Generates debug source maps |
 | `target` | `["es2020"]` | Browser compatibility target |
 
-**Sources:** [build.mjs1-37](https://github.com/codeblech/jsjiit/blob/d123b782/build.mjs#L1-L37) [package.json15-16](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L15-L16)
-
 ---
 
-## Package Structure and Exports
+## Package structure and exports
 
 The package defines multiple entry points to support different consumption patterns. This diagram shows the relationship between package.json export configurations and the actual files:
 
-![Architecture Diagram](images/5-build-and-distribution_diagram_2.png)
+![Diagram 2](images/5-build-and-distribution_diagram_2.png)
 
 **Export Resolution Strategy**
 
@@ -66,15 +62,13 @@ The [package.json5-25](https://github.com/codeblech/jsjiit/blob/d123b782/package
 | `exports.import` | `"./dist/jsjiit.esm.js"` | Modern Node.js with ESM support |
 | `exports.require` | `"./dist/jsjiit.esm.js"` | CommonJS consumers (limited) |
 
-**Sources:** [package.json5-8](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L5-L8) [package.json22-25](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L22-L25) [package.json26-29](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L26-L29)
-
 ---
 
-## Distribution Channels
+## Distribution channels
 
 The library is distributed through multiple channels to maximize accessibility:
 
-![Architecture Diagram](images/5-build-and-distribution_diagram_3.png)
+![Diagram 3](images/5-build-and-distribution_diagram_3.png)
 
 **Distribution Targets**
 
@@ -92,15 +86,13 @@ The library is distributed through multiple channels to maximize accessibility:
    * Repository: `git+https://github.com/codeblech/jsjiit.git` [package.json18-21](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L18-L21)
    * Not a distribution channel, but used for development and issues
 
-**Sources:** [package.json2-3](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L2-L3) [package.json18-21](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L18-L21) [package.json26-29](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L26-L29)
-
 ---
 
-## Automated Build Lifecycle
+## Automated build lifecycle
 
 The build system integrates with npm's lifecycle hooks to ensure artifacts are always up-to-date:
 
-![Architecture Diagram](images/5-build-and-distribution_diagram_4.png)
+![Diagram 4](images/5-build-and-distribution_diagram_4.png)
 
 **Lifecycle Hook Chain**
 
@@ -129,11 +121,9 @@ This ensures that:
 * Published packages include pre-built artifacts
 * Contributors don't need to manually run build commands
 
-**Sources:** [package.json12-16](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L12-L16) [build.mjs11-36](https://github.com/codeblech/jsjiit/blob/d123b782/build.mjs#L11-L36)
-
 ---
 
-## Build Artifact Details
+## Build artifact details
 
 The build process generates the following files in the `dist/` directory:
 
@@ -166,11 +156,9 @@ The development bundle preserves:
 * Comments (where appropriate)
 * Logical code structure
 
-**Sources:** [build.mjs3-9](https://github.com/codeblech/jsjiit/blob/d123b782/build.mjs#L3-L9) [build.mjs14-26](https://github.com/codeblech/jsjiit/blob/d123b782/build.mjs#L14-L26)
-
 ---
 
-## Package Metadata
+## Package metadata
 
 The [package.json1-61](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L1-L61) contains essential metadata for npm registry listing and package discovery:
 
@@ -193,16 +181,12 @@ The package includes 19 keywords targeting various search terms related to JIIT,
 * Issues: `https://github.com/codeblech/jsjiit/issues`
 * Homepage: `https://github.com/codeblech/jsjiit#readme`
 
-**Sources:** [package.json1-56](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L1-L56)
-
 ---
 
-## Version Management
+## Version management
 
 The package version is centrally defined in [package.json3](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L3-L3) and must be manually updated before each release. Both [package.json3](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L3-L3) and [package-lock.json3](https://github.com/codeblech/jsjiit/blob/d123b782/package-lock.json#L3-L3) maintain version synchronization.
 
 **Current Version**: `0.0.23`
 
 The version follows semantic versioning (MAJOR.MINOR.PATCH) conventions, though as indicated by the `0.0.x` prefix, the library is still in initial development phase where breaking changes may occur between releases.
-
-**Sources:** [package.json3](https://github.com/codeblech/jsjiit/blob/d123b782/package.json#L3-L3) [package-lock.json1-4](https://github.com/codeblech/jsjiit/blob/d123b782/package-lock.json#L1-L4)

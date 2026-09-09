@@ -1,8 +1,8 @@
-# macOS and Linux Setup
+# macOS and linux setup
 
 On Unix-based systems, you can set up the script to run as a standalone application with a virtual environment or as a system service.
 
-## Step 1: Creating a Virtual Environment
+## Step 1: creating a virtual environment
 
 A virtual environment isolates the script's dependencies:
 
@@ -13,12 +13,12 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Step 2: Creating an Executable Script
+## Step 2: creating an executable script
 
 1.  **Add a Shebang Line**: point to your virtual environment's Python interpreter (find it with `which python`).
     ```python
     #!/path/to/sophos-auto-login/venv/bin/python3
-    # ... rest of autologin.py ...
+    #... rest of autologin.py...
     ```
 2.  **Make it Executable**:
     ```bash
@@ -26,10 +26,10 @@ pip install -r requirements.txt
     ```
 3.  **Run Directly**:
     ```bash
-    ./autologin.py
+./autologin.py
     ```
 
-## Step 3: Creating a System Service (Linux)
+## Step 3: creating a system service (linux)
 
 Create a systemd service at `/etc/systemd/system/sophos-autologin.service`:
 
@@ -56,7 +56,7 @@ sudo systemctl enable sophos-autologin.service
 sudo systemctl start sophos-autologin.service
 ```
 
-## Step 4: Creating a Launch Agent (macOS)
+## Step 4: creating a launch agent (macOS)
 
 Create a plist file at `~/Library/LaunchAgents/com.user.sophosautologin.plist`:
 

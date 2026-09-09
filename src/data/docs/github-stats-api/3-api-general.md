@@ -1,17 +1,17 @@
-# API Endpoints: General
+# API endpoints: general
 
 Endpoints for accessing API documentation and interactive exploration.
 
 ---
 
-## 1. Custom Documentation
+## 1. custom documentation
 
 Provides the custom HTML documentation page for the API.
 
 - **Endpoint**: `GET /`
 - **Description**: Returns the main dashboard and integrated documentation page.
 
-### Example Request
+### Example request
 
 ```bash
 curl -X GET https://github-stats.tashif.codes/
@@ -23,7 +23,7 @@ Returns an `HTML` response containing the dashboard UI.
 
 ---
 
-## 2. Swagger UI
+## 2. swagger UI
 
 Interactive API exploration and testing.
 
