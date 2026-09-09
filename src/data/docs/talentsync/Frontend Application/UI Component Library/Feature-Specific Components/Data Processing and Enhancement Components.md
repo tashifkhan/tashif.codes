@@ -1,40 +1,7 @@
-# Data Processing and Enhancement Components
-
-<cite>
-**Referenced Files in This Document**
-- [enrichment-modal.tsx](file://frontend/components/enrichment/enrichment-modal.tsx)
-- [loading-step.tsx](file://frontend/components/enrichment/loading-step.tsx)
-- [preview-step.tsx](file://frontend/components/enrichment/preview-step.tsx)
-- [question-step.tsx](file://frontend/components/enrichment/question-step.tsx)
-- [diff-preview-modal.tsx](file://frontend/components/improvement/diff-preview-modal.tsx)
-- [regenerate-dialog.tsx](file://frontend/components/regeneration/regenerate-dialog.tsx)
-- [instruction-step.tsx](file://frontend/components/regeneration/instruction-step.tsx)
-- [regenerate-preview-step.tsx](file://frontend/components/regeneration/regenerate-preview-step.tsx)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts)
-- [enrichment.service.ts](file://frontend/services/enrichment.service.ts)
-- [improvement.service.ts](file://frontend/services/improvement.service.ts)
-- [enrichment.ts](file://frontend/types/enrichment.ts)
-- [improvement.ts](file://frontend/types/improvement.ts)
-- [resume_enrichment.py](file://backend/app/routes/resume_enrichment.py)
-- [resume_improvement.py](file://backend/app/routes/resume_improvement.py)
-- [enrichment.py](file://backend/app/services/enrichment.py)
-- [improver.py](file://backend/app/services/improver.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Data processing and enhancement components
 
 ## Introduction
-This document explains the data processing and enhancement components that power AI-driven resume transformations. It covers:
+This page explains the data processing and enhancement components that power AI-driven resume transformations. It covers:
 - Enrichment workflow: modal dialogs, step-by-step wizards, loading states, and preview functionality
 - Improvement components: text difference display and modification previews
 - Regeneration components: iterative content refinement with instruction-based workflows
@@ -42,7 +9,7 @@ This document explains the data processing and enhancement components that power
 - Backend integration with FastAPI endpoints and LLM orchestration
 - Error handling, progress tracking, and user feedback mechanisms
 
-## Project Structure
+## Project structure
 The feature set spans frontend UI components, hooks for state management, typed interfaces, and backend services:
 - Frontend components implement modals and wizards for user interaction
 - Hooks manage multi-step state machines and coordinate with backend services
@@ -85,38 +52,7 @@ RE --> ESRV
 RI --> ISRV
 ```
 
-**Diagram sources**
-- [enrichment-modal.tsx](file://frontend/components/enrichment/enrichment-modal.tsx#L24-L260)
-- [loading-step.tsx](file://frontend/components/enrichment/loading-step.tsx#L11-L65)
-- [question-step.tsx](file://frontend/components/enrichment/question-step.tsx#L20-L146)
-- [preview-step.tsx](file://frontend/components/enrichment/preview-step.tsx#L40-L357)
-- [regenerate-dialog.tsx](file://frontend/components/regeneration/regenerate-dialog.tsx#L27-L206)
-- [instruction-step.tsx](file://frontend/components/regeneration/instruction-step.tsx#L92-L211)
-- [regenerate-preview-step.tsx](file://frontend/components/regeneration/regenerate-preview-step.tsx#L84-L280)
-- [diff-preview-modal.tsx](file://frontend/components/improvement/diff-preview-modal.tsx#L75-L349)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L237-L486)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L184-L303)
-- [enrichment.service.ts](file://frontend/services/enrichment.service.ts#L57-L185)
-- [improvement.service.ts](file://frontend/services/improvement.service.ts#L23-L49)
-- [resume_enrichment.py](file://backend/app/routes/resume_enrichment.py#L27-L118)
-- [resume_improvement.py](file://backend/app/routes/resume_improvement.py#L18-L43)
-- [enrichment.py](file://backend/app/services/enrichment.py#L227-L800)
-- [improver.py](file://backend/app/services/improver.py#L82-L549)
-
-**Section sources**
-- [enrichment-modal.tsx](file://frontend/components/enrichment/enrichment-modal.tsx#L1-L260)
-- [regenerate-dialog.tsx](file://frontend/components/regeneration/regenerate-dialog.tsx#L1-L206)
-- [diff-preview-modal.tsx](file://frontend/components/improvement/diff-preview-modal.tsx#L1-L349)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L1-L486)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L1-L303)
-- [enrichment.service.ts](file://frontend/services/enrichment.service.ts#L1-L185)
-- [improvement.service.ts](file://frontend/services/improvement.service.ts#L1-L49)
-- [resume_enrichment.py](file://backend/app/routes/resume_enrichment.py#L1-L118)
-- [resume_improvement.py](file://backend/app/routes/resume_improvement.py#L1-L43)
-- [enrichment.py](file://backend/app/services/enrichment.py#L1-L800)
-- [improver.py](file://backend/app/services/improver.py#L1-L549)
-
-## Core Components
+## Core components
 - Enrichment Modal: Orchestrates the end-to-end enrichment flow from analysis to applying enhancements, with animated transitions and error handling.
 - Question Step: Presents targeted questions derived from the analysis and collects user answers.
 - Preview Step: Displays before/after diffs, allows approvals/rejections, and supports bulk actions and comments.
@@ -129,21 +65,7 @@ RI --> ISRV
 - Services: Typed API clients wrapping backend endpoints for analysis, enhancement, refinement, regeneration, and improvement.
 - Backend Routes and Services: Orchestrate LLM prompts, transform resume data, and persist updates.
 
-**Section sources**
-- [enrichment-modal.tsx](file://frontend/components/enrichment/enrichment-modal.tsx#L24-L260)
-- [question-step.tsx](file://frontend/components/enrichment/question-step.tsx#L20-L146)
-- [preview-step.tsx](file://frontend/components/enrichment/preview-step.tsx#L40-L357)
-- [loading-step.tsx](file://frontend/components/enrichment/loading-step.tsx#L11-L65)
-- [regenerate-dialog.tsx](file://frontend/components/regeneration/regenerate-dialog.tsx#L27-L206)
-- [instruction-step.tsx](file://frontend/components/regeneration/instruction-step.tsx#L92-L211)
-- [regenerate-preview-step.tsx](file://frontend/components/regeneration/regenerate-preview-step.tsx#L84-L280)
-- [diff-preview-modal.tsx](file://frontend/components/improvement/diff-preview-modal.tsx#L75-L349)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L237-L486)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L184-L303)
-- [enrichment.service.ts](file://frontend/services/enrichment.service.ts#L57-L185)
-- [improvement.service.ts](file://frontend/services/improvement.service.ts#L23-L49)
-
-## Architecture Overview
+## Architecture overview
 The system follows a layered architecture:
 - UI Layer: Modal dialogs and wizard steps render state and collect user input
 - State Layer: Hooks implement finite state machines for multi-step flows
@@ -187,16 +109,9 @@ ES-->>UEW : Dispatch APPLY_SUCCESS
 UEW-->>EM : Update step to complete
 ```
 
-**Diagram sources**
-- [enrichment-modal.tsx](file://frontend/components/enrichment/enrichment-modal.tsx#L24-L260)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L237-L486)
-- [enrichment.service.ts](file://frontend/services/enrichment.service.ts#L57-L185)
-- [resume_enrichment.py](file://backend/app/routes/resume_enrichment.py#L27-L118)
-- [enrichment.py](file://backend/app/services/enrichment.py#L227-L586)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Enrichment Workflow
+### Enrichment workflow
 The enrichment flow transforms raw resume data into actionable insights and enhancements:
 - Analysis: Extracts weak areas and generates clarifying questions
 - Question Collection: Groups questions by item and validates completeness
@@ -222,26 +137,13 @@ Refining --> Preview
 Apply --> Complete(["Complete"])
 ```
 
-**Diagram sources**
-- [enrichment-modal.tsx](file://frontend/components/enrichment/enrichment-modal.tsx#L117-L186)
-- [question-step.tsx](file://frontend/components/enrichment/question-step.tsx#L30-L54)
-- [preview-step.tsx](file://frontend/components/enrichment/preview-step.tsx#L65-L68)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L290-L348)
-
 Key UI components:
 - EnrichmentModal orchestrates steps and error states
 - QuestionStep groups questions by item and enforces validation
 - PreviewStep renders diffs, manages patch reviews, and enables bulk actions
 - LoadingStep provides consistent progress feedback
 
-**Section sources**
-- [enrichment-modal.tsx](file://frontend/components/enrichment/enrichment-modal.tsx#L24-L260)
-- [question-step.tsx](file://frontend/components/enrichment/question-step.tsx#L20-L146)
-- [preview-step.tsx](file://frontend/components/enrichment/preview-step.tsx#L40-L357)
-- [loading-step.tsx](file://frontend/components/enrichment/loading-step.tsx#L11-L65)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L237-L486)
-
-### Improvement and Diff Preview
+### Improvement and diff preview
 The improvement workflow optimizes resumes for job descriptions and presents detailed diffs:
 - Keyword extraction and resume improvement
 - Diff calculation between original and improved versions
@@ -263,18 +165,7 @@ RI-->>IMS : ResumeImproveResponse
 IMS-->>DPM : Render diff summary, suggestions, warnings
 ```
 
-**Diagram sources**
-- [diff-preview-modal.tsx](file://frontend/components/improvement/diff-preview-modal.tsx#L75-L349)
-- [improvement.service.ts](file://frontend/services/improvement.service.ts#L23-L49)
-- [resume_improvement.py](file://backend/app/routes/resume_improvement.py#L18-L43)
-- [improver.py](file://backend/app/services/improver.py#L82-L549)
-
-**Section sources**
-- [diff-preview-modal.tsx](file://frontend/components/improvement/diff-preview-modal.tsx#L75-L349)
-- [improvement.service.ts](file://frontend/services/improvement.service.ts#L23-L49)
-- [improver.py](file://backend/app/services/improver.py#L368-L517)
-
-### Regeneration Workflow
+### Regeneration workflow
 The regeneration workflow lets users rewrite specific resume items with custom instructions:
 - Item selection with metadata
 - Instruction capture with character limits and quick suggestions
@@ -311,23 +202,7 @@ ES-->>URW : Dispatch APPLYING_SUCCESS
 URW-->>RD : Update step to complete
 ```
 
-**Diagram sources**
-- [regenerate-dialog.tsx](file://frontend/components/regeneration/regenerate-dialog.tsx#L27-L206)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L184-L303)
-- [enrichment.service.ts](file://frontend/services/enrichment.service.ts#L144-L183)
-- [resume_enrichment.py](file://backend/app/routes/resume_enrichment.py#L88-L118)
-- [enrichment.py](file://backend/app/services/enrichment.py#L588-L630)
-
-**Section sources**
-- [regenerate-dialog.tsx](file://frontend/components/regeneration/regenerate-dialog.tsx#L27-L206)
-- [instruction-step.tsx](file://frontend/components/regeneration/instruction-step.tsx#L92-L211)
-- [regenerate-preview-step.tsx](file://frontend/components/regeneration/regenerate-preview-step.tsx#L84-L280)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L184-L303)
-- [enrichment.service.ts](file://frontend/services/enrichment.service.ts#L144-L183)
-- [resume_enrichment.py](file://backend/app/routes/resume_enrichment.py#L88-L118)
-- [enrichment.py](file://backend/app/services/enrichment.py#L588-L630)
-
-### State Management and Data Models
+### State management and data models
 Both wizards implement deterministic state machines:
 - Enrichment Wizard: idle → analyzing → questions → generating → preview → refining → applying → complete/error
 - Regenerate Wizard: idle → selecting → instructing → generating → previewing → applying → complete/error
@@ -351,23 +226,13 @@ Error --> Idle : "reset"
 Complete --> Idle : "reset"
 ```
 
-**Diagram sources**
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L33-L209)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L76-L153)
-
 Typed interfaces define the shape of data exchanged:
 - Enrichment types: AnalysisResponse, EnhancementPreview, RegenerateResponse, PatchReviewState
 - Improvement types: ResumeDiffSummary, ResumeFieldDiff, RefinementStats, ImprovementSuggestion
 
-**Section sources**
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L33-L209)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L76-L153)
-- [enrichment.ts](file://frontend/types/enrichment.ts#L12-L282)
-- [improvement.ts](file://frontend/types/improvement.ts#L12-L124)
-
-## Dependency Analysis
+## Dependency analysis
 Frontend-to-backend dependencies:
-- Enrichment endpoints: analyze, enhance, refine, apply, regenerate, apply-regenerated
+- Enrichment endpoints: analyze, improve, refine, apply, regenerate, apply-regenerated
 - Improvement endpoints: improve, refine
 - Service layers transform resume data, construct prompts, and apply updates
 - Backend routes depend on LLM helpers and language utilities
@@ -382,25 +247,7 @@ UEW["use-enrichment-wizard.ts"] --> ES
 URW["use-regenerate-wizard.ts"] --> ES
 ```
 
-**Diagram sources**
-- [enrichment.service.ts](file://frontend/services/enrichment.service.ts#L57-L185)
-- [improvement.service.ts](file://frontend/services/improvement.service.ts#L23-L49)
-- [resume_enrichment.py](file://backend/app/routes/resume_enrichment.py#L27-L118)
-- [resume_improvement.py](file://backend/app/routes/resume_improvement.py#L18-L43)
-- [enrichment.py](file://backend/app/services/enrichment.py#L227-L800)
-- [improver.py](file://backend/app/services/improver.py#L82-L549)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L240-L428)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L187-L260)
-
-**Section sources**
-- [enrichment.service.ts](file://frontend/services/enrichment.service.ts#L57-L185)
-- [improvement.service.ts](file://frontend/services/improvement.service.ts#L23-L49)
-- [resume_enrichment.py](file://backend/app/routes/resume_enrichment.py#L27-L118)
-- [resume_improvement.py](file://backend/app/routes/resume_improvement.py#L18-L43)
-- [enrichment.py](file://backend/app/services/enrichment.py#L227-L800)
-- [improver.py](file://backend/app/services/improver.py#L82-L549)
-
-## Performance Considerations
+## Performance considerations
 - Parallelization: Regeneration tasks are executed concurrently per item to reduce latency.
 - Payload construction: Resume data is normalized and compacted before LLM calls to minimize token usage.
 - Diff computation: Efficient sequence matching minimizes overhead when computing differences.
@@ -408,7 +255,7 @@ URW["use-regenerate-wizard.ts"] --> ES
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Analysis failures: Validate resume ID and network connectivity; display user-friendly messages and allow retry.
 - Enhancement generation errors: Ensure all questions are answered; check backend logs for LLM errors.
@@ -421,12 +268,5 @@ User-facing error surfaces:
 - Regenerate Dialog error state with Go Back and Close actions
 - Diff Preview Modal displays warnings and refinement outcomes
 
-**Section sources**
-- [enrichment-modal.tsx](file://frontend/components/enrichment/enrichment-modal.tsx#L217-L253)
-- [regenerate-dialog.tsx](file://frontend/components/regeneration/regenerate-dialog.tsx#L162-L198)
-- [diff-preview-modal.tsx](file://frontend/components/improvement/diff-preview-modal.tsx#L173-L196)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L250-L270)
-- [use-regenerate-wizard.ts](file://frontend/hooks/use-regenerate-wizard.ts#L240-L243)
-
 ## Conclusion
-The data processing and enhancement components provide a robust, user-friendly pipeline for AI-driven resume transformations. Through modal-based wizards, typed state machines, and backend orchestration, users can iteratively refine their content with clear previews, actionable diffs, and reliable application of changes. The architecture balances UX polish with scalable backend processing, ensuring smooth progress tracking and effective error handling.
+The data processing and enhancement components provide a reliable, user-friendly pipeline for AI-driven resume transformations. Through modal-based wizards, typed state machines, and backend orchestration, users can iteratively refine their content with clear previews, actionable diffs, and reliable application of changes. The architecture balances UX polish with scalable backend processing, ensuring smooth progress tracking and effective error handling.

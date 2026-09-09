@@ -1,50 +1,16 @@
-# Landing Page Components
-
-<cite>
-**Referenced Files in This Document**
-- [landing-hero.tsx](file://frontend/components/landing-hero.tsx)
-- [know-more-button.tsx](file://frontend/components/know-more-button.tsx)
-- [cta.tsx](file://frontend/components/landing/cta.tsx)
-- [how-it-works.tsx](file://frontend/components/landing/how-it-works.tsx)
-- [testimonials.tsx](file://frontend/components/landing/testimonials.tsx)
-- [value-props.tsx](file://frontend/components/landing/value-props.tsx)
-- [competitive-edge-table.tsx](file://frontend/components/about/competitive-edge-table.tsx)
-- [database-architecture.tsx](file://frontend/components/about/database-architecture.tsx)
-- [dual-value.tsx](file://frontend/components/about/dual-value.tsx)
-- [market-growth.tsx](file://frontend/components/about/market-growth.tsx)
-- [problem-stats.tsx](file://frontend/components/about/problem-stats.tsx)
-- [scroll-progress.tsx](file://frontend/components/about/scroll-progress.tsx)
-- [section-divider.tsx](file://frontend/components/about/section-divider.tsx)
-- [section-nav.tsx](file://frontend/components/about/section-nav.tsx)
-- [sections.tsx](file://frontend/components/about/sections.tsx)
-- [target-industries.tsx](file://frontend/components/about/target-industries.tsx)
-- [tech-stack-grid.tsx](file://frontend/components/about/tech-stack-grid.tsx)
-- [workflow-interactive.tsx](file://frontend/components/about/workflow-interactive.tsx)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Landing page components
 
 ## Introduction
-This document explains the landing page and marketing components used to convert visitors into engaged users and inform decision-makers. It covers:
+This page explains the landing page and marketing components used to convert visitors into engaged users and inform decision-makers. It covers:
 - Marketing hero and CTAs
 - Feature explanation and benefits
 - Social proof and testimonials
 - About page pillars, pipeline, data model, tech stack, and industry targeting
 - Engagement prompts and navigation aids
 
-Each component’s purpose, styling approach, responsiveness, and integration with marketing copy is documented. Usage examples show how to assemble cohesive landing experiences across different contexts (e.g., job seeker vs. recruiter, product demo vs. investor storytelling).
+Each component's purpose, styling approach, responsiveness, and integration with marketing copy is documented. Usage examples show how to assemble cohesive landing experiences across different contexts (e.g., job seeker vs. recruiter, product demo vs. investor storytelling).
 
-## Project Structure
+## Project structure
 The components are organized by feature area:
 - Landing marketing components live under frontend/components/landing
 - The main hero and engagement prompt live under frontend/components
@@ -106,47 +72,7 @@ SCR --> STACK
 SCR --> IND
 ```
 
-**Diagram sources**
-- [landing-hero.tsx](file://frontend/components/landing-hero.tsx#L16-L323)
-- [know-more-button.tsx](file://frontend/components/know-more-button.tsx#L7-L22)
-- [cta.tsx](file://frontend/components/landing/cta.tsx#L6-L62)
-- [how-it-works.tsx](file://frontend/components/landing/how-it-works.tsx#L28-L105)
-- [value-props.tsx](file://frontend/components/landing/value-props.tsx#L33-L93)
-- [testimonials.tsx](file://frontend/components/landing/testimonials.tsx#L26-L81)
-- [sections.tsx](file://frontend/components/about/sections.tsx#L14-L299)
-- [problem-stats.tsx](file://frontend/components/about/problem-stats.tsx#L27-L101)
-- [market-growth.tsx](file://frontend/components/about/market-growth.tsx#L7-L152)
-- [dual-value.tsx](file://frontend/components/about/dual-value.tsx#L23-L136)
-- [competitive-edge-table.tsx](file://frontend/components/about/competitive-edge-table.tsx#L38-L126)
-- [workflow-interactive.tsx](file://frontend/components/about/workflow-interactive.tsx#L100-L204)
-- [database-architecture.tsx](file://frontend/components/about/database-architecture.tsx#L7-L130)
-- [tech-stack-grid.tsx](file://frontend/components/about/tech-stack-grid.tsx#L43-L128)
-- [target-industries.tsx](file://frontend/components/about/target-industries.tsx#L35-L147)
-- [section-nav.tsx](file://frontend/components/about/section-nav.tsx#L19-L69)
-- [section-divider.tsx](file://frontend/components/about/section-divider.tsx#L5-L25)
-- [scroll-progress.tsx](file://frontend/components/about/scroll-progress.tsx#L4-L13)
-
-**Section sources**
-- [landing-hero.tsx](file://frontend/components/landing-hero.tsx#L16-L323)
-- [know-more-button.tsx](file://frontend/components/know-more-button.tsx#L7-L22)
-- [cta.tsx](file://frontend/components/landing/cta.tsx#L6-L62)
-- [how-it-works.tsx](file://frontend/components/landing/how-it-works.tsx#L28-L105)
-- [value-props.tsx](file://frontend/components/landing/value-props.tsx#L33-L93)
-- [testimonials.tsx](file://frontend/components/landing/testimonials.tsx#L26-L81)
-- [sections.tsx](file://frontend/components/about/sections.tsx#L14-L299)
-- [problem-stats.tsx](file://frontend/components/about/problem-stats.tsx#L27-L101)
-- [market-growth.tsx](file://frontend/components/about/market-growth.tsx#L7-L152)
-- [dual-value.tsx](file://frontend/components/about/dual-value.tsx#L23-L136)
-- [competitive-edge-table.tsx](file://frontend/components/about/competitive-edge-table.tsx#L38-L126)
-- [workflow-interactive.tsx](file://frontend/components/about/workflow-interactive.tsx#L100-L204)
-- [database-architecture.tsx](file://frontend/components/about/database-architecture.tsx#L7-L130)
-- [tech-stack-grid.tsx](file://frontend/components/about/tech-stack-grid.tsx#L43-L128)
-- [target-industries.tsx](file://frontend/components/about/target-industries.tsx#L35-L147)
-- [section-nav.tsx](file://frontend/components/about/section-nav.tsx#L19-L69)
-- [section-divider.tsx](file://frontend/components/about/section-divider.tsx#L5-L25)
-- [scroll-progress.tsx](file://frontend/components/about/scroll-progress.tsx#L4-L13)
-
-## Core Components
+## Core components
 - LandingHero: Hero unit with dynamic headline, mode toggle (seeker vs. recruiter), metrics, and primary CTAs. Implements animated typing and ambient visuals.
 - KnowMoreButton: Persistent floating action to drive deeper engagement to the About page.
 - FinalCTA: Conversion-focused section with gradient headline, supporting text, paired buttons, and trust indicators.
@@ -156,15 +82,7 @@ SCR --> IND
 
 These components are designed to be composed into landing pages that speak to distinct personas and use cases, while maintaining consistent brand language and motion.
 
-**Section sources**
-- [landing-hero.tsx](file://frontend/components/landing-hero.tsx#L16-L323)
-- [know-more-button.tsx](file://frontend/components/know-more-button.tsx#L7-L22)
-- [cta.tsx](file://frontend/components/landing/cta.tsx#L6-L62)
-- [how-it-works.tsx](file://frontend/components/landing/how-it-works.tsx#L28-L105)
-- [value-props.tsx](file://frontend/components/landing/value-props.tsx#L33-L93)
-- [testimonials.tsx](file://frontend/components/landing/testimonials.tsx#L26-L81)
-
-## Architecture Overview
+## Architecture overview
 The landing and About page components share a cohesive design system:
 - Motion primitives via Framer Motion for entrance, hover, and progress effects
 - Brand-centric tokens (colors, typography, spacing) applied consistently
@@ -196,29 +114,23 @@ ANCHOR --> PROGRESS
 PROGRESS --> NAVBAR
 ```
 
-**Diagram sources**
-- [landing-hero.tsx](file://frontend/components/landing-hero.tsx#L16-L323)
-- [scroll-progress.tsx](file://frontend/components/about/scroll-progress.tsx#L4-L13)
-- [section-nav.tsx](file://frontend/components/about/section-nav.tsx#L19-L69)
-- [sections.tsx](file://frontend/components/about/sections.tsx#L14-L299)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### LandingHero
 Purpose:
 - Establish brand promise, present dual persona value, and drive immediate action.
 Key behaviors:
 - Animated typing effect cycles words and pauses at completion.
-- Mode toggle switches copy, metrics, and CTA labels between “seeker” and “recruiter.”
+- Mode toggle switches copy, metrics, and CTA labels between "seeker" and "recruiter."
 - Ambient blobs and gradients create depth; desktop preview panel highlights outputs.
 Responsiveness:
 - Mobile-first magazine-style layout with centered hero and minimal metrics strip.
 - Desktop layout splits content and preview, with mode switch and prominent CTAs.
 Integration with marketing copy:
-- Headline emphasizes transformation (“Turn Resumes Into…”), supported by concise taglines and metrics.
+- Headline emphasizes transformation ("Turn Resumes Into..."), supported by concise taglines and metrics.
 Usage examples:
-- Job seeker landing: default mode “seeker,” CTA links to seeker dashboard.
-- Recruiter landing: switch to “recruiter,” CTA links to recruiter console.
+- Job seeker landing: default mode "seeker," CTA links to seeker dashboard.
+- Recruiter landing: switch to "recruiter," CTA links to recruiter console.
 
 ```mermaid
 sequenceDiagram
@@ -238,21 +150,13 @@ U->>LH : Click primary CTA
 LH-->>U : Navigate to dashboard
 ```
 
-**Diagram sources**
-- [landing-hero.tsx](file://frontend/components/landing-hero.tsx#L27-L52)
-- [landing-hero.tsx](file://frontend/components/landing-hero.tsx#L186-L200)
-- [landing-hero.tsx](file://frontend/components/landing-hero.tsx#L202-L232)
-
-**Section sources**
-- [landing-hero.tsx](file://frontend/components/landing-hero.tsx#L16-L323)
-
 ### KnowMoreButton
 Purpose:
 - Provide persistent, low-friction access to the About page for curiosity-driven users.
 Behavior:
 - Fixed-position floating button with subtle hover animation and scale effect.
 Integration with marketing copy:
-- “Know More” communicates transparency and invites deeper exploration.
+- "Know More" communicates transparency and invites deeper exploration.
 Usage examples:
 - Place on landing pages after hero or conversion section to reduce bounce.
 
@@ -264,12 +168,6 @@ Scale --> Click["Click to About page"]
 Click --> End(["Engagement"])
 ```
 
-**Diagram sources**
-- [know-more-button.tsx](file://frontend/components/know-more-button.tsx#L7-L22)
-
-**Section sources**
-- [know-more-button.tsx](file://frontend/components/know-more-button.tsx#L7-L22)
-
 ### FinalCTA
 Purpose:
 - Convert attention into action with paired CTAs for seeker and recruiter.
@@ -277,7 +175,7 @@ Behavior:
 - Staggered entrance animations for headline, body, and buttons.
 - Trust indicators below CTAs reinforce risk reduction.
 Integration with marketing copy:
-- Clear value proposition and benefit framing (“No credit card required • Fast onboarding”).
+- Clear value proposition and benefit framing ("No credit card required • Fast onboarding").
 Usage examples:
 - After feature explanation or testimonials to close the funnel.
 
@@ -290,12 +188,6 @@ FadeIn3 --> Trust["Show trust indicators"]
 Trust --> CTA["User clicks CTA"]
 CTA --> Redirect["Navigate to role-specific dashboard"]
 ```
-
-**Diagram sources**
-- [cta.tsx](file://frontend/components/landing/cta.tsx#L13-L58)
-
-**Section sources**
-- [cta.tsx](file://frontend/components/landing/cta.tsx#L6-L62)
 
 ### HowItWorks
 Purpose:
@@ -316,12 +208,6 @@ Animate --> Hover["Hover reveals subtle glow"]
 Hover --> End(["User scans steps"])
 ```
 
-**Diagram sources**
-- [how-it-works.tsx](file://frontend/components/landing/how-it-works.tsx#L56-L98)
-
-**Section sources**
-- [how-it-works.tsx](file://frontend/components/landing/how-it-works.tsx#L28-L105)
-
 ### ValueProps
 Purpose:
 - Present core benefits with iconography and hover states.
@@ -340,12 +226,6 @@ Cards --> Animate["Animate with staggered delays"]
 Animate --> Hover["Hover reveals overlay glow"]
 Hover --> End(["User reads benefits"])
 ```
-
-**Diagram sources**
-- [value-props.tsx](file://frontend/components/landing/value-props.tsx#L60-L86)
-
-**Section sources**
-- [value-props.tsx](file://frontend/components/landing/value-props.tsx#L33-L93)
 
 ### Testimonials
 Purpose:
@@ -367,15 +247,9 @@ Scroll --> Hover["Hover reveals accent glow"]
 Hover --> End(["User reads quotes"])
 ```
 
-**Diagram sources**
-- [testimonials.tsx](file://frontend/components/landing/testimonials.tsx#L54-L76)
+### About page components
 
-**Section sources**
-- [testimonials.tsx](file://frontend/components/landing/testimonials.tsx#L26-L81)
-
-### About Page Components
-
-#### Sections (Hero, Pillars, Workflow, Footer)
+#### Sections (hero, pillars, workflow, footer)
 Purpose:
 - Tell the story of the company, principles, and end-to-end workflow.
 Behavior:
@@ -405,12 +279,6 @@ U->>Foot : Scroll to footer
 Foot-->>U : Call-to-action buttons
 ```
 
-**Diagram sources**
-- [sections.tsx](file://frontend/components/about/sections.tsx#L14-L299)
-
-**Section sources**
-- [sections.tsx](file://frontend/components/about/sections.tsx#L14-L299)
-
 #### ProblemStats
 Purpose:
 - Highlight pain points with striking stats and visual emphasis.
@@ -429,12 +297,6 @@ Animate --> Hover["Hover enhances glow and text"]
 Hover --> End(["User absorbs stats"])
 ```
 
-**Diagram sources**
-- [problem-stats.tsx](file://frontend/components/about/problem-stats.tsx#L52-L95)
-
-**Section sources**
-- [problem-stats.tsx](file://frontend/components/about/problem-stats.tsx#L27-L101)
-
 #### MarketGrowth
 Purpose:
 - Demonstrate TAM and growth trends to support positioning.
@@ -452,12 +314,6 @@ Panels --> Animate["Animate bars with staggered delays"]
 Animate --> Hover["Hover enhances text and glow"]
 Hover --> End(["User reads projections"])
 ```
-
-**Diagram sources**
-- [market-growth.tsx](file://frontend/components/about/market-growth.tsx#L33-L147)
-
-**Section sources**
-- [market-growth.tsx](file://frontend/components/about/market-growth.tsx#L7-L152)
 
 #### DualValue
 Purpose:
@@ -478,12 +334,6 @@ Connect --> Hover["Hover enhances glow and text"]
 Hover --> End(["User understands flywheel"])
 ```
 
-**Diagram sources**
-- [dual-value.tsx](file://frontend/components/about/dual-value.tsx#L54-L131)
-
-**Section sources**
-- [dual-value.tsx](file://frontend/components/about/dual-value.tsx#L23-L136)
-
 #### CompetitiveEdgeTable
 Purpose:
 - Compare feature support across categories to highlight differentiation.
@@ -502,12 +352,6 @@ Cells --> Hover["Hover enhances row"]
 Hover --> Legend["Legend explains statuses"]
 Legend --> End(["User compares offerings"])
 ```
-
-**Diagram sources**
-- [competitive-edge-table.tsx](file://frontend/components/about/competitive-edge-table.tsx#L86-L120)
-
-**Section sources**
-- [competitive-edge-table.tsx](file://frontend/components/about/competitive-edge-table.tsx#L38-L126)
 
 #### WorkflowInteractive
 Purpose:
@@ -528,12 +372,6 @@ Hover --> Mobile["Mobile: fallback image"]
 Mobile --> End(["User understands pipeline"])
 ```
 
-**Diagram sources**
-- [workflow-interactive.tsx](file://frontend/components/about/workflow-interactive.tsx#L126-L184)
-
-**Section sources**
-- [workflow-interactive.tsx](file://frontend/components/about/workflow-interactive.tsx#L100-L204)
-
 #### DatabaseArchitecture
 Purpose:
 - Communicate data model and persistence design.
@@ -551,12 +389,6 @@ Columns --> Hover["Hover enhances images"]
 Hover --> End(["User understands schema"])
 ```
 
-**Diagram sources**
-- [database-architecture.tsx](file://frontend/components/about/database-architecture.tsx#L32-L125)
-
-**Section sources**
-- [database-architecture.tsx](file://frontend/components/about/database-architecture.tsx#L7-L130)
-
 #### TechStackGrid
 Purpose:
 - Showcase the technology foundation with categorized modules.
@@ -573,12 +405,6 @@ Start(["Viewport enters"]) --> Grid["Render 3 category cards"]
 Grid --> Hover["Hover enhances borders and glow"]
 Hover --> End(["User understands stack"])
 ```
-
-**Diagram sources**
-- [tech-stack-grid.tsx](file://frontend/components/about/tech-stack-grid.tsx#L68-L122)
-
-**Section sources**
-- [tech-stack-grid.tsx](file://frontend/components/about/tech-stack-grid.tsx#L43-L128)
 
 #### TargetIndustries
 Purpose:
@@ -598,12 +424,6 @@ Legend --> Hover["Hover enhances items"]
 Hover --> End(["User understands focus"])
 ```
 
-**Diagram sources**
-- [target-industries.tsx](file://frontend/components/about/target-industries.tsx#L64-L142)
-
-**Section sources**
-- [target-industries.tsx](file://frontend/components/about/target-industries.tsx#L35-L147)
-
 #### SectionNav
 Purpose:
 - Provide sticky navigation across long About page sections.
@@ -622,12 +442,6 @@ Active --> Highlight["Animate highlight pill"]
 Highlight --> End(["User navigates sections"])
 ```
 
-**Diagram sources**
-- [section-nav.tsx](file://frontend/components/about/section-nav.tsx#L22-L38)
-
-**Section sources**
-- [section-nav.tsx](file://frontend/components/about/section-nav.tsx#L19-L69)
-
 #### SectionDivider
 Purpose:
 - Visually separate major sections with a subtle gradient bar.
@@ -643,12 +457,6 @@ flowchart TD
 Start(["Viewport enters"]) --> Divider["Render gradient divider"]
 Divider --> End(["User perceives section break"])
 ```
-
-**Diagram sources**
-- [section-divider.tsx](file://frontend/components/about/section-divider.tsx#L11-L23)
-
-**Section sources**
-- [section-divider.tsx](file://frontend/components/about/section-divider.tsx#L5-L25)
 
 #### ScrollProgress
 Purpose:
@@ -667,13 +475,7 @@ Track --> Scale["Scale progress bar"]
 Scale --> End(["User sees completion"])
 ```
 
-**Diagram sources**
-- [scroll-progress.tsx](file://frontend/components/about/scroll-progress.tsx#L4-L12)
-
-**Section sources**
-- [scroll-progress.tsx](file://frontend/components/about/scroll-progress.tsx#L4-L13)
-
-## Dependency Analysis
+## Dependency analysis
 - Motion and styling:
   - Framer Motion powers entrances, hover states, and progress bars.
   - Tailwind utilities define responsive grids, borders, and backdrop blur.
@@ -721,52 +523,14 @@ BRAND --> DIV
 BRAND --> SCR
 ```
 
-**Diagram sources**
-- [landing-hero.tsx](file://frontend/components/landing-hero.tsx#L16-L323)
-- [cta.tsx](file://frontend/components/landing/cta.tsx#L6-L62)
-- [how-it-works.tsx](file://frontend/components/landing/how-it-works.tsx#L28-L105)
-- [value-props.tsx](file://frontend/components/landing/value-props.tsx#L33-L93)
-- [testimonials.tsx](file://frontend/components/landing/testimonials.tsx#L26-L81)
-- [sections.tsx](file://frontend/components/about/sections.tsx#L14-L299)
-- [problem-stats.tsx](file://frontend/components/about/problem-stats.tsx#L27-L101)
-- [market-growth.tsx](file://frontend/components/about/market-growth.tsx#L7-L152)
-- [dual-value.tsx](file://frontend/components/about/dual-value.tsx#L23-L136)
-- [competitive-edge-table.tsx](file://frontend/components/about/competitive-edge-table.tsx#L38-L126)
-- [workflow-interactive.tsx](file://frontend/components/about/workflow-interactive.tsx#L100-L204)
-- [database-architecture.tsx](file://frontend/components/about/database-architecture.tsx#L7-L130)
-- [tech-stack-grid.tsx](file://frontend/components/about/tech-stack-grid.tsx#L43-L128)
-- [target-industries.tsx](file://frontend/components/about/target-industries.tsx#L35-L147)
-- [section-nav.tsx](file://frontend/components/about/section-nav.tsx#L19-L69)
-- [section-divider.tsx](file://frontend/components/about/section-divider.tsx#L5-L25)
-- [scroll-progress.tsx](file://frontend/components/about/scroll-progress.tsx#L4-L13)
-
-**Section sources**
-- [landing-hero.tsx](file://frontend/components/landing-hero.tsx#L16-L323)
-- [cta.tsx](file://frontend/components/landing/cta.tsx#L6-L62)
-- [how-it-works.tsx](file://frontend/components/landing/how-it-works.tsx#L28-L105)
-- [value-props.tsx](file://frontend/components/landing/value-props.tsx#L33-L93)
-- [testimonials.tsx](file://frontend/components/landing/testimonials.tsx#L26-L81)
-- [sections.tsx](file://frontend/components/about/sections.tsx#L14-L299)
-- [problem-stats.tsx](file://frontend/components/about/problem-stats.tsx#L27-L101)
-- [market-growth.tsx](file://frontend/components/about/market-growth.tsx#L7-L152)
-- [dual-value.tsx](file://frontend/components/about/dual-value.tsx#L23-L136)
-- [competitive-edge-table.tsx](file://frontend/components/about/competitive-edge-table.tsx#L38-L126)
-- [workflow-interactive.tsx](file://frontend/components/about/workflow-interactive.tsx#L100-L204)
-- [database-architecture.tsx](file://frontend/components/about/database-architecture.tsx#L7-L130)
-- [tech-stack-grid.tsx](file://frontend/components/about/tech-stack-grid.tsx#L43-L128)
-- [target-industries.tsx](file://frontend/components/about/target-industries.tsx#L35-L147)
-- [section-nav.tsx](file://frontend/components/about/section-nav.tsx#L19-L69)
-- [section-divider.tsx](file://frontend/components/about/section-divider.tsx#L5-L25)
-- [scroll-progress.tsx](file://frontend/components/about/scroll-progress.tsx#L4-L13)
-
-## Performance Considerations
+## Performance considerations
 - Prefer lazy-loaded images for charts and diagrams to minimize initial payload.
 - Keep motion animations scoped to visible sections to avoid layout thrash.
 - Use CSS containment and transform-style for smoother hover effects.
 - Optimize SVGs and gradients to reduce render cost on lower-end devices.
 - Defer heavy animations until viewport-visible to improve First Contentful Paint.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Animations not triggering:
   - Verify viewport and amount thresholds are appropriate for section heights.
   - Confirm Framer Motion is initialized and not blocked by SSR environments.
@@ -780,12 +544,8 @@ BRAND --> SCR
   - Check backdrop blur and gradient classes are not conflicting with pointer-events.
   - Ensure parent containers allow pointer events for interactive elements.
 
-**Section sources**
-- [scroll-progress.tsx](file://frontend/components/about/scroll-progress.tsx#L4-L12)
-- [section-nav.tsx](file://frontend/components/about/section-nav.tsx#L22-L38)
-
 ## Conclusion
-These components form a cohesive, motion-rich system for communicating value, guiding conversions, and telling a compelling story. By composing them thoughtfully—aligning hero messaging with feature explanations, benefits, and social proof—you can craft landing pages that resonate with both job seekers and recruiters while informing stakeholders with technical depth.
+These components form a cohesive, motion-rich system for communicating value, guiding conversions, and telling a compelling story. By composing them thoughtfully, aligning hero messaging with feature explanations, benefits, and social proof, you can craft landing pages that resonate with both job seekers and recruiters while informing stakeholders with technical depth.
 
 ## Appendices
 - Example compositions:

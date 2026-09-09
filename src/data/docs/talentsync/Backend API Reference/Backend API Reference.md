@@ -1,42 +1,9 @@
-# Backend API Reference
-
-<cite>
-**Referenced Files in This Document**
-- [backend/app/main.py](file://backend/app/main.py)
-- [backend/pyproject.toml](file://backend/pyproject.toml)
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py)
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py)
-- [backend/app/routes/interview.py](file://backend/app/routes/interview.py)
-- [backend/app/routes/cold_mail.py](file://backend/app/routes/cold_mail.py)
-- [backend/app/routes/cover_letter.py](file://backend/app/routes/cover_letter.py)
-- [backend/app/routes/hiring_assistant.py](file://backend/app/routes/hiring_assistant.py)
-- [backend/app/routes/tailored_resume.py](file://backend/app/routes/tailored_resume.py)
-- [backend/app/routes/jd_editor.py](file://backend/app/routes/jd_editor.py)
-- [backend/app/routes/resume_improvement.py](file://backend/app/routes/resume_improvement.py)
-- [backend/app/routes/resume_enrichment.py](file://backend/app/routes/resume_enrichment.py)
-- [backend/app/models/schemas.py](file://backend/app/models/schemas.py)
-- [backend/app/models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py)
-- [backend/app/models/common/schemas.py](file://backend/app/models/common/schemas.py)
-- [backend/app/models/interview/schemas.py](file://backend/app/models/interview/schemas.py)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Backend API reference
 
 ## Introduction
-This document provides a comprehensive API reference for the TalentSync-Normies backend RESTful API built with FastAPI. It covers all endpoints grouped by functional areas: resume analysis, ATS evaluation, interview system, communication tools, and resume enhancement. For each endpoint, you will find HTTP methods, URL patterns, request/response schemas, authentication requirements, error handling, and practical examples. It also documents v1 versus v2 API differences and migration paths, along with rate limiting, pagination, filtering, sorting, authentication headers, session management, role-based access control, webhook endpoints, real-time features, and streaming responses.
+This page provides a detailed API reference for the TalentSync-Normies backend RESTful API built with FastAPI. It covers all endpoints grouped by functional areas: resume analysis, ATS evaluation, interview system, communication tools, and resume enhancement. For each endpoint, you will find HTTP methods, URL patterns, request/response schemas, authentication requirements, error handling, and practical examples. It also documents v1 versus v2 API differences and migration paths, along with rate limiting, pagination, filtering, sorting, authentication headers, session management, role-based access control, webhook endpoints, real-time features, and streaming responses.
 
-## Project Structure
+## Project structure
 The backend is organized around a modular FastAPI application with separate routers for each functional domain. Routers are mounted under both v1 and v2 prefixes to enable incremental migration. The application logs requests and responses and applies CORS middleware. LLM configuration is injected per request via headers.
 
 ```mermaid
@@ -68,13 +35,7 @@ V2 --> S8["Resume Enrichment<br/>/resume/enrichment/*"]
 V2 --> S9["JD Editor<br/>/resume/edit-by-jd"]
 ```
 
-**Diagram sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L197)
-
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L197)
-
-## Core Components
+## Core components
 - FastAPI Application: Centralized routing, middleware, and logging.
 - Routers: Modular endpoints grouped by domain (e.g., ATS, Interview, Cold Mail).
 - LLM Dependency Injection: Per-request LLM creation via headers for flexible provider/model selection.
@@ -86,11 +47,7 @@ Key characteristics:
 - Streaming endpoints: Interview service supports Server-Sent Events (SSE).
 - File-based and text-based variants: Many endpoints offer both multipart/form-data and JSON payloads.
 
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L63-L154)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L22-L68)
-
-## Architecture Overview
+## Architecture overview
 The API follows a layered architecture:
 - Entry points: Routers define endpoints under /api/v1 and /api/v2.
 - Processing: Route handlers depend on LLM instances resolved per request.
@@ -108,13 +65,9 @@ Handlers --> LLM["LLM Dependency<br/>get_request_llm()"]
 Services --> Models["Pydantic Models"]
 ```
 
-**Diagram sources**
-- [backend/app/main.py](file://backend/app/main.py#L63-L154)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L22-L68)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Authentication and Authorization
+### Authentication and authorization
 - Authentication headers:
   - X-LLM-Provider: LLM provider identifier (e.g., openai, anthropic).
   - X-LLM-Model: Model name (e.g., gpt-4o, claude-3.5-sonnet).
@@ -122,7 +75,7 @@ Services --> Models["Pydantic Models"]
   - X-LLM-Base: Optional custom base URL.
 - Behavior:
   - If headers are present, a per-request LLM is created using these values.
-  - If missing, the server’s default LLM is used.
+  - If missing, the server's default LLM is used.
   - If the custom configuration fails, a 503 error is returned.
   - If the server default LLM is not configured, a 503 error is returned.
 - Role-based access control:
@@ -134,16 +87,13 @@ Practical example (curl):
   - -H "X-LLM-Model: gpt-4o"
   - -H "X-LLM-Key: YOUR_API_KEY"
 
-**Section sources**
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L22-L68)
-
-### v1 vs v2 API Differences and Migration Paths
+### v1 vs v2 API differences and migration paths
 - Coexistence:
   - v1 endpoints are mounted under /api/v1.
   - v2 endpoints are mounted under /api/v2.
 - Differences observed:
   - ATS Evaluation: v1 exposes file-based and text-based routers; v2 exposes text-based routers.
-  - Resume Analysis: v1 has file-based and comprehensive analysis; v2 adds text-based format-and-analyze and analysis endpoints.
+  - Resume Analysis: v1 has file-based and detailed analysis; v2 adds text-based format-and-analyze and analysis endpoints.
   - Cold Mail: v1 has file-based and editor endpoints; v2 adds text-based generator and editor endpoints.
   - Cover Letter: v1 has generator and editor endpoints; v2 remains unchanged in this file.
   - Hiring Assistant: v1 has file-based endpoint; v2 adds text-based endpoint.
@@ -154,24 +104,14 @@ Practical example (curl):
   - Migrate clients incrementally by switching from v1 to v2 equivalents.
   - Validate request/response schemas carefully due to differences in payload formats.
 
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L197)
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L15-L184)
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L13-L68)
-- [backend/app/routes/cold_mail.py](file://backend/app/routes/cold_mail.py#L10-L150)
-- [backend/app/routes/cover_letter.py](file://backend/app/routes/cover_letter.py#L13-L103)
-- [backend/app/routes/hiring_assistant.py](file://backend/app/routes/hiring_assistant.py#L10-L68)
-- [backend/app/routes/tailored_resume.py](file://backend/app/routes/tailored_resume.py#L12-L79)
-- [backend/app/routes/jd_editor.py](file://backend/app/routes/jd_editor.py#L10-L23)
-
-### Resume Analysis
+### Resume analysis
 - v1
   - POST /api/v1/resume/analysis
     - Content-Type: multipart/form-data
     - Form fields:
       - file: resume file (PDF, DOC, DOCX, TXT, MD)
     - Response: ResumeUploadResponse
-  - POST /api/v1/resume/comprehensive/analysis/
+  - POST /api/v1/resume/detailed/analysis/
     - Content-Type: multipart/form-data
     - Form fields:
       - file: resume file
@@ -200,11 +140,7 @@ Example curl (v2 text-based analysis):
   -H "X-LLM-Model: gpt-4o" \
   -H "X-LLM-Key: YOUR_API_KEY"
 
-**Section sources**
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L16-L67)
-- [backend/app/models/schemas.py](file://backend/app/models/schemas.py#L50-L64)
-
-### ATS Evaluation
+### ATS evaluation
 - v1
   - POST /api/v1/ats/evaluate
     - Content-Type: multipart/form-data or application/json
@@ -247,11 +183,7 @@ Example curl (v2 text-based evaluation):
   -H "X-LLM-Model: gpt-4o" \
   -H "X-LLM-Key: YOUR_API_KEY"
 
-**Section sources**
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L50-L184)
-- [backend/app/models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L20-L44)
-
-### Interview System (Real-time, Streaming)
+### Interview system (real-time, streaming)
 Endpoints:
 - GET /api/v1/interview/templates
   - Response: templates list
@@ -332,14 +264,7 @@ Graph-->>API : Final result
 API-->>Client : SSE "complete" event
 ```
 
-**Diagram sources**
-- [backend/app/routes/interview.py](file://backend/app/routes/interview.py#L188-L224)
-
-**Section sources**
-- [backend/app/routes/interview.py](file://backend/app/routes/interview.py#L44-L494)
-- [backend/app/models/interview/schemas.py](file://backend/app/models/interview/schemas.py#L109-L169)
-
-### Communication Tools
+### Communication tools
 - Cold Mail
   - v1
     - POST /api/v1/cold-mail/generator/
@@ -428,11 +353,7 @@ Example curl (v2 cold mail generator):
   -H "X-LLM-Model: gpt-4o" \
   -H "X-LLM-Key: YOUR_API_KEY"
 
-**Section sources**
-- [backend/app/routes/cold_mail.py](file://backend/app/routes/cold_mail.py#L13-L150)
-- [backend/app/routes/cover_letter.py](file://backend/app/routes/cover_letter.py#L16-L103)
-
-### Hiring Assistant
+### Hiring assistant
 - v1
   - POST /api/v1/hiring-assistant/
     - Content-Type: multipart/form-data
@@ -472,10 +393,7 @@ Example curl (v2 hiring assistant):
   -H "X-LLM-Model: gpt-4o" \
   -H "X-LLM-Key: YOUR_API_KEY"
 
-**Section sources**
-- [backend/app/routes/hiring_assistant.py](file://backend/app/routes/hiring_assistant.py#L13-L68)
-
-### Tailored Resume
+### Tailored resume
 - v1
   - POST /api/v1/resume/tailor
     - Content-Type: multipart/form-data
@@ -508,10 +426,7 @@ Example curl (v2 tailored resume):
   -H "X-LLM-Model: gpt-4o" \
   -H "X-LLM-Key: YOUR_API_KEY"
 
-**Section sources**
-- [backend/app/routes/tailored_resume.py](file://backend/app/routes/tailored_resume.py#L52-L79)
-
-### JD Editor (v2)
+### JD editor (v2)
 - POST /api/v2/resume/edit-by-jd
   - Content-Type: application/json
   - Request: JDEditRequest
@@ -528,10 +443,7 @@ Example curl:
   -H "X-LLM-Model: gpt-4o" \
   -H "X-LLM-Key: YOUR_API_KEY"
 
-**Section sources**
-- [backend/app/routes/jd_editor.py](file://backend/app/routes/jd_editor.py#L13-L23)
-
-### Resume Improvement and Enrichment
+### Resume improvement and enrichment
 - Resume Improvement
   - POST /api/v1/resume/improve
     - Content-Type: application/json
@@ -544,7 +456,7 @@ Example curl:
     - Content-Type: application/json
     - Request: AnalyzeRequest
     - Response: AnalysisResponse
-  - POST /api/v1/resume/enrichment/enhance
+  - POST /api/v1/resume/enrichment/improve
     - Content-Type: application/json
     - Request: EnhanceRequest
     - Response: EnhancementPreview
@@ -577,11 +489,7 @@ Example curl (v1 enrichment analyze):
   -H "X-LLM-Model: gpt-4o" \
   -H "X-LLM-Key: YOUR_API_KEY"
 
-**Section sources**
-- [backend/app/routes/resume_improvement.py](file://backend/app/routes/resume_improvement.py#L21-L43)
-- [backend/app/routes/resume_enrichment.py](file://backend/app/routes/resume_enrichment.py#L30-L118)
-
-### Additional v1 Endpoints
+### Additional v1 endpoints
 - Tips
   - GET /api/v1/tips
   - Response: TipsResponse
@@ -599,10 +507,7 @@ Example curl (v1 enrichment analyze):
 
 Note: These endpoints are included in the v1 mount but are not covered in detail here due to scope limitations.
 
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L203)
-
-## Dependency Analysis
+## Dependency analysis
 External dependencies relevant to the API:
 - FastAPI: Web framework and ASGI server.
 - LangChain ecosystem: LLM integrations (OpenAI, Anthropic, Google, Ollama).
@@ -620,19 +525,13 @@ FastAPI --> Crypto["Cryptography"]
 FastAPI --> PDF["PyMuPDF / PyMuPDF4LLM"]
 ```
 
-**Diagram sources**
-- [backend/pyproject.toml](file://backend/pyproject.toml#L7-L33)
-
-**Section sources**
-- [backend/pyproject.toml](file://backend/pyproject.toml#L7-L33)
-
-## Performance Considerations
+## Performance considerations
 - Streaming responses: Use SSE endpoints for long-running evaluations to reduce latency and improve UX.
 - LLM cost and latency: Configure appropriate providers and models via headers to balance quality and speed.
 - File processing: Large resume/JD files may increase processing time; consider compression and validation.
 - Pagination and filtering: Use query parameters (e.g., limit, status) to constrain result sets for list endpoints.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - LLM configuration errors:
   - Symptom: 503 error indicating LLM service not configured.
@@ -650,17 +549,12 @@ Common issues and resolutions:
 Logging:
 - Requests and responses are logged with request IDs for tracing.
 
-**Section sources**
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L48-L68)
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L82-L95)
-- [backend/app/routes/interview.py](file://backend/app/routes/interview.py#L94-L108)
-
 ## Conclusion
-TalentSync-Normies provides a comprehensive RESTful API for resume analysis, ATS evaluation, interview simulation with streaming, and communication tools. The API offers both v1 and v2 endpoints to facilitate migration, robust request/response schemas, and per-request LLM configuration. Real-time features leverage SSE for interactive experiences. For production use, ensure proper LLM configuration, validate inputs, and adopt SSE endpoints for improved responsiveness.
+TalentSync-Normies provides a detailed RESTful API for resume analysis, ATS evaluation, interview simulation with streaming, and communication tools. The API offers both v1 and v2 endpoints to facilitate migration, reliable request/response schemas, and per-request LLM configuration. Real-time features use SSE for interactive experiences. For production use, ensure proper LLM configuration, validate inputs, and adopt SSE endpoints for improved responsiveness.
 
 ## Appendices
 
-### Request/Response Schemas Overview
+### Request/Response schemas overview
 - Common schemas:
   - WorkExperienceEntry, ProjectEntry, PublicationEntry, PositionOfResponsibilityEntry, CertificationEntry, AchievementEntry, SkillProficiency, LanguageEntry, EducationEntry, ErrorResponse
 - ATS Evaluator:
@@ -669,9 +563,3 @@ TalentSync-Normies provides a comprehensive RESTful API for resume analysis, ATS
   - InterviewQuestion, CandidateProfile, InterviewConfig, InterviewSession, InterviewEvent, CreateInterviewRequest, SubmitAnswerRequest, CodeExecutionRequest, InterviewEventRequest, InterviewSessionResponse, EvaluationResult, CodeExecutionResult
 - Resume Analysis:
   - ComprehensiveAnalysisData, ComprehensiveAnalysisResponse, FormattedAndAnalyzedResumeResponse, ResumeUploadResponse
-
-**Section sources**
-- [backend/app/models/common/schemas.py](file://backend/app/models/common/schemas.py#L6-L128)
-- [backend/app/models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L6-L44)
-- [backend/app/models/interview/schemas.py](file://backend/app/models/interview/schemas.py#L22-L169)
-- [backend/app/models/schemas.py](file://backend/app/models/schemas.py#L1-L191)

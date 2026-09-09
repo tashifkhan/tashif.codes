@@ -1,37 +1,9 @@
 # Deployment & DevOps
 
-<cite>
-**Referenced Files in This Document**
-- [deploy.yaml](file://.github/workflows/deploy.yaml)
-- [docker-compose.yaml](file://docker-compose.yaml)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml)
-- [backend/Dockerfile](file://backend/Dockerfile)
-- [frontend/Dockerfile](file://frontend/Dockerfile)
-- [backend/.env](file://backend/.env)
-- [frontend/.env](file://frontend/.env)
-- [.env](file://.env)
-- [backend/pyproject.toml](file://backend/pyproject.toml)
-- [backend/app/main.py](file://backend/app/main.py)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py)
-- [frontend/package.json](file://frontend/package.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
-
 ## Introduction
-This document provides comprehensive deployment and DevOps guidance for the TalentSync-Normies platform. It covers Docker configuration with multi-stage builds, service orchestration using Docker Compose, environment variable management, CI/CD with GitHub Actions, production deployment strategies, infrastructure provisioning, database setup, monitoring and logging, health checks and alerting, backup and disaster recovery, and troubleshooting and performance optimization.
+This page provides detailed deployment and DevOps guidance for the TalentSync-Normies platform. It covers Docker configuration with multi-stage builds, service orchestration using Docker Compose, environment variable management, CI/CD with GitHub Actions, production deployment strategies, infrastructure provisioning, database setup, monitoring and logging, health checks and alerting, backup and disaster recovery, and troubleshooting and performance optimization.
 
-## Project Structure
+## Project structure
 The platform consists of:
 - Backend service built with Python and FastAPI, exposing APIs for ATS evaluation, resume analysis, cold mail generation, cover letter generation, hiring assistant, and interview support.
 - Frontend Next.js application using Bun for building and runtime, with Prisma for database operations.
@@ -60,17 +32,7 @@ DCP --> DB
 DCP -.-> NPM
 ```
 
-**Diagram sources**
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-- [backend/Dockerfile](file://backend/Dockerfile#L1-L33)
-- [frontend/Dockerfile](file://frontend/Dockerfile#L1-L110)
-
-**Section sources**
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-
-## Core Components
+## Core components
 - Backend service
   - Built with Python 3.13 and FastAPI.
   - Exposes multiple API routes for ATS evaluation, resume analysis, cold mail, cover letters, hiring assistant, tailored resume, tips, and interview features.
@@ -86,15 +48,7 @@ DCP -.-> NPM
   - Local development via docker-compose.yaml.
   - Production via docker-compose.prod.yaml with health checks and external network integration.
 
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L1-L50)
-- [backend/Dockerfile](file://backend/Dockerfile#L1-L33)
-- [frontend/Dockerfile](file://frontend/Dockerfile#L1-L110)
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-
-## Architecture Overview
+## Architecture overview
 The system comprises three primary containers orchestrated by Docker Compose:
 - Frontend: Next.js application with Prisma migrations executed in a separate stage.
 - Backend: FastAPI application serving REST endpoints.
@@ -112,19 +66,15 @@ BE --> |"SQL"| DB
 FE --> |"Prisma Migrate"| DB
 ```
 
-**Diagram sources**
-- [docker-compose.yaml](file://docker-compose.yaml#L3-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Backend Service
+### Backend service
 - Build and runtime
   - Multi-stage Docker build targeting Python 3.13 slim image.
   - Dependency installation via uv with caching.
   - Application code copied and exposed on port 8000.
 - Environment configuration
-  - Settings loaded from .env with Pydantic BaseSettings.
+  - Settings loaded from.env with Pydantic BaseSettings.
   - Includes API metadata, LLM provider configuration, CORS, and interview parameters.
 - Application lifecycle
   - FastAPI app configured with CORS middleware and request/response logging.
@@ -162,17 +112,7 @@ class MainApp {
 Settings <.. MainApp : "loaded via get_settings()"
 ```
 
-**Diagram sources**
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L1-L50)
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-
-**Section sources**
-- [backend/Dockerfile](file://backend/Dockerfile#L1-L33)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L1-L50)
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-- [backend/pyproject.toml](file://backend/pyproject.toml#L1-L42)
-
-### Frontend Service
+### Frontend service
 - Multi-stage Docker build
   - deps: installs dev dependencies.
   - builder: builds Next.js app and generates Prisma client.
@@ -196,17 +136,10 @@ Migrate --> Runner["Stage 4: runner<br/>Serve built app"]
 Runner --> End(["Build Complete"])
 ```
 
-**Diagram sources**
-- [frontend/Dockerfile](file://frontend/Dockerfile#L1-L110)
-
-**Section sources**
-- [frontend/Dockerfile](file://frontend/Dockerfile#L1-L110)
-- [frontend/package.json](file://frontend/package.json#L1-L114)
-
-### Database Service
+### Database service
 - PostgreSQL 16 image with health check.
 - Persistent volume for data durability.
-- Environment variables sourced from .env for credentials and database name.
+- Environment variables sourced from.env for credentials and database name.
 - Health check uses pg_isready against localhost with configured credentials.
 
 ```mermaid
@@ -217,13 +150,7 @@ WaitHealthy --> |Yes| Proceed["Proceed to dependent services"]
 Retry --> WaitHealthy
 ```
 
-**Diagram sources**
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L15-L23)
-
-**Section sources**
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-
-### CI/CD Pipeline with GitHub Actions
+### CI/CD pipeline with GitHub Actions
 - Workflow triggers on pushes to main branch.
 - Steps:
   - Checkout repository.
@@ -246,31 +173,18 @@ GH->>DC : "compose -f docker-compose.prod.yaml up -d --force-recreate"
 GH-->>VPS : "Deployment complete"
 ```
 
-**Diagram sources**
-- [.github/workflows/deploy.yaml](file://.github/workflows/deploy.yaml#L1-L42)
-
-**Section sources**
-- [.github/workflows/deploy.yaml](file://.github/workflows/deploy.yaml#L1-L42)
-
-### Environment Configuration Management
+### Environment configuration management
 - Centralized environment variables
-  - Root .env and per-service .env files (.env, backend/.env, frontend/.env).
+  - Root.env and per-service.env files (.env, backend/.env, frontend/.env).
   - Variables include database credentials, OAuth clients, email settings, JWT secrets, API keys, and analytics keys.
 - Variable precedence and usage
-  - Docker Compose env_file loads variables from .env files.
+  - Docker Compose env_file loads variables from.env files.
   - DATABASE_URL constructed from POSTGRES_* variables.
   - Frontend NEXTAUTH_URL and BACKEND_URL configured for internal and external access.
 - Security considerations
-  - Encryption key and secrets are present in .env files; ensure secrets are managed securely in CI/CD and production environments.
+  - Encryption key and secrets are present in.env files; ensure secrets are managed securely in CI/CD and production environments.
 
-**Section sources**
-- [.env](file://.env#L1-L26)
-- [backend/.env](file://backend/.env#L1-L26)
-- [frontend/.env](file://frontend/.env#L1-L27)
-- [docker-compose.yaml](file://docker-compose.yaml#L7-L63)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L5-L83)
-
-## Dependency Analysis
+## Dependency analysis
 - Backend dependencies
   - Core: FastAPI, asyncpg, datetime, cryptography.
   - LLM integrations: langchain, langchain-google-genai, langchain-openai, langchain-anthropic, langchain-ollama, tavily-python, gitingest.
@@ -289,15 +203,7 @@ FE --> Prisma["@prisma/client"]
 FE --> PostHog["posthog-js"]
 ```
 
-**Diagram sources**
-- [backend/pyproject.toml](file://backend/pyproject.toml#L1-L42)
-- [frontend/package.json](file://frontend/package.json#L17-L85)
-
-**Section sources**
-- [backend/pyproject.toml](file://backend/pyproject.toml#L1-L42)
-- [frontend/package.json](file://frontend/package.json#L1-L114)
-
-## Performance Considerations
+## Performance considerations
 - Containerization
   - Multi-stage builds reduce final image size and improve startup times.
   - Use production-only dependencies in the frontend prod-deps stage.
@@ -311,7 +217,7 @@ FE --> PostHog["posthog-js"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Health checks failing
   - Verify PostgreSQL health check configuration and credentials.
   - Confirm service_healthy conditions in docker-compose.prod.yaml.
@@ -319,26 +225,20 @@ FE --> PostHog["posthog-js"]
   - Ensure the frontend migrate stage completes successfully before starting the runner.
   - Check Prisma configuration and database connectivity.
 - Environment variables
-  - Validate .env files and ensure required variables are present.
+  - Validate.env files and ensure required variables are present.
   - Confirm DATABASE_URL construction and NEXTAUTH_URL alignment with deployment domain.
 - CI/CD deployment
   - Confirm SSH access to VPS and availability of secrets.
   - Verify docker-compose.prod.yaml path and permissions on the VPS.
 
-**Section sources**
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L15-L23)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L44-L79)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L84-L93)
-- [.github/workflows/deploy.yaml](file://.github/workflows/deploy.yaml#L22-L41)
-
 ## Conclusion
-The TalentSync-Normies platform leverages robust Docker multi-stage builds, orchestrated services with Docker Compose, and a streamlined GitHub Actions deployment pipeline. By adhering to environment variable management best practices, implementing health checks, and establishing secure CI/CD workflows, the platform achieves reliable deployments suitable for production environments. Future enhancements can focus on observability, autoscaling, and advanced backup strategies.
+The TalentSync-Normies platform uses reliable Docker multi-stage builds, orchestrated services with Docker Compose, and a streamlined GitHub Actions deployment pipeline. By adhering to environment variable management best practices, implementing health checks, and establishing secure CI/CD workflows, the platform achieves reliable deployments suitable for production environments. Future enhancements can focus on observability, autoscaling, and advanced backup strategies.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### Production Deployment Strategies
+### Production deployment strategies
 - Infrastructure
   - Use a VPS or managed Kubernetes cluster for container orchestration.
   - External load balancing via nginx-proxy-manager or equivalent.
@@ -351,7 +251,7 @@ The TalentSync-Normies platform leverages robust Docker multi-stage builds, orch
 
 [No sources needed since this section provides general guidance]
 
-### Monitoring and Logging
+### Monitoring and logging
 - Backend
   - Structured logging middleware captures request/response payloads and durations.
   - Integrate centralized logging and metrics collection for production visibility.
@@ -362,7 +262,7 @@ The TalentSync-Normies platform leverages robust Docker multi-stage builds, orch
 
 [No sources needed since this section provides general guidance]
 
-### Backup and Disaster Recovery
+### Backup and disaster recovery
 - Database backups
   - Schedule regular logical backups of PostgreSQL data.
   - Test restoration procedures periodically.

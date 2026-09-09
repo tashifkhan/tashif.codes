@@ -1,33 +1,9 @@
-# Frontend Interview Interface
-
-<cite>
-**Referenced Files in This Document**
-- [InterviewDetailsForm.tsx](file://frontend/components/hiring-assistant/InterviewDetailsForm.tsx)
-- [QuestionsEditor.tsx](file://frontend/components/hiring-assistant/QuestionsEditor.tsx)
-- [GeneratedAnswersPanel.tsx](file://frontend/components/hiring-assistant/GeneratedAnswersPanel.tsx)
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts)
-- [interview.service.ts](file://frontend/services/interview.service.ts)
-- [interview.ts](file://frontend/types/interview.ts)
-- [page.tsx](file://frontend/app/dashboard/seeker/page.tsx)
-- [page.tsx](file://frontend/app/dashboard/page.tsx)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Frontend interview interface
 
 ## Introduction
-This document describes the Frontend Interview Interface component built with React and Next.js. It covers the interview setup forms, question management, answer generation, and evaluation result presentation. The interface integrates with backend services using TanStack Query for state management and React hooks for reactive UI updates. Accessibility, responsive design, and cross-browser compatibility are addressed to ensure a robust interview experience across devices.
+This page describes the Frontend Interview Interface component built with React and Next.js. It covers the interview setup forms, question management, answer generation, and evaluation result presentation. The interface integrates with backend services using TanStack Query for state management and React hooks for reactive UI updates. Accessibility, responsive design, and cross-browser compatibility are addressed to ensure a reliable interview experience across devices.
 
-## Project Structure
+## Project structure
 The interview interface spans several layers:
 - UI components for interview setup and question editing
 - Service layer for API communication
@@ -65,28 +41,7 @@ DashHome --> ModalMgr
 SeekerDash --> ModalMgr
 ```
 
-**Diagram sources**
-- [InterviewDetailsForm.tsx](file://frontend/components/hiring-assistant/InterviewDetailsForm.tsx#L1-L112)
-- [QuestionsEditor.tsx](file://frontend/components/hiring-assistant/QuestionsEditor.tsx#L1-L49)
-- [GeneratedAnswersPanel.tsx](file://frontend/components/hiring-assistant/GeneratedAnswersPanel.tsx)
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts#L1-L44)
-- [interview.service.ts](file://frontend/services/interview.service.ts#L1-L18)
-- [interview.ts](file://frontend/types/interview.ts#L1-L21)
-- [page.tsx](file://frontend/app/dashboard/seeker/page.tsx#L1-L197)
-- [page.tsx](file://frontend/app/dashboard/page.tsx#L464-L1065)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx#L375-L443)
-
-**Section sources**
-- [InterviewDetailsForm.tsx](file://frontend/components/hiring-assistant/InterviewDetailsForm.tsx#L1-L112)
-- [QuestionsEditor.tsx](file://frontend/components/hiring-assistant/QuestionsEditor.tsx#L1-L49)
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts#L1-L44)
-- [interview.service.ts](file://frontend/services/interview.service.ts#L1-L18)
-- [interview.ts](file://frontend/types/interview.ts#L1-L21)
-- [page.tsx](file://frontend/app/dashboard/seeker/page.tsx#L1-L197)
-- [page.tsx](file://frontend/app/dashboard/page.tsx#L464-L1065)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx#L375-L443)
-
-## Core Components
+## Core components
 - InterviewDetailsForm: Collects role, company, word limit, optional company knowledge, and website.
 - QuestionsEditor: Manages dynamic lists of interview questions with add/remove and per-question editing.
 - GeneratedAnswersPanel: Displays generated answers for submitted questions.
@@ -100,15 +55,7 @@ Key capabilities:
 - Accessible markup with labels and semantic inputs
 - Responsive layouts using grid and flex utilities
 
-**Section sources**
-- [InterviewDetailsForm.tsx](file://frontend/components/hiring-assistant/InterviewDetailsForm.tsx#L8-L112)
-- [QuestionsEditor.tsx](file://frontend/components/hiring-assistant/QuestionsEditor.tsx#L8-L49)
-- [GeneratedAnswersPanel.tsx](file://frontend/components/hiring-assistant/GeneratedAnswersPanel.tsx)
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts#L5-L43)
-- [interview.service.ts](file://frontend/services/interview.service.ts#L4-L17)
-- [interview.ts](file://frontend/types/interview.ts#L1-L21)
-
-## Architecture Overview
+## Architecture overview
 The interview interface follows a layered architecture:
 - Presentation layer: UI components manage user interactions and render state
 - State layer: React hooks and TanStack Query manage data fetching, caching, and mutations
@@ -132,12 +79,7 @@ Hook-->>UI : Update state and re-render
 UI-->>User : Display generated answer
 ```
 
-**Diagram sources**
-- [InterviewDetailsForm.tsx](file://frontend/components/hiring-assistant/InterviewDetailsForm.tsx#L13-L16)
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts#L39-L43)
-- [interview.service.ts](file://frontend/services/interview.service.ts#L15-L16)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### InterviewDetailsForm
 Purpose:
@@ -163,9 +105,6 @@ Customization:
 - Accepts external state handler to integrate with parent forms
 - Reusable across different interview flows
 
-**Section sources**
-- [InterviewDetailsForm.tsx](file://frontend/components/hiring-assistant/InterviewDetailsForm.tsx#L13-L112)
-
 ### QuestionsEditor
 Purpose:
 - Dynamically manage a list of interview questions with add/remove actions and inline editing.
@@ -186,9 +125,6 @@ Accessibility:
 - Descriptive button labels with icons
 - Focus management during add/remove
 
-**Section sources**
-- [QuestionsEditor.tsx](file://frontend/components/hiring-assistant/QuestionsEditor.tsx#L15-L49)
-
 ### GeneratedAnswersPanel
 Purpose:
 - Present generated answers to interview questions, typically after submission to the backend.
@@ -208,10 +144,7 @@ Accessibility:
 - Focusable elements for actions
 - Semantic heading structure
 
-**Section sources**
-- [GeneratedAnswersPanel.tsx](file://frontend/components/hiring-assistant/GeneratedAnswersPanel.tsx)
-
-### use-interviews Hook
+### use-interviews hook
 Purpose:
 - Centralize data fetching and mutations for interview sessions and answer generation.
 
@@ -224,9 +157,6 @@ State management:
 - React Query manages caching, background refetching, and invalidations
 - Mutation errors surfaced via toast notifications
 - Success callbacks refresh dependent queries
-
-**Section sources**
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts#L5-L43)
 
 ### interview.service
 Purpose:
@@ -241,9 +171,6 @@ Integration:
 - Uses apiClient for HTTP requests
 - Returns typed responses aligned with InterviewSession and ApiResponse
 
-**Section sources**
-- [interview.service.ts](file://frontend/services/interview.service.ts#L4-L17)
-
 ### Types
 Purpose:
 - Define the shape of interview data structures for type safety.
@@ -257,10 +184,7 @@ Benefits:
 - Compile-time validation of props and API responses
 - Improved developer experience with autocompletion
 
-**Section sources**
-- [interview.ts](file://frontend/types/interview.ts#L1-L21)
-
-### Dashboard Integration
+### Dashboard integration
 Purpose:
 - Display interview sessions, enable viewing details, and support deletion.
 
@@ -280,12 +204,7 @@ Accessibility:
 - Clear headings and descriptions
 - Keyboard-accessible close buttons
 
-**Section sources**
-- [page.tsx](file://frontend/app/dashboard/seeker/page.tsx#L170-L186)
-- [page.tsx](file://frontend/app/dashboard/page.tsx#L464-L1065)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx#L375-L443)
-
-## Dependency Analysis
+## Dependency analysis
 The interview interface components depend on:
 - UI primitives (Button, Card, Input, Label, Loader) for consistent styling
 - Framer Motion for smooth animations
@@ -310,33 +229,14 @@ DashSeeker["seeker/page.tsx"] --> ModalMgr["ModalManager.tsx"]
 DashHome["dashboard/page.tsx"] --> ModalMgr
 ```
 
-**Diagram sources**
-- [InterviewDetailsForm.tsx](file://frontend/components/hiring-assistant/InterviewDetailsForm.tsx#L3-L6)
-- [QuestionsEditor.tsx](file://frontend/components/hiring-assistant/QuestionsEditor.tsx#L3-L6)
-- [GeneratedAnswersPanel.tsx](file://frontend/components/hiring-assistant/GeneratedAnswersPanel.tsx)
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts#L1-L3)
-- [interview.service.ts](file://frontend/services/interview.service.ts#L1)
-- [page.tsx](file://frontend/app/dashboard/seeker/page.tsx#L1-L27)
-- [page.tsx](file://frontend/app/dashboard/page.tsx#L1-L29)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx#L375-L398)
-
-**Section sources**
-- [InterviewDetailsForm.tsx](file://frontend/components/hiring-assistant/InterviewDetailsForm.tsx#L1-L112)
-- [QuestionsEditor.tsx](file://frontend/components/hiring-assistant/QuestionsEditor.tsx#L1-L49)
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts#L1-L44)
-- [interview.service.ts](file://frontend/services/interview.service.ts#L1-L18)
-- [page.tsx](file://frontend/app/dashboard/seeker/page.tsx#L1-L197)
-- [page.tsx](file://frontend/app/dashboard/page.tsx#L1-L1065)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx#L375-L443)
-
-## Performance Considerations
+## Performance considerations
 - Prefer controlled components to minimize unnecessary re-renders
 - Use React Query's background refetching and caching to avoid redundant network calls
 - Virtualize long lists in the interview sessions modal for large datasets
 - Defer heavy computations until after user input stabilizes
 - Optimize animations by limiting expensive transforms and using transform properties
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Form submission fails silently: Ensure mutation error handling displays toasts and logs error messages
 - Network errors: Verify api-client configuration and endpoint URLs
@@ -353,10 +253,5 @@ Responsive behavior:
 - Ensure modals are usable on mobile with appropriate touch targets
 - Validate font sizes and spacing across devices
 
-**Section sources**
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts#L15-L36)
-- [interview.service.ts](file://frontend/services/interview.service.ts#L10-L16)
-- [ModalManager.tsx](file://frontend/components/dashboard/ModalManager.tsx#L375-L443)
-
 ## Conclusion
-The Frontend Interview Interface leverages React, TanStack Query, and a clean service-layer architecture to deliver a responsive, accessible, and efficient interview preparation experience. By centralizing state management, enforcing type safety, and providing intuitive UI patterns, the interface supports seamless interaction with backend services while maintaining excellent user experience across devices.
+The Frontend Interview Interface uses React, TanStack Query, and a clean service-layer architecture to deliver a responsive, accessible, and efficient interview preparation experience. By centralizing state management, enforcing type safety, and providing intuitive UI patterns, the interface supports smooth interaction with backend services while maintaining excellent user experience across devices.

@@ -1,38 +1,13 @@
-# Compatibility Scoring System
-
-<cite>
-**Referenced Files in This Document**
-- [ats.py](file://backend/app/services/ats.py)
-- [routes/ats.py](file://backend/app/routes/ats.py)
-- [graph.py](file://backend/app/services/ats_evaluator/graph.py)
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py)
-- [schemas.py](file://backend/app/models/ats_evaluator/schemas.py)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx)
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx)
-- [diff-preview-modal.tsx](file://frontend/components/improvement/diff-preview-modal.tsx)
-- [schemas.py](file://backend/app/models/refinement/schemas.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Compatibility scoring system
 
 ## Introduction
-This document explains the compatibility scoring system that evaluates how well a resume matches a job description. It covers the multi-factor scoring methodology, normalization into a unified percentage, threshold-based categorization, visualization, and refinement workflows. The system integrates backend LLM-driven evaluation with frontend presentation and optional refinement tracking.
+This page explains the compatibility scoring system that evaluates how well a resume matches a job description. It covers the multi-factor scoring methodology, normalization into a unified percentage, threshold-based categorization, visualization, and refinement workflows. The system integrates backend LLM-driven evaluation with frontend presentation and optional refinement tracking.
 
-## Project Structure
+## Project structure
 The compatibility scoring spans backend services and prompts, and frontend visualization:
 - Backend: FastAPI routes accept resume and job description inputs, invoke an LLM graph to compute a structured score, and return a normalized response.
 - Prompt: A detailed 100-point rubric drives the LLM scorer, including categories such as technical skills, experience relevance, career progression, education, customization, soft skills, and stability/red flags.
-- Frontend: Renders the score, a progress bar, reasons, and suggestions; supports “optimize” workflows and refinement comparisons.
+- Frontend: Renders the score, a progress bar, reasons, and suggestions; supports "optimize" workflows and refinement comparisons.
 
 ```mermaid
 graph TB
@@ -58,48 +33,21 @@ Service --> API_Route
 API_Route --> FE_Result
 ```
 
-**Diagram sources**
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L1-L289)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L1-L177)
-- [routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [ats.py](file://backend/app/services/ats.py#L1-L214)
-- [graph.py](file://backend/app/services/ats_evaluator/graph.py#L1-L209)
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L1-L184)
-- [schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L1-L44)
-
-**Section sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [ats.py](file://backend/app/services/ats.py#L1-L214)
-- [graph.py](file://backend/app/services/ats_evaluator/graph.py#L1-L209)
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L1-L184)
-- [schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L1-L44)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L1-L177)
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L1-L289)
-
-## Core Components
+## Core components
 - Input pipeline: Accepts resume text or file, job description text or file/link, and optional company metadata.
 - LLM evaluation: Executes a state graph prompting a 100-point rubric scorer with explicit JSON schema.
 - Normalization: Ensures the response conforms to a standardized model with a numeric score, reasons, and suggestions.
 - Frontend rendering: Displays the score out of 100, a progress bar, reasons, and suggestions; supports optimization actions.
 
 Key implementation references:
-- Input validation and routing: [routes/ats.py](file://backend/app/routes/ats.py#L22-L48), [routes/ats.py](file://backend/app/routes/ats.py#L109-L118)
-- Service orchestration and normalization: [ats.py](file://backend/app/services/ats.py#L22-L214)
-- LLM graph and JSON parsing: [graph.py](file://backend/app/services/ats_evaluator/graph.py#L116-L202)
-- Prompt rubric and schema: [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L38-L147)
-- Response models: [schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L20-L44)
-- Frontend visualization: [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L67-L101)
+- Input validation and routing: `routes/ats.py`, `routes/ats.py`
+- Service orchestration and normalization: `ats.py`
+- LLM graph and JSON parsing: `graph.py`
+- Prompt rubric and schema: `jd_evaluator.py`
+- Response models: `schemas.py`
+- Frontend visualization: `EvaluationResults.tsx`
 
-**Section sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L22-L48)
-- [routes/ats.py](file://backend/app/routes/ats.py#L109-L118)
-- [ats.py](file://backend/app/services/ats.py#L22-L214)
-- [graph.py](file://backend/app/services/ats_evaluator/graph.py#L116-L202)
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L38-L147)
-- [schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L20-L44)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L67-L101)
-
-## Architecture Overview
+## Architecture overview
 The system follows a request-response flow:
 - The frontend collects inputs and triggers evaluation.
 - The backend validates inputs, optionally enriches with company website content, and invokes the LLM graph.
@@ -123,16 +71,9 @@ SVC-->>API : "JDEvaluatorResponse"
 API-->>FE : "EvaluationResults"
 ```
 
-**Diagram sources**
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L109-L138)
-- [routes/ats.py](file://backend/app/routes/ats.py#L55-L118)
-- [ats.py](file://backend/app/services/ats.py#L22-L214)
-- [graph.py](file://backend/app/services/ats_evaluator/graph.py#L116-L202)
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L1-L184)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Multi-Factor Scoring Rubric
+### Multi-Factor scoring rubric
 The LLM uses a 100-point rubric with explicit categories and point allocations:
 - Technical Skills & Experience Match (30)
   - Hard Skills Alignment (20)
@@ -162,43 +103,30 @@ Normalization:
 - The prompt requires valid JSON with keys: score, reasons_for_the_score, suggestions.
 
 References:
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L38-L118)
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L138-L147)
+- `jd_evaluator.py`
+- `jd_evaluator.py`
 
-**Section sources**
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L38-L118)
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L138-L147)
-
-### Weighted Scoring Methodology
+### Weighted scoring methodology
 - Category weights are embedded in the rubric (e.g., 30/100 for technical and experience, 25/100 for progression and achievements).
 - Within categories, sub-scores are mapped to discrete bands (e.g., 18–20 for perfect hard skills alignment).
 - Synonym normalization is supported (e.g., cloud platforms, containers, databases, methodologies).
 - Handling of missing/implicit information is explicit: treat stated requirements as missing if omitted; ambiguous experience chooses conservative lower bound; explained gaps acceptable.
 
 References:
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L28-L36)
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L131-L136)
+- `jd_evaluator.py`
+- `jd_evaluator.py`
 
-**Section sources**
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L28-L36)
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L131-L136)
-
-### Normalization into Unified Percentage
+### Normalization into unified percentage
 - The prompt enforces a 0–100 score and a strict JSON schema.
 - The service normalizes outputs to ensure numeric score, string lists for reasons and suggestions, and a typed response model.
 - The frontend displays the score out of 100 and animates a progress bar proportional to the score.
 
 References:
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L138-L147)
-- [ats.py](file://backend/app/services/ats.py#L141-L161)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L67-L101)
+- `jd_evaluator.py`
+- `ats.py`
+- `EvaluationResults.tsx`
 
-**Section sources**
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L138-L147)
-- [ats.py](file://backend/app/services/ats.py#L141-L161)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L67-L101)
-
-### Threshold-Based Filtering and Categorization
+### Threshold-Based filtering and categorization
 - The frontend applies categorical labels based on score thresholds:
   - Excellent Match (≥ 80)
   - Good Match (≥ 60)
@@ -207,12 +135,9 @@ References:
 - These thresholds inform color gradients and labels for the score display.
 
 References:
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L25-L42)
+- `EvaluationResults.tsx`
 
-**Section sources**
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L25-L42)
-
-### Examples of Score Calculation and Weight Adjustments
+### Examples of score calculation and weight adjustments
 - Example rubric bands:
   - Hard Skills Alignment: 18–20 (perfect), 15–17 (minor gaps), 12–14 (some important skills missing), 8–11 (several key gaps), 0–7 (<50% present)
   - Experience Relevance: 9–10 (same/similar role/industry), 7–8 (related with minor ramp-up), 5–6 (some transferability), 3–4 (minimal relevance), 0–2 (none)
@@ -223,12 +148,9 @@ References:
   - Penalties: up to −5 total (e.g., −3 for inconsistencies, −2 for unprofessional contact info, −5 for obvious lies/embellishments)
 
 References:
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L38-L118)
+- `jd_evaluator.py`
 
-**Section sources**
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L38-L118)
-
-### Scoring Visualization Components
+### Scoring visualization components
 - Score display: large numeric score out of 100 with a categorical label.
 - Progress bar: animated gradient bar reflecting the score percentage.
 - Reasons panel: concise bullet points explaining score breakdown.
@@ -236,14 +158,10 @@ References:
 - Optimize CTA: links to refinement workflows when a saved resume is used.
 
 References:
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L67-L149)
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L140-L147)
+- `EvaluationResults.tsx`
+- `page.tsx`
 
-**Section sources**
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L67-L149)
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L140-L147)
-
-### Trend Analysis and Refinement Tracking
+### Trend analysis and refinement tracking
 - Refinement stats capture:
   - Initial match percentage
   - Final match percentage
@@ -253,14 +171,10 @@ References:
 - Diff preview modal compares match percentages before and after refinement.
 
 References:
-- [schemas.py](file://backend/app/models/refinement/schemas.py#L102-L125)
-- [diff-preview-modal.tsx](file://frontend/components/improvement/diff-preview-modal.tsx#L157-L171)
+- `schemas.py`
+- `diff-preview-modal.tsx`
 
-**Section sources**
-- [schemas.py](file://backend/app/models/refinement/schemas.py#L102-L125)
-- [diff-preview-modal.tsx](file://frontend/components/improvement/diff-preview-modal.tsx#L157-L171)
-
-### Edge Cases and Outlier Detection Mechanisms
+### Edge cases and outlier detection mechanisms
 - Input validation:
   - Requires either raw JD text or a JD link; otherwise raises a 400 error.
   - Validates payload shape and enforces presence of required fields.
@@ -274,20 +188,13 @@ References:
   - Stability deductions for unexplained gaps.
 
 References:
-- [routes/ats.py](file://backend/app/routes/ats.py#L43-L47)
-- [graph.py](file://backend/app/services/ats_evaluator/graph.py#L149-L202)
-- [ats.py](file://backend/app/services/ats.py#L75-L96)
-- [ats.py](file://backend/app/services/ats.py#L123-L161)
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L111-L114)
+- `routes/ats.py`
+- `graph.py`
+- `ats.py`
+- `ats.py`
+- `jd_evaluator.py`
 
-**Section sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L43-L47)
-- [graph.py](file://backend/app/services/ats_evaluator/graph.py#L149-L202)
-- [ats.py](file://backend/app/services/ats.py#L75-L96)
-- [ats.py](file://backend/app/services/ats.py#L123-L161)
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L111-L114)
-
-## Dependency Analysis
+## Dependency analysis
 - Routes depend on the service layer for evaluation.
 - The service depends on the evaluator graph and prompt template.
 - The graph depends on the LLM and optional tools; it formats messages using the prompt.
@@ -304,32 +211,13 @@ FE --> VIS["Evaluation Results<br/>EvaluationResults.tsx"]
 FE --> REF["Refinement Stats<br/>schemas.py"]
 ```
 
-**Diagram sources**
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L1-L289)
-- [routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [ats.py](file://backend/app/services/ats.py#L1-L214)
-- [graph.py](file://backend/app/services/ats_evaluator/graph.py#L1-L209)
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L1-L184)
-- [schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L1-L44)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L1-L177)
-- [schemas.py](file://backend/app/models/refinement/schemas.py#L102-L125)
-
-**Section sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [ats.py](file://backend/app/services/ats.py#L1-L214)
-- [graph.py](file://backend/app/services/ats_evaluator/graph.py#L1-L209)
-- [jd_evaluator.py](file://backend/app/data/prompt/jd_evaluator.py#L1-L184)
-- [schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L1-L44)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L1-L177)
-- [schemas.py](file://backend/app/models/refinement/schemas.py#L102-L125)
-
-## Performance Considerations
-- Prompt complexity: The rubric prompt is comprehensive; keep inputs concise to reduce token usage and latency.
-- Tool availability: Optional tools (e.g., web search) can enhance context but add overhead; ensure they are enabled only when beneficial.
-- JSON parsing: Robust extraction reduces retries and improves throughput.
+## Performance considerations
+- Prompt complexity: The rubric prompt is detailed; keep inputs concise to reduce token usage and latency.
+- Tool availability: Optional tools (e.g., web search) can improve context but add overhead; ensure they are enabled only when beneficial.
+- JSON parsing: Reliable extraction reduces retries and improves throughput.
 - Frontend animations: Motion effects are lightweight but avoid excessive re-renders by memoizing evaluation results.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Missing job description: Ensure either jd_text or jd_link is provided; otherwise, a 400 error is raised.
 - Parsing failures: If the LLM output is not valid JSON, the system attempts to extract the JSON block; repeated failures return a 500 error.
@@ -337,23 +225,17 @@ Common issues and resolutions:
 - Service errors: Unexpected exceptions during evaluation return 500 with a descriptive message.
 
 References:
-- [routes/ats.py](file://backend/app/routes/ats.py#L43-L47)
-- [graph.py](file://backend/app/services/ats_evaluator/graph.py#L149-L202)
-- [ats.py](file://backend/app/services/ats.py#L75-L96)
-- [ats.py](file://backend/app/services/ats.py#L193-L213)
-
-**Section sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L43-L47)
-- [graph.py](file://backend/app/services/ats_evaluator/graph.py#L149-L202)
-- [ats.py](file://backend/app/services/ats.py#L75-L96)
-- [ats.py](file://backend/app/services/ats.py#L193-L213)
+- `routes/ats.py`
+- `graph.py`
+- `ats.py`
+- `ats.py`
 
 ## Conclusion
-The compatibility scoring system combines a rigorous 100-point rubric with LLM-driven evaluation to produce a normalized, interpretable score. The backend ensures robust input handling and structured output, while the frontend delivers clear visual feedback and optimization pathways. Threshold-based categorization and refinement tracking enable practical decision-making and iterative improvement.
+The compatibility scoring system combines a rigorous 100-point rubric with LLM-driven evaluation to produce a normalized, interpretable score. The backend ensures reliable input handling and structured output, while the frontend delivers clear visual feedback and optimization pathways. Threshold-based categorization and refinement tracking enable practical decision-making and iterative improvement.
 
 ## Appendices
 
-### Scoring Flowchart
+### Scoring flowchart
 ```mermaid
 flowchart TD
 Start(["Start Evaluation"]) --> Validate["Validate Inputs<br/>JD present?"]
@@ -366,8 +248,3 @@ Normalize --> Render["Render score, reasons, suggestions"]
 Render --> End(["End"])
 Err400 --> End
 ```
-
-**Diagram sources**
-- [routes/ats.py](file://backend/app/routes/ats.py#L43-L47)
-- [graph.py](file://backend/app/services/ats_evaluator/graph.py#L149-L202)
-- [ats.py](file://backend/app/services/ats.py#L141-L161)

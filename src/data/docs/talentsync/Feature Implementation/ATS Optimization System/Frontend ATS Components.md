@@ -1,35 +1,7 @@
-# Frontend ATS Components
-
-<cite>
-**Referenced Files in This Document**
-- [JobDescriptionForm.tsx](file://frontend/components/ats/JobDescriptionForm.tsx)
-- [ResumeSelection.tsx](file://frontend/components/ats/ResumeSelection.tsx)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx)
-- [LoadingOverlay.tsx](file://frontend/components/ats/LoadingOverlay.tsx)
-- [PageLoader.tsx](file://frontend/components/ats/PageLoader.tsx)
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx)
-- [ats.service.ts](file://frontend/services/ats.service.ts)
-- [use-ats.ts](file://frontend/hooks/queries/use-ats.ts)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx)
-- [ats.py](file://backend/app/routes/ats.py)
-- [ats.py](file://backend/app/services/ats.py)
-- [response.py](file://backend/app/models/ats_evaluator/response.py)
-- [resume.ts](file://frontend/types/resume.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Frontend ATS components
 
 ## Introduction
-This document explains the frontend ATS (Applicant Tracking System) evaluation components. It covers:
+This page explains the frontend ATS (Applicant Tracking System) evaluation components. It covers:
 - Job description input supporting text, URL, and file modes
 - Resume selection allowing existing or uploaded resumes
 - Evaluation results display with compatibility score, reasons, and suggestions
@@ -38,7 +10,7 @@ This document explains the frontend ATS (Applicant Tracking System) evaluation c
 - Responsive design patterns and accessibility features
 - End-to-end UX flow from job description entry to optimization actions
 
-## Project Structure
+## Project structure
 The ATS evaluation feature spans frontend components and pages, backed by frontend services and hooks, and integrated with backend routes and services.
 
 ```mermaid
@@ -74,52 +46,14 @@ RSel --> RSelShared
 RSelShared --> Types
 ```
 
-**Diagram sources**
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L1-L289)
-- [JobDescriptionForm.tsx](file://frontend/components/ats/JobDescriptionForm.tsx#L1-L286)
-- [ResumeSelection.tsx](file://frontend/components/ats/ResumeSelection.tsx#L1-L325)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L1-L295)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L1-L177)
-- [LoadingOverlay.tsx](file://frontend/components/ats/LoadingOverlay.tsx#L1-L45)
-- [PageLoader.tsx](file://frontend/components/ats/PageLoader.tsx#L1-L23)
-- [use-ats.ts](file://frontend/hooks/queries/use-ats.ts#L1-L19)
-- [ats.service.ts](file://frontend/services/ats.service.ts#L1-L18)
-- [ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [ats.py](file://backend/app/services/ats.py#L1-L214)
-- [response.py](file://backend/app/models/ats_evaluator/response.py#L1-L19)
-- [resume.ts](file://frontend/types/resume.ts#L81-L90)
-
-**Section sources**
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L1-L289)
-- [JobDescriptionForm.tsx](file://frontend/components/ats/JobDescriptionForm.tsx#L1-L286)
-- [ResumeSelection.tsx](file://frontend/components/ats/ResumeSelection.tsx#L1-L325)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L1-L295)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L1-L177)
-- [LoadingOverlay.tsx](file://frontend/components/ats/LoadingOverlay.tsx#L1-L45)
-- [PageLoader.tsx](file://frontend/components/ats/PageLoader.tsx#L1-L23)
-- [use-ats.ts](file://frontend/hooks/queries/use-ats.ts#L1-L19)
-- [ats.service.ts](file://frontend/services/ats.service.ts#L1-L18)
-- [ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [ats.py](file://backend/app/services/ats.py#L1-L214)
-- [response.py](file://backend/app/models/ats_evaluator/response.py#L1-L19)
-- [resume.ts](file://frontend/types/resume.ts#L81-L90)
-
-## Core Components
+## Core components
 - JobDescriptionForm: Allows entering a job description via URL, text, or file upload. Manages mode switching and drag-and-drop file handling.
 - ResumeSelection: Lets users pick an existing resume from a dropdown or upload a new one. Provides previews and loading states.
 - EvaluationResults: Renders the ATS match score, reasons, suggestions, and optional optimization action.
 - LoadingOverlay and PageLoader: Provide overlay and page-level loaders during evaluation and initial load.
 - ATS Page: Orchestrates state, validation, mutation, and navigation to optimization.
 
-**Section sources**
-- [JobDescriptionForm.tsx](file://frontend/components/ats/JobDescriptionForm.tsx#L18-L54)
-- [ResumeSelection.tsx](file://frontend/components/ats/ResumeSelection.tsx#L24-L52)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L8-L24)
-- [LoadingOverlay.tsx](file://frontend/components/ats/LoadingOverlay.tsx#L6-L11)
-- [PageLoader.tsx](file://frontend/components/ats/PageLoader.tsx#L6-L11)
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L19-L138)
-
-## Architecture Overview
+## Architecture overview
 End-to-end flow from input to results and optimization.
 
 ```mermaid
@@ -149,17 +83,9 @@ U->>P : Click Optimize
 P->>P : Navigate to analysis with params
 ```
 
-**Diagram sources**
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L60-L147)
-- [use-ats.ts](file://frontend/hooks/queries/use-ats.ts#L14-L18)
-- [ats.service.ts](file://frontend/services/ats.service.ts#L12-L17)
-- [ats.py](file://backend/app/routes/ats.py#L50-L131)
-- [ats.py](file://backend/app/services/ats.py#L22-L214)
-- [response.py](file://backend/app/models/ats_evaluator/response.py#L14-L19)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Job Description Input Form
+### Job description input form
 - Modes: URL, Text, File
 - Behavior:
   - Mode switching clears conflicting fields to ensure only one source is submitted.
@@ -184,15 +110,7 @@ ValidateJD --> |No| Toast["Show 'Job Description Required'"]
 ValidateJD --> |Yes| Submit["Build FormData and Submit"]
 ```
 
-**Diagram sources**
-- [JobDescriptionForm.tsx](file://frontend/components/ats/JobDescriptionForm.tsx#L32-L54)
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L82-L91)
-
-**Section sources**
-- [JobDescriptionForm.tsx](file://frontend/components/ats/JobDescriptionForm.tsx#L18-L54)
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L39-L116)
-
-### Resume Selection Interface
+### Resume selection interface
 - Modes: Existing or Upload
 - Existing:
   - Dropdown lists user resumes with metadata and upload date.
@@ -236,21 +154,12 @@ class ResumeSelector {
 ResumeSelection --> ResumeSelector : "uses"
 ```
 
-**Diagram sources**
-- [ResumeSelection.tsx](file://frontend/components/ats/ResumeSelection.tsx#L24-L52)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L27-L57)
-
-**Section sources**
-- [ResumeSelection.tsx](file://frontend/components/ats/ResumeSelection.tsx#L24-L52)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L46-L83)
-- [resume.ts](file://frontend/types/resume.ts#L81-L90)
-
-### Evaluation Results Display
+### Evaluation results display
 - Renders:
   - ATS match score with color-coded label and animated progress bar.
   - Reasons for the score as a list with staggered animations.
   - Suggestions if present.
-  - Optional “Optimize Resume” CTA when evaluation is available and a saved resume is selected.
+  - Optional "Optimize Resume" CTA when evaluation is available and a saved resume is selected.
 - Props:
   - evaluationResult: score, reasons_for_the_score[], suggestions[]
   - onOptimize: callback invoked when user clicks optimize
@@ -271,15 +180,7 @@ OptimizeCheck --> |No| Done["Done"]
 OptCTA --> Done
 ```
 
-**Diagram sources**
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L20-L42)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L151-L170)
-
-**Section sources**
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L8-L24)
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L275-L279)
-
-### Loading States, Error Handling, and Feedback
+### Loading states, error handling, and feedback
 - PageLoader: Full-page spinner while the page initializes.
 - LoadingOverlay: Modal overlay during evaluation requests.
 - Toast notifications:
@@ -303,19 +204,7 @@ M-->>P : onError(error)
 P->>T : Show error toast
 ```
 
-**Diagram sources**
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L47-L48)
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L118-L137)
-- [LoadingOverlay.tsx](file://frontend/components/ats/LoadingOverlay.tsx#L10-L11)
-- [PageLoader.tsx](file://frontend/components/ats/PageLoader.tsx#L10-L11)
-
-**Section sources**
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L21-L54)
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L232-L240)
-- [LoadingOverlay.tsx](file://frontend/components/ats/LoadingOverlay.tsx#L10-L44)
-- [PageLoader.tsx](file://frontend/components/ats/PageLoader.tsx#L10-L22)
-
-### Backend Integration and API Contract
+### Backend integration and API contract
 - Frontend service:
   - atsService.evaluateResume(FormData) → ATSEvaluationResponse
   - atsService.getUserResumes() → { success, data: { resumes: UserResume[] } }
@@ -354,21 +243,7 @@ useEvaluateResume --> atsService : "calls"
 atsService --> BackendRoutes : "HTTP"
 ```
 
-**Diagram sources**
-- [ats.service.ts](file://frontend/services/ats.service.ts#L4-L17)
-- [use-ats.ts](file://frontend/hooks/queries/use-ats.ts#L14-L18)
-- [ats.py](file://backend/app/routes/ats.py#L50-L131)
-- [ats.py](file://backend/app/routes/ats.py#L133-L183)
-- [response.py](file://backend/app/models/ats_evaluator/response.py#L14-L19)
-
-**Section sources**
-- [ats.service.ts](file://frontend/services/ats.service.ts#L12-L17)
-- [use-ats.ts](file://frontend/hooks/queries/use-ats.ts#L4-L18)
-- [ats.py](file://backend/app/routes/ats.py#L22-L47)
-- [ats.py](file://backend/app/services/ats.py#L22-L214)
-- [response.py](file://backend/app/models/ats_evaluator/response.py#L14-L19)
-
-### User Experience Flow: From Input to Optimization
+### User experience flow: from input to optimization
 - Step 1: Choose resume (existing or upload)
 - Step 2: Provide job description (text, URL, or file)
 - Step 3: Click Evaluate; observe LoadingOverlay
@@ -389,15 +264,7 @@ H --> J["Done"]
 I --> J
 ```
 
-**Diagram sources**
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L60-L147)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L151-L170)
-
-**Section sources**
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L60-L147)
-- [EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx#L151-L170)
-
-## Dependency Analysis
+## Dependency analysis
 - Component coupling:
   - ATS Page composes JobDescriptionForm, ResumeSelection, EvaluationResults, and loaders.
   - ResumeSelection reuses ResumeSelector for consistent UX.
@@ -422,21 +289,7 @@ Svc --> Route["Backend Routes"]
 Route --> SvcB["Evaluator Service"]
 ```
 
-**Diagram sources**
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L13-L17)
-- [use-ats.ts](file://frontend/hooks/queries/use-ats.ts#L1-L19)
-- [ats.service.ts](file://frontend/services/ats.service.ts#L1-L18)
-- [ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [ats.py](file://backend/app/services/ats.py#L1-L214)
-
-**Section sources**
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L13-L17)
-- [use-ats.ts](file://frontend/hooks/queries/use-ats.ts#L1-L19)
-- [ats.service.ts](file://frontend/services/ats.service.ts#L1-L18)
-- [ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [ats.py](file://backend/app/services/ats.py#L1-L214)
-
-## Performance Considerations
+## Performance considerations
 - Minimize re-renders:
   - Use memoization for callbacks passed to child components (e.g., handleOptimize).
   - Keep evaluationResult shallow to avoid unnecessary renders.
@@ -448,7 +301,7 @@ Route --> SvcB["Evaluator Service"]
   - Ensure focus management after dropdowns open/close.
   - Provide visible labels and keyboard navigation for all interactive elements.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Missing inputs:
   - If no resume is selected or no JD source is provided, the page shows a destructive toast and disables the Evaluate button.
 - Evaluation errors:
@@ -456,12 +309,7 @@ Route --> SvcB["Evaluator Service"]
 - Backend validation:
   - Backend requires either jd_text or jd_link; unsupported file types trigger HTTP 400 with a clear message.
 - Optimization not available:
-  - The “Optimize” CTA appears only when a saved resume is selected and evaluation results are present.
-
-**Section sources**
-- [page.tsx](file://frontend/app/dashboard/ats/page.tsx#L60-L137)
-- [ats.py](file://backend/app/routes/ats.py#L80-L95)
-- [ats.py](file://backend/app/routes/ats.py#L156-L174)
+  - The "Optimize" CTA appears only when a saved resume is selected and evaluation results are present.
 
 ## Conclusion
-The ATS evaluation feature integrates a flexible job description input, robust resume selection, and a clear results presentation with actionable suggestions. The frontend manages loading states and user feedback effectively, while the backend enforces validation and normalization. Together, they deliver a responsive and accessible ATS evaluation experience with a smooth path from input to optimization.
+The ATS evaluation feature integrates a flexible job description input, reliable resume selection, and a clear results presentation with actionable suggestions. The frontend manages loading states and user feedback effectively, while the backend enforces validation and normalization. Together, they deliver a responsive and accessible ATS evaluation experience with a smooth path from input to optimization.

@@ -1,48 +1,16 @@
-# Service Layer and API Integration
+# Service layer and API integration
 
-<cite>
-**Referenced Files in This Document**
-- [backend/app/main.py](file://backend/app/main.py)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py)
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py)
-- [backend/app/routes/cold_mail.py](file://backend/app/routes/cold_mail.py)
-- [backend/app/routes/llm.py](file://backend/app/routes/llm.py)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py)
-- [backend/app/services/cold_mail.py](file://backend/app/services/cold_mail.py)
-- [backend/app/services/hiring_assiatnat.py](file://backend/app/services/hiring_assiatnat.py)
-- [backend/app/models/schemas.py](file://backend/app/models/schemas.py)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts)
-- [frontend/services/ats.service.ts](file://frontend/services/ats.service.ts)
-- [frontend/services/cold-mail.service.ts](file://frontend/services/cold-mail.service.ts)
-- [frontend/services/resume.service.ts](file://frontend/services/resume.service.ts)
-- [frontend/types/api.ts](file://frontend/types/api.ts)
-</cite>
-
-## Update Summary
+## Update summary
 **Changes Made**
 - Removed documentation sections describing third-party service integrations and external dependencies that were part of the temporary integration
 - Updated service layer documentation to reflect current architecture without external dependency documentation
 - Removed references to temporary integration components that have been reverted
 - Streamlined documentation to focus on core service layer functionality
 
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
-
 ## Introduction
-This document explains the service layer architecture and API integration patterns across the backend and frontend. It covers how the backend FastAPI application exposes versioned APIs, how services encapsulate business logic and integrate with external LLM providers, and how the frontend consumes these APIs with typed responses and robust error handling. It also documents dependency injection, middleware, authentication headers, service composition, and strategies for caching and offline handling.
+This page explains the service layer architecture and API integration patterns across the backend and frontend. It covers how the backend FastAPI application exposes versioned APIs, how services encapsulate business logic and integrate with external LLM providers, and how the frontend consumes these APIs with typed responses and reliable error handling. It also documents dependency injection, middleware, authentication headers, service composition, and strategies for caching and offline handling.
 
-## Project Structure
+## Project structure
 The system is split into:
 - Backend (Python/FastAPI): routes, services, models, and core dependencies
 - Frontend (TypeScript/Next.js): typed API clients and service wrappers
@@ -80,40 +48,14 @@ FC --> M
 FS1 --> FT
 ```
 
-**Diagram sources**
-- [backend/app/main.py](file://backend/app/main.py#L63-L203)
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [backend/app/routes/cold_mail.py](file://backend/app/routes/cold_mail.py#L1-L150)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py#L1-L214)
-- [backend/app/services/cold_mail.py](file://backend/app/services/cold_mail.py#L1-L540)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L1-L69)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L1-L50)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-- [backend/app/models/schemas.py](file://backend/app/models/schemas.py#L1-L191)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L1-L125)
-- [frontend/services/ats.service.ts](file://frontend/services/ats.service.ts#L1-L18)
-- [frontend/services/cold-mail.service.ts](file://frontend/services/cold-mail.service.ts#L1-L37)
-- [frontend/services/resume.service.ts](file://frontend/services/resume.service.ts#L1-L66)
-- [frontend/types/api.ts](file://frontend/types/api.ts#L1-L18)
-
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L63-L203)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L1-L125)
-
-## Core Components
+## Core components
 - Backend API server with versioned routes under /api/v1 and /api/v2
 - Per-request LLM dependency injection supporting custom provider/model per request
 - Typed Pydantic models for requests and responses
 - Feature-specific services implementing domain logic and normalization
 - Frontend typed API client with unified error handling and typed responses
 
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L196)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L22-L68)
-- [backend/app/models/schemas.py](file://backend/app/models/schemas.py#L1-L191)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L13-L98)
-
-## Architecture Overview
+## Architecture overview
 The backend follows a layered architecture:
 - HTTP layer: FastAPI routers define endpoints and bind typed request models
 - Service layer: Business logic orchestrators, integrating LLMs and external tools
@@ -139,15 +81,9 @@ BE-->>AC : "JSON response"
 AC-->>FE : "Typed result"
 ```
 
-**Diagram sources**
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L50-L131)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py#L22-L214)
-- [frontend/services/ats.service.ts](file://frontend/services/ats.service.ts#L12-L17)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L25-L98)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Backend API Versioning and Routing
+### Backend API versioning and routing
 - v1 routes include LinkedIn, Database, Tips, Cold Mail, Hiring Assistant, Resume Analysis, Improvement, Enrichment, Cover Letter, ATS Evaluation, Tailored Resume, Digital Interviewer, and LLM Configuration
 - v2 routes include Cold Mail, Hiring Assistant, Resume Analysis, Improvement, Enrichment, Cover Letter, ATS Evaluation, Tailored Resume, and JD Resume Editor
 - Interview and LLM Configuration routes are v1-only in this snapshot
@@ -160,13 +96,7 @@ V1 --> R1["Route Modules"]
 V2 --> R2["Route Modules"]
 ```
 
-**Diagram sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L196)
-
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L196)
-
-### Dependency Injection and LLM Integration
+### Dependency injection and LLM integration
 - Per-request LLM resolution supports custom provider, model, API key, and base URL via request headers
 - Falls back to server-default LLM if headers are absent
 - Raises HTTP 503 if custom configuration fails; HTTP 503 if server default is unavailable
@@ -185,15 +115,7 @@ DefaultOK --> |Yes| ReturnDefault["Return default LLM"]
 DefaultOK --> |No| Raise503b["Raise HTTP 503"]
 ```
 
-**Diagram sources**
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L22-L68)
-
-**Section sources**
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L22-L68)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L27-L32)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L31-L107)
-
-### Typed API Responses and Error Handling
+### Typed API responses and error handling
 - Backend routes return Pydantic models validated by FastAPI
 - Frontend defines a generic ApiResponse<T> and ApiErrorResponse for typed responses
 - Frontend API client throws ApiError with status and parsed message fields
@@ -216,15 +138,7 @@ class ApiError {
 }
 ```
 
-**Diagram sources**
-- [frontend/types/api.ts](file://frontend/types/api.ts#L1-L18)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L13-L23)
-
-**Section sources**
-- [frontend/types/api.ts](file://frontend/types/api.ts#L1-L18)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L13-L98)
-
-### ATS Evaluation Service Integration
+### ATS evaluation service integration
 - Route accepts multipart/form-data or JSON; validates payload ensuring either JD text or link is provided
 - Service resolves JD content from link if needed, validates inputs, invokes evaluator, normalizes output to JDEvaluatorResponse
 - Returns structured success flag, message, score, reasons, and suggestions
@@ -246,17 +160,7 @@ Service-->>Router : "JDEvaluatorResponse"
 Router-->>Client : "JSON response"
 ```
 
-**Diagram sources**
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L50-L131)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py#L22-L191)
-- [backend/app/models/schemas.py](file://backend/app/models/schemas.py#L1-L191)
-
-**Section sources**
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L22-L131)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py#L22-L214)
-- [backend/app/models/schemas.py](file://backend/app/models/schemas.py#L1-L191)
-
-### Cold Mail Generation and Editing
+### Cold mail generation and editing
 - File-based and text-based endpoints support generation and editing of cold emails
 - Service orchestrates resume processing, optional LLM formatting, company research, and LLM-driven content generation
 - Normalizes LLM JSON outputs and returns subject/body in ColdMailResponse
@@ -277,17 +181,7 @@ Svc-->>Router : "Resp(subject, body)"
 Router-->>FE : "JSON response"
 ```
 
-**Diagram sources**
-- [backend/app/routes/cold_mail.py](file://backend/app/routes/cold_mail.py#L84-L112)
-- [backend/app/services/cold_mail.py](file://backend/app/services/cold_mail.py#L442-L474)
-- [backend/app/models/schemas.py](file://backend/app/models/schemas.py#L7-L13)
-
-**Section sources**
-- [backend/app/routes/cold_mail.py](file://backend/app/routes/cold_mail.py#L13-L149)
-- [backend/app/services/cold_mail.py](file://backend/app/services/cold_mail.py#L250-L340)
-- [backend/app/models/schemas.py](file://backend/app/models/schemas.py#L7-L13)
-
-### Frontend Service Composition Patterns
+### Frontend service composition patterns
 - Each feature module exports a service object with typed methods returning promises of typed responses
 - Shared apiClient encapsulates HTTP mechanics, error translation, and JSON parsing
 - Types define ApiResponse<T>, ApiErrorResponse, and paginated variants
@@ -301,19 +195,7 @@ FS --> AC
 FS --> T
 ```
 
-**Diagram sources**
-- [frontend/services/ats.service.ts](file://frontend/services/ats.service.ts#L12-L17)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L25-L98)
-- [frontend/types/api.ts](file://frontend/types/api.ts#L1-L18)
-
-**Section sources**
-- [frontend/services/ats.service.ts](file://frontend/services/ats.service.ts#L1-L18)
-- [frontend/services/cold-mail.service.ts](file://frontend/services/cold-mail.service.ts#L1-L37)
-- [frontend/services/resume.service.ts](file://frontend/services/resume.service.ts#L1-L66)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L1-L125)
-- [frontend/types/api.ts](file://frontend/types/api.ts#L1-L18)
-
-## Dependency Analysis
+## Dependency analysis
 - Routes depend on services and per-request LLM instances
 - Services depend on Pydantic models and external tooling
 - Frontend services depend on the API client and shared types
@@ -333,82 +215,35 @@ FE_SVC["frontend services"] --> FE_AC["frontend api-client.ts"]
 FE_SVC --> FE_TYPES["frontend types/api.ts"]
 ```
 
-**Diagram sources**
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [backend/app/routes/cold_mail.py](file://backend/app/routes/cold_mail.py#L1-L150)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py#L1-L214)
-- [backend/app/services/cold_mail.py](file://backend/app/services/cold_mail.py#L1-L540)
-- [backend/app/models/schemas.py](file://backend/app/models/schemas.py#L1-L191)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L1-L69)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L1-L50)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-- [frontend/services/ats.service.ts](file://frontend/services/ats.service.ts#L1-L18)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L1-L125)
-- [frontend/types/api.ts](file://frontend/types/api.ts#L1-L18)
-
-**Section sources**
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [backend/app/routes/cold_mail.py](file://backend/app/routes/cold_mail.py#L1-L150)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py#L1-L214)
-- [backend/app/services/cold_mail.py](file://backend/app/services/cold_mail.py#L1-L540)
-- [backend/app/models/schemas.py](file://backend/app/models/schemas.py#L1-L191)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L1-L69)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L1-L50)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-- [frontend/services/ats.service.ts](file://frontend/services/ats.service.ts#L1-L18)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L1-L125)
-- [frontend/types/api.ts](file://frontend/types/api.ts#L1-L18)
-
-## Performance Considerations
+## Performance considerations
 - Prefer text-based endpoints for pure text inputs to avoid unnecessary file I/O
 - Use the faster model variant when latency-sensitive operations are acceptable
 - Centralized request/response logging helps identify slow endpoints and payloads
 - Consider caching repeated LLM prompts and company research results at the application layer
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and remedies:
 - LLM initialization failures: Verify provider headers and credentials; server falls back to default LLM or raises HTTP 503
 - Validation errors on backend: Ensure required fields are present (e.g., JD text or link); route returns HTTP 400
 - Network errors on frontend: ApiError wraps network failures; inspect status and message fields
 - JSON parsing errors from LLM: Services normalize content and return ErrorResponse; check logs for raw LLM output
 
-**Section sources**
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L47-L67)
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L119-L130)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L89-L97)
-- [backend/app/services/cold_mail.py](file://backend/app/services/cold_mail.py#L56-L118)
-
 ## Conclusion
 The backend employs a clean separation of concerns with typed models, per-request dependency injection for LLMs, and versioned routes enabling incremental API evolution. The frontend composes typed services around a centralized API client, ensuring consistent error handling and response typing. Together, these patterns support maintainable, testable, and extensible integrations across the platform.
 
 ## Appendices
 
-### API Versioning Summary
+### API versioning summary
 - v1: Legacy endpoints for LinkedIn, Database, Tips, Cold Mail, Hiring Assistant, Resume Analysis, Improvement, Enrichment, Cover Letter, ATS Evaluation, Tailored Resume, Digital Interviewer, LLM Configuration
-- v2: Enhanced endpoints for Cold Mail, Hiring Assistant, Resume Analysis, Improvement, Enrichment, Cover Letter, ATS Evaluation, Tailored Resume, JD Resume Editor
+- v2: Improved endpoints for Cold Mail, Hiring Assistant, Resume Analysis, Improvement, Enrichment, Cover Letter, ATS Evaluation, Tailored Resume, JD Resume Editor
 
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L196)
-
-### Authentication and Headers
+### Authentication and headers
 - Frontend relies on NextAuth for session management; backend reads custom LLM configuration via X-LLM-* headers for per-request LLM instantiation
 
-**Section sources**
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L1-L125)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L22-L68)
-
-### Service Lifecycle Management
+### Service lifecycle management
 - FastAPI lifespan manages startup/shutdown hooks; request/response logging middleware attaches request IDs and logs payloads
 
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L54-L60)
-- [backend/app/main.py](file://backend/app/main.py#L71-L131)
-
-### LLM Configuration and Testing
+### LLM configuration and testing
 - Backend provides LLM factory supporting multiple providers (Google, OpenAI, Anthropic, Ollama, OpenRouter, DeepSeek)
 - Includes LLM connection testing endpoint for validating provider configurations
 - Supports both server-default and per-request LLM instances
-
-**Section sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L31-L107)
-- [backend/app/routes/llm.py](file://backend/app/routes/llm.py#L23-L49)

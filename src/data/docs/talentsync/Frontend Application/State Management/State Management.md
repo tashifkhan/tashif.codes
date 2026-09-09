@@ -1,35 +1,7 @@
-# State Management
-
-<cite>
-**Referenced Files in This Document**
-- [providers.tsx](file://frontend/app/providers.tsx)
-- [auth-options.ts](file://frontend/lib/auth-options.ts)
-- [api-client.ts](file://frontend/services/api-client.ts)
-- [dashboard.service.ts](file://frontend/services/dashboard.service.ts)
-- [resume.service.ts](file://frontend/services/resume.service.ts)
-- [use-dashboard.ts](file://frontend/hooks/queries/use-dashboard.ts)
-- [use-resumes.ts](file://frontend/hooks/queries/use-resumes.ts)
-- [index.ts (queries)](file://frontend/hooks/queries/index.ts)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts)
-- [use-mobile.ts](file://frontend/hooks/use-mobile.ts)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts)
-- [types/index.ts](file://frontend/types/index.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# State management
 
 ## Introduction
-This document explains the state management architecture of the frontend, focusing on:
+This page explains the state management architecture of the frontend, focusing on:
 - Server state management with React Query
 - Local UI state with useState/useReducer
 - Authentication state via NextAuth.js
@@ -38,7 +10,7 @@ This document explains the state management architecture of the frontend, focusi
 - Context providers, state persistence, and cross-component synchronization
 - Error handling, loading states, and debugging techniques
 
-## Project Structure
+## Project structure
 The state management stack is organized around three pillars:
 - Providers: React Query client, session context, and developer tools
 - Services: Typed API clients and service abstractions
@@ -76,29 +48,12 @@ H4 --> Q2
 H1 --> P1
 ```
 
-**Diagram sources**
-- [providers.tsx](file://frontend/app/providers.tsx#L1-L38)
-- [api-client.ts](file://frontend/services/api-client.ts#L1-L125)
-- [dashboard.service.ts](file://frontend/services/dashboard.service.ts#L1-L8)
-- [resume.service.ts](file://frontend/services/resume.service.ts#L1-L66)
-- [use-dashboard.ts](file://frontend/hooks/queries/use-dashboard.ts#L1-L13)
-- [use-resumes.ts](file://frontend/hooks/queries/use-resumes.ts#L1-L83)
-- [index.ts (queries)](file://frontend/hooks/queries/index.ts#L1-L14)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L1-L192)
-- [use-mobile.ts](file://frontend/hooks/use-mobile.ts#L1-L20)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L1-L486)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts#L1-L204)
-
-**Section sources**
-- [providers.tsx](file://frontend/app/providers.tsx#L1-L38)
-- [index.ts (queries)](file://frontend/hooks/queries/index.ts#L1-L14)
-
-## Core Components
+## Core components
 - Providers
   - React Query client configured with default caching and retry policies
   - NextAuth.js session provider for authentication state
 - Services
-  - Centralized typed API client with robust error handling
+  - Centralized typed API client with reliable error handling
   - Feature-specific service modules encapsulate endpoint logic
 - React Query Hooks
   - Queries for server state with explicit query keys
@@ -107,18 +62,7 @@ H1 --> P1
   - Local state machines for complex UI flows
   - Utility hooks for UI state and notifications
 
-**Section sources**
-- [providers.tsx](file://frontend/app/providers.tsx#L13-L37)
-- [api-client.ts](file://frontend/services/api-client.ts#L100-L125)
-- [dashboard.service.ts](file://frontend/services/dashboard.service.ts#L4-L7)
-- [resume.service.ts](file://frontend/services/resume.service.ts#L23-L65)
-- [use-dashboard.ts](file://frontend/hooks/queries/use-dashboard.ts#L4-L12)
-- [use-resumes.ts](file://frontend/hooks/queries/use-resumes.ts#L16-L82)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L171-L189)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L237-L485)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts#L154-L203)
-
-## Architecture Overview
+## Architecture overview
 The system integrates React Query for server state, NextAuth.js for authentication, and custom hooks for local UI state. Services abstract API calls and are consumed by React Query hooks.
 
 ```mermaid
@@ -139,14 +83,9 @@ Hook->>Hook : "invalidateQueries() and toast()"
 Hook-->>UI : "updated state"
 ```
 
-**Diagram sources**
-- [use-resumes.ts](file://frontend/hooks/queries/use-resumes.ts#L16-L82)
-- [resume.service.ts](file://frontend/services/resume.service.ts#L23-L65)
-- [api-client.ts](file://frontend/services/api-client.ts#L25-L98)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### React Query Provider and Defaults
+### React query provider and defaults
 - Creates a singleton QueryClient with:
   - Stale time: 1 minute
   - Retry attempts: 2
@@ -162,13 +101,7 @@ WrapSP --> Devtools["Attach ReactQueryDevtools"]
 Devtools --> End(["Ready"])
 ```
 
-**Diagram sources**
-- [providers.tsx](file://frontend/app/providers.tsx#L13-L37)
-
-**Section sources**
-- [providers.tsx](file://frontend/app/providers.tsx#L13-L37)
-
-### Authentication State Management
+### Authentication state management
 - NextAuth.js configuration supports:
   - Credentials, Google, GitHub, and Email providers
   - JWT session strategy
@@ -190,15 +123,7 @@ Adapter-->>NextAuth : "user object"
 NextAuth-->>Client : "session (JWT)"
 ```
 
-**Diagram sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L201)
-- [providers.tsx](file://frontend/app/providers.tsx#L3-L3)
-
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L201)
-- [providers.tsx](file://frontend/app/providers.tsx#L3-L3)
-
-### API Client and Error Handling
+### API client and error handling
 - Provides typed GET/POST/PUT/PATCH/DELETE helpers
 - Builds query strings and FormData support
 - Throws ApiError with status and structured messages
@@ -219,14 +144,7 @@ H --> J["Throw ApiError"]
 I --> K["Return data"]
 ```
 
-**Diagram sources**
-- [api-client.ts](file://frontend/services/api-client.ts#L25-L98)
-
-**Section sources**
-- [api-client.ts](file://frontend/services/api-client.ts#L13-L23)
-- [api-client.ts](file://frontend/services/api-client.ts#L25-L98)
-
-### Server State: Dashboard and Resumes
+### Server state: dashboard and resumes
 - useDashboard: fetches dashboard data with a fixed query key
 - useResume: fetches a single resume by id with lazy execution (enabled only when id exists)
 - useDeleteResume/useRenameResume/useUploadResume: mutations that invalidate dashboard queries and notify via toast
@@ -245,19 +163,7 @@ Service-->>Hook : "data"
 Hook-->>UI : "data, isLoading, isError"
 ```
 
-**Diagram sources**
-- [use-dashboard.ts](file://frontend/hooks/queries/use-dashboard.ts#L4-L12)
-- [dashboard.service.ts](file://frontend/services/dashboard.service.ts#L4-L7)
-- [api-client.ts](file://frontend/services/api-client.ts#L100-L102)
-
-**Section sources**
-- [use-dashboard.ts](file://frontend/hooks/queries/use-dashboard.ts#L4-L12)
-- [use-resumes.ts](file://frontend/hooks/queries/use-resumes.ts#L5-L14)
-- [use-resumes.ts](file://frontend/hooks/queries/use-resumes.ts#L16-L82)
-- [dashboard.service.ts](file://frontend/services/dashboard.service.ts#L4-L7)
-- [resume.service.ts](file://frontend/services/resume.service.ts#L23-L65)
-
-### Local State: Wizard Flows
+### Local state: wizard flows
 - Enrichment Wizard
   - Uses useReducer to manage multi-step state machine
   - Integrates with React Query mutations for analysis, enhancement, refinement, and application
@@ -283,19 +189,7 @@ Error --> Reset["dispatch RESET"]
 Complete --> Reset
 ```
 
-**Diagram sources**
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L237-L485)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts#L154-L203)
-
-**Section sources**
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L23-L31)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L33-L209)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L237-L485)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts#L26-L65)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts#L71-L128)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts#L154-L203)
-
-### UI State Utilities
+### UI state utilities
 - use-toast: centralized toast notifications with queue limits and dismissal
 - use-mobile: responsive breakpoint detection for UI adaptation
 
@@ -312,15 +206,7 @@ class UseMobile {
 }
 ```
 
-**Diagram sources**
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L171-L189)
-- [use-mobile.ts](file://frontend/hooks/use-mobile.ts#L5-L18)
-
-**Section sources**
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L1-L192)
-- [use-mobile.ts](file://frontend/hooks/use-mobile.ts#L1-L20)
-
-### Data Fetching Patterns, Caching, and Invalidation
+### Data fetching patterns, caching, and invalidation
 - Caching
   - Global staleTime of 1 minute; adjust per feature as needed
   - Automatic retries on failure
@@ -331,14 +217,7 @@ class UseMobile {
   - Mutations invalidate related query keys to synchronize UI state
   - Notifications surfaced via toast
 
-**Section sources**
-- [providers.tsx](file://frontend/app/providers.tsx#L14-L27)
-- [use-resumes.ts](file://frontend/hooks/queries/use-resumes.ts#L6-L13)
-- [use-resumes.ts](file://frontend/hooks/queries/use-resumes.ts#L22-L36)
-- [use-resumes.ts](file://frontend/hooks/queries/use-resumes.ts#L46-L52)
-- [use-resumes.ts](file://frontend/hooks/queries/use-resumes.ts#L70-L74)
-
-### Optimistic Updates
+### Optimistic updates
 - Current hooks primarily reflect server state after mutations
 - To implement optimistic updates:
   - Pre-update cache in mutation.onMutate
@@ -348,22 +227,15 @@ class UseMobile {
 
 [No sources needed since this section provides general guidance]
 
-### Context Providers and Cross-Component Synchronization
+### Context providers and cross-component synchronization
 - SessionProvider ensures authentication state is available across the app
 - QueryClientProvider enables cache sharing and synchronization across components
 - Custom hooks coordinate UI state and react to server-side changes via invalidation
 
-**Section sources**
-- [providers.tsx](file://frontend/app/providers.tsx#L29-L36)
-- [use-resumes.ts](file://frontend/hooks/queries/use-resumes.ts#L22-L36)
-
-### Types and Contracts
+### Types and contracts
 - Centralized exports of feature types enable consistent typing across services and hooks
 
-**Section sources**
-- [types/index.ts](file://frontend/types/index.ts#L1-L9)
-
-## Dependency Analysis
+## Dependency analysis
 ```mermaid
 graph LR
 A["providers.tsx"] --> B["QueryClientProvider"]
@@ -379,20 +251,7 @@ J --> G
 K["use-toast.ts"] --> B
 ```
 
-**Diagram sources**
-- [providers.tsx](file://frontend/app/providers.tsx#L13-L37)
-- [use-dashboard.ts](file://frontend/hooks/queries/use-dashboard.ts#L1-L13)
-- [dashboard.service.ts](file://frontend/services/dashboard.service.ts#L1-L8)
-- [use-resumes.ts](file://frontend/hooks/queries/use-resumes.ts#L1-L83)
-- [resume.service.ts](file://frontend/services/resume.service.ts#L1-L66)
-- [use-enrichment-wizard.ts](file://frontend/hooks/use-enrichment-wizard.ts#L1-L486)
-- [use-improvement-wizard.ts](file://frontend/hooks/use-improvement-wizard.ts#L1-L204)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L1-L192)
-
-**Section sources**
-- [index.ts (queries)](file://frontend/hooks/queries/index.ts#L1-L14)
-
-## Performance Considerations
+## Performance considerations
 - Prefer granular query keys to minimize unnecessary refetches
 - Use enabled flags for id-dependent queries to avoid redundant requests
 - Tune staleTime per feature based on data volatility
@@ -401,7 +260,7 @@ K["use-toast.ts"] --> B
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Network and API errors
   - Inspect ApiError instances thrown by api-client
   - Surface user-friendly messages via toast
@@ -412,17 +271,10 @@ K["use-toast.ts"] --> B
   - Confirm provider configurations and callbacks
   - Check session and JWT token updates in development logs
 
-**Section sources**
-- [api-client.ts](file://frontend/services/api-client.ts#L13-L23)
-- [api-client.ts](file://frontend/services/api-client.ts#L88-L98)
-- [providers.tsx](file://frontend/app/providers.tsx#L33-L33)
-- [use-toast.ts](file://frontend/hooks/use-toast.ts#L142-L169)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L98-L196)
-
 ## Conclusion
 The frontend employs a clean separation of concerns:
 - React Query manages server state with predictable caching and invalidation
 - NextAuth.js centralizes authentication state
 - Services provide typed, reusable API access
 - Custom hooks encapsulate UI logic and local state machines
-This foundation supports scalable UI flows, robust error handling, and maintainable state synchronization across components.
+This foundation supports scalable UI flows, reliable error handling, and maintainable state synchronization across components.

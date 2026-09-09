@@ -1,37 +1,13 @@
-# Authentication & Authorization
-
-<cite>
-**Referenced Files in This Document**
-- [auth-options.ts](file://frontend/lib/auth-options.ts)
-- [[...nextauth]/route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts)
-- [providers.tsx](file://frontend/app/providers.tsx)
-- [page.tsx (Auth)](file://frontend/app/auth/page.tsx)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts)
-- [resend-verification/route.ts](file://frontend/app/api/auth/resend-verification/route.ts)
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Authentication & authorization
 
 ## Introduction
-This document explains the authentication and authorization system for the TalentSync-Normies platform. It covers NextAuth.js integration with multiple OAuth providers, session and JWT lifecycle, user roles and permissions, and the end-to-end flows for registration, login, email verification, password reset, and logout. It also documents API authentication headers, session validation, token refresh, and security considerations for protecting user data and maintaining session integrity. Guidance is included for role-based UI rendering, protected route handling, and permission checks across the application.
+This page explains the authentication and authorization system for the TalentSync-Normies platform. It covers NextAuth.js integration with multiple OAuth providers, session and JWT lifecycle, user roles and permissions, and the end-to-end flows for registration, login, email verification, password reset, and logout. It also documents API authentication headers, session validation, token refresh, and security considerations for protecting user data and maintaining session integrity. Guidance is included for role-based UI rendering, protected route handling, and permission checks across the application.
 
-## Project Structure
+## Project structure
 Authentication spans the frontend Next.js app and the shared auth configuration:
 - NextAuth.js configuration and callbacks are centralized in a single module.
 - NextAuth routes are exposed via a catch-all API endpoint.
-- The application’s provider wrapper initializes session management.
+- The application's provider wrapper initializes session management.
 - UI pages orchestrate sign-in/sign-up, verification, and password reset flows.
 - Dedicated API endpoints implement registration, verification, resend-verification, and password reset confirmation.
 
@@ -60,29 +36,25 @@ UI_Auth --> API_ResetReq
 UI_Auth --> API_ResetConf
 ```
 
-**Diagram sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
 - [[...nextauth]/route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [providers.tsx](file://frontend/app/providers.tsx#L13-L37)
-- [page.tsx (Auth)](file://frontend/app/auth/page.tsx#L1-L933)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L1-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L1-L84)
-- [resend-verification/route.ts](file://frontend/app/api/auth/resend-verification/route.ts#L1-L137)
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts#L1-L135)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts#L1-L89)
+- `providers.tsx`
+- `page.tsx (Auth)`
+- `register/route.ts`
+- `verify-email/route.ts`
+- `resend-verification/route.ts`
+- `reset-password/route.ts`
+- `confirm-reset/route.ts`
 
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
 - [[...nextauth]/route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [providers.tsx](file://frontend/app/providers.tsx#L13-L37)
-- [page.tsx (Auth)](file://frontend/app/auth/page.tsx#L1-L933)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L1-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L1-L84)
-- [resend-verification/route.ts](file://frontend/app/api/auth/resend-verification/route.ts#L1-L137)
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts#L1-L135)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts#L1-L89)
+- `providers.tsx`
+- `page.tsx (Auth)`
+- `register/route.ts`
+- `verify-email/route.ts`
+- `resend-verification/route.ts`
+- `reset-password/route.ts`
+- `confirm-reset/route.ts`
 
-## Core Components
+## Core components
 - NextAuth.js configuration and callbacks:
   - Providers: Credentials, Google, GitHub, Email.
   - Adapter: Prisma adapter.
@@ -101,17 +73,7 @@ UI_Auth --> API_ResetConf
   - Password reset request with token generation and expiry.
   - Confirm password reset with token validation and atomic update.
 
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [providers.tsx](file://frontend/app/providers.tsx#L13-L37)
-- [page.tsx (Auth)](file://frontend/app/auth/page.tsx#L1-L933)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L1-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L1-L84)
-- [resend-verification/route.ts](file://frontend/app/api/auth/resend-verification/route.ts#L1-L137)
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts#L1-L135)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts#L1-L89)
-
-## Architecture Overview
+## Architecture overview
 The system integrates NextAuth.js with a JWT-based session strategy and a Prisma-backed adapter. The UI triggers NextAuth flows and also calls dedicated APIs for registration and verification. Token refresh ensures the session reflects the latest user role and image.
 
 ```mermaid
@@ -131,14 +93,12 @@ NextAuth-->>UI : "Session/JWT"
 UI-->>Browser : "Redirect to /dashboard"
 ```
 
-**Diagram sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
 - [[...nextauth]/route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [page.tsx (Auth)](file://frontend/app/auth/page.tsx#L1-L933)
+- `page.tsx (Auth)`
 
-## Detailed Component Analysis
+## Detailed component analysis
 
-### NextAuth.js Integration and JWT Lifecycle
+### NextAuth.js integration and JWT lifecycle
 - Providers:
   - Credentials: Validates email/password, enforces email verification, returns user with role.
   - Google/GitHub: OAuth providers configured via environment variables.
@@ -168,13 +128,7 @@ SessionCB --> JwtCB["jwt callback<br/>refresh role/image on update"]
 JwtCB --> End(["Session/JWT ready"])
 ```
 
-**Diagram sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L98-L196)
-
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-
-### Session Management and Token Refresh
+### Session management and token refresh
 - Strategy: JWT.
 - Token refresh:
   - Triggered implicitly by NextAuth; jwt callback refreshes role and image from DB when token is updated.
@@ -195,15 +149,7 @@ Config-->>NextAuth : "updated token"
 NextAuth-->>Client : "updated session"
 ```
 
-**Diagram sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L159-L195)
-
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L77-L81)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L145-L158)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L159-L195)
-
-### User Roles and Permissions
+### User roles and permissions
 - Role storage:
   - Users are associated with a role via the Prisma adapter.
 - Role propagation:
@@ -230,15 +176,7 @@ class Role {
 User --> Role : "belongsTo"
 ```
 
-**Diagram sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L19-L55)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L164-L194)
-
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L19-L55)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L164-L194)
-
-### Authentication Flow: Registration to Login
+### Authentication flow: registration to login
 - Registration:
   - Validates input, checks existing user and role, hashes password, creates user and email verification token in a transaction, and sends verification email.
 - Email verification:
@@ -273,20 +211,7 @@ DB-->>NextAuth : "User (verified)"
 NextAuth-->>UI : "Session/JWT"
 ```
 
-**Diagram sources**
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L68-L158)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L9-L66)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L19-L55)
-- [page.tsx (Auth)](file://frontend/app/auth/page.tsx#L151-L186)
-
-**Section sources**
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L1-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L1-L84)
-- [resend-verification/route.ts](file://frontend/app/api/auth/resend-verification/route.ts#L1-L137)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L19-L55)
-- [page.tsx (Auth)](file://frontend/app/auth/page.tsx#L151-L186)
-
-### Password Reset Flow
+### Password reset flow
 - Request reset:
   - Validates email, blocks OAuth users, deletes existing tokens, generates a new token with expiry, and emails reset link.
 - Confirm reset:
@@ -310,15 +235,7 @@ DB-->>API_ResetConf : "OK"
 API_ResetConf-->>UI : "Success"
 ```
 
-**Diagram sources**
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts#L59-L117)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts#L11-L71)
-
-**Section sources**
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts#L1-L135)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts#L1-L89)
-
-### API Authentication Headers and Session Validation
+### API authentication headers and session validation
 - NextAuth endpoints:
   - The catch-all route exposes NextAuth under the API namespace and handles GET/POST for all NextAuth flows.
 - Client usage:
@@ -326,11 +243,10 @@ API_ResetConf-->>UI : "Success"
 - Session validation:
   - The session returned by NextAuth includes id, role, and image; useSession can be used to guard routes and render UI conditionally.
 
-**Section sources**
 - [[...nextauth]/route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [page.tsx (Auth)](file://frontend/app/auth/page.tsx#L40-L122)
+- `page.tsx (Auth)`
 
-### Role-Based UI Rendering and Protected Routes
+### Role-Based UI rendering and protected routes
 - Role availability:
   - session.user.role is populated by callbacks and can be used to render role-specific UI.
 - Protected routes:
@@ -338,11 +254,7 @@ API_ResetConf-->>UI : "Success"
 - Permission matrix:
   - Not defined in the reviewed files; implement route-level checks using session.user.role and restrict access accordingly.
 
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L145-L158)
-- [page.tsx (Auth)](file://frontend/app/auth/page.tsx#L40-L122)
-
-## Dependency Analysis
+## Dependency analysis
 - Internal dependencies:
   - UI depends on next-auth/react and NextAuth route.
   - NextAuth route depends on auth-options.
@@ -369,21 +281,15 @@ API_Reset --> Prisma
 API_Confirm --> Prisma
 ```
 
-**Diagram sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L1-L8)
 - [[...nextauth]/route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [page.tsx (Auth)](file://frontend/app/auth/page.tsx#L1-L933)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L1-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L1-L84)
-- [resend-verification/route.ts](file://frontend/app/api/auth/resend-verification/route.ts#L1-L137)
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts#L1-L135)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts#L1-L89)
+- `page.tsx (Auth)`
+- `register/route.ts`
+- `verify-email/route.ts`
+- `resend-verification/route.ts`
+- `reset-password/route.ts`
+- `confirm-reset/route.ts`
 
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L1-L8)
-- [page.tsx (Auth)](file://frontend/app/auth/page.tsx#L1-L933)
-
-## Performance Considerations
+## Performance considerations
 - Token refresh:
   - Keep role and image in JWT to avoid frequent DB reads; rely on callbacks to refresh on update.
 - Session caching:
@@ -393,7 +299,7 @@ API_Confirm --> Prisma
 - Rate limiting:
   - Consider adding rate limits to registration, verification, resend, and reset endpoints to prevent abuse.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Common issues and resolutions:
   - Unverified email on credentials login:
     - The signIn callback redirects to the verification page with an error parameter; guide users to resend verification.
@@ -405,13 +311,6 @@ API_Confirm --> Prisma
     - Reset is blocked; instruct users to sign in via OAuth.
   - Email delivery failures:
     - Registration and verification resend endpoints log errors but still succeed if email fails; advise resending.
-
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L122-L136)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L20-L46)
-- [resend-verification/route.ts](file://frontend/app/api/auth/resend-verification/route.ts#L42-L54)
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts#L77-L83)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L144-L150)
 
 ## Conclusion
 The platform uses NextAuth.js with a JWT session strategy, Prisma adapter, and multiple providers (Credentials, Google, GitHub, Email). Email verification is mandatory for credentials-based accounts, while OAuth users are auto-verified. Roles are stored and propagated via JWT callbacks, enabling role-based UI and route-level access control. Dedicated APIs support registration, verification, resend-verification, and password reset flows. Security best practices include enforcing email verification for credentials, validating tokens with expiry and duplication checks, and avoiding exposing sensitive data in error messages. Implement route-level guards using session.user.role to enforce access control consistently across the application.

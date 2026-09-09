@@ -1,54 +1,14 @@
-# Communication Tools
-
-<cite>
-**Referenced Files in This Document**
-- [cold_mail_gen.py](file://backend/app/data/prompt/cold_mail_gen.py)
-- [cold_mail_editor.py](file://backend/app/data/prompt/cold_mail_editor.py)
-- [cold_mail.py](file://backend/app/services/cold_mail.py)
-- [cold_mail.py](file://backend/app/routes/cold_mail.py)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py)
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts)
-- [page.tsx](file://frontend/app/dashboard/cold-mail/page.tsx)
-- [EmailDetailsForm.tsx](file://frontend/components/cold-mail/EmailDetailsForm.tsx)
-- [GeneratedEmailPanel.tsx](file://frontend/components/cold-mail/GeneratedEmailPanel.tsx)
-- [cover_letter.py](file://backend/app/services/cover_letter.py)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py)
-- [route.ts](file://frontend/app/api/(backend-interface)/cover-letter/route.ts)
-- [page.tsx](file://frontend/app/dashboard/cover-letter/page.tsx)
-- [CoverLetterDetailsForm.tsx](file://frontend/components/cover-letter/CoverLetterDetailsForm.tsx)
-- [GeneratedLetterPanel.tsx](file://frontend/components/cover-letter/GeneratedLetterPanel.tsx)
-- [linkedin.py](file://backend/app/routes/linkedin.py)
-- [linkedin_post.py](file://backend/app/services/linkedin_post.py)
-- [linkedin_profile.py](file://backend/app/services/linkedin_profile.py)
-- [schemas.py](file://backend/app/models/linkedin_post/schemas.py)
-- [page.tsx](file://frontend/app/dashboard/linkedin-posts/page.tsx)
-- [linkedin.service.ts](file://frontend/services/linkedin.service.ts)
-- [use-linkedin.ts](file://frontend/hooks/queries/use-linkedin.ts)
-- [cold-mail.ts](file://frontend/types/cold-mail.ts)
-- [cover-letter.ts](file://frontend/types/cover-letter.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Communication tools
 
 ## Introduction
-This document describes the Communication Tools suite that powers AI-driven content generation for three primary use cases:
+This page describes the Communication Tools suite that powers AI-driven content generation for three primary use cases:
 - Cold email generation for outbound prospecting
 - Cover letter creation tailored to job descriptions
 - LinkedIn post generation with optional research and GitHub insights
 
 It explains the AI workflows, customization and personalization options, template systems, integration with job descriptions, editing interfaces, preview capabilities, export functionality, frontend components, and the data models for generated content, templates, and user preferences. It also covers quality assurance, plagiarism prevention, and brand consistency features.
 
-## Project Structure
+## Project structure
 The suite spans frontend Next.js pages and components, a TypeScript API route layer, and a FastAPI backend with LangChain prompts and services. The frontend integrates with backend endpoints via a typed API client and React Query hooks. Backend routes delegate to services that orchestrate LLM chains and optional external research.
 
 ```mermaid
@@ -79,49 +39,7 @@ BE_Routes --> BE_Models
 BE_Services --> BE_Models
 ```
 
-**Diagram sources**
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L1-L150)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L1-L102)
-- [linkedin.py](file://backend/app/routes/linkedin.py#L1-L75)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L1-L144)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L1-L190)
-- [linkedin_post.py](file://backend/app/services/linkedin_post.py#L1-L170)
-- [linkedin_profile.py](file://backend/app/services/linkedin_profile.py#L121-L157)
-- [cold_mail_gen.py](file://backend/app/data/prompt/cold_mail_gen.py#L1-L118)
-- [cold_mail_editor.py](file://backend/app/data/prompt/cold_mail_editor.py#L1-L137)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py#L1-L52)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L1-L33)
-- [schemas.py](file://backend/app/models/linkedin_post/schemas.py#L1-L70)
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts#L1-L542)
-- [route.ts](file://frontend/app/api/(backend-interface)/cover-letter/route.ts#L1-L397)
-- [page.tsx](file://frontend/app/dashboard/cold-mail/page.tsx#L1-L750)
-- [page.tsx](file://frontend/app/dashboard/cover-letter/page.tsx#L1-L250)
-- [page.tsx](file://frontend/app/dashboard/linkedin-posts/page.tsx#L1-L650)
-- [linkedin.service.ts](file://frontend/services/linkedin.service.ts#L1-L35)
-- [use-linkedin.ts](file://frontend/hooks/queries/use-linkedin.ts#L1-L8)
-
-**Section sources**
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L1-L150)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L1-L102)
-- [linkedin.py](file://backend/app/routes/linkedin.py#L1-L75)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L1-L144)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L1-L190)
-- [linkedin_post.py](file://backend/app/services/linkedin_post.py#L1-L170)
-- [linkedin_profile.py](file://backend/app/services/linkedin_profile.py#L121-L157)
-- [cold_mail_gen.py](file://backend/app/data/prompt/cold_mail_gen.py#L1-L118)
-- [cold_mail_editor.py](file://backend/app/data/prompt/cold_mail_editor.py#L1-L137)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py#L1-L52)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L1-L33)
-- [schemas.py](file://backend/app/models/linkedin_post/schemas.py#L1-L70)
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts#L1-L542)
-- [route.ts](file://frontend/app/api/(backend-interface)/cover-letter/route.ts#L1-L397)
-- [page.tsx](file://frontend/app/dashboard/cold-mail/page.tsx#L1-L750)
-- [page.tsx](file://frontend/app/dashboard/cover-letter/page.tsx#L1-L250)
-- [page.tsx](file://frontend/app/dashboard/linkedin-posts/page.tsx#L1-L650)
-- [linkedin.service.ts](file://frontend/services/linkedin.service.ts#L1-L35)
-- [use-linkedin.ts](file://frontend/hooks/queries/use-linkedin.ts#L1-L8)
-
-## Core Components
+## Core components
 - Cold Email Generator
   - Frontend: Details form, generated panel, copy/download actions, edit workflow
   - Backend: File/text-based endpoints, prompt templates, LLM orchestration, optional company research
@@ -132,21 +50,7 @@ BE_Services --> BE_Models
   - Frontend: Topic, tone, audience, length, hashtags option, CTA, emoji level, GitHub project URL, research toggle, post cards with actions
   - Backend: Post generation, optional research, hashtag suggestion, GitHub insights, content calendar suggestions
 
-**Section sources**
-- [EmailDetailsForm.tsx](file://frontend/components/cold-mail/EmailDetailsForm.tsx#L1-L150)
-- [GeneratedEmailPanel.tsx](file://frontend/components/cold-mail/GeneratedEmailPanel.tsx#L150-L189)
-- [page.tsx](file://frontend/app/dashboard/cold-mail/page.tsx#L679-L714)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L16-L144)
-- [cold_mail_gen.py](file://backend/app/data/prompt/cold_mail_gen.py#L1-L118)
-- [cold_mail_editor.py](file://backend/app/data/prompt/cold_mail_editor.py#L1-L137)
-- [CoverLetterDetailsForm.tsx](file://frontend/components/cover-letter/CoverLetterDetailsForm.tsx#L1-L246)
-- [GeneratedLetterPanel.tsx](file://frontend/components/cover-letter/GeneratedLetterPanel.tsx#L150-L173)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L154-L190)
-- [linkedin.py](file://backend/app/routes/linkedin.py#L1-L75)
-- [linkedin_post.py](file://backend/app/services/linkedin_post.py#L141-L170)
-- [page.tsx](file://frontend/app/dashboard/linkedin-posts/page.tsx#L39-L629)
-
-## Architecture Overview
+## Architecture overview
 The system follows a layered architecture:
 - Frontend Next.js pages and components collect user inputs and render previews
 - API routes validate, transform, and forward requests to backend endpoints
@@ -176,15 +80,9 @@ API-->>FE : "Sanitized content"
 FE-->>U : "Preview, copy, download, edit"
 ```
 
-**Diagram sources**
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts#L94-L487)
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L13-L41)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L16-L144)
-- [cold_mail_gen.py](file://backend/app/data/prompt/cold_mail_gen.py#L99-L118)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Cold Email Generator
+### Cold email generator
 - Workflow
   - User selects a resume (file or stored text) and fills recipient/company/personal details and key points
   - Frontend sends a multipart/form-data request to the Next.js API route
@@ -225,25 +123,7 @@ API-->>FE : "subject, body"
 FE-->>U : "Preview + actions"
 ```
 
-**Diagram sources**
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts#L94-L445)
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L13-L41)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L16-L144)
-- [cold_mail_gen.py](file://backend/app/data/prompt/cold_mail_gen.py#L99-L118)
-
-**Section sources**
-- [EmailDetailsForm.tsx](file://frontend/components/cold-mail/EmailDetailsForm.tsx#L1-L150)
-- [GeneratedEmailPanel.tsx](file://frontend/components/cold-mail/GeneratedEmailPanel.tsx#L150-L189)
-- [page.tsx](file://frontend/app/dashboard/cold-mail/page.tsx#L295-L346)
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts#L94-L487)
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L13-L41)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L16-L144)
-- [cold_mail_gen.py](file://backend/app/data/prompt/cold_mail_gen.py#L1-L118)
-- [cold_mail_editor.py](file://backend/app/data/prompt/cold_mail_editor.py#L1-L137)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py#L1-L52)
-- [cold-mail.ts](file://frontend/types/cold-mail.ts#L1-L44)
-
-### Cover Letter Creator
+### Cover letter creator
 - Workflow
   - User provides personal details, job description (URL or text), optional recipient/company, key points, and additional context
   - Frontend sends a request to the Next.js API route for generation
@@ -277,22 +157,7 @@ API-->>FE : "body"
 FE-->>U : "Preview + actions"
 ```
 
-**Diagram sources**
-- [route.ts](file://frontend/app/api/(backend-interface)/cover-letter/route.ts#L51-L397)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L38-L56)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L154-L171)
-
-**Section sources**
-- [CoverLetterDetailsForm.tsx](file://frontend/components/cover-letter/CoverLetterDetailsForm.tsx#L1-L246)
-- [GeneratedLetterPanel.tsx](file://frontend/components/cover-letter/GeneratedLetterPanel.tsx#L150-L173)
-- [page.tsx](file://frontend/app/dashboard/cover-letter/page.tsx#L177-L229)
-- [route.ts](file://frontend/app/api/(backend-interface)/cover-letter/route.ts#L51-L397)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L38-L102)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L154-L190)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L1-L33)
-- [cover-letter.ts](file://frontend/types/cover-letter.ts#L1-L39)
-
-### LinkedIn Post Generator
+### LinkedIn post generator
 - Workflow
   - User sets topic, tone, audience, length, hashtags option, CTA, emoji level, GitHub project URL, and toggles research
   - Frontend calls the linkedin service hook, which posts to the backend route
@@ -325,23 +190,7 @@ SVC-->>FE : "posts"
 FE-->>U : "Render + actions"
 ```
 
-**Diagram sources**
-- [page.tsx](file://frontend/app/dashboard/linkedin-posts/page.tsx#L39-L629)
-- [linkedin.service.ts](file://frontend/services/linkedin.service.ts#L1-L35)
-- [use-linkedin.ts](file://frontend/hooks/queries/use-linkedin.ts#L1-L8)
-- [linkedin.py](file://backend/app/routes/linkedin.py#L17-L32)
-- [linkedin_post.py](file://backend/app/services/linkedin_post.py#L141-L170)
-- [schemas.py](file://backend/app/models/linkedin_post/schemas.py#L1-L70)
-
-**Section sources**
-- [page.tsx](file://frontend/app/dashboard/linkedin-posts/page.tsx#L39-L629)
-- [linkedin.service.ts](file://frontend/services/linkedin.service.ts#L1-L35)
-- [use-linkedin.ts](file://frontend/hooks/queries/use-linkedin.ts#L1-L8)
-- [linkedin.py](file://backend/app/routes/linkedin.py#L1-L75)
-- [linkedin_post.py](file://backend/app/services/linkedin_post.py#L141-L170)
-- [schemas.py](file://backend/app/models/linkedin_post/schemas.py#L1-L70)
-
-## Dependency Analysis
+## Dependency analysis
 - Frontend depends on:
   - Next.js API routes for cold mail and cover letter
   - Services for LinkedIn post generation
@@ -363,40 +212,7 @@ BE_SERVICES --> BE_PROMPTS["Prompt Templates"]
 BE_SERVICES --> LLM["LLM"]
 ```
 
-**Diagram sources**
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts#L1-L542)
-- [route.ts](file://frontend/app/api/(backend-interface)/cover-letter/route.ts#L1-L397)
-- [linkedin.service.ts](file://frontend/services/linkedin.service.ts#L1-L35)
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L1-L150)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L1-L102)
-- [linkedin.py](file://backend/app/routes/linkedin.py#L1-L75)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L1-L144)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L1-L190)
-- [linkedin_post.py](file://backend/app/services/linkedin_post.py#L1-L170)
-- [cold_mail_gen.py](file://backend/app/data/prompt/cold_mail_gen.py#L1-L118)
-- [cold_mail_editor.py](file://backend/app/data/prompt/cold_mail_editor.py#L1-L137)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py#L1-L52)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L1-L33)
-- [schemas.py](file://backend/app/models/linkedin_post/schemas.py#L1-L70)
-
-**Section sources**
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L1-L150)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L1-L102)
-- [linkedin.py](file://backend/app/routes/linkedin.py#L1-L75)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L1-L144)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L1-L190)
-- [linkedin_post.py](file://backend/app/services/linkedin_post.py#L1-L170)
-- [cold_mail_gen.py](file://backend/app/data/prompt/cold_mail_gen.py#L1-L118)
-- [cold_mail_editor.py](file://backend/app/data/prompt/cold_mail_editor.py#L1-L137)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py#L1-L52)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L1-L33)
-- [schemas.py](file://backend/app/models/linkedin_post/schemas.py#L1-L70)
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts#L1-L542)
-- [route.ts](file://frontend/app/api/(backend-interface)/cover-letter/route.ts#L1-L397)
-- [linkedin.service.ts](file://frontend/services/linkedin.service.ts#L1-L35)
-- [use-linkedin.ts](file://frontend/hooks/queries/use-linkedin.ts#L1-L8)
-
-## Performance Considerations
+## Performance considerations
 - Timeouts and retries
   - Frontend API routes enforce long timeouts for LLM-heavy operations
   - Backend routes depend on LLM availability and may surface connection errors
@@ -409,7 +225,7 @@ BE_SERVICES --> LLM["LLM"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Authentication failures
   - API routes require a valid session; ensure user is logged in
 - Validation errors
@@ -424,15 +240,5 @@ BE_SERVICES --> LLM["LLM"]
 - Database persistence
   - Request/response persistence is best-effort; failures are logged but do not block response delivery
 
-**Section sources**
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts#L96-L103)
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts#L132-L164)
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts#L197-L232)
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts#L276-L333)
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts#L335-L369)
-- [route.ts](file://frontend/app/api/(backend-interface)/cold-mail/route.ts#L447-L473)
-- [route.ts](file://frontend/app/api/(backend-interface)/cover-letter/route.ts#L52-L58)
-- [route.ts](file://frontend/app/api/(backend-interface)/cover-letter/route.ts#L354-L384)
-
 ## Conclusion
-The Communication Tools suite provides robust, AI-powered workflows for cold email generation, cover letter creation, and LinkedIn post generation. It balances flexibility with strong defaults, integrates seamlessly with job descriptions and optional research, and offers editing, preview, and export capabilities. The layered architecture ensures maintainability, while prompt templates and Pydantic models enforce quality and consistency across generated content.
+The Communication Tools suite provides reliable, AI-powered workflows for cold email generation, cover letter creation, and LinkedIn post generation. It balances flexibility with strong defaults, integrates smoothly with job descriptions and optional research, and offers editing, preview, and export capabilities. The layered architecture ensures maintainability, while prompt templates and Pydantic models enforce quality and consistency across generated content.

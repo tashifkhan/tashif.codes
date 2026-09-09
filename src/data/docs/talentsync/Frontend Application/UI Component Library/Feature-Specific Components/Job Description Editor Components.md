@@ -1,39 +1,13 @@
-# Job Description Editor Components
-
-<cite>
-**Referenced Files in This Document**
-- [jd-edit-panel.tsx](file://frontend/components/jd-editor/jd-edit-panel.tsx)
-- [jd-edit-diff-view.tsx](file://frontend/components/jd-editor/jd-edit-diff-view.tsx)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts)
-- [use-jd-editor.ts](file://frontend/hooks/queries/use-jd-editor.ts)
-- [jd-editor.service.ts](file://frontend/services/jd-editor.service.ts)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts)
-- [resume.ts](file://frontend/types/resume.ts)
-- [improvement.ts](file://frontend/types/improvement.ts)
-- [jd_editor.py](file://backend/app/routes/jd_editor.py)
-- [jd_editor.py](file://backend/app/services/jd_editor.py)
-- [schemas.py](file://backend/app/models/jd_editor/schemas.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Job description editor components
 
 ## Introduction
-This document provides comprehensive technical documentation for the job description editor components in the TalentSync project. It focuses on two primary UI components:
+This page provides detailed technical documentation for the job description editor components in the TalentSync project. It focuses on two primary UI components:
 - JDEditPanel: A rich editing panel for job description-driven resume optimization with validation, preview, and apply workflows.
 - JDEditDiffView: A detailed comparison view that displays ATS score changes, keyword analysis, warnings, and field-level diffs.
 
 The documentation explains the editing workflow, content validation, preview functionality, and integration with backend job description management APIs. It also covers collaborative editing features, version control, and export capabilities for job descriptions.
 
-## Project Structure
+## Project structure
 The job description editor feature spans both frontend and backend layers:
 - Frontend components and hooks manage user interactions, state transitions, and API communication.
 - Backend services orchestrate LLM-based processing, keyword extraction, scoring, and diff computation.
@@ -70,29 +44,7 @@ Types --> Route
 Types --> ServiceB
 ```
 
-**Diagram sources**
-- [jd-edit-panel.tsx](file://frontend/components/jd-editor/jd-edit-panel.tsx#L1-L228)
-- [jd-edit-diff-view.tsx](file://frontend/components/jd-editor/jd-edit-diff-view.tsx#L1-L190)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L1-L215)
-- [use-jd-editor.ts](file://frontend/hooks/queries/use-jd-editor.ts#L1-L26)
-- [jd-editor.service.ts](file://frontend/services/jd-editor.service.ts#L1-L19)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts#L1-L61)
-- [jd_editor.py](file://backend/app/routes/jd_editor.py#L1-L23)
-- [jd_editor.py](file://backend/app/services/jd_editor.py#L1-L238)
-- [schemas.py](file://backend/app/models/jd_editor/schemas.py#L1-L44)
-
-**Section sources**
-- [jd-edit-panel.tsx](file://frontend/components/jd-editor/jd-edit-panel.tsx#L1-L228)
-- [jd-edit-diff-view.tsx](file://frontend/components/jd-editor/jd-edit-diff-view.tsx#L1-L190)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L1-L215)
-- [use-jd-editor.ts](file://frontend/hooks/queries/use-jd-editor.ts#L1-L26)
-- [jd-editor.service.ts](file://frontend/services/jd-editor.service.ts#L1-L19)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts#L1-L61)
-- [jd_editor.py](file://backend/app/routes/jd_editor.py#L1-L23)
-- [jd_editor.py](file://backend/app/services/jd_editor.py#L1-L238)
-- [schemas.py](file://backend/app/models/jd_editor/schemas.py#L1-L44)
-
-## Core Components
+## Core components
 This section documents the core components and their responsibilities.
 
 - JDEditPanel
@@ -142,15 +94,7 @@ This section documents the core components and their responsibilities.
   - JDEditChange: Describes individual field-level changes with reason.
   - JDEditState/JDEditStep: Define the UI state machine.
 
-**Section sources**
-- [jd-edit-panel.tsx](file://frontend/components/jd-editor/jd-edit-panel.tsx#L23-L228)
-- [jd-edit-diff-view.tsx](file://frontend/components/jd-editor/jd-edit-diff-view.tsx#L9-L190)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L11-L215)
-- [use-jd-editor.ts](file://frontend/hooks/queries/use-jd-editor.ts#L1-L26)
-- [jd-editor.service.ts](file://frontend/services/jd-editor.service.ts#L1-L19)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts#L13-L61)
-
-## Architecture Overview
+## Architecture overview
 The system follows a clear separation of concerns:
 - Frontend UI components render forms and previews.
 - Hooks manage state and orchestrate asynchronous operations.
@@ -183,17 +127,9 @@ Panel->>Panel : "onApply(response)"
 Panel-->>User : "Show completion/reset option"
 ```
 
-**Diagram sources**
-- [jd-edit-panel.tsx](file://frontend/components/jd-editor/jd-edit-panel.tsx#L51-L91)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L149-L188)
-- [use-jd-editor.ts](file://frontend/hooks/queries/use-jd-editor.ts#L13-L24)
-- [jd-editor.service.ts](file://frontend/services/jd-editor.service.ts#L11-L17)
-- [jd_editor.py](file://backend/app/routes/jd_editor.py#L18-L22)
-- [jd_editor.py](file://backend/app/services/jd_editor.py#L140-L237)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### JDEditPanel Analysis
+### JDEditPanel analysis
 JDEditPanel is the primary UI surface for job description editing. It manages:
 - Form inputs for job description, optional JD URL, and company name.
 - Validation to ensure job description is present before enabling optimization.
@@ -221,15 +157,7 @@ Error --> Reset["Reset to idle"]
 Complete --> Restart["Edit Again"]
 ```
 
-**Diagram sources**
-- [jd-edit-panel.tsx](file://frontend/components/jd-editor/jd-edit-panel.tsx#L43-L91)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L149-L188)
-
-**Section sources**
-- [jd-edit-panel.tsx](file://frontend/components/jd-editor/jd-edit-panel.tsx#L33-L228)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L127-L215)
-
-### JDEditDiffView Analysis
+### JDEditDiffView analysis
 JDEditDiffView renders the optimization results:
 - ATS Score Change: Before/After scores with delta indicator.
 - Keywords: Addressed and missing keywords with counts.
@@ -261,15 +189,7 @@ JDEditDiffView --> JDEditResponse : "renders"
 JDEditResponse --> JDEditChange : "contains"
 ```
 
-**Diagram sources**
-- [jd-edit-diff-view.tsx](file://frontend/components/jd-editor/jd-edit-diff-view.tsx#L68-L190)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts#L27-L38)
-
-**Section sources**
-- [jd-edit-diff-view.tsx](file://frontend/components/jd-editor/jd-edit-diff-view.tsx#L68-L190)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts#L20-L38)
-
-### useJDEditWizard Analysis
+### useJDEditWizard analysis
 The wizard hook implements a state machine with explicit transitions:
 - SET_FIELD: Updates form fields.
 - START_EDITING: Enters editing state and clears previous response/error.
@@ -291,13 +211,7 @@ error --> idle : "RESET"
 complete --> idle : "RESET"
 ```
 
-**Diagram sources**
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L49-L92)
-
-**Section sources**
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L127-L215)
-
-### Backend Service and API Integration
+### Backend service and API integration
 The backend service performs the following steps:
 - Validates inputs and resolves job description from URL if text is not provided.
 - Extracts keywords from the job description.
@@ -305,7 +219,7 @@ The backend service performs the following steps:
 - Edits the resume to align with the job description using LLM prompts.
 - Preserves personal identity fields.
 - Scores the edited resume and computes differences.
-- Returns a comprehensive response including changes, diffs, and warnings.
+- Returns a detailed response including changes, diffs, and warnings.
 
 ```mermaid
 sequenceDiagram
@@ -330,17 +244,7 @@ Service-->>Route : "JDEditResponse"
 Route-->>Client : "JDEditResponse"
 ```
 
-**Diagram sources**
-- [jd_editor.py](file://backend/app/routes/jd_editor.py#L18-L22)
-- [jd_editor.py](file://backend/app/services/jd_editor.py#L140-L237)
-- [schemas.py](file://backend/app/models/jd_editor/schemas.py#L30-L44)
-
-**Section sources**
-- [jd_editor.py](file://backend/app/routes/jd_editor.py#L1-L23)
-- [jd_editor.py](file://backend/app/services/jd_editor.py#L140-L237)
-- [schemas.py](file://backend/app/models/jd_editor/schemas.py#L9-L44)
-
-## Dependency Analysis
+## Dependency analysis
 The components and their dependencies form a cohesive pipeline:
 
 ```mermaid
@@ -368,45 +272,18 @@ Route --> BackendSvc
 BackendSvc --> Schemas
 ```
 
-**Diagram sources**
-- [jd-edit-panel.tsx](file://frontend/components/jd-editor/jd-edit-panel.tsx#L1-L228)
-- [jd-edit-diff-view.tsx](file://frontend/components/jd-editor/jd-edit-diff-view.tsx#L1-L190)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L1-L215)
-- [use-jd-editor.ts](file://frontend/hooks/queries/use-jd-editor.ts#L1-L26)
-- [jd-editor.service.ts](file://frontend/services/jd-editor.service.ts#L1-L19)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts#L1-L61)
-- [jd_editor.py](file://backend/app/routes/jd_editor.py#L1-L23)
-- [jd_editor.py](file://backend/app/services/jd_editor.py#L1-L238)
-- [schemas.py](file://backend/app/models/jd_editor/schemas.py#L1-L44)
-
-**Section sources**
-- [jd-edit-panel.tsx](file://frontend/components/jd-editor/jd-edit-panel.tsx#L1-L228)
-- [jd-edit-diff-view.tsx](file://frontend/components/jd-editor/jd-edit-diff-view.tsx#L1-L190)
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L1-L215)
-- [use-jd-editor.ts](file://frontend/hooks/queries/use-jd-editor.ts#L1-L26)
-- [jd-editor.service.ts](file://frontend/services/jd-editor.service.ts#L1-L19)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts#L1-L61)
-- [jd_editor.py](file://backend/app/routes/jd_editor.py#L1-L23)
-- [jd_editor.py](file://backend/app/services/jd_editor.py#L1-L238)
-- [schemas.py](file://backend/app/models/jd_editor/schemas.py#L1-L44)
-
-## Performance Considerations
+## Performance considerations
 - LLM latency: The optimization process involves multiple LLM calls (keyword extraction, scoring, editing, change computation). Network latency and model response times impact perceived performance.
 - Debouncing and caching: Consider debouncing repeated edits and caching recent results to reduce redundant API calls.
 - Progressive rendering: Render the preview progressively as the backend returns results to improve perceived responsiveness.
 - Token limits: The editing prompt specifies a high token limit; ensure inputs are trimmed or summarized when necessary to avoid exceeding limits.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Empty job description: The wizard prevents optimization until a job description is provided. Ensure users enter either text or a valid URL.
 - JD URL resolution failures: If a URL is provided but cannot be fetched, the backend adds a warning and returns partial results. Verify the URL accessibility and network connectivity.
 - LLM errors: Errors during LLM operations are caught and surfaced as warnings or errors. Retry the operation or adjust inputs.
 - Apply failures: The apply phase is controlled by the parent component via onApply. Ensure the callback properly persists changes and calls markApplySuccess or markApplyError accordingly.
 
-**Section sources**
-- [use-jd-edit-wizard.ts](file://frontend/hooks/use-jd-edit-wizard.ts#L167-L186)
-- [jd-editor.ts](file://frontend/types/jd-editor.ts#L27-L38)
-- [jd_editor.py](file://backend/app/services/jd_editor.py#L154-L172)
-
 ## Conclusion
-The job description editor components provide a robust, user-friendly workflow for optimizing resumes against specific job descriptions. The frontend components offer clear validation, rich previews, and seamless integration with backend services that leverage LLMs for keyword extraction, scoring, editing, and diff computation. The architecture supports extensibility for collaborative editing, version control, and export capabilities, enabling teams to refine and track changes effectively.
+The job description editor components provide a reliable, user-friendly workflow for optimizing resumes against specific job descriptions. The frontend components offer clear validation, rich previews, and smooth integration with backend services that use LLMs for keyword extraction, scoring, editing, and diff computation. The architecture supports extensibility for collaborative editing, version control, and export capabilities, enabling teams to refine and track changes effectively.

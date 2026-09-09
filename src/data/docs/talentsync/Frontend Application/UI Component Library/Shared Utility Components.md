@@ -1,40 +1,15 @@
-# Shared Utility Components
+# Shared utility components
 
-<cite>
-**Referenced Files in This Document**
-- [resume-combobox.tsx](file://frontend/components/shared/resume-combobox.tsx)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx)
-- [upload-resume.tsx](file://frontend/components/upload-resume.tsx)
-- [file-upload.tsx](file://frontend/components/file-upload.tsx)
-- [ResumeSelection.tsx (ATS)](file://frontend/components/ats/ResumeSelection.tsx)
-- [ResumeSelection.tsx (Cold Mail)](file://frontend/components/cold-mail/ResumeSelection.tsx)
-- [ResumeSelection.tsx (Hiring Assistant)](file://frontend/components/hiring-assistant/ResumeSelection.tsx)
-- [loader.tsx](file://frontend/components/ui/loader.tsx)
-- [button.tsx](file://frontend/components/ui/button.tsx)
-- [utils.ts](file://frontend/lib/utils.ts)
-</cite>
-
-## Update Summary
+## Update summary
 **Changes Made**
-- Added comprehensive documentation for the new ResumeCombobox component (197 lines)
+- Added detailed documentation for the new ResumeCombobox component (197 lines)
 - Updated ResumeSelector documentation to reflect integration with ResumeCombobox
-- Enhanced feature-specific ResumeSelection components documentation to show ResumeCombobox usage
+- Improved feature-specific ResumeSelection components documentation to show ResumeCombobox usage
 - Updated architecture diagrams to reflect the new component hierarchy
 - Added new section covering ResumeCombobox's advanced features
 
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-
 ## Introduction
-This document describes the shared utility components used across multiple features in the application. It focuses on:
+This page describes the shared utility components used across multiple features in the application. It focuses on:
 - ResumeCombobox: A modern, searchable combobox component with haptic feedback and loading states
 - ResumeSelector: A flexible component for choosing existing resumes or uploading new ones
 - UploadResume: A simple form-based uploader for resume analysis
@@ -43,7 +18,7 @@ This document describes the shared utility components used across multiple featu
 
 It explains component props, event handlers, state management, validation, user feedback, integration patterns, and relationships to feature-specific components.
 
-## Project Structure
+## Project structure
 The shared utilities live under the frontend/components directory, with feature-specific wrappers under feature folders (e.g., ats/, cold-mail/, hiring-assistant/). UI primitives and shared helpers are centralized under frontend/components/ui and frontend/lib.
 
 ```mermaid
@@ -77,31 +52,7 @@ UTL -. styling .-> RS
 UTL -. styling .-> FU
 ```
 
-**Diagram sources**
-- [resume-combobox.tsx](file://frontend/components/shared/resume-combobox.tsx#L1-L198)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L1-L201)
-- [upload-resume.tsx](file://frontend/components/upload-resume.tsx#L1-L188)
-- [file-upload.tsx](file://frontend/components/file-upload.tsx#L1-L505)
-- [ResumeSelection.tsx (ATS)](file://frontend/components/ats/ResumeSelection.tsx#L1-L215)
-- [ResumeSelection.tsx (Cold Mail)](file://frontend/components/cold-mail/ResumeSelection.tsx#L1-L465)
-- [ResumeSelection.tsx (Hiring Assistant)](file://frontend/components/hiring-assistant/ResumeSelection.tsx#L1-L237)
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L1-L220)
-- [button.tsx](file://frontend/components/ui/button.tsx#L1-L57)
-- [utils.ts](file://frontend/lib/utils.ts#L1-L7)
-
-**Section sources**
-- [resume-combobox.tsx](file://frontend/components/shared/resume-combobox.tsx#L1-L198)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L1-L201)
-- [file-upload.tsx](file://frontend/components/file-upload.tsx#L1-L505)
-- [upload-resume.tsx](file://frontend/components/upload-resume.tsx#L1-L188)
-- [ResumeSelection.tsx (ATS)](file://frontend/components/ats/ResumeSelection.tsx#L1-L215)
-- [ResumeSelection.tsx (Cold Mail)](file://frontend/components/cold-mail/ResumeSelection.tsx#L1-L465)
-- [ResumeSelection.tsx (Hiring Assistant)](file://frontend/components/hiring-assistant/ResumeSelection.tsx#L1-L237)
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L1-L220)
-- [button.tsx](file://frontend/components/ui/button.tsx#L1-L57)
-- [utils.ts](file://frontend/lib/utils.ts#L1-L7)
-
-## Core Components
+## Core components
 This section summarizes the four primary shared components and their responsibilities.
 
 - ResumeCombobox
@@ -128,14 +79,8 @@ This section summarizes the four primary shared components and their responsibil
   - Behavior: Uses react-dropzone; validates supported formats; calls useUploadResume mutation; navigates to analysis and feature pages; stores analysis data in localStorage for downstream flows
   - Feedback: Full-screen loading overlay; success cards; error banners; animated previews
 
-**Section sources**
-- [resume-combobox.tsx](file://frontend/components/shared/resume-combobox.tsx#L22-L39)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L25-L42)
-- [upload-resume.tsx](file://frontend/components/upload-resume.tsx#L4-L7)
-- [file-upload.tsx](file://frontend/components/file-upload.tsx#L63-L65)
-
-## Architecture Overview
-The shared components integrate with feature-specific wrappers and UI primitives. ResumeCombobox serves as the foundation for modern resume selection across all features. ResumeSelector wraps ResumeCombobox for backward compatibility and additional UI features. FileUpload encapsulates the entire upload+analysis flow and is often composed by higher-level features. UploadResume is a simpler alternative for basic upload+analysis scenarios.
+## Architecture overview
+The shared components integrate with feature-specific wrappers and UI primitives. ResumeCombobox is the foundation for modern resume selection across all features. ResumeSelector wraps ResumeCombobox for backward compatibility and additional UI features. FileUpload encapsulates the entire upload+analysis flow and is often composed by higher-level features. UploadResume is a simpler alternative for basic upload+analysis scenarios.
 
 ```mermaid
 sequenceDiagram
@@ -165,13 +110,7 @@ FU->>Router : push("/dashboard/analysis/ : id")
 end
 ```
 
-**Diagram sources**
-- [resume-combobox.tsx](file://frontend/components/shared/resume-combobox.tsx#L138-L142)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L118-L124)
-- [file-upload.tsx](file://frontend/components/file-upload.tsx#L105-L131)
-- [ResumeSelection.tsx (ATS)](file://frontend/components/ats/ResumeSelection.tsx#L104-L110)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### ResumeCombobox
 - Props and events
@@ -211,14 +150,6 @@ ShowLoading --> End(["Done"])
 ShowList --> End
 ShowEmpty --> End
 ```
-
-**Diagram sources**
-- [resume-combobox.tsx](file://frontend/components/shared/resume-combobox.tsx#L51-L196)
-
-**Section sources**
-- [resume-combobox.tsx](file://frontend/components/shared/resume-combobox.tsx#L22-L39)
-- [resume-combobox.tsx](file://frontend/components/shared/resume-combobox.tsx#L41-L50)
-- [resume-combobox.tsx](file://frontend/components/shared/resume-combobox.tsx#L110-L196)
 
 ### ResumeSelector
 - Props and events
@@ -264,14 +195,6 @@ ShowLoader --> End
 ShowList --> End
 ```
 
-**Diagram sources**
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L56-L127)
-
-**Section sources**
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L25-L42)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L44-L55)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L118-L127)
-
 ### UploadResume
 - Props and events
   - onSuccess?(result: any): void
@@ -302,14 +225,6 @@ else error
 UR-->>User : onError(message)
 end
 ```
-
-**Diagram sources**
-- [upload-resume.tsx](file://frontend/components/upload-resume.tsx#L29-L77)
-
-**Section sources**
-- [upload-resume.tsx](file://frontend/components/upload-resume.tsx#L4-L7)
-- [upload-resume.tsx](file://frontend/components/upload-resume.tsx#L9-L12)
-- [upload-resume.tsx](file://frontend/components/upload-resume.tsx#L18-L77)
 
 ### FileUpload
 - Props and events
@@ -343,16 +258,7 @@ FU-->>User : Show error banner
 end
 ```
 
-**Diagram sources**
-- [file-upload.tsx](file://frontend/components/file-upload.tsx#L79-L131)
-- [file-upload.tsx](file://frontend/components/file-upload.tsx#L133-L216)
-
-**Section sources**
-- [file-upload.tsx](file://frontend/components/file-upload.tsx#L63-L65)
-- [file-upload.tsx](file://frontend/components/file-upload.tsx#L79-L131)
-- [file-upload.tsx](file://frontend/components/file-upload.tsx#L133-L216)
-
-### Feature-Specific ResumeSelection Wrappers
+### Feature-Specific ResumeSelection wrappers
 These components wrap shared ResumeSelector or ResumeCombobox to tailor behavior per feature.
 
 - ATS ResumeSelection
@@ -425,19 +331,7 @@ SharedResumeSelector <.. ColdMail_ResumeSelection : "wraps"
 SharedResumeSelector <.. HiringAssistant_ResumeSelection : "wraps"
 ```
 
-**Diagram sources**
-- [resume-combobox.tsx](file://frontend/components/shared/resume-combobox.tsx#L22-L39)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L25-L42)
-- [ResumeSelection.tsx (ATS)](file://frontend/components/ats/ResumeSelection.tsx#L22-L33)
-- [ResumeSelection.tsx (Cold Mail)](file://frontend/components/cold-mail/ResumeSelection.tsx#L25-L49)
-- [ResumeSelection.tsx (Hiring Assistant)](file://frontend/components/hiring-assistant/ResumeSelection.tsx#L21-L36)
-
-**Section sources**
-- [ResumeSelection.tsx (ATS)](file://frontend/components/ats/ResumeSelection.tsx#L1-L215)
-- [ResumeSelection.tsx (Cold Mail)](file://frontend/components/cold-mail/ResumeSelection.tsx#L1-L465)
-- [ResumeSelection.tsx (Hiring Assistant)](file://frontend/components/hiring-assistant/ResumeSelection.tsx#L1-L237)
-
-## Dependency Analysis
+## Dependency analysis
 - Shared components depend on:
   - UI primitives: Button, Loader, Input, Label, Card, Popover, Command components
   - Styling: cn from utils.ts
@@ -467,28 +361,7 @@ CM["Cold Mail ResumeSelection"] --> RCB
 HA["Hiring Assistant ResumeSelection"] --> RCB
 ```
 
-**Diagram sources**
-- [resume-combobox.tsx](file://frontend/components/shared/resume-combobox.tsx#L1-L198)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L1-L201)
-- [file-upload.tsx](file://frontend/components/file-upload.tsx#L1-L505)
-- [upload-resume.tsx](file://frontend/components/upload-resume.tsx#L1-L188)
-- [ResumeSelection.tsx (ATS)](file://frontend/components/ats/ResumeSelection.tsx#L1-L215)
-- [ResumeSelection.tsx (Cold Mail)](file://frontend/components/cold-mail/ResumeSelection.tsx#L1-L465)
-- [ResumeSelection.tsx (Hiring Assistant)](file://frontend/components/hiring-assistant/ResumeSelection.tsx#L1-L237)
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L1-L220)
-- [button.tsx](file://frontend/components/ui/button.tsx#L1-L57)
-- [utils.ts](file://frontend/lib/utils.ts#L1-L7)
-
-**Section sources**
-- [resume-combobox.tsx](file://frontend/components/shared/resume-combobox.tsx#L1-L198)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L1-L201)
-- [file-upload.tsx](file://frontend/components/file-upload.tsx#L1-L505)
-- [upload-resume.tsx](file://frontend/components/upload-resume.tsx#L1-L188)
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L1-L220)
-- [button.tsx](file://frontend/components/ui/button.tsx#L1-L57)
-- [utils.ts](file://frontend/lib/utils.ts#L1-L7)
-
-## Performance Considerations
+## Performance considerations
 - ResumeCombobox
   - Optimized with virtualized lists for large resume collections
   - Debounced search input for improved responsiveness
@@ -496,7 +369,7 @@ HA["Hiring Assistant ResumeSelection"] --> RCB
   - Lazy loading for resume thumbnails and metadata
 - ResumeSelector
   - Uses controlled vs uncontrolled selection to avoid unnecessary re-renders
-  - Animated dropdown leverages motion; keep lists reasonably sized to minimize DOM
+  - Animated dropdown uses motion; keep lists reasonably sized to minimize DOM
 - FileUpload
   - Full-screen overlay is lightweight; ensure large files are handled gracefully
   - Debounce or batch updates if integrating with real-time features
@@ -505,7 +378,7 @@ HA["Hiring Assistant ResumeSelection"] --> RCB
 - Shared UI
   - Loader variants are optimized with motion; avoid excessive nested loaders
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - ResumeCombobox
   - If resumes don't appear, verify isLoading prop and resumes array structure
   - If search doesn't work, check CommandInput configuration and value prop
@@ -519,12 +392,6 @@ HA["Hiring Assistant ResumeSelection"] --> RCB
 - UploadResume
   - If form remains disabled, ensure both file and customName are set
   - If API errors occur, check backend endpoint and network connectivity
-
-**Section sources**
-- [resume-combobox.tsx](file://frontend/components/shared/resume-combobox.tsx#L138-L142)
-- [resume-selector.tsx](file://frontend/components/shared/resume-selector.tsx#L66-L71)
-- [file-upload.tsx](file://frontend/components/file-upload.tsx#L105-L131)
-- [upload-resume.tsx](file://frontend/components/upload-resume.tsx#L29-L77)
 
 ## Conclusion
 The shared utility components provide a cohesive, reusable foundation for resume selection and upload across features. ResumeCombobox introduces modern, searchable resume selection with haptic feedback and loading states, replacing previous custom dropdown implementations. ResumeSelector offers flexibility and controlled state management, while ResumeCombobox provides a standardized, accessible solution. UploadResume delivers a straightforward upload path, and FileUpload encapsulates the full analysis workflow with rich feedback and navigation. Together with supporting UI primitives and shared utilities, they enable consistent user experiences and maintainable feature integrations.

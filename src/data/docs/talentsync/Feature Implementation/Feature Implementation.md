@@ -1,65 +1,7 @@
-# Feature Implementation
-
-<cite>
-**Referenced Files in This Document**
-- [readme.md](file://readme.md)
-- [backend/app/main.py](file://backend/app/main.py)
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py)
-- [backend/app/models/resume/schemas.py](file://backend/app/models/resume/schemas.py)
-- [backend/app/data/prompt/comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py)
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py)
-- [backend/app/models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py)
-- [backend/app/data/prompt/ats_analysis.py](file://backend/app/data/prompt/ats_analysis.py)
-- [backend/app/routes/interview.py](file://backend/app/routes/interview.py)
-- [backend/app/models/interview/schemas.py](file://backend/app/models/interview/schemas.py)
-- [backend/app/models/interview/enums.py](file://backend/app/models/interview/enums.py)
-- [backend/app/models/interview/templates.py](file://backend/app/models/interview/templates.py)
-- [backend/app/services/interview/graph.py](file://backend/app/services/interview/graph.py)
-- [backend/app/services/interview/session_manager.py](file://backend/app/services/interview/session_manager.py)
-- [backend/app/services/interview/question_generator.py](file://backend/app/services/interview/question_generator.py)
-- [backend/app/services/interview/answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py)
-- [backend/app/services/interview/summary_generator.py](file://backend/app/services/interview/summary_generator.py)
-- [backend/app/services/interview/code_executor.py](file://backend/app/services/interview/code_executor.py)
-- [frontend/package.json](file://frontend/package.json)
-- [frontend/app/dashboard/page.tsx](file://frontend/app/dashboard/page.tsx)
-- [frontend/components/ats/EvaluationResults.tsx](file://frontend/components/ats/EvaluationResults.tsx)
-- [frontend/components/ats/JobDescriptionForm.tsx](file://frontend/components/ats/JobDescriptionForm.tsx)
-- [frontend/components/ats/ResumeSelection.tsx](file://frontend/components/ats/ResumeSelection.tsx)
-- [frontend/components/cold-mail/EmailDetailsForm.tsx](file://frontend/components/cold-mail/EmailDetailsForm.tsx)
-- [frontend/components/cold-mail/GeneratedEmailPanel.tsx](file://frontend/components/cold-mail/GeneratedEmailPanel.tsx)
-- [frontend/components/cover-letter/CoverLetterDetailsForm.tsx](file://frontend/components/cover-letter/CoverLetterDetailsForm.tsx)
-- [frontend/components/cover-letter/GeneratedLetterPanel.tsx](file://frontend/components/cover-letter/GeneratedLetterPanel.tsx)
-- [frontend/components/hiring-assistant/InterviewDetailsForm.tsx](file://frontend/components/hiring-assistant/InterviewDetailsForm.tsx)
-- [frontend/components/hiring-assistant/GeneratedAnswersPanel.tsx](file://frontend/components/hiring-assistant/GeneratedAnswersPanel.tsx)
-- [frontend/components/pdf-resume/ConfigurationForm.tsx](file://frontend/components/pdf-resume/ConfigurationForm.tsx)
-- [frontend/components/pdf-resume/ExportTab.tsx](file://frontend/components/pdf-resume/ExportTab.tsx)
-- [frontend/components/pdf-resume/LatexOutput.tsx](file://frontend/components/pdf-resume/LatexOutput.tsx)
-- [frontend/components/pdf-resume/ResumePreview.tsx](file://frontend/components/pdf-resume/ResumePreview.tsx)
-- [frontend/components/pdf-resume/ResumeSourceSelector.tsx](file://frontend/components/pdf-resume/ResumeSourceSelector.tsx)
-- [frontend/components/pdf-resume/TailoringForm.tsx](file://frontend/components/pdf-resume/TailoringForm.tsx)
-- [frontend/services/ats.service.ts](file://frontend/services/ats.service.ts)
-- [frontend/services/cold-mail.service.ts](file://frontend/services/cold-mail.service.ts)
-- [frontend/services/cover-letter.service.ts](file://frontend/services/cover-letter.service.ts)
-- [frontend/services/interview.service.ts](file://frontend/services/interview.service.ts)
-- [frontend/lib/auth-options.ts](file://frontend/lib/auth-options.ts)
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Feature implementation
 
 ## Introduction
-This document provides feature implementation details for the core capabilities of TalentSync-Normies:
+This page provides feature implementation details for the core capabilities of TalentSync-Normies:
 - Resume analysis engine: text processing pipeline, NLP integration, and result structuring
 - ATS optimization system: keyword analysis, formatting recommendations, and compatibility scoring
 - Interview preparation system: question generation logic, answer evaluation criteria, and interview analytics
@@ -69,10 +11,7 @@ This document provides feature implementation details for the core capabilities 
 
 The platform combines a Next.js frontend with a FastAPI backend, integrating LangChain-based NLP prompts and Pydantic models for structured outputs. The backend exposes REST APIs organized by feature domains, while the frontend consumes these APIs and renders domain-specific UI components.
 
-**Section sources**
-- [readme.md](file://readme.md#L21-L71)
-
-## Project Structure
+## Project structure
 The repository follows a clear separation of concerns:
 - Backend (FastAPI): routes, services, models, prompts, and core infrastructure
 - Frontend (Next.js): pages, components, services, and UI state management
@@ -102,21 +41,13 @@ BE_Services --> BE_Prompts
 FE_Auth --> FE_Services
 ```
 
-**Diagram sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L203)
-- [frontend/package.json](file://frontend/package.json#L17-L86)
-
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L203)
-- [frontend/package.json](file://frontend/package.json#L17-L86)
-
-## Core Components
+## Core components
 This section outlines the primary building blocks powering each feature area.
 
 - Resume Analysis Engine
   - Routes: file-based and text-based endpoints for resume analysis and formatting
   - Service: orchestrates document processing, LLM-driven extraction, validation, and cleanup
-  - Models: comprehensive analysis data structures and typed responses
+  - Models: detailed analysis data structures and typed responses
   - Prompts: structured prompt template for extracting rich, UI-ready data
 
 - ATS Optimization System
@@ -139,20 +70,7 @@ This section outlines the primary building blocks powering each feature area.
   - NextAuth integration in frontend with Prisma adapter
   - Role-based access control via database schema and frontend guards
 
-**Section sources**
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L1-L68)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L1-L364)
-- [backend/app/models/resume/schemas.py](file://backend/app/models/resume/schemas.py#L21-L157)
-- [backend/app/data/prompt/comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py#L5-L173)
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py#L1-L214)
-- [backend/app/models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L6-L44)
-- [backend/app/data/prompt/ats_analysis.py](file://backend/app/data/prompt/ats_analysis.py#L4-L69)
-- [backend/app/routes/interview.py](file://backend/app/routes/interview.py#L1-L494)
-- [frontend/package.json](file://frontend/package.json#L22-L68)
-- [frontend/lib/auth-options.ts](file://frontend/lib/auth-options.ts)
-
-## Architecture Overview
+## Architecture overview
 The system architecture integrates frontend UI components with backend APIs, which delegate to services and prompts orchestrated by LangChain. The backend centralizes routing, middleware, and logging, while the frontend manages user interactions, state, and API consumption.
 
 ```mermaid
@@ -172,28 +90,22 @@ BE_Svc --> BE_Prompts
 BE_Svc --> LLM
 ```
 
-**Diagram sources**
-- [backend/app/main.py](file://backend/app/main.py#L63-L80)
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L1-L68)
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [backend/app/routes/interview.py](file://backend/app/routes/interview.py#L1-L494)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Resume Analysis Engine
-The resume analysis engine processes uploaded or formatted resume content, cleans and structures it, and produces a comprehensive profile suitable for UI rendering and downstream ATS scoring.
+### Resume analysis engine
+The resume analysis engine processes uploaded or formatted resume content, cleans and structures it, and produces a detailed profile suitable for UI rendering and downstream ATS scoring.
 
 - Text Processing Pipeline
   - File-based analysis reads the uploaded file, writes a temporary file, extracts text, removes the temp file, validates content, and optionally formats text via LLM before JSON extraction.
-  - Text-based analysis accepts pre-formatted text, validates it, and performs comprehensive analysis.
+  - Text-based analysis accepts pre-formatted text, validates it, and performs detailed analysis.
   - Formatting and analysis endpoint returns cleaned text plus structured analysis.
 
 - NLP Integration
-  - Comprehensive analysis prompt instructs the LLM to produce a JSON object conforming to the ComprehensiveAnalysisData model, covering skills, languages, education, work experience, projects, publications, positions of responsibility, certifications, achievements, and personal links.
+  - Detailed analysis prompt instructs the LLM to produce a JSON object conforming to the ComprehensiveAnalysisData model, covering skills, languages, education, work experience, projects, publications, positions of responsibility, certifications, achievements, and personal links.
   - Structured extraction ensures consistent schema compliance and UI rendering.
 
 - Result Structuring
-  - Responses include typed models for resume analysis, comprehensive analysis, and formatted-and-analyzed results.
+  - Responses include typed models for resume analysis, detailed analysis, and formatted-and-analyzed results.
   - Portfolio links are normalized across multiple potential field aliases.
 
 ```mermaid
@@ -216,19 +128,7 @@ Service-->>API : "ComprehensiveAnalysisData"
 API-->>Client : "200 OK with analysis"
 ```
 
-**Diagram sources**
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L55-L68)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L305-L342)
-- [backend/app/data/prompt/comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py#L170-L173)
-- [backend/app/models/resume/schemas.py](file://backend/app/models/resume/schemas.py#L21-L48)
-
-**Section sources**
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L1-L68)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L1-L364)
-- [backend/app/models/resume/schemas.py](file://backend/app/models/resume/schemas.py#L21-L157)
-- [backend/app/data/prompt/comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py#L5-L173)
-
-### ATS Optimization System
+### ATS optimization system
 The ATS optimization system evaluates a resume against a job description, computes keyword coverage, compatibility scores, and actionable recommendations.
 
 - Input Handling
@@ -265,19 +165,7 @@ Service-->>API : "JDEvaluatorResponse"
 API-->>Client : "200 OK with score and suggestions"
 ```
 
-**Diagram sources**
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L50-L131)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py#L22-L214)
-- [backend/app/models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L20-L44)
-- [backend/app/data/prompt/ats_analysis.py](file://backend/app/data/prompt/ats_analysis.py#L4-L69)
-
-**Section sources**
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py#L1-L214)
-- [backend/app/models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L6-L44)
-- [backend/app/data/prompt/ats_analysis.py](file://backend/app/data/prompt/ats_analysis.py#L1-L69)
-
-### Interview Preparation System
+### Interview preparation system
 The interview preparation system provides a full lifecycle: session creation, question delivery, answer evaluation (with streaming), code execution, and summary generation.
 
 - Session Lifecycle
@@ -318,21 +206,7 @@ Graph-->>API : "final_score, strengths, weaknesses, recommendations"
 API-->>Client : "Summary response"
 ```
 
-**Diagram sources**
-- [backend/app/routes/interview.py](file://backend/app/routes/interview.py#L65-L186)
-- [backend/app/routes/interview.py](file://backend/app/routes/interview.py#L343-L414)
-- [backend/app/services/interview/graph.py](file://backend/app/services/interview/graph.py)
-- [backend/app/services/interview/session_manager.py](file://backend/app/services/interview/session_manager.py)
-- [backend/app/services/interview/answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py)
-- [backend/app/services/interview/summary_generator.py](file://backend/app/services/interview/summary_generator.py)
-
-**Section sources**
-- [backend/app/routes/interview.py](file://backend/app/routes/interview.py#L1-L494)
-- [backend/app/models/interview/schemas.py](file://backend/app/models/interview/schemas.py)
-- [backend/app/models/interview/enums.py](file://backend/app/models/interview/enums.py)
-- [backend/app/models/interview/templates.py](file://backend/app/models/interview/templates.py)
-
-### Communication Tools
+### Communication tools
 Communication tools enable generating cold emails, cover letters, and LinkedIn posts. The frontend provides dedicated forms and panels, while backend routes handle generation and persistence.
 
 - Cold Email Generation
@@ -355,19 +229,7 @@ Process --> Render["Render generated content in panel"]
 Render --> End(["User reviews and exports"])
 ```
 
-**Diagram sources**
-- [frontend/components/cold-mail/EmailDetailsForm.tsx](file://frontend/components/cold-mail/EmailDetailsForm.tsx)
-- [frontend/components/cold-mail/GeneratedEmailPanel.tsx](file://frontend/components/cold-mail/GeneratedEmailPanel.tsx)
-- [frontend/components/cover-letter/CoverLetterDetailsForm.tsx](file://frontend/components/cover-letter/CoverLetterDetailsForm.tsx)
-- [frontend/components/cover-letter/GeneratedLetterPanel.tsx](file://frontend/components/cover-letter/GeneratedLetterPanel.tsx)
-
-**Section sources**
-- [frontend/components/cold-mail/EmailDetailsForm.tsx](file://frontend/components/cold-mail/EmailDetailsForm.tsx)
-- [frontend/components/cold-mail/GeneratedEmailPanel.tsx](file://frontend/components/cold-mail/GeneratedEmailPanel.tsx)
-- [frontend/components/cover-letter/CoverLetterDetailsForm.tsx](file://frontend/components/cover-letter/CoverLetterDetailsForm.tsx)
-- [frontend/components/cover-letter/GeneratedLetterPanel.tsx](file://frontend/components/cover-letter/GeneratedLetterPanel.tsx)
-
-### User Management, Role-Based Access Control, and Authentication
+### User management, role-based access control, and authentication
 The platform integrates NextAuth with a Prisma adapter for secure user authentication and session management. Role-based access control is enforced via database schema and frontend guards.
 
 - Authentication Integration
@@ -389,16 +251,7 @@ FE_Routes --> DB
 FE_Guards --> FE_Routes
 ```
 
-**Diagram sources**
-- [frontend/lib/auth-options.ts](file://frontend/lib/auth-options.ts)
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma)
-
-**Section sources**
-- [frontend/package.json](file://frontend/package.json#L22-L68)
-- [frontend/lib/auth-options.ts](file://frontend/lib/auth-options.ts)
-- [frontend/prisma/schema.prisma](file://frontend/prisma/schema.prisma)
-
-## Dependency Analysis
+## Dependency analysis
 The backend organizes features into routers, services, models, and prompts. The frontend composes UI components and consumes services that call backend endpoints.
 
 ```mermaid
@@ -428,33 +281,16 @@ INT_Router --> INT_Graph
 INT_Graph --> INT_SM
 ```
 
-**Diagram sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L203)
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L1-L68)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L1-L364)
-- [backend/app/models/resume/schemas.py](file://backend/app/models/resume/schemas.py#L21-L157)
-- [backend/app/data/prompt/comprehensive_analysis.py](file://backend/app/data/prompt/comprehensive_analysis.py#L5-L173)
-- [backend/app/routes/ats.py](file://backend/app/routes/ats.py#L1-L184)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py#L1-L214)
-- [backend/app/models/ats_evaluator/schemas.py](file://backend/app/models/ats_evaluator/schemas.py#L6-L44)
-- [backend/app/data/prompt/ats_analysis.py](file://backend/app/data/prompt/ats_analysis.py#L1-L69)
-- [backend/app/routes/interview.py](file://backend/app/routes/interview.py#L1-L494)
-- [backend/app/services/interview/graph.py](file://backend/app/services/interview/graph.py)
-- [backend/app/services/interview/session_manager.py](file://backend/app/services/interview/session_manager.py)
-
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L203)
-
-## Performance Considerations
+## Performance considerations
 - Asynchronous processing: All major services operate asynchronously to avoid blocking I/O and LLM calls.
 - Temporary file handling: Writes to disk are minimized and removed immediately after processing to reduce I/O overhead.
-- Payload normalization: Robust input validation and normalization prevent repeated parsing and reduce error handling costs.
+- Payload normalization: Reliable input validation and normalization prevent repeated parsing and reduce error handling costs.
 - Streaming responses: Interview answer and summary endpoints use Server-Sent Events to provide responsive UX and incremental feedback.
 - Caching and reuse: Consider caching processed documents and LLM outputs where appropriate to reduce redundant computations.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Resume Analysis
   - Unsupported file type or processing errors: Ensure the file format is supported and readable; verify LLM availability.
   - Validation errors: Confirm extracted data conforms to expected schema; check alias normalization for portfolio links.
@@ -474,12 +310,7 @@ INT_Graph --> INT_SM
   - NextAuth configuration: Verify provider settings and Prisma adapter configuration.
   - Role mismatches: Confirm user roles in the database and frontend guards.
 
-**Section sources**
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L149-L156)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py#L193-L214)
-- [backend/app/routes/interview.py](file://backend/app/routes/interview.py#L183-L185)
-
 ## Conclusion
-TalentSync-Normies delivers a cohesive set of AI-powered features spanning resume analysis, ATS optimization, interview preparation, and communication tools. The backend’s modular design with clear separation of concerns, combined with the frontend’s domain-specific UI components and robust API integrations, enables a scalable and maintainable solution. By leveraging structured prompts, typed models, and streaming capabilities, the platform provides both accuracy and responsiveness for users across job-seeking and hiring scenarios.
+TalentSync-Normies delivers a cohesive set of AI-powered features spanning resume analysis, ATS optimization, interview preparation, and communication tools. The backend's modular design with clear separation of concerns, combined with the frontend's domain-specific UI components and reliable API integrations, enables a scalable and maintainable solution. By using structured prompts, typed models, and streaming capabilities, the platform provides both accuracy and responsiveness for users across job-seeking and hiring scenarios.
 
 [No sources needed since this section summarizes without analyzing specific files]

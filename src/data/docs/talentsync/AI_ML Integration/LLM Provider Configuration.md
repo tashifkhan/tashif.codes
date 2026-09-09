@@ -1,37 +1,9 @@
-# LLM Provider Configuration
-
-<cite>
-**Referenced Files in This Document**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py)
-- [backend/app/core/encryption.py](file://backend/app/core/encryption.py)
-- [backend/app/routes/llm.py](file://backend/app/routes/llm.py)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py)
-- [backend/.env](file://backend/.env)
-- [frontend/app/api/llm-config/route.ts](file://frontend/app/api/llm-config/route.ts)
-- [frontend/app/api/llm-config/[id]/route.ts](file://frontend/app/api/llm-config/[id]/route.ts)
-- [frontend/components/llm-config-panel.tsx](file://frontend/components/llm-config-panel.tsx)
-- [frontend/lib/encryption.ts](file://frontend/lib/encryption.ts)
-- [frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql](file://frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# LLM provider configuration
 
 ## Introduction
-This document explains how TalentSync manages Large Language Model (LLM) providers and configurations. It covers the dynamic provider switching mechanism supporting OpenAI, Gemini, Anthropic, OpenRouter, DeepSeek, Ollama, and Mistral. It documents the configuration system including API key management, rate limiting considerations, and fallback strategies. It also details cost optimization techniques such as token usage tracking, model selection based on complexity, and response caching. The provider abstraction layer, authentication handling, and error recovery mechanisms are explained, along with deployment configurations, environment variable setup, and monitoring approaches for provider performance metrics.
+This page explains how TalentSync manages Large Language Model (LLM) providers and configurations. It covers the dynamic provider switching mechanism supporting OpenAI, Gemini, Anthropic, OpenRouter, DeepSeek, Ollama, and Mistral. It documents the configuration system including API key management, rate limiting considerations, and fallback strategies. It also details cost optimization techniques such as token usage tracking, model selection based on complexity, and response caching. The provider abstraction layer, authentication handling, and error recovery mechanisms are explained, along with deployment configurations, environment variable setup, and monitoring approaches for provider performance metrics.
 
-## Project Structure
+## Project structure
 The LLM configuration spans backend and frontend components:
 - Backend provides provider factories, settings, dependencies, encryption utilities, and a test endpoint.
 - Frontend exposes a UI panel to manage multiple LLM configurations per user, including encryption and testing.
@@ -68,35 +40,21 @@ H --> L
 E --> D
 ```
 
-**Diagram sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L31-L107)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L21-L32)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L22-L68)
-- [backend/app/routes/llm.py](file://backend/app/routes/llm.py#L23-L49)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py#L54-L93)
-- [frontend/app/api/llm-config/route.ts](file://frontend/app/api/llm-config/route.ts#L8-L47)
 - [frontend/app/api/llm-config/[id]/route.ts](file://frontend/app/api/llm-config/[id]/route.ts#L36-L83)
-- [frontend/components/llm-config-panel.tsx](file://frontend/components/llm-config-panel.tsx#L87-L169)
-- [frontend/lib/encryption.ts](file://frontend/lib/encryption.ts#L5-L15)
-- [frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql](file://frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql#L1-L18)
+- `frontend/components/llm-config-panel.tsx`
+- `frontend/lib/encryption.ts`
+- `frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql`
 
-**Section sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L1-L50)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L1-L69)
-- [backend/app/routes/llm.py](file://backend/app/routes/llm.py#L1-L50)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py#L1-L94)
-- [frontend/app/api/llm-config/route.ts](file://frontend/app/api/llm-config/route.ts#L1-L120)
 - [frontend/app/api/llm-config/[id]/route.ts](file://frontend/app/api/llm-config/[id]/route.ts#L1-L133)
-- [frontend/components/llm-config-panel.tsx](file://frontend/components/llm-config-panel.tsx#L1-L800)
-- [frontend/lib/encryption.ts](file://frontend/lib/encryption.ts#L1-L61)
-- [frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql](file://frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql#L1-L19)
+- `frontend/components/llm-config-panel.tsx`
+- `frontend/lib/encryption.ts`
+- `frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql`
 
-## Core Components
+## Core components
 - Provider factory and singleton management:
   - Dynamic provider creation supports OpenAI, Gemini, Anthropic, OpenRouter, DeepSeek, Ollama, and Mistral.
   - Temperature support varies by provider/model; factory enforces compatibility.
-  - Singleton instances for default and “faster” models reduce initialization overhead.
+  - Singleton instances for default and "faster" models reduce initialization overhead.
 - Settings and environment:
   - Centralized configuration via Pydantic settings with environment file loading.
   - Supports legacy and multi-provider fields for backward compatibility.
@@ -107,19 +65,11 @@ E --> D
   - Backend encryption utilities for secure storage of API keys.
   - Frontend encryption utilities mirror the backend key derivation strategy.
 - JSON helpers:
-  - Robust extraction and JSON parsing for LLM responses.
+  - Reliable extraction and JSON parsing for LLM responses.
 - Test endpoint:
   - Validates provider connectivity and response content.
 
-**Section sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L21-L107)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L21-L32)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L22-L68)
-- [backend/app/core/encryption.py](file://backend/app/core/encryption.py#L12-L66)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py#L10-L93)
-- [backend/app/routes/llm.py](file://backend/app/routes/llm.py#L23-L49)
-
-## Architecture Overview
+## Architecture overview
 The system separates concerns across layers:
 - Frontend UI manages multiple user LLM configurations, encrypts keys, and tests connections.
 - Backend validates and stores encrypted keys, exposes a test endpoint, and creates provider instances.
@@ -151,17 +101,14 @@ LLM-->>DEP : "BaseChatModel"
 DEP-->>BE : "LLM instance"
 ```
 
-**Diagram sources**
-- [frontend/components/llm-config-panel.tsx](file://frontend/components/llm-config-panel.tsx#L649-L798)
-- [frontend/app/api/llm-config/route.ts](file://frontend/app/api/llm-config/route.ts#L8-L47)
 - [frontend/app/api/llm-config/[id]/route.ts](file://frontend/app/api/llm-config/[id]/route.ts#L36-L83)
-- [frontend/lib/encryption.ts](file://frontend/lib/encryption.ts#L17-L34)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L22-L68)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L31-L107)
+- `frontend/lib/encryption.ts`
+- `backend/app/core/deps.py`
+- `backend/app/core/llm.py`
 
-## Detailed Component Analysis
+## Detailed component analysis
 
-### Provider Abstraction and Dynamic Switching
+### Provider abstraction and dynamic switching
 The provider abstraction encapsulates LangChain chat model constructors behind a single factory function. Supported providers include OpenAI, Gemini, Anthropic, OpenRouter, DeepSeek, Ollama, and Mistral. The factory:
 - Selects the appropriate constructor based on provider string.
 - Applies provider-specific base URLs and API key fields.
@@ -186,13 +133,7 @@ OL --> End
 F --> End
 ```
 
-**Diagram sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L31-L107)
-
-**Section sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L21-L107)
-
-### Configuration System and API Key Management
+### Configuration system and API key management
 - Frontend:
   - Users can define multiple configurations with labels, provider, model, optional base URL, and optional API key.
   - API keys are encrypted client-side before being sent to the backend.
@@ -219,20 +160,11 @@ BE-->>FE : "Config created"
 FE-->>UI : "Success"
 ```
 
-**Diagram sources**
-- [frontend/components/llm-config-panel.tsx](file://frontend/components/llm-config-panel.tsx#L755-L798)
-- [frontend/app/api/llm-config/route.ts](file://frontend/app/api/llm-config/route.ts#L50-L119)
-- [frontend/lib/encryption.ts](file://frontend/lib/encryption.ts#L17-L34)
-- [backend/app/core/encryption.py](file://backend/app/core/encryption.py#L28-L42)
-
-**Section sources**
-- [frontend/components/llm-config-panel.tsx](file://frontend/components/llm-config-panel.tsx#L87-L169)
-- [frontend/app/api/llm-config/route.ts](file://frontend/app/api/llm-config/route.ts#L8-L119)
 - [frontend/app/api/llm-config/[id]/route.ts](file://frontend/app/api/llm-config/[id]/route.ts#L36-L83)
-- [frontend/lib/encryption.ts](file://frontend/lib/encryption.ts#L1-L61)
-- [backend/app/core/encryption.py](file://backend/app/core/encryption.py#L12-L66)
+- `frontend/lib/encryption.ts`
+- `backend/app/core/encryption.py`
 
-### Rate Limiting and Fallback Strategies
+### Rate limiting and fallback strategies
 - Rate limiting:
   - Implemented at the provider level via upstream API constraints. The system does not enforce application-level rate limits.
 - Fallback strategies:
@@ -240,22 +172,15 @@ FE-->>UI : "Success"
   - Per-request selection uses headers; missing headers fall back to server-default singleton.
   - If the default singleton cannot be initialized (e.g., missing API key), a 503 error is raised advising the user to configure LLM settings.
 
-**Section sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L99-L107)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L59-L68)
-
-### Cost Optimization Techniques
+### Cost optimization techniques
 - Token usage tracking:
   - Not implemented in the current codebase. Recommendation: Integrate token counters around LLM invocations and persist usage metrics per configuration.
 - Model selection based on complexity:
-  - Use a “faster” model for lightweight tasks and reserve larger models for complex prompts. The system maintains separate singleton instances for default and faster models.
+  - Use a "faster" model for lightweight tasks and reserve larger models for complex prompts. The system maintains separate singleton instances for default and faster models.
 - Response caching:
   - Not implemented in the current codebase. Recommendation: Cache deterministic prompts keyed by provider, model, and hashed prompt content with TTL.
 
-**Section sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L148-L176)
-
-### Authentication Handling and Error Recovery
+### Authentication handling and error recovery
 - Authentication:
   - Frontend requires a session for configuration management endpoints.
   - Per-request LLM selection relies on headers injected by the frontend proxy when a user has a custom configuration.
@@ -264,25 +189,14 @@ FE-->>UI : "Success"
   - Test endpoint wraps LLM invocation and returns structured success/failure messages.
   - Frontend displays user-friendly messages for failures and allows retesting.
 
-**Section sources**
-- [frontend/app/api/llm-config/route.ts](file://frontend/app/api/llm-config/route.ts#L8-L47)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L47-L68)
-- [backend/app/routes/llm.py](file://backend/app/routes/llm.py#L23-L49)
-- [frontend/components/llm-config-panel.tsx](file://frontend/components/llm-config-panel.tsx#L755-L798)
-
-### Deployment Configurations and Environment Variables
+### Deployment configurations and environment variables
 - Backend environment variables:
   - GOOGLE_API_KEY, LLM_API_KEY, LLM_API_BASE, LLM_PROVIDER, LLM_MODEL, MODEL_NAME, FASTER_MODEL_NAME, MODEL_TEMPERATURE, ENCRYPTION_KEY.
 - Frontend environment variables:
   - ENCRYPTION_KEY must match the backend key for client-side encryption to interoperate.
-- Example backend .env entries are provided in the repository.
+- Example backend.env entries are provided in the repository.
 
-**Section sources**
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L21-L32)
-- [backend/.env](file://backend/.env#L19-L25)
-- [frontend/lib/encryption.ts](file://frontend/lib/encryption.ts#L5-L15)
-
-### Monitoring Dashboards for Provider Performance Metrics
+### Monitoring dashboards for provider performance metrics
 - Current codebase does not include built-in metrics collection.
 - Recommended approach:
   - Instrument LLM invocations to capture latency, success rates, and token counts.
@@ -290,7 +204,7 @@ FE-->>UI : "Success"
 
 [No sources needed since this section provides general guidance]
 
-## Dependency Analysis
+## Dependency analysis
 The following diagram shows key dependencies among components involved in LLM configuration and runtime selection.
 
 ```mermaid
@@ -306,28 +220,7 @@ FE_API --> FE_Enc["Frontend Encryption<br/>encryption.ts"]
 BE_Enc["Backend Encryption<br/>core/encryption.py"] --> FE_Enc
 ```
 
-**Diagram sources**
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L21-L32)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L31-L107)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L22-L68)
-- [backend/app/routes/llm.py](file://backend/app/routes/llm.py#L23-L49)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py#L54-L93)
-- [frontend/components/llm-config-panel.tsx](file://frontend/components/llm-config-panel.tsx#L649-L798)
-- [frontend/app/api/llm-config/route.ts](file://frontend/app/api/llm-config/route.ts#L50-L119)
-- [frontend/lib/encryption.ts](file://frontend/lib/encryption.ts#L17-L34)
-- [backend/app/core/encryption.py](file://backend/app/core/encryption.py#L28-L42)
-
-**Section sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L1-L69)
-- [backend/app/routes/llm.py](file://backend/app/routes/llm.py#L1-L50)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py#L1-L94)
-- [frontend/components/llm-config-panel.tsx](file://frontend/components/llm-config-panel.tsx#L1-L800)
-- [frontend/app/api/llm-config/route.ts](file://frontend/app/api/llm-config/route.ts#L1-L120)
-- [frontend/lib/encryption.ts](file://frontend/lib/encryption.ts#L1-L61)
-- [backend/app/core/encryption.py](file://backend/app/core/encryption.py#L1-L67)
-
-## Performance Considerations
+## Performance considerations
 - Initialization costs:
   - Use singleton instances for default and faster models to avoid repeated initialization overhead.
 - Provider selection:
@@ -339,7 +232,7 @@ BE_Enc["Backend Encryption<br/>core/encryption.py"] --> FE_Enc
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Missing API key:
   - Backend logs a warning and disables LLM functionality if the default provider key is missing.
@@ -350,30 +243,16 @@ Common issues and resolutions:
 - Frontend encryption mismatch:
   - Ensure ENCRYPTION_KEY matches between frontend and backend for encrypted API keys to work.
 
-**Section sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L124-L129)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L99-L107)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L47-L68)
-- [frontend/lib/encryption.ts](file://frontend/lib/encryption.ts#L5-L15)
-
 ## Conclusion
-TalentSync’s LLM configuration system provides a flexible, secure, and extensible foundation for managing multiple providers and models. The provider abstraction layer, combined with per-request selection and robust encryption, enables dynamic switching while maintaining strong security. Future enhancements—such as token tracking, response caching, and metrics—will further optimize cost and performance.
+TalentSync's LLM configuration system provides a flexible, secure, and extensible foundation for managing multiple providers and models. The provider abstraction layer, combined with per-request selection and reliable encryption, enables dynamic switching while maintaining strong security. Future enhancements, such as token tracking, response caching, and metrics, will further optimize cost and performance.
 
 ## Appendices
 
-### Environment Variables Reference
+### Environment variables reference
 - Backend:
   - GOOGLE_API_KEY, LLM_API_KEY, LLM_API_BASE, LLM_PROVIDER, LLM_MODEL, MODEL_NAME, FASTER_MODEL_NAME, MODEL_TEMPERATURE, ENCRYPTION_KEY.
 - Frontend:
   - ENCRYPTION_KEY (must match backend).
 
-**Section sources**
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L21-L32)
-- [backend/.env](file://backend/.env#L19-L25)
-- [frontend/lib/encryption.ts](file://frontend/lib/encryption.ts#L5-L15)
-
-### Database Schema Notes
+### Database schema notes
 - Migration adds label, isActive, and indices to support multiple user configurations and fast lookup of active config.
-
-**Section sources**
-- [frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql](file://frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql#L1-L18)

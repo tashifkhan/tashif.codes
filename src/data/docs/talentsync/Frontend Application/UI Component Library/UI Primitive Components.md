@@ -1,60 +1,20 @@
-# UI Primitive Components
+# UI primitive components
 
-<cite>
-**Referenced Files in This Document**
-- [button.tsx](file://frontend/components/ui/button.tsx)
-- [input.tsx](file://frontend/components/ui/input.tsx)
-- [dialog.tsx](file://frontend/components/ui/dialog.tsx)
-- [card.tsx](file://frontend/components/ui/card.tsx)
-- [avatar.tsx](file://frontend/components/ui/avatar.tsx)
-- [badge.tsx](file://frontend/components/ui/badge.tsx)
-- [checkbox.tsx](file://frontend/components/ui/checkbox.tsx)
-- [dropdown-menu.tsx](file://frontend/components/ui/dropdown-menu.tsx)
-- [label.tsx](file://frontend/components/ui/label.tsx)
-- [loader.tsx](file://frontend/components/ui/loader.tsx)
-- [markdown-renderer.tsx](file://frontend/components/ui/markdown-renderer.tsx)
-- [progress.tsx](file://frontend/components/ui/progress.tsx)
-- [radio-group.tsx](file://frontend/components/ui/radio-group.tsx)
-- [scroll-area.tsx](file://frontend/components/ui/scroll-area.tsx)
-- [select.tsx](file://frontend/components/ui/select.tsx)
-- [slider.tsx](file://frontend/components/ui/slider.tsx)
-- [switch.tsx](file://frontend/components/ui/switch.tsx)
-- [tabs.tsx](file://frontend/components/ui/tabs.tsx)
-- [textarea.tsx](file://frontend/components/ui/textarea.tsx)
-- [toast.tsx](file://frontend/components/ui/toast.tsx)
-- [toaster.tsx](file://frontend/components/ui/toaster.tsx)
-- [command.tsx](file://frontend/components/ui/command.tsx)
-- [popover.tsx](file://frontend/components/ui/popover.tsx)
-- [haptics.ts](file://frontend/lib/haptics.ts)
-</cite>
-
-## Update Summary
+## Update summary
 **Changes Made**
 - Added new Command component for keyboard-driven search and selection
 - Added new Popover component for modal-like interactions
-- Enhanced Select component with haptic feedback integration
+- Improved Select component with haptic feedback integration
 - Updated project structure diagram to include new components
 - Added haptic feedback documentation and integration patterns
 
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
-
 ## Introduction
-This document describes the foundational UI primitive components used across the frontend. It explains each component's purpose, props, styling options, accessibility features, and usage patterns. It also details how these primitives integrate with Radix UI and Tailwind CSS, and how they compose to form higher-level components. Where applicable, we include code-level diagrams and flowcharts to illustrate behavior and data flow.
+This page describes the foundational UI primitive components used across the frontend. It explains each component's purpose, props, styling options, accessibility features, and usage patterns. It also details how these primitives integrate with Radix UI and Tailwind CSS, and how they compose to form higher-level components. Where applicable, we include code-level diagrams and flowcharts to illustrate behavior and data flow.
 
-**Updated** Added new Command component for keyboard-driven search and selection, Popover component for modal-like interactions, and enhanced Select component with haptic feedback integration.
+**Updated** Added new Command component for keyboard-driven search and selection, Popover component for modal-like interactions, and improved Select component with haptic feedback integration.
 
-## Project Structure
-The primitives live under the UI module and are thin wrappers around Radix UI primitives and Tailwind classes. They expose consistent props, variants, and slots for composition. The new Command and Popover components integrate seamlessly with the existing component ecosystem.
+## Project structure
+The primitives live under the UI module and are thin wrappers around Radix UI primitives and Tailwind classes. They expose consistent props, variants, and slots for composition. The new Command and Popover components integrate smoothly with the existing component ecosystem.
 
 ```mermaid
 graph TB
@@ -100,56 +60,7 @@ Pop --> Btn
 Pop --> DM
 ```
 
-**Diagram sources**
-- [button.tsx](file://frontend/components/ui/button.tsx#L1-L57)
-- [input.tsx](file://frontend/components/ui/input.tsx#L1-L26)
-- [textarea.tsx](file://frontend/components/ui/textarea.tsx)
-- [slider.tsx](file://frontend/components/ui/slider.tsx#L1-L29)
-- [switch.tsx](file://frontend/components/ui/switch.tsx)
-- [checkbox.tsx](file://frontend/components/ui/checkbox.tsx#L1-L31)
-- [radio-group.tsx](file://frontend/components/ui/radio-group.tsx#L1-L45)
-- [progress.tsx](file://frontend/components/ui/progress.tsx#L1-L29)
-- [label.tsx](file://frontend/components/ui/label.tsx#L1-L27)
-- [avatar.tsx](file://frontend/components/ui/avatar.tsx#L1-L121)
-- [badge.tsx](file://frontend/components/ui/badge.tsx#L1-L37)
-- [dialog.tsx](file://frontend/components/ui/dialog.tsx#L1-L123)
-- [card.tsx](file://frontend/components/ui/card.tsx#L1-L87)
-- [dropdown-menu.tsx](file://frontend/components/ui/dropdown-menu.tsx#L1-L201)
-- [select.tsx](file://frontend/components/ui/select.tsx#L1-L186)
-- [tabs.tsx](file://frontend/components/ui/tabs.tsx)
-- [scroll-area.tsx](file://frontend/components/ui/scroll-area.tsx#L1-L49)
-- [markdown-renderer.tsx](file://frontend/components/ui/markdown-renderer.tsx#L1-L77)
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L1-L220)
-- [toast.tsx](file://frontend/components/ui/toast.tsx)
-- [toaster.tsx](file://frontend/components/ui/toaster.tsx)
-- [command.tsx](file://frontend/components/ui/command.tsx#L1-L156)
-- [popover.tsx](file://frontend/components/ui/popover.tsx#L1-L34)
-
-**Section sources**
-- [button.tsx](file://frontend/components/ui/button.tsx#L1-L57)
-- [dialog.tsx](file://frontend/components/ui/dialog.tsx#L1-L123)
-- [card.tsx](file://frontend/components/ui/card.tsx#L1-L87)
-- [avatar.tsx](file://frontend/components/ui/avatar.tsx#L1-L121)
-- [badge.tsx](file://frontend/components/ui/badge.tsx#L1-L37)
-- [checkbox.tsx](file://frontend/components/ui/checkbox.tsx#L1-L31)
-- [dropdown-menu.tsx](file://frontend/components/ui/dropdown-menu.tsx#L1-L201)
-- [label.tsx](file://frontend/components/ui/label.tsx#L1-L27)
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L1-L220)
-- [markdown-renderer.tsx](file://frontend/components/ui/markdown-renderer.tsx#L1-L77)
-- [progress.tsx](file://frontend/components/ui/progress.tsx#L1-L29)
-- [radio-group.tsx](file://frontend/components/ui/radio-group.tsx#L1-L45)
-- [scroll-area.tsx](file://frontend/components/ui/scroll-area.tsx#L1-L49)
-- [select.tsx](file://frontend/components/ui/select.tsx#L1-L186)
-- [slider.tsx](file://frontend/components/ui/slider.tsx#L1-L29)
-- [switch.tsx](file://frontend/components/ui/switch.tsx)
-- [tabs.tsx](file://frontend/components/ui/tabs.tsx)
-- [textarea.tsx](file://frontend/components/ui/textarea.tsx)
-- [toast.tsx](file://frontend/components/ui/toast.tsx)
-- [toaster.tsx](file://frontend/components/ui/toaster.tsx)
-- [command.tsx](file://frontend/components/ui/command.tsx#L1-L156)
-- [popover.tsx](file://frontend/components/ui/popover.tsx#L1-L34)
-
-## Core Components
+## Core components
 Below is a concise overview of each primitive, focusing on props, styling, accessibility, and typical usage patterns.
 
 - Button
@@ -256,7 +167,7 @@ Below is a concise overview of each primitive, focusing on props, styling, acces
   - Styling: Trigger mimics input; Content uses popover styles; item indicators.
   - Accessibility: Keyboard navigation; focus management; viewport sizing.
   - Usage pattern: Compose Trigger with Content and Item children.
-  - **Enhanced** Now includes haptic feedback integration for improved tactile experience.
+  - **Improved** Now includes haptic feedback integration for improved tactile experience.
 
 - Slider
   - Purpose: Range selector with draggable thumb.
@@ -314,32 +225,7 @@ Below is a concise overview of each primitive, focusing on props, styling, acces
   - Accessibility: Focus management and keyboard interaction; supports align and sideOffset props.
   - Usage pattern: Compose PopoverTrigger with PopoverContent; use PopoverAnchor for precise positioning.
 
-**Section sources**
-- [button.tsx](file://frontend/components/ui/button.tsx#L36-L54)
-- [input.tsx](file://frontend/components/ui/input.tsx#L5-L23)
-- [dialog.tsx](file://frontend/components/ui/dialog.tsx#L9-L122)
-- [card.tsx](file://frontend/components/ui/card.tsx#L5-L86)
-- [avatar.tsx](file://frontend/components/ui/avatar.tsx#L5-L120)
-- [badge.tsx](file://frontend/components/ui/badge.tsx#L26-L34)
-- [checkbox.tsx](file://frontend/components/ui/checkbox.tsx#L9-L28)
-- [dropdown-menu.tsx](file://frontend/components/ui/dropdown-menu.tsx#L9-L200)
-- [label.tsx](file://frontend/components/ui/label.tsx#L13-L24)
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L6-L199)
-- [markdown-renderer.tsx](file://frontend/components/ui/markdown-renderer.tsx#L7-L76)
-- [progress.tsx](file://frontend/components/ui/progress.tsx#L8-L26)
-- [radio-group.tsx](file://frontend/components/ui/radio-group.tsx#L9-L44)
-- [scroll-area.tsx](file://frontend/components/ui/scroll-area.tsx#L8-L48)
-- [select.tsx](file://frontend/components/ui/select.tsx#L9-L186)
-- [slider.tsx](file://frontend/components/ui/slider.tsx#L8-L26)
-- [switch.tsx](file://frontend/components/ui/switch.tsx)
-- [tabs.tsx](file://frontend/components/ui/tabs.tsx)
-- [textarea.tsx](file://frontend/components/ui/textarea.tsx)
-- [toast.tsx](file://frontend/components/ui/toast.tsx)
-- [toaster.tsx](file://frontend/components/ui/toaster.tsx)
-- [command.tsx](file://frontend/components/ui/command.tsx#L11-L155)
-- [popover.tsx](file://frontend/components/ui/popover.tsx#L8-L33)
-
-## Architecture Overview
+## Architecture overview
 These primitives are thin wrappers around Radix UI primitives, exposing a consistent API and styling via Tailwind. They promote composition and accessibility by forwarding refs, preserving event handlers, and integrating with theme tokens. The new Command component integrates with the cmdk library for keyboard-driven interactions, while Popover provides modal-like positioning capabilities.
 
 ```mermaid
@@ -397,33 +283,7 @@ Pop --> TW
 Cmd --> TW
 ```
 
-**Diagram sources**
-- [button.tsx](file://frontend/components/ui/button.tsx#L1-L57)
-- [dialog.tsx](file://frontend/components/ui/dialog.tsx#L1-L123)
-- [label.tsx](file://frontend/components/ui/label.tsx#L1-L27)
-- [checkbox.tsx](file://frontend/components/ui/checkbox.tsx#L1-L31)
-- [dropdown-menu.tsx](file://frontend/components/ui/dropdown-menu.tsx#L1-L201)
-- [progress.tsx](file://frontend/components/ui/progress.tsx#L1-L29)
-- [radio-group.tsx](file://frontend/components/ui/radio-group.tsx#L1-L45)
-- [scroll-area.tsx](file://frontend/components/ui/scroll-area.tsx#L1-L49)
-- [select.tsx](file://frontend/components/ui/select.tsx#L1-L186)
-- [slider.tsx](file://frontend/components/ui/slider.tsx#L1-L29)
-- [switch.tsx](file://frontend/components/ui/switch.tsx)
-- [tabs.tsx](file://frontend/components/ui/tabs.tsx)
-- [input.tsx](file://frontend/components/ui/input.tsx#L1-L26)
-- [card.tsx](file://frontend/components/ui/card.tsx#L1-L87)
-- [avatar.tsx](file://frontend/components/ui/avatar.tsx#L1-L121)
-- [badge.tsx](file://frontend/components/ui/badge.tsx#L1-L37)
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L1-L220)
-- [markdown-renderer.tsx](file://frontend/components/ui/markdown-renderer.tsx#L1-L77)
-- [textarea.tsx](file://frontend/components/ui/textarea.tsx)
-- [toast.tsx](file://frontend/components/ui/toast.tsx)
-- [toaster.tsx](file://frontend/components/ui/toaster.tsx)
-- [command.tsx](file://frontend/components/ui/command.tsx#L1-L156)
-- [popover.tsx](file://frontend/components/ui/popover.tsx#L1-L34)
-- [haptics.ts](file://frontend/lib/haptics.ts#L1-L81)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### Button
 - Composition: Uses a variant factory for consistent variants and sizes; supports asChild to render as a slot element.
@@ -440,13 +300,6 @@ class Button {
 +size : "default"|"sm"|"lg"|"icon"
 }
 ```
-
-**Diagram sources**
-- [button.tsx](file://frontend/components/ui/button.tsx#L36-L54)
-
-**Section sources**
-- [button.tsx](file://frontend/components/ui/button.tsx#L7-L34)
-- [button.tsx](file://frontend/components/ui/button.tsx#L36-L54)
 
 ### Dialog
 - Composition: Root, Trigger, Portal, Overlay, Content, Close, Header, Footer, Title, Description.
@@ -467,13 +320,6 @@ O->>C : Render content
 U->>C : Close via X
 C-->>P : Close
 ```
-
-**Diagram sources**
-- [dialog.tsx](file://frontend/components/ui/dialog.tsx#L9-L54)
-
-**Section sources**
-- [dialog.tsx](file://frontend/components/ui/dialog.tsx#L17-L54)
-- [dialog.tsx](file://frontend/components/ui/dialog.tsx#L56-L122)
 
 ### Card
 - Composition: Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter.
@@ -497,12 +343,6 @@ Card <|-- CardContent
 Card <|-- CardFooter
 ```
 
-**Diagram sources**
-- [card.tsx](file://frontend/components/ui/card.tsx#L5-L86)
-
-**Section sources**
-- [card.tsx](file://frontend/components/ui/card.tsx#L5-L86)
-
 ### Avatar
 - Composition: Image with fallback icon; optimized URL handling for external providers; loading/error states.
 - Accessibility: Alt text; fallback icon when image fails.
@@ -523,12 +363,6 @@ Retry --> End
 Fallback --> End
 ```
 
-**Diagram sources**
-- [avatar.tsx](file://frontend/components/ui/avatar.tsx#L12-L120)
-
-**Section sources**
-- [avatar.tsx](file://frontend/components/ui/avatar.tsx#L5-L120)
-
 ### Badge
 - Composition: Variant factory for default, secondary, destructive, outline.
 - Accessibility: Stateless; ensure contrast with background.
@@ -542,13 +376,6 @@ class Badge {
 }
 ```
 
-**Diagram sources**
-- [badge.tsx](file://frontend/components/ui/badge.tsx#L26-L34)
-
-**Section sources**
-- [badge.tsx](file://frontend/components/ui/badge.tsx#L6-L24)
-- [badge.tsx](file://frontend/components/ui/badge.tsx#L26-L34)
-
 ### Checkbox
 - Composition: Radix Checkbox with styled indicator.
 - Accessibility: Works with Label; keyboard activation.
@@ -561,12 +388,6 @@ class Checkbox {
 +className
 }
 ```
-
-**Diagram sources**
-- [checkbox.tsx](file://frontend/components/ui/checkbox.tsx#L9-L28)
-
-**Section sources**
-- [checkbox.tsx](file://frontend/components/ui/checkbox.tsx#L1-L31)
 
 ### DropdownMenu
 - Composition: Root, Trigger, Portal, Sub, SubTrigger, SubContent, Content, Item, CheckboxItem, RadioItem, Label, Separator, Shortcut, RadioGroup.
@@ -593,12 +414,6 @@ class DropdownMenu {
 }
 ```
 
-**Diagram sources**
-- [dropdown-menu.tsx](file://frontend/components/ui/dropdown-menu.tsx#L9-L200)
-
-**Section sources**
-- [dropdown-menu.tsx](file://frontend/components/ui/dropdown-menu.tsx#L1-L201)
-
 ### Label
 - Composition: Radix Label with variant factory.
 - Accessibility: Essential for screen readers; clicking toggles associated control.
@@ -611,12 +426,6 @@ class Label {
 +className
 }
 ```
-
-**Diagram sources**
-- [label.tsx](file://frontend/components/ui/label.tsx#L13-L24)
-
-**Section sources**
-- [label.tsx](file://frontend/components/ui/label.tsx#L9-L24)
 
 ### Loader
 - Composition: Multiple variants (default/dots/pulse/spinner) with optional text; overlay mode.
@@ -639,13 +448,6 @@ Text --> |No| End(["Done"])
 WithText --> End
 ```
 
-**Diagram sources**
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L13-L199)
-
-**Section sources**
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L6-L199)
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L202-L220)
-
 ### MarkdownRenderer
 - Composition: Uses a hook to produce rendered parts; applies Tailwind utilities for details/summaries, callouts, and task lists.
 - Accessibility: Ensures semantic headings and lists; details/summary supported.
@@ -661,12 +463,6 @@ Container --> End(["Done"])
 Null --> End
 ```
 
-**Diagram sources**
-- [markdown-renderer.tsx](file://frontend/components/ui/markdown-renderer.tsx#L12-L76)
-
-**Section sources**
-- [markdown-renderer.tsx](file://frontend/components/ui/markdown-renderer.tsx#L7-L76)
-
 ### Progress
 - Composition: Radix Progress with styled indicator.
 - Accessibility: Announce progress changes via ARIA if needed.
@@ -679,12 +475,6 @@ class Progress {
 +value : number
 }
 ```
-
-**Diagram sources**
-- [progress.tsx](file://frontend/components/ui/progress.tsx#L8-L26)
-
-**Section sources**
-- [progress.tsx](file://frontend/components/ui/progress.tsx#L1-L29)
 
 ### RadioGroup
 - Composition: Radix RadioGroup with styled items.
@@ -699,12 +489,6 @@ class RadioGroup {
 }
 ```
 
-**Diagram sources**
-- [radio-group.tsx](file://frontend/components/ui/radio-group.tsx#L9-L44)
-
-**Section sources**
-- [radio-group.tsx](file://frontend/components/ui/radio-group.tsx#L1-L45)
-
 ### ScrollArea
 - Composition: Radix ScrollArea with styled scrollbar.
 - Accessibility: Preserves native scrolling semantics.
@@ -718,19 +502,13 @@ class ScrollArea {
 }
 ```
 
-**Diagram sources**
-- [scroll-area.tsx](file://frontend/components/ui/scroll-area.tsx#L8-L48)
-
-**Section sources**
-- [scroll-area.tsx](file://frontend/components/ui/scroll-area.tsx#L1-L49)
-
 ### Select
 - Composition: Root, Trigger, Content, Item, Label, Separator, ScrollUp/DownButton.
 - Accessibility: Keyboard navigation; focus management; viewport sizing.
 - Usage patterns: Compose Trigger with Content and Item children.
-- **Enhanced** Integrated haptic feedback for improved tactile experience during interactions.
+- **Improved** Integrated haptic feedback for improved tactile experience during interactions.
 
-**Updated** Enhanced Select component now includes haptic feedback integration through the haptic utility. The SelectTrigger and SelectItem components now trigger haptic pulses on user interactions:
+**Updated** Improved Select component now includes haptic feedback integration through the haptic utility. The SelectTrigger and SelectItem components now trigger haptic pulses on user interactions:
 - SelectTrigger triggers "medium" haptic feedback when opening the dropdown
 - SelectItem triggers "selection" haptic feedback when selecting an option
 
@@ -747,15 +525,6 @@ Open --> End
 Select --> End
 ```
 
-**Diagram sources**
-- [select.tsx](file://frontend/components/ui/select.tsx#L16-L44)
-- [select.tsx](file://frontend/components/ui/select.tsx#L128-L159)
-- [haptics.ts](file://frontend/lib/haptics.ts#L19-L36)
-
-**Section sources**
-- [select.tsx](file://frontend/components/ui/select.tsx#L1-L186)
-- [haptics.ts](file://frontend/lib/haptics.ts#L64-L67)
-
 ### Slider
 - Composition: Radix Slider with styled track and thumb.
 - Accessibility: Keyboard and mouse; supports disabled state.
@@ -768,12 +537,6 @@ class Slider {
 }
 ```
 
-**Diagram sources**
-- [slider.tsx](file://frontend/components/ui/slider.tsx#L8-L26)
-
-**Section sources**
-- [slider.tsx](file://frontend/components/ui/slider.tsx#L1-L29)
-
 ### Switch
 - Composition: Radix Switch with styled thumb.
 - Accessibility: Toggle semantics; keyboard activation.
@@ -785,12 +548,6 @@ class Switch {
 +ComponentPropsWithoutRef
 }
 ```
-
-**Diagram sources**
-- [switch.tsx](file://frontend/components/ui/switch.tsx)
-
-**Section sources**
-- [switch.tsx](file://frontend/components/ui/switch.tsx)
 
 ### Tabs
 - Composition: Radix Tabs with styled triggers and content.
@@ -807,12 +564,6 @@ class Tabs {
 }
 ```
 
-**Diagram sources**
-- [tabs.tsx](file://frontend/components/ui/tabs.tsx)
-
-**Section sources**
-- [tabs.tsx](file://frontend/components/ui/tabs.tsx)
-
 ### Textarea
 - Composition: Native textarea with consistent focus/disabled styling.
 - Accessibility: Focus-visible ring; label association recommended.
@@ -825,13 +576,7 @@ class Textarea {
 }
 ```
 
-**Diagram sources**
-- [textarea.tsx](file://frontend/components/ui/textarea.tsx)
-
-**Section sources**
-- [textarea.tsx](file://frontend/components/ui/textarea.tsx)
-
-### Toast and Toaster
+### Toast and toaster
 - Composition: Toast is a transient message; Toaster manages queue and presentation.
 - Accessibility: Consider aria-live and role; avoid auto-dismiss for critical info.
 - Usage patterns: Trigger via hook; manage queue via Toaster.
@@ -848,14 +593,6 @@ Toaster->>Toast : Render toast
 Toast-->>Toaster : Dismiss
 Toaster-->>App : Update queue
 ```
-
-**Diagram sources**
-- [toast.tsx](file://frontend/components/ui/toast.tsx)
-- [toaster.tsx](file://frontend/components/ui/toaster.tsx)
-
-**Section sources**
-- [toast.tsx](file://frontend/components/ui/toast.tsx)
-- [toaster.tsx](file://frontend/components/ui/toaster.tsx)
 
 ### Command
 - Composition: Command, CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandSeparator, CommandShortcut.
@@ -879,14 +616,6 @@ Action --> Close
 Close --> End(["Done"])
 ```
 
-**Diagram sources**
-- [command.tsx](file://frontend/components/ui/command.tsx#L26-L38)
-- [command.tsx](file://frontend/components/ui/command.tsx#L40-L55)
-- [command.tsx](file://frontend/components/ui/command.tsx#L59-L68)
-
-**Section sources**
-- [command.tsx](file://frontend/components/ui/command.tsx#L1-L156)
-
 ### Popover
 - Composition: Root, Trigger, Content, Anchor with alignment and offset options.
 - Accessibility: Focus management and keyboard interaction; supports align and sideOffset props.
@@ -909,13 +638,7 @@ class PopoverContent {
 Popover <|-- PopoverContent
 ```
 
-**Diagram sources**
-- [popover.tsx](file://frontend/components/ui/popover.tsx#L8-L33)
-
-**Section sources**
-- [popover.tsx](file://frontend/components/ui/popover.tsx#L1-L34)
-
-## Dependency Analysis
+## Dependency analysis
 - Radix UI integration: All interactive primitives depend on Radix UI for state, focus, and accessibility semantics.
 - Tailwind CSS integration: Primitives apply consistent utility classes for colors, spacing, typography, and motion.
 - Third-party library integration: Command component integrates with cmdk for keyboard-driven interactions; haptic feedback integrates with web-haptics library.
@@ -954,68 +677,16 @@ Pop --> TW
 Cmd --> TW
 ```
 
-**Diagram sources**
-- [button.tsx](file://frontend/components/ui/button.tsx#L1-L57)
-- [dialog.tsx](file://frontend/components/ui/dialog.tsx#L1-L123)
-- [label.tsx](file://frontend/components/ui/label.tsx#L1-L27)
-- [checkbox.tsx](file://frontend/components/ui/checkbox.tsx#L1-L31)
-- [dropdown-menu.tsx](file://frontend/components/ui/dropdown-menu.tsx#L1-L201)
-- [progress.tsx](file://frontend/components/ui/progress.tsx#L1-L29)
-- [radio-group.tsx](file://frontend/components/ui/radio-group.tsx#L1-L45)
-- [scroll-area.tsx](file://frontend/components/ui/scroll-area.tsx#L1-L49)
-- [select.tsx](file://frontend/components/ui/select.tsx#L1-L186)
-- [slider.tsx](file://frontend/components/ui/slider.tsx#L1-L29)
-- [switch.tsx](file://frontend/components/ui/switch.tsx)
-- [tabs.tsx](file://frontend/components/ui/tabs.tsx)
-- [input.tsx](file://frontend/components/ui/input.tsx#L1-L26)
-- [card.tsx](file://frontend/components/ui/card.tsx#L1-L87)
-- [avatar.tsx](file://frontend/components/ui/avatar.tsx#L1-L121)
-- [badge.tsx](file://frontend/components/ui/badge.tsx#L1-L37)
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L1-L220)
-- [markdown-renderer.tsx](file://frontend/components/ui/markdown-renderer.tsx#L1-L77)
-- [textarea.tsx](file://frontend/components/ui/textarea.tsx)
-- [toast.tsx](file://frontend/components/ui/toast.tsx)
-- [toaster.tsx](file://frontend/components/ui/toaster.tsx)
-- [command.tsx](file://frontend/components/ui/command.tsx#L1-L156)
-- [popover.tsx](file://frontend/components/ui/popover.tsx#L1-L34)
-- [haptics.ts](file://frontend/lib/haptics.ts#L1-L81)
-
-**Section sources**
-- [button.tsx](file://frontend/components/ui/button.tsx#L1-L57)
-- [dialog.tsx](file://frontend/components/ui/dialog.tsx#L1-L123)
-- [label.tsx](file://frontend/components/ui/label.tsx#L1-L27)
-- [checkbox.tsx](file://frontend/components/ui/checkbox.tsx#L1-L31)
-- [dropdown-menu.tsx](file://frontend/components/ui/dropdown-menu.tsx#L1-L201)
-- [progress.tsx](file://frontend/components/ui/progress.tsx#L1-L29)
-- [radio-group.tsx](file://frontend/components/ui/radio-group.tsx#L1-L45)
-- [scroll-area.tsx](file://frontend/components/ui/scroll-area.tsx#L1-L49)
-- [select.tsx](file://frontend/components/ui/select.tsx#L1-L186)
-- [slider.tsx](file://frontend/components/ui/slider.tsx#L1-L29)
-- [switch.tsx](file://frontend/components/ui/switch.tsx)
-- [tabs.tsx](file://frontend/components/ui/tabs.tsx)
-- [input.tsx](file://frontend/components/ui/input.tsx#L1-L26)
-- [card.tsx](file://frontend/components/ui/card.tsx#L1-L87)
-- [avatar.tsx](file://frontend/components/ui/avatar.tsx#L1-L121)
-- [badge.tsx](file://frontend/components/ui/badge.tsx#L1-L37)
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L1-L220)
-- [markdown-renderer.tsx](file://frontend/components/ui/markdown-renderer.tsx#L1-L77)
-- [textarea.tsx](file://frontend/components/ui/textarea.tsx)
-- [toast.tsx](file://frontend/components/ui/toast.tsx)
-- [toaster.tsx](file://frontend/components/ui/toaster.tsx)
-- [command.tsx](file://frontend/components/ui/command.tsx#L1-L156)
-- [popover.tsx](file://frontend/components/ui/popover.tsx#L1-L34)
-- [haptics.ts](file://frontend/lib/haptics.ts#L1-L81)
-
-## Performance Considerations
+## Performance considerations
 - Prefer variant factories for consistent styling to reduce runtime style computations.
 - Use asChild where appropriate to avoid unnecessary DOM nodes.
-- Keep animations minimal; leverage motion libraries only when necessary.
+- Keep animations minimal; use motion libraries only when necessary.
 - Defer heavy computations in render-heavy components like MarkdownRenderer.
 - Use portals judiciously to avoid layout thrashing.
 - **New** Consider haptic feedback performance implications - haptic pulses are brief but should be throttled to prevent excessive vibration.
 - **New** Command component performance: Use virtualized lists for large datasets to maintain smooth keyboard navigation.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Dialog does not close on overlay click:
   - Ensure Overlay and Content are both rendered and that Close is reachable.
 - Checkbox or RadioGroup not reflecting state:
@@ -1038,20 +709,8 @@ Cmd --> TW
   - Check browser support for Vibration API; verify user hasn't disabled haptics in preferences.
   - Ensure haptic utility is imported and called with valid intensity levels.
 
-**Section sources**
-- [dialog.tsx](file://frontend/components/ui/dialog.tsx#L17-L54)
-- [checkbox.tsx](file://frontend/components/ui/checkbox.tsx#L9-L28)
-- [radio-group.tsx](file://frontend/components/ui/radio-group.tsx#L9-L44)
-- [select.tsx](file://frontend/components/ui/select.tsx#L70-L102)
-- [avatar.tsx](file://frontend/components/ui/avatar.tsx#L61-L78)
-- [loader.tsx](file://frontend/components/ui/loader.tsx#L13-L199)
-- [markdown-renderer.tsx](file://frontend/components/ui/markdown-renderer.tsx#L20-L73)
-- [command.tsx](file://frontend/components/ui/command.tsx#L26-L38)
-- [popover.tsx](file://frontend/components/ui/popover.tsx#L14-L31)
-- [haptics.ts](file://frontend/lib/haptics.ts#L64-L67)
-
 ## Conclusion
-These primitives form a cohesive foundation for building accessible, consistent, and maintainable UI surfaces. By leveraging Radix UI for behavior and Tailwind for styling, components remain composable, customizable, and aligned with platform best practices. The addition of the Command component enhances keyboard-driven workflows, while the Popover component provides flexible modal-like interactions. The enhanced Select component with haptic feedback creates a more engaging user experience through tactile responses. Use the provided patterns to construct higher-level components while preserving accessibility and performance.
+These primitives form a cohesive foundation for building accessible, consistent, and maintainable UI surfaces. By using Radix UI for behavior and Tailwind for styling, components remain composable, customizable, and aligned with platform best practices. The addition of the Command component improves keyboard-driven workflows, while the Popover component provides flexible modal-like interactions. The improved Select component with haptic feedback creates a more engaging user experience through tactile responses. Use the provided patterns to construct higher-level components while preserving accessibility and performance.
 
 ## Appendices
 - Customization guidelines:

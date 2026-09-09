@@ -1,39 +1,9 @@
-# Deployment Architecture
-
-<cite>
-**Referenced Files in This Document**
-- [docker-compose.yaml](file://docker-compose.yaml)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml)
-- [backend/Dockerfile](file://backend/Dockerfile)
-- [frontend/Dockerfile](file://frontend/Dockerfile)
-- [.github/workflows/deploy.yaml](file://.github/workflows/deploy.yaml)
-- [backend/.env](file://backend/.env)
-- [frontend/.env](file://frontend/.env)
-- [.env](file://.env)
-- [backend/pyproject.toml](file://backend/pyproject.toml)
-- [frontend/package.json](file://frontend/package.json)
-- [backend/app/main.py](file://backend/app/main.py)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py)
-- [backend/app/core/logging.py](file://backend/app/core/logging.py)
-- [frontend/next.config.js](file://frontend/next.config.js)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Deployment architecture
 
 ## Introduction
-This document describes the deployment and infrastructure architecture for the application. It covers containerized deployment using Docker with multi-stage builds, docker-compose orchestration for local development and production, CI/CD with GitHub Actions, environment variable management, secrets handling, scaling strategies, health checks, logging aggregation, monitoring setup, reverse proxy configuration, SSL termination, load balancing, and disaster recovery planning.
+This page describes the deployment and infrastructure architecture for the application. It covers containerized deployment using Docker with multi-stage builds, docker-compose orchestration for local development and production, CI/CD with GitHub Actions, environment variable management, secrets handling, scaling strategies, health checks, logging aggregation, monitoring setup, reverse proxy configuration, SSL termination, load balancing, and disaster recovery planning.
 
-## Project Structure
+## Project structure
 The deployment stack consists of:
 - A PostgreSQL database service
 - A Python FastAPI backend service exposing REST APIs
@@ -68,15 +38,7 @@ BE --> DB
 FE --> BE
 ```
 
-**Diagram sources**
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-
-**Section sources**
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-
-## Core Components
+## Core components
 - Backend service
   - Built with a single-stage Dockerfile using uv for dependency installation and Uvicorn for ASGI serving.
   - Exposes port 8000 and mounts an uploads directory for persistence.
@@ -94,13 +56,7 @@ FE --> BE
   - Local development compose defines internal networks and service dependencies.
   - Production compose adds health checks, external network for reverse proxy, and a dedicated migration stage.
 
-**Section sources**
-- [backend/Dockerfile](file://backend/Dockerfile#L1-L33)
-- [frontend/Dockerfile](file://frontend/Dockerfile#L1-L110)
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-
-## Architecture Overview
+## Architecture overview
 The system uses a reverse proxy managed by Nginx Proxy Manager (external network) to terminate TLS and route traffic to the Next.js frontend. The frontend proxies specific API paths to the backend service. The backend exposes REST endpoints and logs requests with request IDs for observability.
 
 ```mermaid
@@ -116,21 +72,16 @@ BE-->>FE : JSON response
 FE-->>U : Rendered page or JSON
 ```
 
-**Diagram sources**
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L79-L83)
-- [frontend/next.config.js](file://frontend/next.config.js#L73-L86)
-- [backend/app/main.py](file://backend/app/main.py#L157-L203)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Backend Containerization
+### Backend containerization
 - Build and runtime
   - Single-stage build using Python slim image, uv for deterministic installs, and Uvicorn ASGI server.
   - Exposes port 8000 and sets working directory to /app.
 - Persistence
   - Uploads directory mounted from host for resume and asset storage.
 - Environment
-  - Reads .env via pydantic-settings and supports model configuration, CORS, and interview settings.
+  - Reads.env via pydantic-settings and supports model configuration, CORS, and interview settings.
 
 ```mermaid
 flowchart TD
@@ -144,16 +95,7 @@ PrepareDirs --> ExposePort["Expose 8000"]
 ExposePort --> CMD["CMD: uvicorn app.main:app"]
 ```
 
-**Diagram sources**
-- [backend/Dockerfile](file://backend/Dockerfile#L1-L33)
-- [backend/pyproject.toml](file://backend/pyproject.toml#L1-L42)
-
-**Section sources**
-- [backend/Dockerfile](file://backend/Dockerfile#L1-L33)
-- [backend/pyproject.toml](file://backend/pyproject.toml#L1-L42)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L1-L50)
-
-### Frontend Containerization
+### Frontend containerization
 - Multi-stage build
   - deps: installs dev dependencies for build tooling
   - builder: Next.js build and Prisma generation
@@ -176,16 +118,7 @@ R --> StartRun["Start Next.js"]
 M --> ExitOnce["Exit after migrations"]
 ```
 
-**Diagram sources**
-- [frontend/Dockerfile](file://frontend/Dockerfile#L1-L110)
-- [frontend/next.config.js](file://frontend/next.config.js#L73-L86)
-
-**Section sources**
-- [frontend/Dockerfile](file://frontend/Dockerfile#L1-L110)
-- [frontend/package.json](file://frontend/package.json#L5-L13)
-- [frontend/next.config.js](file://frontend/next.config.js#L1-L90)
-
-### Orchestration and Networking
+### Orchestration and networking
 - Local development
   - Defines an internal bridge network, service dependencies, and explicit environment overrides for frontend (e.g., NEXTAUTH_URL, BACKEND_URL).
 - Production
@@ -205,14 +138,7 @@ FE --> EXT
 MIG["frontend_migrate: Prisma"] --> INT
 ```
 
-**Diagram sources**
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L99-L105)
-
-**Section sources**
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-
-### CI/CD Pipeline with GitHub Actions
+### CI/CD pipeline with GitHub Actions
 - Workflow triggers on pushes to main branch
 - Deploys to a VPS via SSH, rebuilds production images, and brings services up with docker compose
 - Uses repository secrets for VPS connection and project path
@@ -228,29 +154,16 @@ GH->>VPS : docker compose build (prod)
 GH->>VPS : docker compose up -d --force-recreate
 ```
 
-**Diagram sources**
-- [.github/workflows/deploy.yaml](file://.github/workflows/deploy.yaml#L1-L42)
-
-**Section sources**
-- [.github/workflows/deploy.yaml](file://.github/workflows/deploy.yaml#L1-L42)
-
-### Environment Variables and Secrets Management
+### Environment variables and secrets management
 - Centralized environment files
-  - Root .env and per-service .env files define database credentials, OAuth, email, analytics keys, and encryption keys.
+  - Root.env and per-service.env files define database credentials, OAuth, email, analytics keys, and encryption keys.
 - Service-specific overrides
   - docker-compose sets DATABASE_URL, NEXTAUTH_URL, BACKEND_URL, and other runtime variables.
 - Security considerations
-  - Encryption keys and API keys are loaded from .env files; ensure secrets are protected and not committed to the repository.
+  - Encryption keys and API keys are loaded from.env files; ensure secrets are protected and not committed to the repository.
   - Consider external secret managers in production (e.g., HashiCorp Vault, AWS Secrets Manager) and inject via environment variables or mounted files.
 
-**Section sources**
-- [.env](file://.env#L1-L26)
-- [backend/.env](file://backend/.env#L1-L26)
-- [frontend/.env](file://frontend/.env#L1-L27)
-- [docker-compose.yaml](file://docker-compose.yaml#L26-L62)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L32-L83)
-
-### Logging and Observability
+### Logging and observability
 - Backend logging
   - Structured logging with request ID propagation, console handlers, and access logs via Uvicorn formatter.
   - Request/response middleware logs method, path, query, duration, and sanitized payloads.
@@ -270,16 +183,7 @@ Handler --> LogRes["Log Response (status, duration)"]
 LogRes --> Resp["Send Response"]
 ```
 
-**Diagram sources**
-- [backend/app/main.py](file://backend/app/main.py#L71-L131)
-- [backend/app/core/logging.py](file://backend/app/core/logging.py#L35-L97)
-
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L71-L131)
-- [backend/app/core/logging.py](file://backend/app/core/logging.py#L1-L117)
-- [frontend/next.config.js](file://frontend/next.config.js#L73-L86)
-
-### Health Checks and Monitoring
+### Health checks and monitoring
 - Database health check
   - Healthcheck probes the database using pg_isready with retry configuration.
 - Frontend and backend readiness
@@ -289,11 +193,7 @@ LogRes --> Resp["Send Response"]
   - Configure Prometheus metrics exporters and Grafana dashboards.
   - Set up alerting for service downtime, latency, and error rates.
 
-**Section sources**
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L15-L23)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L84-L90)
-
-### Reverse Proxy, SSL Termination, and Load Balancing
+### Reverse proxy, SSL termination, and load balancing
 - Reverse proxy
   - Nginx Proxy Manager is attached to an external network and terminates TLS for talentsync.tashif.codes.
 - Routing
@@ -302,11 +202,7 @@ LogRes --> Resp["Send Response"]
   - Current setup runs single instances; scale horizontally by running multiple frontend/backend replicas behind the reverse proxy.
   - Use sticky sessions if required by session-based authentication.
 
-**Section sources**
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L102-L105)
-- [frontend/next.config.js](file://frontend/next.config.js#L73-L86)
-
-### Scaling Strategies
+### Scaling strategies
 - Horizontal scaling
   - Run multiple replicas of frontend and backend services; ensure shared state is externalized (PostgreSQL, uploads volume).
 - Stateful vs stateless
@@ -316,7 +212,7 @@ LogRes --> Resp["Send Response"]
 
 [No sources needed since this section provides general guidance]
 
-### Disaster Recovery and Backup Strategies
+### Disaster recovery and backup strategies
 - Database backups
   - Schedule regular logical backups using pg_dump and store offsite; automate retention policies.
 - Artifact backups
@@ -328,7 +224,7 @@ LogRes --> Resp["Send Response"]
 
 [No sources needed since this section provides general guidance]
 
-## Dependency Analysis
+## Dependency analysis
 - Backend dependencies
   - FastAPI, Uvicorn, Pydantic settings, cryptography, and various LLM integrations.
 - Frontend dependencies
@@ -348,35 +244,20 @@ DCP --> FE
 DCP --> MIG["frontend_migrate"]
 ```
 
-**Diagram sources**
-- [backend/Dockerfile](file://backend/Dockerfile#L1-L33)
-- [backend/pyproject.toml](file://backend/pyproject.toml#L1-L42)
-- [frontend/Dockerfile](file://frontend/Dockerfile#L1-L110)
-- [frontend/package.json](file://frontend/package.json#L1-L114)
-- [frontend/next.config.js](file://frontend/next.config.js#L1-L90)
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-
-**Section sources**
-- [backend/pyproject.toml](file://backend/pyproject.toml#L1-L42)
-- [frontend/package.json](file://frontend/package.json#L1-L114)
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-
-## Performance Considerations
+## Performance considerations
 - Build optimization
   - Multi-stage frontend build reduces final image size and improves cold starts.
   - Backend uses uv for faster dependency resolution.
 - Resource limits
   - Define CPU/memory limits in production to prevent resource contention.
 - Caching
-  - Enable CDN for static assets and leverage browser caching via Next.js PWA settings.
+  - Enable CDN for static assets and use browser caching via Next.js PWA settings.
 - Database tuning
   - Optimize connection pooling and consider read replicas for high-load scenarios.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Health check failures
   - Verify database credentials and network connectivity; inspect healthcheck logs.
 - Migration errors
@@ -386,14 +267,8 @@ DCP --> MIG["frontend_migrate"]
 - Logging visibility
   - Ensure logs are emitted to stdout/stderr and collected centrally; verify request ID propagation.
 
-**Section sources**
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L15-L23)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L44-L79)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L37-L38)
-- [backend/app/main.py](file://backend/app/main.py#L148-L154)
-
 ## Conclusion
-The deployment architecture leverages Docker multi-stage builds, docker-compose orchestration, and GitHub Actions for CI/CD. It incorporates health checks, logging, and a reverse proxy for secure, scalable delivery. For production hardening, integrate centralized logging, metrics, secrets management, and disaster recovery procedures.
+The deployment architecture uses Docker multi-stage builds, docker-compose orchestration, and GitHub Actions for CI/CD. It incorporates health checks, logging, and a reverse proxy for secure, scalable delivery. For production hardening, integrate centralized logging, metrics, secrets management, and disaster recovery procedures.
 
 ## Appendices
 - Operational checklist

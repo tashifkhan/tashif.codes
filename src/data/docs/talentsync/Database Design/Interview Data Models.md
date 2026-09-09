@@ -1,33 +1,7 @@
-# Interview Data Models
-
-<cite>
-**Referenced Files in This Document**
-- [schemas.py](file://backend/app/models/interview/schemas.py)
-- [enums.py](file://backend/app/models/interview/enums.py)
-- [templates.py](file://backend/app/models/interview/templates.py)
-- [interview.py](file://backend/app/routes/interview.py)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py)
-- [question_generator.py](file://backend/app/services/interview/question_generator.py)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py)
-- [graph.py](file://backend/app/services/interview/graph.py)
-- [schema.prisma](file://frontend/prisma/schema.prisma)
-- [interview.ts](file://frontend/types/interview.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Interview data models
 
 ## Introduction
-This document provides comprehensive documentation for the Interview data models and workflows in the system. It focuses on:
+This page provides detailed documentation for the Interview data models and workflows in the system. It focuses on:
 - InterviewRequest and InterviewAnswer models and their relationships with user models
 - InterviewRequest model fields for role specification, company information, user knowledge context, word limits, and JSON-stored question arrays
 - InterviewAnswer model for capturing candidate responses with question-answer pair relationships and temporal tracking
@@ -37,7 +11,7 @@ This document provides comprehensive documentation for the Interview data models
 - Data privacy considerations for interview content, response storage strategies, and integration with the AI interview system
 - Structured approach to interview analytics and performance tracking through stored data relationships
 
-## Project Structure
+## Project structure
 The interview system spans backend Pydantic models, FastAPI routes, LangGraph orchestration, and frontend data types. The database schema defines InterviewRequest and InterviewAnswer entities with foreign keys to the User model.
 
 ```mermaid
@@ -66,31 +40,7 @@ FT --> PRISMA
 PRISMA --> |"Foreign Keys"| FT
 ```
 
-**Diagram sources**
-- [interview.py](file://backend/app/routes/interview.py#L1-L494)
-- [graph.py](file://backend/app/services/interview/graph.py#L1-L511)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L1-L257)
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L1-L275)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py#L1-L227)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L1-L169)
-- [enums.py](file://backend/app/models/interview/enums.py#L1-L43)
-- [templates.py](file://backend/app/models/interview/templates.py#L1-L502)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L203-L226)
-- [interview.ts](file://frontend/types/interview.ts#L1-L21)
-
-**Section sources**
-- [interview.py](file://backend/app/routes/interview.py#L1-L494)
-- [graph.py](file://backend/app/services/interview/graph.py#L1-L511)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L1-L257)
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L1-L275)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py#L1-L227)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L1-L169)
-- [enums.py](file://backend/app/models/interview/enums.py#L1-L43)
-- [templates.py](file://backend/app/models/interview/templates.py#L1-L502)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L203-L226)
-- [interview.ts](file://frontend/types/interview.ts#L1-L21)
-
-## Core Components
+## Core components
 This section documents the primary data models and their responsibilities.
 
 - InterviewRequest (database model)
@@ -135,13 +85,7 @@ This section documents the primary data models and their responsibilities.
   - InterviewTemplate: role-specific templates with question banks, topics, coding flags, and difficulty distributions
   - QuestionTemplate: reusable question entries with metadata
 
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L203-L226)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L22-L169)
-- [enums.py](file://backend/app/models/interview/enums.py#L6-L43)
-- [templates.py](file://backend/app/models/interview/templates.py#L10-L502)
-
-## Architecture Overview
+## Architecture overview
 The interview workflow integrates FastAPI routes, a LangGraph orchestrator, and service components for question generation, evaluation, and code execution. Sessions are managed in-memory but designed for persistence.
 
 ```mermaid
@@ -167,22 +111,15 @@ Graph->>SM : save(session)
 Routes-->>Client : {score, feedback, strengths, improvements, next_question, is_complete}
 ```
 
-**Diagram sources**
-- [interview.py](file://backend/app/routes/interview.py#L65-L186)
-- [graph.py](file://backend/app/services/interview/graph.py#L49-L168)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L28-L72)
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L23-L122)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py#L31-L80)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### InterviewRequest Model
+### InterviewRequest model
 - Purpose: Encapsulates user interview requests with structured fields for role, company, knowledge context, and JSON-stored questions
 - Key fields:
   - role: specifies the job role for the interview
   - questions: JSON array storing dynamic question structures
   - companyName: company name associated with the request
-  - userKnowledge: optional free-text context about the candidate’s knowledge
+  - userKnowledge: optional free-text context about the candidate's knowledge
   - companyUrl: optional company website
   - wordLimit: integer limit for response length
   - createdAt: timestamp for auditability
@@ -216,25 +153,16 @@ USER ||--o{ INTERVIEW_REQUEST : "has many"
 INTERVIEW_REQUEST ||--o{ INTERVIEW_ANSWER : "has many"
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L203-L226)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L203-L216)
-
-### InterviewAnswer Model
+### InterviewAnswer model
 - Purpose: Captures individual candidate answers to specific questions
 - Key fields:
   - question: the question text
-  - answer: the candidate’s response
+  - answer: the candidate's response
   - createdAt: timestamp for temporal tracking
 - Relationship: belongs to InterviewRequest
 - Notes: Supports temporal tracking and pairing with InterviewRequest for analytics
 
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L218-L226)
-
-### InterviewSession and InterviewQuestion (Runtime Models)
+### InterviewSession and InterviewQuestion (runtime models)
 - InterviewSession
   - Tracks session lifecycle, current question index, evaluation results, and events
   - Includes timestamps for created_at, started_at, completed_at
@@ -286,15 +214,7 @@ class InterviewQuestion {
 InterviewSession "1" o-- "*" InterviewQuestion : "contains"
 ```
 
-**Diagram sources**
-- [schemas.py](file://backend/app/models/interview/schemas.py#L72-L169)
-- [enums.py](file://backend/app/models/interview/enums.py#L6-L43)
-
-**Section sources**
-- [schemas.py](file://backend/app/models/interview/schemas.py#L72-L169)
-- [enums.py](file://backend/app/models/interview/enums.py#L6-L43)
-
-### Interview Workflow Integration
+### Interview workflow integration
 - Question Generation
   - Uses QuestionGenerator to produce InterviewQuestion lists based on InterviewConfig and templates
   - Supports template-based and LLM-based question generation with fallbacks
@@ -319,29 +239,13 @@ Next --> |No| Summary["Generate Summary"]
 Summary --> Complete(["Mark Completed"])
 ```
 
-**Diagram sources**
-- [graph.py](file://backend/app/services/interview/graph.py#L49-L168)
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L23-L122)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py#L31-L80)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L172-L202)
-
-**Section sources**
-- [graph.py](file://backend/app/services/interview/graph.py#L49-L168)
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L23-L122)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py#L31-L80)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L172-L202)
-
-### Frontend Data Models and Relationships
+### Frontend data models and relationships
 - Frontend types define InterviewSession and InterviewRequest for UI consumption
 - These align conceptually with backend models and database entities
 - InterviewSession includes id, role, companyName, createdAt, and questionsAndAnswers
 - InterviewRequest mirrors backend InterviewRequest fields for user input
 
-**Section sources**
-- [interview.ts](file://frontend/types/interview.ts#L1-L21)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L203-L216)
-
-## Dependency Analysis
+## Dependency analysis
 The backend components depend on each other to orchestrate the interview lifecycle. The routes depend on the graph, which depends on session management, question generation, and evaluation services.
 
 ```mermaid
@@ -355,50 +259,22 @@ Graph --> Schemas["models/interview/schemas.py"]
 Routes --> Schemas
 ```
 
-**Diagram sources**
-- [interview.py](file://backend/app/routes/interview.py#L1-L494)
-- [graph.py](file://backend/app/services/interview/graph.py#L1-L511)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L1-L257)
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L1-L275)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py#L1-L227)
-- [templates.py](file://backend/app/models/interview/templates.py#L1-L502)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L1-L169)
-
-**Section sources**
-- [interview.py](file://backend/app/routes/interview.py#L1-L494)
-- [graph.py](file://backend/app/services/interview/graph.py#L1-L511)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L1-L257)
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L1-L275)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py#L1-L227)
-- [templates.py](file://backend/app/models/interview/templates.py#L1-L502)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L1-L169)
-
-## Performance Considerations
+## Performance considerations
 - Streaming evaluation and code review reduce perceived latency and improve UX
 - In-memory session storage is efficient for small-scale usage; consider persistence for production
 - JSON fields enable flexibility but may require careful indexing and validation strategies
 - Template-based question generation reduces LLM invocation overhead when applicable
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Session not found errors indicate invalid session_id or expired sessions
 - Question mismatch errors occur when submitted question_id does not match current session state
 - Evaluation failures return default scores and feedback; check LLM availability and prompt formatting
 - Tab switch counting helps detect potential misconduct; monitor counts for integrity
 
-**Section sources**
-- [graph.py](file://backend/app/services/interview/graph.py#L115-L135)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py#L31-L80)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L113-L133)
-
 ## Conclusion
-The Interview data models and workflows provide a robust foundation for AI-driven interviews. InterviewRequest and InterviewAnswer integrate with user models and JSON fields for dynamic question structures. The runtime models (InterviewSession, InterviewQuestion) support streaming evaluation, code execution, and comprehensive analytics. Session lifecycle management, answer submission tracking, and evaluation workflows are orchestrated through LangGraph services, ensuring scalability and maintainability.
+The Interview data models and workflows provide a reliable foundation for AI-driven interviews. InterviewRequest and InterviewAnswer integrate with user models and JSON fields for dynamic question structures. The runtime models (InterviewSession, InterviewQuestion) support streaming evaluation, code execution, and detailed analytics. Session lifecycle management, answer submission tracking, and evaluation workflows are orchestrated through LangGraph services, ensuring scalability and maintainability.
 
 ## Appendices
 - Interview templates support role-specific question banks and coding challenges
 - Enums standardize difficulty levels, statuses, sources, and event types
-- Frontend types align with backend models for seamless UI integration
-
-**Section sources**
-- [templates.py](file://backend/app/models/interview/templates.py#L41-L478)
-- [enums.py](file://backend/app/models/interview/enums.py#L6-L43)
-- [interview.ts](file://frontend/types/interview.ts#L1-L21)
+- Frontend types align with backend models for smooth UI integration

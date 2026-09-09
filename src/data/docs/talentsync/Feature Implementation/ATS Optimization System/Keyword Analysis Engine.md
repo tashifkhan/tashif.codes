@@ -1,40 +1,12 @@
-# Keyword Analysis Engine
-
-<cite>
-**Referenced Files in This Document**
-- [analysis/app.py](file://analysis/app.py)
-- [analysis/Resume Analyser.ipynb](file://analysis/Resume Analyser.ipynb)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py)
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py)
-- [backend/app/services/ats_evaluator/graph.py](file://backend/app/services/ats_evaluator/graph.py)
-- [backend/app/data/prompt/ats_analysis.py](file://backend/app/data/prompt/ats_analysis.py)
-- [backend/app/services/process_resume.py](file://backend/app/services/process_resume.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [System Architecture](#system-architecture)
-3. [Core Components](#core-components)
-4. [Keyword Extraction Pipeline](#keyword-extraction-pipeline)
-5. [TF-IDF Vectorization and Similarity Scoring](#tf-idf-vectorization-and-similarity-scoring)
-6. [Natural Language Processing Techniques](#natural-language-processing-techniques)
-7. [Semantic Matching with Machine Learning](#semantic-matching-with-machine-learning)
-8. [Preprocessing Pipeline](#preprocessing-pipeline)
-9. [Technical Terminology and Industry-Specific Jargon](#technical-terminology-and-industry-specific-jargon)
-10. [Soft Skills Identification](#soft-skills-identification)
-11. [Integration Examples](#integration-examples)
-12. [Performance Considerations](#performance-considerations)
-13. [Troubleshooting Guide](#troubleshooting-guide)
-14. [Conclusion](#conclusion)
+# Keyword analysis engine
 
 ## Introduction
 
-The Keyword Analysis Engine is a sophisticated system designed to extract, analyze, and match keywords from resumes and job descriptions. This system combines traditional keyword extraction techniques with modern machine learning approaches to provide comprehensive ATS (Applicant Tracking System) compatibility analysis and semantic matching capabilities.
+The Keyword Analysis Engine is a sophisticated system designed to extract, analyze, and match keywords from resumes and job descriptions. This system combines traditional keyword extraction techniques with modern machine learning approaches to provide detailed ATS (Applicant Tracking System) compatibility analysis and semantic matching capabilities.
 
 The engine operates through two primary pathways: a traditional TF-IDF based classification system for resume categorization, and an advanced semantic analysis system powered by Large Language Models (LLMs) for contextual keyword matching and job description analysis.
 
-## System Architecture
+## System architecture
 
 The Keyword Analysis Engine follows a modular architecture with clear separation of concerns:
 
@@ -64,16 +36,11 @@ M --> N
 end
 ```
 
-**Diagram sources**
-- [analysis/app.py](file://analysis/app.py#L196-L347)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L157)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py#L22-L214)
+## Core components
 
-## Core Components
+### Traditional TF-IDF classification system
 
-### Traditional TF-IDF Classification System
-
-The legacy system utilizes TF-IDF vectorization combined with machine learning classification for resume categorization:
+The legacy system uses TF-IDF vectorization combined with machine learning classification for resume categorization:
 
 ```mermaid
 classDiagram
@@ -104,12 +71,9 @@ TFIDFProcessor --> SkillExtractor
 TextPreprocessor --> SkillExtractor
 ```
 
-**Diagram sources**
-- [analysis/app.py](file://analysis/app.py#L21-L194)
+### Modern LLM-based analysis system
 
-### Modern LLM-Based Analysis System
-
-The contemporary system leverages Large Language Models for semantic understanding and contextual keyword matching:
+The contemporary system uses Large Language Models for semantic understanding and contextual keyword matching:
 
 ```mermaid
 classDiagram
@@ -137,20 +101,11 @@ LLMProcessor --> PromptBuilder
 ATSEvaluator --> PromptBuilder
 ```
 
-**Diagram sources**
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L186-L268)
-- [backend/app/services/ats_evaluator/graph.py](file://backend/app/services/ats_evaluator/graph.py#L116-L202)
+## Keyword extraction pipeline
 
-**Section sources**
-- [analysis/app.py](file://analysis/app.py#L1-L347)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L1-L364)
-- [backend/app/services/ats.py](file://backend/app/services/ats.py#L1-L214)
+The keyword extraction pipeline operates through multiple stages to ensure detailed coverage of relevant terms:
 
-## Keyword Extraction Pipeline
-
-The keyword extraction pipeline operates through multiple stages to ensure comprehensive coverage of relevant terms:
-
-### Stage 1: Text Extraction and Normalization
+### Stage 1: text extraction and normalization
 
 ```mermaid
 flowchart TD
@@ -163,10 +118,7 @@ F --> G[Stopword Removal]
 G --> H[Normalized Text]
 ```
 
-**Diagram sources**
-- [analysis/app.py](file://analysis/app.py#L21-L30)
-
-### Stage 2: Skill Pattern Recognition
+### Stage 2: skill pattern recognition
 
 The system employs sophisticated pattern matching for skill identification:
 
@@ -178,9 +130,9 @@ The system employs sophisticated pattern matching for skill identification:
 | Certifications | Formal Credentials | AWS, PMP, CPA |
 | Soft Skills | Descriptive Terms | Leadership, Communication |
 
-### Stage 3: Contextual Keyword Enhancement
+### Stage 3: contextual keyword enhancement
 
-The LLM-based system enhances keyword extraction through contextual understanding:
+The LLM-based system improves keyword extraction through contextual understanding:
 
 ```mermaid
 sequenceDiagram
@@ -195,16 +147,9 @@ Matcher->>Matcher : Contextual Enhancement
 Matcher-->>User : Enhanced Keywords
 ```
 
-**Diagram sources**
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L66-L130)
+## TF-IDF vectorization and similarity scoring
 
-**Section sources**
-- [analysis/app.py](file://analysis/app.py#L92-L118)
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L66-L130)
-
-## TF-IDF Vectorization and Similarity Scoring
-
-### Vectorization Process
+### Vectorization process
 
 The TF-IDF (Term Frequency-Inverse Document Frequency) implementation transforms text documents into numerical vectors for machine learning analysis:
 
@@ -218,10 +163,7 @@ E --> F[TF-IDF Matrix]
 F --> G[Vector Space Model]
 ```
 
-**Diagram sources**
-- [analysis/Resume Analyser.ipynb](file://analysis/Resume Analyser.ipynb#L16-L18)
-
-### Similarity Scoring Algorithms
+### Similarity scoring algorithms
 
 The system employs multiple similarity measurement techniques:
 
@@ -232,7 +174,7 @@ The system employs multiple similarity measurement techniques:
 | Jaccard Index | `|A∩B|/|A∪B|` | Set overlap analysis |
 | Edit Distance | Levenshtein distance | Spelling correction |
 
-### Classification Workflow
+### Classification workflow
 
 ```mermaid
 sequenceDiagram
@@ -247,18 +189,11 @@ Model->>Output : Predicted Category
 Output->>Output : Confidence Scores
 ```
 
-**Diagram sources**
-- [analysis/app.py](file://analysis/app.py#L120-L134)
+## Natural language processing techniques
 
-**Section sources**
-- [analysis/Resume Analyser.ipynb](file://analysis/Resume Analyser.ipynb#L16-L18)
-- [analysis/app.py](file://analysis/app.py#L120-L134)
+### Text preprocessing pipeline
 
-## Natural Language Processing Techniques
-
-### Text Preprocessing Pipeline
-
-The NLP pipeline implements comprehensive text normalization:
+The NLP pipeline implements detailed text normalization:
 
 ```mermaid
 flowchart TD
@@ -272,10 +207,7 @@ G --> H[Stopword Removal]
 H --> I[Normalized Tokens]
 ```
 
-**Diagram sources**
-- [analysis/app.py](file://analysis/app.py#L21-L30)
-
-### Named Entity Recognition
+### Named entity recognition
 
 The system identifies and categorizes key entities:
 
@@ -287,19 +219,15 @@ The system identifies and categorizes key entities:
 | Educational Institutions | University Keywords | MIT, Harvard, Stanford |
 | Companies | Company Keywords | Google, Microsoft, Amazon |
 
-### Part-of-Speech Tagging
+### Part-of-Speech tagging
 
 Contextual understanding through grammatical analysis enables better keyword interpretation and relevance scoring.
 
-**Section sources**
-- [analysis/app.py](file://analysis/app.py#L21-L30)
-- [analysis/app.py](file://analysis/app.py#L52-L71)
+## Semantic matching with machine learning
 
-## Semantic Matching with Machine Learning
+### LLM integration architecture
 
-### LLM Integration Architecture
-
-The semantic analysis leverages advanced language models for contextual understanding:
+The semantic analysis uses advanced language models for contextual understanding:
 
 ```mermaid
 graph TB
@@ -318,10 +246,7 @@ D --> G
 D --> I
 ```
 
-**Diagram sources**
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L186-L268)
-
-### Semantic Similarity Calculation
+### Semantic similarity calculation
 
 The system calculates semantic similarity through multiple approaches:
 
@@ -330,7 +255,7 @@ The system calculates semantic similarity through multiple approaches:
 3. **Contextual Similarity**: LLM-generated relevance scores
 4. **Hybrid Approach**: Weighted combination of all methods
 
-### Dynamic Keyword Expansion
+### Dynamic keyword expansion
 
 The LLM system dynamically expands keyword sets based on context:
 
@@ -343,18 +268,11 @@ D --> E[Semantic Clustering]
 E --> F[Enhanced Keyword Set]
 ```
 
-**Diagram sources**
-- [backend/app/data/prompt/ats_analysis.py](file://backend/app/data/prompt/ats_analysis.py#L4-L55)
+## Preprocessing pipeline
 
-**Section sources**
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L186-L268)
-- [backend/app/data/prompt/ats_analysis.py](file://backend/app/data/prompt/ats_analysis.py#L1-L69)
+### Document processing workflow
 
-## Preprocessing Pipeline
-
-### Document Processing Workflow
-
-The preprocessing pipeline handles multiple document formats with robust error handling:
+The preprocessing pipeline handles multiple document formats with reliable error handling:
 
 ```mermaid
 flowchart TD
@@ -377,12 +295,9 @@ J --> K[Validation]
 K --> L[Ready for Analysis]
 ```
 
-**Diagram sources**
-- [backend/app/services/process_resume.py](file://backend/app/services/process_resume.py#L68-L91)
+### Text normalization techniques
 
-### Text Normalization Techniques
-
-Comprehensive text cleaning ensures optimal analysis results:
+Detailed text cleaning ensures optimal analysis results:
 
 | Normalization Step | Method | Purpose |
 |---|---|---|
@@ -394,13 +309,9 @@ Comprehensive text cleaning ensures optimal analysis results:
 | Stopword Removal | NLTK Stopwords | Remove common words |
 | Case Normalization | Lowercase Conversion | Consistent formatting |
 
-**Section sources**
-- [backend/app/services/process_resume.py](file://backend/app/services/process_resume.py#L68-L91)
-- [analysis/app.py](file://analysis/app.py#L21-L30)
+## Technical terminology and industry-specific jargon
 
-## Technical Terminology and Industry-Specific Jargon
-
-### Domain-Specific Skill Classification
+### Domain-Specific skill classification
 
 The system categorizes technical skills across multiple domains:
 
@@ -435,16 +346,13 @@ Terraform
 Ansible
 ```
 
-### Industry-Specific Terminology
+### Industry-Specific terminology
 
 The system adapts to different industry contexts through dynamic vocabulary expansion and domain-specific training data.
 
-**Section sources**
-- [analysis/app.py](file://analysis/app.py#L168-L194)
+## Soft skills identification
 
-## Soft Skills Identification
-
-### Soft Skills Recognition Patterns
+### Soft skills recognition patterns
 
 The system identifies soft skills through contextual analysis:
 
@@ -456,7 +364,7 @@ The system identifies soft skills through contextual analysis:
 | Adaptability | Flexibility, Learning Agility | "Quick learner" |
 | Collaboration | Team Player, Interpersonal Skills | "Great team player" |
 
-### Contextual Understanding
+### Contextual understanding
 
 LLM-based analysis provides nuanced understanding of soft skills through:
 
@@ -465,12 +373,9 @@ LLM-based analysis provides nuanced understanding of soft skills through:
 - **Achievement Metrics**: Quantifiable skill applications
 - **Recommendation Analysis**: Third-party skill validation
 
-**Section sources**
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L186-L268)
+## Integration examples
 
-## Integration Examples
-
-### API Integration Patterns
+### API integration patterns
 
 The system provides flexible integration points for different use cases:
 
@@ -488,12 +393,9 @@ Processor-->>API : Structured Output
 API-->>Client : Analysis Report
 ```
 
-**Diagram sources**
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L157)
+### ATS compatibility scoring
 
-### ATS Compatibility Scoring
-
-The system generates comprehensive ATS compatibility assessments:
+The system generates detailed ATS compatibility assessments:
 
 | Compatibility Area | Scoring Criteria | Weight |
 |---|---|---|
@@ -504,12 +406,9 @@ The system generates comprehensive ATS compatibility assessments:
 | Formatting | Section structure | 10% |
 | Semantic Alignment | Contextual relevance | 10% |
 
-**Section sources**
-- [backend/app/data/prompt/ats_analysis.py](file://backend/app/data/prompt/ats_analysis.py#L21-L55)
+## Performance considerations
 
-## Performance Considerations
-
-### Optimization Strategies
+### Optimization strategies
 
 The system implements several performance optimization techniques:
 
@@ -519,7 +418,7 @@ The system implements several performance optimization techniques:
 4. **Model Optimization**: Quantized models for faster inference
 5. **Resource Pooling**: Shared LLM connections for multiple requests
 
-### Scalability Architecture
+### Scalability architecture
 
 ```mermaid
 graph LR
@@ -532,9 +431,9 @@ F --> G[Response Handler]
 G --> H[Client Response]
 ```
 
-## Troubleshooting Guide
+## Troubleshooting guide
 
-### Common Issues and Solutions
+### Common issues and solutions
 
 | Issue | Symptoms | Solution |
 |---|---|---|
@@ -544,9 +443,9 @@ G --> H[Client Response]
 | Slow Performance | Long processing times | Enable caching, optimize models |
 | Inaccurate Results | Wrong keyword matches | Adjust threshold parameters |
 
-### Error Handling Patterns
+### Error handling patterns
 
-The system implements comprehensive error handling:
+The system implements detailed error handling:
 
 ```mermaid
 flowchart TD
@@ -559,20 +458,16 @@ E --> |No| G[Return Error]
 F --> B
 ```
 
-**Section sources**
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L50-L63)
-- [backend/app/services/process_resume.py](file://backend/app/services/process_resume.py#L12-L53)
-
 ## Conclusion
 
-The Keyword Analysis Engine represents a comprehensive solution for modern talent acquisition needs. By combining traditional TF-IDF classification with advanced LLM-powered semantic analysis, the system provides both precise keyword matching and contextual understanding capabilities.
+The Keyword Analysis Engine represents a detailed solution for modern talent acquisition needs. By combining traditional TF-IDF classification with advanced LLM-powered semantic analysis, the system provides both precise keyword matching and contextual understanding capabilities.
 
 Key strengths of the system include:
 
 - **Dual-approach Architecture**: Traditional and modern methods complement each other
 - **Industry Adaptability**: Dynamic skill categorization across domains
 - **Scalable Design**: Optimized for enterprise-scale deployments
-- **Robust Error Handling**: Comprehensive fault tolerance mechanisms
+- **Reliable Error Handling**: Detailed fault tolerance mechanisms
 - **Flexible Integration**: Multiple API patterns for diverse use cases
 
 The system continues to evolve with advances in NLP and machine learning, ensuring it remains at the forefront of intelligent keyword analysis and semantic matching technologies.

@@ -1,33 +1,9 @@
-# User Management System
-
-<cite>
-**Referenced Files in This Document**
-- [schema.prisma](file://frontend/prisma/schema.prisma)
-- [auth-options.ts](file://frontend/lib/auth-options.ts)
-- [prisma.ts](file://frontend/lib/prisma.ts)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts)
-- [resend-verification/route.ts](file://frontend/app/api/auth/resend-verification/route.ts)
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# User management system
 
 ## Introduction
-This document describes the User Management System data model and authentication flows in TalentSync-Normies. It covers the User and Role models, their relationships, and supporting authentication entities (Account, Session, EmailVerificationToken, PasswordResetToken). It also documents user registration, OAuth integration, session management via NextAuth.js with Prisma adapter, and email verification/password reset workflows. Privacy and security considerations such as password hashing and verification mechanisms are addressed.
+This page describes the User Management System data model and authentication flows in TalentSync-Normies. It covers the User and Role models, their relationships, and supporting authentication entities (Account, Session, EmailVerificationToken, PasswordResetToken). It also documents user registration, OAuth integration, session management via NextAuth.js with Prisma adapter, and email verification/password reset workflows. Privacy and security considerations such as password hashing and verification mechanisms are addressed.
 
-## Project Structure
+## Project structure
 The user management system spans the Prisma schema, NextAuth.js configuration, and API endpoints for registration and authentication operations.
 
 ```mermaid
@@ -72,22 +48,7 @@ CONFIRM_API --> PRISMA
 NEXTAUTH_ROUTE --> NEXTAUTH
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L10-L262)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L68-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L9-L84)
-- [resend-verification/route.ts](file://frontend/app/api/auth/resend-verification/route.ts#L24-L137)
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts#L59-L135)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts#L11-L89)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L10-L262)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-
-## Core Components
+## Core components
 This section defines the core data models and their fields, constraints, and relationships.
 
 - Role model
@@ -166,10 +127,7 @@ Relationships and constraints:
 - EmailVerificationToken.userId references User.id
 - PasswordResetToken.userId references User.id
 
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L10-L262)
-
-## Architecture Overview
+## Architecture overview
 The system integrates NextAuth.js with Prisma adapter to manage authentication and user sessions. The Prisma schema defines the data model, while API endpoints handle user registration, email verification, and password reset flows. OAuth providers (Google, GitHub) and credentials/email providers are supported.
 
 ```mermaid
@@ -198,18 +156,9 @@ API->>Prisma : Validate Token + Update PasswordHash
 API-->>Client : Reset Success
 ```
 
-**Diagram sources**
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L68-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L9-L84)
-- [resend-verification/route.ts](file://frontend/app/api/auth/resend-verification/route.ts#L24-L137)
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts#L59-L135)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts#L11-L89)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Data Model: User and Role
+### Data model: user and role
 The User and Role models define the core identity and authorization structure.
 
 ```mermaid
@@ -242,13 +191,7 @@ ROLE ||--o{ USER : "has many"
   - roleId: optional foreign key to Role
   - image: optional avatar URL
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L10-L41)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L10-L41)
-
-### Authentication Models: Account, Session, Tokens
+### Authentication models: account, session, tokens
 These models support OAuth, session management, and verification/reset flows.
 
 ```mermaid
@@ -297,13 +240,7 @@ datetime usedAt
 - PasswordResetToken
   - Unique token; tracks expiry and usage
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L228-L262)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L228-L262)
-
-### NextAuth.js Integration with Prisma Adapter
+### NextAuth.js integration with Prisma adapter
 NextAuth.js is configured with:
 - Prisma adapter for database-backed sessions and accounts
 - Providers: Credentials, Google, GitHub, Email
@@ -330,17 +267,7 @@ NextAuth->>NextAuth : callbacks.signIn
 NextAuth-->>Client : JWT/session payload
 ```
 
-**Diagram sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-
-### User Registration Flow
+### User registration flow
 End-to-end registration with email verification:
 - Validates input (name, email, password, role)
 - Checks for existing user and role existence
@@ -363,13 +290,7 @@ Txn --> SendMail["Send Verification Email"]
 SendMail --> Success["Return 201 + User"]
 ```
 
-**Diagram sources**
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L68-L176)
-
-**Section sources**
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L68-L176)
-
-### Email Verification Workflow
+### Email verification workflow
 - Validates token presence
 - Finds token and includes user
 - Checks expiry and confirmation status
@@ -390,13 +311,7 @@ Confirmed --> |No| Txn["Update User Verified + Token Confirmed"]
 Txn --> Success["Return 200 + Success"]
 ```
 
-**Diagram sources**
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L9-L84)
-
-**Section sources**
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L9-L84)
-
-### Password Reset Workflow
+### Password reset workflow
 - Validates email
 - Finds user (no account existence leakage)
 - Blocks OAuth users (no password to reset)
@@ -424,15 +339,7 @@ API->>Prisma : Update PasswordHash + Mark Used
 API-->>Client : Success
 ```
 
-**Diagram sources**
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts#L59-L135)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts#L11-L89)
-
-**Section sources**
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts#L59-L135)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts#L11-L89)
-
-### OAuth Integration Patterns
+### OAuth integration patterns
 - Providers: Google, GitHub, Email, Credentials
 - signIn callback:
   - Automatically verifies OAuth users
@@ -443,20 +350,13 @@ API-->>Client : Success
 - callbacks.session/jwt:
   - Ensures role and image propagate to session/JWT
 
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-
-### Session Management Strategies
+### Session management strategies
 - Session strategy: JWT
 - Adapter: Prisma adapter for persistence
 - onDelete=Cascade on Account and Session ensures cleanup on user deletion
 - Image and role propagated via callbacks to keep session/JWT consistent
 
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L77-L196)
-- [schema.prisma](file://frontend/prisma/schema.prisma#L228-L253)
-
-## Dependency Analysis
+## Dependency analysis
 The following diagram shows module-level dependencies among the key components.
 
 ```mermaid
@@ -471,34 +371,13 @@ RESET_API["Reset Password API<br/>app/api/auth/reset-password/route.ts"] --> PRI
 CONFIRM_API["Confirm Reset API<br/>app/api/auth/confirm-reset/route.ts"] --> PRISMA_TS
 ```
 
-**Diagram sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L1-L262)
-- [prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L1-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L1-L84)
-- [resend-verification/route.ts](file://frontend/app/api/auth/resend-verification/route.ts#L1-L137)
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts#L1-L135)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts#L1-L89)
-
-**Section sources**
-- [schema.prisma](file://frontend/prisma/schema.prisma#L1-L262)
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L10-L202)
-- [route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- [register/route.ts](file://frontend/app/api/auth/register/route.ts#L1-L176)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L1-L84)
-- [resend-verification/route.ts](file://frontend/app/api/auth/resend-verification/route.ts#L1-L137)
-- [reset-password/route.ts](file://frontend/app/api/auth/reset-password/route.ts#L1-L135)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts#L1-L89)
-
-## Performance Considerations
+## Performance considerations
 - Use unique indexes on frequently queried fields (email, sessionToken, token) to optimize lookups.
 - Batch or transactional writes for related operations (e.g., user creation with verification token).
 - Consider token expiry cleanup jobs to remove stale tokens periodically.
 - Cache role and user metadata in JWT claims to reduce database reads during session validation.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Unverified email prevents credentials login:
   - Ensure verification email is sent and token is valid and unexpired.
@@ -510,10 +389,5 @@ Common issues and resolutions:
 - Session/JWT missing role or image:
   - Verify callbacks.session and callbacks.jwt are functioning; ensure user has a role and image stored.
 
-**Section sources**
-- [auth-options.ts](file://frontend/lib/auth-options.ts#L98-L196)
-- [verify-email/route.ts](file://frontend/app/api/auth/verify-email/route.ts#L20-L46)
-- [confirm-reset/route.ts](file://frontend/app/api/auth/confirm-reset/route.ts#L22-L48)
-
 ## Conclusion
-The User Management System in TalentSync-Normies combines a robust Prisma data model with NextAuth.js and custom API endpoints to deliver secure, flexible authentication. Users can register with credentials, verify emails, reset passwords, and sign in via OAuth. The design emphasizes data integrity, privacy, and scalability through unique constraints, cascading deletes, and JWT-based sessions.
+The User Management System in TalentSync-Normies combines a reliable Prisma data model with NextAuth.js and custom API endpoints to deliver secure, flexible authentication. Users can register with credentials, verify emails, reset passwords, and sign in via OAuth. The design emphasizes data integrity, privacy, and scalability through unique constraints, cascading deletes, and JWT-based sessions.

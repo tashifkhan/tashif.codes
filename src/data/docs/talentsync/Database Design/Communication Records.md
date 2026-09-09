@@ -1,38 +1,9 @@
-# Communication Records
-
-<cite>
-**Referenced Files in This Document**
-- [request.py](file://backend/app/models/cold_mail/request.py)
-- [response.py](file://backend/app/models/cold_mail/response.py)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py)
-- [types.py](file://backend/app/models/cold_mail/types.py)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py)
-- [cold_mail.py](file://backend/app/services/cold_mail.py)
-- [cover_letter.py](file://backend/app/services/cover_letter.py)
-- [cold_mail.py](file://backend/app/routes/cold_mail.py)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py)
-- [cold-mail.ts](file://frontend/types/cold-mail.ts)
-- [cover-letter.ts](file://frontend/types/cover-letter.ts)
-- [cold-mail.service.ts](file://frontend/services/cold-mail.service.ts)
-- [cover-letter.service.ts](file://frontend/services/cover-letter.service.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Communication records
 
 ## Introduction
-This document describes the Communication Records data models and workflows for cold email and cover letter generation. It covers request and response schemas, field definitions, relationships between requests and generated responses, JSON storage approaches for dynamic content, temporal tracking, workflow patterns, approval and versioning considerations, data retention, audit trails, compliance, and integration with AI/ML services.
+This page describes the Communication Records data models and workflows for cold email and cover letter generation. It covers request and response schemas, field definitions, relationships between requests and generated responses, JSON storage approaches for dynamic content, temporal tracking, workflow patterns, approval and versioning considerations, data retention, audit trails, compliance, and integration with AI/ML services.
 
-## Project Structure
+## Project structure
 The communication record features are implemented across backend models, services, and routes, and surfaced to the frontend via typed interfaces and service clients.
 
 ```mermaid
@@ -63,33 +34,7 @@ SCM --> MCE
 SCL --> MCL
 ```
 
-**Diagram sources**
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L1-L150)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L1-L103)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L1-L540)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L1-L254)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py#L1-L52)
-- [response.py](file://backend/app/models/cold_mail/response.py#L1-L10)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L1-L33)
-- [cold-mail.ts](file://frontend/types/cold-mail.ts#L1-L45)
-- [cover-letter.ts](file://frontend/types/cover-letter.ts#L1-L39)
-- [cold-mail.service.ts](file://frontend/services/cold-mail.service.ts#L1-L37)
-- [cover-letter.service.ts](file://frontend/services/cover-letter.service.ts#L1-L34)
-
-**Section sources**
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L1-L150)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L1-L103)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L1-L540)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L1-L254)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py#L1-L52)
-- [response.py](file://backend/app/models/cold_mail/response.py#L1-L10)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L1-L33)
-- [cold-mail.ts](file://frontend/types/cold-mail.ts#L1-L45)
-- [cover-letter.ts](file://frontend/types/cover-letter.ts#L1-L39)
-- [cold-mail.service.ts](file://frontend/services/cold-mail.service.ts#L1-L37)
-- [cover-letter.service.ts](file://frontend/services/cover-letter.service.ts#L1-L34)
-
-## Core Components
+## Core components
 This section documents the request and response models for cold email and cover letter workflows.
 
 - ColdMailRequest
@@ -118,7 +63,7 @@ This section documents the request and response models for cold email and cover 
   - Fields:
     - recipient_name: Optional recipient name.
     - company_name: Optional company name.
-    - sender_name: Sender’s name (required).
+    - sender_name: Sender's name (required).
     - sender_role_or_goal: Optional sender role or goal.
     - job_description: Job description text or content.
     - jd_url: Optional URL to fetch job description content.
@@ -143,14 +88,7 @@ This section documents the request and response models for cold email and cover 
 - Shared Types
   - types.py: Placeholder for shared types used across cold mail modules.
 
-**Section sources**
-- [request.py](file://backend/app/models/cold_mail/request.py#L1-L44)
-- [response.py](file://backend/app/models/cold_mail/response.py#L1-L10)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py#L1-L52)
-- [types.py](file://backend/app/models/cold_mail/types.py#L1-L9)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L1-L33)
-
-## Architecture Overview
+## Architecture overview
 The system follows a request-response pattern with AI/ML integration. Requests are validated by Pydantic models, processed by service functions that orchestrate LLM chains, and returned as standardized response models. Frontend types mirror backend schemas for consistent client-server contracts.
 
 ```mermaid
@@ -174,17 +112,9 @@ SVC-->>API : "CoverLetterResponse(body)"
 API-->>FE : "JSON response"
 ```
 
-**Diagram sources**
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L13-L41)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L16-L56)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L250-L340)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L138-L171)
-- [response.py](file://backend/app/models/cold_mail/response.py#L5-L10)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L27-L33)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Cold Email Workflow
+### Cold email workflow
 - Request pattern
   - File-based and text-based endpoints accept form-encoded inputs and optional resume files.
   - Inputs include recipient, sender, company, key points, optional URLs, and additional context.
@@ -221,20 +151,7 @@ SVC-->>API : "RESP(subject, body)"
 API-->>FE : "JSON {success, message, subject, body}"
 ```
 
-**Diagram sources**
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L13-L78)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L250-L340)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L343-L440)
-- [response.py](file://backend/app/models/cold_mail/response.py#L5-L10)
-
-**Section sources**
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L1-L150)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L1-L540)
-- [request.py](file://backend/app/models/cold_mail/request.py#L1-L44)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py#L1-L52)
-- [response.py](file://backend/app/models/cold_mail/response.py#L1-L10)
-
-### Cover Letter Workflow
+### Cover letter workflow
 - Request pattern
   - Accepts resume text, recipient/company details, job description (or URL), key points, additional info, optional company URL, and language preference.
   - Supports editing an existing cover letter with explicit instructions.
@@ -265,19 +182,7 @@ SVC-->>API : "RESP(body)"
 API-->>FE : "JSON {success, message, body}"
 ```
 
-**Diagram sources**
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L16-L102)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L12-L31)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L138-L171)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L174-L211)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L27-L33)
-
-**Section sources**
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L1-L103)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L1-L254)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L1-L33)
-
-### Data Models and Field Definitions
+### Data models and field definitions
 - ColdMailRequest
   - recipient_name: Required, min length enforced.
   - recipient_designation: Required, min length enforced.
@@ -316,13 +221,7 @@ API-->>FE : "JSON {success, message, body}"
   - message: String default success message.
   - body: Generated cover letter content.
 
-**Section sources**
-- [request.py](file://backend/app/models/cold_mail/request.py#L1-L44)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py#L1-L52)
-- [response.py](file://backend/app/models/cold_mail/response.py#L1-L10)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L1-L33)
-
-### Relationship Patterns and Foreign Keys
+### Relationship patterns and foreign keys
 - Session and Record Entities
   - Frontend types define session and entry structures with identifiers and timestamps.
   - Sessions group related records (emails or letters) by recipient/company and creation time.
@@ -365,16 +264,7 @@ ColdMailSession --> ColdMailEmail : "contains"
 CoverLetterSession --> CoverLetterEntry : "contains"
 ```
 
-**Diagram sources**
-- [cold-mail.ts](file://frontend/types/cold-mail.ts#L8-L15)
-- [cold-mail.ts](file://frontend/types/cold-mail.ts#L1-L6)
-- [cover-letter.ts](file://frontend/types/cover-letter.ts#L1-L13)
-
-**Section sources**
-- [cold-mail.ts](file://frontend/types/cold-mail.ts#L1-L45)
-- [cover-letter.ts](file://frontend/types/cover-letter.ts#L1-L39)
-
-### JSON Storage Approach for Dynamic Content
+### JSON storage approach for dynamic content
 - Cold Email Generation
   - LLM responses are parsed for JSON blocks containing subject and body.
   - The service supports raw JSON, fenced JSON, and embedded JSON extraction.
@@ -392,7 +282,7 @@ Start(["LLM Response"]) --> Detect["Detect JSON format<br/>{} or
 ```json ... ```"]
   Detect --> Parse{"Valid JSON?"}
   Parse -->|Yes| Extract["Extract subject and body"]
-  Parse -->|No| Search["Search for first { ... } block"]
+  Parse -->|No| Search["Search for first {... } block"]
   Search --> Found{"Found block?"}
   Found -->|Yes| Validate["Validate non-empty JSON"]
   Found -->|No| Error["Raise error: invalid JSON"]
@@ -402,14 +292,7 @@ Start(["LLM Response"]) --> Detect["Detect JSON format<br/>{} or
   Extract --> Return
 ```
 
-**Diagram sources**
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L47-L118)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L169-L238)
-
-**Section sources**
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L1-L540)
-
-### Workflow Patterns, Approval, and Version Management
+### Workflow patterns, approval, and version management
 - Workflow Pattern
   - File-based and text-based ingestion paths for cold emails.
   - Cover letter generation supports URL-based job description resolution.
@@ -423,13 +306,7 @@ Start(["LLM Response"]) --> Detect["Detect JSON format<br/>{} or
   - Add explicit approval flags and version fields in persistent models.
   - Track request/response pairs with correlation IDs for auditability.
 
-**Section sources**
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L1-L150)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L1-L103)
-- [cold-mail.ts](file://frontend/types/cold-mail.ts#L1-L45)
-- [cover-letter.ts](file://frontend/types/cover-letter.ts#L1-L39)
-
-### Data Retention, Audit Trails, and Compliance
+### Data retention, audit trails, and compliance
 - Data Retention
   - Implement lifecycle policies for sessions and entries (e.g., auto-delete after X months).
 
@@ -443,7 +320,7 @@ Start(["LLM Response"]) --> Detect["Detect JSON format<br/>{} or
 
 [No sources needed since this section provides general guidance]
 
-## Dependency Analysis
+## Dependency analysis
 The backend composes routes → services → models, with AI/ML integration and optional document processing.
 
 ```mermaid
@@ -459,29 +336,7 @@ SVC_IMPL_COLD --> RESP_COLD["models/cold_mail/response.py"]
 SVC_IMPL_COVER --> MODELS_COVER["models/cover_letter/schemas.py"]
 ```
 
-**Diagram sources**
-- [cold-mail.service.ts](file://frontend/services/cold-mail.service.ts#L1-L37)
-- [cover-letter.service.ts](file://frontend/services/cover-letter.service.ts#L1-L34)
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L1-L150)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L1-L103)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L1-L540)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L1-L254)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py#L1-L52)
-- [response.py](file://backend/app/models/cold_mail/response.py#L1-L10)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L1-L33)
-
-**Section sources**
-- [cold_mail.py](file://backend/app/routes/cold_mail.py#L1-L150)
-- [cover_letter.py](file://backend/app/routes/cover_letter.py#L1-L103)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L1-L540)
-- [cover_letter.py](file://backend/app/services/cover_letter.py#L1-L254)
-- [schemas.py](file://backend/app/models/cold_mail/schemas.py#L1-L52)
-- [response.py](file://backend/app/models/cold_mail/response.py#L1-L10)
-- [schemas.py](file://backend/app/models/cover_letter/schemas.py#L1-L33)
-- [cold-mail.service.ts](file://frontend/services/cold-mail.service.ts#L1-L37)
-- [cover-letter.service.ts](file://frontend/services/cover-letter.service.ts#L1-L34)
-
-## Performance Considerations
+## Performance considerations
 - LLM Invocation
   - Batch or cache repeated prompts where feasible.
   - Limit prompt sizes and enforce max word counts to reduce latency.
@@ -495,7 +350,7 @@ SVC_IMPL_COVER --> MODELS_COVER["models/cover_letter/schemas.py"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - JSON Parsing Failures
   - Symptoms: Errors indicating invalid or missing JSON in LLM responses.
   - Actions: Verify prompt formatting, ensure fenced JSON blocks when expected, and validate extracted substrings.
@@ -512,22 +367,10 @@ SVC_IMPL_COVER --> MODELS_COVER["models/cover_letter/schemas.py"]
   - Symptoms: HTTP exceptions raised by services.
   - Actions: Inspect request payloads, LLM availability, and error details returned by services.
 
-**Section sources**
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L55-L118)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L177-L238)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L283-L307)
-- [cold_mail.py](file://backend/app/services/cold_mail.py#L378-L402)
-
 ## Conclusion
-The Communication Records subsystem provides robust request-response schemas for cold email and cover letter generation, integrates with AI/ML services, and exposes consistent models to the frontend. While current implementations focus on generation and editing, extending with approval, versioning, retention, and audit capabilities will strengthen operational and compliance readiness.
+The Communication Records subsystem provides reliable request-response schemas for cold email and cover letter generation, integrates with AI/ML services, and exposes consistent models to the frontend. While current implementations focus on generation and editing, extending with approval, versioning, retention, and audit capabilities will strengthen operational and compliance readiness.
 
 ## Appendices
 - Frontend Contracts
   - Cold Mail: Session and entry types with timestamps and optional identifiers.
   - Cover Letter: Session and entry types mirroring the cold mail structure.
-
-**Section sources**
-- [cold-mail.ts](file://frontend/types/cold-mail.ts#L1-L45)
-- [cover-letter.ts](file://frontend/types/cover-letter.ts#L1-L39)
-- [cold-mail.service.ts](file://frontend/services/cold-mail.service.ts#L1-L37)
-- [cover-letter.service.ts](file://frontend/services/cover-letter.service.ts#L1-L34)

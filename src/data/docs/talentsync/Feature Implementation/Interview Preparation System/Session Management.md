@@ -1,33 +1,9 @@
-# Session Management
-
-<cite>
-**Referenced Files in This Document**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py)
-- [graph.py](file://backend/app/services/interview/graph.py)
-- [interview.py](file://backend/app/routes/interview.py)
-- [schemas.py](file://backend/app/models/interview/schemas.py)
-- [enums.py](file://backend/app/models/interview/enums.py)
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts)
-- [interview.service.ts](file://frontend/services/interview.service.ts)
-- [interview.ts](file://frontend/types/interview.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Session management
 
 ## Introduction
-This document provides a comprehensive guide to the Session Management component for digital interviews. It explains the interview session lifecycle from creation to termination, including state tracking, progress monitoring, and real-time synchronization. It documents the SessionManager class, session persistence strategies, configuration options, participant management, access control, and frontend integration via React Query hooks. It also covers workflows such as session resumption, timeout handling, and audit trail maintenance for compliance.
+This page provides a detailed guide to the Session Management component for digital interviews. It explains the interview session lifecycle from creation to termination, including state tracking, progress monitoring, and real-time synchronization. It documents the SessionManager class, session persistence strategies, configuration options, participant management, access control, and frontend integration via React Query hooks. It also covers workflows such as session resumption, timeout handling, and audit trail maintenance for compliance.
 
-## Project Structure
+## Project structure
 The Session Management feature spans backend services and models, FastAPI routes, and frontend React Query hooks:
 - Backend Python modules define interview data models, session lifecycle, and orchestration.
 - FastAPI routes expose endpoints for session CRUD, answer submission, code execution, and event recording.
@@ -53,27 +29,7 @@ IG --> SM
 IG --> MD
 ```
 
-**Diagram sources**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L15-L257)
-- [graph.py](file://backend/app/services/interview/graph.py#L23-L511)
-- [interview.py](file://backend/app/routes/interview.py#L23-L494)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L22-L169)
-- [enums.py](file://backend/app/models/interview/enums.py#L6-L43)
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts#L1-L44)
-- [interview.service.ts](file://frontend/services/interview.service.ts#L1-L18)
-- [interview.ts](file://frontend/types/interview.ts#L1-L21)
-
-**Section sources**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L15-L257)
-- [graph.py](file://backend/app/services/interview/graph.py#L23-L511)
-- [interview.py](file://backend/app/routes/interview.py#L23-L494)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L22-L169)
-- [enums.py](file://backend/app/models/interview/enums.py#L6-L43)
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts#L1-L44)
-- [interview.service.ts](file://frontend/services/interview.service.ts#L1-L18)
-- [interview.ts](file://frontend/types/interview.ts#L1-L21)
-
-## Core Components
+## Core components
 - SessionManager: In-memory session and event storage with lifecycle operations (create, start, complete, cancel, delete, list, cleanup).
 - InterviewGraph: Orchestrates session creation, question progression, answer evaluation, code execution, and summary generation.
 - FastAPI Routes: Expose endpoints for session management, answer submission (streaming and non-streaming), code execution, summary generation, and event recording.
@@ -85,14 +41,7 @@ Key responsibilities:
 - Audit and integrity: event recording for tab switches and focus changes.
 - Persistence strategy: current in-memory storage with production extension points to PostgreSQL.
 
-**Section sources**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L15-L257)
-- [graph.py](file://backend/app/services/interview/graph.py#L23-L511)
-- [interview.py](file://backend/app/routes/interview.py#L65-L494)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L72-L104)
-- [enums.py](file://backend/app/models/interview/enums.py#L14-L43)
-
-## Architecture Overview
+## Architecture overview
 The system follows a layered architecture:
 - Presentation: FastAPI routes handle HTTP requests and responses, including SSE streaming.
 - Application: InterviewGraph coordinates services and manages session state transitions.
@@ -118,12 +67,7 @@ IG-->>API : evaluation + next_question
 API-->>FE : {score, feedback, next_question, is_complete}
 ```
 
-**Diagram sources**
-- [interview.py](file://backend/app/routes/interview.py#L65-L186)
-- [graph.py](file://backend/app/services/interview/graph.py#L49-L168)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L28-L52)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### SessionManager
 Responsibilities:
@@ -159,12 +103,6 @@ class SessionManager {
 }
 ```
 
-**Diagram sources**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L15-L257)
-
-**Section sources**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L15-L257)
-
 ### InterviewGraph
 Responsibilities:
 - Orchestrate the interview flow: create session, generate questions, evaluate answers, execute code, and generate summaries.
@@ -191,15 +129,7 @@ NextQ --> |No| Complete["complete_interview(session_id)"]
 Complete --> End([End])
 ```
 
-**Diagram sources**
-- [graph.py](file://backend/app/services/interview/graph.py#L49-L168)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L172-L217)
-
-**Section sources**
-- [graph.py](file://backend/app/services/interview/graph.py#L23-L511)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L15-L257)
-
-### Interview Session Lifecycle
+### Interview session lifecycle
 Lifecycle stages:
 - Creation: SessionManager creates a session with PENDING status and initializes events list.
 - Start: InterviewGraph starts the session, sets IN_PROGRESS and started_at.
@@ -217,15 +147,7 @@ Completed --> [*]
 Cancelled --> [*]
 ```
 
-**Diagram sources**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L172-L217)
-- [enums.py](file://backend/app/models/interview/enums.py#L14-L21)
-
-**Section sources**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L172-L217)
-- [enums.py](file://backend/app/models/interview/enums.py#L14-L21)
-
-### Session Configuration Options
+### Session configuration options
 InterviewConfig supports:
 - Role and optional template/topic.
 - Number of questions and difficulty distribution.
@@ -234,19 +156,12 @@ InterviewConfig supports:
 
 These options influence question generation and session behavior.
 
-**Section sources**
-- [schemas.py](file://backend/app/models/interview/schemas.py#L55-L70)
-
-### Participant Management and Access Control
+### Participant management and access control
 - Session retrieval and mutations require a valid session_id; routes return 404 if not found.
 - Event recording requires a valid session_id and supports event type validation.
 - No explicit user identity is modeled in the session data; access control can be enforced at the route level using authentication middleware.
 
-**Section sources**
-- [interview.py](file://backend/app/routes/interview.py#L94-L119)
-- [interview.py](file://backend/app/routes/interview.py#L420-L450)
-
-### Real-Time State Synchronization
+### Real-Time state synchronization
 Streaming endpoints:
 - Answer submission streaming: yields partial evaluation chunks and a final complete event.
 - Code execution streaming: yields execution result followed by code review chunks and a final complete event.
@@ -254,13 +169,7 @@ Streaming endpoints:
 
 SSE generator converts async generators to Server-Sent Events with appropriate event types.
 
-**Section sources**
-- [interview.py](file://backend/app/routes/interview.py#L188-L224)
-- [interview.py](file://backend/app/routes/interview.py#L257-L295)
-- [interview.py](file://backend/app/routes/interview.py#L386-L414)
-- [interview.py](file://backend/app/routes/interview.py#L29-L39)
-
-### Session Persistence Strategies
+### Session persistence strategies
 Current implementation:
 - In-memory storage via SessionManager dictionaries for sessions and events.
 
@@ -268,36 +177,21 @@ Production extension points:
 - Routes demonstrate persistence via SessionManager; production can integrate PostgreSQL using asyncpg or ORM.
 - The comment in SessionManager indicates extending persistence to PostgreSQL.
 
-**Section sources**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L16-L20)
-- [interview.py](file://backend/app/routes/interview.py#L110-L119)
-
-### Audit Trail and Integrity Tracking
+### Audit trail and integrity tracking
 - InterviewEvent captures session_id, event_type, timestamp, and metadata.
 - Tab switch counting is maintained and exposed; excessive tab switches can be flagged for review.
 - Focus gained/lost and other events are supported for integrity tracking.
 
-**Section sources**
-- [schemas.py](file://backend/app/models/interview/schemas.py#L96-L104)
-- [enums.py](file://backend/app/models/interview/enums.py#L33-L43)
-- [interview.py](file://backend/app/routes/interview.py#L420-L450)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L113-L133)
-
-### Frontend Integration with React Hooks
+### Frontend integration with React hooks
 Frontend hooks:
 - use-interviews.ts integrates with the backend via interview.service.ts to fetch and mutate interview data.
 - Types in interview.ts define the shape of interview sessions and requests.
 
 Note: The provided frontend files primarily cover generic interview data fetching and deletion. Specific interview session state management and real-time updates would typically be handled by additional hooks and services aligned with the backend streaming endpoints.
 
-**Section sources**
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts#L1-L44)
-- [interview.service.ts](file://frontend/services/interview.service.ts#L1-L18)
-- [interview.ts](file://frontend/types/interview.ts#L1-L21)
+### Examples of session workflows
 
-### Examples of Session Workflows
-
-#### Workflow 1: Basic Interview from Setup to Completion
+#### Workflow 1: basic interview from setup to completion
 - Create session with profile and config.
 - Start interview (status becomes IN_PROGRESS).
 - Submit answers; session progresses through questions.
@@ -329,13 +223,7 @@ IG-->>API : summary
 API-->>FE : summary
 ```
 
-**Diagram sources**
-- [interview.py](file://backend/app/routes/interview.py#L65-L186)
-- [interview.py](file://backend/app/routes/interview.py#L343-L384)
-- [graph.py](file://backend/app/services/interview/graph.py#L49-L168)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L65-L72)
-
-#### Workflow 2: Timeout Handling and Cleanup
+#### Workflow 2: timeout handling and cleanup
 - Old sessions can be removed after a configurable threshold (hours).
 - Health endpoint reports active session count.
 
@@ -351,44 +239,25 @@ Keep --> Scan
 Scan --> Done([Done])
 ```
 
-**Diagram sources**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L223-L244)
-- [interview.py](file://backend/app/routes/interview.py#L486-L494)
-
-#### Workflow 3: Session Resumption
+#### Workflow 3: session resumption
 - Current in-memory implementation does not persist state across restarts.
 - To support resumption, integrate SessionManager with persistent storage (e.g., PostgreSQL) and restore sessions on startup.
 
-**Section sources**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L16-L20)
-
-### Concurrent Session Handling
+### Concurrent session handling
 - SessionManager uses in-memory dictionaries keyed by session_id, enabling concurrent access within a single process.
 - For multi-instance deployments, replace in-memory storage with a shared database and add locking or optimistic concurrency controls.
 
-**Section sources**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L22-L26)
-
-### Session Security Measures
+### Session security measures
 - Session existence checks are performed before mutating state (routes return 404 if not found).
 - Event recording validates session presence.
 - No built-in user identity is attached to sessions; enforce access control at the route level using authentication and authorization middleware.
 
-**Section sources**
-- [interview.py](file://backend/app/routes/interview.py#L94-L119)
-- [interview.py](file://backend/app/routes/interview.py#L420-L450)
-
-### Compliance and Audit Trail Maintenance
+### Compliance and audit trail maintenance
 - InterviewEvent captures timestamps and metadata for each event.
 - Tab switch counts and other event types enable integrity monitoring.
 - Summaries and scores are persisted with the session for final audit records.
 
-**Section sources**
-- [schemas.py](file://backend/app/models/interview/schemas.py#L96-L104)
-- [enums.py](file://backend/app/models/interview/enums.py#L33-L43)
-- [graph.py](file://backend/app/services/interview/graph.py#L373-L405)
-
-## Dependency Analysis
+## Dependency analysis
 The following diagram shows key dependencies among components:
 
 ```mermaid
@@ -400,49 +269,25 @@ FE_Hooks["use-interviews.ts"] --> FE_Svc["interview.service.ts"]
 FE_Svc --> RT
 ```
 
-**Diagram sources**
-- [interview.py](file://backend/app/routes/interview.py#L23-L494)
-- [graph.py](file://backend/app/services/interview/graph.py#L23-L511)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L15-L257)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L22-L169)
-- [enums.py](file://backend/app/models/interview/enums.py#L6-L43)
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts#L1-L44)
-- [interview.service.ts](file://frontend/services/interview.service.ts#L1-L18)
-
-**Section sources**
-- [interview.py](file://backend/app/routes/interview.py#L23-L494)
-- [graph.py](file://backend/app/services/interview/graph.py#L23-L511)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L15-L257)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L22-L169)
-- [enums.py](file://backend/app/models/interview/enums.py#L6-L43)
-- [use-interviews.ts](file://frontend/hooks/queries/use-interviews.ts#L1-L44)
-- [interview.service.ts](file://frontend/services/interview.service.ts#L1-L18)
-
-## Performance Considerations
+## Performance considerations
 - In-memory storage is efficient but not persistent; consider database-backed storage for production.
 - Streaming endpoints reduce client wait times; ensure proper buffering and backpressure handling.
 - Cleanup_old_sessions helps control memory usage; tune max_age_hours based on retention policies.
 - Consider indexing and pagination for list_sessions when scaling.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Session not found: Ensure session_id is valid and created before use. Routes return 404 for missing sessions.
 - Question mismatch: When submitting answers, the provided question_id must match the current question; otherwise, validation errors are raised.
 - Excessive tab switches: Tab switch count is tracked; flag sessions with high counts for review.
 - Streaming errors: SSE generator emits error events; inspect client-side event handlers for error payloads.
 
-**Section sources**
-- [interview.py](file://backend/app/routes/interview.py#L94-L119)
-- [interview.py](file://backend/app/routes/interview.py#L154-L186)
-- [interview.py](file://backend/app/routes/interview.py#L420-L450)
-- [interview.py](file://backend/app/routes/interview.py#L29-L39)
-
 ## Conclusion
-The Session Management component provides a robust foundation for managing interview sessions with clear lifecycle stages, real-time streaming capabilities, and event-driven integrity tracking. While the current implementation uses in-memory storage, the architecture supports straightforward persistence integration for production environments. Frontend integration can be extended to leverage streaming endpoints and centralized state management for a seamless user experience.
+The Session Management component provides a reliable foundation for managing interview sessions with clear lifecycle stages, real-time streaming capabilities, and event-driven integrity tracking. While the current implementation uses in-memory storage, the architecture supports straightforward persistence integration for production environments. Frontend integration can be extended to use streaming endpoints and centralized state management for a smooth user experience.
 
 ## Appendices
 
-### API Reference Summary
+### API reference summary
 - Create session: POST /interview/sessions
 - Get session: GET /interview/sessions/{session_id}
 - Delete session: DELETE /interview/sessions/{session_id}
@@ -457,6 +302,3 @@ The Session Management component provides a robust foundation for managing inter
 - Record event: POST /interview/sessions/{session_id}/events
 - Get events: GET /interview/sessions/{session_id}/events
 - Health: GET /interview/health
-
-**Section sources**
-- [interview.py](file://backend/app/routes/interview.py#L65-L494)

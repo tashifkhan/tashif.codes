@@ -1,39 +1,9 @@
-# Technical Architecture Overview
-
-<cite>
-**Referenced Files in This Document**
-- [docker-compose.yaml](file://docker-compose.yaml)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml)
-- [backend/Dockerfile](file://backend/Dockerfile)
-- [frontend/Dockerfile](file://frontend/Dockerfile)
-- [backend/pyproject.toml](file://backend/pyproject.toml)
-- [frontend/package.json](file://frontend/package.json)
-- [backend/app/main.py](file://backend/app/main.py)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py)
-- [backend/app/routes/llm.py](file://backend/app/routes/llm.py)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py)
-- [frontend/app/layout.tsx](file://frontend/app/layout.tsx)
-- [frontend/lib/prisma.ts](file://frontend/lib/prisma.ts)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Technical architecture overview
 
 ## Introduction
-This document presents the technical architecture overview for TalentSync-Normies, a microservices-based platform integrating a Next.js frontend, a FastAPI backend, an AI/ML orchestration layer powered by LangChain, a PostgreSQL database, and containerized deployment via Docker. The system emphasizes modular, independently scalable components with clear separation of concerns across frontend UI, backend APIs, AI/ML processing, and persistent storage. It also documents cross-cutting concerns such as security, observability, and performance optimization, along with deployment topologies suitable for development and production environments.
+This page presents the technical architecture overview for TalentSync-Normies, a microservices-based platform integrating a Next.js frontend, a FastAPI backend, an AI/ML orchestration layer powered by LangChain, a PostgreSQL database, and containerized deployment via Docker. The system emphasizes modular, independently scalable components with clear separation of concerns across frontend UI, backend APIs, AI/ML processing, and persistent storage. It also documents cross-cutting concerns such as security, observability, and performance optimization, along with deployment topologies suitable for development and production environments.
 
-## Project Structure
+## Project structure
 The repository is organized into four primary areas:
 - Frontend: Next.js application with TypeScript, React components, client-side services, and Prisma ORM integration.
 - Backend: FastAPI application written in Python, exposing REST endpoints and orchestrating AI/ML workflows.
@@ -74,23 +44,7 @@ DOCKER_PROD --> BE_MAIN
 DOCKER_PROD --> DB
 ```
 
-**Diagram sources**
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py#L1-L94)
-- [frontend/app/layout.tsx](file://frontend/app/layout.tsx#L1-L52)
-- [frontend/lib/prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L1-L125)
-
-**Section sources**
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-- [backend/Dockerfile](file://backend/Dockerfile#L1-L33)
-- [frontend/Dockerfile](file://frontend/Dockerfile#L1-L110)
-
-## Core Components
+## Core components
 - Next.js Frontend
   - Provides the user interface, client-side services, and Prisma integration for database operations.
   - Uses a centralized API client for backend communication and a shared Prisma client instance.
@@ -104,16 +58,7 @@ DOCKER_PROD --> DB
   - Persistent relational store accessed by both frontend (Prisma) and backend (direct connection via environment).
   - Managed via Docker volumes and health-checked in production compose.
 
-**Section sources**
-- [frontend/app/layout.tsx](file://frontend/app/layout.tsx#L1-L52)
-- [frontend/lib/prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L1-L125)
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py#L1-L94)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L1-L50)
-
-## Architecture Overview
+## Architecture overview
 The system follows a microservices design with clear boundaries:
 - Frontend (Next.js) communicates with the Backend (FastAPI) over HTTP.
 - Backend integrates with PostgreSQL for persistence and with external AI/ML providers via LangChain.
@@ -137,16 +82,9 @@ FastAPI --> DB
 LLMHelpers --> DB
 ```
 
-**Diagram sources**
-- [frontend/app/layout.tsx](file://frontend/app/layout.tsx#L1-L52)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L1-L125)
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py#L1-L94)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Frontend (Next.js) Component Analysis
+### Frontend (Next.js) component analysis
 - Application bootstrap and theme providers are defined in the root layout.
 - Prisma client is initialized globally to avoid multiple instances during development and production.
 - API client encapsulates HTTP requests, error handling, and JSON parsing for backend responses.
@@ -165,17 +103,7 @@ Backend-->>Client : "JSON response"
 Client-->>UI : "Parsed data or error"
 ```
 
-**Diagram sources**
-- [frontend/app/layout.tsx](file://frontend/app/layout.tsx#L1-L52)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L1-L125)
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-
-**Section sources**
-- [frontend/app/layout.tsx](file://frontend/app/layout.tsx#L1-L52)
-- [frontend/lib/prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-- [frontend/services/api-client.ts](file://frontend/services/api-client.ts#L1-L125)
-
-### Backend (FastAPI) Component Analysis
+### Backend (FastAPI) component analysis
 - Central FastAPI application registers middleware for request ID propagation and request/response logging.
 - CORS is configured via settings, and routes are grouped by feature and version (v1/v2).
 - LLM configuration and testing endpoints enable dynamic provider selection and validation.
@@ -194,17 +122,7 @@ LLM-->>Backend : "LLMTestResponse"
 Backend-->>Client : "JSON result"
 ```
 
-**Diagram sources**
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-- [backend/app/routes/llm.py](file://backend/app/routes/llm.py#L1-L50)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-- [backend/app/routes/llm.py](file://backend/app/routes/llm.py#L1-L50)
-- [backend/app/core/settings.py](file://backend/app/core/settings.py#L1-L50)
-
-### AI/ML Orchestration Component Analysis
+### AI/ML orchestration component analysis
 - LLM factory supports multiple providers and temperature handling, with fallbacks and defaults.
 - JSON parsing helpers normalize LLM outputs and extract structured data for downstream services.
 - Dependency resolver selects either per-request LLM configuration or server defaults.
@@ -218,17 +136,7 @@ Invoke --> Parse["parse_llm_json()"]
 Parse --> Return["Structured JSON"]
 ```
 
-**Diagram sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py#L1-L94)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L39-L68)
-
-**Section sources**
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-- [backend/app/services/llm_helpers.py](file://backend/app/services/llm_helpers.py#L1-L94)
-- [backend/app/core/deps.py](file://backend/app/core/deps.py#L39-L68)
-
-### Database Layer Component Analysis
+### Database layer component analysis
 - PostgreSQL is orchestrated via Docker Compose with named volumes for persistence.
 - Production compose adds health checks and explicit network segmentation.
 - Frontend uses Prisma client for type-safe database operations; backend connects directly via environment-derived URLs.
@@ -242,18 +150,7 @@ Prisma --> DB
 Backend --> DB
 ```
 
-**Diagram sources**
-- [frontend/lib/prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-
-**Section sources**
-- [frontend/lib/prisma.ts](file://frontend/lib/prisma.ts#L1-L10)
-- [docker-compose.yaml](file://docker-compose.yaml#L1-L78)
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L1-L105)
-
-## Dependency Analysis
+## Dependency analysis
 - Technology Stack Choices
   - Frontend: Next.js with React, TypeScript, Prisma, and Radix UI components.
   - Backend: FastAPI with Python, LangChain, and LangGraph for agent/graph workflows.
@@ -272,18 +169,7 @@ BE --> DB["PostgreSQL"]
 FE --> DB
 ```
 
-**Diagram sources**
-- [frontend/package.json](file://frontend/package.json#L1-L114)
-- [backend/pyproject.toml](file://backend/pyproject.toml#L1-L42)
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-- [backend/app/core/llm.py](file://backend/app/core/llm.py#L1-L181)
-
-**Section sources**
-- [frontend/package.json](file://frontend/package.json#L1-L114)
-- [backend/pyproject.toml](file://backend/pyproject.toml#L1-L42)
-- [backend/app/main.py](file://backend/app/main.py#L1-L203)
-
-## Performance Considerations
+## Performance considerations
 - Container Images
   - Backend Dockerfile uses a slim Python base and caches dependencies via uv for faster builds.
   - Frontend Dockerfile employs multi-stage builds to minimize runtime footprint and improve startup times.
@@ -298,7 +184,7 @@ FE --> DB
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Environment Variables
   - Ensure database and LLM provider keys are present in environment files consumed by Docker Compose.
 - Health Checks
@@ -308,10 +194,5 @@ FE --> DB
 - Logging
   - Review request/response logs emitted by the backend middleware for debugging payload issues.
 
-**Section sources**
-- [docker-compose.prod.yaml](file://docker-compose.prod.yaml#L15-L23)
-- [backend/app/routes/llm.py](file://backend/app/routes/llm.py#L1-L50)
-- [backend/app/main.py](file://backend/app/main.py#L82-L131)
-
 ## Conclusion
-TalentSync-Normies adopts a clean microservices architecture with a Next.js frontend, FastAPI backend, LangChain-powered AI/ML orchestration, and PostgreSQL persistence, all containerized for reliable development and production deployments. The design supports independent scaling, robust provider flexibility, and strong operational visibility. By leveraging Docker Compose and multi-stage builds, the platform balances developer productivity with efficient resource utilization and maintainable CI/CD pipelines.
+TalentSync-Normies adopts a clean microservices architecture with a Next.js frontend, FastAPI backend, LangChain-powered AI/ML orchestration, and PostgreSQL persistence, all containerized for reliable development and production deployments. The design supports independent scaling, reliable provider flexibility, and strong operational visibility. By using Docker Compose and multi-stage builds, the platform balances developer productivity with efficient resource utilization and maintainable CI/CD pipelines.

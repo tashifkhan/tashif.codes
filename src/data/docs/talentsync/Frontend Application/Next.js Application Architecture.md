@@ -1,42 +1,9 @@
-# Next.js Application Architecture
-
-<cite>
-**Referenced Files in This Document**
-- [next.config.js](file://frontend/next.config.js)
-- [package.json](file://frontend/package.json)
-- [tsconfig.json](file://frontend/tsconfig.json)
-- [instrumentation-client.ts](file://frontend/instrumentation-client.ts)
-- [proxy.ts](file://frontend/proxy.ts)
-- [app/layout.tsx](file://frontend/app/layout.tsx)
-- [app/layout-content.tsx](file://frontend/app/layout-content.tsx)
-- [app/providers.tsx](file://frontend/app/providers.tsx)
-- [app/page.tsx](file://frontend/app/page.tsx)
-- [app/error.tsx](file://frontend/app/error.tsx)
-- [app/not-found.tsx](file://frontend/app/not-found.tsx)
-- [app/global-error.tsx](file://frontend/app/global-error.tsx)
-- [lib/auth-options.ts](file://frontend/lib/auth-options.ts)
-- [lib/navigation.ts](file://frontend/lib/navigation.ts)
-- [tailwind.config.ts](file://frontend/tailwind.config.ts)
-- [postcss.config.js](file://frontend/postcss.config.js)
-- [public/manifest.json](file://frontend/public/manifest.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Next.js application architecture
 
 ## Introduction
-This document provides comprehensive documentation for the Next.js application architecture. It explains the App Router structure, page organization, and component hierarchy. It documents the application layout system, providers setup, and global configuration. It details the build configuration including PWA setup, image optimization, webpack customization, and external package handling. It covers routing patterns, middleware integration, and deployment considerations. It also addresses performance optimization strategies, code splitting, and bundle analysis, along with TypeScript configuration and type safety implementation throughout the application.
+This page provides detailed documentation for the Next.js application architecture. It explains the App Router structure, page organization, and component hierarchy. It documents the application layout system, providers setup, and global configuration. It details the build configuration including PWA setup, image optimization, webpack customization, and external package handling. It covers routing patterns, middleware integration, and deployment considerations. It also addresses performance optimization strategies, code splitting, and bundle analysis, along with TypeScript configuration and type safety implementation throughout the application.
 
-## Project Structure
+## Project structure
 The frontend application follows Next.js App Router conventions with a strict file-system-based routing structure under the app directory. Pages are organized by feature and route segments, with nested layouts and providers at the root level. Utility libraries and services are modularized under dedicated folders, while UI components are structured by feature and shared patterns.
 
 Key structural highlights:
@@ -96,32 +63,8 @@ NEXT_CONFIG --> POSTCSS
 NEXT_CONFIG --> MANIFEST
 ```
 
-**Diagram sources**
-- [app/layout.tsx](file://frontend/app/layout.tsx#L1-L52)
-- [app/layout-content.tsx](file://frontend/app/layout-content.tsx#L1-L34)
-- [app/providers.tsx](file://frontend/app/providers.tsx#L1-L38)
-- [app/page.tsx](file://frontend/app/page.tsx#L1-L27)
-- [app/error.tsx](file://frontend/app/error.tsx#L1-L28)
-- [app/not-found.tsx](file://frontend/app/not-found.tsx#L1-L78)
-- [app/global-error.tsx](file://frontend/app/global-error.tsx#L1-L32)
-- [next.config.js](file://frontend/next.config.js#L1-L90)
-- [tsconfig.json](file://frontend/tsconfig.json#L1-L43)
-- [tailwind.config.ts](file://frontend/tailwind.config.ts#L1-L135)
-- [postcss.config.js](file://frontend/postcss.config.js#L1-L7)
-- [public/manifest.json](file://frontend/public/manifest.json#L1-L65)
-
-**Section sources**
-- [app/layout.tsx](file://frontend/app/layout.tsx#L1-L52)
-- [app/layout-content.tsx](file://frontend/app/layout-content.tsx#L1-L34)
-- [app/providers.tsx](file://frontend/app/providers.tsx#L1-L38)
-- [next.config.js](file://frontend/next.config.js#L1-L90)
-- [tsconfig.json](file://frontend/tsconfig.json#L1-L43)
-- [tailwind.config.ts](file://frontend/tailwind.config.ts#L1-L135)
-- [postcss.config.js](file://frontend/postcss.config.js#L1-L7)
-- [public/manifest.json](file://frontend/public/manifest.json#L1-L65)
-
-## Core Components
-This section outlines the foundational components that define the application’s layout, providers, and global configuration.
+## Core components
+This section outlines the foundational components that define the application's layout, providers, and global configuration.
 
 - Root layout and metadata: Defines application metadata, fonts, and the root HTML wrapper with theme and manifest integration.
 - Layout content: Provides the main content area with navigation, sidebar provider, and toast notifications.
@@ -130,29 +73,16 @@ This section outlines the foundational components that define the application’
 - Tooling configuration: Next.js configuration for PWA, images, webpack, and PostHog proxying; TypeScript strictness and module resolution; Tailwind and PostCSS setup.
 
 Key implementation references:
-- Root layout and metadata: [app/layout.tsx](file://frontend/app/layout.tsx#L1-L52)
-- Layout content and sidebar provider: [app/layout-content.tsx](file://frontend/app/layout-content.tsx#L1-L34)
-- Providers and React Query configuration: [app/providers.tsx](file://frontend/app/providers.tsx#L1-L38)
-- Global error and not-found handlers: [app/error.tsx](file://frontend/app/error.tsx#L1-L28), [app/not-found.tsx](file://frontend/app/not-found.tsx#L1-L78), [app/global-error.tsx](file://frontend/app/global-error.tsx#L1-L32)
-- Next.js configuration: [next.config.js](file://frontend/next.config.js#L1-L90)
-- TypeScript configuration: [tsconfig.json](file://frontend/tsconfig.json#L1-L43)
-- Tailwind and PostCSS: [tailwind.config.ts](file://frontend/tailwind.config.ts#L1-L135), [postcss.config.js](file://frontend/postcss.config.js#L1-L7)
-- PWA manifest: [public/manifest.json](file://frontend/public/manifest.json#L1-L65)
+- Root layout and metadata: `app/layout.tsx`
+- Layout content and sidebar provider: `app/layout-content.tsx`
+- Providers and React Query configuration: `app/providers.tsx`
+- Global error and not-found handlers: `app/error.tsx`, `app/not-found.tsx`, `app/global-error.tsx`
+- Next.js configuration: `next.config.js`
+- TypeScript configuration: `tsconfig.json`
+- Tailwind and PostCSS: `tailwind.config.ts`, `postcss.config.js`
+- PWA manifest: `public/manifest.json`
 
-**Section sources**
-- [app/layout.tsx](file://frontend/app/layout.tsx#L1-L52)
-- [app/layout-content.tsx](file://frontend/app/layout-content.tsx#L1-L34)
-- [app/providers.tsx](file://frontend/app/providers.tsx#L1-L38)
-- [app/error.tsx](file://frontend/app/error.tsx#L1-L28)
-- [app/not-found.tsx](file://frontend/app/not-found.tsx#L1-L78)
-- [app/global-error.tsx](file://frontend/app/global-error.tsx#L1-L32)
-- [next.config.js](file://frontend/next.config.js#L1-L90)
-- [tsconfig.json](file://frontend/tsconfig.json#L1-L43)
-- [tailwind.config.ts](file://frontend/tailwind.config.ts#L1-L135)
-- [postcss.config.js](file://frontend/postcss.config.js#L1-L7)
-- [public/manifest.json](file://frontend/public/manifest.json#L1-L65)
-
-## Architecture Overview
+## Architecture overview
 The application architecture centers around the Next.js App Router with a layered approach:
 - Presentation layer: Root layout, layout content, and feature pages
 - State management: Session and query providers for authentication and data fetching
@@ -189,20 +119,9 @@ CLIENT --> POSTHOG
 NEXT --> MANIFEST
 ```
 
-**Diagram sources**
-- [app/layout.tsx](file://frontend/app/layout.tsx#L1-L52)
-- [app/layout-content.tsx](file://frontend/app/layout-content.tsx#L1-L34)
-- [app/providers.tsx](file://frontend/app/providers.tsx#L1-L38)
-- [lib/navigation.ts](file://frontend/lib/navigation.ts#L1-L116)
-- [proxy.ts](file://frontend/proxy.ts#L1-L31)
-- [lib/auth-options.ts](file://frontend/lib/auth-options.ts#L1-L202)
-- [next.config.js](file://frontend/next.config.js#L1-L90)
-- [instrumentation-client.ts](file://frontend/instrumentation-client.ts#L1-L12)
-- [public/manifest.json](file://frontend/public/manifest.json#L1-L65)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Layout System and Providers
+### Layout system and providers
 The layout system establishes a consistent shell across pages:
 - Root layout sets metadata, fonts, theme variables, and mounts the Providers and LayoutContent wrappers.
 - LayoutContent manages the main content area, navigation bar, sidebar provider, and toast notifications.
@@ -233,18 +152,8 @@ RootLayout --> LayoutContent : "wraps"
 LayoutContent --> Providers : "contains"
 ```
 
-**Diagram sources**
-- [app/layout.tsx](file://frontend/app/layout.tsx#L1-L52)
-- [app/layout-content.tsx](file://frontend/app/layout-content.tsx#L1-L34)
-- [app/providers.tsx](file://frontend/app/providers.tsx#L1-L38)
-
-**Section sources**
-- [app/layout.tsx](file://frontend/app/layout.tsx#L1-L52)
-- [app/layout-content.tsx](file://frontend/app/layout-content.tsx#L1-L34)
-- [app/providers.tsx](file://frontend/app/providers.tsx#L1-L38)
-
-### Routing Patterns and Middleware Integration
-Routing leverages Next.js App Router conventions with dynamic routes and catch-all patterns. Authentication and role-based redirection are handled via NextAuth middleware:
+### Routing patterns and middleware integration
+Routing uses Next.js App Router conventions with dynamic routes and catch-all patterns. Authentication and role-based redirection are handled via NextAuth middleware:
 - Dynamic routes: e.g., dashboard pages with slug-based routing
 - Catch-all routes: e.g., API namespaces with dynamic segments
 - Middleware enforces role selection for authenticated users without roles and redirects accordingly
@@ -269,15 +178,7 @@ NextAuth-->>Middleware : Token/session data
 Middleware-->>Router : Proceed to requested page
 ```
 
-**Diagram sources**
-- [proxy.ts](file://frontend/proxy.ts#L1-L31)
-- [lib/auth-options.ts](file://frontend/lib/auth-options.ts#L1-L202)
-
-**Section sources**
-- [proxy.ts](file://frontend/proxy.ts#L1-L31)
-- [lib/auth-options.ts](file://frontend/lib/auth-options.ts#L1-L202)
-
-### Build Configuration and PWA Setup
+### Build configuration and PWA setup
 The build configuration integrates PWA capabilities, image optimization, and webpack customization:
 - PWA: Enabled via next-pwa with service worker registration and skipWaiting
 - Images: Unoptimized mode with remote patterns for avatar providers
@@ -295,13 +196,7 @@ Rewrites --> Externals["External Packages<br/>serverExternalPackages"]
 Externals --> End(["Build Complete"])
 ```
 
-**Diagram sources**
-- [next.config.js](file://frontend/next.config.js#L1-L90)
-
-**Section sources**
-- [next.config.js](file://frontend/next.config.js#L1-L90)
-
-### TypeScript Configuration and Type Safety
+### TypeScript configuration and type safety
 TypeScript is configured for strict type checking and modern module resolution:
 - Strict mode enabled with noEmit
 - Bundler module resolution and isolated modules
@@ -321,13 +216,7 @@ Aliases --> DX["Developer Experience"]
 Types --> Autocomplete["IDE Autocomplete"]
 ```
 
-**Diagram sources**
-- [tsconfig.json](file://frontend/tsconfig.json#L1-L43)
-
-**Section sources**
-- [tsconfig.json](file://frontend/tsconfig.json#L1-L43)
-
-### UI Theme and Styling
+### UI theme and styling
 Tailwind CSS and PostCSS provide a consistent design system:
 - Dark mode support with class strategy
 - Extended color palette and typography tokens
@@ -343,15 +232,7 @@ THEME --> STYLES["Global Styles"]
 PLUGINS --> ANIM["Animations"]
 ```
 
-**Diagram sources**
-- [tailwind.config.ts](file://frontend/tailwind.config.ts#L1-L135)
-- [postcss.config.js](file://frontend/postcss.config.js#L1-L7)
-
-**Section sources**
-- [tailwind.config.ts](file://frontend/tailwind.config.ts#L1-L135)
-- [postcss.config.js](file://frontend/postcss.config.js#L1-L7)
-
-### Navigation and UI Components
+### Navigation and UI components
 Navigation items and action cards guide users through features:
 - Navigation items for desktop and mobile
 - Action items for quick feature access
@@ -370,13 +251,7 @@ class ActionItem {
 NavItem <|-- ActionItem
 ```
 
-**Diagram sources**
-- [lib/navigation.ts](file://frontend/lib/navigation.ts#L16-L24)
-
-**Section sources**
-- [lib/navigation.ts](file://frontend/lib/navigation.ts#L1-L116)
-
-### Error Boundaries and User Feedback
+### Error boundaries and user feedback
 Error boundaries provide graceful handling of errors and not-found scenarios:
 - Page-level error boundary with reset functionality
 - Global error boundary for top-level failures
@@ -398,17 +273,7 @@ Router->>GlobalError : Top-level error
 GlobalError-->>Router : Render global error UI
 ```
 
-**Diagram sources**
-- [app/error.tsx](file://frontend/app/error.tsx#L1-L28)
-- [app/not-found.tsx](file://frontend/app/not-found.tsx#L1-L78)
-- [app/global-error.tsx](file://frontend/app/global-error.tsx#L1-L32)
-
-**Section sources**
-- [app/error.tsx](file://frontend/app/error.tsx#L1-L28)
-- [app/not-found.tsx](file://frontend/app/not-found.tsx#L1-L78)
-- [app/global-error.tsx](file://frontend/app/global-error.tsx#L1-L32)
-
-### Analytics Integration
+### Analytics integration
 PostHog client-side initialization supports analytics and event tracking:
 - Client-side initialization with environment keys
 - Proxy configuration for API and static assets
@@ -426,16 +291,8 @@ Browser->>Proxy : Request /ph/*
 Proxy-->>Browser : Forward to PostHog endpoints
 ```
 
-**Diagram sources**
-- [instrumentation-client.ts](file://frontend/instrumentation-client.ts#L1-L12)
-- [next.config.js](file://frontend/next.config.js#L73-L86)
-
-**Section sources**
-- [instrumentation-client.ts](file://frontend/instrumentation-client.ts#L1-L12)
-- [next.config.js](file://frontend/next.config.js#L73-L86)
-
-## Dependency Analysis
-The application’s dependencies span UI libraries, state management, authentication, analytics, and build tools. The dependency graph highlights core integrations and potential coupling points.
+## Dependency analysis
+The application's dependencies span UI libraries, state management, authentication, analytics, and build tools. The dependency graph highlights core integrations and potential coupling points.
 
 ```mermaid
 graph TB
@@ -471,17 +328,7 @@ RECHARTS --> REACT
 MOTION --> REACT
 ```
 
-**Diagram sources**
-- [package.json](file://frontend/package.json#L17-L85)
-- [next.config.js](file://frontend/next.config.js#L1-L90)
-- [tailwind.config.ts](file://frontend/tailwind.config.ts#L1-L135)
-
-**Section sources**
-- [package.json](file://frontend/package.json#L1-L114)
-- [next.config.js](file://frontend/next.config.js#L1-L90)
-- [tailwind.config.ts](file://frontend/tailwind.config.ts#L1-L135)
-
-## Performance Considerations
+## Performance considerations
 Performance is addressed through several mechanisms:
 - Image optimization: Unoptimized images with controlled remote patterns to reduce unnecessary processing
 - PWA: Service worker registration and skipWaiting improve offline readiness and load performance
@@ -493,14 +340,9 @@ Recommendations:
 - Enable image optimization selectively for performance-sensitive assets
 - Monitor bundle sizes and split large components
 - Use React Suspense boundaries for data-intensive pages
-- Leverage Next.js static generation where feasible
+- Use Next.js static generation where feasible
 
-**Section sources**
-- [next.config.js](file://frontend/next.config.js#L11-L24)
-- [app/providers.tsx](file://frontend/app/providers.tsx#L14-L27)
-- [tailwind.config.ts](file://frontend/tailwind.config.ts#L5-L8)
-
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Authentication loops: Verify middleware redirection logic and token presence
 - Role selection redirects: Ensure proper handling of authenticated users without roles
@@ -514,25 +356,13 @@ Diagnostics:
 - Check PWA registration and service worker lifecycle
 - Validate Tailwind content paths and purge behavior
 
-**Section sources**
-- [proxy.ts](file://frontend/proxy.ts#L1-L31)
-- [lib/auth-options.ts](file://frontend/lib/auth-options.ts#L98-L195)
-- [next.config.js](file://frontend/next.config.js#L26-L86)
-- [app/providers.tsx](file://frontend/app/providers.tsx#L14-L27)
-- [tailwind.config.ts](file://frontend/tailwind.config.ts#L5-L8)
-
 ## Conclusion
-The Next.js application employs a robust App Router architecture with strong layout and provider patterns, comprehensive authentication via NextAuth, and integrated analytics through PostHog. The build configuration emphasizes PWA readiness, controlled image optimization, and webpack customization for compatibility. TypeScript and Tailwind contribute to type safety and maintainable styling. The middleware ensures secure and role-aware routing, while error boundaries provide resilient user experiences.
+The Next.js application employs a reliable App Router architecture with strong layout and provider patterns, detailed authentication via NextAuth, and integrated analytics through PostHog. The build configuration emphasizes PWA readiness, controlled image optimization, and webpack customization for compatibility. TypeScript and Tailwind contribute to type safety and maintainable styling. The middleware ensures secure and role-aware routing, while error boundaries provide resilient user experiences.
 
 ## Appendices
 
-### Deployment Considerations
+### Deployment considerations
 - Environment variables for authentication and analytics
 - PWA manifest and service worker registration
 - Build scripts invoking Prisma generation and migrations
 - Docker and compose configurations for containerized deployment
-
-**Section sources**
-- [package.json](file://frontend/package.json#L5-L12)
-- [public/manifest.json](file://frontend/public/manifest.json#L1-L65)
-- [next.config.js](file://frontend/next.config.js#L1-L90)

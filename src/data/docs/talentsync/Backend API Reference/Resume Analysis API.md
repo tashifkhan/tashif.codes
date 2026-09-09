@@ -1,33 +1,7 @@
-# Resume Analysis API
-
-<cite>
-**Referenced Files in This Document**
-- [backend/app/main.py](file://backend/app/main.py)
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py)
-- [backend/app/routes/resume_enrichment.py](file://backend/app/routes/resume_enrichment.py)
-- [backend/app/routes/resume_improvement.py](file://backend/app/routes/resume_improvement.py)
-- [backend/app/routes/tailored_resume.py](file://backend/app/routes/tailored_resume.py)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py)
-- [backend/app/services/process_resume.py](file://backend/app/services/process_resume.py)
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py)
-- [backend/app/models/resume/schemas.py](file://backend/app/models/resume/schemas.py)
-- [backend/app/models/common/schemas.py](file://backend/app/models/common/schemas.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Resume analysis API
 
 ## Introduction
-This document provides comprehensive API documentation for the resume analysis functionality. It covers:
+This page provides detailed API documentation for the resume analysis functionality. It covers:
 - File upload endpoints for resume processing
 - Text-based analysis endpoints
 - Batch processing capabilities
@@ -36,7 +10,7 @@ This document provides comprehensive API documentation for the resume analysis f
 - The NLP processing pipeline, entity recognition, and structured output formats
 - Practical examples of resume analysis workflows, error handling for malformed inputs, and performance considerations for large files
 
-## Project Structure
+## Project structure
 The resume analysis feature is implemented as part of a FastAPI backend. Key components include:
 - Routers that define API endpoints for file-based and text-based analysis
 - Services that orchestrate document processing, LLM-based extraction, and validation
@@ -60,39 +34,16 @@ SvcRA --> Models["Models: resume/schemas.py"]
 Models --> Common["Common Models: common/schemas.py"]
 ```
 
-**Diagram sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L196)
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L1-L68)
-- [backend/app/routes/resume_enrichment.py](file://backend/app/routes/resume_enrichment.py#L1-L118)
-- [backend/app/routes/resume_improvement.py](file://backend/app/routes/resume_improvement.py#L1-L43)
-- [backend/app/routes/tailored_resume.py](file://backend/app/routes/tailored_resume.py#L1-L79)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L1-L364)
-- [backend/app/services/process_resume.py](file://backend/app/services/process_resume.py#L68-L91)
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L186-L269)
-- [backend/app/models/resume/schemas.py](file://backend/app/models/resume/schemas.py#L21-L157)
-- [backend/app/models/common/schemas.py](file://backend/app/models/common/schemas.py#L6-L128)
-
-**Section sources**
-- [backend/app/main.py](file://backend/app/main.py#L157-L196)
-
-## Core Components
+## Core components
 - File-based resume analysis endpoint: Accepts a resume file and returns structured data via LLM extraction and validation.
-- Text-based resume analysis endpoint: Accepts pre-formatted text and returns comprehensive analysis.
-- Comprehensive analysis service: Extracts skills, languages, education, experience, projects, and more.
-- Enrichment endpoints: Analyze, enhance, refine, regenerate, and apply improvements to resume data.
+- Text-based resume analysis endpoint: Accepts pre-formatted text and returns detailed analysis.
+- Detailed analysis service: Extracts skills, languages, education, experience, projects, and more.
+- Enrichment endpoints: Analyze, improve, refine, regenerate, and apply improvements to resume data.
 - Tailored resume generation: Aligns resume content with a target job role and optional context.
 - Data processors: Handle document conversion, text formatting, JSON extraction, and LLM prompt chains.
-- Schemas: Define typed request/response models for robust API contracts.
+- Schemas: Define typed request/response models for reliable API contracts.
 
-**Section sources**
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L16-L67)
-- [backend/app/routes/resume_enrichment.py](file://backend/app/routes/resume_enrichment.py#L30-L117)
-- [backend/app/routes/tailored_resume.py](file://backend/app/routes/tailored_resume.py#L33-L78)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L342)
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L26-L342)
-- [backend/app/models/resume/schemas.py](file://backend/app/models/resume/schemas.py#L21-L157)
-
-## Architecture Overview
+## Architecture overview
 The system follows a layered architecture:
 - Presentation layer: FastAPI routers expose endpoints for file and text-based analysis, enrichment, improvement, and tailored resume generation.
 - Application layer: Services coordinate document processing, LLM interactions, and data validation.
@@ -119,15 +70,9 @@ S-->>C : ResumeUploadResponse(data, cleaned_data_dict)
 end
 ```
 
-**Diagram sources**
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L16-L25)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L156)
-- [backend/app/services/process_resume.py](file://backend/app/services/process_resume.py#L68-L91)
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L66-L130)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### File-Based Resume Analysis
+### File-Based resume analysis
 Endpoints:
 - POST /api/v1/resume/analysis
 - POST /api/v2/resume/format-and-analyze
@@ -156,17 +101,7 @@ BuildResp --> End(["Return response"])
 Err400 --> End
 ```
 
-**Diagram sources**
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L156)
-- [backend/app/services/process_resume.py](file://backend/app/services/process_resume.py#L68-L109)
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L66-L130)
-
-**Section sources**
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L16-L25)
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L43-L67)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L28-L156)
-
-### Text-Based Resume Analysis
+### Text-Based resume analysis
 Endpoints:
 - POST /api/v2/resume/format-and-analyze
 - POST /api/v2/resume/analysis
@@ -174,7 +109,7 @@ Endpoints:
 Processing flow:
 - Accepts pre-formatted text
 - Formats and analyzes using unified LLM chain
-- Returns comprehensive analysis data
+- Returns detailed analysis data
 
 ```mermaid
 sequenceDiagram
@@ -194,17 +129,8 @@ D-->>S : analysis_dict
 S-->>C : ComprehensiveAnalysisData
 ```
 
-**Diagram sources**
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L43-L67)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L240-L342)
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L271-L342)
-
-**Section sources**
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L43-L67)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L240-L342)
-
-### Comprehensive Analysis Pipeline
-The comprehensive analysis extracts:
+### Detailed analysis pipeline
+The detailed analysis extracts:
 - Skills with proficiency percentages
 - Languages
 - Education entries
@@ -262,18 +188,10 @@ ComprehensiveAnalysisData --> SkillProficiency : "contains"
 ComprehensiveAnalysisData --> EducationEntry : "contains"
 ```
 
-**Diagram sources**
-- [backend/app/models/resume/schemas.py](file://backend/app/models/resume/schemas.py#L21-L42)
-- [backend/app/models/common/schemas.py](file://backend/app/models/common/schemas.py#L6-L122)
-
-**Section sources**
-- [backend/app/models/resume/schemas.py](file://backend/app/models/resume/schemas.py#L21-L48)
-- [backend/app/models/common/schemas.py](file://backend/app/models/common/schemas.py#L6-L122)
-
-### Resume Enrichment Endpoints
+### Resume enrichment endpoints
 Capabilities:
 - Analyze resume items for enrichment
-- Generate enhanced descriptions
+- Generate improved descriptions
 - Refine rejected enhancements
 - Apply enhancements
 - Regenerate selected items
@@ -304,13 +222,7 @@ R->>S : apply_regenerated_items(resume_data, items)
 S-->>C : {"updated_resume"}
 ```
 
-**Diagram sources**
-- [backend/app/routes/resume_enrichment.py](file://backend/app/routes/resume_enrichment.py#L30-L117)
-
-**Section sources**
-- [backend/app/routes/resume_enrichment.py](file://backend/app/routes/resume_enrichment.py#L30-L117)
-
-### Resume Improvement and Tailored Resume
+### Resume improvement and tailored resume
 - Improve endpoint aligns resume with keywords and refines content.
 - Tailored resume endpoint generates a tailored analysis given a target role and optional context.
 
@@ -335,15 +247,7 @@ TR->>ST : tailor_resume(process_document(file), ...)
 ST-->>C : ComprehensiveAnalysisResponse
 ```
 
-**Diagram sources**
-- [backend/app/routes/resume_improvement.py](file://backend/app/routes/resume_improvement.py#L21-L42)
-- [backend/app/routes/tailored_resume.py](file://backend/app/routes/tailored_resume.py#L33-L78)
-
-**Section sources**
-- [backend/app/routes/resume_improvement.py](file://backend/app/routes/resume_improvement.py#L21-L42)
-- [backend/app/routes/tailored_resume.py](file://backend/app/routes/tailored_resume.py#L33-L78)
-
-## Dependency Analysis
+## Dependency analysis
 Key dependencies and relationships:
 - Routers depend on services for business logic
 - Services depend on document processing utilities and LLM data processors
@@ -364,20 +268,7 @@ TR["tailored_resume.py"] --> TRS["tailored_resume.py"]
 TR --> RS
 ```
 
-**Diagram sources**
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L1-L11)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L1-L25)
-- [backend/app/services/process_resume.py](file://backend/app/services/process_resume.py#L1-L11)
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L1-L16)
-- [backend/app/models/resume/schemas.py](file://backend/app/models/resume/schemas.py#L1-L18)
-- [backend/app/models/common/schemas.py](file://backend/app/models/common/schemas.py#L1-L4)
-
-**Section sources**
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L1-L11)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L1-L25)
-- [backend/app/models/resume/schemas.py](file://backend/app/models/resume/schemas.py#L1-L18)
-
-## Performance Considerations
+## Performance considerations
 - Document conversion: PDF/DOC/DOCX are converted to Markdown for consistent parsing; fallback conversion uses multimodal LLM for PDFs when supported.
 - LLM reliability: Text and JSON formatting includes fallbacks and error handling to avoid blocking failures.
 - Large files: Temporary file handling prevents memory overload during processing.
@@ -386,34 +277,28 @@ TR --> RS
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Unsupported file type: Ensure file extension is TXT, MD, PDF, or DOCX; otherwise conversion returns None and a 400 error is raised.
 - Empty or invalid resume text: Validation checks for resume keywords; failure triggers a 400 error.
 - LLM unavailability or malformed JSON: JSON extraction attempts multiple parsing strategies; on failure returns empty dict or raises 500.
 - Rate limit or auth errors: Detected conditions trigger fallback to original text with warnings.
 
-**Section sources**
-- [backend/app/services/process_resume.py](file://backend/app/services/process_resume.py#L68-L91)
-- [backend/app/services/resume_analysis.py](file://backend/app/services/resume_analysis.py#L53-L73)
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L66-L130)
-- [backend/app/services/data_processor.py](file://backend/app/services/data_processor.py#L186-L269)
-
 ## Conclusion
-The resume analysis API provides robust endpoints for file-based and text-based processing, comprehensive structured extraction, enrichment workflows, and tailored resume generation. Typed schemas ensure reliable integrations, while resilient LLM processing and validation improve reliability for varied inputs.
+The resume analysis API provides reliable endpoints for file-based and text-based processing, detailed structured extraction, enrichment workflows, and tailored resume generation. Typed schemas ensure reliable integrations, while resilient LLM processing and validation improve reliability for varied inputs.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### API Endpoints Summary
+### API endpoints summary
 - File-based analysis
   - POST /api/v1/resume/analysis
   - POST /api/v2/resume/format-and-analyze
   - POST /api/v2/resume/analysis
 - Enrichment
   - POST /api/v1/resume/enrichment/analyze
-  - POST /api/v1/resume/enrichment/enhance
+  - POST /api/v1/resume/enrichment/improve
   - POST /api/v1/resume/enrichment/refine
   - POST /api/v1/resume/enrichment/apply
   - POST /api/v1/resume/enrichment/regenerate
@@ -425,18 +310,8 @@ The resume analysis API provides robust endpoints for file-based and text-based 
   - POST /api/v1/resume/tailor (text-based)
   - POST /api/v1/resume/tailor (file-based)
 
-**Section sources**
-- [backend/app/routes/resume_analysis.py](file://backend/app/routes/resume_analysis.py#L16-L67)
-- [backend/app/routes/resume_enrichment.py](file://backend/app/routes/resume_enrichment.py#L30-L117)
-- [backend/app/routes/resume_improvement.py](file://backend/app/routes/resume_improvement.py#L21-L42)
-- [backend/app/routes/tailored_resume.py](file://backend/app/routes/tailored_resume.py#L33-L78)
-
-### Structured Output Schemas
+### Structured output schemas
 - ComprehensiveAnalysisData: Skills, languages, education, experience, projects, publications, certifications, achievements, personal identifiers, predicted field
 - ResumeUploadResponse: Analysis result plus cleaned data dictionary
-- FormattedAndAnalyzedResumeResponse: Cleaned text and comprehensive analysis
+- FormattedAndAnalyzedResumeResponse: Cleaned text and detailed analysis
 - Common entries: WorkExperienceEntry, ProjectEntry, SkillProficiency, EducationEntry
-
-**Section sources**
-- [backend/app/models/resume/schemas.py](file://backend/app/models/resume/schemas.py#L21-L94)
-- [backend/app/models/common/schemas.py](file://backend/app/models/common/schemas.py#L6-L122)

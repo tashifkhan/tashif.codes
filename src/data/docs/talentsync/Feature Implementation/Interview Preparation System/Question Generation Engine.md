@@ -1,34 +1,9 @@
-# Question Generation Engine
-
-<cite>
-**Referenced Files in This Document**
-- [question_generator.py](file://backend/app/services/interview/question_generator.py)
-- [interview_question.py](file://backend/app/data/prompt/interview_question.py)
-- [enums.py](file://backend/app/models/interview/enums.py)
-- [schemas.py](file://backend/app/models/interview/schemas.py)
-- [templates.py](file://backend/app/models/interview/templates.py)
-- [graph.py](file://backend/app/services/interview/graph.py)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py)
-- [interview.py](file://backend/app/routes/interview.py)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py)
-- [code_executor.py](file://backend/app/services/interview/code_executor.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Question generation engine
 
 ## Introduction
-The Question Generation Engine is an AI-powered system that generates interview questions tailored to a candidate’s profile, the target role, and the interview format. It combines a configurable difficulty distribution, optional role-based templates, and LLM prompts to produce diverse, non-repeating questions. The engine supports both technical and behavioral assessments, integrates with coding challenges, and adapts question selection dynamically across interview stages. Anti-cheating safeguards include integrity tracking (e.g., tab switching) and code sandboxing for coding rounds.
+The Question Generation Engine is an AI-powered system that generates interview questions tailored to a candidate's profile, the target role, and the interview format. It combines a configurable difficulty distribution, optional role-based templates, and LLM prompts to produce diverse, non-repeating questions. The engine supports both technical and behavioral assessments, integrates with coding challenges, and adapts question selection dynamically across interview stages. Anti-cheating safeguards include integrity tracking (e.g., tab switching) and code sandboxing for coding rounds.
 
-## Project Structure
+## Project structure
 The Question Generation Engine spans several modules:
 - Prompt definition for question generation
 - Data models for questions, templates, and interview configuration
@@ -70,31 +45,7 @@ GRAPH --> EVAL
 GRAPH --> CODE
 ```
 
-**Diagram sources**
-- [interview_question.py](file://backend/app/data/prompt/interview_question.py#L1-L60)
-- [enums.py](file://backend/app/models/interview/enums.py#L1-L43)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L1-L169)
-- [templates.py](file://backend/app/models/interview/templates.py#L1-L502)
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L1-L275)
-- [graph.py](file://backend/app/services/interview/graph.py#L1-L511)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L1-L257)
-- [interview.py](file://backend/app/routes/interview.py#L1-L494)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py#L1-L227)
-- [code_executor.py](file://backend/app/services/interview/code_executor.py#L1-L278)
-
-**Section sources**
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L1-L275)
-- [interview_question.py](file://backend/app/data/prompt/interview_question.py#L1-L60)
-- [enums.py](file://backend/app/models/interview/enums.py#L1-L43)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L1-L169)
-- [templates.py](file://backend/app/models/interview/templates.py#L1-L502)
-- [graph.py](file://backend/app/services/interview/graph.py#L1-L511)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L1-L257)
-- [interview.py](file://backend/app/routes/interview.py#L1-L494)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py#L1-L227)
-- [code_executor.py](file://backend/app/services/interview/code_executor.py#L1-L278)
-
-## Core Components
+## Core components
 - QuestionGenerator: Central class that builds question lists from difficulty distributions, optionally pulls from templates, and falls back to LLM-generated questions. It ensures non-repetition by tracking previously asked questions and selects question types cyclically.
 - Prompt Template: Defines the system and human messages guiding the LLM to produce structured, role-appropriate questions with expected keywords and follow-ups.
 - Templates: Predefined question banks per role with difficulty, topic, and optional code challenges. These are used to fill gaps when templates are selected.
@@ -102,16 +53,7 @@ GRAPH --> CODE
 - SessionManager: Tracks interview state, integrity events (e.g., tab switches), and persists sessions.
 - AnswerEvaluator and CodeExecutor: Support evaluation and secure execution for coding questions, complementing question generation.
 
-**Section sources**
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L16-L275)
-- [interview_question.py](file://backend/app/data/prompt/interview_question.py#L18-L54)
-- [templates.py](file://backend/app/models/interview/templates.py#L22-L502)
-- [graph.py](file://backend/app/services/interview/graph.py#L49-L85)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L15-L257)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py#L22-L227)
-- [code_executor.py](file://backend/app/services/interview/code_executor.py#L11-L278)
-
-## Architecture Overview
+## Architecture overview
 The engine orchestrates question generation within the broader interview flow. The route handlers create sessions, which trigger the graph to generate questions. The generator uses templates and/or LLM prompts to produce questions, ensuring variety and avoiding repetition. Integrity events are recorded to detect potential cheating, and coding questions are executed in a sandboxed environment.
 
 ```mermaid
@@ -139,16 +81,9 @@ Graph->>SM : save(session with questions)
 Routes-->>Client : InterviewSessionResponse(current_question)
 ```
 
-**Diagram sources**
-- [interview.py](file://backend/app/routes/interview.py#L65-L90)
-- [graph.py](file://backend/app/services/interview/graph.py#L49-L85)
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L23-L122)
-- [interview_question.py](file://backend/app/data/prompt/interview_question.py#L18-L54)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L65-L87)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### QuestionGenerator Class
+### QuestionGenerator class
 The QuestionGenerator builds a list of InterviewQuestion objects from:
 - Difficulty distribution: Ensures requested counts per difficulty, padding with fallbacks if needed.
 - Template selection: Uses predefined templates when provided to fill questions first.
@@ -206,17 +141,7 @@ QuestionGenerator --> DifficultyLevel : "uses"
 QuestionGenerator --> QuestionSource : "assigns"
 ```
 
-**Diagram sources**
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L16-L275)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L22-L43)
-- [enums.py](file://backend/app/models/interview/enums.py#L6-L31)
-
-**Section sources**
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L16-L275)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L22-L43)
-- [enums.py](file://backend/app/models/interview/enums.py#L6-L31)
-
-### Prompt Engineering Approach
+### Prompt engineering approach
 The prompt template establishes:
 - Role and difficulty framing
 - Topic focus and question type
@@ -236,13 +161,7 @@ Seen --> Output["Define JSON Output Schema"]
 Output --> End(["Invoke LLM"])
 ```
 
-**Diagram sources**
-- [interview_question.py](file://backend/app/data/prompt/interview_question.py#L18-L54)
-
-**Section sources**
-- [interview_question.py](file://backend/app/data/prompt/interview_question.py#L5-L59)
-
-### Parameter Configuration and Question Categorization
+### Parameter configuration and question categorization
 - InterviewConfig controls role, number of questions, difficulty distribution, optional template/topic, and coding flags.
 - QuestionSource categorizes questions as resume-based, role-based, behavioral, technical, or coding.
 - DifficultyLevel drives question selection and pacing.
@@ -272,15 +191,7 @@ CODING
 InterviewConfig --> QuestionSource : "used by generated questions"
 ```
 
-**Diagram sources**
-- [schemas.py](file://backend/app/models/interview/schemas.py#L55-L70)
-- [enums.py](file://backend/app/models/interview/enums.py#L23-L31)
-
-**Section sources**
-- [schemas.py](file://backend/app/models/interview/schemas.py#L55-L70)
-- [enums.py](file://backend/app/models/interview/enums.py#L23-L31)
-
-### Template-Based Question Selection
+### Template-Based question selection
 Templates define:
 - Roles and topics
 - Question banks with difficulty and expected keywords
@@ -301,15 +212,7 @@ E --> G["_generate_llm_question()"]
 G --> F
 ```
 
-**Diagram sources**
-- [templates.py](file://backend/app/models/interview/templates.py#L22-L502)
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L124-L144)
-
-**Section sources**
-- [templates.py](file://backend/app/models/interview/templates.py#L42-L478)
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L124-L144)
-
-### Dynamic Question Selection Based on Candidate Responses
+### Dynamic question selection based on candidate responses
 While the generator itself does not alter future questions based on a single response, the broader interview graph advances to the next question after evaluation. Integrity events (e.g., tab switches) are tracked and surfaced for review, indirectly influencing the final summary and recommendations.
 
 ```mermaid
@@ -327,19 +230,7 @@ Graph->>SM : update question + move index
 Graph-->>Routes : next_question or complete
 ```
 
-**Diagram sources**
-- [interview.py](file://backend/app/routes/interview.py#L154-L186)
-- [graph.py](file://backend/app/services/interview/graph.py#L99-L168)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py#L31-L79)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L113-L133)
-
-**Section sources**
-- [interview.py](file://backend/app/routes/interview.py#L154-L186)
-- [graph.py](file://backend/app/services/interview/graph.py#L99-L168)
-- [answer_evaluator.py](file://backend/app/services/interview/answer_evaluator.py#L31-L79)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L113-L133)
-
-### Question Diversity and Anti-Cheating Mechanisms
+### Question diversity and anti-cheating mechanisms
 - Diversity: The generator cycles question types (technical, behavioral, role-based) and avoids repeats by tracking existing questions.
 - Anti-cheating:
   - Integrity events recording (e.g., tab switches) are stored and counted.
@@ -362,29 +253,14 @@ end
 C1 --> C2 --> C3 --> C4
 ```
 
-**Diagram sources**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L113-L133)
-- [interview.py](file://backend/app/routes/interview.py#L420-L450)
-- [code_executor.py](file://backend/app/services/interview/code_executor.py#L35-L152)
-
-**Section sources**
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L113-L133)
-- [interview.py](file://backend/app/routes/interview.py#L420-L450)
-- [code_executor.py](file://backend/app/services/interview/code_executor.py#L14-L30)
-- [code_executor.py](file://backend/app/services/interview/code_executor.py#L154-L215)
-
-### Examples of Generated Question Patterns
+### Examples of generated question patterns
 - Technical coding rounds (e.g., Software Engineer): Algorithmic challenges with code challenges embedded in questions.
 - Behavioral assessments: STAR-focused questions aligned with role expectations.
 - Panel interviews: Mixed difficulty and type progression to maintain engagement and depth.
 
-These patterns derive from built-in templates and the LLM prompt’s structured output schema.
+These patterns derive from built-in templates and the LLM prompt's structured output schema.
 
-**Section sources**
-- [templates.py](file://backend/app/models/interview/templates.py#L42-L478)
-- [interview_question.py](file://backend/app/data/prompt/interview_question.py#L44-L50)
-
-## Dependency Analysis
+## Dependency analysis
 The QuestionGenerator depends on:
 - Prompt template for LLM invocation
 - Enums for difficulty and question source
@@ -402,39 +278,17 @@ QGEN --> GRAPH["InterviewGraph"]
 QGEN --> SM["SessionManager"]
 ```
 
-**Diagram sources**
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L9-L21)
-- [enums.py](file://backend/app/models/interview/enums.py#L6-L31)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L22-L70)
-- [templates.py](file://backend/app/models/interview/templates.py#L10-L38)
-- [graph.py](file://backend/app/services/interview/graph.py#L43-L47)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L22-L27)
-
-**Section sources**
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L9-L21)
-- [enums.py](file://backend/app/models/interview/enums.py#L6-L31)
-- [schemas.py](file://backend/app/models/interview/schemas.py#L22-L70)
-- [templates.py](file://backend/app/models/interview/templates.py#L10-L38)
-- [graph.py](file://backend/app/services/interview/graph.py#L43-L47)
-- [session_manager.py](file://backend/app/services/interview/session_manager.py#L22-L27)
-
-## Performance Considerations
+## Performance considerations
 - Prompt construction and LLM invocation are asynchronous; ensure efficient prompt formatting and minimal payload sizes.
 - Template-first strategy reduces LLM calls when templates are available.
 - Non-repetition tracking uses a list of strings; for very large interviews, consider hashing or indexing for O(1) lookups.
 - Streaming evaluation and code execution improve perceived latency; keep prompt sizes reasonable to avoid timeouts.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - LLM generation failures: The generator falls back to curated fallback questions and sets a default behavioral source.
 - JSON parsing errors: The parser extracts content as-is when JSON is invalid.
 - Session not found or mismatched question: Route handlers raise explicit HTTP errors for invalid states.
 - Integrity concerns: Excessive tab switches are flagged for manual review.
 
-**Section sources**
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L211-L215)
-- [question_generator.py](file://backend/app/services/interview/question_generator.py#L217-L230)
-- [interview.py](file://backend/app/routes/interview.py#L182-L185)
-- [interview.py](file://backend/app/routes/interview.py#L420-L450)
-
 ## Conclusion
-The Question Generation Engine blends structured templates with LLM-driven creativity to produce tailored, non-repeating interview questions. Its integration with integrity tracking and secure code execution ensures robust assessments across technical and behavioral domains. The modular design allows easy extension to new roles, topics, and evaluation modes.
+The Question Generation Engine blends structured templates with LLM-driven creativity to produce tailored, non-repeating interview questions. Its integration with integrity tracking and secure code execution ensures reliable assessments across technical and behavioral domains. The modular design allows easy extension to new roles, topics, and evaluation modes.
