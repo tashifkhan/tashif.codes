@@ -1,37 +1,10 @@
-# Controller System
-
-<cite>
-**Referenced Files in This Document**
-- [index.js](file://assignment-solver/src/ui/index.js)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js)
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js)
-- [state.js](file://assignment-solver/src/ui/state.js)
-- [elements.js](file://assignment-solver/src/ui/elements.js)
-- [messages.js](file://assignment-solver/src/core/messages.js)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js)
-- [gemini/index.js](file://assignment-solver/src/services/gemini/index.js)
-- [manifest.json](file://assignment-solver/manifest.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Controller system
 
 ## Introduction
-This document describes the controller system architecture for the assignment solver UI. It focuses on four controllers: detection controller for assignment recognition, progress controller for status tracking, settings controller for configuration management, and solve controller for assignment processing. The document explains controller responsibilities, initialization patterns, inter-controller communication, dependency injection, event handling, lifecycle, state integration, error handling, and testing patterns.
+This page describes the controller system architecture for the assignment solver UI. It focuses on four controllers: detection controller for assignment recognition, progress controller for status tracking, settings controller for configuration management, and solve controller for assignment processing. The document explains controller responsibilities, initialization patterns, inter-controller communication, dependency injection, event handling, lifecycle, state integration, error handling, and testing patterns.
 
-## Project Structure
-The UI controllers live under the assignment-solver extension’s frontend. The entry point initializes adapters, services, state, and controllers, wiring them together for a cohesive user experience.
+## Project structure
+The UI controllers live under the assignment-solver extension's frontend. The entry point initializes adapters, services, state, and controllers, wiring them together for a cohesive user experience.
 
 ```mermaid
 graph TB
@@ -78,36 +51,13 @@ S --> E
 P --> E
 ```
 
-**Diagram sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L1-L113)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L1-L111)
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js#L1-L164)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L1-L128)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L1-L778)
-- [state.js](file://assignment-solver/src/ui/state.js#L1-L41)
-- [elements.js](file://assignment-solver/src/ui/elements.js#L1-L46)
-- [messages.js](file://assignment-solver/src/core/messages.js#L1-L96)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L1-L32)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L1-L119)
-- [gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L1-L342)
-
-**Section sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L1-L113)
-- [manifest.json](file://assignment-solver/manifest.json#L1-L44)
-
-## Core Components
+## Core components
 - Detection Controller: Checks current page for assignments, displays assignment info or empty state, and listens for tab updates.
 - Progress Controller: Manages status messages, progress bars, step indicators, and visibility of progress sections.
 - Settings Controller: Loads and saves API keys and model preferences, manages settings modal UI, and wires event listeners.
 - Solve Controller: Orchestrates the end-to-end solving flow, including extraction, AI processing, answer filling, optional submission, and results display.
 
-**Section sources**
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L1-L111)
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js#L1-L164)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L1-L128)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L1-L778)
-
-## Architecture Overview
+## Architecture overview
 The UI entry point initializes adapters and services, then constructs controllers with dependency injection. Controllers communicate via shared state, DOM elements, and runtime messaging.
 
 ```mermaid
@@ -136,21 +86,9 @@ UI->>SOL : initEventListeners()
 UI->>SET : initEventListeners({onSaved})
 ```
 
-**Diagram sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L54-L112)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [messages.js](file://assignment-solver/src/core/messages.js#L5-L23)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L12-L119)
-- [gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L60-L342)
-- [state.js](file://assignment-solver/src/ui/state.js#L9-L40)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L15-L111)
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js#L12-L164)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L13-L128)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L21-L778)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Detection Controller
+### Detection controller
 Responsibilities:
 - Detect assignment presence on the current page.
 - Update UI to show assignment info or empty state.
@@ -171,12 +109,7 @@ Lifecycle:
 - checkCurrentPage -> showAssignmentInfo/showEmptyState.
 - init triggers initial check and event subscription.
 
-**Section sources**
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L15-L111)
-- [messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-
-### Progress Controller
+### Progress controller
 Responsibilities:
 - Update status text and status bar visuals (loading/error states).
 - Manage step indicators with active/done/error states.
@@ -193,11 +126,7 @@ Inter-controller communication:
 Lifecycle:
 - setStatus/setStep/resetSteps/markStepDone/setProgress/setIndeterminate/resetProgress/showProgress/hideProgress.
 
-**Section sources**
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js#L12-L164)
-- [elements.js](file://assignment-solver/src/ui/elements.js#L9-L45)
-
-### Settings Controller
+### Settings controller
 Responsibilities:
 - Load stored API key and model preferences into form inputs.
 - Save API key and preferences to storage.
@@ -217,12 +146,7 @@ Lifecycle:
 - save -> validate API key -> persist preferences -> return success.
 - hide -> animate out and hide.
 
-**Section sources**
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L13-L128)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L12-L119)
-- [elements.js](file://assignment-solver/src/ui/elements.js#L9-L45)
-
-### Solve Controller
+### Solve controller
 Responsibilities:
 - Orchestrate the full solving pipeline: extraction, screenshots, AI processing, answer filling, optional submission, and results display.
 - Implement recursive splitting to handle MAX_TOKENS errors.
@@ -245,17 +169,7 @@ Lifecycle:
 - Recursive splitting ensures robustness against token limits.
 - Results are rendered into results section with formatted HTML.
 
-**Section sources**
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L21-L778)
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js#L12-L164)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L13-L128)
-- [state.js](file://assignment-solver/src/ui/state.js#L9-L40)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L12-L119)
-- [messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L60-L342)
-
-### Controller Factory Functions and Dependency Injection
+### Controller factory functions and dependency injection
 - createDetectionController: elements, runtime, logger.
 - createProgressController: elements, logger.
 - createSettingsController: elements, storage, logger.
@@ -269,27 +183,12 @@ Dependency injection pattern:
 - The UI entry point constructs adapters/services and injects them into controllers.
 - This promotes testability and modularity.
 
-**Section sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L54-L112)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L12-L119)
-- [gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L60-L342)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L15-L111)
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js#L12-L164)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L13-L128)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L21-L778)
-
-### Event Handling Mechanisms
+### Event handling mechanisms
 - Runtime messaging: sendMessageWithRetry handles transient connection failures and retries.
 - DOM events: Settings controller wires click handlers for open/close/save and reasoning selection updates.
 - Tab updates: Detection controller listens for runtime messages indicating tab changes.
 
-**Section sources**
-- [messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L99-L125)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L101-L107)
-
-### Controller Lifecycle, State Integration, and Error Handling
+### Controller lifecycle, state integration, and error handling
 - Lifecycle:
   - Initialization: UI entry point constructs and wires controllers.
   - Interaction: Users trigger actions (solve, settings open/save).
@@ -302,12 +201,7 @@ Dependency injection pattern:
   - Solve controller splits work on MAX_TOKENS and aggregates results.
   - Errors are surfaced to UI via progress status and debug logging.
 
-**Section sources**
-- [state.js](file://assignment-solver/src/ui/state.js#L9-L40)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L44-L240)
-- [messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-
-### Testing Patterns and Mock Implementations
+### Testing patterns and mock implementations
 Recommended patterns:
 - Mock runtime adapter to stub sendMessage and onMessage for controller tests.
 - Mock storage service to simulate API key and preferences retrieval/persistence.
@@ -323,7 +217,7 @@ Mock examples (descriptive):
 
 [No sources needed since this section provides general guidance]
 
-## Dependency Analysis
+## Dependency analysis
 Controllers depend on shared services and adapters. The solve controller has the most dependencies, reflecting its central role.
 
 ```mermaid
@@ -351,22 +245,7 @@ PRG --> |updates| UI["DOM Elements"]
 SET --> |updates| UI
 ```
 
-**Diagram sources**
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L21-L778)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L15-L111)
-- [progress.js](file://assignment-solver/src/ui/controllers/progress.js#L12-L164)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L13-L128)
-- [state.js](file://assignment-solver/src/ui/state.js#L9-L40)
-- [storage/index.js](file://assignment-solver/src/services/storage/index.js#L12-L119)
-- [gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L60-L342)
-- [runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-
-**Section sources**
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L21-L778)
-- [index.js](file://assignment-solver/src/ui/index.js#L72-L89)
-
-## Performance Considerations
+## Performance considerations
 - Retry logic: sendMessageWithRetry reduces flakiness on slower browsers by retrying transient connection errors.
 - Recursive splitting: solve controller splits HTML and question sets to avoid MAX_TOKENS limits, trading latency for reliability.
 - Determinate progress: Progress controller uses determinate progress bars when counts are known; indeterminate mode otherwise.
@@ -374,7 +253,7 @@ SET --> |updates| UI
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and strategies:
 - Background not ready: UI entry point waits for background readiness with exponential backoff; ensure extension reloads if background fails to initialize.
 - Connection errors: sendMessageWithRetry detects connection-related errors and retries; inspect last error message for guidance.
@@ -382,12 +261,5 @@ Common issues and strategies:
 - API key missing: Settings controller prompts for API key; ensure storage contains a valid key before solving.
 - Tab switching: Detection controller listens for tab updates; ensure runtime messages are flowing for accurate detection.
 
-**Section sources**
-- [index.js](file://assignment-solver/src/ui/index.js#L26-L51)
-- [messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-- [solve.js](file://assignment-solver/src/ui/controllers/solve.js#L252-L319)
-- [settings.js](file://assignment-solver/src/ui/controllers/settings.js#L73-L94)
-- [detection.js](file://assignment-solver/src/ui/controllers/detection.js#L101-L107)
-
 ## Conclusion
-The controller system employs a clean dependency injection pattern, centralized initialization, and robust messaging to coordinate UI state, user interactions, and external services. The solve controller orchestrates complex workflows while the progress and settings controllers provide clear feedback and configuration. The architecture supports testing through mocks and offers resilience via retry logic and recursive splitting.
+The controller system employs a clean dependency injection pattern, centralized initialization, and reliable messaging to coordinate UI state, user interactions, and external services. The solve controller orchestrates complex workflows while the progress and settings controllers provide clear feedback and configuration. The architecture supports testing through mocks and offers resilience via retry logic and recursive splitting.

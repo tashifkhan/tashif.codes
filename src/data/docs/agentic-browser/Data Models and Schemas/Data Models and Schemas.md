@@ -1,41 +1,9 @@
-# Data Models and Schemas
-
-<cite>
-**Referenced Files in This Document**
-- [models/__init__.py](file://models/__init__.py)
-- [models/yt.py](file://models/yt.py)
-- [models/requests/agent.py](file://models/requests/agent.py)
-- [models/requests/react_agent.py](file://models/requests/react_agent.py)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py)
-- [models/requests/video_info.py](file://models/requests/video_info.py)
-- [models/requests/website.py](file://models/requests/website.py)
-- [models/requests/crawller.py](file://models/requests/crawller.py)
-- [models/requests/github.py](file://models/requests/github.py)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py)
-- [models/requests/ask.py](file://models/requests/ask.py)
-- [models/response/agent.py](file://models/response/agent.py)
-- [models/response/react_agent.py](file://models/response/react_agent.py)
-- [models/response/subtitles.py](file://models/response/subtitles.py)
-- [models/response/health.py](file://models/response/health.py)
-- [models/response/website.py](file://models/response/website.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Data models and schemas
 
 ## Introduction
-This document describes the data model layer of the Agentic Browser system. It focuses on Pydantic-based request and response schemas used across the backend APIs, including agent messaging payloads, browser action requests, service integration models, and YouTube-related data structures. For each model, we document fields, types, validation rules, aliases, defaults, and relationships. We also explain serialization/deserialization behavior, validation patterns, error handling approaches, and security considerations.
+This page describes the data model layer of the Agentic Browser system. It focuses on Pydantic-based request and response schemas used across the backend APIs, including agent messaging payloads, browser action requests, service integration models, and YouTube-related data structures. For each model, we document fields, types, validation rules, aliases, defaults, and relationships. We also explain serialization/deserialization behavior, validation patterns, error handling approaches, and security considerations.
 
-## Project Structure
+## Project structure
 The data models are organized under a dedicated models package with two subpackages:
 - models/requests: request schemas for various services and endpoints
 - models/response: response schemas for the same services and endpoints
@@ -85,42 +53,7 @@ PJ --> RA
 PJ --> CR
 ```
 
-**Diagram sources**
-- [models/requests/agent.py](file://models/requests/agent.py#L1-L10)
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L1-L45)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L1-L8)
-- [models/requests/video_info.py](file://models/requests/video_info.py#L1-L7)
-- [models/requests/website.py](file://models/requests/website.py#L1-L11)
-- [models/requests/crawller.py](file://models/requests/crawller.py#L1-L35)
-- [models/requests/github.py](file://models/requests/github.py#L1-L9)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L1-L91)
-- [models/requests/ask.py](file://models/requests/ask.py#L1-L10)
-- [models/response/agent.py](file://models/response/agent.py#L1-L11)
-- [models/response/react_agent.py](file://models/response/react_agent.py#L1-L15)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L1-L6)
-- [models/response/health.py](file://models/response/health.py#L1-L7)
-- [models/response/website.py](file://models/response/website.py#L1-L6)
-- [models/yt.py](file://models/yt.py#L1-L17)
-
-**Section sources**
-- [models/__init__.py](file://models/__init__.py#L1-L4)
-- [models/yt.py](file://models/yt.py#L1-L17)
-- [models/requests/agent.py](file://models/requests/agent.py#L1-L10)
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L1-L45)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L1-L8)
-- [models/requests/video_info.py](file://models/requests/video_info.py#L1-L7)
-- [models/requests/website.py](file://models/requests/website.py#L1-L11)
-- [models/requests/crawller.py](file://models/requests/crawller.py#L1-L35)
-- [models/requests/github.py](file://models/requests/github.py#L1-L9)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L1-L91)
-- [models/requests/ask.py](file://models/requests/ask.py#L1-L10)
-- [models/response/agent.py](file://models/response/agent.py#L1-L11)
-- [models/response/react_agent.py](file://models/response/react_agent.py#L1-L15)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L1-L6)
-- [models/response/health.py](file://models/response/health.py#L1-L7)
-- [models/response/website.py](file://models/response/website.py#L1-L6)
-
-## Core Components
+## Core components
 This section summarizes the primary data models and their roles.
 
 - YouTube metadata model
@@ -175,23 +108,7 @@ This section summarizes the primary data models and their roles.
   - HealthResponse: status and message.
   - WebsiteResponse: answer text.
 
-**Section sources**
-- [models/yt.py](file://models/yt.py#L1-L17)
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L10-L44)
-- [models/requests/crawller.py](file://models/requests/crawller.py#L8-L35)
-- [models/requests/website.py](file://models/requests/website.py#L5-L11)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L5-L8)
-- [models/requests/video_info.py](file://models/requests/video_info.py#L5-L7)
-- [models/requests/github.py](file://models/requests/github.py#L4-L9)
-- [models/requests/ask.py](file://models/requests/ask.py#L5-L10)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L9-L91)
-- [models/response/agent.py](file://models/response/agent.py#L5-L11)
-- [models/response/react_agent.py](file://models/response/react_agent.py#L10-L15)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L4-L6)
-- [models/response/health.py](file://models/response/health.py#L4-L7)
-- [models/response/website.py](file://models/response/website.py#L4-L6)
-
-## Architecture Overview
+## Architecture overview
 The data model layer is consumed by routers and services to validate incoming requests and produce standardized responses. Authentication contexts (Google OAuth and PyJIIT login) are embedded as optional fields in several requests to enable downstream service integrations.
 
 ```mermaid
@@ -211,9 +128,9 @@ Router --> Client
 
 [No sources needed since this diagram shows conceptual workflow, not actual code structure]
 
-## Detailed Component Analysis
+## Detailed component analysis
 
-### YouTube Metadata Model (YTVideoInfo)
+### YouTube metadata model (YTVideoInfo)
 - Purpose: Standardized representation of YouTube video metadata and optional captions/transcript.
 - Fields and types:
   - title: str (default "Unknown")
@@ -249,14 +166,7 @@ class YTVideoInfo {
 }
 ```
 
-**Diagram sources**
-- [models/yt.py](file://models/yt.py#L5-L17)
-
-**Section sources**
-- [models/yt.py](file://models/yt.py#L1-L17)
-- [models/__init__.py](file://models/__init__.py#L1-L4)
-
-### Agent Messaging Payload (AgentMessage)
+### Agent messaging payload (AgentMessage)
 - Purpose: Represents a single message in an agent conversation, including optional tool call metadata.
 - Fields and types:
   - role: Literal["system","user","assistant","tool"]
@@ -281,13 +191,7 @@ class AgentMessage {
 }
 ```
 
-**Diagram sources**
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L10-L24)
-
-**Section sources**
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L10-L24)
-
-### React Agent Request (ReactAgentRequest)
+### React agent request (ReactAgentRequest)
 - Purpose: Top-level request for the React agent containing conversation history and optional authentication context.
 - Fields and types:
   - messages: List[AgentMessage] (required, minimum length 1)
@@ -310,15 +214,7 @@ ReactAgentRequest --> AgentMessage : "contains"
 ReactAgentRequest --> PyjiitLoginResponse : "optional"
 ```
 
-**Diagram sources**
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L27-L44)
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L10-L24)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L54-L91)
-
-**Section sources**
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L27-L44)
-
-### Crawler Request (CrawlerRequest)
+### Crawler request (CrawlerRequest)
 - Purpose: Request for content crawling with optional context and authentication.
 - Fields and types:
   - question: str
@@ -329,7 +225,7 @@ ReactAgentRequest --> PyjiitLoginResponse : "optional"
   - attached_file_path: Optional[str]
 - Validation and behavior:
   - populate_by_name enabled.
-  - Defaults ensure robust handling when optional fields are absent.
+  - Defaults ensure reliable handling when optional fields are absent.
 
 ```mermaid
 classDiagram
@@ -345,14 +241,7 @@ class PyjiitLoginResponse
 CrawlerRequest --> PyjiitLoginResponse : "optional"
 ```
 
-**Diagram sources**
-- [models/requests/crawller.py](file://models/requests/crawller.py#L8-L35)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L54-L91)
-
-**Section sources**
-- [models/requests/crawller.py](file://models/requests/crawller.py#L8-L35)
-
-### Website Request (WebsiteRequest)
+### Website request (WebsiteRequest)
 - Purpose: Query for website QA with optional client HTML and attached file.
 - Fields and types:
   - url: str
@@ -374,13 +263,7 @@ class WebsiteRequest {
 }
 ```
 
-**Diagram sources**
-- [models/requests/website.py](file://models/requests/website.py#L5-L11)
-
-**Section sources**
-- [models/requests/website.py](file://models/requests/website.py#L5-L11)
-
-### Subtitles Request (SubtitlesRequest)
+### Subtitles request (SubtitlesRequest)
 - Purpose: Fetch subtitles for a given URL with optional language.
 - Fields and types:
   - url: str
@@ -396,13 +279,7 @@ class SubtitlesRequest {
 }
 ```
 
-**Diagram sources**
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L5-L8)
-
-**Section sources**
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L5-L8)
-
-### Video Info Request (VideoInfoRequest)
+### Video info request (VideoInfoRequest)
 - Purpose: Retrieve basic video metadata by URL.
 - Fields and types:
   - url: str
@@ -416,13 +293,7 @@ class VideoInfoRequest {
 }
 ```
 
-**Diagram sources**
-- [models/requests/video_info.py](file://models/requests/video_info.py#L5-L7)
-
-**Section sources**
-- [models/requests/video_info.py](file://models/requests/video_info.py#L5-L7)
-
-### GitHub Request (GitHubRequest)
+### GitHub request (GitHubRequest)
 - Purpose: Query GitHub resources with validated URL type.
 - Fields and types:
   - url: HttpUrl
@@ -442,13 +313,7 @@ class GitHubRequest {
 }
 ```
 
-**Diagram sources**
-- [models/requests/github.py](file://models/requests/github.py#L4-L9)
-
-**Section sources**
-- [models/requests/github.py](file://models/requests/github.py#L4-L9)
-
-### Ask Request (AskRequest)
+### Ask request (AskRequest)
 - Purpose: General-purpose question-answering request with optional attachments.
 - Fields and types:
   - url: str
@@ -468,13 +333,7 @@ class AskRequest {
 }
 ```
 
-**Diagram sources**
-- [models/requests/ask.py](file://models/requests/ask.py#L5-L10)
-
-**Section sources**
-- [models/requests/ask.py](file://models/requests/ask.py#L5-L10)
-
-### PyJIIT Nested Models (PyjiitInstituteEntry, PyjiitRegData, PyjiitRawResponse, PyjiitLoginResponse)
+### PyJIIT nested models (PyjiitInstituteEntry, PyjiitRegData, PyjiitRawResponse, PyjiitLoginResponse)
 - Purpose: Represent authentication and session metadata from the PyJIIT portal.
 - Fields and types:
   - PyjiitInstituteEntry: label (str), value (str)
@@ -528,13 +387,7 @@ PyjiitLoginResponse --> PyjiitRawResponse : "has"
 PyjiitLoginResponse --> PyjiitRegData : "has"
 ```
 
-**Diagram sources**
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L9-L91)
-
-**Section sources**
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L9-L91)
-
-### Response Models
+### Response models
 - GenerateScriptResponse: ok (bool), action_plan (Optional[Dict[str, Any]]), error (Optional[str]), problems (Optional[List[str]]), raw_response (Optional[str])
 - ReactAgentResponse: messages (List[AgentMessage]), output (str)
 - SubtitlesResponse: subtitles (str)
@@ -568,22 +421,7 @@ class AgentMessage
 ReactAgentResponse --> AgentMessage : "contains"
 ```
 
-**Diagram sources**
-- [models/response/agent.py](file://models/response/agent.py#L5-L11)
-- [models/response/react_agent.py](file://models/response/react_agent.py#L10-L15)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L4-L6)
-- [models/response/health.py](file://models/response/health.py#L4-L7)
-- [models/response/website.py](file://models/response/website.py#L4-L6)
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L10-L24)
-
-**Section sources**
-- [models/response/agent.py](file://models/response/agent.py#L5-L11)
-- [models/response/react_agent.py](file://models/response/react_agent.py#L10-L15)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L4-L6)
-- [models/response/health.py](file://models/response/health.py#L4-L7)
-- [models/response/website.py](file://models/response/website.py#L4-L6)
-
-## Dependency Analysis
+## Dependency analysis
 - ReactAgentRequest depends on AgentMessage and PyjiitLoginResponse.
 - CrawlerRequest optionally depends on PyjiitLoginResponse.
 - PyjiitLoginResponse composes PyjiitRawResponse and PyjiitRegData.
@@ -599,29 +437,15 @@ PRR --> PRD["PyjiitRegData"]
 PRD --> PIE["PyjiitInstituteEntry"]
 ```
 
-**Diagram sources**
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L27-L44)
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L10-L24)
-- [models/requests/crawller.py](file://models/requests/crawller.py#L8-L35)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L54-L91)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L47-L52)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L14-L44)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L9-L12)
-
-**Section sources**
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L27-L44)
-- [models/requests/crawller.py](file://models/requests/crawller.py#L8-L35)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L54-L91)
-
-## Performance Considerations
+## Performance considerations
 - Prefer minimal validation overhead: most models rely on type coercion and defaults; avoid expensive validators.
 - Use Optional fields judiciously to reduce unnecessary allocations when data is absent.
 - For large payloads (e.g., tool_calls), keep payloads compact and avoid redundant copies.
-- Leverage alias normalization to reduce parsing ambiguity and improve throughput.
+- Use alias normalization to reduce parsing ambiguity and improve throughput.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Validation errors:
   - Non-empty content in AgentMessage triggers validation failures if missing or blank after trimming.
   - Missing required fields in requests cause validation errors; ensure presence of required fields or provide defaults.
@@ -632,11 +456,6 @@ PRD --> PIE["PyjiitInstituteEntry"]
 - Serialization differences:
   - ToolCalls/toolCallId and similar fields use aliases; ensure clients send the appropriate keys to pass validation.
 
-**Section sources**
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L10-L24)
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L27-L44)
-- [models/requests/github.py](file://models/requests/github.py#L4-L9)
-
 ## Conclusion
 The Agentic Browser data model layer uses Pydantic to define clear, validated request and response schemas. Authentication contexts are integrated via optional nested models, while YouTube metadata is encapsulated in a reusable model. Aliases and defaults improve resilience against client-side inconsistencies. Responses standardize outcomes across services, enabling predictable integration.
 
@@ -644,7 +463,7 @@ The Agentic Browser data model layer uses Pydantic to define clear, validated re
 
 ## Appendices
 
-### Data Lifecycle and Transformation
+### Data lifecycle and transformation
 - Deserialization: Requests are parsed from JSON into Pydantic models; aliases resolve to canonical field names; defaults fill missing optional fields.
 - Validation: Pydantic enforces types, lengths, and optional constraints; custom descriptions clarify intent.
 - Processing: Services operate on validated models; nested models propagate context (e.g., PyJIIT login).
@@ -652,7 +471,7 @@ The Agentic Browser data model layer uses Pydantic to define clear, validated re
 
 [No sources needed since this section provides general guidance]
 
-### Security and Privacy Considerations
+### Security and privacy considerations
 - Token handling:
   - Google access tokens and PyJIIT tokens are optional fields; ensure they are transmitted securely and handled with least privilege.
 - Sensitive data:
@@ -662,7 +481,7 @@ The Agentic Browser data model layer uses Pydantic to define clear, validated re
 
 [No sources needed since this section provides general guidance]
 
-### Schema Evolution and Backwards Compatibility
+### Schema evolution and backwards compatibility
 - Add new optional fields with defaults to preserve backward compatibility.
 - Introduce aliases for renamed fields to accept legacy clients while serializing under new names.
 - Avoid removing required fields; deprecate with migration paths.

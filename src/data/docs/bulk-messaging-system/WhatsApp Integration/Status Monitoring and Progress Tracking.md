@@ -1,33 +1,9 @@
-# Status Monitoring and Progress Tracking
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://README.md)
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [pyodide.js](file://electron/src/utils/pyodide.js)
-- [package.json](file://electron/package.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Status monitoring and progress tracking
 
 ## Introduction
-This document explains the real-time status monitoring and progress tracking system for bulk messaging operations. It covers the event-driven status reporting pipeline, including client initialization and authentication, QR code generation, progress updates during message sending, and the frontend UI integration that displays live feedback. It also documents the status message types, progress tracking interface, error reporting, and troubleshooting guidance.
+This page explains the real-time status monitoring and progress tracking system for bulk messaging operations. It covers the event-driven status reporting pipeline, including client initialization and authentication, QR code generation, progress updates during message sending, and the frontend UI integration that displays live feedback. It also documents the status message types, progress tracking interface, error reporting, and troubleshooting guidance.
 
-## Project Structure
+## Project structure
 The status monitoring spans three layers:
 - Electron Main Process: Initializes clients, emits status events, and manages long-running operations.
 - Preload Bridge: Exposes secure IPC channels to the renderer for receiving status updates.
@@ -54,19 +30,7 @@ P --> BM
 BM --> WF
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L494-L605)
-
-**Section sources**
-- [README.md](file://README.md#L43-L58)
-- [package.json](file://electron/package.json#L20-L31)
-
-## Core Components
+## Core components
 - WhatsApp client lifecycle and status events:
   - Client initialization, QR code generation, authentication, readiness, and disconnection events are emitted to the renderer.
   - Progress events during mass sending include per-contact status and final summary.
@@ -76,16 +40,7 @@ BM --> WF
   - Event subscriptions for status, QR, and send progress.
   - Real-time UI updates and activity log aggregation.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [preload.js](file://electron/src/electron/preload.js#L18-L39)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L494-L605)
-
-## Architecture Overview
+## Architecture overview
 The status monitoring follows an event-driven pattern:
 - Main process emits events for client status, QR code, and send progress.
 - Preload exposes IPC listeners to the renderer.
@@ -124,16 +79,9 @@ P-->>BM : Final summary
 BM-->>UI : Show totals
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [preload.js](file://electron/src/electron/preload.js#L28-L39)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L263-L415)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L494-L605)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### WhatsApp Status Reporting Pipeline
+### WhatsApp status reporting pipeline
 - Client lifecycle events:
   - Initialization, QR generation, ready, authenticated, auth failure, and disconnect notifications are sent to the renderer.
 - QR code generation:
@@ -170,21 +118,7 @@ P-->>BM : Final summary
 BM-->>WF : Show totals
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [preload.js](file://electron/src/electron/preload.js#L28-L39)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L394-L415)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L524-L560)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [preload.js](file://electron/src/electron/preload.js#L28-L39)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L394-L415)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L524-L560)
-
-### Gmail and SMTP Progress Tracking
+### Gmail and SMTP progress tracking
 - Both handlers emit per-message progress events with:
   - current index
   - total count
@@ -211,19 +145,7 @@ BM-->>UI : Update results/log
 end
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L166-L206)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L55-L98)
-- [preload.js](file://electron/src/electron/preload.js#L18-L21)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L261)
-
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [preload.js](file://electron/src/electron/preload.js#L18-L21)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L261)
-
-### Status Message Types and Interpretation
+### Status message types and interpretation
 - WhatsApp client status:
   - Initializing WhatsApp client...
   - Scan QR code to authenticate
@@ -253,13 +175,7 @@ Interpretation guidelines:
 - "Failed" or "Authentication failed" indicates errors requiring action.
 - "Sending" indicates ongoing operation; "sent" indicates success; "failed" indicates error with details.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L166-L206)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L55-L98)
-
-### Progress Tracking Interface
+### Progress tracking interface
 - Sent/Failed counts:
   - Final summary after mass sending includes total sent and failed.
 - Individual recipient status:
@@ -268,12 +184,7 @@ Interpretation guidelines:
   - Status text updates immediately upon receiving events.
   - QR code appears/disappears based on authentication state.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L524-L560)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L394-L415)
-
-### Error Reporting System
+### Error reporting system
 - WhatsApp:
   - Authentication failures report the reason.
   - Disconnection reasons are reported.
@@ -293,17 +204,7 @@ Troubleshooting guidance:
 - Contact import errors:
   - Validate file format and encoding.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L162-L168)
-- [main.js](file://electron/src/electron/main.js#L174-L176)
-- [main.js](file://electron/src/electron/main.js#L205-L208)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L16-L29)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L195-L206)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L18-L20)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L88-L98)
-- [README.md](file://README.md#L412-L447)
-
-### Integration with Frontend UI
+### Integration with frontend UI
 - Event subscriptions:
   - onWhatsAppStatus, onWhatsAppQR, onWhatsAppSendStatus for WhatsApp.
   - onProgress for email progress.
@@ -312,14 +213,7 @@ Troubleshooting guidance:
   - QR code displayed until authenticated.
   - Activity log shows chronological status updates with color-coded severity.
 
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L28-L39)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L64-L75)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L205-L253)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L524-L560)
-
-## Dependency Analysis
+## Dependency analysis
 The status monitoring relies on:
 - Electron IPC for secure event transport.
 - whatsapp-web.js for WhatsApp client lifecycle and messaging.
@@ -338,16 +232,7 @@ GHJS["gmail-handler.js"] --> GA
 SHJS["smtp-handler.js"] --> NM
 ```
 
-**Diagram sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [main.js](file://electron/src/electron/main.js#L8-L12)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L3-L5)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1)
-
-**Section sources**
-- [package.json](file://electron/package.json#L20-L31)
-
-## Performance Considerations
+## Performance considerations
 - Rate limiting:
   - Delays between messages reduce the risk of throttling and improve reliability.
 - Asynchronous processing:
@@ -355,7 +240,7 @@ SHJS["smtp-handler.js"] --> NM
 - Efficient rendering:
   - Only appending new log entries prevents unnecessary re-renders.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - WhatsApp QR code not loading:
   - Retry connection; clear browser cache; ensure network connectivity.
@@ -366,8 +251,5 @@ Common issues and resolutions:
 - Contact import errors:
   - Confirm file format compatibility and UTF-8 encoding; ensure proper column headers.
 
-**Section sources**
-- [README.md](file://README.md#L412-L447)
-
 ## Conclusion
-The status monitoring system provides robust, real-time feedback for bulk messaging operations. It leverages Electron IPC to deliver client lifecycle events, QR code generation, and per-message progress updates to the frontend. The UI integrates these events seamlessly, enabling users to track sent/failed counts, monitor individual recipient statuses, and troubleshoot issues effectively.
+The status monitoring system provides reliable, real-time feedback for bulk messaging operations. It uses Electron IPC to deliver client lifecycle events, QR code generation, and per-message progress updates to the frontend. The UI integrates these events smoothly, enabling users to track sent/failed counts, monitor individual recipient statuses, and troubleshoot issues effectively.

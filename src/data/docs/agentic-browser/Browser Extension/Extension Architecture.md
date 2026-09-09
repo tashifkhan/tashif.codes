@@ -1,45 +1,14 @@
-# Extension Architecture
-
-<cite>
-**Referenced Files in This Document**
-- [wxt.config.ts](file://extension/wxt.config.ts)
-- [background.ts](file://extension/entrypoints/background.ts)
-- [content.ts](file://extension/entrypoints/content.ts)
-- [index.tsx](file://extension/entrypoints/sidepanel/index.tsx)
-- [main.tsx](file://extension/entrypoints/sidepanel/main.tsx)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts)
-- [useTabManagement.ts](file://extension/entrypoints/sidepanel/hooks/useTabManagement.ts)
-- [AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts)
-- [package.json](file://extension/package.json)
-- [tsconfig.json](file://extension/tsconfig.json)
-- [README.md](file://extension/README.md)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Security Considerations](#security-considerations)
-9. [Cross-Browser Compatibility](#cross-browser-compatibility)
-10. [Troubleshooting Guide](#troubleshooting-guide)
-11. [Conclusion](#conclusion)
+# Extension architecture
 
 ## Introduction
-This document explains the Browser Extension Architecture built with the WXT framework. It focuses on the three main entry points:
+This page explains the Browser Extension Architecture built with the WXT framework. It focuses on the three main entry points:
 - Background script for extension-wide operations and cross-tab coordination
 - Content script for page-level automation and DOM interaction
 - Side panel UI for user interaction and agent orchestration
 
 It documents extension configuration, manifest setup, messaging architecture, component relationships, lifecycle management, and integration patterns with browser APIs. Security, permissions, and performance optimization strategies are also covered.
 
-## Project Structure
+## Project structure
 The extension is organized under the extension directory with WXT entrypoints and React-based UI components. Key areas:
 - Configuration: wxt.config.ts defines module usage, permissions, and host permissions
 - Background: background.ts handles messaging, tab management, and agent tool execution
@@ -81,27 +50,7 @@ PKG --> WS
 PKG --> EXE
 ```
 
-**Diagram sources**
-- [wxt.config.ts](file://extension/wxt.config.ts#L1-L29)
-- [background.ts](file://extension/entrypoints/background.ts#L1-L1642)
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-- [index.tsx](file://extension/entrypoints/sidepanel/index.tsx#L1-L26)
-- [main.tsx](file://extension/entrypoints/sidepanel/main.tsx#L1-L10)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-- [useTabManagement.ts](file://extension/entrypoints/sidepanel/hooks/useTabManagement.ts#L1-L94)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L1-L133)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-- [package.json](file://extension/package.json#L1-L40)
-- [tsconfig.json](file://extension/tsconfig.json#L1-L13)
-
-**Section sources**
-- [wxt.config.ts](file://extension/wxt.config.ts#L1-L29)
-- [package.json](file://extension/package.json#L1-L40)
-- [tsconfig.json](file://extension/tsconfig.json#L1-L13)
-- [README.md](file://extension/README.md#L1-L4)
-
-## Core Components
+## Core components
 - Background Script: Central orchestrator for messaging, tab state, and agent tool execution. Handles message routing for agent actions, tab operations, and Gemini requests.
 - Content Script: Page-level automation that injects or removes visual overlays and performs DOM actions (click, type, scroll) via injected scripts.
 - Side Panel UI: React application mounted in a shadow DOM, providing user controls, authentication, tab management, and agent execution with WebSocket integration.
@@ -111,14 +60,7 @@ Key responsibilities:
 - Permissions: activeTab, tabs, storage, scripting, identity, sidePanel, webNavigation, webRequest, cookies, bookmarks, history, clipboard, notifications, contextMenus, downloads
 - Cross-origin: host_permissions for <all_urls>
 
-**Section sources**
-- [background.ts](file://extension/entrypoints/background.ts#L1-L1642)
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-- [index.tsx](file://extension/entrypoints/sidepanel/index.tsx#L1-L26)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [wxt.config.ts](file://extension/wxt.config.ts#L5-L27)
-
-## Architecture Overview
+## Architecture overview
 The extension follows a layered architecture:
 - UI Layer: Side panel React app with hooks for auth and tab management
 - Control Layer: Background script managing messaging and cross-tab operations
@@ -152,19 +94,9 @@ BG --> NAV
 BG --> REQ
 ```
 
-**Diagram sources**
-- [background.ts](file://extension/entrypoints/background.ts#L1-L1642)
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-- [index.tsx](file://extension/entrypoints/sidepanel/index.tsx#L1-L26)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L1-L133)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-- [useTabManagement.ts](file://extension/entrypoints/sidepanel/hooks/useTabManagement.ts#L1-L94)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Background Script
+### Background script
 Responsibilities:
 - Message routing for agent tool execution, tab activation/deactivation, tab queries, action execution, Gemini requests, and generated agent runs
 - Tab tracking via browser.tabs listeners and storage updates
@@ -193,15 +125,7 @@ CT-->>BG : "Action result"
 BG-->>UI : "Response"
 ```
 
-**Diagram sources**
-- [background.ts](file://extension/entrypoints/background.ts#L24-L128)
-- [background.ts](file://extension/entrypoints/background.ts#L428-L449)
-- [content.ts](file://extension/entrypoints/content.ts#L197-L213)
-
-**Section sources**
-- [background.ts](file://extension/entrypoints/background.ts#L1-L1642)
-
-### Content Script
+### Content script
 Responsibilities:
 - Optional creation/removal of visual AI frame overlays
 - DOM-level actions (click, type, scroll) via injected functions
@@ -211,10 +135,7 @@ Notes:
 - The current implementation focuses on DOM manipulation and does not actively listen for messages in the provided snippet
 - The commented code shows a previous approach to overlay injection and removal
 
-**Section sources**
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-
-### Side Panel UI
+### Side panel UI
 Responsibilities:
 - Mounts React app in a shadow DOM
 - Provides authentication flow (Google OAuth and demo GitHub login)
@@ -248,22 +169,7 @@ WS->>WS : "Emit execute_agent"
 WS-->>UI : "Progress + Result"
 ```
 
-**Diagram sources**
-- [index.tsx](file://extension/entrypoints/sidepanel/index.tsx#L1-L26)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-- [useTabManagement.ts](file://extension/entrypoints/sidepanel/hooks/useTabManagement.ts#L1-L94)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L1-L133)
-- [background.ts](file://extension/entrypoints/background.ts#L81-L89)
-
-**Section sources**
-- [index.tsx](file://extension/entrypoints/sidepanel/index.tsx#L1-L26)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-- [useTabManagement.ts](file://extension/entrypoints/sidepanel/hooks/useTabManagement.ts#L1-L94)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L1-L133)
-
-### Messaging System Architecture
+### Messaging system architecture
 The messaging system connects the UI, background, and content layers:
 - UI sends commands to background via runtime.sendMessage
 - Background routes messages to appropriate handlers
@@ -289,17 +195,7 @@ CT_PERF --> BG_RESP["Return result to background"]
 BG_RESP --> UI_RESP["Return result to UI"]
 ```
 
-**Diagram sources**
-- [background.ts](file://extension/entrypoints/background.ts#L24-L128)
-- [background.ts](file://extension/entrypoints/background.ts#L428-L514)
-- [content.ts](file://extension/entrypoints/content.ts#L197-L213)
-
-**Section sources**
-- [background.ts](file://extension/entrypoints/background.ts#L24-L128)
-- [background.ts](file://extension/entrypoints/background.ts#L428-L514)
-- [content.ts](file://extension/entrypoints/content.ts#L197-L213)
-
-### Component Relationships
+### Component relationships
 - Side Panel App depends on hooks for authentication and tab management
 - AgentExecutor integrates with WebSocket client and action executor
 - Background script coordinates messaging and tab operations
@@ -349,21 +245,7 @@ AgentExecutor --> WebSocketClient : "uses"
 AgentExecutor --> executeActions : "uses"
 ```
 
-**Diagram sources**
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-- [useTabManagement.ts](file://extension/entrypoints/sidepanel/hooks/useTabManagement.ts#L1-L94)
-- [AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx#L1-L800)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L1-L133)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-
-**Section sources**
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx#L1-L800)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L1-L133)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-
-## Dependency Analysis
+## Dependency analysis
 External dependencies include React, Socket.IO client, and Google Generative AI SDK. Internal dependencies are structured around hooks and utilities.
 
 ```mermaid
@@ -380,19 +262,7 @@ APP --> AE["AgentExecutor.tsx"]
 AE --> EXE["executeActions.ts"]
 ```
 
-**Diagram sources**
-- [package.json](file://extension/package.json#L17-L32)
-- [App.tsx](file://extension/entrypoints/sidepanel/App.tsx#L1-L200)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-- [useTabManagement.ts](file://extension/entrypoints/sidepanel/hooks/useTabManagement.ts#L1-L94)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L1-L133)
-- [AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx#L1-L800)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-
-**Section sources**
-- [package.json](file://extension/package.json#L17-L32)
-
-## Performance Considerations
+## Performance considerations
 - Minimize DOM operations: batch DOM queries and mutations in content script
 - Debounce UI updates: throttle progress updates and tab list refreshes
 - Lazy loading: defer heavy computations until needed (e.g., Gemini SDK dynamic import)
@@ -400,20 +270,20 @@ AE --> EXE["executeActions.ts"]
 - Memory cleanup: remove event listeners and unmount React roots when appropriate
 - WebSocket reconnection: configure retry policies and backoff strategies
 
-## Security Considerations
+## Security considerations
 - Permissions: carefully review and limit permissions to those required for functionality
 - Host permissions: <all_urls> grants broad access; ensure CSP and content security are enforced
 - OAuth: validate redirect URIs and handle errors gracefully; store tokens securely in browser storage
 - Content script isolation: avoid exposing sensitive data; sanitize inputs before DOM manipulation
 - Cross-origin requests: validate and sanitize external API responses; handle rate limits and errors
 
-## Cross-Browser Compatibility
+## Cross-Browser compatibility
 - WXT supports multiple browsers; ensure browser-specific APIs are handled consistently
 - Use browser polyfills or feature detection for APIs not universally available
 - Test manifest keys and permissions across Chrome, Firefox, and Edge
 - Validate content script injection and messaging behavior differences
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Messaging timeouts: verify message listener registration and ensure async responses are sent
 - Content script injection failures: confirm scripting permissions and correct file paths
@@ -421,10 +291,5 @@ Common issues and resolutions:
 - WebSocket connectivity: verify URL configuration and network availability
 - Authentication errors: validate OAuth flow and token refresh logic
 
-**Section sources**
-- [background.ts](file://extension/entrypoints/background.ts#L24-L128)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L128-L208)
-- [websocket-client.ts](file://extension/entrypoints/utils/websocket-client.ts#L17-L40)
-
 ## Conclusion
-The extension architecture leverages WXT’s entry points and React to deliver a cohesive browser automation experience. The background script centralizes messaging and coordination, the content script handles page-level automation, and the side panel UI provides user interaction and agent orchestration. Proper configuration, security hardening, and performance optimization are essential for robust cross-browser deployment.
+The extension architecture uses WXT's entry points and React to deliver a cohesive browser automation experience. The background script centralizes messaging and coordination, the content script handles page-level automation, and the side panel UI provides user interaction and agent orchestration. Proper configuration, security hardening, and performance optimization are essential for reliable cross-browser deployment.

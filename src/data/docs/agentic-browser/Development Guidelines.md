@@ -1,42 +1,9 @@
-# Development Guidelines
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://README.md)
-- [main.py](file://main.py)
-- [pyproject.toml](file://pyproject.toml)
-- [api/run.py](file://api/run.py)
-- [core/config.py](file://core/config.py)
-- [mcp_server/server.py](file://mcp_server/server.py)
-- [agents/react_agent.py](file://agents/react_agent.py)
-- [routers/react_agent.py](file://routers/react_agent.py)
-- [services/react_agent_service.py](file://services/react_agent_service.py)
-- [extension/README.md](file://extension/README.md)
-- [extension/package.json](file://extension/package.json)
-- [extension/wxt.config.ts](file://extension/wxt.config.ts)
-- [extension/tsconfig.json](file://extension/tsconfig.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Development Workflow](#development-workflow)
-10. [Code Standards and Conventions](#code-standards-and-conventions)
-11. [Testing Requirements](#testing-requirements)
-12. [Documentation Standards](#documentation-standards)
-13. [Release Procedures](#release-procedures)
-14. [Conclusion](#conclusion)
+# Development guidelines
 
 ## Introduction
-This document provides comprehensive development guidelines for contributors working on Agentic Browser. It covers code standards for Python backend, TypeScript frontend, and browser extension development, outlines the development workflow, debugging techniques, performance profiling, code review processes, quality assurance practices, environment setup, IDE configuration, and contribution guidelines for new features, tool system extensions, and service integrations.
+This page provides detailed development guidelines for contributors working on Agentic Browser. It covers code standards for Python backend, TypeScript frontend, and browser extension development, outlines the development workflow, debugging techniques, performance profiling, code review processes, quality assurance practices, environment setup, IDE configuration, and contribution guidelines for new features, tool system extensions, and service integrations.
 
-## Project Structure
+## Project structure
 Agentic Browser is organized into distinct layers:
 - Python backend: FastAPI server and MCP server for model-agnostic agent orchestration
 - Agent runtime: LangGraph-based React agent with tool integration
@@ -80,25 +47,7 @@ PKG --> WXT
 WXT --> TSCONFIG
 ```
 
-**Diagram sources**
-- [main.py](file://main.py#L1-L58)
-- [api/run.py](file://api/run.py#L1-L15)
-- [mcp_server/server.py](file://mcp_server/server.py#L1-L139)
-- [core/config.py](file://core/config.py#L1-L26)
-- [agents/react_agent.py](file://agents/react_agent.py#L1-L191)
-- [services/react_agent_service.py](file://services/react_agent_service.py#L1-L154)
-- [routers/react_agent.py](file://routers/react_agent.py#L1-L57)
-- [extension/README.md](file://extension/README.md#L1-L4)
-- [extension/package.json](file://extension/package.json#L1-L40)
-- [extension/wxt.config.ts](file://extension/wxt.config.ts#L1-L29)
-- [extension/tsconfig.json](file://extension/tsconfig.json#L1-L13)
-
-**Section sources**
-- [README.md](file://README.md#L1-L185)
-- [main.py](file://main.py#L1-L58)
-- [pyproject.toml](file://pyproject.toml#L1-L34)
-
-## Core Components
+## Core components
 - Entry point and server selection: The main entry chooses between API and MCP modes, supporting interactive and non-interactive modes.
 - API server: Uvicorn-based FastAPI app with reload capability for development.
 - MCP server: Model Context Protocol server exposing tools for LLMs and website context conversion.
@@ -106,15 +55,7 @@ WXT --> TSCONFIG
 - Services: Orchestrate agent workflows, integrate external SDKs, and manage context.
 - Extension: React-based sidepanel, background scripts, and utilities for agent execution and WebSocket communication.
 
-**Section sources**
-- [main.py](file://main.py#L11-L58)
-- [api/run.py](file://api/run.py#L4-L10)
-- [mcp_server/server.py](file://mcp_server/server.py#L13-L139)
-- [agents/react_agent.py](file://agents/react_agent.py#L138-L191)
-- [services/react_agent_service.py](file://services/react_agent_service.py#L16-L154)
-- [extension/README.md](file://extension/README.md#L1-L4)
-
-## Architecture Overview
+## Architecture overview
 Agentic Browser follows a model-agnostic architecture with a Python MCP server bridging LLM reasoning and browser automation. The React agent orchestrates multi-step workflows, while the extension provides a secure UI and WebSocket connectivity.
 
 ```mermaid
@@ -139,15 +80,9 @@ AGENT --> MCP
 MCP --> AGENT
 ```
 
-**Diagram sources**
-- [routers/react_agent.py](file://routers/react_agent.py#L1-L57)
-- [services/react_agent_service.py](file://services/react_agent_service.py#L16-L154)
-- [agents/react_agent.py](file://agents/react_agent.py#L138-L191)
-- [mcp_server/server.py](file://mcp_server/server.py#L13-L139)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Python Backend Entry Point
+### Python backend entry point
 - Supports mutually exclusive modes: API server or MCP server.
 - Non-interactive mode defaults to API server when requested.
 - Environment loading via dotenv for configuration.
@@ -167,13 +102,7 @@ Choice --> |2| RunMCP
 DefaultAPI --> RunAPI
 ```
 
-**Diagram sources**
-- [main.py](file://main.py#L11-L58)
-
-**Section sources**
-- [main.py](file://main.py#L11-L58)
-
-### API Server and Router
+### API server and router
 - Uvicorn runner with configurable host, port, and reload.
 - Router validates inputs and delegates to service layer.
 - Service handles agent execution and returns responses.
@@ -193,18 +122,7 @@ Service-->>Router : Answer text
 Router-->>Client : 200 OK with answer
 ```
 
-**Diagram sources**
-- [routers/react_agent.py](file://routers/react_agent.py#L18-L57)
-- [services/react_agent_service.py](file://services/react_agent_service.py#L17-L145)
-- [agents/react_agent.py](file://agents/react_agent.py#L183-L191)
-
-**Section sources**
-- [api/run.py](file://api/run.py#L4-L10)
-- [routers/react_agent.py](file://routers/react_agent.py#L1-L57)
-- [services/react_agent_service.py](file://services/react_agent_service.py#L1-L154)
-- [agents/react_agent.py](file://agents/react_agent.py#L1-L191)
-
-### MCP Server and Tools
+### MCP server and tools
 - Exposes tools for LLM generation, GitHub Q&A, and website content conversion.
 - Uses typed inputs and structured responses via MCP types.
 - Error handling returns descriptive text responses.
@@ -225,13 +143,7 @@ HTMLtoMD --> Return
 Dispatch --> |Unknown/Error| ErrorResp["Return Error Message"]
 ```
 
-**Diagram sources**
-- [mcp_server/server.py](file://mcp_server/server.py#L16-L124)
-
-**Section sources**
-- [mcp_server/server.py](file://mcp_server/server.py#L1-L139)
-
-### React Agent Graph
+### React agent graph
 - LangGraph workflow with agent node and tool execution node.
 - Caching via LRU cache for compiled graph.
 - Message normalization and conversion between payloads and LangChain messages.
@@ -254,16 +166,10 @@ GraphBuilder --> AgentState : "compiles workflow"
 ReactAgent --> GraphBuilder : "uses cached graph"
 ```
 
-**Diagram sources**
-- [agents/react_agent.py](file://agents/react_agent.py#L138-L191)
-
-**Section sources**
-- [agents/react_agent.py](file://agents/react_agent.py#L1-L191)
-
-### Extension Configuration and Build
+### Extension configuration and build
 - WXT configuration defines permissions and host permissions.
 - Package scripts for dev, build, and zip targets.
-- TypeScript configuration extends WXT’s tsconfig with path aliases.
+- TypeScript configuration extends WXT's tsconfig with path aliases.
 
 ```mermaid
 flowchart TD
@@ -275,18 +181,7 @@ WXTBuild --> Manifest
 WXTZip --> Manifest
 ```
 
-**Diagram sources**
-- [extension/package.json](file://extension/package.json#L7-L16)
-- [extension/wxt.config.ts](file://extension/wxt.config.ts#L3-L28)
-- [extension/tsconfig.json](file://extension/tsconfig.json#L1-L13)
-
-**Section sources**
-- [extension/README.md](file://extension/README.md#L1-L4)
-- [extension/package.json](file://extension/package.json#L1-L40)
-- [extension/wxt.config.ts](file://extension/wxt.config.ts#L1-L29)
-- [extension/tsconfig.json](file://extension/tsconfig.json#L1-L13)
-
-## Dependency Analysis
+## Dependency analysis
 - Python dependencies declared in project metadata and scripts for CLI entry points.
 - Extension dependencies include React, Radix UI, Tailwind utilities, and WXT tooling.
 - Core configuration loads environment variables and sets logging levels.
@@ -300,23 +195,14 @@ EXTDEPS --> BUILD["Build & Dev Tooling"]
 CFG["core/config.py"] --> LOGGING["Logging Setup"]
 ```
 
-**Diagram sources**
-- [pyproject.toml](file://pyproject.toml#L1-L34)
-- [extension/package.json](file://extension/package.json#L17-L39)
-- [core/config.py](file://core/config.py#L1-L26)
-
-**Section sources**
-- [pyproject.toml](file://pyproject.toml#L1-L34)
-- [core/config.py](file://core/config.py#L1-L26)
-
-## Performance Considerations
+## Performance considerations
 - Use LRU caching for compiled agent graphs to avoid repeated compilation overhead.
-- Minimize synchronous I/O in hot paths; leverage async patterns in services and routers.
+- Minimize synchronous I/O in hot paths; use async patterns in services and routers.
 - Profile long-running tool invocations and external API calls; consider timeouts and retries.
 - Monitor logging verbosity in production to reduce I/O overhead.
 - Optimize HTML-to-markdown conversions and file uploads for large content.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common debugging techniques:
 - Backend debugging
   - Enable debug logging via environment variables and inspect loggers.
@@ -332,14 +218,7 @@ Common debugging techniques:
   - Test routers with valid and invalid inputs; confirm HTTP status codes and error messages.
   - Mock external services for deterministic test runs.
 
-**Section sources**
-- [core/config.py](file://core/config.py#L8-L26)
-- [api/run.py](file://api/run.py#L4-L10)
-- [mcp_server/server.py](file://mcp_server/server.py#L83-L124)
-- [agents/react_agent.py](file://agents/react_agent.py#L52-L121)
-- [extension/wxt.config.ts](file://extension/wxt.config.ts#L8-L27)
-
-## Development Workflow
+## Development workflow
 - Branching strategy
   - Use feature branches per feature or bug fix.
   - Keep branches up to date with upstream main.
@@ -349,9 +228,9 @@ Common debugging techniques:
   - Include clear description, linked issues, and acceptance criteria.
   - Ensure tests pass and code is reviewed by maintainers.
 
-## Code Standards and Conventions
+## Code standards and conventions
 
-### Python Backend
+### Python backend
 - Naming
   - Modules: snake_case; classes: PascalCase; functions: snake_case; constants: UPPER_CASE.
 - Imports
@@ -363,7 +242,7 @@ Common debugging techniques:
 - Error handling
   - Return structured error responses; catch and log exceptions in routers and services.
 
-### TypeScript Frontend
+### TypeScript frontend
 - Naming
   - Components: PascalCase; hooks: useXxx; utilities: camelCase.
 - Imports
@@ -373,7 +252,7 @@ Common debugging techniques:
 - Build and scripts
   - Use WXT scripts for development, building, and packaging.
 
-### Browser Extension
+### Browser extension
 - Permissions
   - Define minimal required permissions in manifest; host permissions for all URLs.
 - Sidepanel and background
@@ -381,14 +260,7 @@ Common debugging techniques:
 - WebSocket
   - Implement connection management and reconnection strategies.
 
-**Section sources**
-- [agents/react_agent.py](file://agents/react_agent.py#L40-L121)
-- [routers/react_agent.py](file://routers/react_agent.py#L18-L57)
-- [services/react_agent_service.py](file://services/react_agent_service.py#L16-L154)
-- [extension/tsconfig.json](file://extension/tsconfig.json#L3-L12)
-- [extension/wxt.config.ts](file://extension/wxt.config.ts#L8-L27)
-
-## Testing Requirements
+## Testing requirements
 - Unit tests
   - Test individual functions, services, and tool logic with pytest.
   - Mock external dependencies to isolate units.
@@ -399,7 +271,7 @@ Common debugging techniques:
   - Use React testing libraries for component and hook tests.
   - Validate WebSocket client behavior and sidepanel interactions.
 
-## Documentation Standards
+## Documentation standards
 - Inline documentation
   - Document public functions, classes, and modules with purpose, parameters, and return values.
 - API documentation
@@ -407,7 +279,7 @@ Common debugging techniques:
 - README updates
   - Update feature descriptions and contribution steps as needed.
 
-## Release Procedures
+## Release procedures
 - Versioning
   - Increment version in project metadata and package manifests.
 - Packaging

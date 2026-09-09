@@ -1,39 +1,9 @@
-# Frontend User Interface
-
-<cite>
-**Referenced Files in This Document**
-- [App.jsx](file://electron/src/ui/App.jsx)
-- [main.jsx](file://electron/src/ui/main.jsx)
-- [App.css](file://electron/src/ui/App.css)
-- [index.css](file://electron/src/ui/index.css)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx)
-- [Icons.jsx](file://electron/src/components/Icons.jsx)
-- [vite.config.js](file://electron/vite.config.js)
-- [package.json](file://electron/package.json)
-- [index.html](file://electron/index.html)
-- [dist-react/index.html](file://electron/dist-react/index.html)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Frontend user interface
 
 ## Introduction
-This document describes the React-based user interface architecture for the WhatsApp and email bulk messaging application. It focuses on the component hierarchy starting with App.jsx as the main container and BulkMailer.jsx as the primary application component. The documentation covers the sidebar navigation system, top bar functionality, responsive design using Tailwind CSS, state management patterns with React hooks, modular component architecture, styling guidelines, theme implementation, dark mode support, accessibility features, cross-platform UI consistency, and performance optimization techniques.
+This page describes the React-based user interface architecture for the WhatsApp and email bulk messaging application. It focuses on the component hierarchy starting with App.jsx as the main container and BulkMailer.jsx as the primary application component. The documentation covers the sidebar navigation system, top bar functionality, responsive design using Tailwind CSS, state management patterns with React hooks, modular component architecture, styling guidelines, theme implementation, dark mode support, accessibility features, cross-platform UI consistency, and performance optimization techniques.
 
-## Project Structure
+## Project structure
 The frontend is organized into two main areas:
 - UI bootstrap and global styles: electron/src/ui
 - Application components and forms: electron/src/components
@@ -77,33 +47,7 @@ GMAIL --> ICONS
 SMTP --> ICONS
 ```
 
-**Diagram sources**
-- [main.jsx](file://electron/src/ui/main.jsx#L1-L11)
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx#L1-L90)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx#L1-L24)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [Icons.jsx](file://electron/src/components/Icons.jsx#L1-L53)
-
-**Section sources**
-- [main.jsx](file://electron/src/ui/main.jsx#L1-L11)
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx#L1-L90)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx#L1-L24)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [Icons.jsx](file://electron/src/components/Icons.jsx#L1-L53)
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
-- [package.json](file://electron/package.json#L1-L49)
-- [index.html](file://electron/index.html#L1-L13)
-- [dist-react/index.html](file://electron/dist-react/index.html#L1-L14)
-
-## Core Components
+## Core components
 - App.jsx: Minimal wrapper that renders the main BulkMailer component and applies global CSS.
 - BulkMailer.jsx: Central state hub managing tab selection, Electron API integrations, form validation, and rendering the active form.
 - Sidebar.jsx: Vertical navigation with icons for switching between Gmail, SMTP, and WhatsApp tabs.
@@ -116,14 +60,7 @@ State management highlights:
 - Electron API integration for authentication, file import, QR display, and sending operations.
 - Tab-based routing without a router library, using a single activeTab state.
 
-**Section sources**
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx#L1-L90)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx#L1-L24)
-- [Icons.jsx](file://electron/src/components/Icons.jsx#L1-L53)
-
-## Architecture Overview
+## Architecture overview
 The application follows a container/presentational pattern:
 - App.jsx mounts the application.
 - BulkMailer.jsx acts as the container, holding state and coordinating Electron API calls.
@@ -147,16 +84,7 @@ BM --> GF
 BM --> SF
 ```
 
-**Diagram sources**
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx#L1-L90)
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx#L1-L24)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### App.jsx and main.jsx
 - main.jsx initializes the React root and mounts App.jsx.
@@ -165,12 +93,6 @@ BM --> SF
 Implementation notes:
 - StrictMode enabled during development.
 - Global CSS files are imported for base styles and animations.
-
-**Section sources**
-- [main.jsx](file://electron/src/ui/main.jsx#L1-L11)
-- [App.jsx](file://electron/src/ui/App.jsx#L1-L13)
-- [App.css](file://electron/src/ui/App.css#L1-L10)
-- [index.css](file://electron/src/ui/index.css#L1-L37)
 
 ### BulkMailer.jsx
 Responsibilities:
@@ -211,19 +133,6 @@ Reset --> Render
 WAResults --> Render
 ```
 
-**Diagram sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L60-L107)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L109-L147)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L221-L261)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L263-L288)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L290-L321)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L368-L415)
-
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-
 ### Sidebar.jsx
 Responsibilities:
 - Provide vertical navigation with three icons for Gmail, SMTP, and WhatsApp.
@@ -235,9 +144,6 @@ Design details:
 - Hover and active states with transitions.
 - Consistent icon sizing and color scheme.
 
-**Section sources**
-- [Sidebar.jsx](file://electron/src/components/Sidebar.jsx#L1-L90)
-
 ### TopBar.jsx
 Responsibilities:
 - Display the current active tab and a descriptive subtitle.
@@ -246,9 +152,6 @@ Responsibilities:
 Styling:
 - Backdrop blur and semi-transparent background for depth.
 - Text color and typography aligned with dark theme.
-
-**Section sources**
-- [TopBar.jsx](file://electron/src/components/TopBar.jsx#L1-L24)
 
 ### WhatsAppForm.jsx
 Responsibilities:
@@ -263,9 +166,6 @@ State and UX:
 - Manual number input with parsing and validation.
 - Disabled states during sending operations.
 
-**Section sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L609)
-
 ### GmailForm.jsx
 Responsibilities:
 - Authenticate with Gmail via Electron API.
@@ -276,9 +176,6 @@ UX:
 - Authentication status indicator.
 - Recipient count and readiness checks.
 - Real-time email status logging.
-
-**Section sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
 
 ### SMTPForm.jsx
 Responsibilities:
@@ -291,18 +188,12 @@ UX:
 - Recipient count and status display.
 - Real-time email status logging.
 
-**Section sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-
 ### Icons.jsx
 Responsibilities:
 - Provide reusable SVG icons for consistent UI.
 - Used across Sidebar and Forms for visual cues.
 
-**Section sources**
-- [Icons.jsx](file://electron/src/components/Icons.jsx#L1-L53)
-
-## Dependency Analysis
+## Dependency analysis
 Build and runtime dependencies:
 - React 19 and React DOM for UI rendering.
 - Tailwind CSS v4 and @tailwindcss/vite for styling.
@@ -334,15 +225,7 @@ VITE --> TWCSSVITE
 VITE --> REACT
 ```
 
-**Diagram sources**
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
-- [package.json](file://electron/package.json#L1-L49)
-
-**Section sources**
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
-- [package.json](file://electron/package.json#L1-L49)
-
-## Performance Considerations
+## Performance considerations
 - Component-level state isolation reduces unnecessary re-renders within forms.
 - Conditional rendering of forms minimizes DOM overhead.
 - Disabled states prevent redundant operations during async tasks.
@@ -353,7 +236,7 @@ VITE --> REACT
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Electron API not available: Ensure the app runs in the Electron environment; alerts guide users accordingly.
 - Gmail authentication failures: Verify OAuth configuration and network connectivity; check returned error messages.
@@ -361,14 +244,5 @@ Common issues and resolutions:
 - Form validation errors: Clear invalid entries and ensure required fields are filled.
 - Build issues: Confirm Tailwind and Vite plugin configurations; verify dependencies in package.json.
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L75-L107)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L109-L147)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L263-L288)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L290-L321)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L216-L253)
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
-- [package.json](file://electron/package.json#L1-L49)
-
 ## Conclusion
-The React-based UI is structured around a central container (BulkMailer.jsx) that manages state, integrates with Electron APIs, and renders modular forms for different messaging transports. The design leverages Tailwind CSS for a cohesive dark theme, responsive layouts, and accessible focus styles. The component architecture supports easy extension and customization, enabling incremental feature additions and UI refinements. With careful attention to state management, error handling, and performance, the application maintains a consistent cross-platform UI experience.
+The React-based UI is structured around a central container (BulkMailer.jsx) that manages state, integrates with Electron APIs, and renders modular forms for different messaging transports. The design uses Tailwind CSS for a cohesive dark theme, responsive layouts, and accessible focus styles. The component architecture supports easy extension and customization, enabling incremental feature additions and UI refinements. With careful attention to state management, error handling, and performance, the application maintains a consistent cross-platform UI experience.

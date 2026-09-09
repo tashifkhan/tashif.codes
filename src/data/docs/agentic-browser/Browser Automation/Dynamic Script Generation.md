@@ -1,36 +1,9 @@
-# Dynamic Script Generation
-
-<cite>
-**Referenced Files in This Document**
-- [react_agent.py](file://agents/react_agent.py)
-- [react_agent_service.py](file://services/react_agent_service.py)
-- [browser_use_service.py](file://services/browser_use_service.py)
-- [browser_use.py](file://routers/browser_use.py)
-- [tool.py](file://tools/browser_use/tool.py)
-- [browser_use.py](file://prompts/browser_use.py)
-- [agent.py](file://models/requests/agent.py)
-- [agent.py](file://models/response/agent.py)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts)
-- [content.ts](file://extension/entrypoints/content.ts)
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Dynamic script generation
 
 ## Introduction
-This document explains the dynamic script generation system that transforms natural language goals into safe, executable browser actions. It covers the end-to-end pipeline from goal interpretation to validated action plans, the templating and prompting system, parameter injection, safety validation, sandboxing considerations, error handling, and execution monitoring. It also documents how agent decisions map to generated code, including fallback strategies and error recovery mechanisms.
+This page explains the dynamic script generation system that transforms natural language goals into safe, executable browser actions. It covers the end-to-end pipeline from goal interpretation to validated action plans, the templating and prompting system, parameter injection, safety validation, sandboxing considerations, error handling, and execution monitoring. It also documents how agent decisions map to generated code, including fallback strategies and error recovery mechanisms.
 
-## Project Structure
+## Project structure
 The dynamic script generation spans backend services, routing, prompts, sanitization utilities, and the browser extension runtime:
 - Backend API and service orchestration
 - Prompt templates and LLM invocation
@@ -65,31 +38,7 @@ E --> C
 M1 --> R
 ```
 
-**Diagram sources**
-- [browser_use.py](file://routers/browser_use.py#L16-L44)
-- [browser_use_service.py](file://services/browser_use_service.py#L11-L95)
-- [browser_use.py](file://prompts/browser_use.py#L5-L137)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L95)
-- [react_agent_service.py](file://services/react_agent_service.py#L16-L153)
-- [react_agent.py](file://agents/react_agent.py#L138-L180)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L56)
-- [content.ts](file://extension/entrypoints/content.ts#L215-L323)
-- [agent.py](file://models/requests/agent.py#L5-L9)
-- [agent.py](file://models/response/agent.py#L5-L10)
-
-**Section sources**
-- [browser_use.py](file://routers/browser_use.py#L1-L51)
-- [browser_use_service.py](file://services/browser_use_service.py#L1-L96)
-- [browser_use.py](file://prompts/browser_use.py#L1-L138)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L1-L119)
-- [react_agent_service.py](file://services/react_agent_service.py#L1-L154)
-- [react_agent.py](file://agents/react_agent.py#L1-L191)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-- [agent.py](file://models/requests/agent.py#L1-L10)
-- [agent.py](file://models/response/agent.py#L1-L11)
-
-## Core Components
+## Core components
 - Prompt template and LLM chain for action plan generation
 - Service orchestrating prompt assembly, LLM invocation, and validation
 - Sanitization and safety checks for generated JSON action plans
@@ -103,16 +52,7 @@ Key responsibilities:
 - Safety validation and error reporting
 - Execution coordination between backend and extension
 
-**Section sources**
-- [browser_use.py](file://prompts/browser_use.py#L5-L137)
-- [browser_use_service.py](file://services/browser_use_service.py#L11-L95)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L95)
-- [browser_use.py](file://routers/browser_use.py#L16-L44)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L56)
-- [content.ts](file://extension/entrypoints/content.ts#L215-L323)
-- [react_agent.py](file://agents/react_agent.py#L138-L180)
-
-## Architecture Overview
+## Architecture overview
 The system follows a clear separation of concerns:
 - Frontend sends a goal with optional DOM context and constraints.
 - Backend composes a prompt with DOM information and constraints, invokes the LLM, validates the JSON action plan, and returns a structured response.
@@ -141,16 +81,9 @@ Ext->>Ext : executeBrowserActions()
 Ext->>Ext : sendMessage(EXECUTE_ACTION) to active tab
 ```
 
-**Diagram sources**
-- [browser_use.py](file://routers/browser_use.py#L16-L44)
-- [browser_use_service.py](file://services/browser_use_service.py#L11-L95)
-- [browser_use.py](file://prompts/browser_use.py#L5-L137)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L95)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L56)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Prompt Template and Script Generation
+### Prompt template and script generation
 - The prompt defines available actions (DOM manipulation and tab/window control), selector best practices, and critical rules for safe and effective automation.
 - The service composes a user prompt including goal, target URL, constraints, and a limited DOM snapshot of interactive elements.
 - The LLM produces a JSON action plan; the service extracts the content and passes it to the sanitizer.
@@ -160,12 +93,7 @@ Validation highlights:
 - Validates action types and required parameters (e.g., selector for CLICK/TYPE/SELECT, url for OPEN_TAB/NAVIGATE).
 - Detects potentially dangerous EXECUTE_SCRIPT patterns.
 
-**Section sources**
-- [browser_use.py](file://prompts/browser_use.py#L5-L137)
-- [browser_use_service.py](file://services/browser_use_service.py#L53-L79)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L95)
-
-### Action Planning Pipeline
+### Action planning pipeline
 The pipeline stages:
 1. Input assembly: goal, target_url, dom_structure, constraints.
 2. Prompt construction: DOM summary and constraints embedded into a structured prompt.
@@ -185,16 +113,7 @@ ReportProblems --> End(["End"])
 ReturnPlan --> End
 ```
 
-**Diagram sources**
-- [browser_use_service.py](file://services/browser_use_service.py#L53-L91)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L95)
-
-**Section sources**
-- [browser_use_service.py](file://services/browser_use_service.py#L11-L95)
-- [agent.py](file://models/requests/agent.py#L5-L9)
-- [agent.py](file://models/response/agent.py#L5-L10)
-
-### Script Templating and Parameter Injection
+### Script templating and parameter injection
 - The prompt template is a ChatPromptTemplate with a system message enumerating actions and rules, plus user content constructed from the goal, target URL, constraints, and DOM snapshot.
 - Parameter injection occurs by formatting the user prompt string with the provided inputs and limiting the number of interactive elements to control token usage.
 
@@ -203,11 +122,7 @@ Best practices reflected in the template:
 - Prefer constructing full search URLs directly in OPEN_TAB.
 - Encourage atomic, clearly described steps.
 
-**Section sources**
-- [browser_use.py](file://prompts/browser_use.py#L5-L137)
-- [browser_use_service.py](file://services/browser_use_service.py#L21-L69)
-
-### Safety Validation and Sandboxing
+### Safety validation and sandboxing
 Safety measures:
 - JSON validation ensures required fields and correct types.
 - EXECUTE_SCRIPT validation scans for dangerous patterns (e.g., eval-like constructs).
@@ -215,16 +130,10 @@ Safety measures:
 - DOM actions are restricted to http/https contexts per prompt rules.
 
 Sandboxing considerations:
-- EXECUTE_SCRIPT is allowed but subject to basic pattern checks; it runs in the extension’s content script context.
+- EXECUTE_SCRIPT is allowed but subject to basic pattern checks; it runs in the extension's content script context.
 - DOM actions are delegated to the content script via message passing, reducing direct exposure of unsafe patterns in the extension host.
 
-**Section sources**
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L95)
-- [browser_use.py](file://prompts/browser_use.py#L89-L116)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L56)
-- [content.ts](file://extension/entrypoints/content.ts#L215-L323)
-
-### Execution Monitoring and Extension Integration
+### Execution monitoring and extension integration
 - The extension receives action lists and executes them sequentially with delays between actions.
 - DOM actions are sent to the active tab via messaging; the content script performs element queries and interactions.
 - The content script includes helpers for element finding and a small set of built-in actions for quick tasks.
@@ -244,15 +153,7 @@ ActiveTab-->>Ext : result
 Ext->>Ext : wait between actions
 ```
 
-**Diagram sources**
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L56)
-- [content.ts](file://extension/entrypoints/content.ts#L215-L323)
-
-**Section sources**
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L56)
-- [content.ts](file://extension/entrypoints/content.ts#L215-L323)
-
-### Relationship Between Agent Decisions and Generated Code
+### Relationship between agent decisions and generated code
 - The prompt template encodes decision rules: choose tab control vs DOM actions based on intent, prefer direct navigation for searches, and use precise selectors.
 - The sanitizer enforces these rules at validation time, returning actionable feedback when plans violate constraints.
 - The extension faithfully executes the validated plan, with content script helpers enabling DOM interactions.
@@ -261,13 +162,7 @@ Fallback and recovery:
 - If validation fails, the API returns ok=false with problems; the caller can refine the goal or DOM context and retry.
 - For runtime errors during execution, the extension logs failures and continues to the next action after a delay.
 
-**Section sources**
-- [browser_use.py](file://prompts/browser_use.py#L89-L116)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L95)
-- [browser_use.py](file://routers/browser_use.py#L32-L44)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L52-L55)
-
-### Examples of Generated Scripts
+### Examples of generated scripts
 Below are representative action plan structures produced by the system. These are conceptual examples derived from the prompt template and sanitizer rules.
 
 - Click an element:
@@ -293,13 +188,9 @@ Below are representative action plan structures produced by the system. These ar
   - TYPE with selector and value
   - CLICK with selector
 
-These examples reflect the prompt’s preference for direct navigation URLs and atomic steps with clear descriptions.
+These examples reflect the prompt's preference for direct navigation URLs and atomic steps with clear descriptions.
 
-**Section sources**
-- [browser_use.py](file://prompts/browser_use.py#L28-L88)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L54-L91)
-
-### Agent Runtime and Conversational Planning
+### Agent runtime and conversational planning
 While the dynamic script generation focuses on action plans, the agent runtime supports broader conversational reasoning:
 - A LangGraph workflow coordinates an agent node and tool execution.
 - The runtime normalizes messages and integrates tools, including a browser action tool that delegates to the script generation service.
@@ -319,17 +210,7 @@ Agent-->>Service : response
 Service-->>Client : final answer
 ```
 
-**Diagram sources**
-- [react_agent_service.py](file://services/react_agent_service.py#L16-L153)
-- [react_agent.py](file://agents/react_agent.py#L138-L180)
-- [tool.py](file://tools/browser_use/tool.py#L27-L40)
-
-**Section sources**
-- [react_agent_service.py](file://services/react_agent_service.py#L16-L153)
-- [react_agent.py](file://agents/react_agent.py#L138-L180)
-- [tool.py](file://tools/browser_use/tool.py#L27-L40)
-
-## Dependency Analysis
+## Dependency analysis
 - Router depends on AgentService and models for request/response.
 - AgentService composes SCRIPT_PROMPT and invokes the LLM, then applies agent_sanitizer.
 - Extension utilities depend on browser APIs for tab management and content script messaging.
@@ -347,31 +228,7 @@ AgentSvc["services/react_agent_service.py"] --> AgentGraph["agents/react_agent.p
 AgentGraph --> Tools["tools/browser_use/tool.py"]
 ```
 
-**Diagram sources**
-- [browser_use.py](file://routers/browser_use.py#L16-L44)
-- [browser_use_service.py](file://services/browser_use_service.py#L11-L95)
-- [browser_use.py](file://prompts/browser_use.py#L5-L137)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L95)
-- [agent.py](file://models/response/agent.py#L5-L10)
-- [agent.py](file://models/requests/agent.py#L5-L9)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L56)
-- [content.ts](file://extension/entrypoints/content.ts#L215-L323)
-- [react_agent_service.py](file://services/react_agent_service.py#L16-L153)
-- [react_agent.py](file://agents/react_agent.py#L138-L180)
-- [tool.py](file://tools/browser_use/tool.py#L27-L40)
-
-**Section sources**
-- [browser_use.py](file://routers/browser_use.py#L1-L51)
-- [browser_use_service.py](file://services/browser_use_service.py#L1-L96)
-- [browser_use.py](file://prompts/browser_use.py#L1-L138)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L1-L119)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-- [react_agent_service.py](file://services/react_agent_service.py#L1-L154)
-- [react_agent.py](file://agents/react_agent.py#L1-L191)
-- [tool.py](file://tools/browser_use/tool.py#L1-L49)
-
-## Performance Considerations
+## Performance considerations
 - Limit DOM snapshots: The service truncates interactive elements to reduce token usage.
 - Batch execution delays: The extension introduces small delays between actions to prevent overwhelming the page.
 - Validation overhead: JSON parsing and safety checks occur synchronously; keep action plans concise and atomic.
@@ -379,7 +236,7 @@ AgentGraph --> Tools["tools/browser_use/tool.py"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Invalid JSON or missing fields:
   - The sanitizer reports problems; refine the goal or provide a richer DOM context.
@@ -392,10 +249,5 @@ Common issues and resolutions:
 - API validation errors:
   - The endpoint returns ok=false with problems; address reported issues and retry.
 
-**Section sources**
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L95)
-- [browser_use.py](file://routers/browser_use.py#L32-L44)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L52-L55)
-
 ## Conclusion
-The dynamic script generation system combines a structured prompt template, robust validation, and extension-based execution to safely transform natural language goals into executable browser actions. By enforcing strict validation rules, limiting DOM context, and using message-passing for DOM operations, the system balances flexibility with safety. The agent runtime complements this by enabling broader conversational planning, while the API and extension layers provide clear integration points for execution monitoring and error recovery.
+The dynamic script generation system combines a structured prompt template, reliable validation, and extension-based execution to safely transform natural language goals into executable browser actions. By enforcing strict validation rules, limiting DOM context, and using message-passing for DOM operations, the system balances flexibility with safety. The agent runtime complements this by enabling broader conversational planning, while the API and extension layers provide clear integration points for execution monitoring and error recovery.

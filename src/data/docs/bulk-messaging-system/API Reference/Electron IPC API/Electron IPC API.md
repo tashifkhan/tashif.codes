@@ -1,33 +1,9 @@
 # Electron IPC API
 
-<cite>
-**Referenced Files in This Document**
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [package.json](file://electron/package.json)
-- [vite.config.js](file://electron/vite.config.js)
-- [utils.js](file://electron/src/electron/utils.js)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-
 ## Introduction
-This document provides comprehensive IPC API documentation for the Electron inter-process communication system. It covers all ipcMain.handle handlers, event-driven communication patterns, preload script security model, and practical usage examples for the WhatsApp bulk messaging and email sending features.
+This page provides detailed IPC API documentation for the Electron inter-process communication system. It covers all ipcMain.handle handlers, event-driven communication patterns, preload script security model, and practical usage examples for the WhatsApp bulk messaging and email sending features.
 
-## Project Structure
+## Project structure
 The Electron application follows a clear separation of concerns with distinct main process, preload bridge, and renderer process components:
 
 ```mermaid
@@ -67,20 +43,9 @@ GmailHandler --> GmailAPI
 SMTPHandler --> SMTP
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
+## Core components
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L51)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [package.json](file://electron/package.json#L1-L49)
-
-## Core Components
-
-### IPC Handler Registration
+### IPC handler registration
 The main process registers all IPC handlers using `ipcMain.handle()`:
 
 ```mermaid
@@ -97,15 +62,7 @@ Main-->>Preload : Response data
 Preload-->>Renderer : Response data
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [preload.js](file://electron/src/electron/preload.js#L24-L25)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [main.js](file://electron/src/electron/main.js#L110-L371)
-
-### Preload Script Security Model
+### Preload script security model
 The preload script implements a secure contextBridge interface that exposes only necessary functionality:
 
 ```mermaid
@@ -138,15 +95,9 @@ ElectronAPI --> IPCRenderer : "uses"
 ContextBridge --> ElectronAPI : "exposes"
 ```
 
-**Diagram sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
+## Architecture overview
 
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-
-## Architecture Overview
-
-### IPC Communication Flow
+### IPC communication flow
 The system implements a unidirectional request-response pattern for handlers and bidirectional event streaming for status updates:
 
 ```mermaid
@@ -187,15 +138,11 @@ P3 --> R1
 P3 --> R2
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
+## Detailed component analysis
 
-## Detailed Component Analysis
+### WhatsApp IPC handlers
 
-### WhatsApp IPC Handlers
-
-#### whatsapp-start-client Handler
+#### whatsapp-start-client handler
 This handler manages the complete WhatsApp Web client lifecycle:
 
 **Handler Registration:**
@@ -240,15 +187,8 @@ Client->>Main : emit('disconnected', reason)
 Main->>UI : mainWindow.webContents.send('whatsapp-status', 'Client disconnected')
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L155-L172)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-
-#### whatsapp-send-messages Handler
-Bulk message sending functionality with comprehensive error handling:
+#### whatsapp-send-messages handler
+Bulk message sending functionality with detailed error handling:
 
 **Handler Registration:**
 - Channel: `whatsapp-send-messages`
@@ -305,13 +245,7 @@ ReturnError --> End([Function Exit])
 ReturnSuccess --> End
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-
-#### whatsapp-import-contacts Handler
+#### whatsapp-import-contacts handler
 Multi-format contact import with validation:
 
 **Handler Registration:**
@@ -334,10 +268,7 @@ Array<{
 - TXT: Line-by-line parsing with comma separation
 - Error handling for unsupported formats
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L215-L262)
-
-#### whatsapp-logout Handler
+#### whatsapp-logout handler
 Secure client logout with cleanup:
 
 **Handler Registration:**
@@ -361,12 +292,9 @@ Secure client logout with cleanup:
 - Authentication directory cleanup
 - Status notification emission
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L342-L371)
+### Email IPC handlers
 
-### Email IPC Handlers
-
-#### gmail-auth Handler
+#### gmail-auth handler
 OAuth2 authentication flow with browser window:
 
 **Handler Registration:**
@@ -391,10 +319,7 @@ OAuth2 authentication flow with browser window:
 4. Exchange authorization code for tokens
 5. Store tokens securely
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-
-#### gmail-token Handler
+#### gmail-token handler
 Token availability checking:
 
 **Handler Registration:**
@@ -412,10 +337,7 @@ Token availability checking:
 }
 ```
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L132-L139)
-
-#### send-email Handler
+#### send-email handler
 Bulk email sending via Gmail API:
 
 **Handler Registration:**
@@ -448,10 +370,7 @@ interface GmailEmailData {
 - `email-progress` events emitted during processing
 - Real-time status updates for each recipient
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-
-#### smtp-send Handler
+#### smtp-send handler
 Bulk email sending via SMTP:
 
 **Handler Registration:**
@@ -493,12 +412,9 @@ interface SMTPData {
 - TLS verification
 - Self-signed certificate support
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
+### Event-Driven communication
 
-### Event-Driven Communication
-
-#### WhatsApp Status Events
+#### WhatsApp status events
 The main process emits status updates to the renderer:
 
 **Events Emitted:**
@@ -518,16 +434,9 @@ Main->>Renderer : mainWindow.webContents.send('whatsapp-status', 'Client ready!'
 Main->>Renderer : mainWindow.webContents.send('whatsapp-qr', null)
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L137-L176)
+## Dependency analysis
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L137-L176)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-
-## Dependency Analysis
-
-### External Dependencies
+### External dependencies
 The application relies on several key external libraries:
 
 ```mermaid
@@ -554,13 +463,7 @@ Electron --> QRCode
 Electron --> CSV
 ```
 
-**Diagram sources**
-- [package.json](file://electron/package.json#L20-L31)
-
-**Section sources**
-- [package.json](file://electron/package.json#L20-L31)
-
-### Build Configuration
+### Build configuration
 The Vite configuration supports development and production builds:
 
 **Build Features:**
@@ -569,12 +472,9 @@ The Vite configuration supports development and production builds:
 - Production optimization
 - Cross-platform distribution
 
-**Section sources**
-- [vite.config.js](file://electron/vite.config.js#L1-L17)
+## Performance considerations
 
-## Performance Considerations
-
-### Rate Limiting and Throttling
+### Rate limiting and throttling
 The system implements multiple layers of rate limiting:
 
 1. **WhatsApp Message Delays**: 3-second intervals between messages
@@ -582,43 +482,39 @@ The system implements multiple layers of rate limiting:
 3. **API Rate Limits**: Gmail API quota management
 4. **Connection Pooling**: Efficient resource utilization
 
-### Memory Management
+### Memory management
 - Proper cleanup of event listeners
 - Client session management
 - File descriptor handling
 - Temporary file cleanup
 
-### Serialization Considerations
+### Serialization considerations
 - All IPC data is serialized automatically
 - Large data structures should be chunked
 - Avoid circular references in IPC payloads
 - Use primitive types for optimal performance
 
-## Troubleshooting Guide
+## Troubleshooting guide
 
-### Common Issues and Solutions
+### Common issues and solutions
 
-#### WhatsApp Connection Problems
+#### WhatsApp connection problems
 - **QR Code Not Loading**: Check network connectivity and restart client
 - **Authentication Failures**: Verify WhatsApp Web compatibility
 - **Client Disconnections**: Monitor for network interruptions
 
-#### Email Delivery Issues
+#### Email delivery issues
 - **Gmail Authentication**: Verify OAuth2 credentials and API enablement
 - **SMTP Configuration**: Validate server settings and credentials
 - **Rate Limiting**: Adjust delay parameters appropriately
 
-#### IPC Communication Issues
+#### IPC communication issues
 - **Function Not Available**: Ensure preload bridge is properly loaded
 - **Event Listener Cleanup**: Verify proper removal of event listeners
 - **Memory Leaks**: Monitor for accumulated event listeners
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [main.js](file://electron/src/electron/main.js#L320-L340)
-
 ## Conclusion
 
-The Electron IPC API implementation provides a robust, secure, and efficient communication layer between the renderer and main processes. The system successfully handles complex operations like WhatsApp Web integration, Gmail API authentication, and SMTP email sending while maintaining strong security boundaries through context isolation and selective API exposure.
+The Electron IPC API implementation provides a reliable, secure, and efficient communication layer between the renderer and main processes. The system successfully handles complex operations like WhatsApp Web integration, Gmail API authentication, and SMTP email sending while maintaining strong security boundaries through context isolation and selective API exposure.
 
-Key strengths include comprehensive error handling, real-time progress tracking, secure credential storage, and flexible configuration options. The modular design allows for easy extension and maintenance of the IPC communication system.
+Key strengths include detailed error handling, real-time progress tracking, secure credential storage, and flexible configuration options. The modular design allows for easy extension and maintenance of the IPC communication system.

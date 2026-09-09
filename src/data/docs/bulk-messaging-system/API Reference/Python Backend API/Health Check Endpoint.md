@@ -1,28 +1,9 @@
-# Health Check Endpoint
-
-<cite>
-**Referenced Files in This Document**
-- [python-backend/app.py](file://python-backend/app.py)
-- [python-backend/requirements.txt](file://python-backend/requirements.txt)
-- [localhost/app.py](file://localhost/app.py)
-- [README.md](file://README.md)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Health check endpoint
 
 ## Introduction
-This document provides comprehensive documentation for the `/health` endpoint implemented in the Python backend service. The endpoint exposes a simple GET method that returns the application's health status, enabling system monitoring, load balancer health checks, and container orchestration readiness probes. The documentation covers the endpoint's implementation, response schema, practical examples, operational roles, and integration patterns with modern infrastructure.
+This page provides detailed documentation for the `/health` endpoint implemented in the Python backend service. The endpoint exposes a simple GET method that returns the application's health status, enabling system monitoring, load balancer health checks, and container orchestration readiness probes. The documentation covers the endpoint's implementation, response schema, practical examples, operational roles, and integration patterns with modern infrastructure.
 
-## Project Structure
+## Project structure
 The health check endpoint is implemented within the Python backend module of the project. The relevant files and their roles are:
 
 - python-backend/app.py: Contains the Flask application definition, route registration, and the `/health` endpoint implementation.
@@ -45,18 +26,7 @@ A --> C
 D -.-> A
 ```
 
-**Diagram sources**
-- [python-backend/app.py](file://python-backend/app.py#L1-L30)
-- [python-backend/requirements.txt](file://python-backend/requirements.txt#L1-L7)
-- [localhost/app.py](file://localhost/app.py#L1-L15)
-
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L1-L30)
-- [python-backend/requirements.txt](file://python-backend/requirements.txt#L1-L7)
-- [localhost/app.py](file://localhost/app.py#L1-L15)
-- [README.md](file://README.md#L52-L58)
-
-## Core Components
+## Core components
 The `/health` endpoint is implemented as a dedicated Flask route that responds to HTTP GET requests. It returns a JSON payload containing two fields:
 - status: A string indicating the application's health state.
 - message: A human-readable description of the application's current state.
@@ -73,10 +43,7 @@ Implementation highlights:
 - Returns a fixed success message indicating the service is running.
 - No external dependencies are required for this endpoint.
 
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L224-L229)
-
-## Architecture Overview
+## Architecture overview
 The health endpoint operates within the Python backend service and integrates with the broader application architecture as follows:
 
 ```mermaid
@@ -91,12 +58,9 @@ Health->>JSON : "Build response {status, message}"
 JSON-->>Client : "200 OK with JSON payload"
 ```
 
-**Diagram sources**
-- [python-backend/app.py](file://python-backend/app.py#L224-L229)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Endpoint Definition and Implementation
+### Endpoint definition and implementation
 The `/health` endpoint is defined as a Flask route with the following characteristics:
 - Route decorator registers the endpoint at GET /health.
 - Handler function constructs and returns a JSON object with status and message fields.
@@ -128,7 +92,7 @@ Common Scenarios
 
 Operational Role in System Monitoring
 - Readiness Checks: Load balancers and orchestrators can use this endpoint to determine if the service is ready to accept traffic.
-- Liveness Probes: The endpoint can serve as a basic liveness indicator, confirming the service responds to HTTP requests.
+- Liveness Probes: The endpoint can are a basic liveness indicator, confirming the service responds to HTTP requests.
 - Health Dashboards: Monitoring systems can poll this endpoint to track service availability and uptime.
 
 Integration Patterns
@@ -136,10 +100,7 @@ Integration Patterns
 - Container Orchestration: Kubernetes readiness and liveness probes can reference this endpoint.
 - Reverse Proxies: Nginx/Apache health checks can probe this endpoint for upstream health.
 
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L224-L229)
-
-### Endpoint Call Flow
+### Endpoint call flow
 The following sequence illustrates the internal flow when the endpoint is invoked:
 
 ```mermaid
@@ -154,10 +115,7 @@ Route->>Response : "Create JSON payload"
 Response-->>Client : "200 OK with {status, message}"
 ```
 
-**Diagram sources**
-- [python-backend/app.py](file://python-backend/app.py#L224-L229)
-
-## Dependency Analysis
+## Dependency analysis
 The health endpoint has minimal dependencies:
 - Flask: Used for route registration and JSON response construction.
 - Flask-CORS: Enabled for cross-origin resource sharing, though not directly required for the health endpoint.
@@ -174,21 +132,13 @@ B --> A
 C --> A
 ```
 
-**Diagram sources**
-- [python-backend/requirements.txt](file://python-backend/requirements.txt#L1-L7)
-- [python-backend/app.py](file://python-backend/app.py#L1-L11)
-
-**Section sources**
-- [python-backend/requirements.txt](file://python-backend/requirements.txt#L1-L7)
-- [python-backend/app.py](file://python-backend/app.py#L1-L11)
-
-## Performance Considerations
+## Performance considerations
 - Response Size: The endpoint returns a small JSON payload, resulting in minimal bandwidth usage.
 - Latency: The handler performs no I/O operations, so response latency is primarily determined by network conditions.
 - Scalability: The endpoint can handle high request volumes without additional resource overhead.
 - Caching: Since the response is static, caching is unnecessary and not implemented.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common Failure Scenarios and Resolutions
 
 Endpoint Not Reachable
@@ -237,4 +187,4 @@ Load Balancer or Proxy Misconfiguration
   - Ensure the load balancer or proxy can reach the application's host and port.
 
 ## Conclusion
-The `/health` endpoint provides a simple, reliable mechanism for monitoring the Python backend service. Its minimal implementation ensures low overhead while offering essential readiness and liveness capabilities for modern deployment environments. By following the integration patterns and troubleshooting guidance outlined in this document, operators can effectively monitor service availability and maintain high system reliability.
+The `/health` endpoint provides a simple, reliable mechanism for monitoring the Python backend service. Its minimal implementation ensures low overhead while offering essential readiness and liveness capabilities for modern deployment environments. By following the integration patterns and troubleshooting guidance outlined in this page, operators can effectively monitor service availability and maintain high system reliability.

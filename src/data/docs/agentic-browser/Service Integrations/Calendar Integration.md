@@ -1,32 +1,9 @@
-# Calendar Integration
-
-<cite>
-**Referenced Files in This Document**
-- [calendar_service.py](file://services/calendar_service.py)
-- [calendar.py](file://routers/calendar.py)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts)
-- [react_tools.py](file://agents/react_tools.py)
-- [main.py](file://api/main.py)
-- [config.py](file://core/config.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Calendar integration
 
 ## Introduction
-This document explains the Google Calendar service integration implemented in the project. It covers calendar operations (event listing and creation), the OAuth2 authentication flow for Google Calendar API, scope configuration, request/response handling, and operational guidelines. It also documents date/time handling, timezone behavior, and practical guidance for performance and troubleshooting.
+This page explains the Google Calendar service integration implemented in the project. It covers calendar operations (event listing and creation), the OAuth2 authentication flow for Google Calendar API, scope configuration, request/response handling, and operational guidelines. It also documents date/time handling, timezone behavior, and practical guidance for performance and troubleshooting.
 
-## Project Structure
+## Project structure
 The calendar integration spans three layers:
 - Frontend extension: handles OAuth2 login, token storage, and token refresh.
 - Backend API: exposes endpoints to list and create calendar events using an access token.
@@ -53,23 +30,7 @@ S --> T1
 S --> T2
 ```
 
-**Diagram sources**
-- [main.py](file://api/main.py#L12-L41)
-- [calendar.py](file://routers/calendar.py#L1-L113)
-- [calendar_service.py](file://services/calendar_service.py#L1-L38)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L1-L52)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L1-L70)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-
-**Section sources**
-- [main.py](file://api/main.py#L12-L41)
-- [calendar.py](file://routers/calendar.py#L1-L113)
-- [calendar_service.py](file://services/calendar_service.py#L1-L38)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L1-L52)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L1-L70)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-
-## Core Components
+## Core components
 - CalendarService: orchestrates calendar operations by delegating to tools that call Google Calendar API.
 - Routers: FastAPI endpoints validating inputs and invoking CalendarService.
 - Tools: HTTP clients to Google Calendar API for listing and creating events.
@@ -80,14 +41,7 @@ Key responsibilities:
 - Event creation: posts a new event to the primary calendar with ISO 8601 timestamps and UTC timezone.
 - Authentication: obtains and refreshes access tokens via browser identity APIs and backend token exchange endpoints.
 
-**Section sources**
-- [calendar_service.py](file://services/calendar_service.py#L8-L38)
-- [calendar.py](file://routers/calendar.py#L32-L112)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L6-L23)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L6-L40)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L128-L190)
-
-## Architecture Overview
+## Architecture overview
 The integration follows a layered architecture:
 - Extension frontend authenticates the user and stores tokens.
 - Backend routes accept validated requests and delegate to the service layer.
@@ -123,14 +77,7 @@ SVC-->>BE : "event"
 BE-->>Ext : "{result : created, event}"
 ```
 
-**Diagram sources**
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L128-L190)
-- [calendar.py](file://routers/calendar.py#L32-L112)
-- [calendar_service.py](file://services/calendar_service.py#L8-L38)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L6-L23)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L6-L40)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### CalendarService
 - Responsibilities:
@@ -154,15 +101,7 @@ CalendarService --> GetCalendarEvents : "delegates"
 CalendarService --> CreateCalendarEvent : "delegates"
 ```
 
-**Diagram sources**
-- [calendar_service.py](file://services/calendar_service.py#L8-L38)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L6-L23)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L6-L40)
-
-**Section sources**
-- [calendar_service.py](file://services/calendar_service.py#L8-L38)
-
-### Routers: Calendar Endpoints
+### Routers: calendar endpoints
 - GET-style endpoints (POST with request bodies) for:
   - Listing events: validates presence of access token and max results; forwards to service.
   - Creating events: validates presence of access token, summary, and ISO 8601 start/end times; forwards to service.
@@ -190,13 +129,7 @@ ISOOK --> |Yes| CallSvc2["Call CalendarService.create_event()"]
 CallSvc2 --> Done2(["Return {result: created, event}"])
 ```
 
-**Diagram sources**
-- [calendar.py](file://routers/calendar.py#L32-L112)
-
-**Section sources**
-- [calendar.py](file://routers/calendar.py#L32-L112)
-
-### Tools: Google Calendar API Wrappers
+### Tools: Google calendar API wrappers
 - Listing events:
   - Endpoint: primary calendar events.
   - Query parameters: max results, order by start time, single events, minimum time from now.
@@ -221,15 +154,7 @@ ToolPost->>GCAL : "POST with event body"
 GCAL-->>ToolPost : "200 + event"
 ```
 
-**Diagram sources**
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L6-L23)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L6-L40)
-
-**Section sources**
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L6-L23)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L6-L40)
-
-### Authentication Flow (OAuth2)
+### Authentication flow (OAuth2)
 - Extension login:
   - Uses browser identity APIs to launch web auth flow with configured client ID and scopes.
   - Scopes include Google Calendar and Gmail scopes.
@@ -255,13 +180,7 @@ Google-->>ExtAuth : "User info"
 ExtAuth-->>UI : "Store tokens and status"
 ```
 
-**Diagram sources**
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L128-L190)
-
-**Section sources**
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L128-L190)
-
-### Agent Tool Integration
+### Agent tool integration
 - React agent tools define Pydantic models for calendar operations:
   - CalendarToolInput: access token and max results.
   - CalendarCreateEventInput: summary, start_time, end_time, description, optional access token.
@@ -272,11 +191,7 @@ ExtAuth-->>UI : "Store tokens and status"
   - Bounds max_results to a safe range.
   - Uses provided token or a default token when available.
 
-**Section sources**
-- [react_tools.py](file://agents/react_tools.py#L158-L198)
-- [react_tools.py](file://agents/react_tools.py#L378-L435)
-
-## Dependency Analysis
+## Dependency analysis
 - API wiring:
   - FastAPI app registers the calendar router under /api/calendar.
 - Router-to-service:
@@ -295,23 +210,7 @@ Svc --> TPost["tools/calendar/create_calender_events.py"]
 Ext["extension/useAuth.ts"] --> Main
 ```
 
-**Diagram sources**
-- [main.py](file://api/main.py#L14-L40)
-- [calendar.py](file://routers/calendar.py#L1-L113)
-- [calendar_service.py](file://services/calendar_service.py#L1-L38)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L1-L52)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L1-L70)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-
-**Section sources**
-- [main.py](file://api/main.py#L14-L40)
-- [calendar.py](file://routers/calendar.py#L1-L113)
-- [calendar_service.py](file://services/calendar_service.py#L1-L38)
-- [get_calender_events.py](file://tools/calendar/get_calender_events.py#L1-L52)
-- [create_calender_events.py](file://tools/calendar/create_calender_events.py#L1-L70)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L1-L311)
-
-## Performance Considerations
+## Performance considerations
 - Timeouts:
   - Listing events uses a short timeout for responsiveness.
   - Creating events uses a slightly longer timeout to accommodate network variability.
@@ -324,10 +223,10 @@ Ext["extension/useAuth.ts"] --> Main
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Missing or invalid access token:
-  - Ensure the access token is present and not expired. Use the extension’s token display and refresh controls.
+  - Ensure the access token is present and not expired. Use the extension's token display and refresh controls.
 - Invalid ISO 8601 timestamps:
   - Verify start_time and end_time conform to ISO 8601. The router enforces this and returns HTTP 400 otherwise.
 - Network timeouts:
@@ -342,11 +241,5 @@ Operational checks:
 - Verify the calendar router is registered under /api/calendar.
 - Ensure the extension has stored a valid access token and refresh token when available.
 
-**Section sources**
-- [calendar.py](file://routers/calendar.py#L36-L56)
-- [calendar.py](file://routers/calendar.py#L74-L112)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L91-L126)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L271-L295)
-
 ## Conclusion
-The calendar integration provides a clean separation of concerns: the extension manages authentication and token lifecycle, the backend exposes typed endpoints with validation, the service layer coordinates operations, and the tools encapsulate Google Calendar API interactions. By adhering to ISO 8601 timestamps, UTC timezone semantics, and robust error handling, the system supports reliable calendar operations. For production deployments, consider adding quota awareness, retry/backoff strategies, and enhanced logging for diagnostics.
+The calendar integration provides a clean separation of concerns: the extension manages authentication and token lifecycle, the backend exposes typed endpoints with validation, the service layer coordinates operations, and the tools encapsulate Google Calendar API interactions. By adhering to ISO 8601 timestamps, UTC timezone semantics, and reliable error handling, the system supports reliable calendar operations. For production deployments, consider adding quota awareness, retry/backoff strategies, and improved logging for diagnostics.

@@ -1,32 +1,11 @@
-# Users Collection
-
-<cite>
-**Referenced Files in This Document**
-- [DATABASE.md](file://docs/DATABASE.md)
-- [database_service.py](file://app/services/database_service.py)
-- [db_client.py](file://app/clients/db_client.py)
-- [web_push_service.py](file://app/services/web_push_service.py)
-- [webhook_server.py](file://app/servers/webhook_server.py)
-- [telegram_service.py](file://app/services/telegram_service.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Users collection
 
 ## Introduction
-This document provides comprehensive documentation for the Users collection schema that stores user subscription data and preferences for the SuperSet Telegram Notification Bot. The Users collection serves as the central repository for managing user subscriptions, notification preferences, and associated metadata. It enables the system to deliver notifications via Telegram and Web Push channels while maintaining user preferences and activity tracking.
+This page provides detailed documentation for the Users collection schema that stores user subscription data and preferences for the SuperSet Telegram Notification Bot. The Users collection is the central repository for managing user subscriptions, notification preferences, and associated metadata. It enables the system to deliver notifications via Telegram and Web Push channels while maintaining user preferences and activity tracking.
 
-The Users collection schema is designed to handle multiple notification channels, track user engagement, and support flexible subscription management. It integrates seamlessly with the broader notification ecosystem, providing a robust foundation for user-centric communication workflows.
+The Users collection schema is designed to handle multiple notification channels, track user engagement, and support flexible subscription management. It integrates smoothly with the broader notification ecosystem, providing a reliable foundation for user-centric communication workflows.
 
-## Project Structure
+## Project structure
 The Users collection is part of the MongoDB database schema and interacts with several key components:
 
 ```mermaid
@@ -55,20 +34,10 @@ B --> G
 C --> H
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [db_client.py](file://app/clients/db_client.py#L16-L61)
-- [web_push_service.py](file://app/services/web_push_service.py#L27-L75)
-- [webhook_server.py](file://app/servers/webhook_server.py#L69-L131)
+## Core components
 
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [db_client.py](file://app/clients/db_client.py#L16-L61)
-
-## Core Components
-
-### Users Collection Schema
-The Users collection implements a comprehensive schema designed for flexible user subscription management:
+### Users collection schema
+The Users collection implements a detailed schema designed for flexible user subscription management:
 
 **Primary Identifier**: `user_id` (String)
 - Telegram user ID serving as the unique identifier
@@ -86,7 +55,7 @@ The Users collection implements a comprehensive schema designed for flexible use
 **Notification Preferences**:
 Embedded document with three boolean flags:
 - `telegram`: Boolean - Telegram notification preference
-- `webpush`: Boolean - Web Push notification preference  
+- `webpush`: Boolean - Web Push notification preference
 - `email`: Boolean - Email notification preference
 
 **Web Push Subscriptions**:
@@ -109,10 +78,7 @@ Embedded document with optional fields:
 - `batch_year`: String - Graduation year
 - `device_type`: String - Device classification ('mobile', 'desktop', 'web')
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L256-L329)
-
-### Database Integration
+### Database integration
 The Users collection is accessed through the DatabaseService, which provides a clean abstraction layer for MongoDB operations:
 
 ```mermaid
@@ -148,18 +114,9 @@ DatabaseService --> UsersCollection : "manages"
 DBClient --> UsersCollection : "provides access"
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [db_client.py](file://app/clients/db_client.py#L16-L61)
-- [DATABASE.md](file://docs/DATABASE.md#L256-L329)
+## Architecture overview
 
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L616-L728)
-- [db_client.py](file://app/clients/db_client.py#L34-L61)
-
-## Architecture Overview
-
-### Notification Delivery Workflow
+### Notification delivery workflow
 The Users collection integrates with the notification delivery pipeline:
 
 ```mermaid
@@ -181,13 +138,7 @@ TP-->>User : Telegram message
 WP-->>User : Browser notification
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L684-L728)
-- [telegram_service.py](file://app/services/telegram_service.py#L140-L172)
-- [web_push_service.py](file://app/services/web_push_service.py#L120-L155)
-- [webhook_server.py](file://app/servers/webhook_server.py#L186-L226)
-
-### Web Push Subscription Management
+### Web push subscription management
 The system handles Web Push subscriptions through dedicated endpoints:
 
 ```mermaid
@@ -206,19 +157,10 @@ L --> M["DatabaseService"]
 M --> N["Remove subscription"]
 ```
 
-**Diagram sources**
-- [webhook_server.py](file://app/servers/webhook_server.py#L186-L226)
-- [web_push_service.py](file://app/services/web_push_service.py#L213-L237)
-- [database_service.py](file://app/services/database_service.py#L616-L668)
+## Detailed component analysis
 
-**Section sources**
-- [webhook_server.py](file://app/servers/webhook_server.py#L186-L226)
-- [web_push_service.py](file://app/services/web_push_service.py#L213-L237)
-
-## Detailed Component Analysis
-
-### User Registration and Management
-The user registration process involves creating user records with comprehensive metadata:
+### User registration and management
+The user registration process involves creating user records with detailed metadata:
 
 **Registration Flow**:
 1. User initiates subscription via Telegram bot
@@ -232,11 +174,7 @@ The user registration process involves creating user records with comprehensive 
 - Preserves user data for potential reactivation
 - Maintains historical activity records
 
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L616-L668)
-- [database_service.py](file://app/services/database_service.py#L670-L682)
-
-### Notification Preference Management
+### Notification preference management
 The notification preferences system provides granular control over communication channels:
 
 **Preference Structure**:
@@ -249,11 +187,7 @@ The notification preferences system provides granular control over communication
 - Batch processing considers individual user preferences
 - Admin interface allows bulk preference updates
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L264-L268)
-- [database_service.py](file://app/services/database_service.py#L684-L728)
-
-### Web Push Subscription Handling
+### Web push subscription handling
 The Web Push subscription system manages browser push endpoints:
 
 **Subscription Data Model**:
@@ -269,13 +203,8 @@ The Web Push subscription system manages browser push endpoints:
 4. Automatic cleanup of expired/invalid subscriptions
 5. Support for user-initiated unsubscription
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L269-L279)
-- [web_push_service.py](file://app/services/web_push_service.py#L157-L208)
-- [webhook_server.py](file://app/servers/webhook_server.py#L186-L226)
-
-### Activity Tracking and Analytics
-The Users collection maintains comprehensive activity metrics:
+### Activity tracking and analytics
+The Users collection maintains detailed activity metrics:
 
 **Tracking Fields**:
 - `registered_at`: User registration timestamp
@@ -289,13 +218,9 @@ The Users collection maintains comprehensive activity metrics:
 - Platform usage patterns
 - Personalized notification targeting
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L280-L287)
-- [database_service.py](file://app/services/database_service.py#L714-L728)
+## Dependency analysis
 
-## Dependency Analysis
-
-### Component Relationships
+### Component relationships
 The Users collection participates in several critical dependency relationships:
 
 ```mermaid
@@ -310,13 +235,7 @@ H[NotificationService] --> C
 H --> D
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [telegram_service.py](file://app/services/telegram_service.py#L20-L51)
-- [web_push_service.py](file://app/services/web_push_service.py#L27-L75)
-- [webhook_server.py](file://app/servers/webhook_server.py#L69-L131)
-
-### External Dependencies
+### External dependencies
 The Users collection relies on several external systems:
 
 **MongoDB Integration**:
@@ -329,13 +248,9 @@ The Users collection relies on several external systems:
 - VAPID Web Push infrastructure for browser notifications
 - External authentication providers for user verification
 
-**Section sources**
-- [db_client.py](file://app/clients/db_client.py#L21-L72)
-- [web_push_service.py](file://app/services/web_push_service.py#L55-L79)
+## Performance considerations
 
-## Performance Considerations
-
-### Index Strategy
+### Index strategy
 The Users collection benefits from strategic indexing:
 
 **Critical Indexes**:
@@ -348,15 +263,15 @@ The Users collection benefits from strategic indexing:
 - Rapid subscription status checks
 - Optimized broadcast operations
 
-### Scalability Factors
+### Scalability factors
 - Horizontal scaling through sharding by user_id
 - Connection pooling for database operations
 - Asynchronous processing for notification delivery
 - Caching strategies for frequently accessed user data
 
-## Troubleshooting Guide
+## Troubleshooting guide
 
-### Common Issues and Solutions
+### Common issues and solutions
 
 **User Registration Failures**:
 - Verify MongoDB connectivity and authentication
@@ -373,11 +288,7 @@ The Users collection benefits from strategic indexing:
 - Check subscription endpoint validity
 - Monitor for expired/invalid subscriptions
 
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L616-L668)
-- [web_push_service.py](file://app/services/web_push_service.py#L157-L208)
-
 ## Conclusion
-The Users collection schema provides a robust foundation for managing user subscriptions and preferences in the SuperSet Telegram Notification Bot. Its comprehensive design supports multiple notification channels, detailed activity tracking, and flexible subscription management. The integration with the broader notification ecosystem ensures seamless user experience while maintaining data integrity and system performance.
+The Users collection schema provides a reliable foundation for managing user subscriptions and preferences in the SuperSet Telegram Notification Bot. Its detailed design supports multiple notification channels, detailed activity tracking, and flexible subscription management. The integration with the broader notification ecosystem ensures smooth user experience while maintaining data integrity and system performance.
 
 The schema's flexibility accommodates various user scenarios, from simple Telegram-only subscribers to complex multi-channel users with Web Push subscriptions. The embedded document structure optimizes query performance while maintaining data normalization principles. With proper indexing and monitoring, the Users collection scales effectively to support the application's growing user base and evolving feature requirements.

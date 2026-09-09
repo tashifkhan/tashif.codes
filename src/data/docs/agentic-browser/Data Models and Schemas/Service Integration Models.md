@@ -1,41 +1,9 @@
-# Service Integration Models
-
-<cite>
-**Referenced Files in This Document**
-- [models/requests/__init__.py](file://models/requests/__init__.py)
-- [models/response/__init__.py](file://models/response/__init__.py)
-- [models/requests/ask.py](file://models/requests/ask.py)
-- [models/response/ask.py](file://models/response/ask.py)
-- [models/requests/crawller.py](file://models/requests/crawller.py)
-- [models/response/crawller.py](file://models/response/crawller.py)
-- [models/requests/github.py](file://models/requests/github.py)
-- [models/response/gihub.py](file://models/response/gihub.py)
-- [models/requests/react_agent.py](file://models/requests/react_agent.py)
-- [models/response/react_agent.py](file://models/response/react_agent.py)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py)
-- [models/requests/website.py](file://models/requests/website.py)
-- [models/response/website.py](file://models/response/website.py)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py)
-- [models/response/subtitles.py](file://models/response/subtitles.py)
-- [models/yt.py](file://models/yt.py)
-- [services/github_service.py](file://services/github_service.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Service integration models
 
 ## Introduction
-This document describes the service integration schemas used across external services in the project. It focuses on request/response models for general service queries, crawler-specific structures, and GitHub integration models. It explains field definitions, validation rules, and transformation patterns, highlights shared patterns and service-specific variations, and outlines how these models relate to service implementations. Authentication data handling, rate-limiting considerations, and validation requirements are also addressed.
+This page describes the service integration schemas used across external services in the project. It focuses on request/response models for general service queries, crawler-specific structures, and GitHub integration models. It explains field definitions, validation rules, and transformation patterns, highlights shared patterns and service-specific variations, and outlines how these models relate to service implementations. Authentication data handling, rate-limiting considerations, and validation requirements are also addressed.
 
-## Project Structure
+## Project structure
 The service integration models are organized under a dedicated models namespace with separate packages for requests and responses. Supporting models include PyJIIT authentication payloads and YouTube video info structures. Services consume these models to orchestrate external integrations.
 
 ```mermaid
@@ -79,28 +47,7 @@ S_GitHub --> S_Subtitles
 M_YT --> S_GitHub
 ```
 
-**Diagram sources**
-- [models/requests/ask.py](file://models/requests/ask.py#L1-L10)
-- [models/response/ask.py](file://models/response/ask.py#L1-L8)
-- [models/requests/crawller.py](file://models/requests/crawller.py#L1-L35)
-- [models/response/crawller.py](file://models/response/crawller.py#L1-L6)
-- [models/requests/github.py](file://models/requests/github.py#L1-L9)
-- [models/response/gihub.py](file://models/response/gihub.py#L1-L6)
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L1-L45)
-- [models/response/react_agent.py](file://models/response/react_agent.py#L1-L15)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L1-L91)
-- [models/requests/website.py](file://models/requests/website.py#L1-L11)
-- [models/response/website.py](file://models/response/website.py#L1-L6)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L1-L8)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L1-L6)
-- [models/yt.py](file://models/yt.py#L1-L17)
-- [services/github_service.py](file://services/github_service.py#L1-L109)
-
-**Section sources**
-- [models/requests/__init__.py](file://models/requests/__init__.py#L1-L21)
-- [models/response/__init__.py](file://models/response/__init__.py#L1-L20)
-
-## Core Components
+## Core components
 This section summarizes the primary request/response models used across services, highlighting shared fields and service-specific extensions.
 
 - AskRequest/AskResponse
@@ -164,23 +111,7 @@ This section summarizes the primary request/response models used across services
   - Validation: Defaults ensure safe fallbacks; optional fields accommodate missing data.
   - Transformation: Normalizes scraped or API-derived video metadata.
 
-**Section sources**
-- [models/requests/ask.py](file://models/requests/ask.py#L1-L10)
-- [models/response/ask.py](file://models/response/ask.py#L1-L8)
-- [models/requests/crawller.py](file://models/requests/crawller.py#L1-L35)
-- [models/response/crawller.py](file://models/response/crawller.py#L1-L6)
-- [models/requests/github.py](file://models/requests/github.py#L1-L9)
-- [models/response/gihub.py](file://models/response/gihub.py#L1-L6)
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L1-L45)
-- [models/response/react_agent.py](file://models/response/react_agent.py#L1-L15)
-- [models/requests/website.py](file://models/requests/website.py#L1-L11)
-- [models/response/website.py](file://models/response/website.py#L1-L6)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L1-L8)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L1-L6)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L1-L91)
-- [models/yt.py](file://models/yt.py#L1-L17)
-
-## Architecture Overview
+## Architecture overview
 The service integration architecture follows a clear separation of concerns:
 - Models define strict request/response schemas with validation.
 - Services consume models, transform inputs, and produce outputs.
@@ -206,12 +137,7 @@ LLM-->>Service : "Answer text"
 Service-->>Client : "GitHubResponse(content)"
 ```
 
-**Diagram sources**
-- [models/requests/github.py](file://models/requests/github.py#L1-L9)
-- [models/response/gihub.py](file://models/response/gihub.py#L1-L6)
-- [services/github_service.py](file://services/github_service.py#L1-L109)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### AskRequest/AskResponse
 - Shared pattern: Accepts a URL and question, supports optional chat history and an attached file path.
@@ -227,14 +153,6 @@ AddFile --> Validate["Pydantic validation"]
 Validate --> UseInService["Service consumes fields to generate answer"]
 UseInService --> End(["Produce AskResponse"])
 ```
-
-**Diagram sources**
-- [models/requests/ask.py](file://models/requests/ask.py#L1-L10)
-- [models/response/ask.py](file://models/response/ask.py#L1-L8)
-
-**Section sources**
-- [models/requests/ask.py](file://models/requests/ask.py#L1-L10)
-- [models/response/ask.py](file://models/response/ask.py#L1-L8)
 
 ### CrawlerRequest/CrawllerResponse
 - Shared pattern: Supports chat history, optional OAuth token, persisted PyJIIT login, client HTML, and attached file.
@@ -257,14 +175,6 @@ class CrawllerResponse {
 CrawlerRequest --> CrawllerResponse : "produces"
 ```
 
-**Diagram sources**
-- [models/requests/crawller.py](file://models/requests/crawller.py#L1-L35)
-- [models/response/crawller.py](file://models/response/crawller.py#L1-L6)
-
-**Section sources**
-- [models/requests/crawller.py](file://models/requests/crawller.py#L1-L35)
-- [models/response/crawller.py](file://models/response/crawller.py#L1-L6)
-
 ### GitHubRequest/GitHubResponse
 - Shared pattern: Validates URL as HttpUrl; supports optional chat history and attached file.
 - Validation: Strict URL validation; optional fields allow flexible invocation.
@@ -283,16 +193,6 @@ Service->>LLM : "Invoke with context + question"
 LLM-->>Service : "Answer"
 Service-->>Client : "GitHubResponse(content)"
 ```
-
-**Diagram sources**
-- [models/requests/github.py](file://models/requests/github.py#L1-L9)
-- [models/response/gihub.py](file://models/response/gihub.py#L1-L6)
-- [services/github_service.py](file://services/github_service.py#L1-L109)
-
-**Section sources**
-- [models/requests/github.py](file://models/requests/github.py#L1-L9)
-- [models/response/gihub.py](file://models/response/gihub.py#L1-L6)
-- [services/github_service.py](file://services/github_service.py#L1-L109)
 
 ### ReactAgentRequest/ReactAgentResponse
 - Shared pattern: Messages carry roles and optional tool calls; supports authentication via OAuth and PyJIIT login.
@@ -321,14 +221,6 @@ ReactAgentRequest --> AgentMessage : "contains"
 ReactAgentResponse --> AgentMessage : "contains"
 ```
 
-**Diagram sources**
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L1-L45)
-- [models/response/react_agent.py](file://models/response/react_agent.py#L1-L15)
-
-**Section sources**
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L1-L45)
-- [models/response/react_agent.py](file://models/response/react_agent.py#L1-L15)
-
 ### WebsiteRequest/WebsiteResponse
 - Shared pattern: Accepts URL and question with optional client HTML and attached file.
 - Validation: Basic presence/type checks; chat history defaults to empty list.
@@ -341,14 +233,6 @@ AddFields --> Validate["Pydantic validation"]
 Validate --> UseInService["Service uses fields to generate answer"]
 UseInService --> End(["Produce WebsiteResponse"])
 ```
-
-**Diagram sources**
-- [models/requests/website.py](file://models/requests/website.py#L1-L11)
-- [models/response/website.py](file://models/response/website.py#L1-L6)
-
-**Section sources**
-- [models/requests/website.py](file://models/requests/website.py#L1-L11)
-- [models/response/website.py](file://models/response/website.py#L1-L6)
 
 ### SubtitlesRequest/SubtitlesResponse
 - Shared pattern: Retrieves subtitles for a given video URL and language.
@@ -363,14 +247,6 @@ AddLang --> Validate["Pydantic validation"]
 Validate --> UseInService["Service retrieves subtitles"]
 UseInService --> End(["Produce SubtitlesResponse"])
 ```
-
-**Diagram sources**
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L1-L8)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L1-L6)
-
-**Section sources**
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L1-L8)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L1-L6)
 
 ### PyjiitLoginResponse
 - Shared pattern: Encapsulates PyJIIT portal response and derived session metadata.
@@ -419,12 +295,6 @@ PyjiitRawResponse --> PyjiitRegData : "has"
 PyjiitRegData --> PyjiitInstituteEntry : "contains"
 ```
 
-**Diagram sources**
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L1-L91)
-
-**Section sources**
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L1-L91)
-
 ### YTVideoInfo
 - Shared pattern: Normalizes YouTube metadata with sensible defaults.
 - Validation: Defaults prevent missing-field errors; optional fields handle sparse data.
@@ -447,13 +317,7 @@ class YTVideoInfo {
 }
 ```
 
-**Diagram sources**
-- [models/yt.py](file://models/yt.py#L1-L17)
-
-**Section sources**
-- [models/yt.py](file://models/yt.py#L1-L17)
-
-## Dependency Analysis
+## Dependency analysis
 The models are decoupled from service implementations, enabling reuse across services. Authentication payloads (PyJIIT) are embedded in requests to support authenticated flows. Services selectively use subsets of request fields and map outputs to response models.
 
 ```mermaid
@@ -473,34 +337,14 @@ S_GitHub --> S_Website["WebsiteResponse"]
 S_GitHub --> S_Subtitles["SubtitlesResponse"]
 ```
 
-**Diagram sources**
-- [models/requests/ask.py](file://models/requests/ask.py#L1-L10)
-- [models/response/ask.py](file://models/response/ask.py#L1-L8)
-- [models/requests/crawller.py](file://models/requests/crawller.py#L1-L35)
-- [models/response/crawller.py](file://models/response/crawller.py#L1-L6)
-- [models/requests/github.py](file://models/requests/github.py#L1-L9)
-- [models/response/gihub.py](file://models/response/gihub.py#L1-L6)
-- [models/requests/react_agent.py](file://models/requests/react_agent.py#L1-L45)
-- [models/response/react_agent.py](file://models/response/react_agent.py#L1-L15)
-- [models/requests/website.py](file://models/requests/website.py#L1-L11)
-- [models/response/website.py](file://models/response/website.py#L1-L6)
-- [models/requests/subtitles.py](file://models/requests/subtitles.py#L1-L8)
-- [models/response/subtitles.py](file://models/response/subtitles.py#L1-L6)
-- [models/requests/pyjiit.py](file://models/requests/pyjiit.py#L1-L91)
-- [services/github_service.py](file://services/github_service.py#L1-L109)
-
-**Section sources**
-- [models/requests/__init__.py](file://models/requests/__init__.py#L1-L21)
-- [models/response/__init__.py](file://models/response/__init__.py#L1-L20)
-
-## Performance Considerations
+## Performance considerations
 - Truncation and context limits: Services may truncate large repository content to fit model context windows.
 - File uploads: Attaching large files increases payload size; consider chunking or streaming where applicable.
 - Tokenization: Prefer summarization and selective content inclusion to reduce token usage.
 - Caching: Reuse processed repository summaries and transcripts when possible.
 - Rate limiting: Respect provider quotas; implement retries with exponential backoff for throttled requests.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Invalid GitHub URL: Ensure the URL points to the repository root; otherwise, return a clear message instructing to navigate to the main repository page.
 - Access failures: Verify repository visibility and URL correctness; return actionable guidance for 404 or clone-related errors.
@@ -508,8 +352,5 @@ Common issues and resolutions:
 - Attached file processing: If file upload fails, log the error and return a user-friendly message.
 - Authentication: Validate PyJIIT token presence and expiry; ensure aliases are handled consistently.
 
-**Section sources**
-- [services/github_service.py](file://services/github_service.py#L1-L109)
-
 ## Conclusion
-The service integration models provide a consistent, validated foundation for interacting with external services. Shared patterns enable cross-service compatibility, while service-specific variants address unique requirements such as authentication, file attachments, and specialized transformations. By adhering to these schemas and leveraging the outlined best practices, developers can implement robust integrations with predictable validation, error handling, and performance characteristics.
+The service integration models provide a consistent, validated foundation for interacting with external services. Shared patterns enable cross-service compatibility, while service-specific variants address unique requirements such as authentication, file attachments, and specialized transformations. By adhering to these schemas and using the outlined best practices, developers can implement reliable integrations with predictable validation, error handling, and performance characteristics.

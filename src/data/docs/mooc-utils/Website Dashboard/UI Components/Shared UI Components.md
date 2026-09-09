@@ -1,44 +1,9 @@
-# Shared UI Components
-
-<cite>
-**Referenced Files in This Document**
-- [package.json](file://website/package.json)
-- [components.json](file://website/components.json)
-- [globals.css](file://website/app/globals.css)
-- [utils.ts](file://website/lib/utils.ts)
-- [button.tsx](file://website/components/ui/button.tsx)
-- [input.tsx](file://website/components/ui/input.tsx)
-- [card.tsx](file://website/components/ui/card.tsx)
-- [dialog.tsx](file://website/components/ui/dialog.tsx)
-- [alert-dialog.tsx](file://website/components/ui/alert-dialog.tsx)
-- [badge.tsx](file://website/components/ui/badge.tsx)
-- [combobox.tsx](file://website/components/ui/combobox.tsx)
-- [dropdown-menu.tsx](file://website/components/ui/dropdown-menu.tsx)
-- [field.tsx](file://website/components/ui/field.tsx)
-- [input-group.tsx](file://website/components/ui/input-group.tsx)
-- [label.tsx](file://website/components/ui/label.tsx)
-- [select.tsx](file://website/components/ui/select.tsx)
-- [separator.tsx](file://website/components/ui/separator.tsx)
-- [sonner.tsx](file://website/components/ui/sonner.tsx)
-- [textarea.tsx](file://website/components/ui/textarea.tsx)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Shared UI components
 
 ## Introduction
-This document describes the shared UI component library built with the shadcn/ui design system in a Next.js application. It documents reusable components including Button, Input, Card, Dialog, Alert Dialog, Badge, Combobox, Dropdown Menu, Field, Input Group, Label, Select, Separator, Sonner, and Textarea. For each component, we explain the props interface, styling customization options, accessibility features, and usage patterns. We also cover composition patterns, variant options, size variations, theme integration via Tailwind CSS and design tokens, and practical examples for integrating with form validation.
+This page describes the shared UI component library built with the shadcn/ui design system in a Next.js application. It documents reusable components including Button, Input, Card, Dialog, Alert Dialog, Badge, Combobox, Dropdown Menu, Field, Input Group, Label, Select, Separator, Sonner, and Textarea. For each component, we explain the props interface, styling customization options, accessibility features, and usage patterns. We also cover composition patterns, variant options, size variations, theme integration via Tailwind CSS and design tokens, and practical examples for integrating with form validation.
 
-## Project Structure
+## Project structure
 The UI components live under website/components/ui and are composed with:
 - Base primitives from @base-ui/react
 - Shadcn/ui configuration via components.json
@@ -106,33 +71,7 @@ TWT --> THEME
 THEME --> SHADCN
 ```
 
-**Diagram sources**
-- [button.tsx](file://website/components/ui/button.tsx#L1-L54)
-- [input.tsx](file://website/components/ui/input.tsx#L1-L21)
-- [card.tsx](file://website/components/ui/card.tsx#L1-L95)
-- [dialog.tsx](file://website/components/ui/dialog.tsx#L1-L152)
-- [alert-dialog.tsx](file://website/components/ui/alert-dialog.tsx#L1-L176)
-- [badge.tsx](file://website/components/ui/badge.tsx#L1-L49)
-- [combobox.tsx](file://website/components/ui/combobox.tsx#L1-L296)
-- [dropdown-menu.tsx](file://website/components/ui/dropdown-menu.tsx#L1-L266)
-- [field.tsx](file://website/components/ui/field.tsx#L1-L228)
-- [input-group.tsx](file://website/components/ui/input-group.tsx#L1-L150)
-- [label.tsx](file://website/components/ui/label.tsx)
-- [select.tsx](file://website/components/ui/select.tsx)
-- [separator.tsx](file://website/components/ui/separator.tsx)
-- [sonner.tsx](file://website/components/ui/sonner.tsx)
-- [textarea.tsx](file://website/components/ui/textarea.tsx)
-- [utils.ts](file://website/lib/utils.ts#L1-L7)
-- [globals.css](file://website/app/globals.css#L1-L128)
-- [components.json](file://website/components.json#L1-L26)
-
-**Section sources**
-- [package.json](file://website/package.json#L1-L47)
-- [components.json](file://website/components.json#L1-L26)
-- [globals.css](file://website/app/globals.css#L1-L128)
-- [utils.ts](file://website/lib/utils.ts#L1-L7)
-
-## Core Components
+## Core components
 This section summarizes the primary components and their responsibilities, focusing on props, variants, sizes, and styling hooks.
 
 - Button
@@ -209,24 +148,7 @@ This section summarizes the primary components and their responsibilities, focus
   - Accessibility: focus-visible ring, aria-invalid states
   - Composition: used inside InputGroup
 
-**Section sources**
-- [button.tsx](file://website/components/ui/button.tsx#L8-L36)
-- [input.tsx](file://website/components/ui/input.tsx#L6-L18)
-- [card.tsx](file://website/components/ui/card.tsx#L5-L84)
-- [dialog.tsx](file://website/components/ui/dialog.tsx#L10-L138)
-- [alert-dialog.tsx](file://website/components/ui/alert-dialog.tsx#L9-L130)
-- [badge.tsx](file://website/components/ui/badge.tsx#L7-L24)
-- [combobox.tsx](file://website/components/ui/combobox.tsx#L16-L256)
-- [dropdown-menu.tsx](file://website/components/ui/dropdown-menu.tsx#L9-L221)
-- [field.tsx](file://website/components/ui/field.tsx#L10-L214)
-- [input-group.tsx](file://website/components/ui/input-group.tsx#L11-L140)
-- [label.tsx](file://website/components/ui/label.tsx)
-- [select.tsx](file://website/components/ui/select.tsx)
-- [separator.tsx](file://website/components/ui/separator.tsx)
-- [sonner.tsx](file://website/components/ui/sonner.tsx)
-- [textarea.tsx](file://website/components/ui/textarea.tsx)
-
-## Architecture Overview
+## Architecture overview
 The UI components follow a layered architecture:
 - Primitive wrappers: thin wrappers around @base-ui/react primitives
 - Styling layer: class merging via cn(), variants via class-variance-authority
@@ -243,21 +165,7 @@ TWT --> THEME["Design Tokens<br/>app/globals.css"]
 THEME --> SHADCN["shadcn/tailwind.css"]
 ```
 
-**Diagram sources**
-- [button.tsx](file://website/components/ui/button.tsx#L3-L6)
-- [input.tsx](file://website/components/ui/input.tsx#L2-L4)
-- [utils.ts](file://website/lib/utils.ts#L4-L6)
-- [globals.css](file://website/app/globals.css#L7-L49)
-- [components.json](file://website/components.json#L6-L12)
-
-**Section sources**
-- [button.tsx](file://website/components/ui/button.tsx#L1-L54)
-- [input.tsx](file://website/components/ui/input.tsx#L1-L21)
-- [utils.ts](file://website/lib/utils.ts#L1-L7)
-- [globals.css](file://website/app/globals.css#L1-L128)
-- [components.json](file://website/components.json#L1-L26)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### Button
 - Props interface
@@ -288,13 +196,6 @@ class ButtonPrimitive {
 Button --> ButtonPrimitive : "wraps"
 ```
 
-**Diagram sources**
-- [button.tsx](file://website/components/ui/button.tsx#L38-L51)
-
-**Section sources**
-- [button.tsx](file://website/components/ui/button.tsx#L8-L36)
-- [button.tsx](file://website/components/ui/button.tsx#L38-L51)
-
 ### Input
 - Props interface
   - className: string
@@ -319,12 +220,6 @@ class InputPrimitive {
 }
 Input --> InputPrimitive : "wraps"
 ```
-
-**Diagram sources**
-- [input.tsx](file://website/components/ui/input.tsx#L6-L18)
-
-**Section sources**
-- [input.tsx](file://website/components/ui/input.tsx#L1-L21)
 
 ### Card
 - Props interface
@@ -359,12 +254,6 @@ Card <.. CardAction
 Card <.. CardContent
 Card <.. CardFooter
 ```
-
-**Diagram sources**
-- [card.tsx](file://website/components/ui/card.tsx#L5-L84)
-
-**Section sources**
-- [card.tsx](file://website/components/ui/card.tsx#L1-L95)
 
 ### Dialog
 - Props interface
@@ -401,13 +290,7 @@ U->>B : Click close
 B->>R : Close
 ```
 
-**Diagram sources**
-- [dialog.tsx](file://website/components/ui/dialog.tsx#L10-L78)
-
-**Section sources**
-- [dialog.tsx](file://website/components/ui/dialog.tsx#L1-L152)
-
-### Alert Dialog
+### Alert dialog
 - Props interface
   - AlertDialog: Root
   - AlertDialogTrigger: Trigger
@@ -448,12 +331,6 @@ U->>X : Cancel
 X->>R : Close
 ```
 
-**Diagram sources**
-- [alert-dialog.tsx](file://website/components/ui/alert-dialog.tsx#L9-L160)
-
-**Section sources**
-- [alert-dialog.tsx](file://website/components/ui/alert-dialog.tsx#L1-L176)
-
 ### Badge
 - Props interface
   - className: string
@@ -478,12 +355,6 @@ class BadgePrimitive {
 }
 Badge --> BadgePrimitive : "wraps"
 ```
-
-**Diagram sources**
-- [badge.tsx](file://website/components/ui/badge.tsx#L26-L46)
-
-**Section sources**
-- [badge.tsx](file://website/components/ui/badge.tsx#L1-L49)
 
 ### Combobox
 - Props interface
@@ -518,13 +389,7 @@ Empty --> Close
 Close --> End(["Done"])
 ```
 
-**Diagram sources**
-- [combobox.tsx](file://website/components/ui/combobox.tsx#L16-L256)
-
-**Section sources**
-- [combobox.tsx](file://website/components/ui/combobox.tsx#L1-L296)
-
-### Dropdown Menu
+### Dropdown menu
 - Props interface
   - DropdownMenu: Root
   - DropdownMenuPortal: Portal
@@ -565,12 +430,6 @@ DropdownMenu --> Submenu
 DropdownMenu --> Items
 ```
 
-**Diagram sources**
-- [dropdown-menu.tsx](file://website/components/ui/dropdown-menu.tsx#L9-L221)
-
-**Section sources**
-- [dropdown-menu.tsx](file://website/components/ui/dropdown-menu.tsx#L1-L266)
-
 ### Field
 - Props interface
   - FieldSet, FieldLegend (variant), FieldGroup
@@ -602,13 +461,7 @@ Field <.. FieldError
 Field <.. FieldSeparator
 ```
 
-**Diagram sources**
-- [field.tsx](file://website/components/ui/field.tsx#L64-L78)
-
-**Section sources**
-- [field.tsx](file://website/components/ui/field.tsx#L1-L228)
-
-### Input Group
+### Input group
 - Props interface
   - InputGroup
   - InputGroupAddon (align: "inline-start" | "inline-end" | "block-start" | "block-end")
@@ -639,12 +492,6 @@ InputGroup <.. InputGroupInput
 InputGroup <.. InputGroupTextarea
 ```
 
-**Diagram sources**
-- [input-group.tsx](file://website/components/ui/input-group.tsx#L11-L140)
-
-**Section sources**
-- [input-group.tsx](file://website/components/ui/input-group.tsx#L1-L150)
-
 ### Label
 - Props interface
   - className: string
@@ -656,9 +503,6 @@ InputGroup <.. InputGroupTextarea
 - Usage examples
   - Labels for inputs, checkboxes, radios
 
-**Section sources**
-- [label.tsx](file://website/components/ui/label.tsx)
-
 ### Select
 - Props interface
   - Root, Trigger, Portal, Content (positioning), Group, Label, Item, Separator, Value
@@ -668,9 +512,6 @@ InputGroup <.. InputGroupTextarea
   - Keyboard navigation, highlight states
 - Usage examples
   - Dropdown selects, option pickers
-
-**Section sources**
-- [select.tsx](file://website/components/ui/select.tsx)
 
 ### Separator
 - Props interface
@@ -684,9 +525,6 @@ InputGroup <.. InputGroupTextarea
 - Usage examples
   - Dividers in forms, menus, cards
 
-**Section sources**
-- [separator.tsx](file://website/components/ui/separator.tsx)
-
 ### Sonner
 - Props interface
   - Toast manager and helpers
@@ -694,9 +532,6 @@ InputGroup <.. InputGroupTextarea
   - Notification styling via Tailwind classes
 - Usage examples
   - Global notifications, toasts
-
-**Section sources**
-- [sonner.tsx](file://website/components/ui/sonner.tsx)
 
 ### Textarea
 - Props interface
@@ -709,10 +544,7 @@ InputGroup <.. InputGroupTextarea
 - Usage examples
   - Multi-line inputs, comments, descriptions
 
-**Section sources**
-- [textarea.tsx](file://website/components/ui/textarea.tsx)
-
-## Dependency Analysis
+## Dependency analysis
 The components depend on:
 - Base primitives (@base-ui/react/*)
 - Styling utilities (class-variance-authority, clsx, tailwind-merge)
@@ -733,26 +565,14 @@ THEME["app/globals.css"] --> TW["Tailwind v4"]
 CFG["components.json"] --> THEME
 ```
 
-**Diagram sources**
-- [package.json](file://website/package.json#L11-L26)
-- [utils.ts](file://website/lib/utils.ts#L1-L7)
-- [globals.css](file://website/app/globals.css#L1-L128)
-- [components.json](file://website/components.json#L1-L26)
-
-**Section sources**
-- [package.json](file://website/package.json#L1-L47)
-- [utils.ts](file://website/lib/utils.ts#L1-L7)
-- [globals.css](file://website/app/globals.css#L1-L128)
-- [components.json](file://website/components.json#L1-L26)
-
-## Performance Considerations
+## Performance considerations
 - Prefer variant and size props over ad-hoc className overrides to keep styles predictable and efficient.
 - Use InputGroup to avoid redundant borders and shadows on composite inputs.
-- Leverage CSS variables for theme updates without rebuilding styles.
+- Use CSS variables for theme updates without rebuilding styles.
 - Keep animations minimal; Dialog and AlertDialog use lightweight transitions.
 - Avoid excessive nesting in Field and DropdownMenu to reduce DOM traversal.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Focus ring not visible
   - Ensure focus-visible ring classes are applied and not overridden.
   - Verify theme variables for ring color.
@@ -767,15 +587,8 @@ CFG["components.json"] --> THEME
 - InputGroup addon click does nothing
   - Confirm click handler focuses the input element.
 
-**Section sources**
-- [button.tsx](file://website/components/ui/button.tsx#L8-L36)
-- [input.tsx](file://website/components/ui/input.tsx#L6-L18)
-- [input-group.tsx](file://website/components/ui/input-group.tsx#L55-L62)
-- [combobox.tsx](file://website/components/ui/combobox.tsx#L95-L121)
-- [dropdown-menu.tsx](file://website/components/ui/dropdown-menu.tsx#L99-L146)
-
 ## Conclusion
-The shared UI component library leverages shadcn/ui design principles with @base-ui/react primitives, Tailwind CSS v4, and CSS variables for consistent theming. Components expose clear props interfaces, variants, and sizes, while emphasizing accessibility and composability. The InputGroup, Field, and Combobox demonstrate advanced composition patterns suitable for robust form experiences.
+The shared UI component library uses shadcn/ui design principles with @base-ui/react primitives, Tailwind CSS v4, and CSS variables for consistent theming. Components expose clear props interfaces, variants, and sizes, while emphasizing accessibility and composability. The InputGroup, Field, and Combobox demonstrate advanced composition patterns suitable for reliable form experiences.
 
 ## Appendices
 - Theme integration
@@ -785,9 +598,3 @@ The shared UI component library leverages shadcn/ui design principles with @base
   - Use Field components to group labels, descriptions, and errors.
   - Apply aria-invalid on inputs and observe destructive ring/opacity.
   - Use InputGroup for prepend/append actions alongside validation feedback.
-
-**Section sources**
-- [globals.css](file://website/app/globals.css#L7-L49)
-- [components.json](file://website/components.json#L3-L13)
-- [field.tsx](file://website/components/ui/field.tsx#L165-L214)
-- [input-group.tsx](file://website/components/ui/input-group.tsx#L11-L23)

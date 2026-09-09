@@ -1,39 +1,7 @@
-# API Schemas
-
-<cite>
-**Referenced Files in This Document**
-- [app/api/main.py](file://notice-reminders/app/api/main.py)
-- [pyproject.toml](file://notice-reminders/pyproject.toml)
-- [app/schemas/__init__.py](file://notice-reminders/app/schemas/__init__.py)
-- [app/schemas/user.py](file://notice-reminders/app/schemas/user.py)
-- [app/schemas/course.py](file://notice-reminders/app/schemas/course.py)
-- [app/schemas/announcement.py](file://notice-reminders/app/schemas/announcement.py)
-- [app/schemas/subscription.py](file://notice-reminders/app/schemas/subscription.py)
-- [app/schemas/notification.py](file://notice-reminders/app/schemas/notification.py)
-- [app/schemas/notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py)
-- [app/schemas/auth.py](file://notice-reminders/app/schemas/auth.py)
-- [app/models/user.py](file://notice-reminders/app/models/user.py)
-- [app/models/course.py](file://notice-reminders/app/models/course.py)
-- [app/models/announcement.py](file://notice-reminders/app/models/announcement.py)
-- [app/models/subscription.py](file://notice-reminders/app/models/subscription.py)
-- [app/models/notification.py](file://notice-reminders/app/models/notification.py)
-- [app/models/notification_channel.py](file://notice-reminders/app/models/notification_channel.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# API schemas
 
 ## Introduction
-This document provides detailed API schema documentation for the Notice Reminders API built with FastAPI and Pydantic. It covers request and response schemas for:
+This page provides detailed API schema documentation for the Notice Reminders API built with FastAPI and Pydantic. It covers request and response schemas for:
 - User operations
 - Course search and management
 - Announcement retrieval and filtering
@@ -43,7 +11,7 @@ This document provides detailed API schema documentation for the Notice Reminder
 
 It also documents field validation rules, serialization/deserialization behavior, optional versus required fields, schema inheritance patterns, example payloads, validation error responses, schema evolution considerations, the relationship between database models and API schemas, data transformation patterns, and API versioning strategies.
 
-## Project Structure
+## Project structure
 The API is organized around routers and schemas. The application factory registers routers and sets up CORS and database initialization. Schemas define request/response contracts, while Tortoise ORM models define persistence.
 
 ```mermaid
@@ -97,28 +65,8 @@ S_notif --> M_notif
 S_chan --> M_chan
 ```
 
-**Diagram sources**
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L17-L42)
-- [app/schemas/user.py](file://notice-reminders/app/schemas/user.py#L1-L24)
-- [app/schemas/course.py](file://notice-reminders/app/schemas/course.py#L1-L19)
-- [app/schemas/announcement.py](file://notice-reminders/app/schemas/announcement.py#L1-L16)
-- [app/schemas/subscription.py](file://notice-reminders/app/schemas/subscription.py#L1-L19)
-- [app/schemas/notification.py](file://notice-reminders/app/schemas/notification.py#L1-L17)
-- [app/schemas/notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py#L1-L22)
-- [app/schemas/auth.py](file://notice-reminders/app/schemas/auth.py#L1-L26)
-- [app/models/user.py](file://notice-reminders/app/models/user.py#L1-L20)
-- [app/models/course.py](file://notice-reminders/app/models/course.py#L1-L22)
-- [app/models/announcement.py](file://notice-reminders/app/models/announcement.py#L1-L25)
-- [app/models/subscription.py](file://notice-reminders/app/models/subscription.py#L1-L28)
-- [app/models/notification.py](file://notice-reminders/app/models/notification.py#L1-L37)
-- [app/models/notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L1-L26)
-
-**Section sources**
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L1-L46)
-- [pyproject.toml](file://notice-reminders/pyproject.toml#L1-L41)
-
-## Core Components
-This section summarizes the primary Pydantic models grouped by functional area. Each model’s role, validation rules, and serialization behavior are described.
+## Core components
+This section summarizes the primary Pydantic models grouped by functional area. Each model's role, validation rules, and serialization behavior are described.
 
 - User schemas
   - UserUpdate: Partial updates for user profile fields with optional fields for email, name, telegram_id, and is_active.
@@ -153,16 +101,7 @@ Validation rules and behaviors:
 - Attribute-based serialization is enabled via model configuration, aligning schema fields with ORM attributes.
 - Unique constraints and indexes are defined in the database models (e.g., unique email, unique telegram_id, unique course code, unique channel+address per user).
 
-**Section sources**
-- [app/schemas/user.py](file://notice-reminders/app/schemas/user.py#L1-L24)
-- [app/schemas/course.py](file://notice-reminders/app/schemas/course.py#L1-L19)
-- [app/schemas/announcement.py](file://notice-reminders/app/schemas/announcement.py#L1-L16)
-- [app/schemas/subscription.py](file://notice-reminders/app/schemas/subscription.py#L1-L19)
-- [app/schemas/notification.py](file://notice-reminders/app/schemas/notification.py#L1-L17)
-- [app/schemas/notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py#L1-L22)
-- [app/schemas/auth.py](file://notice-reminders/app/schemas/auth.py#L1-L26)
-
-## Architecture Overview
+## Architecture overview
 The API follows a layered architecture:
 - Routers expose endpoints and delegate to services.
 - Schemas define request/response contracts and enable automatic validation and serialization.
@@ -186,14 +125,9 @@ DB --> ORM
 Schemas --> Services
 ```
 
-**Diagram sources**
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L29-L35)
-- [app/schemas/__init__.py](file://notice-reminders/app/schemas/__init__.py#L1-L2)
-- [app/models/user.py](file://notice-reminders/app/models/user.py#L1-L20)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### User Operations
+### User operations
 - Schema: UserUpdate and UserResponse
 - Validation rules
   - Optional fields allow partial updates.
@@ -233,15 +167,7 @@ class User {
 UserResponse <|.. User : "from_attributes"
 ```
 
-**Diagram sources**
-- [app/schemas/user.py](file://notice-reminders/app/schemas/user.py#L6-L23)
-- [app/models/user.py](file://notice-reminders/app/models/user.py#L8-L19)
-
-**Section sources**
-- [app/schemas/user.py](file://notice-reminders/app/schemas/user.py#L1-L24)
-- [app/models/user.py](file://notice-reminders/app/models/user.py#L1-L20)
-
-### Course Management
+### Course management
 - Schema: CourseResponse
 - Validation rules
   - String fields with length constraints reflected in ORM.
@@ -277,15 +203,7 @@ class Course {
 CourseResponse <|.. Course : "from_attributes"
 ```
 
-**Diagram sources**
-- [app/schemas/course.py](file://notice-reminders/app/schemas/course.py#L6-L18)
-- [app/models/course.py](file://notice-reminders/app/models/course.py#L8-L21)
-
-**Section sources**
-- [app/schemas/course.py](file://notice-reminders/app/schemas/course.py#L1-L19)
-- [app/models/course.py](file://notice-reminders/app/models/course.py#L1-L22)
-
-### Announcement Retrieval and Filtering
+### Announcement retrieval and filtering
 - Schema: AnnouncementResponse
 - Validation rules
   - Date stored as string; content as text; fetch timestamp auto-generated.
@@ -315,15 +233,7 @@ class Announcement {
 AnnouncementResponse <|.. Announcement : "from_attributes"
 ```
 
-**Diagram sources**
-- [app/schemas/announcement.py](file://notice-reminders/app/schemas/announcement.py#L6-L15)
-- [app/models/announcement.py](file://notice-reminders/app/models/announcement.py#L12-L24)
-
-**Section sources**
-- [app/schemas/announcement.py](file://notice-reminders/app/schemas/announcement.py#L1-L16)
-- [app/models/announcement.py](file://notice-reminders/app/models/announcement.py#L1-L25)
-
-### Subscription CRUD Operations
+### Subscription CRUD operations
 - Schemas: SubscriptionCreate and SubscriptionResponse
 - Validation rules
   - SubscriptionCreate requires course code; SubscriptionResponse includes activation flag and timestamps.
@@ -355,15 +265,7 @@ class Subscription {
 SubscriptionResponse <|.. Subscription : "from_attributes"
 ```
 
-**Diagram sources**
-- [app/schemas/subscription.py](file://notice-reminders/app/schemas/subscription.py#L6-L18)
-- [app/models/subscription.py](file://notice-reminders/app/models/subscription.py#L13-L27)
-
-**Section sources**
-- [app/schemas/subscription.py](file://notice-reminders/app/schemas/subscription.py#L1-L19)
-- [app/models/subscription.py](file://notice-reminders/app/models/subscription.py#L1-L28)
-
-### Notification Delivery and Status Tracking
+### Notification delivery and status tracking
 - Schemas: NotificationResponse and NotificationChannel schemas
 - Validation rules
   - NotificationResponse includes optional channel reference; channel address and channel type constrained by model.
@@ -419,19 +321,7 @@ NotificationResponse <|.. Notification : "from_attributes"
 NotificationChannelResponse <|.. NotificationChannel : "from_attributes"
 ```
 
-**Diagram sources**
-- [app/schemas/notification.py](file://notice-reminders/app/schemas/notification.py#L6-L16)
-- [app/schemas/notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py#L6-L21)
-- [app/models/notification.py](file://notice-reminders/app/models/notification.py#L15-L36)
-- [app/models/notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L12-L25)
-
-**Section sources**
-- [app/schemas/notification.py](file://notice-reminders/app/schemas/notification.py#L1-L17)
-- [app/schemas/notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py#L1-L22)
-- [app/models/notification.py](file://notice-reminders/app/models/notification.py#L1-L37)
-- [app/models/notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L1-L26)
-
-### Authentication Flows
+### Authentication flows
 - Schemas: OtpRequest, OtpVerify, AuthStatus, OtpRequestResponse
 - Validation rules
   - Email fields are validated; OTP code is a string.
@@ -457,14 +347,7 @@ AuthService-->>AuthRouter : authenticate_user(email)
 AuthRouter-->>Client : AuthStatus
 ```
 
-**Diagram sources**
-- [app/schemas/auth.py](file://notice-reminders/app/schemas/auth.py#L8-L25)
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L29-L35)
-
-**Section sources**
-- [app/schemas/auth.py](file://notice-reminders/app/schemas/auth.py#L1-L26)
-
-## Dependency Analysis
+## Dependency analysis
 The schemas depend on Pydantic for validation and serialization. They are consumed by routers and services, and mapped onto Tortoise ORM models for persistence. The application factory wires routers into the FastAPI app.
 
 ```mermaid
@@ -498,31 +381,13 @@ S_notif --> M_notif
 S_chan --> M_chan
 ```
 
-**Diagram sources**
-- [app/schemas/user.py](file://notice-reminders/app/schemas/user.py#L1-L24)
-- [app/schemas/course.py](file://notice-reminders/app/schemas/course.py#L1-L19)
-- [app/schemas/announcement.py](file://notice-reminders/app/schemas/announcement.py#L1-L16)
-- [app/schemas/subscription.py](file://notice-reminders/app/schemas/subscription.py#L1-L19)
-- [app/schemas/notification.py](file://notice-reminders/app/schemas/notification.py#L1-L17)
-- [app/schemas/notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py#L1-L22)
-- [app/schemas/auth.py](file://notice-reminders/app/schemas/auth.py#L1-L26)
-- [app/models/user.py](file://notice-reminders/app/models/user.py#L1-L20)
-- [app/models/course.py](file://notice-reminders/app/models/course.py#L1-L22)
-- [app/models/announcement.py](file://notice-reminders/app/models/announcement.py#L1-L25)
-- [app/models/subscription.py](file://notice-reminders/app/models/subscription.py#L1-L28)
-- [app/models/notification.py](file://notice-reminders/app/models/notification.py#L1-L37)
-- [app/models/notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L1-L26)
-
-**Section sources**
-- [app/api/main.py](file://notice-reminders/app/api/main.py#L1-L46)
-
-## Performance Considerations
+## Performance considerations
 - Attribute-based serialization reduces mapping overhead by aligning schema fields with ORM attributes.
 - Unique constraints in models minimize duplicate writes and improve lookup performance.
 - Consider pagination for listing endpoints (courses, announcements, notifications) to limit payload sizes.
 - Use selective field projection in queries to avoid loading unnecessary data.
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common validation errors and their likely causes:
 - Email validation failures: Ensure the email field matches the validated email type.
 - Missing required fields: SubscriptionCreate requires course_code; Auth requests require email and code where applicable.
@@ -532,50 +397,24 @@ Operational checks:
 - Verify attribute-based serialization is enabled in schemas to prevent missing fields during ORM mapping.
 - Confirm unique constraints are respected to avoid duplicate entries.
 
-**Section sources**
-- [app/schemas/user.py](file://notice-reminders/app/schemas/user.py#L22-L23)
-- [app/schemas/course.py](file://notice-reminders/app/schemas/course.py#L17-L18)
-- [app/schemas/announcement.py](file://notice-reminders/app/schemas/announcement.py#L14-L15)
-- [app/schemas/subscription.py](file://notice-reminders/app/schemas/subscription.py#L17-L18)
-- [app/schemas/notification.py](file://notice-reminders/app/schemas/notification.py#L15-L16)
-- [app/schemas/notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py#L20-L21)
-- [app/schemas/auth.py](file://notice-reminders/app/schemas/auth.py#L22-L25)
-
 ## Conclusion
-The Notice Reminders API employs a clean separation of concerns with Pydantic schemas defining strict request/response contracts and Tortoise ORM models encapsulating persistence. Attribute-based serialization simplifies mapping between schemas and models. The schemas support robust validation, optional fields for partial updates, and clear inheritance patterns via shared base models. Together with unique constraints and indexes, these designs provide a solid foundation for reliable user, course, announcement, subscription, and notification workflows.
+The Notice Reminders API employs a clean separation of concerns with Pydantic schemas defining strict request/response contracts and Tortoise ORM models encapsulating persistence. Attribute-based serialization simplifies mapping between schemas and models. The schemas support reliable validation, optional fields for partial updates, and clear inheritance patterns via shared base models. Together with unique constraints and indexes, these designs provide a solid foundation for reliable user, course, announcement, subscription, and notification workflows.
 
 ## Appendices
 
-### Relationship Between Database Models and API Schemas
-- User: UserResponse mirrors User model fields; attribute-based serialization enables seamless conversion.
-- Course: CourseResponse mirrors Course model fields; attribute-based serialization enables seamless conversion.
-- Announcement: AnnouncementResponse mirrors Announcement model fields; attribute-based serialization enables seamless conversion.
-- Subscription: SubscriptionResponse mirrors Subscription model fields; attribute-based serialization enables seamless conversion.
-- Notification: NotificationResponse mirrors Notification model fields; attribute-based serialization enables seamless conversion.
-- NotificationChannel: NotificationChannelResponse mirrors NotificationChannel model fields; attribute-based serialization enables seamless conversion.
+### Relationship between database models and API schemas
+- User: UserResponse mirrors User model fields; attribute-based serialization enables smooth conversion.
+- Course: CourseResponse mirrors Course model fields; attribute-based serialization enables smooth conversion.
+- Announcement: AnnouncementResponse mirrors Announcement model fields; attribute-based serialization enables smooth conversion.
+- Subscription: SubscriptionResponse mirrors Subscription model fields; attribute-based serialization enables smooth conversion.
+- Notification: NotificationResponse mirrors Notification model fields; attribute-based serialization enables smooth conversion.
+- NotificationChannel: NotificationChannelResponse mirrors NotificationChannel model fields; attribute-based serialization enables smooth conversion.
 
-**Section sources**
-- [app/models/user.py](file://notice-reminders/app/models/user.py#L8-L19)
-- [app/models/course.py](file://notice-reminders/app/models/course.py#L8-L21)
-- [app/models/announcement.py](file://notice-reminders/app/models/announcement.py#L12-L24)
-- [app/models/subscription.py](file://notice-reminders/app/models/subscription.py#L13-L27)
-- [app/models/notification.py](file://notice-reminders/app/models/notification.py#L15-L36)
-- [app/models/notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L12-L25)
-- [app/schemas/user.py](file://notice-reminders/app/schemas/user.py#L22-L23)
-- [app/schemas/course.py](file://notice-reminders/app/schemas/course.py#L17-L18)
-- [app/schemas/announcement.py](file://notice-reminders/app/schemas/announcement.py#L14-L15)
-- [app/schemas/subscription.py](file://notice-reminders/app/schemas/subscription.py#L17-L18)
-- [app/schemas/notification.py](file://notice-reminders/app/schemas/notification.py#L15-L16)
-- [app/schemas/notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py#L20-L21)
-
-### Data Transformation Patterns
+### Data transformation patterns
 - Schemas act as adapters between external clients and internal ORM models.
 - Attribute-based serialization eliminates manual field mapping in most cases.
 - Services receive validated models and convert them to ORM instances for persistence.
 
-### API Versioning Strategies
+### API versioning strategies
 - Current project version: 0.1.0
 - Recommendation: Introduce a version prefix in route paths (e.g., /api/v1/) and maintain backward compatibility by deprecating older endpoints rather than removing them immediately. This allows clients to migrate gradually.
-
-**Section sources**
-- [pyproject.toml](file://notice-reminders/pyproject.toml#L3-L3)

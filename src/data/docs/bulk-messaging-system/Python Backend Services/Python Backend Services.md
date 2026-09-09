@@ -1,44 +1,16 @@
-# Python Backend Services
-
-<cite>
-**Referenced Files in This Document**
-- [app.py](file://python-backend/app.py)
-- [extract_contacts.py](file://python-backend/extract_contacts.py)
-- [validate_number.py](file://python-backend/validate_number.py)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py)
-- [requirements.txt](file://python-backend/requirements.txt)
-- [README.md](file://python-backend/README.md)
-- [pyodide.js](file://electron/src/utils/pyodide.js)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py)
-- [parse_manual_numbers.py](file://electron/dist-react/py/parse_manual_numbers.py)
-- [cli_functions.py](file://localhost/cli_functions.py)
-- [app.py](file://localhost/app.py)
-- [README.md](file://README.md)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Security Considerations](#security-considerations)
-10. [Conclusion](#conclusion)
+# Python backend services
 
 ## Introduction
-This document provides comprehensive documentation for the Python backend services and utilities that power contact processing and validation in the WhatsApp bulk messaging system. The backend consists of a Flask-based API for file uploads and phone number validation, along with standalone utilities for extracting contacts from CSV, TXT, and Excel files, validating individual phone numbers, and parsing manually entered numbers. It also covers integration with the Pyodide runtime for browser-based Python execution within the Electron application, local development server implementation, and command-line interface functions.
+This page provides detailed documentation for the Python backend services and utilities that power contact processing and validation in the WhatsApp bulk messaging system. The backend consists of a Flask-based API for file uploads and phone number validation, along with standalone utilities for extracting contacts from CSV, TXT, and Excel files, validating individual phone numbers, and parsing manually entered numbers. It also covers integration with the Pyodide runtime for browser-based Python execution within the Electron application, local development server implementation, and command-line interface functions.
 
 The backend is designed to:
 - Support multiple file formats with automatic format detection
 - Extract and clean phone numbers with flexible international formatting
-- Provide robust error handling and fallback parsing
-- Integrate seamlessly with the Electron frontend via Pyodide
+- Provide reliable error handling and fallback parsing
+- Integrate smoothly with the Electron frontend via Pyodide
 - Offer a lightweight local development server for testing and validation
 
-## Project Structure
+## Project structure
 The Python backend is organized into modular components:
 - Flask API server for contact processing and validation
 - Standalone utilities for file-based and manual number parsing
@@ -72,23 +44,7 @@ I --> A
 J --> A
 ```
 
-**Diagram sources**
-- [app.py](file://python-backend/app.py#L1-L378)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L1-L177)
-- [validate_number.py](file://python-backend/validate_number.py#L1-L27)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L1-L61)
-- [requirements.txt](file://python-backend/requirements.txt#L1-L7)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L1-L33)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py#L1-L61)
-- [parse_manual_numbers.py](file://electron/dist-react/py/parse_manual_numbers.py#L1-L61)
-- [app.py](file://localhost/app.py#L1-L306)
-- [cli_functions.py](file://localhost/cli_functions.py#L1-L360)
-
-**Section sources**
-- [README.md](file://README.md#L223-L236)
-- [README.md](file://python-backend/README.md#L1-L128)
-
-## Core Components
+## Core components
 This section outlines the primary backend components and their responsibilities.
 
 - Flask API server
@@ -117,16 +73,7 @@ This section outlines the primary backend components and their responsibilities.
   - Provides a local Flask server for development and testing
   - Offers CLI functions for sending WhatsApp messages and managing contacts
 
-**Section sources**
-- [app.py](file://python-backend/app.py#L225-L378)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L25-L157)
-- [validate_number.py](file://python-backend/validate_number.py#L6-L19)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L54)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L5-L33)
-- [app.py](file://localhost/app.py#L1-L306)
-- [cli_functions.py](file://localhost/cli_functions.py#L1-L360)
-
-## Architecture Overview
+## Architecture overview
 The backend architecture follows a layered design:
 - Presentation layer: Flask API endpoints
 - Processing layer: Contact extraction and validation utilities
@@ -171,17 +118,9 @@ CE --> CN
 VN --> VU
 ```
 
-**Diagram sources**
-- [app.py](file://python-backend/app.py#L225-L378)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L25-L157)
-- [validate_number.py](file://python-backend/validate_number.py#L6-L19)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L54)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L5-L33)
-- [app.py](file://localhost/app.py#L1-L306)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Flask API Implementation
+### Flask API implementation
 The Flask API provides four main endpoints:
 - Health check endpoint for monitoring
 - File upload endpoint for CSV, TXT, XLSX, and XLS files
@@ -193,7 +132,7 @@ Key implementation details:
 - File upload handling with secure filename validation
 - Automatic file type detection and processing
 - Cleanup of uploaded files after processing
-- Comprehensive error handling with appropriate HTTP status codes
+- Detailed error handling with appropriate HTTP status codes
 
 ```mermaid
 sequenceDiagram
@@ -222,32 +161,23 @@ Validator-->>API : validation result
 API-->>Client : JSON response
 ```
 
-**Diagram sources**
-- [app.py](file://python-backend/app.py#L232-L378)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L25-L157)
-- [validate_number.py](file://python-backend/validate_number.py#L6-L19)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L54)
-
-**Section sources**
-- [app.py](file://python-backend/app.py#L225-L378)
-
-### Contact Extraction Utilities
+### Contact extraction utilities
 The contact extraction utilities support three file formats with automatic format detection:
 
-#### CSV Processing
+#### CSV processing
 - Uses pandas for efficient CSV reading
 - Automatically detects phone number and name columns based on header keywords
 - Falls back to pure Python CSV reader for malformed files
 - Handles UTF-8 encoding and various separator formats
 
-#### TXT Processing
+#### TXT processing
 - Processes plain text files with flexible formatting
 - Splits lines by common separators (comma, semicolon, tab, pipe)
 - Attempts to identify phone numbers using regex patterns
 - Extracts names from the remaining parts of each line
 
-#### Excel Processing
-- Supports both .xlsx and .xls formats via pandas
+#### Excel processing
+- Supports both.xlsx and.xls formats via pandas
 - Automatically detects column headers for phone numbers and names
 - Handles missing values and NaN entries gracefully
 
@@ -277,13 +207,7 @@ PandasCSV -.-> FallbackCSV["Fallback to CSV Reader"]
 FallbackCSV --> PandasCSV
 ```
 
-**Diagram sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L25-L157)
-
-**Section sources**
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L25-L157)
-
-### Phone Number Validation Logic
+### Phone number validation logic
 The phone number validation logic implements the following rules:
 - Removes all non-digit characters except plus signs
 - Strips leading zeros for domestic numbers
@@ -310,15 +234,7 @@ Valid --> |Yes| ReturnCleaned["Return Cleaned Number"]
 Valid --> |No| ReturnNone["Return None"]
 ```
 
-**Diagram sources**
-- [validate_number.py](file://python-backend/validate_number.py#L6-L19)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L9-L22)
-
-**Section sources**
-- [validate_number.py](file://python-backend/validate_number.py#L6-L19)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L9-L22)
-
-### Manual Numbers Parser
+### Manual numbers parser
 The manual numbers parser handles various input formats:
 - One number per line
 - Name: Number format
@@ -331,10 +247,7 @@ Processing logic:
 - Extracts names from the remaining parts
 - Applies the same cleaning and validation logic as file-based processing
 
-**Section sources**
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L54)
-
-### Pyodide Runtime Integration
+### Pyodide runtime integration
 The Electron application integrates with Pyodide to enable browser-based Python execution:
 - Dynamically loads Pyodide runtime from CDN
 - Fetches and executes Python scripts in the browser
@@ -359,15 +272,7 @@ Loader-->>PyUtils : JSON result
 PyUtils-->>UI : Parsed contacts
 ```
 
-**Diagram sources**
-- [pyodide.js](file://electron/src/utils/pyodide.js#L5-L33)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py#L1-L61)
-
-**Section sources**
-- [pyodide.js](file://electron/src/utils/pyodide.js#L5-L33)
-- [parse_manual_numbers.py](file://electron/public/py/parse_manual_numbers.py#L1-L61)
-
-### Local Development Server
+### Local development server
 The local development server provides:
 - User authentication and session management
 - File upload and storage
@@ -382,10 +287,7 @@ Key features:
 - CORS-enabled API endpoints for frontend integration
 - SQLite database for persistent storage
 
-**Section sources**
-- [app.py](file://localhost/app.py#L1-L306)
-
-### Command-Line Interface Functions
+### Command-Line interface functions
 The CLI functions provide:
 - WhatsApp message sending via Selenium WebDriver
 - Contact import and filtering capabilities
@@ -398,10 +300,7 @@ Capabilities:
 - Schedule messages for future delivery
 - Handle various file formats and error conditions
 
-**Section sources**
-- [cli_functions.py](file://localhost/cli_functions.py#L1-L360)
-
-## Dependency Analysis
+## Dependency analysis
 The Python backend has minimal external dependencies focused on web serving and data processing:
 
 ```mermaid
@@ -438,16 +337,7 @@ PY --> JS
 SQL --> DB
 ```
 
-**Diagram sources**
-- [requirements.txt](file://python-backend/requirements.txt#L1-L7)
-- [app.py](file://python-backend/app.py#L1-L11)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L1-L7)
-- [app.py](file://localhost/app.py#L1-L14)
-
-**Section sources**
-- [requirements.txt](file://python-backend/requirements.txt#L1-L7)
-
-## Performance Considerations
+## Performance considerations
 The backend implements several performance optimization techniques:
 
 - Efficient file processing
@@ -475,35 +365,30 @@ The backend implements several performance optimization techniques:
   - Python scripts are cached after initial load
   - Minimal overhead for repeated parsing operations
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and their solutions:
 
-### File Processing Errors
+### File processing errors
 - **Empty or malformed files**: The system provides fallback parsing for CSV files when pandas fails
 - **Encoding issues**: Files are processed with UTF-8 encoding; ensure proper file encoding
 - **Column header variations**: The system searches for common keywords in column names
 
-### Phone Number Validation Failures
+### Phone number validation failures
 - **Invalid length**: Numbers must be between 7 and 15 digits after cleaning
 - **Unsupported characters**: Only digits, plus signs, and common separators are allowed
 - **Format inconsistencies**: The cleaner removes separators and applies international formatting rules
 
-### Pyodide Integration Issues
+### Pyodide integration issues
 - **CDN loading failures**: The system attempts to load Pyodide from CDN; check network connectivity
 - **Script execution errors**: Python scripts are executed asynchronously; check console for error messages
 - **Memory limitations**: Large input texts may exceed Pyodide memory limits
 
-### Local Development Server Issues
+### Local development server issues
 - **Database initialization**: The server creates tables on startup; ensure proper permissions
 - **File upload errors**: Check upload directory permissions and available disk space
 - **CORS issues**: Ensure proper CORS configuration for frontend integration
 
-**Section sources**
-- [app.py](file://python-backend/app.py#L100-L124)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L59-L81)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L7-L16)
-
-## Security Considerations
+## Security considerations
 The backend implements several security measures:
 
 - Input validation and sanitization
@@ -537,15 +422,9 @@ Best practices for production deployment:
 - Monitor and log all API requests
 - Regular security updates for dependencies
 
-**Section sources**
-- [app.py](file://python-backend/app.py#L14-L21)
-- [app.py](file://python-backend/app.py#L241-L244)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L28-L30)
-- [app.py](file://localhost/app.py#L11-L14)
-
 ## Conclusion
-The Python backend services provide a robust foundation for contact processing and validation in the WhatsApp bulk messaging system. The modular design enables seamless integration with the Electron frontend while maintaining flexibility for local development and testing. Key strengths include comprehensive file format support, intelligent phone number cleaning and validation, efficient processing algorithms, and secure browser-based Python execution via Pyodide.
+The Python backend services provide a reliable foundation for contact processing and validation in the WhatsApp bulk messaging system. The modular design enables smooth integration with the Electron frontend while maintaining flexibility for local development and testing. Key strengths include detailed file format support, intelligent phone number cleaning and validation, efficient processing algorithms, and secure browser-based Python execution via Pyodide.
 
 The implementation demonstrates good engineering practices with proper error handling, fallback mechanisms, and security considerations. The architecture supports future enhancements such as additional file formats, improved validation rules, and expanded integration capabilities.
 
-For production deployment, consider adding comprehensive logging, monitoring, authentication, and rate limiting to complement the existing security measures. The modular structure makes it straightforward to extend functionality while maintaining backward compatibility.
+For production deployment, consider adding detailed logging, monitoring, authentication, and rate limiting to complement the existing security measures. The modular structure makes it straightforward to extend functionality while maintaining backward compatibility.

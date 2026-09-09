@@ -1,41 +1,9 @@
-# Development & Contributing
-
-<cite>
-**Referenced Files in This Document**
-- [app/main.py](file://app/main.py)
-- [app/pyproject.toml](file://app/pyproject.toml)
-- [app/requirements.txt](file://app/requirements.txt)
-- [app/docker-compose.dev.yaml](file://app/docker-compose.dev.yaml)
-- [app/core/config.py](file://app/core/config.py)
-- [app/core/daemon.py](file://app/core/daemon.py)
-- [app/services/database_service.py](file://app/services/database_service.py)
-- [app/services/telegram_service.py](file://app/services/telegram_service.py)
-- [app/runners/notification_runner.py](file://app/runners/notification_runner.py)
-- [app/servers/bot_server.py](file://app/servers/bot_server.py)
-- [docs/DEVELOPMENT.md](file://docs/DEVELOPMENT.md)
-- [docs/README.md](file://docs/README.md)
-- [AGENTS.md](file://AGENTS.md)
-- [.github/workflows/daily-run.yml.legacy](file://.github/workflows/daily-run.yml.legacy)
-- [.github/workflows/noon-run.yml.legacy](file://.github/workflows/noon-run.yml.legacy)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Contribution Workflow](#contribution-workflow)
-10. [Extensibility & Integration Guide](#extensibility--integration-guide)
-11. [Conclusion](#conclusion)
+# Development & contributing
 
 ## Introduction
-This document provides comprehensive development and contribution guidance for the SuperSet Telegram Notification Bot. It covers local setup, testing, code standards, development tools, debugging and profiling, performance optimization, CI/CD, and extension strategies for adding new notification channels and data sources.
+This page provides detailed development and contribution guidance for the SuperSet Telegram Notification Bot. It covers local setup, testing, code standards, development tools, debugging and profiling, performance optimization, CI/CD, and extension strategies for adding new notification channels and data sources.
 
-## Project Structure
+## Project structure
 The project is organized as a modular Python application under the app/ directory with clear separation of concerns:
 - Core configuration and daemon utilities
 - Service layer for business logic
@@ -73,20 +41,7 @@ BOT --> DB
 BOT --> TG
 ```
 
-**Diagram sources**
-- [app/main.py](file://app/main.py#L370-L632)
-- [app/core/config.py](file://app/core/config.py#L18-L254)
-- [app/core/daemon.py](file://app/core/daemon.py#L114-L251)
-- [app/services/database_service.py](file://app/services/database_service.py#L16-L200)
-- [app/services/telegram_service.py](file://app/services/telegram_service.py#L20-L200)
-- [app/runners/notification_runner.py](file://app/runners/notification_runner.py#L21-L160)
-- [app/servers/bot_server.py](file://app/servers/bot_server.py#L29-L200)
-
-**Section sources**
-- [docs/README.md](file://docs/README.md#L1-L252)
-- [docs/DEVELOPMENT.md](file://docs/DEVELOPMENT.md#L115-L173)
-
-## Core Components
+## Core components
 - CLI entry point orchestrating commands for bot, scheduler, webhook, update, send, official, and daemon control
 - Centralized configuration with Pydantic settings and logging setup
 - Daemon utilities for Unix-style background processes
@@ -96,16 +51,7 @@ BOT --> TG
 
 Key responsibilities and integration points are defined in the CLI and service wiring.
 
-**Section sources**
-- [app/main.py](file://app/main.py#L370-L632)
-- [app/core/config.py](file://app/core/config.py#L18-L254)
-- [app/core/daemon.py](file://app/core/daemon.py#L114-L251)
-- [app/services/database_service.py](file://app/services/database_service.py#L16-L200)
-- [app/services/telegram_service.py](file://app/services/telegram_service.py#L20-L200)
-- [app/runners/notification_runner.py](file://app/runners/notification_runner.py#L21-L160)
-- [app/servers/bot_server.py](file://app/servers/bot_server.py#L29-L200)
-
-## Architecture Overview
+## Architecture overview
 The system follows a dependency-injected, modular architecture:
 - Data sources (SuperSet portal, emails, official website) feed structured data into MongoDB
 - Services encapsulate business logic and integrate with external APIs
@@ -128,16 +74,9 @@ CLI --> WH["Webhook Server"]
 CLI --> SCH["Scheduler Server"]
 ```
 
-**Diagram sources**
-- [app/main.py](file://app/main.py#L370-L632)
-- [app/services/database_service.py](file://app/services/database_service.py#L16-L200)
-- [app/services/telegram_service.py](file://app/services/telegram_service.py#L20-L200)
-- [app/runners/notification_runner.py](file://app/runners/notification_runner.py#L21-L160)
-- [app/servers/bot_server.py](file://app/servers/bot_server.py#L29-L200)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### CLI and Command Orchestration
+### CLI and command orchestration
 The CLI defines subcommands for bot, scheduler, webhook, update, send, official, and daemon control. It sets up logging, supports daemon mode, and wires services for orchestrated execution.
 
 ```mermaid
@@ -155,15 +94,7 @@ CLI->>BOT : create_bot_server(settings, daemon_mode)
 BOT-->>U : "Bot running in background"
 ```
 
-**Diagram sources**
-- [app/main.py](file://app/main.py#L370-L632)
-- [app/core/config.py](file://app/core/config.py#L188-L254)
-- [app/servers/bot_server.py](file://app/servers/bot_server.py#L29-L200)
-
-**Section sources**
-- [app/main.py](file://app/main.py#L370-L632)
-
-### Configuration and Logging
+### Configuration and logging
 Centralized settings management with Pydantic, environment loading, and configurable logging levels and destinations. Includes daemon-aware printing and PID file management.
 
 ```mermaid
@@ -177,13 +108,7 @@ InitSettings --> SetupLog["setup_logging(settings)"]
 SetupLog --> Done(["Ready"])
 ```
 
-**Diagram sources**
-- [app/core/config.py](file://app/core/config.py#L156-L254)
-
-**Section sources**
-- [app/core/config.py](file://app/core/config.py#L18-L254)
-
-### Daemon Utilities
+### Daemon utilities
 Unix-style daemonization with PID file management, graceful stop, and status reporting. Ensures background processes detach cleanly and redirect output.
 
 ```mermaid
@@ -200,13 +125,7 @@ HasPID --> |Yes| Kill["SIGTERM -> wait -> SIGKILL if needed"]
 Kill --> Cleanup["cleanup_pid_file(name); True"]
 ```
 
-**Diagram sources**
-- [app/core/daemon.py](file://app/core/daemon.py#L59-L112)
-
-**Section sources**
-- [app/core/daemon.py](file://app/core/daemon.py#L1-L251)
-
-### Database Service
+### Database service
 Encapsulates MongoDB operations for notices, jobs, placement offers, users, and policies. Provides helpers for existence checks, retrieval, and statistics.
 
 ```mermaid
@@ -221,13 +140,7 @@ class DatabaseService {
 }
 ```
 
-**Diagram sources**
-- [app/services/database_service.py](file://app/services/database_service.py#L16-L200)
-
-**Section sources**
-- [app/services/database_service.py](file://app/services/database_service.py#L16-L200)
-
-### Telegram Service
+### Telegram service
 Implements Telegram notifications with message chunking, formatting, and broadcasting capabilities. Integrates with a Telegram client wrapper.
 
 ```mermaid
@@ -242,13 +155,7 @@ class TelegramService {
 }
 ```
 
-**Diagram sources**
-- [app/services/telegram_service.py](file://app/services/telegram_service.py#L20-L200)
-
-**Section sources**
-- [app/services/telegram_service.py](file://app/services/telegram_service.py#L20-L200)
-
-### Notification Runner
+### Notification runner
 Coordinates sending unsent notices across channels using dependency injection. Supports Telegram and Web Push, with optional NotificationService composition.
 
 ```mermaid
@@ -269,13 +176,7 @@ end
 NR-->>CLI : results
 ```
 
-**Diagram sources**
-- [app/runners/notification_runner.py](file://app/runners/notification_runner.py#L60-L160)
-
-**Section sources**
-- [app/runners/notification_runner.py](file://app/runners/notification_runner.py#L21-L160)
-
-### Telegram Bot Server
+### Telegram bot server
 Long-polling Telegram bot with command handlers for user registration, help, status, stats, and administrative commands. Integrates with services for DB, notifications, and stats.
 
 ```mermaid
@@ -292,13 +193,7 @@ BS->>NS : compute stats
 BS-->>TGB : Stats reply
 ```
 
-**Diagram sources**
-- [app/servers/bot_server.py](file://app/servers/bot_server.py#L87-L200)
-
-**Section sources**
-- [app/servers/bot_server.py](file://app/servers/bot_server.py#L29-L200)
-
-## Dependency Analysis
+## Dependency analysis
 - Project metadata and dependencies are defined in pyproject.toml and requirements.txt
 - Development uses uv for dependency management and reproducible environments
 - Docker Compose provides a local MongoDB instance for development
@@ -313,26 +208,16 @@ PIP --> APP
 MONGO --> APP
 ```
 
-**Diagram sources**
-- [app/pyproject.toml](file://app/pyproject.toml#L1-L27)
-- [app/requirements.txt](file://app/requirements.txt#L1-L81)
-- [app/docker-compose.dev.yaml](file://app/docker-compose.dev.yaml#L1-L15)
-
-**Section sources**
-- [app/pyproject.toml](file://app/pyproject.toml#L1-L27)
-- [app/requirements.txt](file://app/requirements.txt#L1-L81)
-- [app/docker-compose.dev.yaml](file://app/docker-compose.dev.yaml#L1-L15)
-
-## Performance Considerations
+## Performance considerations
 - Use daemon mode for background processes to reduce overhead and improve reliability
 - Chunk long Telegram messages to avoid rate limits and failures
 - Minimize database round-trips by batching operations and using aggregation where possible
-- Leverage caching for settings and enable logging levels appropriate to environment
+- Use caching for settings and enable logging levels appropriate to environment
 - Profile CPU and memory usage during heavy update cycles using built-in profiling tools
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and remedies:
 - Verify environment variables and MongoDB connectivity before running
 - Check daemon status and logs for background processes
@@ -340,23 +225,14 @@ Common issues and remedies:
 - Inspect scheduler job registrations and intervals
 - Validate Telegram bot token and chat ID configuration
 
-**Section sources**
-- [docs/DEVELOPMENT.md](file://docs/DEVELOPMENT.md#L569-L593)
-- [app/core/daemon.py](file://app/core/daemon.py#L235-L251)
-- [app/core/config.py](file://app/core/config.py#L188-L254)
-
-## Contribution Workflow
+## Contribution workflow
 - Fork and branch: feature/your-feature-name or fix/issue-description
 - Develop with pytest for unit tests and flake8 for style checks
 - Commit with conventional messages (feat:, fix:, refactor:, docs:, test:)
 - Create Pull Request with checklist items addressed
 - Address reviewer feedback and ensure tests pass
 
-**Section sources**
-- [docs/DEVELOPMENT.md](file://docs/DEVELOPMENT.md#L175-L234)
-- [AGENTS.md](file://AGENTS.md#L414-L481)
-
-## Extensibility & Integration Guide
+## Extensibility & integration guide
 - Adding a new notification channel:
   - Implement a channel-specific service following the INotificationChannel pattern
   - Integrate via NotificationRunner and CLI flags
@@ -369,48 +245,29 @@ Common issues and remedies:
   - Extend LangGraph workflows in dedicated services
   - Maintain separation of concerns and inject dependencies
 
-**Section sources**
-- [docs/DEVELOPMENT.md](file://docs/DEVELOPMENT.md#L633-L704)
-- [app/main.py](file://app/main.py#L98-L334)
-
-## Continuous Integration and Release Management
+## Continuous integration and release management
 - Scheduled workflows run the bot hourly and scrape official data
 - Python version pinned to 3.11 in CI for stability
 - Secrets injected for Telegram, MongoDB, SuperSet credentials, and email access
 - Use uv caching for faster dependency installs in CI
 
-**Section sources**
-- [.github/workflows/daily-run.yml.legacy](file://.github/workflows/daily-run.yml.legacy#L1-L72)
-- [.github/workflows/noon-run.yml.legacy](file://.github/workflows/noon-run.yml.legacy#L1-L58)
-
-## Development & Testing Guide
+## Development & testing guide
 - Local setup with uv sync and Docker Compose for MongoDB
 - Run pytest for unit tests and coverage
 - Use mocks for external services in tests
 - Follow AGENTS.md style and best practices
 
-**Section sources**
-- [docs/DEVELOPMENT.md](file://docs/DEVELOPMENT.md#L15-L112)
-- [docs/DEVELOPMENT.md](file://docs/DEVELOPMENT.md#L236-L335)
-- [AGENTS.md](file://AGENTS.md#L38-L54)
-
-## Debugging and Profiling
+## Debugging and profiling
 - Use safe_print for daemon-friendly output
 - Enable verbose logging via CLI flags
 - Employ pdb or IDE debuggers for interactive inspection
 - Profile code using cProfile for hotspots
 
-**Section sources**
-- [docs/DEVELOPMENT.md](file://docs/DEVELOPMENT.md#L484-L629)
-
-## Code Standards and Style
+## Code standards and style
 - Python 3.12+ with type hints and docstrings
 - Organized imports, consistent naming, and class structure
 - Logging at appropriate levels and error handling patterns
 - Configuration via Pydantic settings with validation
-
-**Section sources**
-- [AGENTS.md](file://AGENTS.md#L64-L233)
 
 ## Conclusion
 This guide consolidates local development, testing, contribution, and operational practices for the SuperSet Telegram Notification Bot. By following the documented workflows, standards, and extension patterns, contributors can reliably add features, integrate new channels, and maintain system performance and reliability.

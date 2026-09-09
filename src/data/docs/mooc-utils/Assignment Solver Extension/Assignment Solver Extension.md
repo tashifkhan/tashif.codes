@@ -1,43 +1,9 @@
-# Assignment Solver Extension
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://assignment-solver/README.md)
-- [package.json](file://assignment-solver/package.json)
-- [manifest.json](file://assignment-solver/manifest.json)
-- [src/background/index.js](file://assignment-solver/src/background/index.js)
-- [src/content/index.js](file://assignment-solver/src/content/index.js)
-- [src/ui/index.js](file://assignment-solver/src/ui/index.js)
-- [src/core/messages.js](file://assignment-solver/src/core/messages.js)
-- [src/platform/browser.js](file://assignment-solver/src/platform/browser.js)
-- [src/platform/runtime.js](file://assignment-solver/src/platform/runtime.js)
-- [src/platform/storage.js](file://assignment-solver/src/platform/storage.js)
-- [src/services/gemini/index.js](file://assignment-solver/src/services/gemini/index.js)
-- [src/services/storage/index.js](file://assignment-solver/src/services/storage/index.js)
-- [src/content/extractor.js](file://assignment-solver/src/content/extractor.js)
-- [src/content/applicator.js](file://assignment-solver/src/content/applicator.js)
-- [src/ui/controllers/solve.js](file://assignment-solver/src/ui/controllers/solve.js)
-- [src/ui/state.js](file://assignment-solver/src/ui/state.js)
-- [src/ui/elements.js](file://assignment-solver/src/ui/elements.js)
-- [public/sidepanel.html](file://assignment-solver/public/sidepanel.html)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Assignment solver extension
 
 ## Introduction
-Assignment Solver is a privacy-focused Chrome and Firefox extension that assists with online assignments using Google’s Gemini AI. It supports dual modes—Study Hints (non-invasive guidance) and Auto-Solve (automated answer application)—and handles multiple question types: single-choice, multi-choice, fill-in-the-blank, and image-based questions. The extension operates client-side, storing your Gemini API key locally and communicating with the official Gemini API endpoint. It provides a side panel UI, robust message routing, and cross-browser compatibility via webextension-polyfill.
+Assignment Solver is a privacy-focused Chrome and Firefox extension that assists with online assignments using Google's Gemini AI. It supports dual modes, Study Hints (non-invasive guidance) and Auto-Solve (automated answer application), and handles multiple question types: single-choice, multi-choice, fill-in-the-blank, and image-based questions. The extension operates client-side, storing your Gemini API key locally and communicating with the official Gemini API endpoint. It provides a side panel UI, reliable message routing, and cross-browser compatibility via webextension-polyfill.
 
-## Project Structure
+## Project structure
 The extension is organized into modular layers:
 - background: Service worker with message routing and platform adapters
 - content: Content script for DOM extraction and answer application
@@ -99,26 +65,7 @@ SP -.-> BG
 SP -.-> CIN
 ```
 
-**Diagram sources**
-- [src/ui/index.js](file://assignment-solver/src/ui/index.js#L54-L112)
-- [src/background/index.js](file://assignment-solver/src/background/index.js#L30-L134)
-- [src/content/index.js](file://assignment-solver/src/content/index.js#L19-L96)
-- [src/core/messages.js](file://assignment-solver/src/core/messages.js#L5-L33)
-- [src/services/gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L60-L341)
-- [src/services/storage/index.js](file://assignment-solver/src/services/storage/index.js#L12-L118)
-- [src/platform/browser.js](file://assignment-solver/src/platform/browser.js#L22-L85)
-- [src/platform/runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [src/platform/storage.js](file://assignment-solver/src/platform/storage.js#L12-L41)
-- [src/content/extractor.js](file://assignment-solver/src/content/extractor.js#L21-L96)
-- [src/content/applicator.js](file://assignment-solver/src/content/applicator.js#L21-L48)
-- [public/sidepanel.html](file://assignment-solver/public/sidepanel.html#L1-L392)
-
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L142-L160)
-- [package.json](file://assignment-solver/package.json#L6-L14)
-- [manifest.json](file://assignment-solver/manifest.json#L1-L44)
-
-## Core Components
+## Core components
 - Dual-mode operation:
   - Study Hints: Retrieve AI guidance without applying answers
   - Auto-Solve: Extract, analyze, apply answers, and optionally auto-submit
@@ -134,14 +81,7 @@ SP -.-> CIN
   - Uses webextension-polyfill
   - Dynamic manifest differences for Chrome (side_panel) and Firefox (sidebar_action)
 
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L5-L14)
-- [README.md](file://assignment-solver/README.md#L134-L141)
-- [README.md](file://assignment-solver/README.md#L306-L311)
-- [src/platform/browser.js](file://assignment-solver/src/platform/browser.js#L22-L85)
-- [manifest.json](file://assignment-solver/manifest.json#L27-L29)
-
-## Architecture Overview
+## Architecture overview
 The extension follows a layered architecture:
 - UI (Side Panel) communicates with background worker via typed messages
 - Background worker orchestrates content script interactions and Gemini API calls
@@ -176,16 +116,9 @@ CTX-->>BG : success
 BG-->>UI : completion
 ```
 
-**Diagram sources**
-- [src/ui/controllers/solve.js](file://assignment-solver/src/ui/controllers/solve.js#L44-L240)
-- [src/background/index.js](file://assignment-solver/src/background/index.js#L51-L113)
-- [src/content/index.js](file://assignment-solver/src/content/index.js#L32-L78)
-- [src/services/gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L145-L217)
-- [src/services/gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L228-L297)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Background Service Worker
+### Background service worker
 Responsibilities:
 - Initialize platform adapters and services
 - Register message handlers for extraction, screenshots, Gemini requests, answer application, and submission
@@ -218,13 +151,7 @@ HandleSubmit --> Reply
 Reply --> Listen
 ```
 
-**Diagram sources**
-- [src/background/index.js](file://assignment-solver/src/background/index.js#L30-L134)
-
-**Section sources**
-- [src/background/index.js](file://assignment-solver/src/background/index.js#L30-L134)
-
-### Content Script
+### Content script
 Responsibilities:
 - Extract page HTML and images
 - Provide scroll info and scrolling control for screenshot capture
@@ -256,16 +183,7 @@ end
 CS-->>BG : {success : true}
 ```
 
-**Diagram sources**
-- [src/content/index.js](file://assignment-solver/src/content/index.js#L67-L78)
-- [src/content/applicator.js](file://assignment-solver/src/content/applicator.js#L54-L194)
-
-**Section sources**
-- [src/content/index.js](file://assignment-solver/src/content/index.js#L19-L96)
-- [src/content/extractor.js](file://assignment-solver/src/content/extractor.js#L21-L96)
-- [src/content/applicator.js](file://assignment-solver/src/content/applicator.js#L21-L221)
-
-### Side Panel UI
+### Side panel UI
 Responsibilities:
 - Initialize UI, controllers, state, and storage
 - Wait for background readiness (with retry/backoff)
@@ -295,17 +213,7 @@ MaybeSubmit --> |No| Done["Show Results"]
 Submit --> Done
 ```
 
-**Diagram sources**
-- [src/ui/index.js](file://assignment-solver/src/ui/index.js#L54-L112)
-- [src/ui/controllers/solve.js](file://assignment-solver/src/ui/controllers/solve.js#L44-L240)
-
-**Section sources**
-- [src/ui/index.js](file://assignment-solver/src/ui/index.js#L54-L112)
-- [src/ui/state.js](file://assignment-solver/src/ui/state.js#L9-L40)
-- [src/ui/elements.js](file://assignment-solver/src/ui/elements.js#L9-L45)
-- [public/sidepanel.html](file://assignment-solver/public/sidepanel.html#L1-L392)
-
-### Gemini Service
+### Gemini service
 Responsibilities:
 - Construct prompts and payloads for extraction and solving
 - Manage thinking budgets and reasoning levels
@@ -331,13 +239,7 @@ HandleError --> |Yes| Split["Split Input (HTML/Questions)"] --> Start
 HandleError --> |No| Return["Return Structured Result"]
 ```
 
-**Diagram sources**
-- [src/services/gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L134-L341)
-
-**Section sources**
-- [src/services/gemini/index.js](file://assignment-solver/src/services/gemini/index.js#L60-L341)
-
-### Message Passing System
+### Message passing system
 - Centralized message types define UI-to-background and content-script interactions
 - Retry logic with exponential backoff for transient connection failures
 - Dedicated debug relay to surface AI payloads in the page console
@@ -365,13 +267,7 @@ class Messages {
 MessageTypes <.. Messages : "consumed by"
 ```
 
-**Diagram sources**
-- [src/core/messages.js](file://assignment-solver/src/core/messages.js#L5-L95)
-
-**Section sources**
-- [src/core/messages.js](file://assignment-solver/src/core/messages.js#L5-L95)
-
-### Platform Abstraction Layer
+### Platform abstraction layer
 - Unified browser detection and API access
 - Runtime adapter for messaging
 - Storage adapter for local persistence
@@ -399,17 +295,7 @@ Browser <.. RuntimeAdapter : "used by"
 Browser <.. StorageAdapter : "used by"
 ```
 
-**Diagram sources**
-- [src/platform/browser.js](file://assignment-solver/src/platform/browser.js#L22-L85)
-- [src/platform/runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [src/platform/storage.js](file://assignment-solver/src/platform/storage.js#L12-L41)
-
-**Section sources**
-- [src/platform/browser.js](file://assignment-solver/src/platform/browser.js#L22-L85)
-- [src/platform/runtime.js](file://assignment-solver/src/platform/runtime.js#L12-L31)
-- [src/platform/storage.js](file://assignment-solver/src/platform/storage.js#L12-L41)
-
-## Dependency Analysis
+## Dependency analysis
 - Build and packaging:
   - Vite builds separate bundles for background, content script, and UI
   - Scripts support watch mode for both Chrome and Firefox
@@ -435,15 +321,7 @@ Poly --> UIJS
 Poly --> CTXJS
 ```
 
-**Diagram sources**
-- [package.json](file://assignment-solver/package.json#L6-L14)
-- [manifest.json](file://assignment-solver/manifest.json#L1-L44)
-
-**Section sources**
-- [package.json](file://assignment-solver/package.json#L6-L14)
-- [manifest.json](file://assignment-solver/manifest.json#L6-L12)
-
-## Performance Considerations
+## Performance considerations
 - Rate limiting:
   - 500 ms delay between answer applications
   - 200 ms delay between DOM operations
@@ -456,7 +334,7 @@ Poly --> CTXJS
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Could not get page HTML:
   - Ensure you are on a real assignment page and fully loaded
@@ -476,53 +354,36 @@ Common issues and resolutions:
   - Wait before retrying
   - Upgrade quota or reduce concurrent questions
 
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L259-L289)
-
 ## Conclusion
-Assignment Solver delivers a robust, privacy-preserving solution for automated assignment assistance. Its modular architecture, cross-browser compatibility, and dual-mode operation make it adaptable to diverse educational platforms. By leveraging client-side processing and structured Gemini prompts, it balances automation with transparency and user control.
+Assignment Solver delivers a reliable, privacy-preserving solution for automated assignment assistance. Its modular architecture, cross-browser compatibility, and dual-mode operation make it adaptable to diverse educational platforms. By using client-side processing and structured Gemini prompts, it balances automation with transparency and user control.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### Installation and Setup
+### Installation and setup
 - Clone and install dependencies
 - Build for Chrome or Firefox
 - Load the extension in developer mode
 - Configure your Gemini API key in the side panel settings
 
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L30-L73)
-
-### Supported Question Types
+### Supported question types
 - Single Choice: Clicks the correct radio option
 - Multi Choice: Checks all correct options, unchecks wrong ones
 - Fill-in-the-Blank: Types the answer and triggers input events
 
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L134-L141)
-
-### Configuration Options
+### Configuration options
 - API Key Storage: Local browser storage via polyfill
 - Model Selection: Choose extraction and solving models
 - Reasoning Levels: Configure reasoning budgets per model family
 - Auto-submit: Toggle automatic submission after filling
 
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L240-L257)
-- [src/services/storage/index.js](file://assignment-solver/src/services/storage/index.js#L75-L85)
-- [public/sidepanel.html](file://assignment-solver/public/sidepanel.html#L192-L380)
-
-### Usage Examples
+### Usage examples
 - Basic Workflow:
   - Navigate to an assignment page
-  - Open the side panel and click “Solve Assignment”
+  - Open the side panel and click "Solve Assignment"
   - Review results and confirm auto-submit if enabled
 - Manual Mode:
   - Extract questions
   - Get hints, select answers, and apply one by one
   - Submit manually when finished
-
-**Section sources**
-- [README.md](file://assignment-solver/README.md#L93-L133)

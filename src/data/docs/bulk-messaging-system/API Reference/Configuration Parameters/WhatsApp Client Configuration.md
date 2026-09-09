@@ -1,29 +1,7 @@
-# WhatsApp Client Configuration
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://README.md)
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [package.json](file://electron/package.json)
-- [utils.js](file://electron/src/electron/utils.js)
-- [pyodide.js](file://electron/src/utils/pyodide.js)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# WhatsApp client configuration
 
 ## Introduction
-This document explains how the application configures and manages the WhatsApp client, focusing on:
+This page explains how the application configures and manages the WhatsApp client, focusing on:
 - Puppeteer launch arguments and browser behavior
 - Authentication via QR code and session persistence
 - Session storage and cleanup
@@ -32,8 +10,8 @@ This document explains how the application configures and manages the WhatsApp c
 - Performance tuning and resource management
 - Error handling, timeouts, and recovery strategies
 
-## Project Structure
-The WhatsApp integration lives in the Electron application’s main process and is exposed to the renderer via a secure IPC bridge. The renderer component renders the UI and orchestrates user actions.
+## Project structure
+The WhatsApp integration lives in the Electron application's main process and is exposed to the renderer via a secure IPC bridge. The renderer component renders the UI and orchestrates user actions.
 
 ```mermaid
 graph TB
@@ -53,17 +31,7 @@ MP --> MW
 WF --> MW
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L20-L51)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L263-L288)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L1-L100)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L120)
-
-## Core Components
+## Core components
 - Electron main process initializes the WhatsApp client with puppeteer options and emits status events.
 - Preload exposes a controlled API surface to the renderer.
 - Renderer component manages UI state, QR display, and user actions.
@@ -74,12 +42,7 @@ Key responsibilities:
 - Session lifecycle (start, authenticate, disconnect, logout)
 - Cleanup of cached sessions and auth artifacts
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [preload.js](file://electron/src/electron/preload.js#L23-L39)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L120-L280)
-
-## Architecture Overview
+## Architecture overview
 End-to-end flow for connecting and sending messages:
 
 ```mermaid
@@ -106,15 +69,9 @@ WA-->>MP : results
 MP-->>UI : on("whatsapp-send-status", progress)
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L179-L213)
-- [preload.js](file://electron/src/electron/preload.js#L23-L39)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L263-L321)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Puppeteer Launch Arguments and Browser Behavior
+### Puppeteer launch arguments and browser behavior
 The WhatsApp client uses a headless Chromium instance configured via puppeteer. The main process sets:
 - Headless mode: enabled
 - Hardened Chromium flags for stability and sandbox compatibility
@@ -127,10 +84,7 @@ Recommended adjustments (conceptual):
 - To enable visible debugging, toggle headless to false and add viewport/user agent overrides.
 - For performance, consider disabling unneeded chrome features via additional puppeteer args.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L120-L135)
-
-### Authentication Strategy: QR Code, Session Persistence, Reconnection
+### Authentication strategy: QR code, session persistence, reconnection
 - Authentication strategy: LocalAuth persists session data locally.
 - QR code generation: The client emits a QR string; the main process converts it to a data URL and sends it to the renderer.
 - Status events: The app listens for ready, authenticated, and auth_failure events.
@@ -140,12 +94,7 @@ Reconnection mechanism:
 - The UI checks current status and prevents starting a second client while one is running.
 - On successful authentication, the QR is cleared and the UI shows a success state.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L342-L371)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L136-L178)
-
-### Session Storage and Cookie Management
+### Session storage and cookie management
 LocalAuth stores session artifacts in a local directory managed by whatsapp-web.js. The application cleans these directories on startup and logout:
 - Cache directory cleanup on startup and logout
 - Auth directory cleanup on logout
@@ -154,12 +103,7 @@ Guidance:
 - If you need to force a fresh session, rely on the cleanup routines.
 - For multi-device scenarios, manage separate profiles by controlling the LocalAuth baseDir.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L53-L56)
-- [main.js](file://electron/src/electron/main.js#L320-L340)
-- [main.js](file://electron/src/electron/main.js#L342-L371)
-
-### Rate Limiting, Message Throttling, and API Usage
+### Rate limiting, message throttling, and API usage
 The application implements a simple throttle between sending attempts:
 - A fixed delay is applied between sending messages to reduce detection risk.
 
@@ -167,20 +111,14 @@ Recommendations:
 - Tune delays based on target rate and provider feedback.
 - Consider exponential backoff on errors and dynamic pacing based on response codes.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L199-L209)
-
-### Proxy Configuration Options
+### Proxy configuration options
 The current configuration does not set explicit proxy options for puppeteer. To route traffic through a proxy:
 - Add a proxy server argument to puppeteer args in the main process.
 - Alternatively, configure system-level proxy or environment variables consumed by the underlying Chromium.
 
 Note: This is a configuration extension and not currently implemented in the codebase.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L120-L135)
-
-### Performance Tuning and Resource Allocation
+### Performance tuning and resource allocation
 Observations:
 - Headless Chromium reduces CPU and memory usage compared to headed mode.
 - Sandboxed flags improve stability on constrained systems.
@@ -191,11 +129,7 @@ Recommendations:
 - Disable unnecessary features via puppeteer args to reduce overhead.
 - Use LocalAuth with a dedicated baseDir for isolation and easier cleanup.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L120-L135)
-- [main.js](file://electron/src/electron/main.js#L320-L340)
-
-### Error Handling, Authentication Timeouts, and Recovery
+### Error handling, authentication timeouts, and recovery
 - QR loading failures: The UI displays an error state and offers a retry action.
 - Authentication failures: The client emits auth_failure; the main process forwards a status message.
 - Disconnections: The client emits disconnected; the main process resets state.
@@ -206,12 +140,7 @@ Recovery steps:
 - Ensure network connectivity and device availability.
 - Re-scan QR if the session becomes invalid.
 
-**Section sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L32-L39)
-- [main.js](file://electron/src/electron/main.js#L162-L169)
-- [main.js](file://electron/src/electron/main.js#L342-L371)
-
-## Dependency Analysis
+## Dependency analysis
 External libraries involved in WhatsApp integration:
 - whatsapp-web.js: Provides the WhatsApp client and authentication strategy.
 - qrcode: Converts QR strings to data URLs for display.
@@ -228,13 +157,7 @@ PJSON --> QR
 PJSON --> Pptr
 ```
 
-**Diagram sources**
-- [package.json](file://electron/package.json#L20-L31)
-
-**Section sources**
-- [package.json](file://electron/package.json#L20-L31)
-
-## Performance Considerations
+## Performance considerations
 - Headless mode reduces resource consumption.
 - Sandboxed flags improve stability on restricted environments.
 - Periodic cleanup of cache and auth directories prevents bloat.
@@ -242,7 +165,7 @@ PJSON --> Pptr
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - QR code not loading: Check network connectivity, restart the app, and retry scanning.
 - Authentication failure: Clear cache/auth directories and re-scan QR.
@@ -253,10 +176,5 @@ Operational tips:
 - Use the activity log to track status and errors.
 - Ensure the Electron environment is properly initialized before invoking APIs.
 
-**Section sources**
-- [README.md](file://README.md#L412-L447)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L32-L39)
-- [main.js](file://electron/src/electron/main.js#L342-L371)
-
 ## Conclusion
-The application integrates WhatsApp Web using a hardened headless Chromium configuration with LocalAuth for session persistence. It provides a robust UI for QR-based authentication, real-time status updates, and basic rate limiting. For production deployments, consider adding proxy support, configurable puppeteer options, and enhanced error recovery strategies.
+The application integrates WhatsApp Web using a hardened headless Chromium configuration with LocalAuth for session persistence. It provides a reliable UI for QR-based authentication, real-time status updates, and basic rate limiting. For production deployments, consider adding proxy support, configurable puppeteer options, and improved error recovery strategies.

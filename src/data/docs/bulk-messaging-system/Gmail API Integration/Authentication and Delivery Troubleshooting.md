@@ -1,32 +1,9 @@
-# Authentication and Delivery Troubleshooting
-
-<cite>
-**Referenced Files in This Document**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx)
-- [package.json](file://electron/package.json)
-- [README.md](file://README.md)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Authentication and delivery troubleshooting
 
 ## Introduction
-This document provides a comprehensive troubleshooting guide for Gmail API integration issues within the desktop application. It focuses on authentication failures (invalid client credentials, consent screen errors, OAuth2 flow interruptions), email sending problems (rate limit violations, API quota exceeded errors, delivery failures), and platform-specific considerations for Windows, macOS, and Linux. It also covers debugging techniques using console logs, network inspection, and API response analysis, along with step-by-step resolution guides for certificate issues, proxy configuration, and network connectivity problems. Security-related troubleshooting for blocked applications and suspicious activity warnings is included.
+This page provides a detailed troubleshooting guide for Gmail API integration issues within the desktop application. It focuses on authentication failures (invalid client credentials, consent screen errors, OAuth2 flow interruptions), email sending problems (rate limit violations, API quota exceeded errors, delivery failures), and platform-specific considerations for Windows, macOS, and Linux. It also covers debugging techniques using console logs, network inspection, and API response analysis, along with step-by-step resolution guides for certificate issues, proxy configuration, and network connectivity problems. Security-related troubleshooting for blocked applications and suspicious activity warnings is included.
 
-## Project Structure
+## Project structure
 The application is an Electron-based desktop app with a React frontend and Node/Electron backend. Gmail integration is handled in the Electron main process via the Google APIs client library, while the UI provides authentication and sending controls.
 
 ```mermaid
@@ -54,39 +31,21 @@ GmailHandler --> GoogleAPIs
 SMTPHandler --> SMTPServer
 ```
 
-**Diagram sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L1-L332)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L1-L482)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [main.js](file://electron/src/electron/main.js#L1-L371)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-
-**Section sources**
-- [package.json](file://electron/package.json#L1-L49)
-- [README.md](file://README.md#L1-L455)
-
-## Core Components
+## Core components
 - Gmail authentication and token management: Handles OAuth2 flow, consent screen, and token persistence.
 - Email sending pipeline: Sends emails via Gmail API with progress reporting and rate limiting.
 - SMTP transport: Alternative email delivery method with connection verification and TLS handling.
 - Frontend integration: UI components for authentication, recipient import, and progress monitoring.
 
 Key implementation references:
-- Gmail OAuth2 flow and token exchange: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-- Gmail send operation and per-recipient progress: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-- SMTP transport creation and verification: [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L33-L48)
-- Frontend IPC exposure and event listeners: [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- Electron main process IPC registration: [main.js](file://electron/src/electron/main.js#L102-L108)
+- Gmail OAuth2 flow and token exchange: `gmail-handler.js`
+- Gmail send operation and per-recipient progress: `gmail-handler.js`
+- SMTP transport creation and verification: `smtp-handler.js`
+- Frontend IPC exposure and event listeners: `preload.js`
+- Electron main process IPC registration: `main.js`
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L227)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L110)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-
-## Architecture Overview
-The application uses Electron’s contextBridge to securely expose IPC methods to the renderer. The main process registers handlers for Gmail authentication, token retrieval, and email sending. The Gmail handler manages OAuth2, opens a browser window for consent, captures the authorization code, exchanges it for tokens, and persists them. The UI triggers these flows and displays progress events.
+## Architecture overview
+The application uses Electron's contextBridge to securely expose IPC methods to the renderer. The main process registers handlers for Gmail authentication, token retrieval, and email sending. The Gmail handler manages OAuth2, opens a browser window for consent, captures the authorization code, exchanges it for tokens, and persists them. The UI triggers these flows and displays progress events.
 
 ```mermaid
 sequenceDiagram
@@ -114,16 +73,9 @@ Preload-->>BM : "{success : true}"
 BM-->>UI : "update auth status"
 ```
 
-**Diagram sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L90-L100)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L75-L107)
-- [preload.js](file://electron/src/electron/preload.js#L6-L8)
-- [main.js](file://electron/src/electron/main.js#L103-L103)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Gmail Authentication Handler
+### Gmail authentication handler
 Implements OAuth2 authorization, consent screen handling, and token exchange. Logs environment variable checks, redirect handling, and error propagation.
 
 ```mermaid
@@ -150,13 +102,7 @@ SetCreds --> CloseWindow["Close BrowserWindow"]
 CloseWindow --> Done(["Resolve {success:true}"])
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-
-### Gmail Send Handler
+### Gmail send handler
 Handles bulk email sending via Gmail API, including per-recipient progress updates and rate limiting.
 
 ```mermaid
@@ -183,17 +129,7 @@ Preload-->>BM : "{success : true, results}"
 BM-->>UI : "update results"
 ```
 
-**Diagram sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L228-L254)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-- [preload.js](file://electron/src/electron/preload.js#L8-L21)
-- [main.js](file://electron/src/electron/main.js#L105-L105)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-
-### SMTP Transport Handler
+### SMTP transport handler
 Provides SMTP-based email sending with connection verification and TLS configuration.
 
 ```mermaid
@@ -217,13 +153,7 @@ NextRecipient --> LoopRecipients
 LoopRecipients --> Done(["Return {success:true, results}"])
 ```
 
-**Diagram sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-## Dependency Analysis
+## Dependency analysis
 - Electron main process registers IPC handlers for Gmail and SMTP operations.
 - Frontend uses contextBridge to invoke handlers and listen for progress events.
 - Gmail integration depends on googleapis and electron-store for token persistence.
@@ -240,26 +170,16 @@ GmailHandler --> ElectronStore["electron-store"]
 SMTPHandler --> ElectronStore
 ```
 
-**Diagram sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L40)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L10)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L4)
-
-**Section sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [main.js](file://electron/src/electron/main.js#L102-L108)
-
-## Performance Considerations
+## Performance considerations
 - Rate limiting: Both Gmail and SMTP handlers apply configurable delays between emails to avoid throttling and spam detection.
 - Progress reporting: Real-time updates per recipient improve user feedback and help diagnose slow endpoints.
 - Connection verification: SMTP handler verifies transport configuration before sending to reduce runtime failures.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 
-### Authentication Failures
+### Authentication failures
 
 Common symptoms:
 - Missing environment variables for client credentials.
@@ -280,15 +200,12 @@ Resolution steps:
 - Re-run authentication after correcting credentials or consent configuration.
 
 Relevant implementation references:
-- Environment variable checks and error returns: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L19-L29)
-- OAuth URL generation with consent prompt: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L38-L42)
-- Redirect handling and authorization code extraction: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L74-L116)
-- Timeout handling and window closure: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L63-L125)
+- Environment variable checks and error returns: `gmail-handler.js`
+- OAuth URL generation with consent prompt: `gmail-handler.js`
+- Redirect handling and authorization code extraction: `gmail-handler.js`
+- Timeout handling and window closure: `gmail-handler.js`
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L19-L125)
-
-### OAuth2 Flow Interruptions
+### OAuth2 flow interruptions
 
 Common symptoms:
 - Redirect URL mismatch or unexpected parameters.
@@ -306,14 +223,11 @@ Resolution steps:
 - Retry authentication if interrupted; avoid closing the browser window prematurely.
 
 Relevant implementation references:
-- Redirect URL capture and parameter extraction: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L74-L116)
-- Error parameter handling: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L87-L92)
-- Authorization code exchange: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L96-L109)
+- Redirect URL capture and parameter extraction: `gmail-handler.js`
+- Error parameter handling: `gmail-handler.js`
+- Authorization code exchange: `gmail-handler.js`
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L74-L109)
-
-### Email Sending Problems
+### Email sending problems
 
 Common symptoms:
 - Rate limit violations or throttling.
@@ -333,16 +247,11 @@ Resolution steps:
 - For certificate issues, review TLS configuration and consider disabling unauthorized certificate rejection only for testing.
 
 Relevant implementation references:
-- Progress emission and per-recipient updates: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L167-L206), [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L56-L98)
-- SMTP connection verification: [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L47-L48)
-- TLS settings for SMTP: [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L42-L44)
+- Progress emission and per-recipient updates: `gmail-handler.js`, `smtp-handler.js`
+- SMTP connection verification: `smtp-handler.js`
+- TLS settings for SMTP: `smtp-handler.js`
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L167-L206)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L47-L48)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L42-L44)
-
-### Platform-Specific Issues (Windows, macOS, Linux)
+### Platform-Specific issues (windows, macOS, linux)
 
 Common symptoms:
 - Application fails to start or load resources.
@@ -361,15 +270,10 @@ Resolution steps:
 - Configure proxies if required by the environment; ensure HTTPS proxy support.
 
 Relevant implementation references:
-- Electron app lifecycle and resource loading: [main.js](file://electron/src/electron/main.js#L20-L51)
-- Build targets for distribution: [README.md](file://README.md#L328-L332), [electron-builder.json](file://electron/electron-builder.json#L6-L15)
+- Electron app lifecycle and resource loading: `main.js`
+- Build targets for distribution: `README.md`, `electron-builder.json`
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L20-L51)
-- [README.md](file://README.md#L328-L332)
-- [electron-builder.json](file://electron/electron-builder.json#L6-L15)
-
-### Certificate Issues and Proxy Configuration
+### Certificate issues and proxy configuration
 
 Symptoms:
 - TLS handshake failures or certificate errors.
@@ -381,12 +285,9 @@ Resolution steps:
 - Validate that the proxy supports HTTPS and maintains session continuity.
 
 Relevant implementation references:
-- SMTP TLS configuration: [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L42-L44)
+- SMTP TLS configuration: `smtp-handler.js`
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L42-L44)
-
-### Network Connectivity Problems
+### Network connectivity problems
 
 Symptoms:
 - Authentication redirects fail to reach localhost callback.
@@ -399,13 +300,10 @@ Resolution steps:
 - Use network tracing tools to inspect request/response flows and identify blocking endpoints.
 
 Relevant implementation references:
-- OAuth redirect URI and browser window handling: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L11-L11)
-- Browser window lifecycle and timeout: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L47-L125)
+- OAuth redirect URI and browser window handling: `gmail-handler.js`
+- Browser window lifecycle and timeout: `gmail-handler.js`
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L11-L125)
-
-### Security-Related Troubleshooting
+### Security-Related troubleshooting
 
 Symptoms:
 - Suspicious activity warnings or blocked application notifications.
@@ -414,15 +312,12 @@ Symptoms:
 Resolution steps:
 - Ensure the OAuth client is configured for desktop application type and includes the required scopes.
 - Review Google Cloud Console settings and API enablement.
-- Follow Google’s guidelines for OAuth application verification and security practices.
+- Follow Google's guidelines for OAuth application verification and security practices.
 
 Relevant implementation references:
-- OAuth scope and consent prompt configuration: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L10-L42)
+- OAuth scope and consent prompt configuration: `gmail-handler.js`
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L10-L42)
-
-### Debugging Techniques
+### Debugging techniques
 
 Console logs:
 - Use Electron DevTools to inspect logs from the main process and renderer.
@@ -437,15 +332,8 @@ API response analysis:
 - Track per-recipient statuses and error details in the activity log.
 
 Relevant implementation references:
-- Frontend IPC listeners and alerts: [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58), [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L75-L107), [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-- Progress event emission: [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L167-L206), [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L56-L98)
-
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L35-L58)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L75-L107)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L181-L219)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L167-L206)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L56-L98)
+- Frontend IPC listeners and alerts: `BulkMailer.jsx`, `BulkMailer.jsx`, `BulkMailer.jsx`
+- Progress event emission: `gmail-handler.js`, `smtp-handler.js`
 
 ## Conclusion
 This guide consolidates practical troubleshooting strategies for Gmail API and SMTP integration within the Electron application. By validating credentials, ensuring proper OAuth consent, monitoring progress events, and addressing platform-specific and network conditions, most authentication and delivery issues can be resolved efficiently. Use the referenced implementation files to correlate observed symptoms with code-level diagnostics and apply the recommended resolutions.

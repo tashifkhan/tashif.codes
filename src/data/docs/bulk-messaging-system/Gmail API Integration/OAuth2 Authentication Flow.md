@@ -1,33 +1,9 @@
-# OAuth2 Authentication Flow
-
-<cite>
-**Referenced Files in This Document**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [package.json](file://electron/package.json)
-- [README.md](file://README.md)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# OAuth2 authentication flow
 
 ## Introduction
-This document provides comprehensive documentation for the Gmail OAuth2 authentication implementation in the desktop application. It covers the complete OAuth2 flow including client ID/secret configuration, consent screen setup, redirect URI handling, browser window implementation for OAuth2 consent, token exchange and storage, and troubleshooting for common issues. The implementation leverages Electron's main/preload process model, Google APIs client library, and secure local storage via electron-store.
+This page provides detailed documentation for the Gmail OAuth2 authentication implementation in the desktop application. It covers the complete OAuth2 flow including client ID/secret configuration, consent screen setup, redirect URI handling, browser window implementation for OAuth2 consent, token exchange and storage, and troubleshooting for common issues. The implementation uses Electron's main/preload process model, Google APIs client library, and secure local storage via electron-store.
 
-## Project Structure
+## Project structure
 The Gmail OAuth2 implementation spans three primary areas:
 - Electron main process: IPC registration and orchestration
 - Preload script: Secure IPC bridge exposing safe APIs to the renderer
@@ -54,23 +30,10 @@ GH --> GA
 GH --> ES
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L102-L105)
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L91-L99)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L60-L73)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L102-L105)
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L91-L99)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L60-L73)
-
-## Core Components
+## Core components
 The OAuth2 implementation consists of four core components working together:
 
-### 1. Gmail Handler (Authentication Engine)
+### 1. gmail handler (authentication engine)
 The central authentication module that manages OAuth2 lifecycle:
 - Validates environment credentials
 - Generates OAuth2 URLs with proper scopes
@@ -78,32 +41,25 @@ The central authentication module that manages OAuth2 lifecycle:
 - Handles token exchange and storage
 - Implements timeout and error management
 
-### 2. Main Process IPC Registration
+### 2. main process IPC registration
 Registers all authentication-related IPC handlers:
 - `gmail-auth`: Initiates OAuth2 flow
 - `gmail-token`: Checks token availability
 - `send-email`: Sends emails using stored credentials
 
-### 3. Preload Bridge
+### 3. preload bridge
 Provides secure access to authentication APIs:
 - Exposes `authenticateGmail`, `getGmailToken`, `sendEmail`
 - Bridges renderer to main process safely
 - Handles progress events for email sending
 
-### 4. UI Integration
+### 4. UI integration
 Two-way integration between UI and authentication:
 - Authentication button triggers OAuth2 flow
 - Token status displayed in UI
 - Progress tracking during email sending
 
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-- [main.js](file://electron/src/electron/main.js#L102-L105)
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L91-L99)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L60-L73)
-
-## Architecture Overview
+## Architecture overview
 The OAuth2 flow follows a secure, multi-process architecture designed to isolate sensitive operations in the main process while maintaining a responsive UI.
 
 ```mermaid
@@ -131,37 +87,31 @@ Main-->>Preload : {success : true}
 Preload-->>UI : authentication result
 ```
 
-**Diagram sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L91-L99)
-- [preload.js](file://electron/src/electron/preload.js#L6-L8)
-- [main.js](file://electron/src/electron/main.js#L102-L105)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
+## Detailed component analysis
 
-## Detailed Component Analysis
+### Gmail handler implementation
+The authentication engine implements a reliable OAuth2 flow with detailed error handling and timeout management.
 
-### Gmail Handler Implementation
-The authentication engine implements a robust OAuth2 flow with comprehensive error handling and timeout management.
-
-#### Configuration and Initialization
+#### Configuration and initialization
 - **Scopes**: Requested scope is `https://www.googleapis.com/auth/gmail.send`
 - **Redirect URI**: `http://localhost:3000/oauth/callback`
 - **Prompt Parameter**: Uses `consent` to ensure refresh token acquisition
 - **Access Type**: Offline access for long-term token usage
 
-#### Authentication URL Generation
+#### Authentication URL generation
 The handler generates OAuth2 URLs with:
 - Proper scope specification for Gmail send permissions
 - Consent prompt to guarantee refresh token retrieval
 - Offline access type for persistent authentication
 
-#### Browser Window Implementation
+#### Browser window implementation
 The implementation creates a dedicated browser window for OAuth2 consent:
 - **Security Settings**: Node integration disabled, context isolation enabled
 - **Window Size**: 800x800 pixels for optimal consent screen display
 - **Show Policy**: Hidden until ready-to-show event for smooth UX
 - **Timeout Handling**: 5-minute timeout prevents hanging windows
 
-#### Redirect Handling and Token Exchange
+#### Redirect handling and token exchange
 The handler monitors redirects and processes authentication responses:
 - **Callback Detection**: Watches for URLs starting with configured redirect URI
 - **Error Extraction**: Parses OAuth error parameters from redirect URL
@@ -169,8 +119,8 @@ The handler monitors redirects and processes authentication responses:
 - **Token Exchange**: Uses Google APIs client to exchange code for tokens
 - **Credential Storage**: Stores tokens securely using electron-store
 
-#### Timeout and Error Management
-Comprehensive error handling ensures graceful failure scenarios:
+#### Timeout and error management
+Detailed error handling ensures graceful failure scenarios:
 - **Authentication Timeout**: Closes window after 5 minutes
 - **Window Closure**: Handles user-initiated window closure
 - **Network Errors**: Catches and reports token exchange failures
@@ -207,27 +157,18 @@ Cleanup --> End([End])
 Success --> End
 ```
 
-**Diagram sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L15-L130)
-
-**Section sources**
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L10-L130)
-
-### Main Process IPC Integration
+### Main process IPC integration
 The main process registers and handles all authentication-related IPC operations with proper error propagation.
 
-#### IPC Handler Registration
+#### IPC handler registration
 - **`gmail-auth`**: Primary authentication handler
 - **`gmail-token`**: Token availability checker
 - **`send-email`**: Email sending with stored credentials
 
-#### Error Propagation
-All handlers return structured responses with success flags and error details, enabling robust UI feedback.
+#### Error propagation
+All handlers return structured responses with success flags and error details, enabling reliable UI feedback.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L102-L105)
-
-### Preload Bridge Security Model
+### Preload bridge security model
 The preload script implements a secure IPC bridge that exposes only necessary authentication APIs to the renderer process.
 
 #### Exposed APIs
@@ -235,34 +176,27 @@ The preload script implements a secure IPC bridge that exposes only necessary au
 - **Email Operations**: `sendEmail()`
 - **Event Listeners**: Progress tracking for email operations
 
-#### Security Features
+#### Security features
 - **Context Isolation**: Prevents direct Node.js access from renderer
 - **Selective Exposure**: Only authentication-related APIs exposed
 - **IPC Validation**: All renderer-to-main calls use explicit IPC channels
 
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
+### UI integration components
+The UI components provide smooth user interaction with the authentication system.
 
-### UI Integration Components
-The UI components provide seamless user interaction with the authentication system.
-
-#### GmailForm Component
+#### GmailForm component
 - **Authentication Button**: Triggers OAuth2 flow with proper error handling
 - **Status Display**: Shows authentication status with visual indicators
 - **Progress Tracking**: Displays real-time email sending progress
-- **Validation**: Comprehensive form validation before sending
+- **Validation**: Detailed form validation before sending
 
-#### BulkMailer Integration
+#### BulkMailer integration
 - **Token Checking**: Automatically checks authentication status on load
 - **Error Handling**: Graceful handling of missing Electron APIs
 - **User Feedback**: Clear alerts for authentication success/failure
 - **Form Validation**: Email format validation and recipient count verification
 
-**Section sources**
-- [GmailForm.jsx](file://electron/src/components/GmailForm.jsx#L91-L99)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L60-L73)
-
-## Dependency Analysis
+## Dependency analysis
 The OAuth2 implementation relies on several key dependencies and external services.
 
 ```mermaid
@@ -288,50 +222,42 @@ GC --> GA_API
 GC --> OAUTH
 ```
 
-**Diagram sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L3-L5)
-
-### External Dependencies
+### External dependencies
 - **googleapis**: Provides OAuth2 client implementation and Gmail API integration
 - **electron-store**: Handles secure local token storage
 - **electron**: Main process and BrowserWindow for OAuth2 consent
 - **react**: UI components for user interaction
 
-### Google Cloud Configuration
+### Google cloud configuration
 The implementation requires specific Google Cloud Console setup:
 - OAuth2 Client ID (Desktop application)
 - Enabled Gmail API
 - Proper OAuth2 consent screen configuration
 - Correct redirect URI setup
 
-**Section sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [README.md](file://README.md#L101-L119)
-
-## Performance Considerations
+## Performance considerations
 The OAuth2 implementation includes several performance optimizations and considerations:
 
-### Token Reuse
+### Token reuse
 - Stored tokens eliminate repeated authentication prompts
 - OAuth2 client reinitialization only when necessary
 - Efficient token validation reduces unnecessary API calls
 
-### Rate Limiting
+### Rate limiting
 - Configurable delays between email sends prevent rate limiting
 - Progress tracking enables user control over sending speed
 - Batch processing with controlled intervals
 
-### Memory Management
+### Memory management
 - Browser windows closed after authentication completion
 - Timeout cleanup prevents memory leaks
 - Proper error handling ensures resource cleanup
 
-## Troubleshooting Guide
+## Troubleshooting guide
 
-### Common OAuth2 Issues and Solutions
+### Common OAuth2 issues and solutions
 
-#### Invalid Client Credentials
+#### Invalid client credentials
 **Symptoms**: Authentication fails immediately with credential errors
 **Causes**: Missing or incorrect GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET
 **Solutions**:
@@ -339,7 +265,7 @@ The OAuth2 implementation includes several performance optimizations and conside
 - Confirm Google Cloud Console project configuration
 - Ensure OAuth2 client credentials match project settings
 
-#### Consent Screen Errors
+#### Consent screen errors
 **Symptoms**: OAuth error responses during consent process
 **Causes**: Mismatched redirect URIs, invalid scopes, or user rejection
 **Solutions**:
@@ -347,7 +273,7 @@ The OAuth2 implementation includes several performance optimizations and conside
 - Check scope permissions and user consent
 - Ensure proper OAuth2 consent screen setup
 
-#### Token Exchange Failures
+#### Token exchange failures
 **Symptoms**: Authentication succeeds but token retrieval fails
 **Causes**: Network issues, expired authorization codes, or API errors
 **Solutions**:
@@ -355,7 +281,7 @@ The OAuth2 implementation includes several performance optimizations and conside
 - Check network connectivity
 - Verify Google APIs are enabled in project
 
-#### Authentication Timeout
+#### Authentication timeout
 **Symptoms**: Window closes after 5 minutes without user interaction
 **Causes**: Slow network, blocked pop-ups, or user inactivity
 **Solutions**:
@@ -363,7 +289,7 @@ The OAuth2 implementation includes several performance optimizations and conside
 - Check network connectivity
 - Retry authentication with improved conditions
 
-#### Token Storage Issues
+#### Token storage issues
 **Symptoms**: Authentication works but tokens aren't persisted
 **Causes**: electron-store initialization errors or permission issues
 **Solutions**:
@@ -371,7 +297,7 @@ The OAuth2 implementation includes several performance optimizations and conside
 - Check application data directory permissions
 - Restart application to refresh storage
 
-### Environment Setup Checklist
+### Environment setup checklist
 1. **Google Cloud Console Configuration**:
    - Create project and enable Gmail API
    - Configure OAuth2 consent screen
@@ -393,16 +319,12 @@ The OAuth2 implementation includes several performance optimizations and conside
    - Verify user account has Gmail access
    - Check for domain restrictions if applicable
 
-**Section sources**
-- [README.md](file://README.md#L101-L119)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L20-L29)
-
 ## Conclusion
-The Gmail OAuth2 authentication implementation provides a secure, robust, and user-friendly solution for desktop email integration. The multi-process architecture ensures sensitive operations remain isolated while maintaining a responsive user experience. Key strengths include comprehensive error handling, timeout management, secure token storage, and seamless UI integration. The implementation follows OAuth2 best practices with proper scope management, consent screen handling, and refresh token acquisition for persistent authentication.
+The Gmail OAuth2 authentication implementation provides a secure, reliable, and user-friendly solution for desktop email integration. The multi-process architecture ensures sensitive operations remain isolated while maintaining a responsive user experience. Key strengths include detailed error handling, timeout management, secure token storage, and smooth UI integration. The implementation follows OAuth2 best practices with proper scope management, consent screen handling, and refresh token acquisition for persistent authentication.
 
 ## Appendices
 
-### Step-by-Step Google Cloud Console Setup
+### Step-by-Step Google cloud console setup
 1. Navigate to Google Cloud Console
 2. Create a new project or select existing one
 3. Enable the Gmail API for the project
@@ -413,14 +335,14 @@ The Gmail OAuth2 authentication implementation provides a secure, robust, and us
 8. Set redirect URI to `http://localhost:3000/oauth/callback`
 9. Copy client ID and secret to environment variables
 
-### Environment Variable Configuration
+### Environment variable configuration
 Create a `.env` file in the electron directory:
 ```env
 GOOGLE_CLIENT_ID=your_client_id_here
 GOOGLE_CLIENT_SECRET=your_client_secret_here
 ```
 
-### Security Best Practices
+### Security best practices
 - Store client secrets securely in environment variables
 - Use offline access type for long-term token persistence
 - Implement proper timeout handling to prevent hanging sessions

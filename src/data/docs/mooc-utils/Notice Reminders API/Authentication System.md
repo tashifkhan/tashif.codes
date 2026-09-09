@@ -1,40 +1,9 @@
-# Authentication System
-
-<cite>
-**Referenced Files in This Document**
-- [auth.py](file://notice-reminders/app/api/routers/auth.py)
-- [auth_core.py](file://notice-reminders/app/core/auth.py)
-- [config.py](file://notice-reminders/app/core/config.py)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py)
-- [otp_email_service.py](file://notice-reminders/app/services/otp_email_service.py)
-- [user_model.py](file://notice-reminders/app/models/user.py)
-- [otp_model.py](file://notice-reminders/app/models/otp.py)
-- [refresh_token_model.py](file://notice-reminders/app/models/refresh_token.py)
-- [auth_schema.py](file://notice-reminders/app/schemas/auth.py)
-- [user_schema.py](file://notice-reminders/app/schemas/user.py)
-- [main.py](file://notice-reminders/app/api/main.py)
-- [auth_context.tsx](file://website/lib/auth-context.tsx)
-- [login_page.tsx](file://website/app/notice-reminders/login/page.tsx)
-- [api.ts](file://website/lib/api.ts)
-- [types.ts](file://website/lib/types.ts)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Authentication system
 
 ## Introduction
-This document explains the authentication system that enables OTP-based login with JWT cookie management and session handling. It covers the backend implementation (FastAPI), models, services, and schemas, as well as the frontend integration (Next.js) for a complete authentication flow from OTP request to successful login. Security measures, error handling, and API specifications are included to guide both developers and operators.
+This page explains the authentication system that enables OTP-based login with JWT cookie management and session handling. It covers the backend implementation (FastAPI), models, services, and schemas, as well as the frontend integration (Next.js) for a complete authentication flow from OTP request to successful login. Security measures, error handling, and API specifications are included to guide both developers and operators.
 
-## Project Structure
+## Project structure
 The authentication system spans two primary parts:
 - Backend (Python/FastAPI): authentication routes, token management, persistence, and email delivery
 - Frontend (Next.js): authentication context, UI flow, and API client integration
@@ -69,25 +38,7 @@ F1 --> F3
 F3 --> F4
 ```
 
-**Diagram sources**
-- [main.py](file://notice-reminders/app/api/main.py#L17-L46)
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L12-L126)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L17-L128)
-- [otp_email_service.py](file://notice-reminders/app/services/otp_email_service.py#L7-L43)
-- [user_model.py](file://notice-reminders/app/models/user.py#L7-L20)
-- [otp_model.py](file://notice-reminders/app/models/otp.py#L7-L19)
-- [refresh_token_model.py](file://notice-reminders/app/models/refresh_token.py#L7-L23)
-- [config.py](file://notice-reminders/app/core/config.py#L4-L32)
-- [auth_context.tsx](file://website/lib/auth-context.tsx#L21-L88)
-- [login_page.tsx](file://website/app/notice-reminders/login/page.tsx#L19-L158)
-- [api.ts](file://website/lib/api.ts#L28-L53)
-
-**Section sources**
-- [main.py](file://notice-reminders/app/api/main.py#L17-L46)
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L12-L126)
-- [auth_context.tsx](file://website/lib/auth-context.tsx#L21-L88)
-
-## Core Components
+## Core components
 - Authentication Router: exposes endpoints for OTP request, verification, token refresh, logout, and profile retrieval
 - AuthService: orchestrates OTP generation/validation, JWT creation/verification, refresh token lifecycle, and user provisioning
 - Models: User, OTP, and RefreshToken for persistence
@@ -96,19 +47,7 @@ F3 --> F4
 - Frontend Auth Context: manages session state, cookies, and navigation
 - API Client: centralized fetch wrapper with credential handling
 
-**Section sources**
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L43-L126)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L17-L128)
-- [user_model.py](file://notice-reminders/app/models/user.py#L7-L20)
-- [otp_model.py](file://notice-reminders/app/models/otp.py#L7-L19)
-- [refresh_token_model.py](file://notice-reminders/app/models/refresh_token.py#L7-L23)
-- [auth_schema.py](file://notice-reminders/app/schemas/auth.py#L8-L26)
-- [user_schema.py](file://notice-reminders/app/schemas/user.py#L13-L24)
-- [otp_email_service.py](file://notice-reminders/app/services/otp_email_service.py#L7-L43)
-- [auth_context.tsx](file://website/lib/auth-context.tsx#L21-L88)
-- [api.ts](file://website/lib/api.ts#L28-L53)
-
-## Architecture Overview
+## Architecture overview
 The authentication flow integrates frontend and backend components with secure cookie-based sessions using JWTs.
 
 ```mermaid
@@ -145,18 +84,9 @@ API-->>AC : "AuthStatus"
 AC-->>FE : "Navigate to dashboard"
 ```
 
-**Diagram sources**
-- [login_page.tsx](file://website/app/notice-reminders/login/page.tsx#L37-L61)
-- [auth_context.tsx](file://website/lib/auth-context.tsx#L41-L49)
-- [api.ts](file://website/lib/api.ts#L150-L165)
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L43-L76)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L22-L59)
-- [otp_model.py](file://notice-reminders/app/models/otp.py#L7-L19)
-- [user_model.py](file://notice-reminders/app/models/user.py#L7-L20)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Backend Authentication Router
+### Backend authentication router
 - Routes:
   - POST /auth/request-otp: generates and emails OTP; returns whether user is new and expiry time
   - POST /auth/verify-otp: validates OTP, creates access/refresh tokens, sets secure cookies
@@ -169,10 +99,7 @@ AC-->>FE : "Navigate to dashboard"
 - Error handling:
   - Returns HTTP 400/401 with descriptive messages for invalid/expired OTP or missing/invalid tokens
 
-**Section sources**
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L43-L126)
-
-### Authentication Service Implementation
+### Authentication service implementation
 Responsibilities:
 - OTP lifecycle: generation, persistence, expiry enforcement, and usage marking
 - User provisioning: auto-create user on first login
@@ -185,11 +112,7 @@ Key behaviors:
 - Refresh token rotation invalidates previous token and issues a new one
 - OTP uniqueness per email and latest-first validation ensures freshness
 
-**Section sources**
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L17-L128)
-- [otp_email_service.py](file://notice-reminders/app/services/otp_email_service.py#L7-L43)
-
-### Data Models
+### Data models
 - User: identifier, email, optional name/telegram, activity flag, timestamps
 - OtpCode: email, code, expiry, usage flag, timestamps
 - RefreshToken: foreign key to User, unique token, expiry, revoked flag, timestamps
@@ -224,17 +147,7 @@ timestamp created_at
 USER ||--o{ REFRESH_TOKEN : "has many"
 ```
 
-**Diagram sources**
-- [user_model.py](file://notice-reminders/app/models/user.py#L7-L20)
-- [otp_model.py](file://notice-reminders/app/models/otp.py#L7-L19)
-- [refresh_token_model.py](file://notice-reminders/app/models/refresh_token.py#L7-L23)
-
-**Section sources**
-- [user_model.py](file://notice-reminders/app/models/user.py#L7-L20)
-- [otp_model.py](file://notice-reminders/app/models/otp.py#L7-L19)
-- [refresh_token_model.py](file://notice-reminders/app/models/refresh_token.py#L7-L23)
-
-### JWT Cookie Management and Session Handling
+### JWT cookie management and session handling
 - Access token cookie:
   - Name: access_token
   - Attributes: HttpOnly, SameSite=Lax, secure unless debug, path "/"
@@ -248,20 +161,11 @@ USER ||--o{ REFRESH_TOKEN : "has many"
 - Token refresh:
   - Uses refresh_token cookie to validate, revoke old, issue new refresh token, and update cookies
 
-**Section sources**
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L15-L41)
-- [auth_core.py](file://notice-reminders/app/core/auth.py#L14-L51)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L81-L113)
-
-### Password Hashing Strategy
+### Password hashing strategy
 - The system does not hash passwords; authentication relies on OTP delivery and JWT-based session management
 - No password field exists in the User model
 
-**Section sources**
-- [user_model.py](file://notice-reminders/app/models/user.py#L7-L20)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L122-L123)
-
-### Frontend Authentication Flow
+### Frontend authentication flow
 - Auth Context:
   - Loads session on startup via /auth/me
   - Provides requestOtp, verifyOtp, refresh, and logout
@@ -288,17 +192,7 @@ Success --> |No| ShowError["Display error message"]
 ShowError --> ShowCode
 ```
 
-**Diagram sources**
-- [login_page.tsx](file://website/app/notice-reminders/login/page.tsx#L37-L61)
-- [auth_context.tsx](file://website/lib/auth-context.tsx#L41-L49)
-- [api.ts](file://website/lib/api.ts#L150-L165)
-
-**Section sources**
-- [auth_context.tsx](file://website/lib/auth-context.tsx#L21-L88)
-- [login_page.tsx](file://website/app/notice-reminders/login/page.tsx#L19-L158)
-- [api.ts](file://website/lib/api.ts#L28-L53)
-
-## Dependency Analysis
+## Dependency analysis
 - Router depends on:
   - AuthService for OTP, token, and user operations
   - Settings for cookie lifetimes and delivery configuration
@@ -323,24 +217,7 @@ ASVC --> RTM["RefreshToken Model<br/>refresh_token_model.py"]
 ASVC --> EMAIL["OtpEmailService<br/>otp_email_service.py"]
 ```
 
-**Diagram sources**
-- [auth_context.tsx](file://website/lib/auth-context.tsx#L6-L7)
-- [api.ts](file://website/lib/api.ts#L28-L53)
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L3-L9)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L10-L21)
-- [config.py](file://notice-reminders/app/core/config.py#L4-L32)
-- [otp_model.py](file://notice-reminders/app/models/otp.py#L7-L19)
-- [user_model.py](file://notice-reminders/app/models/user.py#L7-L20)
-- [refresh_token_model.py](file://notice-reminders/app/models/refresh_token.py#L7-L23)
-- [otp_email_service.py](file://notice-reminders/app/services/otp_email_service.py#L7-L43)
-
-**Section sources**
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L3-L9)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L10-L21)
-- [auth_context.tsx](file://website/lib/auth-context.tsx#L6-L7)
-- [api.ts](file://website/lib/api.ts#L28-L53)
-
-## Performance Considerations
+## Performance considerations
 - OTP generation uses constant-time numeric codes; consider rate limiting per email to prevent abuse
 - Token rotation creates new refresh tokens; ensure database indexing on token and user fields remains efficient
 - Access token expiry is short-lived by default; balance usability with security
@@ -348,7 +225,7 @@ ASVC --> EMAIL["OtpEmailService<br/>otp_email_service.py"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Invalid or expired OTP:
   - Cause: OTP not found, expired, or already used
@@ -366,20 +243,14 @@ Common issues and resolutions:
   - Cause: Missing SMTP settings for non-console delivery
   - Resolution: Provide required SMTP environment variables
 
-**Section sources**
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L64-L70)
-- [auth_core.py](file://notice-reminders/app/core/auth.py#L18-L51)
-- [auth_service.py](file://notice-reminders/app/services/auth_service.py#L104-L120)
-- [otp_email_service.py](file://notice-reminders/app/services/otp_email_service.py#L16-L25)
-
 ## Conclusion
-The authentication system provides a secure, cookie-backed OTP login flow with robust JWT token management and refresh mechanisms. The backend enforces strict validation and persistence, while the frontend offers a smooth, validated user experience. Operators should configure environment variables carefully, especially for JWT secrets and SMTP settings, and deploy with appropriate CORS and cookie policies.
+The authentication system provides a secure, cookie-backed OTP login flow with reliable JWT token management and refresh mechanisms. The backend enforces strict validation and persistence, while the frontend offers a smooth, validated user experience. Operators should configure environment variables carefully, especially for JWT secrets and SMTP settings, and deploy with appropriate CORS and cookie policies.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### API Endpoint Specifications
+### API endpoint specifications
 
 - POST /auth/request-otp
   - Request: { email: string }
@@ -413,13 +284,7 @@ Security considerations:
 - Access tokens are signed HS256; keep jwt_secret secret
 - Refresh tokens are rotated on each refresh and stored with expiry/revocation flags
 
-**Section sources**
-- [auth.py](file://notice-reminders/app/api/routers/auth.py#L43-L126)
-- [auth_schema.py](file://notice-reminders/app/schemas/auth.py#L8-L26)
-- [user_schema.py](file://notice-reminders/app/schemas/user.py#L13-L24)
-- [config.py](file://notice-reminders/app/core/config.py#L22-L27)
-
-### Client Integration Examples
+### Client integration examples
 
 - Next.js usage pattern:
   - Wrap app with AuthProvider
@@ -432,9 +297,3 @@ Security considerations:
   - refreshSession() → AuthStatus
   - logout() → void
   - getMe() → User
-
-**Section sources**
-- [auth_context.tsx](file://website/lib/auth-context.tsx#L21-L88)
-- [login_page.tsx](file://website/app/notice-reminders/login/page.tsx#L19-L158)
-- [api.ts](file://website/lib/api.ts#L150-L181)
-- [types.ts](file://website/lib/types.ts#L65-L75)

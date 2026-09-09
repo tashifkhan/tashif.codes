@@ -1,32 +1,10 @@
-# Collection Schemas & Field Definitions
-
-<cite>
-**Referenced Files in This Document**
-- [DATABASE.md](file://docs/DATABASE.md)
-- [db_client.py](file://app/clients/db_client.py)
-- [database_service.py](file://app/services/database_service.py)
-- [placement_service.py](file://app/services/placement_service.py)
-- [official_placement_service.py](file://app/services/official_placement_service.py)
-- [placement_offers.json](file://app/data/placement_offers.json)
-- [structured_job_listings.json](file://app/data/structured_job_listings.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Collection schemas & field definitions
 
 ## Introduction
-This document provides comprehensive collection schemas and field definitions for the SuperSet notification system’s MongoDB database. It covers the five main collections (Notices, Jobs, PlacementOffers, Users, OfficialPlacementData), detailing field types, validation rules, constraints, nested structures, and metadata patterns. It also explains the rationale behind using custom identifiers (id, job_id, offer_id, user_id, data_id) instead of ObjectId, and outlines data transformation rules applied during insertion and updates.
+This page provides detailed collection schemas and field definitions for the SuperSet notification system's MongoDB database. It covers the five main collections (Notices, Jobs, PlacementOffers, Users, OfficialPlacementData), detailing field types, validation rules, constraints, nested structures, and metadata patterns. It also explains the rationale behind using custom identifiers (id, job_id, offer_id, user_id, data_id) instead of ObjectId, and outlines data transformation rules applied during insertion and updates.
 
-## Project Structure
-The database schema is defined in the centralized documentation and enforced by the application’s database client and service layers:
+## Project structure
+The database schema is defined in the centralized documentation and enforced by the application's database client and service layers:
 - Centralized schema reference: docs/DATABASE.md
 - Database client: app/clients/db_client.py
 - Database service: app/services/database_service.py
@@ -63,17 +41,7 @@ PlacementSvc --> PlacementOffers
 OfficialSvc --> OfficialPlacementData
 ```
 
-**Diagram sources**
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-- [placement_service.py](file://app/services/placement_service.py#L419-L800)
-- [official_placement_service.py](file://app/services/official_placement_service.py#L80-L459)
-
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L1-L620)
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-
-## Core Components
+## Core components
 This section summarizes the five collections and their purposes, identifiers, and key constraints.
 
 - Notices
@@ -106,10 +74,7 @@ This section summarizes the five collections and their purposes, identifiers, an
   - Key fields: timestamp, overall_statistics (nested), branch_wise (dynamic object), company_wise (array), sector_wise (dynamic object), source_url, timestamps.
   - Constraints: Unique index on data_id; descending index on timestamp.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L32-L424)
-
-## Architecture Overview
+## Architecture overview
 The system integrates external data sources (SuperSet portal, email, official website) into MongoDB collections through dedicated services. The database client abstracts connection management, while the database service encapsulates CRUD operations and maintains consistency.
 
 ```mermaid
@@ -123,19 +88,11 @@ JobsJSON-->>JobsDB : "Upsert job documents (job_id)"
 JobsJSON-->>NoticesDB : "Create notices for new jobs"
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L205-L269)
-- [structured_job_listings.json](file://app/data/structured_job_listings.json#L1-L800)
+## Detailed component analysis
 
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L205-L269)
-- [structured_job_listings.json](file://app/data/structured_job_listings.json#L1-L800)
-
-## Detailed Component Analysis
-
-### Notices Collection
+### Notices collection
 - Purpose: Central hub for all notifications, including job postings, announcements, and updates.
-- Identifier: id (string) — distinct from ObjectId to ensure deterministic uniqueness and external compatibility.
+- Identifier: id (string), distinct from ObjectId to ensure deterministic uniqueness and external compatibility.
 - Required fields:
   - id (string, unique)
   - title (string)
@@ -166,13 +123,9 @@ Typical document structure:
 Unique identifier rationale:
 - Using id instead of ObjectId ensures predictable uniqueness and simplifies external integrations and deduplication.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L32-L97)
-- [database_service.py](file://app/services/database_service.py#L56-L148)
-
-### Jobs Collection
+### Jobs collection
 - Purpose: Structured representation of job listings from SuperSet.
-- Identifier: job_id (string) — unique job identifier.
+- Identifier: job_id (string), unique job identifier.
 - Required fields:
   - job_id (string, unique)
   - company (string)
@@ -203,14 +156,9 @@ Typical document structure:
 Unique identifier rationale:
 - job_id allows deduplication across scrapers and prevents ObjectId collisions.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L98-L168)
-- [database_service.py](file://app/services/database_service.py#L205-L269)
-- [structured_job_listings.json](file://app/data/structured_job_listings.json#L1-L800)
-
-### PlacementOffers Collection
+### PlacementOffers collection
 - Purpose: Extracted placement offer data from emails with validation and enrichment.
-- Identifier: offer_id (string) — unique offer identifier.
+- Identifier: offer_id (string), unique offer identifier.
 - Required fields:
   - offer_id (string, unique)
   - company (string)
@@ -255,16 +203,9 @@ Typical document structure:
 Unique identifier rationale:
 - offer_id enables deduplication across email sources and preserves referential integrity.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L169-L251)
-- [database_service.py](file://app/services/database_service.py#L274-L442)
-- [placement_service.py](file://app/services/placement_service.py#L55-L68)
-- [placement_service.py](file://app/services/placement_service.py#L706-L754)
-- [placement_offers.json](file://app/data/placement_offers.json#L1-L800)
-
-### Users Collection
+### Users collection
 - Purpose: User subscription and preference management.
-- Identifier: user_id (string) — Telegram user ID.
+- Identifier: user_id (string), Telegram user ID.
 - Required fields:
   - user_id (string, unique)
   - first_name (string)
@@ -290,15 +231,11 @@ Typical document structure:
 - Arrays: webpush_subscriptions[]
 
 Unique identifier rationale:
-- user_id mirrors Telegram’s user ID for seamless integration.
+- user_id mirrors Telegram's user ID for smooth integration.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L252-L330)
-- [database_service.py](file://app/services/database_service.py#L616-L729)
-
-### OfficialPlacementData Collection
+### OfficialPlacementData collection
 - Purpose: Aggregated placement statistics from official sources.
-- Identifier: data_id (string) — snapshot identifier.
+- Identifier: data_id (string), snapshot identifier.
 - Required fields:
   - data_id (string, unique)
   - timestamp (date)
@@ -324,12 +261,7 @@ Typical document structure:
 Unique identifier rationale:
 - data_id enables snapshot-based deduplication and time-series analysis.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L331-L424)
-- [database_service.py](file://app/services/database_service.py#L443-L499)
-- [official_placement_service.py](file://app/services/official_placement_service.py#L53-L65)
-
-## Dependency Analysis
+## Dependency analysis
 The database client initializes collections and exposes them to the database service. The database service orchestrates CRUD operations and enforces constraints. Placement and official services feed data into PlacementOffers and OfficialPlacementData respectively.
 
 ```mermaid
@@ -362,15 +294,7 @@ DatabaseService --> Jobs : "insert/update"
 DatabaseService --> Users : "insert/update"
 ```
 
-**Diagram sources**
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-
-**Section sources**
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-
-## Performance Considerations
+## Performance considerations
 - Indexing strategy:
   - Unique indexes on identifiers (id, job_id, offer_id, user_id, data_id) for fast lookups.
   - Compound indexes on frequently queried fields (e.g., { company: 1 }, { processing_status: 1 }, { created_at: -1 }).
@@ -382,11 +306,11 @@ DatabaseService --> Users : "insert/update"
 - TTL and cleanup:
   - Consider TTL indexes for ephemeral logs or temporary collections.
 - Connection pooling:
-  - Leverage PyMongo’s built-in connection pooling for scalability.
+  - Use PyMongo's built-in connection pooling for scalability.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Duplicate notices/jobs/offers:
   - Verify unique index on id/job_id/offer_id; check for duplicate identifiers before insert/upsert.
@@ -399,10 +323,5 @@ Common issues and resolutions:
 - Connection failures:
   - Confirm MONGO_CONNECTION_STR environment variable and DBClient connectivity.
 
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L56-L148)
-- [database_service.py](file://app/services/database_service.py#L274-L442)
-- [placement_service.py](file://app/services/placement_service.py#L756-L789)
-
 ## Conclusion
-The SuperSet notification system’s MongoDB schema is designed for reliability, scalability, and clarity. Each collection uses a custom string identifier to ensure deterministic uniqueness and simplify integrations. The database service enforces constraints and indexes, while specialized services handle data extraction, validation, and enrichment. Adhering to the documented schemas and transformation rules ensures consistent data quality and robust querying.
+The SuperSet notification system's MongoDB schema is designed for reliability, scalability, and clarity. Each collection uses a custom string identifier to ensure deterministic uniqueness and simplify integrations. The database service enforces constraints and indexes, while specialized services handle data extraction, validation, and enrichment. Adhering to the documented schemas and transformation rules ensures consistent data quality and reliable querying.

@@ -1,35 +1,9 @@
-# Authentication and Session Management
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://README.md)
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [package.json](file://electron/package.json)
-- [pyodide.js](file://electron/src/utils/pyodide.js)
-- [extract_contacts.py](file://python-backend/extract_contacts.py)
-- [validate_number.py](file://python-backend/validate_number.py)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Security Considerations](#security-considerations)
-10. [Conclusion](#conclusion)
+# Authentication and session management
 
 ## Introduction
-This document explains the WhatsApp authentication and session management system implemented in the Electron application. It focuses on the QR code authentication flow using the LocalAuth strategy from whatsapp-web.js, the client lifecycle (startup, ready state, authentication failure handling, disconnection), session persistence and cache management for automatic reconnection, and practical troubleshooting steps for common issues. It also covers security considerations and best practices for local authentication storage and session cleanup.
+This page explains the WhatsApp authentication and session management system implemented in the Electron application. It focuses on the QR code authentication flow using the LocalAuth strategy from whatsapp-web.js, the client lifecycle (startup, ready state, authentication failure handling, disconnection), session persistence and cache management for automatic reconnection, and practical troubleshooting steps for common issues. It also covers security considerations and best practices for local authentication storage and session cleanup.
 
-## Project Structure
+## Project structure
 The authentication and session management spans three layers:
 - Renderer UI (React): Presents the WhatsApp interface, displays QR code, and shows status/log.
 - Preload bridge: Exposes secure IPC methods to the renderer for WhatsApp operations.
@@ -45,19 +19,7 @@ Main --> FS["File System<br/>Delete .wwebjs_cache/.wwebjs_auth"]
 Main --> Events["Event Handlers<br/>qr, ready, authenticated,<br/>auth_failure, disconnected"]
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L176-L278)
-- [preload.js](file://electron/src/electron/preload.js#L23-L39)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [package.json](file://electron/package.json#L20-L31)
-
-**Section sources**
-- [README.md](file://README.md#L16-L24)
-- [main.js](file://electron/src/electron/main.js#L1-L100)
-- [preload.js](file://electron/src/electron/preload.js#L1-L41)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L1-L120)
-
-## Core Components
+## Core components
 - WhatsApp client initialization and event handling in the main process using LocalAuth.
 - Renderer UI that renders QR code, shows status, and triggers actions.
 - IPC bridge exposing WhatsApp operations to the renderer.
@@ -68,15 +30,9 @@ Key responsibilities:
 - Emit status updates for QR display, ready, authenticated, auth failure, and disconnection.
 - Convert QR string to a data URL for rendering in the UI.
 - Persist sessions locally via LocalAuth and clear them on logout or app close.
-- Provide robust error handling and user feedback.
+- Provide reliable error handling and user feedback.
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L320-L340)
-- [preload.js](file://electron/src/electron/preload.js#L23-L39)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L176-L278)
-
-## Architecture Overview
+## Architecture overview
 The system uses a secure IPC model:
 - The renderer invokes startWhatsAppClient via preload.js.
 - The main process creates a Client with LocalAuth and registers event listeners.
@@ -108,15 +64,9 @@ Main->>Main : deleteWhatsAppFiles()
 Main-->>UI : emit("whatsapp-status", "Disconnected")
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L154-L172)
-- [preload.js](file://electron/src/electron/preload.js#L23-L39)
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L342-L371)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### QR Code Authentication Flow (LocalAuth)
+### QR code authentication flow (LocalAuth)
 - Initialization: The main process creates a Client with LocalAuth and headless puppeteer options.
 - QR Generation: On receiving the "qr" event, the main process converts the QR string to a data URL using the qrcode library and sends it to the renderer.
 - UI Rendering: The renderer displays the QR code image and sets status to "Scan QR code to authenticate".
@@ -135,17 +85,7 @@ AuthEvents --> |Authenticated| ClearQR
 ClearQR --> Success(["Authenticated"])
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L137-L160)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L176-L278)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [package.json](file://electron/package.json#L25-L30)
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L176-L278)
-
-### Client Lifecycle Management
+### Client lifecycle management
 - Startup: Immediate status update indicates initialization, followed by client start.
 - Ready State: Emitted when the client is fully initialized and ready to send messages.
 - Authentication Failure: Emitted when authentication fails; status includes the failure message.
@@ -166,17 +106,9 @@ Initializing --> Error : "auth_failure"
 Error --> Initializing : "retry"
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L162-L169)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L110-L177)
-- [main.js](file://electron/src/electron/main.js#L66-L100)
-
-### Session Persistence and Cache Management
+### Session persistence and cache management
 - LocalAuth Strategy: Persists authentication state locally so subsequent runs can reconnect without scanning a QR.
-- Cache Cleanup: On logout and app close/quit, the main process deletes the .wwebjs_cache and .wwebjs_auth directories to force re-authentication and clear stale session data.
+- Cache Cleanup: On logout and app close/quit, the main process deletes the.wwebjs_cache and.wwebjs_auth directories to force re-authentication and clear stale session data.
 - Automatic Reconnection: Subsequent starts reuse persisted credentials until invalidated by logout or cache deletion.
 
 ```mermaid
@@ -193,15 +125,7 @@ Ready --> Running(["Running"])
 QR --> Running
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L320-L340)
-- [main.js](file://electron/src/electron/main.js#L342-L371)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L320-L340)
-- [main.js](file://electron/src/electron/main.js#L342-L371)
-
-### Renderer Integration and User Experience
+### Renderer integration and user experience
 - Status Updates: The renderer listens to "whatsapp-status" and "whatsapp-qr" events to reflect current state.
 - QR Handling: The renderer displays QR when present and handles load/error states.
 - Logout UX: Provides a logout button and clears UI state upon success.
@@ -218,16 +142,7 @@ Main-->>Renderer : emit("whatsapp-qr", dataURL or null)
 Renderer->>Renderer : Update UI state (status, QR, buttons)
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L35-L58)
-- [preload.js](file://electron/src/electron/preload.js#L28-L39)
-- [main.js](file://electron/src/electron/main.js#L137-L160)
-
-**Section sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L35-L58)
-- [preload.js](file://electron/src/electron/preload.js#L28-L39)
-
-### Contact Import and Message Composition (Supporting Components)
+### Contact import and message composition (supporting components)
 - Manual Number Parsing: Uses Pyodide to run Python scripts for parsing and validating manual numbers.
 - Contact Extraction: Python backend utilities extract and normalize contacts from CSV/Excel/Text files.
 - Message Personalization: The renderer supports placeholders for personalization.
@@ -241,22 +156,7 @@ UI --> Validate["validate_number.py"]
 UI --> Send["sendWhatsAppBulk()<br/>main.js"]
 ```
 
-**Diagram sources**
-- [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L41-L62)
-- [pyodide.js](file://electron/src/utils/pyodide.js#L26-L33)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L54)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L25-L81)
-- [validate_number.py](file://python-backend/validate_number.py#L6-L19)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L368-L415)
-
-**Section sources**
-- [pyodide.js](file://electron/src/utils/pyodide.js#L26-L33)
-- [parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L54)
-- [extract_contacts.py](file://python-backend/extract_contacts.py#L25-L81)
-- [validate_number.py](file://python-backend/validate_number.py#L6-L19)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L368-L415)
-
-## Dependency Analysis
+## Dependency analysis
 External libraries and their roles:
 - whatsapp-web.js: Provides the WhatsApp client with LocalAuth strategy.
 - qrcode: Converts QR strings to data URLs for rendering.
@@ -273,15 +173,7 @@ UI["WhatsAppForm.jsx"] --> Bridge["preload.js"]
 Bridge --> Main
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L8-L12)
-- [package.json](file://electron/package.json#L20-L31)
-
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L8-L12)
-- [package.json](file://electron/package.json#L20-L31)
-
-## Performance Considerations
+## Performance considerations
 - Headless browser: Puppeteer runs headless to reduce overhead; ensure sufficient system resources.
 - Delays between sends: The main process introduces deliberate delays to avoid rate limits and improve reliability.
 - QR generation: Converting QR strings to data URLs is lightweight but avoid excessive regeneration.
@@ -289,58 +181,40 @@ Bridge --> Main
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - QR code not loading
   - Symptoms: QR image shows as failed or blank.
   - Causes: Network issues, QR generation errors, renderer image load failure.
   - Resolution: Retry connection; check console for QR generation errors; ensure network connectivity.
   - Related code: QR error handling and retry button in the renderer.
-  
-  **Section sources**
-  - [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L32-L39)
-  - [WhatsAppForm.jsx](file://electron/src/components/WhatsAppForm.jsx#L218-L251)
 
 - Authentication failure
   - Symptoms: Status indicates "Authentication failed".
   - Causes: Invalid QR, corrupted session cache, or authentication timeout.
   - Resolution: Clear session cache and retry; ensure device is linked; check logs for detailed messages.
   - Related code: auth_failure event handler and status emission.
-  
-  **Section sources**
-  - [main.js](file://electron/src/electron/main.js#L162-L164)
 
 - Disconnection
   - Symptoms: Status indicates "Client disconnected".
   - Causes: Network issues, browser crash, or external logout.
   - Resolution: Reconnect by initiating authentication again; ensure stable network.
   - Related code: disconnected event handler and client cleanup.
-  
-  **Section sources**
-  - [main.js](file://electron/src/electron/main.js#L166-L169)
 
 - Session corruption or stale cache
   - Symptoms: Repeated authentication failures despite valid credentials.
   - Resolution: Force logout to clear cache and auth directories; restart the client.
   - Related code: logout handler and deleteWhatsAppFiles().
-  
-  **Section sources**
-  - [main.js](file://electron/src/electron/main.js#L342-L371)
-  - [main.js](file://electron/src/electron/main.js#L320-L340)
 
 - Application lifecycle cleanup
   - Symptoms: Old session persists after app close.
   - Resolution: Rely on app/window close and before-quit handlers to logout and delete files.
   - Related code: app lifecycle hooks and deleteWhatsAppFiles().
-  
-  **Section sources**
-  - [main.js](file://electron/src/electron/main.js#L66-L100)
-  - [main.js](file://electron/src/electron/main.js#L320-L340)
 
-## Security Considerations
+## Security considerations
 - Local authentication storage
   - LocalAuth stores session data locally; protect the application directory and avoid sharing it.
-  - Consider restricting file permissions on the .wwebjs_cache and .wwebjs_auth directories.
+  - Consider restricting file permissions on the.wwebjs_cache and.wwebjs_auth directories.
 - Session cleanup
   - Always call logout and delete session files when switching users or ending a session.
   - On app close/quit, ensure cleanup routines run to prevent accidental reuse of stale sessions.
@@ -352,4 +226,4 @@ Common issues and resolutions:
 [No sources needed since this section provides general guidance]
 
 ## Conclusion
-The application implements a robust, user-friendly WhatsApp authentication flow using LocalAuth. The QR-based authentication is handled seamlessly across the renderer, preload bridge, and main process, with clear status updates and resilient error handling. Session persistence enables quick reconnection, while explicit cleanup ensures secure and predictable lifecycle management. Following the troubleshooting and security recommendations will help maintain a reliable and secure messaging experience.
+The application implements a reliable, user-friendly WhatsApp authentication flow using LocalAuth. The QR-based authentication is handled smoothly across the renderer, preload bridge, and main process, with clear status updates and resilient error handling. Session persistence enables quick reconnection, while explicit cleanup ensures secure and predictable lifecycle management. Following the troubleshooting and security recommendations will help maintain a reliable and secure messaging experience.

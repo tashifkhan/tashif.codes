@@ -1,31 +1,7 @@
-# Database Service
-
-<cite>
-**Referenced Files in This Document**
-- [database_service.py](file://app/services/database_service.py)
-- [db_client.py](file://app/clients/db_client.py)
-- [config.py](file://app/core/config.py)
-- [main.py](file://app/main.py)
-- [DATABASE.md](file://docs/DATABASE.md)
-- [notification_runner.py](file://app/runners/notification_runner.py)
-- [notification_service.py](file://app/services/notification_service.py)
-- [official_placement_service.py](file://app/services/official_placement_service.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Database service
 
 ## Introduction
-This document provides comprehensive documentation for the DatabaseService component, which serves as the central MongoDB abstraction layer in the SuperSet Telegram Notification Bot. The service implements a protocol-like interface for MongoDB operations and encapsulates all data persistence concerns for notices, jobs, placement offers, users, and policies. It provides a clean separation between data access logic and business services, enabling dependency injection, testability, and modular operation across the system.
+This page provides detailed documentation for the DatabaseService component, which is the central MongoDB abstraction layer in the SuperSet Telegram Notification Bot. The service implements a protocol-like interface for MongoDB operations and encapsulates all data persistence concerns for notices, jobs, placement offers, users, and policies. It provides a clean separation between data access logic and business services, enabling dependency injection, testability, and modular operation across the system.
 
 Key responsibilities include:
 - Centralized MongoDB access via DBClient
@@ -37,7 +13,7 @@ Key responsibilities include:
 - Serialization of ObjectId fields for JSON transport
 - Error handling and logging
 
-## Project Structure
+## Project structure
 The DatabaseService resides in the services layer and collaborates with the DBClient for raw MongoDB connectivity. It integrates with other system components through dependency injection, enabling flexible orchestration in both CLI commands and runtime services.
 
 ```mermaid
@@ -79,22 +55,7 @@ DBC --> Official
 CFG --> DBC
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L16-L51)
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [config.py](file://app/core/config.py#L18-L186)
-- [main.py](file://app/main.py#L117-L148)
-- [notification_runner.py](file://app/runners/notification_runner.py#L21-L59)
-- [notification_service.py](file://app/services/notification_service.py#L13-L41)
-- [official_placement_service.py](file://app/services/official_placement_service.py#L80-L105)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L16-L51)
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [config.py](file://app/core/config.py#L18-L186)
-- [main.py](file://app/main.py#L117-L148)
-
-## Core Components
+## Core components
 - DatabaseService: Implements MongoDB operations for notices, jobs, placement offers, users, and policies. Provides CRUD methods, merge logic for placement offers, and serialization helpers.
 - DBClient: Handles MongoDB connection establishment, collection initialization, and connection lifecycle.
 - Configuration: Centralized settings management including MongoDB connection string and logging configuration.
@@ -107,12 +68,7 @@ Key capabilities:
 - Policy operations: upsert by year with change detection.
 - Serialization: converts ObjectId fields to strings for JSON transport.
 
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L16-L51)
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [config.py](file://app/core/config.py#L18-L186)
-
-## Architecture Overview
+## Architecture overview
 The DatabaseService follows a layered architecture:
 - Clients layer: DBClient manages raw MongoDB connectivity and exposes typed collection properties.
 - Services layer: DatabaseService wraps DBClient and adds business logic for CRUD operations, merge algorithms, and serialization.
@@ -140,15 +96,9 @@ DB-->>Runner : success
 Runner-->>CLI : send results
 ```
 
-**Diagram sources**
-- [main.py](file://app/main.py#L117-L148)
-- [notification_runner.py](file://app/runners/notification_runner.py#L21-L77)
-- [database_service.py](file://app/services/database_service.py#L106-L147)
-- [db_client.py](file://app/clients/db_client.py#L42-L79)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### DatabaseService Class
+### DatabaseService class
 The DatabaseService class encapsulates all MongoDB operations and acts as the primary data access object for notices, jobs, placement offers, users, and policies.
 
 ```mermaid
@@ -205,15 +155,7 @@ class DBClient {
 DatabaseService --> DBClient : "uses"
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-
-### Notice Operations
+### Notice operations
 The notice subsystem provides lifecycle management for notifications:
 - Existence checks by unique notice id
 - Bulk retrieval of notice ids for efficient lookups
@@ -242,13 +184,7 @@ Coll-->>Service : cursor
 Service->>Service : filter and return list
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L56-L160)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L56-L160)
-
-### Structured Job Operations
+### Structured job operations
 Structured job upsert maintains normalized job listings:
 - Existence checks by structured id
 - Upsert logic that merges incoming data with existing records
@@ -266,13 +202,7 @@ Insert --> Done
 Validate --> |No| Error([Return False, "Missing id"])
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L205-L257)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L205-L257)
-
-### Placement Offer Processing with Merge Logic
+### Placement offer processing with merge logic
 The placement offers subsystem implements a complex merge algorithm designed to:
 - Group offers by company name
 - Merge roles with package comparison (higher package wins)
@@ -302,13 +232,7 @@ Next --> Iterate
 Iterate --> Done([Return counts and events])
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L274-L441)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L274-L441)
-
-### User Management
+### User management
 User management provides soft-deletion semantics:
 - Add or reactivate users with activation flag
 - Deactivate users (soft delete)
@@ -334,13 +258,7 @@ Service->>Logger : added new user
 end
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L616-L668)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L616-L668)
-
-### Policy Operations
+### Policy operations
 Policy operations manage official policy documents by year:
 - Upsert by year with upsert semantics
 - Change detection and logging
@@ -365,13 +283,7 @@ Service->>Logger : created
 end
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L741-L777)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L741-L777)
-
-### Serialization Mechanisms for MongoDB ObjectId
+### Serialization mechanisms for MongoDB ObjectId
 The DatabaseService provides a serialization helper to convert ObjectId fields to strings for JSON transport:
 - Converts top-level _id field to string
 - Can be extended for nested ObjectId fields if needed
@@ -387,13 +299,7 @@ HasId --> |No| ReturnDoc["Return original"]
 ConvertId --> ReturnDoc
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L602-L610)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L602-L610)
-
-### Integration Patterns with Other System Components
+### Integration patterns with other system components
 DatabaseService integrates with other components through dependency injection:
 - CLI commands: main.py orchestrates DBClient and DatabaseService creation for email processing and official data updates
 - NotificationRunner: creates its own DBClient/DatabaseService instance for sending unsent notices
@@ -419,17 +325,7 @@ CLI->>NSF : process_events(events)
 CLI->>DB : save_official_placement_data(data)
 ```
 
-**Diagram sources**
-- [main.py](file://app/main.py#L117-L148)
-- [official_placement_service.py](file://app/services/official_placement_service.py#L406-L421)
-
-**Section sources**
-- [main.py](file://app/main.py#L117-L148)
-- [notification_runner.py](file://app/runners/notification_runner.py#L21-L77)
-- [notification_service.py](file://app/services/notification_service.py#L93-L167)
-- [official_placement_service.py](file://app/services/official_placement_service.py#L406-L421)
-
-## Dependency Analysis
+## Dependency analysis
 The DatabaseService exhibits low coupling and high cohesion:
 - Coupling: Minimal direct coupling to DBClient; all MongoDB operations delegated to DBClient collections
 - Cohesion: High cohesion around data access patterns and business logic for each entity type
@@ -448,16 +344,8 @@ DS --> DT
 DS --> TY
 ```
 
-**Diagram sources**
-- [database_service.py](file://app/services/database_service.py#L8-L13)
-- [db_client.py](file://app/clients/db_client.py#L11-L13)
-
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L8-L13)
-- [db_client.py](file://app/clients/db_client.py#L11-L13)
-
-## Performance Considerations
-- Connection pooling: DBClient uses PyMongo’s built-in connection pooling; ensure appropriate pool sizing for production workloads
+## Performance considerations
+- Connection pooling: DBClient uses PyMongo's built-in connection pooling; ensure appropriate pool sizing for production workloads
 - Index usage: The database schema defines indexes for frequent query patterns (e.g., notices by sent flags, jobs by deadlines)
 - Query optimization: Prefer targeted queries with projections and limits; avoid loading entire collections
 - Batch operations: Use bulk operations for large-scale updates (e.g., marking notices as sent)
@@ -466,7 +354,7 @@ DS --> TY
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Connection failures: Verify MONGO_CONNECTION_STR environment variable and network connectivity
 - Missing collections: Ensure database initialization occurs before accessing collections
@@ -474,43 +362,25 @@ Common issues and resolutions:
 - Serialization errors: Use _serialize_doc for ObjectId fields when returning JSON responses
 - Performance bottlenecks: Review query plans and add missing indexes as per DATABASE.md
 
-**Section sources**
-- [db_client.py](file://app/clients/db_client.py#L42-L79)
-- [DATABASE.md](file://docs/DATABASE.md#L425-L458)
-
 ## Conclusion
-DatabaseService provides a robust, dependency-injected abstraction over MongoDB operations, enabling clean separation of concerns and facilitating integration across the system. Its comprehensive coverage of CRUD operations, sophisticated merge logic for placement offers, and serialization mechanisms make it a cornerstone of the data layer. Proper configuration, indexing, and logging practices ensure reliable operation in production environments.
+DatabaseService provides a reliable, dependency-injected abstraction over MongoDB operations, enabling clean separation of concerns and facilitating integration across the system. Its detailed coverage of CRUD operations, sophisticated merge logic for placement offers, and serialization mechanisms make it a cornerstone of the data layer. Proper configuration, indexing, and logging practices ensure reliable operation in production environments.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### Practical Examples
+### Practical examples
 
-#### Service Initialization
+#### Service initialization
 - CLI-driven initialization: main.py creates DBClient, connects, and passes it to DatabaseService for email processing and official data updates
 - Runner-driven initialization: NotificationRunner creates its own DBClient/DatabaseService instance for sending unsent notices
 
-**Section sources**
-- [main.py](file://app/main.py#L117-L148)
-- [notification_runner.py](file://app/runners/notification_runner.py#L44-L59)
-
-#### Common Operations
+#### Common operations
 - Notice management: existence checks, insertion, retrieval, unsent enumeration, and marking as sent
 - Structured job upsert: merge incoming job data with existing records
 - Placement offers: bulk save with merge logic and event emission
 - User management: add/reactivate/deactivate users
 - Policy operations: upsert by year with change detection
 
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L56-L160)
-- [database_service.py](file://app/services/database_service.py#L205-L257)
-- [database_service.py](file://app/services/database_service.py#L274-L441)
-- [database_service.py](file://app/services/database_service.py#L616-L668)
-- [database_service.py](file://app/services/database_service.py#L741-L777)
-
-### Database Schema Reference
+### Database schema reference
 The database schema defines five main collections with specific indexes and data models. Notices, Jobs, PlacementOffers, Users, and OfficialPlacementData each have tailored schemas optimized for their respective use cases.
-
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L32-L424)

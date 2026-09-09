@@ -1,37 +1,9 @@
-# Subscriptions Management API
-
-<cite>
-**Referenced Files in This Document**
-- [subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py)
-- [subscription.py](file://notice-reminders/app/models/subscription.py)
-- [subscription.py](file://notice-reminders/app/schemas/subscription.py)
-- [course.py](file://notice-reminders/app/models/course.py)
-- [user.py](file://notice-reminders/app/models/user.py)
-- [dependencies.py](file://notice-reminders/app/core/dependencies.py)
-- [main.py](file://notice-reminders/app/api/main.py)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py)
-- [notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py)
-- [announcements.py](file://notice-reminders/app/api/routers/announcements.py)
-- [announcement_service.py](file://notice-reminders/app/services/announcement_service.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Subscriptions management API
 
 ## Introduction
-This document provides comprehensive API documentation for subscription management endpoints within the notice-reminders system. It covers CRUD operations for course subscriptions, subscription preferences, and notification settings. It explains subscription validation, duplicate prevention, status management, lifecycle handling, automatic renewal behavior, cancellation procedures, analytics, usage tracking, and preference-based filtering. The documentation includes endpoint definitions, request/response schemas, error handling, and practical workflows for creating, modifying, and deleting subscriptions.
+This page provides detailed API documentation for subscription management endpoints within the notice-reminders system. It covers CRUD operations for course subscriptions, subscription preferences, and notification settings. It explains subscription validation, duplicate prevention, status management, lifecycle handling, automatic renewal behavior, cancellation procedures, analytics, usage tracking, and preference-based filtering. The documentation includes endpoint definitions, request/response schemas, error handling, and practical workflows for creating, modifying, and deleting subscriptions.
 
-## Project Structure
+## Project structure
 The subscription management feature is implemented in the notice-reminders backend (FastAPI application). Key components include:
 - API router exposing subscription endpoints
 - Service layer implementing subscription logic
@@ -69,29 +41,7 @@ R --> V1
 NS --> V2
 ```
 
-**Diagram sources**
-- [subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py#L1-L71)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L1-L23)
-- [subscription.py](file://notice-reminders/app/models/subscription.py#L1-L28)
-- [course.py](file://notice-reminders/app/models/course.py#L1-L22)
-- [user.py](file://notice-reminders/app/models/user.py#L1-L20)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L1-L26)
-- [subscription.py](file://notice-reminders/app/schemas/subscription.py#L1-L19)
-- [notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py#L1-L22)
-
-**Section sources**
-- [subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py#L1-L71)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L1-L23)
-- [subscription.py](file://notice-reminders/app/models/subscription.py#L1-L28)
-- [course.py](file://notice-reminders/app/models/course.py#L1-L22)
-- [user.py](file://notice-reminders/app/models/user.py#L1-L20)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L1-L26)
-- [subscription.py](file://notice-reminders/app/schemas/subscription.py#L1-L19)
-- [notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py#L1-L22)
-- [dependencies.py](file://notice-reminders/app/core/dependencies.py#L1-L75)
-- [main.py](file://notice-reminders/app/api/main.py#L1-L46)
-
-## Core Components
+## Core components
 - Subscription API Router: Exposes endpoints for creating, listing, and deleting subscriptions under /subscriptions.
 - Subscription Service: Implements subscription logic including duplicate prevention and retrieval.
 - Subscription Model: Defines the subscription entity with foreign keys to User and Course, timestamps, and activation flag.
@@ -106,16 +56,7 @@ Key capabilities:
 - Manage notification channels and preferences
 - Announcements caching and retrieval for course subscriptions
 
-**Section sources**
-- [subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py#L16-L71)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L8-L23)
-- [subscription.py](file://notice-reminders/app/models/subscription.py#L12-L28)
-- [course.py](file://notice-reminders/app/models/course.py#L7-L22)
-- [user.py](file://notice-reminders/app/models/user.py#L7-L20)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L11-L26)
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L7-L32)
-
-## Architecture Overview
+## Architecture overview
 The subscription management architecture follows a layered pattern:
 - API Router handles HTTP requests and injects services via FastAPI Depends
 - Service layer encapsulates business logic and interacts with models
@@ -152,15 +93,9 @@ Router-->>Client : 404 Not Found
 end
 ```
 
-**Diagram sources**
-- [subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py#L16-L34)
-- [dependencies.py](file://notice-reminders/app/core/dependencies.py#L28-L35)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L9-L13)
-- [course.py](file://notice-reminders/app/models/course.py#L10-L10)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Subscription Endpoints
+### Subscription endpoints
 - Base path: /subscriptions
 - Authentication: All endpoints require authentication via require_auth decorator
 
@@ -186,10 +121,7 @@ Endpoints:
 Authorization and ownership checks:
 - DELETE endpoint verifies that the subscription belongs to the current user before deletion
 
-**Section sources**
-- [subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py#L16-L71)
-
-### Subscription Service
+### Subscription service
 Responsibilities:
 - subscribe(user, course): Creates a subscription; if a duplicate exists (unique constraint), returns the existing subscription
 - list_for_user(user): Retrieves all subscriptions for a user ordered by creation time
@@ -203,11 +135,7 @@ Duplicate prevention:
 Status management:
 - Subscription records include is_active flag; service does not toggle it on create/delete
 
-**Section sources**
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L8-L23)
-- [subscription.py](file://notice-reminders/app/models/subscription.py#L27-L27)
-
-### Data Models and Schemas
+### Data models and schemas
 Models:
 - Subscription: Links User and Course, tracks creation time, and activation status
 - Course: Course metadata with unique code
@@ -225,15 +153,7 @@ Unique constraints:
 - Course: unique code
 - NotificationChannel: unique_together (user, channel, address)
 
-**Section sources**
-- [subscription.py](file://notice-reminders/app/models/subscription.py#L12-L28)
-- [course.py](file://notice-reminders/app/models/course.py#L7-L22)
-- [user.py](file://notice-reminders/app/models/user.py#L7-L20)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L11-L26)
-- [subscription.py](file://notice-reminders/app/schemas/subscription.py#L6-L19)
-- [notification_channel.py](file://notice-reminders/app/schemas/notification_channel.py#L6-L22)
-
-### Notification Preferences and Channels
+### Notification preferences and channels
 Endpoints:
 - GET /notification-channels (conceptual, see service usage below)
 - POST /notification-channels (conceptual)
@@ -246,11 +166,7 @@ Services:
 Integration:
 - Notification preferences complement subscriptions by controlling how and where users receive updates
 
-**Section sources**
-- [notification_channel_service.py](file://notice-reminders/app/services/notification_channel_service.py#L7-L32)
-- [notification_channel.py](file://notice-reminders/app/models/notification_channel.py#L11-L26)
-
-### Announcements and Subscription Analytics
+### Announcements and subscription analytics
 Announcements:
 - AnnouncementService fetches and caches announcements per course
 - Deduplicates announcements by title and date; updates content if changed
@@ -260,11 +176,7 @@ Analytics and usage tracking:
 - Announcement caching provides historical context for subscription analytics
 - Subscription listing enables usage tracking per user and course
 
-**Section sources**
-- [announcement_service.py](file://notice-reminders/app/services/announcement_service.py#L11-L45)
-- [announcements.py](file://notice-reminders/app/api/routers/announcements.py#L20-L30)
-
-## Dependency Analysis
+## Dependency analysis
 Service injection and routing:
 - API router depends on CourseService and SubscriptionService via get_* dependency functions
 - Dependencies module provides cached instances of services
@@ -281,22 +193,13 @@ SubSvc --> CourseModel["Course model"]
 SubSvc --> UserModel["User model"]
 ```
 
-**Diagram sources**
-- [main.py](file://notice-reminders/app/api/main.py#L17-L42)
-- [subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py#L1-L13)
-- [dependencies.py](file://notice-reminders/app/core/dependencies.py#L28-L53)
-
-**Section sources**
-- [dependencies.py](file://notice-reminders/app/core/dependencies.py#L1-L75)
-- [main.py](file://notice-reminders/app/api/main.py#L1-L46)
-
-## Performance Considerations
+## Performance considerations
 - Unique constraints on (user, course) and (user, channel, address) prevent redundant writes and improve lookup performance
 - Ordering by created_at in list queries ensures recent subscriptions appear first
 - Announcement caching reduces repeated external API calls and database writes
 - Consider adding pagination for listing endpoints if subscription volumes grow large
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common errors and resolutions:
 - 404 Not Found when creating subscription:
   - Cause: Course code does not exist
@@ -314,10 +217,5 @@ Common errors and resolutions:
   - Behavior: Service returns existing subscription instead of raising error
   - Resolution: No action needed; idempotent behavior prevents duplication
 
-**Section sources**
-- [subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py#L26-L31)
-- [subscriptions.py](file://notice-reminders/app/api/routers/subscriptions.py#L56-L68)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L10-L13)
-
 ## Conclusion
-The subscription management API provides a robust foundation for course subscriptions with built-in duplicate prevention, user ownership enforcement, and integration with course and notification systems. While explicit subscription status toggling and automatic renewal are not implemented in the current code, the underlying models and services support extending the feature set. The architecture cleanly separates concerns across API, service, and persistence layers, enabling future enhancements such as subscription analytics, preference-based filtering, and lifecycle automation.
+The subscription management API provides a reliable foundation for course subscriptions with built-in duplicate prevention, user ownership enforcement, and integration with course and notification systems. While explicit subscription status toggling and automatic renewal are not implemented in the current code, the underlying models and services support extending the feature set. The architecture cleanly separates concerns across API, service, and persistence layers, enabling future enhancements such as subscription analytics, preference-based filtering, and lifecycle automation.

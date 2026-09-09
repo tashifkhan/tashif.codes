@@ -1,39 +1,9 @@
-# Prompt Engineering System
-
-<cite>
-**Referenced Files in This Document**
-- [react_agent.py](file://agents/react_agent.py)
-- [react_tools.py](file://agents/react_tools.py)
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py)
-- [react.py](file://prompts/react.py)
-- [browser_use.py](file://prompts/browser_use.py)
-- [github.py](file://prompts/github.py)
-- [website.py](file://prompts/website.py)
-- [youtube.py](file://prompts/youtube.py)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py)
-- [llm.py](file://core/llm.py)
-- [config.py](file://core/config.py)
-- [website_validator_service.py](file://services/website_validator_service.py)
-- [website_validator.py](file://routers/website_validator.py)
-- [react_agent.py](file://routers/react_agent.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Prompt engineering system
 
 ## Introduction
-This document explains the prompt engineering system powering the agentic assistant. It covers the DEFAULT_SYSTEM_PROMPT structure and how it steers agent behavior across domains, the prompt injection validation pipeline, the prompt template architecture, and how domain-specific prompts are organized. It also documents prompt customization, context injection, dynamic prompt generation, and the interplay among system prompts, user messages, and tool responses that maintains coherent conversation flow. Finally, it outlines optimization techniques, testing strategies, and best practices for prompt engineering in agentic systems.
+This page explains the prompt engineering system powering the agentic assistant. It covers the DEFAULT_SYSTEM_PROMPT structure and how it steers agent behavior across domains, the prompt injection validation pipeline, the prompt template architecture, and how domain-specific prompts are organized. It also documents prompt customization, context injection, dynamic prompt generation, and the interaction among system prompts, user messages, and tool responses that maintains coherent conversation flow. Finally, it outlines optimization techniques, testing strategies, and best practices for prompt engineering in agentic systems.
 
-## Project Structure
+## Project structure
 The prompt engineering system spans several modules:
 - Agents orchestrate conversational loops and tool use, with a DEFAULT_SYSTEM_PROMPT guiding behavior.
 - Prompts define domain-specific templates for GitHub repositories, websites, YouTube videos, and browser automation.
@@ -75,42 +45,14 @@ RA --> SAN
 LLM --> CFG
 ```
 
-**Diagram sources**
-- [react_agent.py](file://agents/react_agent.py#L25-L37)
-- [react_tools.py](file://agents/react_tools.py#L13-L21)
-- [github.py](file://prompts/github.py#L54-L63)
-- [website.py](file://prompts/website.py#L73-L81)
-- [youtube.py](file://prompts/youtube.py#L121-L128)
-- [browser_use.py](file://prompts/browser_use.py#L5-L123)
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [website_validator_service.py](file://services/website_validator_service.py#L17-L37)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L96)
-- [llm.py](file://core/llm.py#L78-L169)
-- [config.py](file://core/config.py#L1-L26)
-
-**Section sources**
-- [react_agent.py](file://agents/react_agent.py#L25-L37)
-- [llm.py](file://core/llm.py#L78-L169)
-- [config.py](file://core/config.py#L1-L26)
-
-## Core Components
+## Core components
 - DEFAULT_SYSTEM_PROMPT: Defines agent persona, memory of user-provided credentials, and explicit tool invocation policies for sensitive domains (e.g., JIIT attendance).
 - Domain-specific prompt templates: GitHub, Website, YouTube, and Browser Automation templates encapsulate context framing and response formatting.
 - Prompt injection validator: A dedicated template and service to flag potentially malicious website content.
 - Agent sanitizer: Validates and sanitizes JSON action plans produced by the browser automation agent.
 - LLM provider abstraction: Centralized configuration supporting multiple providers and runtime overrides.
 
-**Section sources**
-- [react_agent.py](file://agents/react_agent.py#L25-L37)
-- [github.py](file://prompts/github.py#L10-L52)
-- [website.py](file://prompts/website.py#L12-L71)
-- [youtube.py](file://prompts/youtube.py#L77-L119)
-- [browser_use.py](file://prompts/browser_use.py#L5-L123)
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L96)
-- [llm.py](file://core/llm.py#L78-L169)
-
-## Architecture Overview
+## Architecture overview
 The system composes prompts with LLM clients and orchestrates tool use through a LangGraph workflow. The DEFAULT_SYSTEM_PROMPT is prepended to conversation turns when absent, ensuring consistent grounding. Domain-specific chains inject context and enforce response formatting. Validation and sanitization occur at boundaries to mitigate risk.
 
 ```mermaid
@@ -140,16 +82,9 @@ LLM-->>Validator : true/false
 Validator-->>Client : is_safe
 ```
 
-**Diagram sources**
-- [react_agent.py](file://agents/react_agent.py#L183-L191)
-- [react_tools.py](file://agents/react_tools.py#L609-L702)
-- [llm.py](file://core/llm.py#L197-L205)
-- [website_validator_service.py](file://services/website_validator_service.py#L17-L37)
-- [react_agent.py](file://routers/react_agent.py#L18-L38)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### DEFAULT_SYSTEM_PROMPT and Agent Behavior
+### DEFAULT_SYSTEM_PROMPT and agent behavior
 - Purpose: Establishes agent persona, context retention, credential handling policy, and explicit tool invocation rules for sensitive domains.
 - Behavior cues:
   - Maintain conversation context and remember user-provided information.
@@ -171,20 +106,12 @@ ExecTool --> PostExec["Append ToolMessage"]
 PostExec --> InvokeLLM
 ```
 
-**Diagram sources**
-- [react_agent.py](file://agents/react_agent.py#L128-L135)
-- [react_agent.py](file://agents/react_agent.py#L25-L37)
-
-**Section sources**
-- [react_agent.py](file://agents/react_agent.py#L25-L37)
-- [react_agent.py](file://agents/react_agent.py#L128-L135)
-
-### Prompt Injection Validation System
-- Validator template: Requires a binary safety assessment (“true” or “false”) after analyzing website markdown for prompt injection attempts.
+### Prompt injection validation system
+- Validator template: Requires a binary safety assessment ("true" or "false") after analyzing website markdown for prompt injection attempts.
 - Service flow:
   - Convert HTML to Markdown.
   - Compose a validation chain using the validator template and the configured LLM.
-  - Evaluate the model’s response and return a boolean safety flag.
+  - Evaluate the model's response and return a boolean safety flag.
 
 ```mermaid
 sequenceDiagram
@@ -202,18 +129,7 @@ LLM-->>Service : response (true/false)
 Service-->>FE : {is_safe}
 ```
 
-**Diagram sources**
-- [website_validator.py](file://routers/website_validator.py#L12-L14)
-- [website_validator_service.py](file://services/website_validator_service.py#L17-L37)
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [llm.py](file://core/llm.py#L197-L205)
-
-**Section sources**
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [website_validator_service.py](file://services/website_validator_service.py#L17-L37)
-- [website_validator.py](file://routers/website_validator.py#L12-L14)
-
-### Prompt Template Architecture and Domain Organization
+### Prompt template architecture and domain organization
 - GitHub template:
   - Inputs: repository summary, file tree, relevant file content, question, optional chat history.
   - Guidelines emphasize reliance on provided context, concise answers, Markdown formatting, and code block usage.
@@ -246,20 +162,7 @@ class Chains {
 PromptTemplates --> Chains : "compose with LLM"
 ```
 
-**Diagram sources**
-- [github.py](file://prompts/github.py#L54-L78)
-- [website.py](file://prompts/website.py#L73-L93)
-- [youtube.py](file://prompts/youtube.py#L121-L138)
-- [browser_use.py](file://prompts/browser_use.py#L5-L137)
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-
-**Section sources**
-- [github.py](file://prompts/github.py#L10-L52)
-- [website.py](file://prompts/website.py#L12-L71)
-- [youtube.py](file://prompts/youtube.py#L77-L119)
-- [browser_use.py](file://prompts/browser_use.py#L5-L123)
-
-### Security Measures Against Malicious Input
+### Security measures against malicious input
 - Prompt injection detection:
   - Dedicated validator template and service to assess website content safety.
   - Returns a boolean flag enabling downstream decisions (e.g., block or sanitize).
@@ -284,15 +187,7 @@ J --> |Yes| H
 J --> |No| K["Accept"]
 ```
 
-**Diagram sources**
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L96)
-
-**Section sources**
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [website_validator_service.py](file://services/website_validator_service.py#L17-L37)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L96)
-
-### Prompt Customization, Context Injection, and Dynamic Generation
+### Prompt customization, context injection, and dynamic generation
 - Customization anchors:
   - DEFAULT_SYSTEM_PROMPT: Adjust persona, credential handling, and tool invocation policies.
   - Domain templates: Modify guidelines, response formatting, and context framing.
@@ -305,15 +200,7 @@ J --> |No| K["Accept"]
   - Chains assemble prompt templates with LLM clients and parsers.
   - Provider configuration enables runtime selection and parameterization.
 
-**Section sources**
-- [react_agent.py](file://agents/react_agent.py#L25-L37)
-- [github.py](file://prompts/github.py#L64-L78)
-- [website.py](file://prompts/website.py#L84-L93)
-- [youtube.py](file://prompts/youtube.py#L130-L138)
-- [browser_use.py](file://prompts/browser_use.py#L5-L137)
-- [llm.py](file://core/llm.py#L78-L169)
-
-### Relationship Between System Prompts, User Messages, and Tool Responses
+### Relationship between system prompts, user messages, and tool responses
 - Conversation flow:
   - System message is prepended when missing to anchor behavior.
   - User messages are appended; tool responses are converted to ToolMessages and re-enter the loop.
@@ -337,17 +224,7 @@ Agent->>LLM : invoke(messages + ToolMessage)
 LLM-->>Agent : AIMessage (final)
 ```
 
-**Diagram sources**
-- [react_agent.py](file://agents/react_agent.py#L183-L191)
-- [react_agent.py](file://agents/react_agent.py#L128-L135)
-- [react_tools.py](file://agents/react_tools.py#L19-L21)
-
-**Section sources**
-- [react_agent.py](file://agents/react_agent.py#L183-L191)
-- [react_agent.py](file://agents/react_agent.py#L128-L135)
-- [react_tools.py](file://agents/react_tools.py#L19-L21)
-
-## Dependency Analysis
+## Dependency analysis
 - Agent-to-tool coupling:
   - The React Agent builds a toolset from context and invokes them conditionally.
   - Tools depend on domain-specific prompt chains and external services.
@@ -373,24 +250,7 @@ PV --> LLM
 LLM --> CFG["Provider Config"]
 ```
 
-**Diagram sources**
-- [react_agent.py](file://agents/react_agent.py#L138-L170)
-- [react_tools.py](file://agents/react_tools.py#L609-L702)
-- [github.py](file://prompts/github.py#L75-L78)
-- [website.py](file://prompts/website.py#L93-L93)
-- [youtube.py](file://prompts/youtube.py#L138-L138)
-- [browser_use.py](file://prompts/browser_use.py#L129-L133)
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [llm.py](file://core/llm.py#L78-L169)
-- [config.py](file://core/config.py#L1-L26)
-
-**Section sources**
-- [react_agent.py](file://agents/react_agent.py#L138-L170)
-- [react_tools.py](file://agents/react_tools.py#L609-L702)
-- [llm.py](file://core/llm.py#L78-L169)
-- [config.py](file://core/config.py#L1-L26)
-
-## Performance Considerations
+## Performance considerations
 - Prompt composition overhead:
   - Reuse compiled prompt chains and cached LLM clients to minimize repeated construction.
 - Tool latency:
@@ -402,7 +262,7 @@ LLM --> CFG["Provider Config"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Prompt injection flagged as unsafe:
   - Verify website content; if legitimate, adjust validator template or thresholds.
   - Ensure HTML-to-Markdown parsing is intact.
@@ -415,20 +275,14 @@ LLM --> CFG["Provider Config"]
 - LLM initialization issues:
   - Check provider configuration, API keys, and base URLs.
 
-**Section sources**
-- [website_validator_service.py](file://services/website_validator_service.py#L17-L37)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L96)
-- [react_tools.py](file://agents/react_tools.py#L609-L702)
-- [llm.py](file://core/llm.py#L121-L155)
-
 ## Conclusion
-The prompt engineering system integrates a robust DEFAULT_SYSTEM_PROMPT, domain-specific templates, and layered validation to maintain safety and coherence. By composing templates with configurable LLM clients, injecting rich context, and enforcing strict sanitization, the system supports reliable agentic behavior across diverse domains. Adopting the recommended optimization and testing strategies will further enhance reliability and performance.
+The prompt engineering system integrates a reliable DEFAULT_SYSTEM_PROMPT, domain-specific templates, and layered validation to maintain safety and coherence. By composing templates with configurable LLM clients, injecting rich context, and enforcing strict sanitization, the system supports reliable agentic behavior across diverse domains. Adopting the recommended optimization and testing strategies will further improve reliability and performance.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### Best Practices for Prompt Engineering in Agentic Systems
+### Best practices for prompt engineering in agentic systems
 - Keep system prompts concise yet explicit about roles, constraints, and credential handling.
 - Frame domain templates with clear input schemas and response formatting rules.
 - Inject only verified, minimal context to reduce noise and hallucinations.

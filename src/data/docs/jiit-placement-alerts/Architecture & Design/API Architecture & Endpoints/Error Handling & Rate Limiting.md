@@ -1,31 +1,9 @@
-# Error Handling & Rate Limiting
-
-<cite>
-**Referenced Files in This Document**
-- [API.md](file://docs/API.md)
-- [bot_server.py](file://app/servers/bot_server.py)
-- [webhook_server.py](file://app/servers/webhook_server.py)
-- [telegram_client.py](file://app/clients/telegram_client.py)
-- [notification_service.py](file://app/services/notification_service.py)
-- [config.py](file://app/core/config.py)
-- [main.py](file://app/main.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Error handling & rate limiting
 
 ## Introduction
-This document consolidates the error handling patterns and rate limiting strategies across the two server types in the project: the Telegram Bot Server and the Webhook/REST API Server. It defines the standardized error response format, documents rate limiting policies, and explains how rate limit headers and 429 responses are handled. It also covers retry mechanisms, circuit breaker patterns, and graceful degradation strategies for robust service operation.
+This page consolidates the error handling patterns and rate limiting strategies across the two server types in the project: the Telegram Bot Server and the Webhook/REST API Server. It defines the standardized error response format, documents rate limiting policies, and explains how rate limit headers and 429 responses are handled. It also covers retry mechanisms, circuit breaker patterns, and graceful degradation strategies for reliable service operation.
 
-## Project Structure
+## Project structure
 The error handling and rate limiting concerns are distributed across:
 - Servers: Telegram Bot Server and Webhook/REST API Server
 - Clients: Telegram API client with built-in retry/backoff and rate-limit handling
@@ -57,23 +35,7 @@ MAIN --> BOT
 MAIN --> WEB
 ```
 
-**Diagram sources**
-- [bot_server.py](file://app/servers/bot_server.py#L1-L519)
-- [webhook_server.py](file://app/servers/webhook_server.py#L1-L387)
-- [telegram_client.py](file://app/clients/telegram_client.py#L1-L126)
-- [notification_service.py](file://app/services/notification_service.py#L1-L237)
-- [config.py](file://app/core/config.py#L1-L254)
-- [main.py](file://app/main.py#L1-L632)
-
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L1-L519)
-- [webhook_server.py](file://app/servers/webhook_server.py#L1-L387)
-- [telegram_client.py](file://app/clients/telegram_client.py#L1-L126)
-- [notification_service.py](file://app/services/notification_service.py#L1-L237)
-- [config.py](file://app/core/config.py#L1-L254)
-- [main.py](file://app/main.py#L1-L632)
-
-## Core Components
+## Core components
 - Standardized error response format with code, human-readable message, timestamp, and request ID.
 - Rate limiting policies:
   - Bot Commands: 30 per minute per user
@@ -84,11 +46,7 @@ MAIN --> WEB
 - Retry/backoff and exponential backoff for Telegram API calls
 - Circuit breaker-like behavior via graceful degradation and fallbacks
 
-**Section sources**
-- [API.md](file://docs/API.md#L505-L596)
-- [telegram_client.py](file://app/clients/telegram_client.py#L83-L111)
-
-## Architecture Overview
+## Architecture overview
 The error handling and rate limiting architecture is layered:
 - Servers define endpoints and raise HTTP exceptions with standardized error bodies.
 - Services encapsulate cross-channel notification routing and handle per-channel failures gracefully.
@@ -111,14 +69,9 @@ Service-->>Webhook : "Results per channel"
 Webhook-->>Client : "200 OK with results"
 ```
 
-**Diagram sources**
-- [webhook_server.py](file://app/servers/webhook_server.py#L244-L264)
-- [notification_service.py](file://app/services/notification_service.py#L61-L91)
-- [telegram_client.py](file://app/clients/telegram_client.py#L83-L111)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Standardized Error Response Format
+### Standardized error response format
 - All errors follow a consistent JSON shape with code, message, timestamp, and request ID.
 - The API documentation defines the standard error envelope and common error codes mapped to HTTP status codes.
 
@@ -129,10 +82,7 @@ BuildErr --> ReturnErr["Return HTTP Response<br/>with error body"]
 ReturnErr --> End(["Client Receives Standardized Error"])
 ```
 
-**Section sources**
-- [API.md](file://docs/API.md#L507-L520)
-
-### Rate Limiting Policies and Headers
+### Rate limiting policies and headers
 - Bot Commands: 30 per minute per user
 - REST API: 100 per minute per IP
 - Webhook: unlimited (trusted Telegram servers)
@@ -149,10 +99,7 @@ Proceed --> Done["Complete Request"]
 Respond429 --> Done
 ```
 
-**Section sources**
-- [API.md](file://docs/API.md#L570-L596)
-
-### Telegram Bot Server Error Handling
+### Telegram bot server error handling
 - Command handlers perform basic input validation and delegate to services.
 - Exceptions in stats calculation are caught and surfaced to the user.
 - Logging is used for operational visibility.
@@ -170,10 +117,7 @@ ReplyErr --> End(["Done"])
 Reply --> End
 ```
 
-**Section sources**
-- [bot_server.py](file://app/servers/bot_server.py#L246-L299)
-
-### Webhook/REST API Server Error Handling
+### Webhook/REST API server error handling
 - Endpoints raise HTTPException with standardized details for misconfiguration or processing failures.
 - Health endpoints return structured responses.
 - Stats endpoints return aggregated data or raise 501/503 when services are not configured.
@@ -194,10 +138,7 @@ API-->>Client : "200 OK with stats"
 end
 ```
 
-**Section sources**
-- [webhook_server.py](file://app/servers/webhook_server.py#L306-L341)
-
-### Telegram Client Retry and Backoff
+### Telegram client retry and backoff
 - The Telegram client implements retries with exponential backoff on transient failures.
 - On 429 responses, it reads Retry-After header and waits before retrying.
 - Non-transient failures are logged and retried according to backoff.
@@ -213,10 +154,7 @@ Backoff --> |Yes| ExpBackoff["Exponential Backoff"] --> Attempt
 Backoff --> |No| Fail["Return False"]
 ```
 
-**Section sources**
-- [telegram_client.py](file://app/clients/telegram_client.py#L83-L111)
-
-### Notification Service Failure Handling
+### Notification service failure handling
 - Broadcast loops through channels and logs errors per channel without failing the whole operation.
 - Unsolicited notices send path marks as sent only on full success per channel.
 
@@ -231,10 +169,7 @@ RecordOk --> Next
 Next --> End(["Return results"])
 ```
 
-**Section sources**
-- [notification_service.py](file://app/services/notification_service.py#L61-L91)
-
-### Logging and Configuration
+### Logging and configuration
 - Centralized logging configuration with environment-driven log levels and daemon mode.
 - Safe printing utilities suppress output in daemon mode and log instead.
 
@@ -246,10 +181,7 @@ Handlers --> ReduceNoise["Reduce Third-Party Noise"]
 ReduceNoise --> Ready["Ready for Use"]
 ```
 
-**Section sources**
-- [config.py](file://app/core/config.py#L188-L254)
-
-## Dependency Analysis
+## Dependency analysis
 - The Webhook server depends on NotificationService for routing and on TelegramClient for Telegram delivery.
 - The Telegram Bot Server depends on services for DB operations and stats calculation.
 - Logging and configuration utilities are used across servers and services.
@@ -265,30 +197,14 @@ MAIN["main.py"] --> BOT
 MAIN --> WEB
 ```
 
-**Diagram sources**
-- [webhook_server.py](file://app/servers/webhook_server.py#L1-L387)
-- [notification_service.py](file://app/services/notification_service.py#L1-L237)
-- [telegram_client.py](file://app/clients/telegram_client.py#L1-L126)
-- [bot_server.py](file://app/servers/bot_server.py#L1-L519)
-- [config.py](file://app/core/config.py#L1-L254)
-- [main.py](file://app/main.py#L1-L632)
-
-**Section sources**
-- [webhook_server.py](file://app/servers/webhook_server.py#L1-L387)
-- [notification_service.py](file://app/services/notification_service.py#L1-L237)
-- [telegram_client.py](file://app/clients/telegram_client.py#L1-L126)
-- [bot_server.py](file://app/servers/bot_server.py#L1-L519)
-- [config.py](file://app/core/config.py#L1-L254)
-- [main.py](file://app/main.py#L1-L632)
-
-## Performance Considerations
+## Performance considerations
 - Exponential backoff reduces thundering herds under rate limits.
 - Circuit breaker-like behavior: per-channel failure isolation prevents cascading failures.
 - Graceful degradation: continue processing other items when encountering errors.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common scenarios and resolutions:
 - Rate limit exceeded (429): Respect Retry-After and back off. Consider batching or reducing request frequency.
 - Unauthorized or forbidden: Verify authentication tokens and permissions.
@@ -305,8 +221,5 @@ Error code reference (HTTP status mappings and guidance):
 - INTERNAL_ERROR (500): Investigate server-side issues.
 - SERVICE_UNAVAILABLE (503): Dependency failure; retry after recovery.
 
-**Section sources**
-- [API.md](file://docs/API.md#L522-L534)
-
 ## Conclusion
-The project implements a consistent error response format and standardized rate limiting policies across both server types. The Telegram client’s retry/backoff and 429 handling, combined with service-level graceful degradation and robust logging, ensures resilient operation under load and transient failures. Adhering to the documented policies and using the provided patterns will maintain reliability and predictable behavior for both users and operators.
+The project implements a consistent error response format and standardized rate limiting policies across both server types. The Telegram client's retry/backoff and 429 handling, combined with service-level graceful degradation and reliable logging, ensures resilient operation under load and transient failures. Adhering to the documented policies and using the provided patterns will maintain reliability and predictable behavior for both users and operators.

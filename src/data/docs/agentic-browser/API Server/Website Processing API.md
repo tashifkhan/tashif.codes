@@ -1,35 +1,7 @@
-# Website Processing API
-
-<cite>
-**Referenced Files in This Document**
-- [api/main.py](file://api/main.py)
-- [routers/website.py](file://routers/website.py)
-- [routers/website_validator.py](file://routers/website_validator.py)
-- [models/requests/website.py](file://models/requests/website.py)
-- [models/response/website.py](file://models/response/website.py)
-- [services/website_service.py](file://services/website_service.py)
-- [services/website_validator_service.py](file://services/website_validator_service.py)
-- [prompts/website.py](file://prompts/website.py)
-- [prompts/prompt_injection_validator.py](file://prompts/prompt_injection_validator.py)
-- [tools/website_context/request_md.py](file://tools/website_context/request_md.py)
-- [tools/website_context/html_md.py](file://tools/website_context/html_md.py)
-- [core/config.py](file://core/config.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Website processing API
 
 ## Introduction
-This document describes the Website Processing API, focusing on:
+This page describes the Website Processing API, focusing on:
 - Website content extraction via server-side fetching and client-provided HTML
 - HTML-to-Markdown conversion
 - Website content validation against prompt injection risks
@@ -38,10 +10,10 @@ This document describes the Website Processing API, focusing on:
 - Practical client integration patterns and limitations
 
 Endpoints:
-- POST /api/genai/website/ — Process website content and answer questions
-- POST /api/validator/validate-website — Validate website HTML for safety
+- POST /api/genai/website/, Process website content and answer questions
+- POST /api/validator/validate-website, Validate website HTML for safety
 
-## Project Structure
+## Project structure
 The Website Processing API is implemented as a FastAPI application with modular routers, services, models, prompts, and tools.
 
 ```mermaid
@@ -78,23 +50,7 @@ REQ --> WEBSITE_RT
 RES --> WEBSITE_RT
 ```
 
-**Diagram sources**
-- [api/main.py](file://api/main.py#L12-L42)
-- [routers/website.py](file://routers/website.py#L1-L43)
-- [routers/website_validator.py](file://routers/website_validator.py#L1-L15)
-- [services/website_service.py](file://services/website_service.py#L1-L97)
-- [services/website_validator_service.py](file://services/website_validator_service.py#L1-L38)
-- [models/requests/website.py](file://models/requests/website.py#L1-L11)
-- [models/response/website.py](file://models/response/website.py#L1-L6)
-- [prompts/website.py](file://prompts/website.py#L1-L115)
-- [prompts/prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [tools/website_context/request_md.py](file://tools/website_context/request_md.py#L1-L30)
-- [tools/website_context/html_md.py](file://tools/website_context/html_md.py#L1-L27)
-
-**Section sources**
-- [api/main.py](file://api/main.py#L12-L42)
-
-## Core Components
+## Core components
 - Website Processing Endpoint
   - Method: POST
   - Path: /api/genai/website/
@@ -104,11 +60,7 @@ RES --> WEBSITE_RT
   - Path: /api/validator/validate-website
   - Purpose: Validate HTML content for prompt injection risks by converting to Markdown and evaluating with a language model.
 
-**Section sources**
-- [routers/website.py](file://routers/website.py#L14-L42)
-- [routers/website_validator.py](file://routers/website_validator.py#L12-L14)
-
-## Architecture Overview
+## Architecture overview
 End-to-end flow for website processing and validation:
 
 ```mermaid
@@ -137,16 +89,9 @@ S-->>R : "Answer"
 R-->>C : "{ answer }"
 ```
 
-**Diagram sources**
-- [routers/website.py](file://routers/website.py#L14-L32)
-- [services/website_service.py](file://services/website_service.py#L13-L92)
-- [tools/website_context/request_md.py](file://tools/website_context/request_md.py#L7-L29)
-- [tools/website_context/html_md.py](file://tools/website_context/html_md.py#L5-L11)
-- [prompts/website.py](file://prompts/website.py#L100-L114)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Website Processing Endpoint
+### Website processing endpoint
 - URL: POST /api/genai/website/
 - Request Schema (WebsiteRequest)
   - url: string (required)
@@ -190,20 +135,7 @@ Gen --> Done(["Return answer"])
 Err400 --> Done
 ```
 
-**Diagram sources**
-- [routers/website.py](file://routers/website.py#L18-L32)
-- [services/website_service.py](file://services/website_service.py#L13-L92)
-- [tools/website_context/request_md.py](file://tools/website_context/request_md.py#L7-L29)
-- [tools/website_context/html_md.py](file://tools/website_context/html_md.py#L5-L11)
-- [prompts/website.py](file://prompts/website.py#L100-L114)
-
-**Section sources**
-- [routers/website.py](file://routers/website.py#L14-L42)
-- [models/requests/website.py](file://models/requests/website.py#L5-L10)
-- [models/response/website.py](file://models/response/website.py#L4-L6)
-- [services/website_service.py](file://services/website_service.py#L13-L92)
-
-### Website Validation Endpoint
+### Website validation endpoint
 - URL: POST /api/validator/validate-website
 - Request Schema (WebsiteValidatorRequest)
   - html: string (required)
@@ -231,17 +163,7 @@ Safe --> VDone(["Return response"])
 Unsafe --> VDone
 ```
 
-**Diagram sources**
-- [routers/website_validator.py](file://routers/website_validator.py#L12-L14)
-- [services/website_validator_service.py](file://services/website_validator_service.py#L17-L37)
-- [prompts/prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [tools/website_context/html_md.py](file://tools/website_context/html_md.py#L5-L11)
-
-**Section sources**
-- [routers/website_validator.py](file://routers/website_validator.py#L12-L14)
-- [services/website_validator_service.py](file://services/website_validator_service.py#L9-L37)
-
-### Supporting Tools and Prompts
+### Supporting tools and prompts
 - Server-side Markdown Fetcher (Jina AI)
   - Converts a URL into clean Markdown via an external service
   - Returns raw text/markdown or an error message string
@@ -251,13 +173,7 @@ Unsafe --> VDone
   - Website prompt composes server and client contexts with question and chat history
   - Validator prompt checks for prompt injection indicators
 
-**Section sources**
-- [tools/website_context/request_md.py](file://tools/website_context/request_md.py#L7-L29)
-- [tools/website_context/html_md.py](file://tools/website_context/html_md.py#L5-L11)
-- [prompts/website.py](file://prompts/website.py#L12-L114)
-- [prompts/prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-
-## Dependency Analysis
+## Dependency analysis
 - API Registration
   - Routers mounted under specific prefixes:
     - /api/genai/website (website router)
@@ -288,21 +204,7 @@ SVC2 --> HM
 SVC2 --> VPROMPT["prompts/prompt_injection_validator.py"]
 ```
 
-**Diagram sources**
-- [api/main.py](file://api/main.py#L14-L42)
-- [routers/website.py](file://routers/website.py#L1-L43)
-- [routers/website_validator.py](file://routers/website_validator.py#L1-L15)
-- [services/website_service.py](file://services/website_service.py#L1-L97)
-- [services/website_validator_service.py](file://services/website_validator_service.py#L1-L38)
-- [tools/website_context/request_md.py](file://tools/website_context/request_md.py#L1-L30)
-- [tools/website_context/html_md.py](file://tools/website_context/html_md.py#L1-L27)
-- [prompts/website.py](file://prompts/website.py#L1-L115)
-- [prompts/prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-
-**Section sources**
-- [api/main.py](file://api/main.py#L14-L42)
-
-## Performance Considerations
+## Performance considerations
 - Latency Factors
   - Network latency to Jina AI service for server-side markdown fetching
   - Optional Google AI SDK file upload and generation
@@ -315,7 +217,7 @@ SVC2 --> VPROMPT["prompts/prompt_injection_validator.py"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Common HTTP Errors
   - 400 Bad Request: Missing url or question in request
   - 500 Internal Server Error: Unhandled exceptions during processing
@@ -329,18 +231,14 @@ SVC2 --> VPROMPT["prompts/prompt_injection_validator.py"]
   - Handle network timeouts and retry logic for external services
   - Normalize chat_history entries to dictionaries with role/content fields
 
-**Section sources**
-- [routers/website.py](file://routers/website.py#L23-L42)
-- [core/config.py](file://core/config.py#L13-L25)
-
 ## Conclusion
-The Website Processing API provides a robust pipeline for extracting, converting, and analyzing website content, while offering a dedicated validation endpoint to mitigate prompt injection risks. By combining server-side and client-side contexts, it delivers comprehensive answers grounded in both static and dynamic page content. Clients should implement appropriate retries, payload normalization, and error handling to integrate smoothly with the API.
+The Website Processing API provides a reliable pipeline for extracting, converting, and analyzing website content, while offering a dedicated validation endpoint to mitigate prompt injection risks. By combining server-side and client-side contexts, it delivers detailed answers grounded in both static and dynamic page content. Clients should implement appropriate retries, payload normalization, and error handling to integrate smoothly with the API.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### API Reference
+### API reference
 
 - Website Processing
   - Method: POST
@@ -362,13 +260,7 @@ The Website Processing API provides a robust pipeline for extracting, converting
   - Response Body Fields
     - is_safe: boolean
 
-**Section sources**
-- [routers/website.py](file://routers/website.py#L14-L32)
-- [routers/website_validator.py](file://routers/website_validator.py#L12-L14)
-- [models/requests/website.py](file://models/requests/website.py#L5-L10)
-- [models/response/website.py](file://models/response/website.py#L4-L6)
-
-### Example Workflows
+### Example workflows
 
 - Website Scraping and Analysis
   - Steps
@@ -384,11 +276,7 @@ The Website Processing API provides a robust pipeline for extracting, converting
     - Send POST to /api/validator/validate-website with html payload
     - Receive is_safe boolean indicating whether the content is considered safe
 
-**Section sources**
-- [services/website_service.py](file://services/website_service.py#L52-L79)
-- [services/website_validator_service.py](file://services/website_validator_service.py#L17-L37)
-
-### Client Implementation Patterns
+### Client implementation patterns
 - Basic Client Call Pattern
   - Construct request payload with url and question
   - Set Content-Type to application/json
@@ -397,7 +285,3 @@ The Website Processing API provides a robust pipeline for extracting, converting
   - For dynamic pages, capture client HTML in the browser and pass client_html
   - For multi-turn conversations, accumulate chat_history entries
   - For sensitive documents, consider uploading files via the attached_file_path path when supported
-
-**Section sources**
-- [routers/website.py](file://routers/website.py#L14-L32)
-- [services/website_service.py](file://services/website_service.py#L13-L92)

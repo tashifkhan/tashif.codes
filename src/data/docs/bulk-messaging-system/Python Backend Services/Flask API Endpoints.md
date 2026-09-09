@@ -1,30 +1,7 @@
-# Flask API Endpoints
-
-<cite>
-**Referenced Files in This Document**
-- [python-backend/app.py](file://python-backend/app.py)
-- [python-backend/extract_contacts.py](file://python-backend/extract_contacts.py)
-- [python-backend/parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py)
-- [python-backend/validate_number.py](file://python-backend/validate_number.py)
-- [python-backend/requirements.txt](file://python-backend/requirements.txt)
-- [python-backend/README.md](file://python-backend/README.md)
-- [README.md](file://README.md)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Flask API endpoints
 
 ## Introduction
-This document provides comprehensive API documentation for the Flask-based contact processing endpoints used by the desktop application for bulk messaging. It covers:
+This page provides detailed API documentation for the Flask-based contact processing endpoints used by the desktop application for bulk messaging. It covers:
 - Health check endpoint for system monitoring
 - File upload endpoint for importing contacts from CSV, TXT, and Excel files
 - Manual number parsing endpoint for direct phone number input
@@ -32,7 +9,7 @@ This document provides comprehensive API documentation for the Flask-based conta
 
 It includes request/response schemas, HTTP status codes, error handling patterns, authentication requirements, practical usage examples with curl commands, and guidance on rate limiting, file size limits, and security measures.
 
-## Project Structure
+## Project structure
 The API is implemented in a dedicated Python backend module with a Flask application that exposes four endpoints:
 - Health check: GET /health
 - File upload: POST /upload
@@ -48,15 +25,7 @@ Flask --> Re["Regex<br/>Phone number cleaning"]
 Flask --> Werkzeug["Werkzeug<br/>secure_filename"]
 ```
 
-**Diagram sources**
-- [python-backend/app.py](file://python-backend/app.py#L10-L22)
-- [python-backend/requirements.txt](file://python-backend/requirements.txt#L1-L7)
-
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L10-L22)
-- [python-backend/README.md](file://python-backend/README.md#L39-L62)
-
-## Core Components
+## Core components
 - Flask application with CORS enabled for cross-origin requests
 - File upload handling with allowed extensions and size limit
 - Phone number cleaning and validation logic
@@ -70,15 +39,7 @@ Key configurations:
 - Max content length: 16 MB
 - CORS enabled globally
 
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L10-L22)
-- [python-backend/app.py](file://python-backend/app.py#L24-L25)
-- [python-backend/app.py](file://python-backend/app.py#L225-L229)
-- [python-backend/app.py](file://python-backend/app.py#L232-L280)
-- [python-backend/app.py](file://python-backend/app.py#L283-L341)
-- [python-backend/app.py](file://python-backend/app.py#L343-L370)
-
-## Architecture Overview
+## Architecture overview
 The API follows a straightforward request-response model:
 - Clients send HTTP requests to the endpoints
 - The Flask app validates inputs and performs operations
@@ -114,15 +75,9 @@ R-->>F : "Normalized number or null"
 F-->>C : "{valid, cleaned_number, original}"
 ```
 
-**Diagram sources**
-- [python-backend/app.py](file://python-backend/app.py#L225-L370)
-- [python-backend/extract_contacts.py](file://python-backend/extract_contacts.py#L25-L81)
-- [python-backend/parse_manual_numbers.py](file://python-backend/parse_manual_numbers.py#L22-L54)
-- [python-backend/validate_number.py](file://python-backend/validate_number.py#L6-L19)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Health Check Endpoint
+### Health check endpoint
 - Path: GET /health
 - Purpose: System monitoring and readiness probe
 - Request: No body required
@@ -141,11 +96,7 @@ Response schema:
 HTTP status codes:
 - 200 OK
 
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L225-L229)
-- [python-backend/README.md](file://python-backend/README.md#L41-L44)
-
-### File Upload Endpoint
+### File upload endpoint
 - Path: POST /upload
 - Purpose: Import contacts from CSV, TXT, or Excel files
 - Request:
@@ -211,15 +162,7 @@ Cleanup --> Return200["Return 200 with contacts"]
 Success --> |No| Return500["Return 500: Failed to process file"]
 ```
 
-**Diagram sources**
-- [python-backend/app.py](file://python-backend/app.py#L232-L280)
-
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L14-L21)
-- [python-backend/app.py](file://python-backend/app.py#L232-L280)
-- [python-backend/README.md](file://python-backend/README.md#L46-L50)
-
-### Manual Number Parsing Endpoint
+### Manual number parsing endpoint
 - Path: POST /parse-manual-numbers
 - Purpose: Parse manually entered phone numbers with optional names
 - Request:
@@ -261,11 +204,7 @@ Parsing logic:
 - Validates and normalizes each number
 - Ignores empty entries
 
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L283-L341)
-- [python-backend/README.md](file://python-backend/README.md#L52-L56)
-
-### Single Number Validation Endpoint
+### Single number validation endpoint
 - Path: POST /validate-number
 - Purpose: Validate and normalize a single phone number
 - Request:
@@ -300,11 +239,7 @@ Validation logic:
 - Validates digit count and format constraints
 - Returns normalized number if valid, null otherwise
 
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L343-L370)
-- [python-backend/README.md](file://python-backend/README.md#L58-L62)
-
-## Dependency Analysis
+## Dependency analysis
 External dependencies used by the Flask application:
 - flask: Web framework
 - flask-cors: Enable CORS for cross-origin requests
@@ -323,13 +258,7 @@ Flask --> Xlrd["xlrd"]
 Flask --> Werkzeug["werkzeug"]
 ```
 
-**Diagram sources**
-- [python-backend/requirements.txt](file://python-backend/requirements.txt#L1-L7)
-
-**Section sources**
-- [python-backend/requirements.txt](file://python-backend/requirements.txt#L1-L7)
-
-## Performance Considerations
+## Performance considerations
 - File size limit: 16 MB enforced via MAX_CONTENT_LENGTH
 - CPU-bound parsing: Regex and pandas operations; large files may take time
 - Memory usage: Depends on file size and number of contacts
@@ -341,7 +270,7 @@ Flask --> Werkzeug["werkzeug"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Health check fails:
   - Ensure the Flask server is running on the expected host/port
@@ -363,14 +292,10 @@ Common issues and resolutions:
   - Implement application-level throttling if needed
   - Consider external rate limiting proxies
 
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L225-L370)
-- [python-backend/README.md](file://python-backend/README.md#L107-L112)
-
 ## Conclusion
 The Flask API provides essential contact processing capabilities for the desktop application:
 - Health check for monitoring
-- File upload with robust parsing for CSV, TXT, and Excel
+- File upload with reliable parsing for CSV, TXT, and Excel
 - Manual number parsing with flexible input formats
 - Single number validation with normalization
 
@@ -380,14 +305,11 @@ The endpoints are designed for simplicity and reliability, with clear error hand
 
 ## Appendices
 
-### Authentication Requirements
+### Authentication requirements
 - No authentication is required for any of the endpoints
 - For production environments, consider adding authentication middleware or API keys
 
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L10-L11)
-
-### Practical Usage Examples
+### Practical usage examples
 - Health check:
   - curl -s http://localhost:5000/health
 - Upload CSV:
@@ -401,22 +323,14 @@ The endpoints are designed for simplicity and reliability, with clear error hand
 - Validate number:
   - curl -s -H "Content-Type: application/json" -d '{"number":"+1234567890"}' http://localhost:5000/validate-number
 
-**Section sources**
-- [python-backend/README.md](file://python-backend/README.md#L39-L62)
-
-### Security Measures
+### Security measures
 - CORS enabled globally; restrict origins in production
 - Secure filename handling via werkzeug.secure_filename
 - File type validation against allowed extensions
 - Maximum content length set to 16 MB
 - Consider adding input validation and sanitization
 
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L10-L11)
-- [python-backend/app.py](file://python-backend/app.py#L14-L21)
-- [python-backend/app.py](file://python-backend/app.py#L24-L25)
-
-### Rate Limiting Considerations
+### Rate limiting considerations
 - No built-in rate limiting in the current implementation
 - Recommended approaches:
   - Use Flask-Limiter or similar libraries
@@ -425,17 +339,11 @@ The endpoints are designed for simplicity and reliability, with clear error hand
 
 [No sources needed since this section provides general guidance]
 
-### File Size Limits
+### File size limits
 - Maximum upload size: 16 MB
-- Enforced via Flask’s MAX_CONTENT_LENGTH configuration
+- Enforced via Flask's MAX_CONTENT_LENGTH configuration
 
-**Section sources**
-- [python-backend/app.py](file://python-backend/app.py#L21)
-
-### Supported File Formats
+### Supported file formats
 - CSV: Comma-separated values with automatic column detection for phone and name
 - TXT: One contact per line; supports "Name: Number" and "Number - Name" formats
-- Excel: .xlsx and .xls files with automatic column detection
-
-**Section sources**
-- [python-backend/README.md](file://python-backend/README.md#L64-L87)
+- Excel:.xlsx and.xls files with automatic column detection

@@ -1,33 +1,7 @@
-# Security and Safety Mechanisms
-
-<cite>
-**Referenced Files in This Document**
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py)
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts)
-- [background.ts](file://extension/entrypoints/background.ts)
-- [content.ts](file://extension/entrypoints/content.ts)
-- [wxt.config.ts](file://extension/wxt.config.ts)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx)
-- [ApiKeySection.tsx](file://extension/entrypoints/sidepanel/components/ApiKeySection.tsx)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts)
-- [README.md](file://README.md)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Security and safety mechanisms
 
 ## Introduction
-This document explains the security and safety mechanisms implemented in the browser automation system. It focuses on:
+This page explains the security and safety mechanisms implemented in the browser automation system. It focuses on:
 - User approval workflow for potentially dangerous actions
 - Activity logging and audit trails
 - Intelligent content filtering
@@ -38,7 +12,7 @@ This document explains the security and safety mechanisms implemented in the bro
 - Examples of security policies, threat mitigation strategies, and incident response procedures
 - Compliance considerations and best practices for secure browser automation
 
-## Project Structure
+## Project structure
 The security-relevant parts of the system span three layers:
 - Extension background and content scripts for safe DOM/tab operations
 - Utilities for sanitization and validation
@@ -71,25 +45,7 @@ CFG --> BG
 CFG --> CS
 ```
 
-**Diagram sources**
-- [background.ts](file://extension/entrypoints/background.ts#L17-L156)
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L1-L119)
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [wxt.config.ts](file://extension/wxt.config.ts#L1-L29)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L1-L1194)
-
-**Section sources**
-- [background.ts](file://extension/entrypoints/background.ts#L17-L156)
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L1-L119)
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [wxt.config.ts](file://extension/wxt.config.ts#L1-L29)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L1-L1194)
-
-## Core Components
+## Core components
 - Agent Sanitizer: Validates and sanitizes action plans from the LLM, rejects unsafe constructs, and enforces required fields per action type.
 - Prompt Injection Validator: Provides a template to detect prompt injection attempts in markdown content.
 - Background Script: Orchestrates safe execution of tab-level and DOM-level actions, injects content scripts when needed, and coordinates messaging with the active tab.
@@ -98,20 +54,10 @@ CFG --> CS
 - Manifest Permissions: Defines the minimal set of permissions required for safe automation.
 - Side Panel UI and Authentication: Manages secure storage of credentials and API keys, and handles OAuth flows.
 
-**Section sources**
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L96)
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [background.ts](file://extension/entrypoints/background.ts#L428-L804)
-- [content.ts](file://extension/entrypoints/content.ts#L220-L323)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-- [wxt.config.ts](file://extension/wxt.config.ts#L5-L27)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L1-L1194)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L110-L218)
-
-## Architecture Overview
+## Architecture overview
 The system separates concerns across layers to enforce security boundaries:
 - Background script controls browser-level actions and safe injection of content scripts.
-- Content script operates within the page’s DOM with explicit selectors and event simulation.
+- Content script operates within the page's DOM with explicit selectors and event simulation.
 - Utilities validate inputs and actions before execution.
 - UI manages sensitive data and authentication securely.
 
@@ -132,15 +78,9 @@ CS-->>BG : Return result
 BG-->>UI : Report outcome
 ```
 
-**Diagram sources**
-- [background.ts](file://extension/entrypoints/background.ts#L428-L804)
-- [content.ts](file://extension/entrypoints/content.ts#L220-L323)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L96)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Agent Sanitizer
+### Agent sanitizer
 The sanitizer validates JSON action plans and enforces:
 - Required fields per action type (e.g., selector for CLICK/TYPE/SELECT, url for OPEN_TAB/NAVIGATE, tab identifier or direction for SWITCH_TAB)
 - Structural checks (presence of actions array, non-empty list)
@@ -168,13 +108,7 @@ Done --> |Yes| ReturnOK["Return data + empty problems"]
 Done --> |No| ReturnErr["Return data + problems"]
 ```
 
-**Diagram sources**
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L96)
-
-**Section sources**
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L20-L96)
-
-### Prompt Injection Validator
+### Prompt injection validator
 The validator defines a structured prompt template to classify whether a markdown text is safe or contains prompt injection attempts. It expects a binary classification response suitable for automated gating.
 
 ```mermaid
@@ -186,13 +120,7 @@ D --> |true| E["Safe content"]
 D --> |false| F["Flag for review or block"]
 ```
 
-**Diagram sources**
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-
-**Section sources**
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-
-### Background Script: Safe Execution Engine
+### Background script: safe execution engine
 The background script coordinates:
 - Tab/window control actions (OPEN_TAB, CLOSE_TAB, SWITCH_TAB, NAVIGATE, RELOAD_TAB, DUPLICATE_TAB)
 - DOM manipulation actions (CLICK, TYPE, SCROLL, WAIT) via content script injection
@@ -218,15 +146,7 @@ end
 BG-->>Caller : Final report
 ```
 
-**Diagram sources**
-- [background.ts](file://extension/entrypoints/background.ts#L470-L514)
-- [background.ts](file://extension/entrypoints/background.ts#L541-L804)
-
-**Section sources**
-- [background.ts](file://extension/entrypoints/background.ts#L470-L514)
-- [background.ts](file://extension/entrypoints/background.ts#L541-L804)
-
-### Content Script: Page Context Operations
+### Content script: page context operations
 The content script executes DOM operations safely:
 - Finds elements by selector
 - Dispatches realistic input/change/keyboard events for editable and standard inputs
@@ -251,13 +171,7 @@ SetVal --> Events
 Events --> Done
 ```
 
-**Diagram sources**
-- [content.ts](file://extension/entrypoints/content.ts#L220-L323)
-
-**Section sources**
-- [content.ts](file://extension/entrypoints/content.ts#L220-L323)
-
-### Action Executor: Minimal Bridge Between UI and Browser APIs
+### Action executor: minimal bridge between UI and browser APIs
 The executor translates high-level actions into browser APIs with:
 - Targeting the active tab for DOM actions
 - Sending messages to the content script for DOM operations
@@ -277,13 +191,7 @@ Next --> Loop
 Loop --> End(["Done"])
 ```
 
-**Diagram sources**
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-
-**Section sources**
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-
-### Permissions and Security Boundaries
+### Permissions and security boundaries
 The manifest grants minimal permissions necessary for automation:
 - Tabs, scripting, storage, identity, side panel, webNavigation, webRequest, cookies, bookmarks, history, clipboard, notifications, context menus, downloads
 - Host permissions for all URLs to enable page context operations
@@ -307,13 +215,7 @@ BG --> Downloads["Downloads API"]
 BG --> AllUrls["<all_urls> Host Permissions"]
 ```
 
-**Diagram sources**
-- [wxt.config.ts](file://extension/wxt.config.ts#L5-L27)
-
-**Section sources**
-- [wxt.config.ts](file://extension/wxt.config.ts#L5-L27)
-
-### Secure Credential Management and Authentication
+### Secure credential management and authentication
 The side panel UI and authentication hook:
 - Store API keys and credentials securely in browser storage
 - Manage OAuth flows with explicit consent and token lifecycle
@@ -333,17 +235,7 @@ Auth->>Storage : Save user + tokens
 Storage-->>UI : Updated token status
 ```
 
-**Diagram sources**
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L1-L1194)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L110-L218)
-- [ApiKeySection.tsx](file://extension/entrypoints/sidepanel/components/ApiKeySection.tsx#L1-L25)
-
-**Section sources**
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L1-L1194)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L110-L218)
-- [ApiKeySection.tsx](file://extension/entrypoints/sidepanel/components/ApiKeySection.tsx#L1-L25)
-
-## Dependency Analysis
+## Dependency analysis
 The security-critical dependencies are:
 - Background script depends on content script for DOM operations
 - Sanitizer and validator feed into background action orchestration
@@ -362,27 +254,7 @@ CFG["wxt.config.ts"] --> BG
 CFG --> CS
 ```
 
-**Diagram sources**
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L1-L119)
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [background.ts](file://extension/entrypoints/background.ts#L17-L156)
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-- [wxt.config.ts](file://extension/wxt.config.ts#L1-L29)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L1-L1194)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L110-L218)
-
-**Section sources**
-- [background.ts](file://extension/entrypoints/background.ts#L17-L156)
-- [content.ts](file://extension/entrypoints/content.ts#L1-L326)
-- [executeActions.ts](file://extension/entrypoints/utils/executeActions.ts#L1-L57)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L1-L119)
-- [prompt_injection_validator.py](file://prompts/prompt_injection_validator.py#L1-L16)
-- [wxt.config.ts](file://extension/wxt.config.ts#L1-L29)
-- [UnifiedSettingsMenu.tsx](file://extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx#L1-L1194)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L110-L218)
-
-## Performance Considerations
+## Performance considerations
 - Artificial delays between actions reduce page overload and improve stability.
 - Waiting for navigation/reload completion prevents race conditions.
 - Minimal content script injection reduces overhead.
@@ -390,29 +262,23 @@ CFG --> CS
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and mitigations:
 - Element not found during CLICK/TYPE: Verify selector specificity and timing; ensure content script runs after page load.
 - Navigation failures: Confirm URL validity and allow sufficient completion time.
 - Sanitizer rejects action plan: Review required fields and action types; remove dangerous patterns for EXECUTE_SCRIPT.
 - Authentication errors: Re-run OAuth flow and confirm backend connectivity.
 
-**Section sources**
-- [content.ts](file://extension/entrypoints/content.ts#L690-L707)
-- [background.ts](file://extension/entrypoints/background.ts#L617-L648)
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L45-L96)
-- [useAuth.ts](file://extension/entrypoints/sidepanel/hooks/useAuth.ts#L110-L218)
-
 ## Conclusion
-The system enforces strong security boundaries by validating inputs, limiting permissions, and isolating DOM operations to content scripts. The background script orchestrates safe actions, while the UI manages credentials securely. Together, these components provide a robust foundation for secure browser automation with logging, filtering, and approval processes.
+The system enforces strong security boundaries by validating inputs, limiting permissions, and isolating DOM operations to content scripts. The background script orchestrates safe actions, while the UI manages credentials securely. Together, these components provide a reliable foundation for secure browser automation with logging, filtering, and approval processes.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### Security Policies and Best Practices
+### Security policies and best practices
 - Enforce user approval for all potentially destructive actions (OPEN_TAB, NAVIGATE, TYPE, CLICK).
-- Maintain comprehensive activity logs for every action with timestamps and outcomes.
+- Maintain detailed activity logs for every action with timestamps and outcomes.
 - Apply intelligent content filtering using prompt injection validators and sanitizer rules.
 - Limit permissions to the minimum required for automation.
 - Use secure storage for credentials and tokens; avoid exposing secrets in logs or UI.
@@ -421,19 +287,14 @@ The system enforces strong security boundaries by validating inputs, limiting pe
 
 [No sources needed since this section provides general guidance]
 
-### Threat Mitigation Strategies
+### Threat mitigation strategies
 - Reject unknown action types and missing fields.
 - Block EXECUTE_SCRIPT with dangerous patterns.
 - Validate URLs for OPEN_TAB/NAVIGATE.
 - Use selectors strictly and avoid broad DOM queries.
 - Simulate realistic user events to reduce fingerprinting risk.
 
-**Section sources**
-- [agent_sanitizer.py](file://utils/agent_sanitizer.py#L54-L96)
-- [background.ts](file://extension/entrypoints/background.ts#L547-L615)
-- [content.ts](file://extension/entrypoints/content.ts#L690-L797)
-
-### Incident Response Procedures
+### Incident response procedures
 - Isolate affected tabs and revoke tokens if compromise suspected.
 - Review logs for suspicious action sequences and sanitize inputs.
 - Rotate API keys and re-authenticate users.

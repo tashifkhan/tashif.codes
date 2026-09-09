@@ -1,37 +1,9 @@
-# Domain Models
-
-<cite>
-**Referenced Files in This Document**
-- [models.py](file://notice-reminders/app/domain/models.py)
-- [course.py](file://notice-reminders/app/models/course.py)
-- [announcement.py](file://notice-reminders/app/models/announcement.py)
-- [notification.py](file://notice-reminders/app/models/notification.py)
-- [user.py](file://notice-reminders/app/models/user.py)
-- [announcement.py](file://notice-reminders/app/schemas/announcement.py)
-- [course.py](file://notice-reminders/app/schemas/course.py)
-- [notification.py](file://notice-reminders/app/schemas/notification.py)
-- [user.py](file://notice-reminders/app/schemas/user.py)
-- [announcement_service.py](file://notice-reminders/app/services/announcement_service.py)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py)
-- [user_service.py](file://notice-reminders/app/services/user_service.py)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Domain models
 
 ## Introduction
-This document describes the domain-level models and business logic entities in the Notice Reminders system. It focuses on how domain entities encapsulate business logic, how database models map to API schemas, and how domain services enforce business rules. The domain layer is intentionally minimal and lightweight, centered around dataclasses representing core domain entities and service classes coordinating persistence and cross-cutting concerns.
+This page describes the domain-level models and business logic entities in the Notice Reminders system. It focuses on how domain entities encapsulate business logic, how database models map to API schemas, and how domain services enforce business rules. The domain layer is intentionally minimal and lightweight, centered around dataclasses representing core domain entities and service classes coordinating persistence and cross-cutting concerns.
 
-## Project Structure
+## Project structure
 The domain layer is organized by concerns:
 - Domain models: Lightweight data containers for core entities
 - Database models: Tortoise ORM entities for persistence
@@ -81,37 +53,7 @@ SVC_Sub --> M_User
 SVC_User --> M_User
 ```
 
-**Diagram sources**
-- [models.py](file://notice-reminders/app/domain/models.py#L7-L34)
-- [course.py](file://notice-reminders/app/models/course.py#L7-L22)
-- [announcement.py](file://notice-reminders/app/models/announcement.py#L11-L25)
-- [notification.py](file://notice-reminders/app/models/notification.py#L14-L37)
-- [user.py](file://notice-reminders/app/models/user.py#L7-L20)
-- [announcement.py](file://notice-reminders/app/schemas/announcement.py#L6-L16)
-- [course.py](file://notice-reminders/app/schemas/course.py#L6-L19)
-- [notification.py](file://notice-reminders/app/schemas/notification.py#L6-L17)
-- [user.py](file://notice-reminders/app/schemas/user.py#L6-L24)
-- [announcement_service.py](file://notice-reminders/app/services/announcement_service.py#L11-L45)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L7-L31)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L8-L23)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L11-L55)
-
-**Section sources**
-- [models.py](file://notice-reminders/app/domain/models.py#L1-L34)
-- [course.py](file://notice-reminders/app/models/course.py#L1-L22)
-- [announcement.py](file://notice-reminders/app/models/announcement.py#L1-L25)
-- [notification.py](file://notice-reminders/app/models/notification.py#L1-L37)
-- [user.py](file://notice-reminders/app/models/user.py#L1-L20)
-- [announcement.py](file://notice-reminders/app/schemas/announcement.py#L1-L16)
-- [course.py](file://notice-reminders/app/schemas/course.py#L1-L19)
-- [notification.py](file://notice-reminders/app/schemas/notification.py#L1-L17)
-- [user.py](file://notice-reminders/app/schemas/user.py#L1-L24)
-- [announcement_service.py](file://notice-reminders/app/services/announcement_service.py#L1-L45)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L1-L31)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L1-L23)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L1-L55)
-
-## Core Components
+## Core components
 - Domain entities
   - Course: Lightweight dataclass representing a MOOC course entity in the domain.
   - Announcement: Lightweight dataclass representing a course announcement in the domain.
@@ -130,22 +72,7 @@ SVC_User --> M_User
 
 These components form a cohesive domain layer where domain entities describe core concepts, database models persist state, schemas define API boundaries, and services enforce business rules and coordinate operations.
 
-**Section sources**
-- [models.py](file://notice-reminders/app/domain/models.py#L7-L34)
-- [course.py](file://notice-reminders/app/models/course.py#L7-L22)
-- [announcement.py](file://notice-reminders/app/models/announcement.py#L11-L25)
-- [notification.py](file://notice-reminders/app/models/notification.py#L14-L37)
-- [user.py](file://notice-reminders/app/models/user.py#L7-L20)
-- [announcement.py](file://notice-reminders/app/schemas/announcement.py#L6-L16)
-- [course.py](file://notice-reminders/app/schemas/course.py#L6-L19)
-- [notification.py](file://notice-reminders/app/schemas/notification.py#L6-L17)
-- [user.py](file://notice-reminders/app/schemas/user.py#L6-L24)
-- [announcement_service.py](file://notice-reminders/app/services/announcement_service.py#L11-L45)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L7-L31)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L8-L23)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L11-L55)
-
-## Architecture Overview
+## Architecture overview
 The domain layer follows a layered pattern:
 - Domain models: Pure data containers with minimal behavior.
 - Database models: Encapsulate persistence and relationships.
@@ -239,20 +166,9 @@ SubscriptionService --> User_DB : "uses"
 SubscriptionService --> Course_DB : "uses"
 ```
 
-**Diagram sources**
-- [models.py](file://notice-reminders/app/domain/models.py#L7-L34)
-- [course.py](file://notice-reminders/app/models/course.py#L7-L22)
-- [announcement.py](file://notice-reminders/app/models/announcement.py#L11-L25)
-- [notification.py](file://notice-reminders/app/models/notification.py#L14-L37)
-- [user.py](file://notice-reminders/app/models/user.py#L7-L20)
-- [announcement_service.py](file://notice-reminders/app/services/announcement_service.py#L11-L45)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L7-L31)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L8-L23)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L11-L55)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Domain Entities
+### Domain entities
 - Course (domain dataclass)
   - Purpose: Represents a MOOC course concept in the domain.
   - Behavior: Provides a string representation summarizing course identity.
@@ -262,10 +178,7 @@ SubscriptionService --> Course_DB : "uses"
 
 These domain entities are intentionally simple and free of persistence logic, enabling reuse across mapping layers.
 
-**Section sources**
-- [models.py](file://notice-reminders/app/domain/models.py#L7-L34)
-
-### Database Models
+### Database models
 - Course (ORM)
   - Unique and indexed identifiers enable fast lookups and referential integrity.
   - Timestamps track creation and updates.
@@ -282,12 +195,6 @@ These domain entities are intentionally simple and free of persistence logic, en
 
 These models encapsulate persistence concerns and maintain referential integrity.
 
-**Section sources**
-- [course.py](file://notice-reminders/app/models/course.py#L7-L22)
-- [announcement.py](file://notice-reminders/app/models/announcement.py#L11-L25)
-- [notification.py](file://notice-reminders/app/models/notification.py#L14-L37)
-- [user.py](file://notice-reminders/app/models/user.py#L7-L20)
-
 ### Schemas
 - CourseResponse: Defines the serialized shape of a course for APIs.
 - AnnouncementResponse: Defines the serialized shape of an announcement for APIs.
@@ -296,20 +203,14 @@ These models encapsulate persistence concerns and maintain referential integrity
 
 Schemas enable controlled serialization and validation between application layers and the API boundary.
 
-**Section sources**
-- [course.py](file://notice-reminders/app/schemas/course.py#L6-L19)
-- [announcement.py](file://notice-reminders/app/schemas/announcement.py#L6-L16)
-- [notification.py](file://notice-reminders/app/schemas/notification.py#L6-L17)
-- [user.py](file://notice-reminders/app/schemas/user.py#L6-L24)
-
-### Services and Business Rule Enforcement
+### Services and business rule enforcement
 - AnnouncementService
   - Deduplication: Uses composite criteria (course, title, date) to detect existing announcements.
   - Content synchronization: Updates persisted content if it differs from scraped data.
   - Idempotency: Returns existing records when duplicates are detected.
   - Ordering: Lists announcements ordered by fetch time.
 - NotificationService
-  - Creation: Builds a notification linking a subscription’s user, the announcement, and optional channel.
+  - Creation: Builds a notification linking a subscription's user, the announcement, and optional channel.
   - Listing: Supports global and user-scoped retrieval with ordering.
   - Read-state: Marks notifications as read and persists state.
 - SubscriptionService
@@ -343,10 +244,6 @@ end
 AnnSvc-->>Client : "stored announcements[]"
 ```
 
-**Diagram sources**
-- [announcement_service.py](file://notice-reminders/app/services/announcement_service.py#L11-L45)
-- [announcement.py](file://notice-reminders/app/models/announcement.py#L11-L25)
-
 ```mermaid
 flowchart TD
 Start(["Notification Creation"]) --> Build["Resolve user from subscription"]
@@ -359,19 +256,9 @@ NoChannel --> Persist
 Persist --> Done(["Notification Ready"])
 ```
 
-**Diagram sources**
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L7-L31)
-- [notification.py](file://notice-reminders/app/models/notification.py#L14-L37)
-
-**Section sources**
-- [announcement_service.py](file://notice-reminders/app/services/announcement_service.py#L11-L45)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L7-L31)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L8-L23)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L11-L55)
-
-### Domain-Driven Design Patterns in This Layer
+### Domain-Driven design patterns in this layer
 - Aggregate Roots
-  - Course aggregates related announcements and serves as a boundary for business operations.
+  - Course aggregates related announcements and is a boundary for business operations.
   - User aggregates subscriptions and notifications, forming a user-centric boundary.
 - Entities
   - Course and Announcement are entities with identity and behavior in the domain.
@@ -385,7 +272,7 @@ Persist --> Done(["Notification Ready"])
 
 [No sources needed since this section synthesizes patterns without quoting specific code]
 
-## Dependency Analysis
+## Dependency analysis
 The domain layer exhibits low coupling and clear separation of responsibilities:
 - Domain models depend only on Python typing constructs.
 - Database models depend on Tortoise ORM and define foreign keys.
@@ -400,45 +287,15 @@ M --> SVC["Services"]
 SVC --> EXT["External Integrations"]
 ```
 
-**Diagram sources**
-- [models.py](file://notice-reminders/app/domain/models.py#L1-L34)
-- [course.py](file://notice-reminders/app/models/course.py#L1-L22)
-- [announcement.py](file://notice-reminders/app/models/announcement.py#L1-L25)
-- [notification.py](file://notice-reminders/app/models/notification.py#L1-L37)
-- [user.py](file://notice-reminders/app/models/user.py#L1-L20)
-- [announcement.py](file://notice-reminders/app/schemas/announcement.py#L1-L16)
-- [course.py](file://notice-reminders/app/schemas/course.py#L1-L19)
-- [notification.py](file://notice-reminders/app/schemas/notification.py#L1-L17)
-- [user.py](file://notice-reminders/app/schemas/user.py#L1-L24)
-- [announcement_service.py](file://notice-reminders/app/services/announcement_service.py#L1-L45)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L1-L31)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L1-L23)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L1-L55)
-
-**Section sources**
-- [models.py](file://notice-reminders/app/domain/models.py#L1-L34)
-- [course.py](file://notice-reminders/app/models/course.py#L1-L22)
-- [announcement.py](file://notice-reminders/app/models/announcement.py#L1-L25)
-- [notification.py](file://notice-reminders/app/models/notification.py#L1-L37)
-- [user.py](file://notice-reminders/app/models/user.py#L1-L20)
-- [announcement.py](file://notice-reminders/app/schemas/announcement.py#L1-L16)
-- [course.py](file://notice-reminders/app/schemas/course.py#L1-L19)
-- [notification.py](file://notice-reminders/app/schemas/notification.py#L1-L17)
-- [user.py](file://notice-reminders/app/schemas/user.py#L1-L24)
-- [announcement_service.py](file://notice-reminders/app/services/announcement_service.py#L1-L45)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L1-L31)
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L1-L23)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L1-L55)
-
-## Performance Considerations
+## Performance considerations
 - Deduplication and content updates: AnnouncementService minimizes writes by updating only when content differs.
 - Indexing: Course code is unique and indexed, improving lookup performance for subscriptions and announcements.
 - Ordering: Services order results by timestamps to support efficient pagination and recent-first retrieval.
-- Asynchronous operations: Services leverage async/await for IO-bound tasks (external scraping and database operations).
+- Asynchronous operations: Services use async/await for IO-bound tasks (external scraping and database operations).
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 - Duplicate subscription prevention
   - Symptom: Attempting to create a duplicate subscription fails.
   - Resolution: SubscriptionService handles integrity errors by retrieving the existing subscription.
@@ -448,11 +305,6 @@ SVC --> EXT["External Integrations"]
 - Notification read-state updates
   - Symptom: Marking a notification as read does not persist.
   - Resolution: NotificationService sets the flag and saves the record.
-
-**Section sources**
-- [subscription_service.py](file://notice-reminders/app/services/subscription_service.py#L8-L23)
-- [user_service.py](file://notice-reminders/app/services/user_service.py#L38-L55)
-- [notification_service.py](file://notice-reminders/app/services/notification_service.py#L27-L31)
 
 ## Conclusion
 The Notice Reminders domain layer cleanly separates concerns across domain entities, database models, schemas, and services. Domain entities capture core concepts with minimal behavior, while services enforce business rules, coordinate persistence, and maintain invariants. The design supports extensibility, such as adding domain events alongside the Notification entity, and maintains performance through indexing, deduplication, and asynchronous operations.

@@ -1,33 +1,10 @@
-# SMTP Troubleshooting and Error Handling
-
-<cite>
-**Referenced Files in This Document**
-- [README.md](file://README.md)
-- [package.json](file://electron/package.json)
-- [main.js](file://electron/src/electron/main.js)
-- [preload.js](file://electron/src/electron/preload.js)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# SMTP troubleshooting and error handling
 
 ## Introduction
-This document provides comprehensive troubleshooting guidance for SMTP integration issues within the application. It explains common error scenarios, diagnostic steps for network and provider-specific problems, and practical resolutions. It also covers log analysis, SSL/TLS certificate handling, and performance optimization strategies such as connection verification, rate limiting, and progress reporting.
+This page provides detailed troubleshooting guidance for SMTP integration issues within the application. It explains common error scenarios, diagnostic steps for network and provider-specific problems, and practical resolutions. It also covers log analysis, SSL/TLS certificate handling, and performance optimization strategies such as connection verification, rate limiting, and progress reporting.
 
-## Project Structure
-The application integrates SMTP email sending through Electron’s main process and a React UI. The Electron main process exposes IPC handlers for email operations, while the renderer invokes them securely via a preload bridge. SMTP operations are handled by a dedicated handler that validates configuration, verifies connectivity, and sends emails with progress updates.
+## Project structure
+The application integrates SMTP email sending through Electron's main process and a React UI. The Electron main process exposes IPC handlers for email operations, while the renderer invokes them securely via a preload bridge. SMTP operations are handled by a dedicated handler that validates configuration, verifies connectivity, and sends emails with progress updates.
 
 ```mermaid
 graph TB
@@ -38,17 +15,7 @@ SMTPHandler --> Nodemailer["Nodemailer Transport"]
 Main --> GmailHandler["Gmail Handler<br/>gmail-handler.js"]
 ```
 
-**Diagram sources**
-- [main.js](file://electron/src/electron/main.js#L107-L108)
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L48)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L141-L214)
-
-**Section sources**
-- [README.md](file://README.md#L100-L133)
-- [package.json](file://electron/package.json#L20-L31)
-
-## Core Components
+## Core components
 - Electron main process IPC handlers for SMTP and Gmail
 - Preload bridge exposing secure IPC methods
 - SMTP handler performing configuration validation, connection verification, and per-recipient sending with progress events
@@ -60,14 +27,7 @@ Key implementation references:
 - Progress events emitted to the renderer
 - UI form validation and submission flow
 
-**Section sources**
-- [main.js](file://electron/src/electron/main.js#L107-L108)
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L221-L261)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-
-## Architecture Overview
+## Architecture overview
 The SMTP workflow is initiated from the UI, routed through the preload bridge, executed in the main process, and emits progress events back to the UI for display.
 
 ```mermaid
@@ -96,16 +56,9 @@ PR-->>BM : "Receive results"
 BM-->>UI : "Display summary"
 ```
 
-**Diagram sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L288-L312)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L221-L261)
-- [preload.js](file://electron/src/electron/preload.js#L10-L21)
-- [main.js](file://electron/src/electron/main.js#L107-L108)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### SMTP Handler: Configuration, Verification, and Delivery
+### SMTP handler: configuration, verification, and delivery
 The SMTP handler performs:
 - Configuration validation (host, port, user, pass)
 - Optional credential saving (encrypted storage)
@@ -141,13 +94,7 @@ Next --> |Yes| Loop
 Next --> |No| Done(["Return {success:true, results}"])
 ```
 
-**Diagram sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L6-L105)
-
-### UI Integration: Form Validation and Progress Logging
+### UI integration: form validation and progress logging
 The UI validates inputs, constructs the SMTP payload, and listens for progress events to render real-time status.
 
 ```mermaid
@@ -168,20 +115,7 @@ PR-->>BM : "callback updates results array"
 BM-->>UI : "SMTPForm renders results"
 ```
 
-**Diagram sources**
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L288-L312)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L221-L261)
-- [preload.js](file://electron/src/electron/preload.js#L17-L21)
-- [main.js](file://electron/src/electron/main.js#L107-L108)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L55-L98)
-
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L149-L179)
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L221-L261)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L1-L390)
-- [preload.js](file://electron/src/electron/preload.js#L17-L21)
-
-## Dependency Analysis
+## Dependency analysis
 - Electron main process registers IPC handlers for SMTP and Gmail.
 - Preload exposes safe IPC methods to the renderer.
 - SMTP handler depends on Nodemailer for transport and on electron-store for optional credential persistence.
@@ -198,21 +132,7 @@ SMTPHandler --> Store["electron-store"]
 Main --> GmailHandler["gmail-handler.js"]
 ```
 
-**Diagram sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [main.js](file://electron/src/electron/main.js#L107-L108)
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L4)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L13)
-
-**Section sources**
-- [package.json](file://electron/package.json#L20-L31)
-- [main.js](file://electron/src/electron/main.js#L107-L108)
-- [preload.js](file://electron/src/electron/preload.js#L4-L21)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L1-L4)
-- [gmail-handler.js](file://electron/src/electron/gmail-handler.js#L1-L13)
-
-## Performance Considerations
+## Performance considerations
 - Connection verification: The handler calls a verification step before sending to detect misconfiguration early.
 - Rate limiting: A configurable delay is applied between emails to reduce the risk of throttling or rate limits.
 - Progress reporting: Real-time progress events allow users to monitor sending status and diagnose slow deliveries.
@@ -222,14 +142,9 @@ Recommendations:
 - Batch recipients thoughtfully to avoid exceeding provider quotas.
 - Monitor progress events to identify intermittent failures and adjust timing.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L47-L48)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L83-L86)
-- [preload.js](file://electron/src/electron/preload.js#L17-L21)
+## Troubleshooting guide
 
-## Troubleshooting Guide
-
-### Common SMTP Errors and Meanings
+### Common SMTP errors and meanings
 - Authentication failure
   - Cause: Incorrect username/password or missing/invalid app-specific credentials.
   - Symptom: Immediate failure during authentication or initial connection verification.
@@ -250,12 +165,7 @@ Provider-specific notes:
 - Gmail SMTP typically requires App Passwords or OAuth2. The project supports Gmail API integration via OAuth2; for SMTP, ensure App Passwords are used when required.
 - Outlook SMTP commonly uses TLS on port 587; confirm security setting matches the port.
 
-**Section sources**
-- [README.md](file://README.md#L120-L133)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L18-L20)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L42-L44)
-
-### Diagnostic Steps
+### Diagnostic steps
 - Verify SMTP configuration
   - Confirm host, port, user, and pass are provided and correct.
   - Match secure flag with the intended port (SSL/TLS).
@@ -271,12 +181,7 @@ Provider-specific notes:
   - For self-signed certificates, review TLS options and consider CA trust chain.
   - Ensure system clock is correct to avoid certificate expiry issues.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L18-L20)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L42-L44)
-- [README.md](file://README.md#L120-L133)
-
-### Provider-Specific Troubleshooting
+### Provider-Specific troubleshooting
 - Gmail
   - Use App Passwords or enable 2FA and generate an App Password.
   - Confirm TLS on port 587 or SSL on port 465.
@@ -288,10 +193,7 @@ Provider-specific notes:
   - Use TLS on port 587.
   - Confirm SMTP access is enabled in account settings.
 
-**Section sources**
-- [README.md](file://README.md#L120-L133)
-
-### Log Analysis and Debugging Approaches
+### Log analysis and debugging approaches
 - Enable verbose logging
   - Capture Electron main process logs and renderer logs during SMTP operations.
   - Use the progress events to correlate timestamps and statuses.
@@ -300,12 +202,7 @@ Provider-specific notes:
 - UI activity log
   - The UI displays per-recipient status and error messages for quick diagnosis.
 
-**Section sources**
-- [preload.js](file://electron/src/electron/preload.js#L17-L21)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L88-L98)
-- [SMTPForm.jsx](file://electron/src/components/SMTPForm.jsx#L344-L382)
-
-### Certificate Validation, SSL/TLS, and CA Issues
+### Certificate validation, SSL/TLS, and CA issues
 - TLS options
   - The handler sets TLS to reject unauthorized certificates by default; adjust only if necessary for self-signed environments.
 - Certificate authorities
@@ -313,12 +210,9 @@ Provider-specific notes:
 - Hostname verification
   - Mismatches cause certificate errors; verify the SMTP host matches the certificate.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L42-L44)
+### Solutions and step-by-step resolution guides
 
-### Solutions and Step-by-Step Resolution Guides
-
-#### Authentication Failures
+#### Authentication failures
 1. Verify credentials
    - Confirm username/email and password/app password are correct.
 2. Enable less secure apps or use App Passwords (where applicable)
@@ -326,10 +220,7 @@ Provider-specific notes:
 3. Check provider-specific requirements
    - Ensure two-factor authentication settings and app permissions are configured.
 
-**Section sources**
-- [README.md](file://README.md#L120-L127)
-
-#### Connection Timeouts
+#### Connection timeouts
 1. Validate host and port
    - Confirm the SMTP host resolves and the port is reachable.
 2. Check firewall and network
@@ -337,10 +228,7 @@ Provider-specific notes:
 3. Test with a known-good client
    - Use telnet or openssl s_client to test connectivity.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L47-L48)
-
-#### TLS/SSL Handshake Failures
+#### TLS/SSL handshake failures
 1. Match security mode to port
    - Use SSL on port 465; TLS on port 587.
 2. Update TLS options cautiously
@@ -348,10 +236,7 @@ Provider-specific notes:
 3. Update system trust store
    - Ensure intermediate CAs are installed.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L34-L44)
-
-#### Certificate Authority Issues
+#### Certificate authority issues
 1. Verify certificate chain
    - Ensure the server presents a valid chain recognized by the OS.
 2. Update trust store
@@ -359,10 +244,7 @@ Provider-specific notes:
 3. Consider temporary TLS adjustments (self-signed environments only)
    - Use TLS options carefully and revert afterward.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L42-L44)
-
-#### Delivery Rejections
+#### Delivery rejections
 1. Check recipient validity
    - Ensure recipient addresses are properly formatted.
 2. Review provider policies
@@ -370,20 +252,12 @@ Provider-specific notes:
 3. Use lower rate and monitor progress
    - Increase delays between emails to avoid throttling.
 
-**Section sources**
-- [BulkMailer.jsx](file://electron/src/components/BulkMailer.jsx#L149-L179)
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L83-L86)
-
-### Best Practices and Recommendations
+### Best practices and recommendations
 - Always verify configuration before sending.
 - Use rate limiting to avoid throttling.
 - Monitor progress events to identify failing recipients quickly.
 - Prefer OAuth2 for Gmail API when possible.
 - Keep TLS settings aligned with provider requirements.
 
-**Section sources**
-- [smtp-handler.js](file://electron/src/electron/smtp-handler.js#L47-L48)
-- [README.md](file://README.md#L120-L133)
-
 ## Conclusion
-This guide consolidates SMTP troubleshooting practices grounded in the application’s implementation. By validating configuration, verifying connections, aligning TLS settings with provider requirements, and monitoring progress events, most SMTP issues can be diagnosed and resolved efficiently. Adopt rate limiting and provider-specific configurations to maintain reliable delivery.
+This guide consolidates SMTP troubleshooting practices grounded in the application's implementation. By validating configuration, verifying connections, aligning TLS settings with provider requirements, and monitoring progress events, most SMTP issues can be diagnosed and resolved efficiently. Adopt rate limiting and provider-specific configurations to maintain reliable delivery.

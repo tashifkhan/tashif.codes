@@ -1,34 +1,9 @@
-# Database Schema & Models
-
-<cite>
-**Referenced Files in This Document**
-- [DATABASE.md](file://docs/DATABASE.md)
-- [database_service.py](file://app/services/database_service.py)
-- [db_client.py](file://app/clients/db_client.py)
-- [config.py](file://app/core/config.py)
-- [update_runner.py](file://app/runners/update_runner.py)
-- [notification_runner.py](file://app/runners/notification_runner.py)
-- [placement_offers.json](file://app/data/placement_offers.json)
-- [structured_job_listings.json](file://app/data/structured_job_listings.json)
-- [notices.json](file://app/data/notices.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# Database schema & models
 
 ## Introduction
-This document provides comprehensive database schema documentation for the SuperSet Telegram Notification Bot’s MongoDB implementation. It covers the five main collections (Notices, Jobs, PlacementOffers, Users, OfficialData), their field definitions, data types, validation rules, entity relationships, indexes, and query patterns. It also explains data modeling decisions, normalization strategies, performance considerations, sample documents, common queries, data lifecycle management, retention policies, backup strategies, and integrity constraints.
+This page provides detailed database schema documentation for the SuperSet Telegram Notification Bot's MongoDB implementation. It covers the five main collections (Notices, Jobs, PlacementOffers, Users, OfficialData), their field definitions, data types, validation rules, entity relationships, indexes, and query patterns. It also explains data modeling decisions, normalization strategies, performance considerations, sample documents, common queries, data lifecycle management, retention policies, backup strategies, and integrity constraints.
 
-## Project Structure
+## Project structure
 The database layer is implemented as a service that wraps a MongoDB client. The service exposes CRUD and aggregation operations for each collection, while the client manages the connection and collection references. Runners orchestrate data ingestion and notification dispatch, relying on the database service for persistence and retrieval.
 
 ```mermaid
@@ -58,19 +33,7 @@ DB --> C4
 DB --> C5
 ```
 
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L21-L148)
-- [notification_runner.py](file://app/runners/notification_runner.py#L21-L115)
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L21-L148)
-- [notification_runner.py](file://app/runners/notification_runner.py#L21-L115)
-- [database_service.py](file://app/services/database_service.py#L16-L46)
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-
-## Core Components
+## Core components
 - DatabaseService: Centralized service exposing operations for Notices, Jobs, PlacementOffers, Users, Policies, and OfficialPlacementData. It encapsulates MongoDB collection access and implements CRUD, upserts, aggregations, and statistics.
 - DBClient: Thin wrapper around PyMongo to manage connection, database selection, and collection initialization.
 - Runners: UpdateRunner orchestrates fetching notices/jobs from SuperSet, enriching and saving to DB; NotificationRunner retrieves unsent notices and broadcasts via Telegram/WebPush.
@@ -82,13 +45,7 @@ Key responsibilities:
 - Users: Subscription and preference management.
 - OfficialPlacementData: Aggregated placement statistics snapshots.
 
-**Section sources**
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [update_runner.py](file://app/runners/update_runner.py#L56-L148)
-- [notification_runner.py](file://app/runners/notification_runner.py#L60-L115)
-
-## Architecture Overview
+## Architecture overview
 The system follows a layered architecture:
 - Clients: DBClient connects to MongoDB and exposes collections.
 - Services: DatabaseService abstracts operations and enforces data shaping.
@@ -110,17 +67,9 @@ COL-->>DB : Acknowledged write
 DB-->>UR : Success/Failure
 ```
 
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L56-L237)
-- [database_service.py](file://app/services/database_service.py#L80-L257)
+## Detailed component analysis
 
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L56-L237)
-- [database_service.py](file://app/services/database_service.py#L80-L257)
-
-## Detailed Component Analysis
-
-### Notices Collection
+### Notices collection
 Purpose: Store all types of notifications (job postings, announcements, updates) with channel-specific sent flags and metadata.
 
 Fields and types:
@@ -148,22 +97,17 @@ Indexes:
 - Non-unique: { sent_to_telegram: 1 }, { sent_to_webpush: 1 }, { created_at: -1 }, { source: 1, category: 1 }
 
 Sample documents:
-- See example in [DATABASE.md](file://docs/DATABASE.md#L67-L94).
+- See example in `DATABASE.md`.
 
 Common queries:
-- Find unsent notices: see [DATABASE.md](file://docs/DATABASE.md#L506-L515).
-- Bulk update sent timestamps: see [DATABASE.md](file://docs/DATABASE.md#L551-L558).
+- Find unsent notices: see `DATABASE.md`.
+- Bulk update sent timestamps: see `DATABASE.md`.
 
 Operational usage:
 - Existence checks and ID retrieval for deduplication during ingestion.
 - Chronological retrieval for notification dispatch.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L32-L97)
-- [database_service.py](file://app/services/database_service.py#L56-L104)
-- [database_service.py](file://app/services/database_service.py#L116-L148)
-
-### Jobs Collection
+### Jobs collection
 Purpose: Structured job profiles extracted from SuperSet, with eligibility criteria, positions, compensation, and deadlines.
 
 Fields and types:
@@ -186,17 +130,13 @@ Indexes:
 - Non-unique: { company: 1 }, { application_deadline: 1 }
 
 Sample documents:
-- See example in [DATABASE.md](file://docs/DATABASE.md#L133-L162).
+- See example in `DATABASE.md`.
 
 Operational usage:
 - Upsert job records with merge of updated_at.
 - Retrieval sorted by creation time for recent listings.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L98-L168)
-- [database_service.py](file://app/services/database_service.py#L205-L257)
-
-### PlacementOffers Collection
+### PlacementOffers collection
 Purpose: Offers extracted from emails, with roles, selected students, and processing status.
 
 Fields and types:
@@ -219,17 +159,13 @@ Indexes:
 - Non-unique: { company: 1 }, { processing_status: 1 }, { created_at: -1 }
 
 Sample documents:
-- See example in [DATABASE.md](file://docs/DATABASE.md#L207-L244).
+- See example in `DATABASE.md`.
 
 Operational usage:
 - Merge logic for updating offers and students, emitting events for new/updated offers.
 - Stats computation across offers and students.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L169-L251)
-- [database_service.py](file://app/services/database_service.py#L274-L441)
-
-### Users Collection
+### Users collection
 Purpose: User subscription and preferences, including web push subscriptions.
 
 Fields and types:
@@ -250,17 +186,13 @@ Indexes:
 - Non-unique: { subscription_active: 1 }, { last_active: -1 }, { registered_at: 1 }
 
 Sample documents:
-- See example in [DATABASE.md](file://docs/DATABASE.md#L291-L324).
+- See example in `DATABASE.md`.
 
 Operational usage:
 - Add or reactivate users, soft-deactivate on unsubscribe.
 - Retrieve active users for broadcasting.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L252-L330)
-- [database_service.py](file://app/services/database_service.py#L616-L702)
-
-### OfficialPlacementData Collection
+### OfficialPlacementData collection
 Purpose: Aggregated placement statistics snapshots from official sources.
 
 Fields and types:
@@ -280,17 +212,13 @@ Indexes:
 - Non-unique: { timestamp: -1 }
 
 Sample documents:
-- See example in [DATABASE.md](file://docs/DATABASE.md#L374-L418).
+- See example in `DATABASE.md`.
 
 Operational usage:
 - Deduplicate by content hash and update scrape timestamps.
 - Retrieve latest snapshot for stats.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L331-L424)
-- [database_service.py](file://app/services/database_service.py#L443-L484)
-
-### Entity Relationships and Normalization
+### Entity relationships and normalization
 - One-way relationships:
   - Notices may link to Jobs via enrichment during formatting; no foreign key is stored.
   - PlacementOffers are independent snapshots; no explicit links to Users.
@@ -300,93 +228,60 @@ Operational usage:
 - Event-driven updates:
   - PlacementOffers emits events for new offers and updates to trigger notifications.
 
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L149-L222)
-- [database_service.py](file://app/services/database_service.py#L274-L441)
-
-### Indexing Strategy
+### Indexing strategy
 - Notices: Unique id; sent flags; creation time; source/category.
 - Jobs: Unique job_id; company; deadline.
 - PlacementOffers: Unique offer_id; company; processing_status; creation time.
 - Users: Unique user_id; subscription and activity.
 - OfficialPlacementData: Unique data_id; timestamp.
 
-Index creation and usage examples are documented in [DATABASE.md](file://docs/DATABASE.md#L425-L468).
+Index creation and usage examples are documented in `DATABASE.md`.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L425-L468)
+### Query patterns and examples
+- Find unsent notices: see `DATABASE.md`.
+- Get recent placements: see `DATABASE.md`.
+- Count active users: see `DATABASE.md`.
+- Get branch-wise stats: see `DATABASE.md`.
+- Find company offers: see `DATABASE.md`.
+- Bulk update sent timestamps: see `DATABASE.md`.
 
-### Query Patterns and Examples
-- Find unsent notices: see [DATABASE.md](file://docs/DATABASE.md#L506-L515).
-- Get recent placements: see [DATABASE.md](file://docs/DATABASE.md#L517-L523).
-- Count active users: see [DATABASE.md](file://docs/DATABASE.md#L525-L531).
-- Get branch-wise stats: see [DATABASE.md](file://docs/DATABASE.md#L533-L539).
-- Find company offers: see [DATABASE.md](file://docs/DATABASE.md#L542-L549).
-- Bulk update sent timestamps: see [DATABASE.md](file://docs/DATABASE.md#L551-L558).
-
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L504-L558)
-
-### Data Modeling Decisions
+### Data modeling decisions
 - Embedded arrays for students and roles allow atomic updates and reduce joins.
 - Separate sent flags per channel enable idempotent dispatch and auditability.
 - Structured job fields enable fast filtering and display without joins.
 - Official data snapshots capture time-series aggregates for reporting.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L32-L424)
+### Sample documents
+- Notices: `DATABASE.md`
+- Jobs: `DATABASE.md`
+- PlacementOffers: `DATABASE.md`
+- Users: `DATABASE.md`
+- OfficialPlacementData: `DATABASE.md`
 
-### Sample Documents
-- Notices: [DATABASE.md](file://docs/DATABASE.md#L67-L94)
-- Jobs: [DATABASE.md](file://docs/DATABASE.md#L133-L162)
-- PlacementOffers: [DATABASE.md](file://docs/DATABASE.md#L207-L244)
-- Users: [DATABASE.md](file://docs/DATABASE.md#L291-L324)
-- OfficialPlacementData: [DATABASE.md](file://docs/DATABASE.md#L374-L418)
+### Common query examples
+- Unsent notices: `DATABASE.md`
+- Recent offers: `DATABASE.md`
+- Active users count: `DATABASE.md`
+- Branch stats: `DATABASE.md`
+- Company offers aggregation: `DATABASE.md`
+- Bulk sent timestamp update: `DATABASE.md`
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L32-L424)
-
-### Common Query Examples
-- Unsent notices: [DATABASE.md](file://docs/DATABASE.md#L506-L515)
-- Recent offers: [DATABASE.md](file://docs/DATABASE.md#L517-L523)
-- Active users count: [DATABASE.md](file://docs/DATABASE.md#L525-L531)
-- Branch stats: [DATABASE.md](file://docs/DATABASE.md#L533-L539)
-- Company offers aggregation: [DATABASE.md](file://docs/DATABASE.md#L542-L549)
-- Bulk sent timestamp update: [DATABASE.md](file://docs/DATABASE.md#L551-L558)
-
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L504-L558)
-
-### Data Lifecycle Management
+### Data lifecycle management
 - Ingestion: UpdateRunner fetches notices/jobs, filters duplicates, enriches jobs, formats notices, and persists to DB.
 - Dispatch: NotificationRunner retrieves unsent notices and sends via Telegram/WebPush, marking sent flags.
 - Stats: Placement stats computed from PlacementOffers; official stats deduplicated by content hash.
 
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L56-L237)
-- [notification_runner.py](file://app/runners/notification_runner.py#L60-L115)
-- [database_service.py](file://app/services/database_service.py#L501-L600)
-
-### Retention Policies and Backup Strategies
-- TTL indexes: Recommended for auto-cleanup of logs and temporary data (see [DATABASE.md](file://docs/DATABASE.md#L589-L597)).
-- Snapshots: OfficialPlacementData captures periodic snapshots; deduplication via content hash (see [database_service.py](file://app/services/database_service.py#L443-L484)).
+### Retention policies and backup strategies
+- TTL indexes: Recommended for auto-cleanup of logs and temporary data (see `DATABASE.md`).
+- Snapshots: OfficialPlacementData captures periodic snapshots; deduplication via content hash (see `database_service.py`).
 - Backups: Use MongoDB native tools or cloud provider backups; schedule regular snapshots of all collections.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L589-L597)
-- [database_service.py](file://app/services/database_service.py#L443-L484)
-
-### Integrity Constraints and Validation
+### Integrity constraints and validation
 - Unique indexes enforce uniqueness for identifiers (id, job_id, offer_id, user_id, data_id).
 - Existence checks prevent duplicate writes.
 - Sent flags and processing statuses act as audit trails for idempotent operations.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L425-L468)
-- [database_service.py](file://app/services/database_service.py#L56-L89)
-- [database_service.py](file://app/services/database_service.py#L205-L240)
-
-## Dependency Analysis
+## Dependency analysis
 The database layer depends on:
 - DBClient for connection and collection access.
 - DatabaseService for operations and data shaping.
@@ -425,68 +320,36 @@ NotificationRunner --> DatabaseService : "uses"
 DatabaseService --> DBClient : "wraps"
 ```
 
-**Diagram sources**
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-- [update_runner.py](file://app/runners/update_runner.py#L21-L148)
-- [notification_runner.py](file://app/runners/notification_runner.py#L21-L115)
+## Performance considerations
+- Efficient queries: Filter early and limit results (see `DATABASE.md`).
+- Projections: Select only needed fields to reduce payload size (see `DATABASE.md`).
+- Batch operations: Insert/update in batches for throughput (see `DATABASE.md`).
+- TTL indexes: Automatic cleanup for temporary data (see `DATABASE.md`).
+- Connection pooling: Use PyMongo defaults; tune pool size as needed (see `DATABASE.md`).
 
-**Section sources**
-- [db_client.py](file://app/clients/db_client.py#L16-L104)
-- [database_service.py](file://app/services/database_service.py#L16-L795)
-- [update_runner.py](file://app/runners/update_runner.py#L21-L148)
-- [notification_runner.py](file://app/runners/notification_runner.py#L21-L115)
-
-## Performance Considerations
-- Efficient queries: Filter early and limit results (see [DATABASE.md](file://docs/DATABASE.md#L562-L572)).
-- Projections: Select only needed fields to reduce payload size (see [DATABASE.md](file://docs/DATABASE.md#L574-L581)).
-- Batch operations: Insert/update in batches for throughput (see [DATABASE.md](file://docs/DATABASE.md#L583-L587)).
-- TTL indexes: Automatic cleanup for temporary data (see [DATABASE.md](file://docs/DATABASE.md#L589-L597)).
-- Connection pooling: Leverage PyMongo defaults; tune pool size as needed (see [DATABASE.md](file://docs/DATABASE.md#L599-L604)).
-
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L560-L604)
-
-## Troubleshooting Guide
+## Troubleshooting guide
 - Connection failures: Verify MONGO_CONNECTION_STR and DBClient connection logic.
 - Missing collections: Ensure DBClient initializes all required collections.
 - Duplicate inserts: Use notice_exists/get_all_notice_ids and upsert patterns.
 - Slow queries: Confirm appropriate indexes exist and queries use indexed fields.
 - Broadcast failures: Check Telegram bot token/chat ID and rate limits.
 
-**Section sources**
-- [db_client.py](file://app/clients/db_client.py#L21-L72)
-- [database_service.py](file://app/services/database_service.py#L56-L89)
-- [database_service.py](file://app/services/database_service.py#L116-L148)
-- [notification_runner.py](file://app/runners/notification_runner.py#L79-L98)
-
 ## Conclusion
 The MongoDB schema for the SuperSet Telegram Notification Bot emphasizes denormalization, embedded arrays, and channel-specific sent flags to enable efficient ingestion, formatting, and dispatch. The five collections are designed for high-cardinality, time-series, and preference-driven workflows. Proper indexing, batch operations, and TTL-based cleanup ensure scalability and maintainability.
 
 ## Appendices
 
-### Appendix A: Index Creation Commands
-See [DATABASE.md](file://docs/DATABASE.md#L429-L458).
+### Appendix A: index creation commands
+See `DATABASE.md`.
 
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L429-L458)
+### Appendix B: data samples
+- Notices: `DATABASE.md`
+- Jobs: `DATABASE.md`
+- PlacementOffers: `DATABASE.md`
+- Users: `DATABASE.md`
+- OfficialPlacementData: `DATABASE.md`
 
-### Appendix B: Data Samples
-- Notices: [DATABASE.md](file://docs/DATABASE.md#L67-L94)
-- Jobs: [DATABASE.md](file://docs/DATABASE.md#L133-L162)
-- PlacementOffers: [DATABASE.md](file://docs/DATABASE.md#L207-L244)
-- Users: [DATABASE.md](file://docs/DATABASE.md#L291-L324)
-- OfficialPlacementData: [DATABASE.md](file://docs/DATABASE.md#L374-L418)
-
-**Section sources**
-- [DATABASE.md](file://docs/DATABASE.md#L32-L424)
-
-### Appendix C: Operational Scripts and Data Sources
-- Notices ingestion sample: [notices.json](file://app/data/notices.json#L1-L200)
-- Jobs ingestion sample: [structured_job_listings.json](file://app/data/structured_job_listings.json#L1-L200)
-- Placement offers sample: [placement_offers.json](file://app/data/placement_offers.json#L1-L200)
-
-**Section sources**
-- [notices.json](file://app/data/notices.json#L1-L200)
-- [structured_job_listings.json](file://app/data/structured_job_listings.json#L1-L200)
-- [placement_offers.json](file://app/data/placement_offers.json#L1-L200)
+### Appendix C: operational scripts and data sources
+- Notices ingestion sample: `notices.json`
+- Jobs ingestion sample: `structured_job_listings.json`
+- Placement offers sample: `placement_offers.json`

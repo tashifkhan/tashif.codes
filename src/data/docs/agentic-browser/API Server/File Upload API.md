@@ -1,35 +1,7 @@
-# File Upload API
-
-<cite>
-**Referenced Files in This Document**
-- [routers/file_upload.py](file://routers/file_upload.py)
-- [api/main.py](file://api/main.py)
-- [routers/__init__.py](file://routers/__init__.py)
-- [core/config.py](file://core/config.py)
-- [pyproject.toml](file://pyproject.toml)
-- [uv.lock](file://uv.lock)
-- [extension/entrypoints/sidepanel/AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx)
-- [models/requests/crawller.py](file://models/requests/crawller.py)
-- [services/react_agent_service.py](file://services/react_agent_service.py)
-- [services/github_service.py](file://services/github_service.py)
-- [services/website_service.py](file://services/website_service.py)
-- [services/youtube_service.py](file://services/youtube_service.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+# File upload API
 
 ## Introduction
-This document provides comprehensive API documentation for the file upload and processing endpoints. It covers:
+This page provides detailed API documentation for the file upload and processing endpoints. It covers:
 - Endpoint definition and usage
 - Multipart form handling
 - File validation rules
@@ -40,7 +12,7 @@ This document provides comprehensive API documentation for the file upload and p
 
 The file upload capability is implemented as a dedicated FastAPI router and integrated into the main application under the "/api/upload" prefix. Uploaded files are validated by extension and size, persisted to disk, and returned with metadata for subsequent processing.
 
-## Project Structure
+## Project structure
 The file upload feature spans several modules:
 - Router module defines the upload endpoint and validation logic
 - Application wiring registers the router under a specific prefix
@@ -79,22 +51,7 @@ WEBSITE --> ROUTER
 YOUTUBE --> ROUTER
 ```
 
-**Diagram sources**
-- [api/main.py](file://api/main.py#L40-L42)
-- [routers/file_upload.py](file://routers/file_upload.py#L11-L12)
-- [core/config.py](file://core/config.py#L16-L25)
-- [extension/entrypoints/sidepanel/AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx#L666-L687)
-- [services/react_agent_service.py](file://services/react_agent_service.py#L27-L65)
-- [services/github_service.py](file://services/github_service.py#L39-L79)
-- [services/website_service.py](file://services/website_service.py#L52-L79)
-- [services/youtube_service.py](file://services/youtube_service.py#L20-L52)
-
-**Section sources**
-- [api/main.py](file://api/main.py#L40-L42)
-- [routers/file_upload.py](file://routers/file_upload.py#L11-L12)
-- [core/config.py](file://core/config.py#L16-L25)
-
-## Core Components
+## Core components
 - File Upload Router: Implements a single POST endpoint that validates file extensions and sizes, saves the file with a unique name, and returns metadata.
 - Application Registration: The router is included under the "/api/upload" prefix.
 - Validation Rules:
@@ -107,16 +64,11 @@ YOUTUBE --> ROUTER
   - Successful uploads and errors are logged.
 
 Key implementation references:
-- Router and validation: [routers/file_upload.py](file://routers/file_upload.py#L26-L66)
-- Application routing: [api/main.py](file://api/main.py#L40-L42)
-- Router export: [routers/__init__.py](file://routers/__init__.py#L16)
+- Router and validation: `routers/file_upload.py`
+- Application routing: `api/main.py`
+- Router export: `routers/__init__.py`
 
-**Section sources**
-- [routers/file_upload.py](file://routers/file_upload.py#L26-L66)
-- [api/main.py](file://api/main.py#L40-L42)
-- [routers/__init__.py](file://routers/__init__.py#L16)
-
-## Architecture Overview
+## Architecture overview
 The file upload workflow integrates client-side multipart/form-data submission with server-side validation and persistence, followed by optional downstream processing.
 
 ```mermaid
@@ -136,13 +88,9 @@ Router->>Logger : "Log success"
 Router-->>Client : "JSON response with metadata"
 ```
 
-**Diagram sources**
-- [api/main.py](file://api/main.py#L40-L42)
-- [routers/file_upload.py](file://routers/file_upload.py#L26-L66)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### Endpoint Definition
+### Endpoint definition
 - Method: POST
 - URL Pattern: /api/upload/
 - Request Type: multipart/form-data
@@ -167,10 +115,7 @@ Behavior:
 - On invalid extension or oversized file, returns 400 with a descriptive message.
 - On unexpected errors, returns 500 with a generic message.
 
-**Section sources**
-- [routers/file_upload.py](file://routers/file_upload.py#L26-L66)
-
-### Client Implementation Examples
+### Client implementation examples
 - Frontend Example (React/TSX): Demonstrates constructing FormData and sending a POST request to /api/upload/.
   - Appends a single file field named "file".
   - Handles non-OK responses by reading the body and raising an error.
@@ -179,10 +124,7 @@ Behavior:
   - Ensure the base URL is configured (environment variable).
   - The frontend expects a JSON response containing the metadata fields described above.
 
-**Section sources**
-- [extension/entrypoints/sidepanel/AgentExecutor.tsx](file://extension/entrypoints/sidepanel/AgentExecutor.tsx#L666-L687)
-
-### Downstream Processing Workflows
+### Downstream processing workflows
 Uploaded files can be referenced by downstream services for advanced processing. These services accept an attached file path and upload it to an external provider for analysis.
 
 ```mermaid
@@ -203,45 +145,23 @@ External-->>Service : "Processed resource reference"
 Service-->>Client : "Answer incorporating file content"
 ```
 
-**Diagram sources**
-- [routers/file_upload.py](file://routers/file_upload.py#L26-L66)
-- [services/react_agent_service.py](file://services/react_agent_service.py#L27-L65)
-- [services/github_service.py](file://services/github_service.py#L39-L79)
-- [services/website_service.py](file://services/website_service.py#L52-L79)
-- [services/youtube_service.py](file://services/youtube_service.py#L20-L52)
-
-#### React Agent Service
+#### React agent service
 - Accepts an attached file path alongside other inputs.
 - If present, uploads the file to an external provider and includes it in the generation context along with optional HTML context and the question.
 
-**Section sources**
-- [services/react_agent_service.py](file://services/react_agent_service.py#L27-L65)
-
-#### GitHub Service
+#### GitHub service
 - Accepts an attached file path and, when provided, uploads it to an external provider and incorporates repository content and chat history into the generation context.
 
-**Section sources**
-- [services/github_service.py](file://services/github_service.py#L39-L79)
-
-#### Website Service
+#### Website service
 - Accepts an attached file path and, when provided, uploads it to an external provider and incorporates server/client content and chat history into the generation context.
 
-**Section sources**
-- [services/website_service.py](file://services/website_service.py#L52-L79)
-
-#### YouTube Service
+#### YouTube service
 - Accepts an attached file path and, when provided, uploads it to an external provider and incorporates transcript and chat history into the generation context.
 
-**Section sources**
-- [services/youtube_service.py](file://services/youtube_service.py#L20-L52)
-
-### Model Integration
+### Model integration
 - The crawler request model includes an optional field for an attached file path, enabling clients to pass the saved file path received from the upload endpoint to downstream processing.
 
-**Section sources**
-- [models/requests/crawller.py](file://models/requests/crawller.py#L29-L32)
-
-## Dependency Analysis
+## Dependency analysis
 - Router Registration:
   - The router is exported and included in the main application under the "/api/upload" prefix.
 - External Dependencies:
@@ -258,18 +178,7 @@ ROUTER --> LOG["core/config.py (logger)"]
 ROUTER --> DEP["python-multipart (uv.lock)"]
 ```
 
-**Diagram sources**
-- [api/main.py](file://api/main.py#L40-L42)
-- [routers/file_upload.py](file://routers/file_upload.py#L5)
-- [core/config.py](file://core/config.py#L22-L25)
-- [uv.lock](file://uv.lock#L1960-L1967)
-
-**Section sources**
-- [api/main.py](file://api/main.py#L40-L42)
-- [routers/__init__.py](file://routers/__init__.py#L16)
-- [uv.lock](file://uv.lock#L1960-L1967)
-
-## Performance Considerations
+## Performance considerations
 - File Size Limit: 10 MB enforced at runtime; larger files will be rejected.
 - Disk I/O: Writes occur synchronously; consider asynchronous storage or streaming for very large files.
 - Concurrency: The endpoint does not implement concurrency controls; ensure appropriate deployment scaling.
@@ -277,7 +186,7 @@ ROUTER --> DEP["python-multipart (uv.lock)"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - 400 Bad Request: Occurs when the file extension is not allowed or exceeds the size limit. Verify the file type and size against the allowed set and the 10 MB cap.
 - 500 Internal Server Error: Indicates an unexpected error during processing. Check server logs for details.
@@ -287,19 +196,14 @@ Operational checks:
 - Confirm the upload directory exists and is writable.
 - Verify router registration under "/api/upload".
 
-**Section sources**
-- [routers/file_upload.py](file://routers/file_upload.py#L30-L44)
-- [routers/file_upload.py](file://routers/file_upload.py#L64-L66)
-- [api/main.py](file://api/main.py#L40-L42)
-
 ## Conclusion
-The file upload API provides a straightforward, validated mechanism for accepting multipart/form-data, persisting files securely under a controlled directory, and returning metadata for downstream consumption. Combined with downstream services that accept an attached file path, it enables robust file-based automation scenarios across browsing, repository, website, and YouTube contexts.
+The file upload API provides a straightforward, validated mechanism for accepting multipart/form-data, persisting files securely under a controlled directory, and returning metadata for downstream consumption. Combined with downstream services that accept an attached file path, it enables reliable file-based automation scenarios across browsing, repository, website, and YouTube contexts.
 
 [No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 
-### Endpoint Reference
+### Endpoint reference
 - Method: POST
 - URL: /api/upload/
 - Request Body: multipart/form-data
@@ -315,23 +219,12 @@ The file upload API provides a straightforward, validated mechanism for acceptin
   - 400 Bad Request: Invalid extension or oversized file
   - 500 Internal Server Error: Unexpected error
 
-**Section sources**
-- [routers/file_upload.py](file://routers/file_upload.py#L26-L66)
-
-### Supported Formats and Limits
+### Supported formats and limits
 - Allowed Extensions: png, jpg, jpeg, gif, webp, svg, pdf, txt, md, csv, json, xml, py, js, ts, html, css, java, c, cpp, go, rs
 - Maximum File Size: 10 MB
 
-**Section sources**
-- [routers/file_upload.py](file://routers/file_upload.py#L14-L23)
-
-### Security Considerations
+### Security considerations
 - Input Validation: Only whitelisted extensions are accepted.
 - Size Limits: Prevents excessive resource consumption.
 - Unique Filenames: Reduces collision risks and improves traceability.
 - Logging: Errors and successful uploads are logged for monitoring.
-
-**Section sources**
-- [routers/file_upload.py](file://routers/file_upload.py#L30-L49)
-- [routers/file_upload.py](file://routers/file_upload.py#L51-L51)
-- [routers/file_upload.py](file://routers/file_upload.py#L64-L66)

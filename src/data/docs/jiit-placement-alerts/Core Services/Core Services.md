@@ -1,36 +1,9 @@
-# Core Services
-
-<cite>
-**Referenced Files in This Document**
-- [app/services/__init__.py](file://app/services/__init__.py)
-- [app/services/database_service.py](file://app/services/database_service.py)
-- [app/services/notification_service.py](file://app/services/notification_service.py)
-- [app/services/telegram_service.py](file://app/services/telegram_service.py)
-- [app/services/email_notice_service.py](file://app/services/email_notice_service.py)
-- [app/services/placement_service.py](file://app/services/placement_service.py)
-- [app/services/web_push_service.py](file://app/services/web_push_service.py)
-- [app/services/notice_formatter_service.py](file://app/services/notice_formatter_service.py)
-- [app/services/placement_notification_formatter.py](file://app/services/placement_notification_formatter.py)
-- [app/services/official_placement_service.py](file://app/services/official_placement_service.py)
-- [app/services/placement_stats_calculator_service.py](file://app/services/placement_stats_calculator_service.py)
-- [app/services/admin_telegram_service.py](file://app/services/admin_telegram_service.py)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Core services
 
 ## Introduction
-This document describes the core service layer of the SuperSet Telegram Notification Bot. It explains the responsibilities, interfaces, and implementation patterns of the primary services: DatabaseService, NotificationService, TelegramService, EmailNoticeService, PlacementService, and WebPushService. It also covers how services depend on each other, initialization patterns, lifecycle management, error handling strategies, performance considerations, public APIs, configuration requirements, and integration points with external systems.
+This page describes the core service layer of the SuperSet Telegram Notification Bot. It explains the responsibilities, interfaces, and implementation patterns of the primary services: DatabaseService, NotificationService, TelegramService, EmailNoticeService, PlacementService, and WebPushService. It also covers how services depend on each other, initialization patterns, lifecycle management, error handling strategies, performance considerations, public APIs, configuration requirements, and integration points with external systems.
 
-## Project Structure
+## Project structure
 The services are organized under app/services and expose a cohesive API surface for ingestion, processing, formatting, and delivery of notifications and placement data. The module exports a curated set of services for consumption by higher-level components.
 
 ```mermaid
@@ -57,23 +30,7 @@ PSCS --> DS
 TS --> DS
 ```
 
-**Diagram sources**
-- [app/services/__init__.py](file://app/services/__init__.py#L1-L23)
-- [app/services/database_service.py](file://app/services/database_service.py#L16-L795)
-- [app/services/notification_service.py](file://app/services/notification_service.py#L13-L237)
-- [app/services/telegram_service.py](file://app/services/telegram_service.py#L20-L351)
-- [app/services/email_notice_service.py](file://app/services/email_notice_service.py#L335-L1155)
-- [app/services/placement_service.py](file://app/services/placement_service.py#L419-L1176)
-- [app/services/web_push_service.py](file://app/services/web_push_service.py#L27-L242)
-- [app/services/notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L866)
-- [app/services/placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L102-L380)
-- [app/services/official_placement_service.py](file://app/services/official_placement_service.py#L81-L459)
-- [app/services/placement_stats_calculator_service.py](file://app/services/placement_stats_calculator_service.py#L354-L1034)
-
-**Section sources**
-- [app/services/__init__.py](file://app/services/__init__.py#L1-L23)
-
-## Core Components
+## Core components
 - DatabaseService: Central persistence layer for notices, jobs, placement offers, users, and policies. Provides CRUD and aggregation helpers for MongoDB collections.
 - NotificationService: Orchestrates multi-channel delivery (Telegram, Web Push) and broadcasts unsent notices.
 - TelegramService: Implements Telegram-specific messaging, formatting, and broadcasting to users.
@@ -85,19 +42,7 @@ TS --> DS
 - OfficialPlacementService: Scrapes official placement data from the JIIT website and persists it to MongoDB.
 - PlacementStatsCalculatorService: Computes placement statistics from stored offers with filtering and branch/company breakdowns.
 
-**Section sources**
-- [app/services/database_service.py](file://app/services/database_service.py#L16-L795)
-- [app/services/notification_service.py](file://app/services/notification_service.py#L13-L237)
-- [app/services/telegram_service.py](file://app/services/telegram_service.py#L20-L351)
-- [app/services/web_push_service.py](file://app/services/web_push_service.py#L27-L242)
-- [app/services/email_notice_service.py](file://app/services/email_notice_service.py#L335-L1155)
-- [app/services/placement_service.py](file://app/services/placement_service.py#L419-L1176)
-- [app/services/notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L866)
-- [app/services/placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L102-L380)
-- [app/services/official_placement_service.py](file://app/services/official_placement_service.py#L81-L459)
-- [app/services/placement_stats_calculator_service.py](file://app/services/placement_stats_calculator_service.py#L354-L1034)
-
-## Architecture Overview
+## Architecture overview
 The service layer follows a dependency-injection style with clear separation of concerns:
 - Data access is encapsulated in DatabaseService.
 - Delivery orchestration is handled by NotificationService, which delegates to channel-specific services.
@@ -140,17 +85,7 @@ TS --> DS
 WPS --> DS
 ```
 
-**Diagram sources**
-- [app/services/email_notice_service.py](file://app/services/email_notice_service.py#L335-L1155)
-- [app/services/placement_service.py](file://app/services/placement_service.py#L419-L1176)
-- [app/services/notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L866)
-- [app/services/placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L102-L380)
-- [app/services/database_service.py](file://app/services/database_service.py#L16-L795)
-- [app/services/notification_service.py](file://app/services/notification_service.py#L13-L237)
-- [app/services/telegram_service.py](file://app/services/telegram_service.py#L20-L351)
-- [app/services/web_push_service.py](file://app/services/web_push_service.py#L27-L242)
-
-## Detailed Component Analysis
+## Detailed component analysis
 
 ### DatabaseService
 Responsibilities:
@@ -182,9 +117,6 @@ Performance considerations:
 - Applies sorting and limits for pagination.
 - Merge logic for offers minimizes duplicate writes.
 
-**Section sources**
-- [app/services/database_service.py](file://app/services/database_service.py#L16-L795)
-
 ### NotificationService
 Responsibilities:
 - Aggregates multiple notification channels and orchestrates broadcasts.
@@ -208,9 +140,6 @@ Lifecycle and error handling:
 - Catches and logs exceptions per channel to prevent partial failures from halting the pipeline.
 - Returns structured results per channel.
 
-**Section sources**
-- [app/services/notification_service.py](file://app/services/notification_service.py#L13-L237)
-
 ### TelegramService
 Responsibilities:
 - Implements Telegram-specific messaging and broadcasting.
@@ -221,7 +150,7 @@ Implementation highlights:
 - Uses TelegramClient for HTTP interactions.
 - Provides channel_name property for compatibility with NotificationService.
 - Implements test_connection, send_message, send_to_user, broadcast_to_all_users, and HTML-specific send methods.
-- Includes robust message splitting and fallback mechanisms.
+- Includes reliable message splitting and fallback mechanisms.
 
 Public APIs:
 - test_connection(): Validates bot configuration.
@@ -237,9 +166,6 @@ Lifecycle and error handling:
 - Retries without formatting on failures.
 - Applies small delays between sends to respect rate limits.
 
-**Section sources**
-- [app/services/telegram_service.py](file://app/services/telegram_service.py#L20-L351)
-
 ### WebPushService
 Responsibilities:
 - Implements browser push notifications using VAPID.
@@ -253,7 +179,7 @@ Implementation highlights:
 
 Public APIs:
 - send_message(message, **kwargs): Broadcasts to all subscriptions.
-- send_to_user(user_id, message, **kwargs): Sends to a user’s subscriptions.
+- send_to_user(user_id, message, **kwargs): Sends to a user's subscriptions.
 - broadcast_to_all_users(message, **kwargs): Broadcasts to all users with subscriptions.
 - save_subscription(user_id, subscription), remove_subscription(user_id, endpoint): Subscription management hooks.
 - get_public_key(): Returns VAPID public key for clients.
@@ -262,9 +188,6 @@ Lifecycle and error handling:
 - Checks availability of pywebpush and VAPID configuration at initialization.
 - Logs warnings and disables functionality when not configured.
 - Removes expired subscriptions on receiving 404/410 responses.
-
-**Section sources**
-- [app/services/web_push_service.py](file://app/services/web_push_service.py#L27-L242)
 
 ### EmailNoticeService
 Responsibilities:
@@ -288,9 +211,6 @@ Lifecycle and error handling:
 - Logs and continues on errors to avoid blocking the pipeline.
 - Validates extracted data and retries up to a configured limit.
 
-**Section sources**
-- [app/services/email_notice_service.py](file://app/services/email_notice_service.py#L335-L1155)
-
 ### PlacementService
 Responsibilities:
 - Processes placement offer emails using a LangGraph pipeline.
@@ -307,7 +227,7 @@ Public APIs:
 - _build_graph(): Constructs the LangGraph workflow.
 - _classify_email(state): Keyword-based classification.
 - _extract_info(state): LLM extraction with retry logic.
-- _validate_and_enhance(state): Validates and enhances extracted data.
+- _validate_and_enhance(state): Validates and improves extracted data.
 - _sanitize_privacy(state): Removes sensitive information.
 - _display_results(state): Displays final results.
 - scrape_and_save(): Main entry point to process and persist offers.
@@ -316,9 +236,6 @@ Lifecycle and error handling:
 - Uses retry logic for LLM extraction failures.
 - Handles empty responses and validation errors gracefully.
 - Sanitizes content to protect privacy.
-
-**Section sources**
-- [app/services/placement_service.py](file://app/services/placement_service.py#L419-L1176)
 
 ### NoticeFormatterService
 Responsibilities:
@@ -336,9 +253,6 @@ Public APIs:
 Lifecycle and error handling:
 - Ensures string content from LLM responses.
 - Handles missing or malformed data with safe defaults.
-
-**Section sources**
-- [app/services/notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L866)
 
 ### PlacementNotificationFormatter
 Responsibilities:
@@ -359,9 +273,6 @@ Public APIs:
 Lifecycle and error handling:
 - Logs and continues on processing errors.
 - Uses DatabaseService to save notices.
-
-**Section sources**
-- [app/services/placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L102-L380)
 
 ### OfficialPlacementService
 Responsibilities:
@@ -385,12 +296,9 @@ Lifecycle and error handling:
 - Handles timeouts, connection errors, and HTTP errors with detailed logging.
 - Returns None on failure and logs critical errors.
 
-**Section sources**
-- [app/services/official_placement_service.py](file://app/services/official_placement_service.py#L81-L459)
-
 ### PlacementStatsCalculatorService
 Responsibilities:
-- Computes comprehensive placement statistics from stored offers.
+- Computes detailed placement statistics from stored offers.
 - Supports filtering by company, role, location, and package range.
 - Provides branch-wise and company-wise breakdowns with placement percentages.
 
@@ -403,7 +311,7 @@ Implementation highlights:
 Public APIs:
 - calculate_all_stats(placements=None): Computes overall and detailed statistics.
 - _flatten_students(placements): Flattens offers into student records.
-- _filter_students(students, ...): Applies filters for branches, companies, roles, locations, package ranges, and search queries.
+- _filter_students(students,...): Applies filters for branches, companies, roles, locations, package ranges, and search queries.
 - _calculate_package_stats(students): Computes package metrics.
 - _calculate_branch_stats(students): Computes branch-wise stats.
 - _calculate_company_stats(students): Computes company-wise stats.
@@ -413,10 +321,7 @@ Lifecycle and error handling:
 - Falls back to fetching placements from DatabaseService if not provided.
 - Returns empty stats when no data is available.
 
-**Section sources**
-- [app/services/placement_stats_calculator_service.py](file://app/services/placement_stats_calculator_service.py#L354-L1034)
-
-## Dependency Analysis
+## Dependency analysis
 Service dependencies and coupling:
 - DatabaseService is a shared dependency across EmailNoticeService, PlacementService, PlacementNotificationFormatter, OfficialPlacementService, and PlacementStatsCalculatorService for persistence operations.
 - NotificationService depends on TelegramService and WebPushService for delivery and on DatabaseService for fetching unsent notices.
@@ -447,22 +352,7 @@ NS --> TS
 NS --> WPS
 ```
 
-**Diagram sources**
-- [app/services/database_service.py](file://app/services/database_service.py#L16-L795)
-- [app/services/notification_service.py](file://app/services/notification_service.py#L13-L237)
-- [app/services/telegram_service.py](file://app/services/telegram_service.py#L20-L351)
-- [app/services/web_push_service.py](file://app/services/web_push_service.py#L27-L242)
-- [app/services/email_notice_service.py](file://app/services/email_notice_service.py#L335-L1155)
-- [app/services/placement_service.py](file://app/services/placement_service.py#L419-L1176)
-- [app/services/notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L866)
-- [app/services/placement_notification_formatter.py](file://app/services/placement_notification_formatter.py#L102-L380)
-- [app/services/official_placement_service.py](file://app/services/official_placement_service.py#L81-L459)
-- [app/services/placement_stats_calculator_service.py](file://app/services/placement_stats_calculator_service.py#L354-L1034)
-
-**Section sources**
-- [app/services/__init__.py](file://app/services/__init__.py#L1-L23)
-
-## Performance Considerations
+## Performance considerations
 - DatabaseService:
   - Uses aggregation pipelines for statistics to minimize client-side computation.
   - Applies sorting and limits for pagination to control memory usage.
@@ -485,7 +375,7 @@ NS --> WPS
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and resolutions:
 - Telegram bot configuration errors:
   - Symptoms: Messages fail to send or connection tests fail.
@@ -503,12 +393,5 @@ Common issues and resolutions:
   - Symptoms: Telegram API throttling.
   - Resolution: Respect built-in delays between sends; consider external rate limiting if needed.
 
-**Section sources**
-- [app/services/telegram_service.py](file://app/services/telegram_service.py#L58-L122)
-- [app/services/web_push_service.py](file://app/services/web_push_service.py#L62-L194)
-- [app/services/email_notice_service.py](file://app/services/email_notice_service.py#L553-L624)
-- [app/services/placement_service.py](file://app/services/placement_service.py#L663-L704)
-- [app/services/database_service.py](file://app/services/database_service.py#L47-L51)
-
 ## Conclusion
-The core service layer provides a robust, modular foundation for ingesting, processing, formatting, and delivering notifications and placement data. It leverages dependency injection, clear separation of concerns, and resilient error handling to maintain reliability. The integration of LLM pipelines ensures high-quality extraction and formatting, while database-centric design supports scalability and observability.
+The core service layer provides a reliable, modular foundation for ingesting, processing, formatting, and delivering notifications and placement data. It uses dependency injection, clear separation of concerns, and resilient error handling to maintain reliability. The integration of LLM pipelines ensures high-quality extraction and formatting, while database-centric design supports scalability and observability.

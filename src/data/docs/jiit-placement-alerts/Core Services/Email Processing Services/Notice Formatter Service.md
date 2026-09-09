@@ -1,34 +1,11 @@
-# Notice Formatter Service
-
-<cite>
-**Referenced Files in This Document**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py)
-- [superset_client.py](file://app/clients/superset_client.py)
-- [notification_service.py](file://app/services/notification_service.py)
-- [telegram_service.py](file://app/services/telegram_service.py)
-- [update_runner.py](file://app/runners/update_runner.py)
-- [main.py](file://app/main.py)
-- [structured_job_listings.json](file://app/data/structured_job_listings.json)
-- [placement_offers.json](file://app/data/placement_offers.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Notice formatter service
 
 ## Introduction
-The Notice Formatter Service is a sophisticated pipeline that transforms raw notice content from the SuperSet portal into standardized, human-readable messages optimized for multiple notification channels, with a focus on Telegram. It leverages LLM-based classification, fuzzy matching, and structured extraction to deliver consistent, audience-appropriate formatting across different notice types including job postings, webinars, hackathons, shortlistings, and general announcements.
+The Notice Formatter Service is a sophisticated pipeline that transforms raw notice content from the SuperSet portal into standardized, human-readable messages optimized for multiple notification channels, with a focus on Telegram. It uses LLM-based classification, fuzzy matching, and structured extraction to deliver consistent, audience-appropriate formatting across different notice types including job postings, webinars, hackathons, shortlistings, and general announcements.
 
 The service integrates tightly with the broader notification ecosystem, supporting both automated scheduling and manual triggering via CLI commands. It ensures content safety through HTML cleaning, link handling, and Markdown/HTML rendering compatibility, while respecting Telegram's character limits and formatting capabilities.
 
-## Project Structure
+## Project structure
 The Notice Formatter Service resides within the application's services layer and interacts with data clients, database services, and notification channels through a well-defined dependency injection architecture.
 
 ```mermaid
@@ -57,21 +34,7 @@ SS --> SJ
 SS --> PO
 ```
 
-**Diagram sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L866)
-- [superset_client.py](file://app/clients/superset_client.py#L88-L604)
-- [notification_service.py](file://app/services/notification_service.py#L13-L237)
-- [telegram_service.py](file://app/services/telegram_service.py#L20-L351)
-- [update_runner.py](file://app/runners/update_runner.py#L21-L278)
-
-**Section sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L1-L866)
-- [superset_client.py](file://app/clients/superset_client.py#L1-L604)
-- [notification_service.py](file://app/services/notification_service.py#L1-L237)
-- [telegram_service.py](file://app/services/telegram_service.py#L1-L351)
-- [update_runner.py](file://app/runners/update_runner.py#L1-L278)
-
-## Core Components
+## Core components
 The Notice Formatter Service is built around a LangGraph-based state machine that processes notices through distinct stages: text extraction, classification, job matching, enrichment, structured extraction, and final formatting. It maintains a compact set of helper utilities for date formatting, currency display, HTML breakdown parsing, and content prettification.
 
 Key capabilities include:
@@ -82,10 +45,7 @@ Key capabilities include:
 - Integration hooks for job enrichment callbacks
 - Content cleaning and sanitization for Telegram compatibility
 
-**Section sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L28-L866)
-
-## Architecture Overview
+## Architecture overview
 The formatter operates as a stateful pipeline that transforms unstructured notice content into standardized messages. The architecture emphasizes modularity, allowing for easy extension to new notice types and integration with additional channels.
 
 ```mermaid
@@ -111,15 +71,9 @@ TS-->>NS : success/failure
 NS-->>CR : delivery stats
 ```
 
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L150-L222)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L202-L866)
-- [notification_service.py](file://app/services/notification_service.py#L93-L167)
-- [telegram_service.py](file://app/services/telegram_service.py#L62-L121)
+## Detailed component analysis
 
-## Detailed Component Analysis
-
-### NoticeFormatterService Class
+### NoticeFormatterService class
 The core formatter implements a LangGraph StateGraph with six nodes representing the processing pipeline. Each node encapsulates a specific transformation step with explicit input/output contracts.
 
 ```mermaid
@@ -158,13 +112,7 @@ class PostState {
 NoticeFormatterService --> PostState : "manages"
 ```
 
-**Diagram sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L28-L866)
-
-**Section sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L48-L866)
-
-### Content Transformation Pipeline
+### Content transformation pipeline
 The pipeline transforms raw HTML content through multiple stages, each with specific responsibilities:
 
 1. **Text Extraction**: Converts HTML to plain text while preserving structure
@@ -190,48 +138,39 @@ Format --> Telegram["Telegram-Compatible Output"]
 Telegram --> End([Standardized Message])
 ```
 
-**Diagram sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L202-L774)
-
-**Section sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L202-L774)
-
-### Category-Specific Formatting Templates
+### Category-Specific formatting templates
 The formatter implements distinct templates for each notice type, ensuring consistent presentation across channels:
 
-#### Job Posting Template
-- **Header**: "📢 Job Posting" with company and role
+#### Job posting template
+- **Header**: " Job Posting" with company and role
 - **Key Sections**: Location, CTC with package breakdown, eligibility criteria, hiring flow
 - **Deadlines**: Prominent warning with IST formatting
 - **Links**: Direct job details URL when available
 
-#### Shortlisting Template
-- **Header**: "🎉 Shortlisting Update"
+#### Shortlisting template
+- **Header**: " Shortlisting Update"
 - **Lists**: Total shortlisted count and student names with enrollment numbers
 - **Context**: Company, role, location, package information
 - **Process**: Hiring flow steps when available
 
-#### Webinar Template
-- **Header**: "🎓 Webinar Details"
+#### Webinar template
+- **Header**: " Webinar Details"
 - **Timing**: Flexible date/time formatting with IST timezone
 - **Venue**: Platform or physical location
 - **Registration**: Direct link handling with deadline warnings
 
-#### Hackathon Template
-- **Header**: "🏁 Hackathon"
+#### Hackathon template
+- **Header**: " Hackathon"
 - **Duration**: Start/end date formatting
 - **Structure**: Theme, team size, prize pool, venue
 - **Registration**: Deadline and link handling
 
-#### Announcement Template
+#### Announcement template
 - **Header**: Bold title with passthrough content
 - **Attribution**: Author and timestamp footer
 - **Minimal Processing**: Light cleanup for readability
 
-**Section sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L482-L774)
-
-### Integration with Telegram Message Formatting
+### Integration with telegram message formatting
 The formatter produces content compatible with Telegram's HTML parsing, with automatic fallback to MarkdownV2 escaping when needed. The Telegram service handles:
 - Character limit enforcement (4000 character chunks)
 - Automatic message splitting with line-aware boundaries
@@ -258,16 +197,8 @@ end
 TG-->>TS : success/failure
 ```
 
-**Diagram sources**
-- [telegram_service.py](file://app/services/telegram_service.py#L74-L121)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L795-L866)
-
-**Section sources**
-- [telegram_service.py](file://app/services/telegram_service.py#L62-L212)
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L795-L866)
-
-### Content Cleaning and Safety Features
-The formatter implements comprehensive content cleaning to ensure safe, readable output:
+### Content cleaning and safety features
+The formatter implements detailed content cleaning to ensure safe, readable output:
 
 - **HTML Stripping**: BeautifulSoup-based extraction with table parsing and paragraph handling
 - **Line Normalization**: Collapse excessive blank lines and trim trailing whitespace
@@ -275,12 +206,8 @@ The formatter implements comprehensive content cleaning to ensure safe, readable
 - **Link Preservation**: Maintains hyperlinks while ensuring proper HTML anchor tags
 - **Markdown Compatibility**: Automatic escaping for Telegram MarkdownV2 special characters
 
-**Section sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L105-L200)
-- [telegram_service.py](file://app/services/telegram_service.py#L256-L351)
-
-### Integration with Notification Delivery System
-The formatted notices integrate seamlessly with the broader notification infrastructure:
+### Integration with notification delivery system
+The formatted notices integrate smoothly with the broader notification infrastructure:
 
 ```mermaid
 graph LR
@@ -311,16 +238,7 @@ NS --> TS
 NS --> WP
 ```
 
-**Diagram sources**
-- [update_runner.py](file://app/runners/update_runner.py#L1-L278)
-- [notification_service.py](file://app/services/notification_service.py#L1-L237)
-- [superset_client.py](file://app/clients/superset_client.py#L1-L604)
-
-**Section sources**
-- [update_runner.py](file://app/runners/update_runner.py#L1-L278)
-- [notification_service.py](file://app/services/notification_service.py#L1-L237)
-
-## Dependency Analysis
+## Dependency analysis
 The Notice Formatter Service maintains loose coupling with external dependencies through well-defined interfaces and typed data models.
 
 ```mermaid
@@ -347,15 +265,7 @@ NFS --> NS
 NFS --> TS
 ```
 
-**Diagram sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L8-L25)
-- [superset_client.py](file://app/clients/superset_client.py#L37-L86)
-
-**Section sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L8-L25)
-- [superset_client.py](file://app/clients/superset_client.py#L37-L86)
-
-## Performance Considerations
+## Performance considerations
 The formatter is optimized for production use with several performance-conscious design decisions:
 
 - **Selective Enrichment**: Jobs are only enriched when matched during notice processing, avoiding unnecessary API calls
@@ -364,12 +274,12 @@ The formatter is optimized for production use with several performance-conscious
 - **Batch Processing**: Support for formatting multiple notices in sequence
 - **Caching Opportunities**: Job lookup dictionaries prevent repeated database queries
 
-## Troubleshooting Guide
+## Troubleshooting guide
 Common issues and their resolutions:
 
-### LLM Parsing Failures
+### LLM parsing failures
 **Symptoms**: Empty extracted fields or JSON parsing errors
-**Causes**: 
+**Causes**:
 - LLM output format inconsistencies
 - Complex HTML structures causing extraction ambiguity
 - Insufficient context for classification
@@ -379,9 +289,9 @@ Common issues and their resolutions:
 - Check HTML content complexity and consider preprocessing
 - Monitor classification confidence scores
 
-### Telegram Message Limits
+### Telegram message limits
 **Symptoms**: Truncated messages or delivery failures
-**Causes**: 
+**Causes**:
 - Messages exceeding 4000 characters
 - Improper HTML/Markdown formatting
 
@@ -390,7 +300,7 @@ Common issues and their resolutions:
 - Validate message length before sending
 - Test with simplified content first
 
-### Job Matching Issues
+### Job matching issues
 **Symptoms**: Missed job matches or incorrect fuzzy matches
 **Causes**:
 - Company name variations in notices vs. job listings
@@ -402,11 +312,7 @@ Common issues and their resolutions:
 - Implement job enrichment callback for matched entries
 - Verify company name normalization
 
-**Section sources**
-- [notice_formatter_service.py](file://app/services/notice_formatter_service.py#L294-L318)
-- [telegram_service.py](file://app/services/telegram_service.py#L218-L253)
-
 ## Conclusion
-The Notice Formatter Service provides a robust, extensible foundation for standardizing notice content across multiple channels. Its LLM-powered classification, structured extraction, and category-specific formatting ensure consistent, professional presentations while maintaining flexibility for future enhancements. The integration with Telegram's formatting requirements and the broader notification ecosystem makes it a critical component of the system's communication infrastructure.
+The Notice Formatter Service provides a reliable, extensible foundation for standardizing notice content across multiple channels. Its LLM-powered classification, structured extraction, and category-specific formatting ensure consistent, professional presentations while maintaining flexibility for future enhancements. The integration with Telegram's formatting requirements and the broader notification ecosystem makes it a critical component of the system's communication infrastructure.
 
-The service's modular design, comprehensive error handling, and performance optimizations position it well for scaling to additional notice types and notification channels as requirements evolve.
+The service's modular design, detailed error handling, and performance optimizations position it well for scaling to additional notice types and notification channels as requirements evolve.

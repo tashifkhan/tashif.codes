@@ -1,35 +1,11 @@
-# Page Information Handler
-
-<cite>
-**Referenced Files in This Document**
-- [pageinfo.js](file://assignment-solver/src/background/handlers/pageinfo.js)
-- [extractor.js](file://assignment-solver/src/content/extractor.js)
-- [index.js](file://assignment-solver/src/content/index.js)
-- [messages.js](file://assignment-solver/src/core/messages.js)
-- [router.js](file://assignment-solver/src/background/router.js)
-- [index.js](file://assignment-solver/src/background/index.js)
-- [types.js](file://assignment-solver/src/core/types.js)
-- [applicator.js](file://assignment-solver/src/content/applicator.js)
-- [manifest.json](file://assignment-solver/manifest.json)
-</cite>
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+# Page information handler
 
 ## Introduction
-The Page Information Handler is a critical component of the NPTEL Assignment Solver extension responsible for detecting assignment pages, extracting metadata, and identifying assignment context. This handler serves as the bridge between the background service worker and content script, enabling context-aware processing of educational assignments from platforms like NPTEL and SWAYAM.
+The Page Information Handler is a critical component of the NPTEL Assignment Solver extension responsible for detecting assignment pages, extracting metadata, and identifying assignment context. This handler is the bridge between the background service worker and content script, enabling context-aware processing of educational assignments from platforms like NPTEL and SWAYAM.
 
 The handler performs sophisticated page analysis to determine course types, assignment formats, and available question structures, providing essential metadata for downstream AI-powered processing and automated assignment completion capabilities.
 
-## Project Structure
+## Project structure
 The Page Information Handler is part of a modular extension architecture with clear separation of concerns:
 
 ```mermaid
@@ -60,34 +36,22 @@ BG --> LS
 CS --> LS
 ```
 
-**Diagram sources**
-- [index.js](file://assignment-solver/src/background/index.js#L1-L135)
-- [index.js](file://assignment-solver/src/content/index.js#L1-L99)
+## Core components
+The Page Information Handler consists of several interconnected components working together to provide detailed assignment detection and metadata extraction:
 
-**Section sources**
-- [index.js](file://assignment-solver/src/background/index.js#L1-L135)
-- [index.js](file://assignment-solver/src/content/index.js#L1-L99)
-
-## Core Components
-The Page Information Handler consists of several interconnected components working together to provide comprehensive assignment detection and metadata extraction:
-
-### Primary Handler Functions
+### Primary handler functions
 - **Assignment Detection**: Identifies NPTEL/SWAYAM assignment pages using URL patterns and content selectors
 - **Metadata Extraction**: Collects page title, question counts, and structural information
 - **Context Validation**: Ensures content script availability and proper initialization
 - **Response Formatting**: Returns standardized metadata for downstream processing
 
-### Supporting Services
+### Supporting services
 - **Extractor Service**: Provides HTML extraction and image processing capabilities
 - **Message Routing**: Manages bidirectional communication between background and content scripts
 - **Platform Adapters**: Handles browser-specific implementations for tabs, scripting, and runtime APIs
 
-**Section sources**
-- [pageinfo.js](file://assignment-solver/src/background/handlers/pageinfo.js#L1-L112)
-- [extractor.js](file://assignment-solver/src/content/extractor.js#L1-L241)
-
-## Architecture Overview
-The Page Information Handler operates within a sophisticated message-driven architecture that enables seamless communication between extension components:
+## Architecture overview
+The Page Information Handler operates within a sophisticated message-driven architecture that enables smooth communication between extension components:
 
 ```mermaid
 sequenceDiagram
@@ -116,23 +80,14 @@ PIH-->>BG : formatted metadata
 BG-->>UI : assignment detection result
 ```
 
-**Diagram sources**
-- [pageinfo.js](file://assignment-solver/src/background/handlers/pageinfo.js#L18-L110)
-- [index.js](file://assignment-solver/src/content/index.js#L32-L41)
-- [messages.js](file://assignment-solver/src/core/messages.js#L5-L23)
-
 The architecture demonstrates a clear separation of concerns with the handler focusing on assignment detection while delegating content extraction to specialized services.
 
-**Section sources**
-- [pageinfo.js](file://assignment-solver/src/background/handlers/pageinfo.js#L1-L112)
-- [index.js](file://assignment-solver/src/content/index.js#L1-L99)
+## Detailed component analysis
 
-## Detailed Component Analysis
+### Page information handler implementation
+The core handler implements a reliable assignment detection mechanism with detailed error handling and fallback strategies:
 
-### Page Information Handler Implementation
-The core handler implements a robust assignment detection mechanism with comprehensive error handling and fallback strategies:
-
-#### Assignment Detection Logic
+#### Assignment detection logic
 The handler employs a multi-layered approach to identify assignment pages:
 
 ```mermaid
@@ -158,19 +113,13 @@ NotAssignment --> End
 ReturnSuccess --> End
 ```
 
-**Diagram sources**
-- [pageinfo.js](file://assignment-solver/src/background/handlers/pageinfo.js#L18-L110)
+#### Metadata extraction process
+The handler coordinates with the content script to extract detailed page metadata:
 
-#### Metadata Extraction Process
-The handler coordinates with the content script to extract comprehensive page metadata:
-
-**Section sources**
-- [pageinfo.js](file://assignment-solver/src/background/handlers/pageinfo.js#L47-L105)
-
-### Content Script Integration
+### Content script integration
 The content script provides essential page analysis capabilities through the extractor service:
 
-#### Page Structure Analysis
+#### Page structure analysis
 The extractor service implements sophisticated DOM traversal to identify assignment containers and question structures:
 
 ```mermaid
@@ -209,17 +158,10 @@ Extractor --> Image : "extracts"
 Extractor --> PageInfo : "analyzes"
 ```
 
-**Diagram sources**
-- [extractor.js](file://assignment-solver/src/content/extractor.js#L12-L238)
-- [types.js](file://assignment-solver/src/core/types.js#L36-L61)
-
-#### Question Format Detection
+#### Question format detection
 The extractor implements intelligent question format identification through CSS selector targeting:
 
-**Section sources**
-- [extractor.js](file://assignment-solver/src/content/extractor.js#L182-L236)
-
-### Message Communication Protocol
+### Message communication protocol
 The handler participates in a well-defined message protocol that ensures reliable communication:
 
 ```mermaid
@@ -242,15 +184,7 @@ RT-->>BG : response
 BG-->>BG : format response
 ```
 
-**Diagram sources**
-- [messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
-- [index.js](file://assignment-solver/src/content/index.js#L20-L95)
-
-**Section sources**
-- [messages.js](file://assignment-solver/src/core/messages.js#L1-L96)
-- [index.js](file://assignment-solver/src/content/index.js#L1-L99)
-
-## Dependency Analysis
+## Dependency analysis
 The Page Information Handler maintains loose coupling with its dependencies while providing essential orchestration:
 
 ```mermaid
@@ -280,46 +214,34 @@ EX --> LOGGER
 APP --> LOGGER
 ```
 
-**Diagram sources**
-- [pageinfo.js](file://assignment-solver/src/background/handlers/pageinfo.js#L5-L16)
-- [index.js](file://assignment-solver/src/background/index.js#L44-L113)
-
-### Platform Compatibility
+### Platform compatibility
 The handler demonstrates excellent cross-browser compatibility through platform abstraction:
 
-**Section sources**
-- [pageinfo.js](file://assignment-solver/src/background/handlers/pageinfo.js#L73-L93)
-- [manifest.json](file://assignment-solver/manifest.json#L1-L44)
-
-## Performance Considerations
+## Performance considerations
 The Page Information Handler implements several optimization strategies for efficient operation:
 
-### Asynchronous Processing
+### Asynchronous processing
 - Non-blocking tab operations using Promise-based APIs
 - Configurable retry mechanisms for transient failures
 - Optimistic content script loading with verification
 
-### Resource Management
+### Resource management
 - Selective DOM querying to minimize performance impact
 - Image extraction with size filtering to reduce bandwidth
 - Graceful degradation when content scripts are unavailable
 
-### Error Resilience
-- Comprehensive error handling with fallback responses
+### Error resilience
+- Detailed error handling with fallback responses
 - Connection error detection and retry logic
 - Timeout management for external operations
 
-**Section sources**
-- [pageinfo.js](file://assignment-solver/src/background/handlers/pageinfo.js#L65-L93)
-- [messages.js](file://assignment-solver/src/core/messages.js#L47-L95)
+## Troubleshooting guide
 
-## Troubleshooting Guide
+### Common issues and solutions
 
-### Common Issues and Solutions
-
-#### Content Script Loading Failures
+#### Content script loading failures
 **Symptoms**: Handler reports "Content script not loaded" errors
-**Causes**: 
+**Causes**:
 - Content script injection timeout
 - Cross-origin restrictions
 - Browser extension policy limitations
@@ -329,7 +251,7 @@ The Page Information Handler implements several optimization strategies for effi
 - Check host permissions for target domains
 - Implement manual content script reload
 
-#### Assignment Detection Failures
+#### Assignment detection failures
 **Symptoms**: Pages not recognized as assignments despite valid URLs
 **Causes**:
 - Incorrect URL patterns for new platform versions
@@ -341,7 +263,7 @@ The Page Information Handler implements several optimization strategies for effi
 - Implement dynamic content waiting mechanisms
 - Add fallback detection methods
 
-#### Message Communication Errors
+#### Message communication errors
 **Symptoms**: "Receiving end does not exist" or connection failures
 **Causes**:
 - Background script initialization delays
@@ -353,13 +275,9 @@ The Page Information Handler implements several optimization strategies for effi
 - Use connection error detection and recovery
 - Add timeout mechanisms for message operations
 
-**Section sources**
-- [pageinfo.js](file://assignment-solver/src/background/handlers/pageinfo.js#L106-L109)
-- [messages.js](file://assignment-solver/src/core/messages.js#L69-L90)
-
 ## Conclusion
-The Page Information Handler represents a sophisticated solution for assignment detection and metadata extraction in educational platforms. Its modular architecture, comprehensive error handling, and cross-browser compatibility make it a robust foundation for AI-powered educational assistance tools.
+The Page Information Handler represents a sophisticated solution for assignment detection and metadata extraction in educational platforms. Its modular architecture, detailed error handling, and cross-browser compatibility make it a reliable foundation for AI-powered educational assistance tools.
 
 The handler's strength lies in its ability to intelligently analyze page structure, extract meaningful metadata, and coordinate with content services to provide context-aware processing. The implementation demonstrates best practices in extension development, including proper separation of concerns, graceful error handling, and performance optimization.
 
-Future enhancements could include expanded platform support, improved machine learning-based detection, and enhanced integration with external educational APIs for richer context awareness.
+Future enhancements could include expanded platform support, improved machine learning-based detection, and improved integration with external educational APIs for richer context awareness.
