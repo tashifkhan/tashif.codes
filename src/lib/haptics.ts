@@ -1,13 +1,14 @@
 import { WebHaptics, type HapticInput } from "web-haptics";
 
-// Short pulses, ordered by significance. Intensity is approximated by the
-// library on the web; these are not Android's native Pixel haptic primitives.
+// One brief pulse per effect, without a delayed second beat. Intensity 1
+// preserves the duration instead of simulating amplitude with on/off timing.
+// Browsers cannot control motor amplitude or reproduce native Pixel effects.
 export const hapticPatterns = {
-	selection: [{ duration: 8, intensity: 0.4 }],
-	light: [{ duration: 12, intensity: 0.5 }],
-	medium: [{ duration: 18, intensity: 0.6 }],
-	success: [{ duration: 10, intensity: 0.5 }, { delay: 45, duration: 16, intensity: 0.65 }],
-	error: [{ duration: 18, intensity: 0.65 }, { delay: 55, duration: 18, intensity: 0.65 }],
+	selection: [{ duration: 4, intensity: 1 }],
+	light: [{ duration: 6, intensity: 1 }],
+	medium: [{ duration: 8, intensity: 1 }],
+	success: [{ duration: 8, intensity: 1 }],
+	error: [{ duration: 10, intensity: 1 }],
 } satisfies Record<string, HapticInput>;
 export type HapticKind = keyof typeof hapticPatterns;
 
@@ -42,9 +43,9 @@ export function trigger(kind: HapticKind = "light"): void {
 	if (!Object.hasOwn(hapticPatterns, kind)) return;
 	const now = performance.now();
 	const outcome = kind === "success" || kind === "error";
-	// Coalesce overlapping handlers. An actual result can replace an action tap,
-	// but a trailing generic click must never replace a result.
-	if (now - lastPulse < (lastWasOutcome ? 160 : 70) && (!outcome || lastWasOutcome)) return;
+	// Coalesce duplicate handlers and immediate results into one pulse.
+	// Later async outcomes still provide their own confirmation.
+	if (now - lastPulse < (lastWasOutcome ? 180 : 100)) return;
 	lastPulse = now;
 	lastWasOutcome = outcome;
 	try {

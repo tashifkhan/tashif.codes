@@ -315,6 +315,31 @@ async function fillMissingReadmes(
 	});
 }
 
+/** The lite stats response omits releases. Check public feeds without API tokens. */
+async function hasPublishedRelease(project: Project): Promise<boolean> {
+	if (project.releases?.some((release) => !release.draft)) return true;
+	const repo = project.github_link.match(/^https:\/\/github\.com\/([^/]+\/[^/]+)\/?$/)?.[1];
+	if (!repo) return false;
+	const key = `release-availability-${repo}`;
+	const cached = readCache<{ checkedAt: number; hasReleases: boolean }>(key);
+	if (cached && Date.now() - cached.checkedAt < 24 * 60 * 60 * 1000) return cached.hasReleases;
+	try {
+		const response = await fetch(`https://github.com/${repo}/releases.atom`, {
+			signal: AbortSignal.timeout(8000),
+		});
+		if (!response.ok) throw new Error(`HTTP ${response.status}`);
+		const feed = await response.text();
+		// Reject error pages instead of caching them as an empty release list.
+		if (!feed.includes('<feed xmlns="http://www.w3.org/2005/Atom"')) throw new Error("Invalid release feed");
+		const hasReleases = /<entry(?:\s|>)/.test(feed);
+		writeCache(key, { checkedAt: Date.now(), hasReleases });
+		return hasReleases;
+	} catch {
+		console.warn(`Release feed unavailable for ${repo}; using cached availability`);
+		return cached?.hasReleases ?? false;
+	}
+}
+
 async function fetchAllProjects(): Promise<Project[]> {
 	let repos: any[] =
 		(await fetchJsonCached<any[]>(
@@ -542,7 +567,7 @@ async function fetchAllProjects(): Promise<Project[]> {
 		return 0; 
 	});
 
-	return repoProjects.filter((p) => {
+	const visibleProjects = repoProjects.filter((p) => {
         // Always show pinned projects
         if (p.pinned) return true;
         
@@ -552,6 +577,10 @@ async function fetchAllProjects(): Promise<Project[]> {
         // Show if it is NOT a fork (source repo)
         return !p.isFork;
     });
+	await inBatches(visibleProjects, 4, async (project) => {
+		project.hasReleases = await hasPublishedRelease(project);
+	});
+	return visibleProjects;
 }
 
 

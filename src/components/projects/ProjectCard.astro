@@ -29,7 +29,7 @@ const accent = project.languages[0] ? languageColor(project.languages[0]) : null
 	data-project-card
 	data-project-slug={project.slug}
 	data-pinned={project.pinned ? "true" : "false"}
-	data-has-releases={releaseCount > 0 ? "true" : "false"}
+	data-has-releases={project.hasReleases || releaseCount > 0 ? "true" : "false"}
 >
 	<article
 		class={cn(
@@ -37,9 +37,9 @@ const accent = project.languages[0] ? languageColor(project.languages[0]) : null
 			// dark surface is lifted a touch off the near-black page so cards read as objects
 			"border border-border/70 bg-card dark:bg-[#101119] text-card-foreground",
 			"dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
-			"transition-[transform,box-shadow,border-color] duration-300",
+			"motion-card",
 			"shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/40",
-			"hover:border-primary/40 hover:-translate-y-1"
+			"hover:border-primary/40"
 		)}
 	>
 		{

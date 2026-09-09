@@ -1,5 +1,7 @@
-import { beforeEach, expect, mock, test } from "bun:test";
+import { beforeEach, expect, mock, spyOn, test } from "bun:test";
 
+let now = 0;
+spyOn(performance, "now").mockImplementation(() => now);
 const pulses = [];
 let instances = 0;
 let throwOnTrigger = false;
@@ -30,6 +32,7 @@ const { trigger, installHaptics, hapticsEnabled, setHapticsEnabled } = await imp
 installHaptics();
 
 beforeEach(() => {
+  now = 0;
   document.visibilityState = "visible";
   document.hidden = false;
   throwOnTrigger = false;
@@ -39,24 +42,38 @@ beforeEach(() => {
   pulses.length = 0;
 });
 
-test("overlapping handlers produce one pulse on the shared engine", () => {
-  trigger("selection");
-  trigger("light");
-  trigger("selection");
-  expect(pulses).toHaveLength(1);
+test("taps and selections produce feedback on the shared engine", () => {
+  for (const kind of ["selection", "light", "medium"]) {
+    trigger(kind);
+    now += 100;
+  }
+  expect(pulses).toHaveLength(3);
   expect(instances).toBe(1);
 });
 
-test("a result takes precedence over an action and trailing click", () => {
+test("duplicate handlers and immediate results produce only one pulse", () => {
   trigger("light");
-  trigger("error");
+  trigger("selection");
+  now = 50;
+  trigger("success");
+  expect(pulses).toHaveLength(1);
+});
+
+test("later results fire once and protect against trailing clicks", () => {
+  trigger("light");
+  now = 100;
+  trigger("success");
+  now = 200;
   trigger("light");
   expect(pulses).toHaveLength(2);
-  expect(pulses[1]).toHaveLength(2);
+  expect(pulses[1]).toHaveLength(1);
+  now = 280;
+  trigger("selection");
+  expect(pulses).toHaveLength(3);
 });
 
 test("hidden pages remain silent and cancel running patterns", () => {
-  trigger();
+  trigger("success");
   document.hidden = true;
   document.visibilityState = "hidden";
   document.dispatchEvent(new Event("visibilitychange"));
@@ -75,7 +92,7 @@ test("turning feedback off cancels and persists the preference", () => {
 
 test("unsupported hardware cannot break an action", () => {
   throwOnTrigger = true;
-  expect(() => trigger()).not.toThrow();
+  expect(() => trigger("success")).not.toThrow();
 });
 
 test("unknown patterns are ignored, including inherited object keys", () => {
@@ -93,6 +110,6 @@ test("inline outcomes use the same policy without duplicate installation", () =>
 test("SSR imports and calls do not require browser globals", () => {
   const saved = globalThis.document;
   delete globalThis.document;
-  try { expect(() => trigger()).not.toThrow(); }
+  try { expect(() => trigger("success")).not.toThrow(); }
   finally { globalThis.document = saved; }
 });

@@ -273,7 +273,7 @@ nav::-webkit-scrollbar-thumb:hover {
     0 4px 16px -2px rgba(0, 0, 0, 0.5),
     0 0 0 1px oklch(0.6397 0.1720 36.4421 / 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  transition: all 0.25s ease;
+  transition: border-color var(--motion-normal) var(--motion-ease), box-shadow var(--motion-normal) var(--motion-ease);
   max-width: 100%;
 }
 
@@ -341,7 +341,7 @@ nav::-webkit-scrollbar-thumb:hover {
   padding: 0.5rem;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color var(--motion-fast), background-color var(--motion-fast), border-color var(--motion-fast);
   backdrop-filter: blur(10px);
   z-index: 10;
 }
@@ -810,6 +810,14 @@ nav::-webkit-scrollbar-thumb:hover {
   --shadow-2xl: 0px 20px 56px 0px hsl(0 0% 0% / 0.6);
 }
 
+/* Keep the browser canvas and native UI aligned with the selected site theme. */
+html {
+  color-scheme: light;
+  background-color: var(--background);
+}
+html.dark { color-scheme: dark; }
+html.cream { color-scheme: light; }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -854,34 +862,87 @@ nav::-webkit-scrollbar-thumb:hover {
   }
 }
 
-/* ── Page transitions (Astro ClientRouter) — gentle rise & fade ── */
-@keyframes page-out {
-  to {
-    opacity: 0;
-    transform: translateY(-8px);
+/* Shared CSS motion. Content never waits for an entrance animation. */
+:root {
+  --motion-press: 80ms;
+  --motion-fast: 140ms;
+  --motion-normal: 200ms;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.motion-control,
+button,
+[role="tab"],
+summary {
+  transition-property: color, background-color, border-color, box-shadow, opacity, scale;
+  transition-duration: var(--motion-fast);
+  transition-timing-function: var(--motion-ease);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(.motion-control, button, [role="tab"]):not(:disabled):not([aria-disabled="true"]):active {
+    scale: 0.98;
+    transition-duration: var(--motion-press);
   }
 }
 
-@keyframes page-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
+.motion-card {
+  transition: transform var(--motion-normal) var(--motion-ease),
+    box-shadow var(--motion-normal) var(--motion-ease),
+    border-color var(--motion-normal) var(--motion-ease);
 }
 
-::view-transition-old(root) {
-  animation: page-out 0.16s cubic-bezier(0.4, 0, 1, 1) both;
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .motion-card:hover { transform: translateY(-2px); }
 }
 
-::view-transition-new(root) {
-  animation: page-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.04s both;
+[data-blog-card]:focus-visible,
+a.motion-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+  border-radius: var(--radius);
 }
+
+/* Feedback should remain discoverable with a keyboard and on touch screens. */
+:is([data-blog-card], a.motion-card):focus-visible .motion-card-arrow {
+  opacity: 1;
+  translate: none;
+}
+@media (hover: none) {
+  .motion-card-arrow { opacity: 1; translate: none; }
+}
+
+.motion-menu[data-state="open"] {
+  animation: menu-in var(--motion-fast) var(--motion-ease);
+}
+.motion-menu[data-state="closed"] {
+  animation: menu-out 100ms ease-in;
+}
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes menu-out { to { opacity: 0; } }
+
+/* A brief crossfade keeps the reading position visually stable. */
+@keyframes page-out { to { opacity: 0; } }
+@keyframes page-in { from { opacity: 0; } }
+::view-transition-old(root) { animation: page-out 120ms ease-out both; }
+::view-transition-new(root) { animation: page-in 180ms var(--motion-ease) both; }
 
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation: none;
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    /* Preserve completion events used by existing overlay components. */
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
   }
+  .motion-card, .motion-tooltip { transform: none !important; }
+  [data-blog-cover], .motion-card-arrow { translate: none !important; scale: none !important; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 }
 
 /* ── TanStack Charts tooltips (project stats dashboard) ── */

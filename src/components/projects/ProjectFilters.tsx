@@ -70,7 +70,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 		}
 		return () =>
 			document.removeEventListener("project-list-select", handleIncoming);
-	}, [lists.length]);
+	}, [lists, searchTerm, showLiveOnly, showReleasesOnly]);
 
 	// Dispatch initial filter state when component mounts
 	useEffect(() => {
@@ -169,6 +169,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 					<Button
 						variant={showLiveOnly ? "default" : "outline"}
 						onClick={handleLiveFilter}
+						aria-pressed={showLiveOnly}
 						className={`gap-2 whitespace-nowrap ${
 							!showLiveOnly ? "bg-background/50 backdrop-blur-sm" : ""
 						}`}
@@ -179,6 +180,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 					<Button
 						variant={showReleasesOnly ? "default" : "outline"}
 						onClick={handleReleasesFilter}
+						aria-pressed={showReleasesOnly}
 						className={`gap-2 whitespace-nowrap ${
 							!showReleasesOnly ? "bg-background/50 backdrop-blur-sm" : ""
 						}`}

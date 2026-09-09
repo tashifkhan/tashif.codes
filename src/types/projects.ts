@@ -51,6 +51,8 @@ export interface Project {
     isFork?: boolean;
     contributors?: Contributor[];
     releases?: RepoRelease[];
+    /** Release availability when the stats response omits release details. */
+    hasReleases?: boolean;
 }
 
 export interface Contributor {

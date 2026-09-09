@@ -59,7 +59,7 @@ const liveCount = projects.filter((p) => Boolean(p.live_website_url)).length;
 				<span class="inline-flex items-center gap-1.5">
 					<span class="relative flex h-1.5 w-1.5">
 						<span
-							class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
+							class="motion-safe:animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
 						></span>
 						<span
 							class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"
@@ -86,7 +86,7 @@ const liveCount = projects.filter((p) => Boolean(p.live_website_url)).length;
 					class="h-full"
 					data-project-item-card
 					data-has-live-link={Boolean(project.live_website_url)}
-					data-has-releases={Boolean(project.releases && project.releases.length > 0)}
+					data-has-releases={Boolean(project.hasReleases || project.releases?.length)}
 				>
 					<ProjectCard
 						project={project}
@@ -97,6 +97,7 @@ const liveCount = projects.filter((p) => Boolean(p.live_website_url)).length;
 			))
 		}
 	</div>
+	<p data-project-empty role="status" hidden class="py-8 text-center text-sm text-muted-foreground">No projects match these filters. Try clearing a filter or changing your search.</p>
 </PageShell>
 
 <script>
@@ -201,6 +202,10 @@ const liveCount = projects.filter((p) => Boolean(p.live_website_url)).length;
 				if (isExact) exactMatches.push(card);
 				else if (isFuzzy) fuzzyMatches.push(card);
 			}
+		});
+
+		document.querySelectorAll<HTMLElement>("[data-project-empty]").forEach((message) => {
+			message.hidden = exactMatches.length + fuzzyMatches.length > 0;
 		});
 
 		if (query && projectCards.length) {

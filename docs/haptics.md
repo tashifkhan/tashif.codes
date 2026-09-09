@@ -1,60 +1,36 @@
-# Haptics audit
+# Haptics policy
 
-The site uses one lazy `WebHaptics` instance through `src/lib/haptics.ts`.
-Astro markup, React islands, menus rendered in portals, and generated Markdown
-share its patterns and rate limit.
+Haptics accompany deliberate interactions across Astro pages and React islands.
+Every effect is a single pulse, with no delayed second beat.
 
-## Feedback levels
-
-| Interaction | Feedback |
+| Interaction | Requested pulse |
 | --- | --- |
-| Theme, filter, tab, year or contribution-day selection | Short selection tick |
-| Navigation, links, menu opening/dismissal, action buttons | Light tap |
-| Copy completed, comment/reply posted, refresh completed | Short rising pair |
-| Copy failed, invalid comment, rejected reply, failed refresh/like | Short equal pair |
-| Typing, hover, scrolling, loading, selecting the current tab | Silent |
+| Theme, filters, tabs, toggles, selections | 4 ms |
+| Navigation, links, buttons, menu opening/dismissal | 6 ms |
+| Medium actions and successful copy, submission, or refresh | 8 ms |
+| Failed actions and invalid submissions | 10 ms |
+| Typing, hover, scrolling, loading, current-tab selection | Silent |
 
-Social links use the same light tap as other links. Opening an email client is
-an action tap, since the site cannot confirm that an email was sent. Clipboard
-feedback follows completion, including the legacy copy fallback's return value.
+One lazy WebHaptics instance handles all feedback. A 100 ms guard prevents
+handlers and immediate outcomes from stacking. Outcomes suppress trailing
+feedback for 180 ms. Later async results can provide their own confirmation.
 
-The haptic button beside the theme button saves the visitor's preference.
-Without an explicit preference, reduced motion defaults to silence. Turning
-feedback off cancels a running pattern. Hidden pages and page transitions cancel
-patterns too. Unsupported hardware and rejected vibration calls never block UI.
+Links, buttons, summaries, and common ARIA controls receive delegated click
+feedback. Native form controls receive feedback on change. Explicit handlers
+use `trigger` from `@/lib/haptics`; inline scripts dispatch `site:haptic` with
+the semantic kind in `detail`.
 
-## Integration rules
+Use `data-haptic="manual"` when an action handler owns feedback, such as a copy
+button waiting for its result. `data-haptic="off"` suppresses delegated feedback
+for an element or subtree. Disabled controls and modified clicks stay silent.
 
-- Import `trigger` from `@/lib/haptics` for state changes and async outcomes.
-  Do not instantiate the library in components or use its per-component hook.
-- Plain links, buttons, summaries and common ARIA controls receive delegated
-  feedback. Use `data-haptic="selection"` to specify a tick.
-- Use `data-haptic="manual"` when the action handler owns feedback. Copy buttons
-  use it to avoid an extra click pulse before their result. Select triggers use
-  it because their open-state callback runs on pointer-down or keyboard input.
-- `data-haptic="off"` silences delegated feedback for an element/subtree.
-- Inline Astro scripts dispatch `site:haptic` with a semantic kind in `detail`.
-- Explicit feedback takes precedence over delegated clicks. A 70 ms guard
-  coalesces ordinary feedback; outcome patterns have 160 ms of protection.
-- Never trigger feedback from a render, background fetch, hover or scroll.
+The haptic preference button saves the visitor's choice. Reduced motion
+initially defaults to silence. Disabling feedback, hiding the page, or navigating
+cancels active patterns. Unsupported hardware never blocks an action.
 
-## Validation
+Intensity 1 preserves pulse timing rather than simulating amplitude through
+on/off timing. Browsers cannot control motor amplitude or damping, and devices
+may clamp short pulses. The sensation still needs testing on a physical phone.
 
-`bun test tests/haptics.test.js` checks shared-instance deduplication, outcome
-priority, cancellation, preferences, SSR and unavailable hardware.
-
-The browser audit uses Chromium at a 390 × 844 touch viewport with
-`navigator.vibrate` instrumented. It checks actual React controls, Astro tabs,
-menu open/dismissal, silent typing, preference persistence, native disclosures,
-copy outcomes, delegated opt-outs, synthetic/modified clicks and reduced motion.
-Blog API requests are intercepted when testing comments, so no real comments
-or likes are created.
-
-A real Pixel pass remains necessary to judge the sensation. Web vibration uses
-timing patterns and cannot invoke Android's native tick/click primitives or
-control motor amplitude directly. The intent follows Android's haptics design
-principles: brief, consistent feedback whose strength matches the action.
-
-References:
-- https://developer.android.com/develop/ui/views/haptics/haptics-principles
-- https://developer.mozilla.org/en-US/docs/Web/API/Vibration_API
+`bun test tests/haptics.test.js` checks active feedback, duplicate suppression,
+result spacing, preferences, cancellation, SSR, and unavailable hardware.

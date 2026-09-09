@@ -275,7 +275,7 @@ const title = titleLabel
 
 	// Project search and filter functionality (exact matches first, then fuzzy)
 	document.addEventListener("project-search", (e: Event) => {
-		const { term: searchTerm, showLiveOnly, list } = (e as CustomEvent).detail;
+		const { term: searchTerm, showLiveOnly, showReleasesOnly, list } = (e as CustomEvent).detail;
 		const query = (searchTerm || "").trim().toLowerCase();
 		const projectCards = Array.from(
 			document.querySelectorAll("[data-project-item-card]")
@@ -304,6 +304,8 @@ const title = titleLabel
 			const hasLiveLink =
 				card.querySelector("[data-live-link]") !== null ||
 				card.getAttribute("data-has-live-link") === "true";
+
+			const hasReleases = card.querySelector('[data-has-releases="true"]') !== null;
 
 			// Star list filtering
 			let listFilter = true;
@@ -338,13 +340,18 @@ const title = titleLabel
 			}
 
 			const liveFilter = !showLiveOnly || hasLiveLink;
-			const matches = (isExact || isFuzzy) && liveFilter && listFilter;
+			const releasesFilter = !showReleasesOnly || hasReleases;
+			const matches = (isExact || isFuzzy) && liveFilter && releasesFilter && listFilter;
 			card.style.display = matches ? "" : "none";
 
 			if (matches) {
 				if (isExact) exactMatches.push(card);
 				else if (isFuzzy) fuzzyMatches.push(card);
 			}
+		});
+
+		document.querySelectorAll<HTMLElement>("[data-project-empty]").forEach((message) => {
+			message.hidden = exactMatches.length + fuzzyMatches.length > 0;
 		});
 
 		// Re-order DOM for non-empty queries: exact first then fuzzy
