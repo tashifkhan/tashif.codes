@@ -33,12 +33,22 @@ const { titleLabel } = getTab(activeTab);
 const title = titleLabel
 	? `${titleLabel} | ${owner.name}`
 	: `${owner.name} | Dashboard & Portfolio`;
+
+const tabImageMap: Record<TabId, string> = {
+	projects: "/og/home.jpg",
+	resume: "/og/resume.jpg",
+	blog: "/og/blog.jpg",
+	github: "/og/github.jpg",
+	leetcode: "/og/leetcode.jpg",
+	community: "/og/connect.jpg",
+};
+const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 ---
 
 <Layout
 	title={title}
 	description={description}
-	image={DEFAULT_OG_IMAGE}
+	image={tabImage}
 	url={Astro.url.pathname}
 >
 	<div

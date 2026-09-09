@@ -56,26 +56,74 @@ export function absoluteUrl(pathOrUrl?: string | null): string {
 }
 
 /**
+ * Maps a site route pathname to its dedicated pre-rendered OG thumbnail.
+ */
+export function resolveRouteOgImage(pathname?: string | null): string | null {
+	if (!pathname) return null;
+	const clean = pathname.replace(/\/+$/, "").toLowerCase() || "/";
+
+	if (clean === "/" || clean === "") return "/og/home.jpg";
+	if (clean === "/resume" || clean === "/print-resume") return "/og/resume.jpg";
+	if (clean === "/github") return "/og/github.jpg";
+	if (clean === "/github/stats") return "/og/github-stats.jpg";
+	if (clean === "/leetcode") return "/og/leetcode.jpg";
+	if (clean === "/leetcode/stats") return "/og/leetcode-stats.jpg";
+	if (clean === "/connect") return "/og/connect.jpg";
+	if (clean === "/projects") return "/og/projects.jpg";
+	if (clean === "/projects/stats") return "/og/projects-stats.jpg";
+	if (clean.startsWith("/projects/")) {
+		const slug = clean.replace("/projects/", "").split("/")[0];
+		if (slug && slug !== "stats") {
+			return `/og/projects/${encodeURIComponent(slug)}.jpg`;
+		}
+	}
+	if (clean === "/docs") return "/og/docs.jpg";
+	if (clean.startsWith("/docs/")) {
+		const project = clean.replace("/docs/", "").split("/")[0];
+		if (project) {
+			return `/og/docs/${encodeURIComponent(project)}.jpg`;
+		}
+	}
+	if (clean === "/fdroid") return "/og/fdroid.jpg";
+	if (clean.startsWith("/download/")) {
+		const title = clean.replace("/download/", "").split("/")[0];
+		if (title) {
+			return `/og/download/${encodeURIComponent(title)}.jpg`;
+		}
+	}
+	if (clean === "/blog" || clean === "/blog/archive") return "/og/blog.jpg";
+
+	return null;
+}
+
+/**
  * Pick a crawler-safe social image.
  *
- * Prefer an explicit raster URL; for blog posts with SVG covers use the
- * build-time PNG at /og/blog/<slug>.png; otherwise the site default card.
+ * Checks explicit image -> blog post slug -> route-based image -> default card.
  */
 export function resolveSocialImage(options: {
 	image?: string | null;
 	blogSlug?: string;
+	pathname?: string | null;
 }): string {
-	const { image, blogSlug } = options;
+	const { image, blogSlug, pathname } = options;
 
-	if (image) {
+	if (image && image !== DEFAULT_OG_IMAGE) {
 		const abs = absoluteUrl(image);
 		if (RASTER_EXT.test(abs) && !SVG_EXT.test(abs)) return abs;
-		// SVG (or unknown) — fall through to generated blog PNG / default
+		// SVG (or unknown) — fall through to route/default
 	}
 
 	if (blogSlug) {
 		// Build-time JPEG (opaque sRGB) — Discord/WhatsApp drop SVG and flaky PNGs.
 		return absoluteUrl(`/og/blog/${encodeURIComponent(blogSlug)}.jpg`);
+	}
+
+	if (pathname) {
+		const routeImage = resolveRouteOgImage(pathname);
+		if (routeImage) {
+			return absoluteUrl(routeImage);
+		}
 	}
 
 	return DEFAULT_OG_IMAGE;
@@ -92,11 +140,12 @@ function mimeForImageUrl(url: string): string {
 
 /**
  * Dimensions + MIME for og:image:* / twitter:image.
- * Blog PNGs and the default card are authored at 1200×630.
+ * Cards are authored at 1200×630.
  */
 export function resolveSocialImageMeta(options: {
 	image?: string | null;
 	blogSlug?: string;
+	pathname?: string | null;
 	alt: string;
 }): SocialImageMeta {
 	const url = resolveSocialImage(options);
@@ -116,9 +165,9 @@ export function defaultSeo(partial: SeoProps): Required<
 	return {
 		title: partial.title,
 		description: partial.description?.trim() || DEFAULT_DESCRIPTION,
-		image: resolveSocialImage({ image: partial.image }),
+		image: resolveSocialImage({ image: partial.image, pathname: partial.url }),
 		url: absoluteUrl(partial.url ?? "/"),
-		type: partial.type ?? "website",
+		type: partial.type || "website",
 		publishedTime: partial.publishedTime,
 		tags: partial.tags,
 	};

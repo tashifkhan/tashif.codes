@@ -30,7 +30,8 @@ const {
 
 const canonical = absoluteUrl(url ?? Astro.url.pathname);
 const social = resolveSocialImageMeta({
-	image: image ?? DEFAULT_OG_IMAGE,
+	image,
+	pathname: url ?? Astro.url.pathname,
 	alt: title,
 });
 ---

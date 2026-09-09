@@ -101,6 +101,7 @@ export async function getStaticPaths() {
 	title={`${project.title} | Projects | Tashif Ahmad Khan`}
 	description={project.description || undefined}
 	url={`/projects/${project.slug}`}
+	image={`/og/projects/${project.slug}.jpg`}
 	tint="orange"
 	breadcrumbs={[
 		{ label: "Home", href: "/" },
