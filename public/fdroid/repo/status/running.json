@@ -1,5 +1,5 @@
 {
-  "/etc/issue.net": "Ubuntu 24.04.4 LTS",
+  "/etc/issue.net": "Ubuntu 24.04.5 LTS",
   "antiFeatures": {},
   "apksigner": "/usr/bin/apksigner",
   "archivePolicy0": [],
@@ -11,7 +11,7 @@
     "--verbose"
   ],
   "disabled": [],
-  "endTimestamp": 1788932585749,
+  "endTimestamp": 1789073476001,
   "failedBuilds": {},
   "jarsigner": "/usr/bin/jarsigner",
   "keytool": "/usr/bin/keytool",
@@ -31,17 +31,17 @@
     "codes.tashif.paisa"
   ],
   "stages": {
-    "archive_old_apks archive": 1788932580149,
-    "delete_disabled_builds": 1788932573725,
-    "index.make archive": 1788932580161,
-    "index.make repo": 1788932583215,
-    "prepare_apps archive": 1788932580161,
-    "prepare_apps repo": 1788932583213,
-    "process_apks": 1788932573726,
-    "read_added_date_from_all_apks": 1788932580149,
-    "remove_apks": 1788932578515,
-    "scan_repo_files": 1788932578515
+    "archive_old_apks archive": 1789073468983,
+    "delete_disabled_builds": 1789073460338,
+    "index.make archive": 1789073468985,
+    "index.make repo": 1789073472762,
+    "prepare_apps archive": 1789073468984,
+    "prepare_apps repo": 1789073472760,
+    "process_apks": 1789073460338,
+    "read_added_date_from_all_apks": 1789073468983,
+    "remove_apks": 1789073466173,
+    "scan_repo_files": 1789073466173
   },
-  "startTimestamp": 1788932573000,
+  "startTimestamp": 1789073460000,
   "subcommand": "update"
 }
