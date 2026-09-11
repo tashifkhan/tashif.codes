@@ -1525,6 +1525,20 @@ div.md-hand {
 
 .md-details-summary::-webkit-details-marker { display: none; }
 
+/*
+ * The label sits in its own span so a summary lifted out of HTML — which can be
+ * a `<code>` chip or a `<b>` run — stays on the baseline instead of becoming a
+ * flex item of the summary row and losing its inline box.
+ */
+.md-details-label {
+  min-width: 0;
+}
+
+.md-details-label > :is(p, div) {
+  display: inline;
+  margin: 0;
+}
+
 /* A rotating caret, drawn rather than an icon so it inherits the text colour. */
 .md-details-summary::before {
   content: "";

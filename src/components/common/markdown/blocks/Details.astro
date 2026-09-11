@@ -1,10 +1,35 @@
 ---
 import type { BlockProps } from "./shared";
 const { attrs, theme } = Astro.props as BlockProps;
+
+/*
+ * The label arrives one of two ways. `:::details` and `<Details summary="…">`
+ * pass a plain string; the HTML spelling a README uses keeps it in a `<summary>`
+ * element, which the parser lifts into `summaryhtml` because it can hold inline
+ * markup (`<b><code>$ ./run.sh</code></b>`) that an attribute cannot carry. That
+ * markup is emitted as markup — the document around it is raw HTML already.
+ */
+const summaryHtml =
+	typeof attrs.summaryhtml === "string" ? attrs.summaryhtml.trim() : "";
+// What a browser shows for a `<details>` with no `<summary>` of its own, rather
+// than a caret with nothing beside it.
+const summaryText =
+	typeof attrs.summary === "string" && attrs.summary.trim()
+		? attrs.summary
+		: "Details";
 ---
+
 {/* Native <details>, so this needs no JavaScript at all and still works with
     in-page search on browsers that expand matches automatically. */}
 <details class:list={["md-details", theme.details]} open={Boolean(attrs.open)}>
-  <summary class="md-details-summary">{attrs.summary}</summary>
+  <summary class="md-details-summary">
+    {
+      summaryHtml ? (
+        <span class="md-details-label" set:html={summaryHtml} />
+      ) : (
+        <span class="md-details-label">{summaryText}</span>
+      )
+    }
+  </summary>
   <div class="md-details-body"><slot /></div>
 </details>

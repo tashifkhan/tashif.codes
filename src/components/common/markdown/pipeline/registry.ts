@@ -549,6 +549,13 @@ export const COMPONENTS: readonly ComponentSpec[] = [
         required: true,
         describe: 'The always-visible line',
       },
+      // Set by the parser, not by hand: the HTML spelling of `<details>` keeps
+      // its label in a `<summary>` element, which can hold inline markup that
+      // an attribute string cannot carry safely.
+      summaryhtml: {
+        type: 'string',
+        describe: 'Inline HTML lifted from a `<summary>` element',
+      },
       open: { type: 'boolean', describe: 'Start expanded' },
     },
     positional: 'summary',

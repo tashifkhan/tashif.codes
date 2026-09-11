@@ -199,6 +199,54 @@ function normalizeSingleLineTags(source: string): string {
   return out.join('\n')
 }
 
+/**
+ * Put a `<summary>` element on a line of its own.
+ *
+ * `<details><summary>Label</summary>body</details>` collapses to one body line
+ * holding both the label and the content. `liftHtmlSummary` only claims a
+ * summary that ends its line, since it cannot re-cut the line map the tokenizer
+ * is about to read — so the cut is made here, while the source is still a
+ * string.
+ */
+function splitSummaryLines(source: string): string {
+  if (!/<summary/i.test(source)) return source
+
+  const lines = source.split('\n')
+  const out: string[] = []
+  let codeMarker: string | null = null
+
+  for (const line of lines) {
+    const fence = codeFenceMarker(line)
+    if (fence) {
+      if (codeMarker === null) codeMarker = fence
+      else if (codeMarker === fence) codeMarker = null
+      out.push(line)
+      continue
+    }
+    if (codeMarker !== null) {
+      out.push(line)
+      continue
+    }
+
+    const trimmed = line.trim()
+    const close = /<\/summary\s*>/i.exec(trimmed)
+    if (!/^<summary(?:\s[^>]*)?>/i.test(trimmed) || !close) {
+      out.push(line)
+      continue
+    }
+
+    const rest = trimmed.slice(close.index + close[0].length)
+    if (!rest.trim()) {
+      out.push(line)
+      continue
+    }
+
+    out.push(trimmed.slice(0, close.index + close[0].length), rest)
+  }
+
+  return out.join('\n')
+}
+
 // ---------------------------------------------------------------------------
 // 2. Block rule
 // ---------------------------------------------------------------------------
@@ -249,6 +297,49 @@ function findClosingTag(
   }
 
   return -1
+}
+
+/**
+ * Lift a leading `<summary>` element out of an HTML-spelled `<details>` body.
+ *
+ * A README writes the native shape — `<details>` wrapping a `<summary>` — and
+ * `findByTag` is case-insensitive, so that markup resolves to the Details
+ * component, whose label is an attribute instead. Without this the label sinks
+ * into the collapsed body and the strip renders as a bare caret.
+ *
+ * Returns the summary's inner HTML and the first body line after it, or `null`
+ * when the body does not open with a `<summary>` that ends its own line —
+ * re-splicing a partial line would mean rewriting the line map the tokenizer
+ * is about to read.
+ */
+function liftHtmlSummary(
+  lines: readonly string[],
+  from: number,
+  to: number,
+): { html: string; nextLine: number } | null {
+  let index = from
+  while (index < to && !lines[index].trim()) index++
+  if (index >= to) return null
+
+  const open = /^<summary(?:\s[^>]*)?>/i.exec(lines[index].trimStart())
+  if (!open) return null
+
+  const parts: string[] = []
+  let rest = lines[index].trimStart().slice(open[0].length)
+  let line = index
+
+  while (true) {
+    const close = /<\/summary\s*>/i.exec(rest)
+    if (close) {
+      if (rest.slice(close.index + close[0].length).trim()) return null
+      parts.push(rest.slice(0, close.index))
+      return { html: parts.join('\n').trim(), nextLine: line + 1 }
+    }
+    parts.push(rest)
+    line++
+    if (line >= to) return null
+    rest = lines[line]
+  }
 }
 
 function jsxBlockRule(
@@ -310,12 +401,23 @@ function jsxBlockRule(
   state.parentType = 'directive'
   state.lineMax = bodyEnd
 
+  // The HTML spelling of `<details>` carries its label in a child element
+  // rather than an attribute, so move it across before the body is tokenized.
+  let bodyStart = startLine + 1
+  if (tag.spec.name === 'Details' && !tag.attrs.summary) {
+    const lifted = liftHtmlSummary(lines, 1, bodyEnd - startLine)
+    if (lifted) {
+      tag.attrs.summaryhtml = lifted.html
+      bodyStart = startLine + lifted.nextLine
+    }
+  }
+
   const open = state.push('directive_open', 'div', 1)
   open.block = true
   open.meta = info
   open.map = [startLine, bodyEnd]
 
-  state.line = startLine + 1
+  state.line = bodyStart
   if (tag.spec.body === 'raw') {
     // See the matching branch in `directives.ts`: a raw body is captured
     // verbatim rather than re-tokenized.
@@ -399,7 +501,7 @@ function jsxInlineRule(state: any, silent: boolean): boolean {
 export function jsxPlugin(md: any): void {
   md.core.ruler.before('block', 'jsx_normalize', (state: any) => {
     if (state.inlineMode) return true
-    state.src = normalizeSingleLineTags(state.src)
+    state.src = splitSummaryLines(normalizeSingleLineTags(state.src))
     return true
   })
 
