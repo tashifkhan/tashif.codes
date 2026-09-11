@@ -22,7 +22,7 @@ export const resumeAbout = {
 		{ label: "Email", url: "mailto:me@tashif.codes", icon: "mail" },
 		{
 			label: "Resume",
-			url: "https://tashif.codes/resume",
+			url: "https://tashif.codes/resume:pdf",
 			icon: "download",
 		},
 	] as ResumeAction[],
