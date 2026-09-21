@@ -25,9 +25,22 @@ PH_FIELDS = {
 }
 
 
-# Lifetime breakdowns scan years of events and routinely take PostHog more
-# than 8s. The snapshot refresh deadline (45s) bounds the total wait.
-QUERY_TIMEOUT = httpx.Timeout(8.0, read=40.0)
+# Lifetime breakdowns scan years of events and take PostHog 10s to over 40s.
+# The snapshot refresh deadline bounds the total wait.
+QUERY_TIMEOUT = httpx.Timeout(8.0, read=120.0)
+# PostHog answers bursts of concurrent queries with 429 or 503.
+MAX_CONCURRENT_QUERIES = 4
+RETRY_STATUSES = {429, 502, 503, 504}
+_query_slots: dict[asyncio.AbstractEventLoop, asyncio.Semaphore] = {}
+
+
+def _slots() -> asyncio.Semaphore:
+    # One semaphore per event loop; a semaphore can't be shared across loops.
+    loop = asyncio.get_running_loop()
+    if loop not in _query_slots:
+        _query_slots.clear()
+        _query_slots[loop] = asyncio.Semaphore(MAX_CONCURRENT_QUERIES)
+    return _query_slots[loop]
 
 
 async def query_posthog(project_id: str, hogql: str) -> list:
@@ -47,18 +60,16 @@ async def query_posthog(project_id: str, hogql: str) -> list:
     url = f"{settings.posthog_base_url}/api/projects/{project_id}/query/"
     headers = {"Authorization": f"Bearer {settings.posthog_api_key}"}
 
+    body = {"query": {"kind": "HogQLQuery", "query": hogql}}
     try:
-        response = await http_client.post(
-            url,
-            headers=headers,
-            json={
-                "query": {
-                    "kind": "HogQLQuery",
-                    "query": hogql,
-                }
-            },
-            timeout=QUERY_TIMEOUT,
-        )
+        for attempt in range(2):
+            async with _slots():
+                response = await http_client.post(url, headers=headers, json=body, timeout=QUERY_TIMEOUT)
+            if response.status_code in RETRY_STATUSES and attempt == 0:
+                retry_after = response.headers.get("Retry-After", "")
+                await asyncio.sleep(min(float(retry_after), 10) if retry_after.isdigit() else 3)
+                continue
+            break
         response.raise_for_status()
         payload = response.json()
         if not isinstance(payload.get("results"), list):

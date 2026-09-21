@@ -16,8 +16,11 @@ from .client import http_client
 logger = logging.getLogger(__name__)
 FRESH_SECONDS = 300
 RETENTION_SECONDS = 30 * 86400
-REFRESH_SECONDS = 45
-LOCK_SECONDS = 55
+# Lifetime PostHog queries take anywhere from 10s to over 40s each. The page
+# shows the saved snapshot while this runs, so a long refresh costs no one a
+# blank screen. vercel.json allows the function 300s.
+REFRESH_SECONDS = 240
+LOCK_SECONDS = 250
 RETRY_SECONDS = 60
 PREFIX = "analytics:v1:"
 _memory: OrderedDict[str, dict] = OrderedDict()

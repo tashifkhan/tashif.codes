@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Query
 from services.snapshots import get_snapshot
+from services.posthog_history import fetch_history
 from fastapi.responses import Response
 
 from core.config import list_available_projects
@@ -82,8 +83,14 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
             ts_task, breakdowns_task
         )
 
+    elif ph_id and query_days > 90:
+        # Long ranges go quarter by quarter; past quarters come from cache.
+        live_timeseries, live_breakdowns = await fetch_history(
+            ph_id, query_days, align=effective_days == 0
+        )
+
     elif ph_id:
-        ts_task = fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=30)
+        ts_task = fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=90)
         breakdowns_task = fetch_all_breakdowns(ph_id, query_days)
 
         live_timeseries, live_breakdowns = await gather_queries(

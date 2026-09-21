@@ -36,7 +36,7 @@ export function useProjectStats<T extends StatsData>(apiBase: string, slug: stri
 		async function request(refresh: boolean): Promise<Result<T>> {
 			const params = new URLSearchParams({ slugs: slug, days });
 			if (refresh) params.set("refresh", "true");
-			const deadline = window.setTimeout(() => controller.abort(new Error("Analytics took too long to respond. Try again.")), 65000);
+			const deadline = window.setTimeout(() => controller.abort(new Error("Analytics took too long to respond. Try again.")), 305000);
 			try {
 				const response = await fetch(`${apiBase}/v1/stats?${params}`, { signal: controller.signal, cache: "no-store" });
 				if (!response.ok) throw new Error(response.status === 504 ? "Analytics took too long to respond. Try again." : "Could not load analytics. Try again.");

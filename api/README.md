@@ -6,7 +6,7 @@ A unified FastAPI service that combines Vercel migration data with live PostHog 
 
 - **Multi-Project Support**: Handle multiple projects with a single API
 - **Unified Data**: Merge historical Vercel data with live PostHog analytics
-- **Parallel Fetching**: All PostHog queries run concurrently for fast responses
+- **Parallel Fetching**: PostHog queries run concurrently, capped at four at a time so bursts do not trip the provider's rate limit
 - **Dynamic Registry**: Easy to add new projects via configuration
 
 ## Project Structure
@@ -19,6 +19,8 @@ api/
 ├── services/
 │   ├── __init__.py
 │   ├── posthog.py       # PostHog API integration
+│   ├── posthog_history.py # Quarter-window long-range PostHog reads
+│   ├── snapshots.py     # Shared last-successful snapshots and refresh leases
 │   ├── vercel.py        # Vercel data loading
 │   └── merger.py        # Data merging logic
 ├── data/                # Vercel migration JSON files
@@ -131,12 +133,20 @@ lease, so separate Vercel instances do not repeat the same refresh concurrently.
    `KV` prefix sets `KV_REST_API_URL` and `KV_REST_API_TOKEN` instead, and the
    config reads those too. Use the read/write REST token. Never prefix these with `PUBLIC_`.
    Use separate databases for preview and production deployments.
-3. Redeploy. `vercel.json` sets the Python function duration to 60 seconds.
-   The provider refresh deadline is 45 seconds, leaving time for storage and a
-   useful error response. Individual provider HTTP operations still use 8 seconds.
+3. Redeploy. `vercel.json` sets the Python function duration to 300 seconds.
+   The provider refresh deadline is 240 seconds, leaving time for storage and a
+   useful error response. Lifetime PostHog queries take 10s to over 40s each, so
+   PostHog reads get 120 seconds, at most four run at once, and a 429 or 5xx is
+   retried once. Other provider HTTP operations use 8 seconds.
 4. Open `/projects/stats?project=dashboard`. The first request for a project/range
    fills its snapshot. Subsequent requests read Redis. Visit the desired ranges
    once to warm them before sharing the page.
+
+Ranges longer than 90 days are read quarter by quarter. A single multi-year
+breakdown can run past PostHog's own gateway timeout, while a quarter stays
+small. A quarter that has ended never changes, so its result is cached
+(`posthog-quarter:v1:<project>:<quarter-start>`) for 30 days and later refreshes
+only query the current quarter. Visitors are summed across quarters.
 
 Without Redis credentials, local development uses a bounded instance cache.
 That fallback does not persist across cold starts. The integration cannot provide
