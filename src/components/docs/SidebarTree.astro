@@ -24,7 +24,7 @@ const leafClasses = (item: SidebarItem) => [
 ];
 
 const sectionLabelClasses = (item: SidebarItem) => [
-	"mb-1.5 flex items-center px-2.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
+	"mb-1.5 flex items-center px-2.5 text-[10px] font-bold tracking-[0.18em] transition-colors",
 	isActive(item)
 		? "text-primary"
 		: hasActiveDescendant(item)
@@ -59,8 +59,8 @@ const sectionLabelClasses = (item: SidebarItem) => [
 							<div
 								class:list={
 									depth === 0
-										? "mb-1.5 px-2.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
-										: "px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70"
+										? "mb-1.5 px-2.5 text-[10px] font-bold tracking-[0.18em] text-muted-foreground"
+										: "px-2.5 py-1.5 text-xs font-semibold tracking-wider text-muted-foreground/70"
 								}
 							>
 								{item.title}
