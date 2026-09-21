@@ -25,6 +25,11 @@ PH_FIELDS = {
 }
 
 
+# Lifetime breakdowns scan years of events and routinely take PostHog more
+# than 8s. The snapshot refresh deadline (45s) bounds the total wait.
+QUERY_TIMEOUT = httpx.Timeout(8.0, read=40.0)
+
+
 async def query_posthog(project_id: str, hogql: str) -> list:
     """
     Execute a HogQL query against a specific PostHog project.
@@ -52,6 +57,7 @@ async def query_posthog(project_id: str, hogql: str) -> list:
                     "query": hogql,
                 }
             },
+            timeout=QUERY_TIMEOUT,
         )
         response.raise_for_status()
         payload = response.json()
