@@ -79,6 +79,26 @@
 			"source": "/blogs",
 			"destination": "/blog",
 			"permanent": true
+		},
+		{
+			"source": "/feed",
+			"destination": "/rss.xml",
+			"permanent": true
+		},
+		{
+			"source": "/blog.xml",
+			"destination": "/rss.xml",
+			"permanent": true
+		},
+		{
+			"source": "/blog/feed",
+			"destination": "/blog/rss.xml",
+			"permanent": true
+		},
+		{
+			"source": "/blog/feed.xml",
+			"destination": "/blog/rss.xml",
+			"permanent": true
 		}
 	]
 }

@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { allProjects } from "@/data/projects";
-import { escapeXml, cdata, rfc822 } from "@/lib/rss";
+import { escapeXml, cdata, rfc822, rfc822Now } from "@/lib/rss";
 
 // Projects feed: every repo shown on /projects, pointing at its project page.
 // Pub date uses the newest release, then the last GitHub push date, and is
@@ -11,9 +11,30 @@ const FEED_DESCRIPTION =
 	"Things Tashif Ahmad Khan has built and shipped — web apps, tools, and experiments.";
 
 export const GET: APIRoute = async () => {
-	const items = allProjects
+	const withDates = allProjects
 		.filter((project) => project.title)
 		.map((project) => {
+			const releases = (project.releases ?? []).filter(
+				(r) => !r.draft && !r.prerelease
+			);
+			const published = releases
+				.map((r) => r.published_at ?? r.created_at)
+				.filter((d): d is string => Boolean(d))
+				.sort()
+				.reverse()[0];
+			const dateRaw = published ?? project.updated_at ?? "";
+			const time = dateRaw ? new Date(dateRaw).getTime() : NaN;
+			return { project, time: Number.isNaN(time) ? -Infinity : time };
+		})
+		// Newest first; undated projects sink to the bottom in slug order.
+		.sort(
+			(a, b) =>
+				b.time - a.time ||
+				a.project.slug.localeCompare(b.project.slug)
+		);
+
+	const items = withDates
+		.map(({ project }) => {
 			const url = `${SITE}/projects/${project.slug}`;
 			const releases = (project.releases ?? []).filter(
 				(r) => !r.draft && !r.prerelease
@@ -67,9 +88,12 @@ export const GET: APIRoute = async () => {
 \t<title>${escapeXml(FEED_TITLE)}</title>
 \t<link>${SITE}/projects</link>
 \t<description>${escapeXml(FEED_DESCRIPTION)}</description>
-\t<language>en-us</language>
-\t<lastBuildDate>${rfc822()}</lastBuildDate>
-\t<atom:link href="${SITE}/rss-projects.xml" rel="self" type="application/rss+xml" />
+	<language>en-us</language>
+	<lastBuildDate>${rfc822Now()}</lastBuildDate>
+	<atom:link href="${SITE}/rss-projects.xml" rel="self" type="application/rss+xml" />
+	<generator>tashif.codes RSS (Astro)</generator>
+	<docs>https://www.rssboard.org/rss-specification</docs>
+	<ttl>60</ttl>
 ${items}
 </channel>
 </rss>`;
@@ -77,7 +101,8 @@ ${items}
 	return new Response(xml, {
 		headers: {
 			"Content-Type": "application/rss+xml; charset=utf-8",
-			"Cache-Control": "public, max-age=0, must-revalidate",
+			"Cache-Control":
+				"public, max-age=0, s-maxage=3600, stale-while-revalidate",
 		},
 	});
 };

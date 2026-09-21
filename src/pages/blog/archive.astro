@@ -4,7 +4,7 @@ import BlogFilters from "../../components/blog/BlogFilters";
 import BlogCard from "../../components/blog/BlogCard.astro";
 import EmptyState from "../../components/common/EmptyState.astro";
 import DataFreshness from "../../components/common/DataFreshness";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Rss } from "lucide-react";
 import { blogPosts, blogFetchedAt, blogCategories, avgReadingMinutes, numBlogPosts, totalBlogWords } from "../../data/blog";
 ---
 
@@ -26,6 +26,7 @@ import { blogPosts, blogFetchedAt, blogCategories, avgReadingMinutes, numBlogPos
 				>
 					Blog
 				</h1>
+				<div class="flex items-center gap-2 shrink-0">
 				<a
 					href="https://blog.tashif.codes"
 					data-haptic-external
@@ -36,6 +37,17 @@ import { blogPosts, blogFetchedAt, blogCategories, avgReadingMinutes, numBlogPos
 					Full archive
 					<ExternalLink className="w-3.5 h-3.5" />
 				</a>
+				<a
+					href="/rss.xml"
+					data-haptic-nav
+					class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-full text-muted-foreground ring-1 ring-border/60 hover:text-primary hover:ring-primary/40 transition-colors shrink-0"
+					aria-label="Subscribe to the blog RSS feed"
+					title="Subscribe via RSS"
+				>
+					<Rss className="w-3.5 h-3.5" />
+					RSS
+				</a>
+				</div>
 			</div>
 			<p class="mt-2 sm:mt-3 max-w-xl text-sm sm:text-base text-muted-foreground">
 				Guides, deep dives, and notes on web systems, tooling, and low-level
