@@ -405,7 +405,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 									>
 										<div className="px-5 py-3 border-b border-border/60 flex items-center gap-2">
 											<Icon className="w-3.5 h-3.5 text-muted-foreground" />
-											<span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+											<span className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground">
 												{cat.label}
 											</span>
 											<span className="ml-auto font-mono text-[10px] tabular-nums text-muted-foreground/60">

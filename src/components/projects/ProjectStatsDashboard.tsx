@@ -550,7 +550,7 @@ const MetricCard = memo(({
 			style={{ backgroundColor: accentColor }}
 		/>
 		{spark && <Sparkline data={spark} color={accentColor} />}
-		<p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground pl-4 flex items-center gap-2">
+		<p className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground pl-4 flex items-center gap-2">
 			<Icon className="w-3 h-3" />
 			{title}
 		</p>
@@ -654,7 +654,7 @@ const BreakdownList = memo(({
 	<div className={cn(CARD, "max-h-[300px] sm:max-h-[400px] md:h-[400px] flex flex-col")}>
 		<div className="px-5 py-3.5 border-b border-border flex items-center gap-2 shrink-0">
 			{Icon && <Icon className="w-3.5 h-3.5 text-muted-foreground" />}
-			<span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+			<span className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground">
 				{title}
 			</span>
 		</div>
@@ -699,7 +699,7 @@ const BreakdownChartCard = memo(({
 	<div className={cn(CARD, "h-[400px] flex flex-col")}>
 		<div className="px-5 py-3.5 border-b border-border flex items-center gap-2 shrink-0">
 			{Icon && <Icon className="w-3.5 h-3.5 text-muted-foreground" />}
-			<span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+			<span className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground">
 				{title}
 			</span>
 		</div>
@@ -1036,7 +1036,7 @@ export default function ProjectStatsDashboard() {
 									</TabsTrigger>
 								</TabsList>
 								<div className="hidden md:block pb-3">
-									<span className="whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground bg-muted border border-border px-2.5 py-1 rounded-md">
+									<span className="whitespace-nowrap text-[10px] font-bold tracking-[0.15em] text-muted-foreground bg-muted border border-border px-2.5 py-1 rounded-md">
 										{displayedPeriod === "0" ? "Lifetime" : `${displayedPeriod}d`} · {GRANULARITY_LABELS[granularity]}
 									</span>
 								</div>
@@ -1095,7 +1095,7 @@ export default function ProjectStatsDashboard() {
 						{/* Section divider */}
 						<div className="flex items-center gap-4">
 							<div className="h-px flex-1 bg-border" />
-							<span className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
+							<span className="text-[10px] font-bold tracking-[0.22em] text-muted-foreground">
 								Traffic Breakdown
 							</span>
 							<div className="h-px flex-1 bg-border" />
