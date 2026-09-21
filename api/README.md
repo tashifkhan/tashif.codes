@@ -114,6 +114,7 @@ Lightweight endpoint for time-based data only.
 | `POSTHOG_API_KEY` | Your PostHog personal API key |
 | `POSTHOG_BASE_URL` | PostHog API URL (default: `https://us.posthog.com`) |
 | `PH_*_ID` | PostHog project IDs for each project |
+| `CLOUDFLARE_PROXY_URL` | JPortal's analytics proxy, which adds its own Cloudflare token and tags (default: `https://jportal.jmut.de/api/analytics`). Set empty to use `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_TAG` directly |
 
 ## Analytics snapshots
 

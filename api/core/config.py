@@ -41,6 +41,13 @@ class Settings(BaseSettings):
     # Cloudflare Configuration
     cloudflare_api_token: str = Field(default="", validation_alias="CLOUDFLARE_API_TOKEN")
     cloudflare_account_tag: str = Field(default="", validation_alias="CLOUDFLARE_ACCOUNT_TAG")
+    # JPortal's own analytics proxy fills in its account tag, site tag, and token,
+    # so JPortal stats need no Cloudflare credentials here. Set empty to query
+    # Cloudflare directly with the token above.
+    cloudflare_proxy_url: str = Field(
+        default="https://jportal.jmut.de/api/analytics",
+        validation_alias="CLOUDFLARE_PROXY_URL",
+    )
 
     # Cloudflare Tags
     cf_jportal_site_tag: str = Field(default="", validation_alias="CF_JPORTAL_SITE_TAG")

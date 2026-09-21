@@ -16,7 +16,9 @@ from datetime import datetime, timezone, timedelta
 CF_API_URL = "https://api.cloudflare.com/client/v4/graphql"
 CF_MAX_QUERY_DAYS = 90       # Cloudflare hard limit per query
 CF_PARALLEL_WINDOW_DAYS = 30  # Chunk size for parallel fetching
-CF_MAX_LOOKBACK_DAYS = 184
+# Retention is 26w2d (184 days). Stay a day inside it so clock drift and
+# request latency never push the oldest window past the limit.
+CF_MAX_LOOKBACK_DAYS = 183
 
 
 def _as_dict(value: object) -> dict:
@@ -257,6 +259,20 @@ async def _fetch_cf_breakdown_range(
         raise RuntimeError("Invalid Cloudflare breakdown") from e
 
 
+def _proxy_variables(value):
+    """Swap real tags for the placeholders the JPortal proxy fills in."""
+    if isinstance(value, dict):
+        return {
+            key: "__CLOUDFLARE_ACCOUNT_TAG__" if key == "accountTag"
+            else "__CLOUDFLARE_SITE_TAG__" if key == "siteTag"
+            else _proxy_variables(item)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_proxy_variables(item) for item in value]
+    return value
+
+
 async def query_cloudflare(query: str, variables: dict) -> dict:
     """
     Execute a GraphQL query against Cloudflare's API.
@@ -268,17 +284,22 @@ async def query_cloudflare(query: str, variables: dict) -> dict:
     Returns:
         The response data. Raises on provider errors.
     """
-    if not settings.cloudflare_api_token or not settings.cloudflare_account_tag:
+    if settings.cloudflare_proxy_url:
+        url = settings.cloudflare_proxy_url
+        headers = {"Content-Type": "application/json"}
+        variables = _proxy_variables(variables)
+    elif settings.cloudflare_api_token and settings.cloudflare_account_tag:
+        url = CF_API_URL
+        headers = {
+            "Authorization": f"Bearer {settings.cloudflare_api_token}",
+            "Content-Type": "application/json",
+        }
+    else:
         raise RuntimeError("Cloudflare analytics is not configured")
-
-    headers = {
-        "Authorization": f"Bearer {settings.cloudflare_api_token}",
-        "Content-Type": "application/json",
-    }
 
     try:
         response = await http_client.post(
-            CF_API_URL,
+            url,
             headers=headers,
             json={"query": query, "variables": variables},
         )
@@ -394,7 +415,7 @@ async def fetch_cf_all_breakdowns(
     dimension_map = {
         "path": "requestPath",
         "os_name": "userAgentOS",
-        "device_type": "userAgentDevice",
+        "device_type": "deviceType",
         "referrer": "refererHost",
         "country": "countryName",
     }

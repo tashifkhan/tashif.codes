@@ -23,7 +23,7 @@ from services import (
 
 router = APIRouter(prefix="/v1", tags=["analytics"])
 
-CLOUDFLARE_EFFECTIVE_LOOKBACK_DAYS = 184
+CLOUDFLARE_EFFECTIVE_LOOKBACK_DAYS = 183
 
 
 @router.get("/projects", response_model=ProjectListResponse)
