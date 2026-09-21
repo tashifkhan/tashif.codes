@@ -7,6 +7,8 @@ import time
 from collections import OrderedDict
 from uuid import uuid4
 
+import httpx
+
 from core.config import settings
 from models import AllStats
 from .client import http_client
@@ -40,6 +42,23 @@ async def command(*args):
         if "error" in body:
             raise RuntimeError("Snapshot storage rejected the command")
         return body["result"]
+
+
+def failures(exc: BaseException) -> list[list[BaseException]]:
+    """Flatten task groups into one cause chain per failed provider query."""
+    if isinstance(exc, BaseExceptionGroup):
+        return [chain for inner in exc.exceptions for chain in failures(inner)]
+    chain = [exc]
+    while chain[-1].__cause__ is not None:
+        chain.append(chain[-1].__cause__)
+    return [chain]
+
+
+def describe_failure(exc: BaseException) -> str:
+    # Provider errors carry the request URL and status, never the API key.
+    return "; ".join(
+        " <- ".join(f"{type(e).__name__}: {e}" for e in chain) for chain in failures(exc)
+    )
 
 
 def remember(key: str, snapshot: dict):
@@ -145,10 +164,11 @@ async def get_snapshot(key: str, factory, *, refresh: bool = False) -> dict:
         await save(key, snapshot)
         return result(snapshot)
     except Exception as exc:
-        logger.warning("Analytics refresh failed for %s (%s)", key, type(exc).__name__)
+        logger.warning("Analytics refresh failed for %s: %s", key, describe_failure(exc))
         # Re-read the previous successful snapshot if the new write failed.
         previous = await read(key)
-        message = "Analytics refresh timed out. Try again shortly." if isinstance(exc, TimeoutError) else "Analytics refresh failed. Try again shortly."
+        timed_out = any(isinstance(e, (TimeoutError, httpx.TimeoutException)) for chain in failures(exc) for e in chain)
+        message = "Analytics refresh timed out. Try again shortly." if timed_out else "Analytics refresh failed. Try again shortly."
         if previous:
             previous = {**previous, "refresh_error": message, "retry_at": time.time() + RETRY_SECONDS}
             try:
