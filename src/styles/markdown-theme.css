@@ -204,7 +204,6 @@
   font-weight: 700;
   font-style: normal;
   letter-spacing: 0.1em;
-  text-transform: uppercase;
   color: color-mix(in oklab, var(--primary) 72%, var(--foreground));
   vertical-align: 0.08em;
 }
@@ -326,7 +325,7 @@
 
 /*
  * markdown.css already lays these out. What follows is only where this site's
- * conventions differ from the structural defaults: mono uppercase meta labels,
+ * conventions differ from the structural defaults: mono meta labels,
  * the `bg-card/50 backdrop-blur-sm` surface, and `border-border/60` hairlines.
  */
 

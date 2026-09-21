@@ -186,7 +186,6 @@
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .md-callout-title .md-icon {
@@ -252,7 +251,6 @@
   font-weight: 500;
   letter-spacing: 0.08em;
   text-overflow: ellipsis;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -518,7 +516,6 @@
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.05em;
-  text-transform: uppercase;
 }
 
 .md-tr:last-child .md-td {
@@ -720,7 +717,6 @@
   font-weight: 700;
   font-size: 0.95rem;
   letter-spacing: 0.02em;
-  text-transform: uppercase;
   color: var(--md-tone, var(--md-fg));
 }
 
@@ -810,7 +806,6 @@
   font-family: var(--md-display-font);
   font-size: 1.35rem;
   letter-spacing: 0.02em;
-  text-transform: uppercase;
 }
 
 .md-ink-band-body > :first-child { margin-top: 0; }
@@ -864,7 +859,6 @@
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.09em;
-  text-transform: uppercase;
   color: var(--md-fg-muted);
 }
 
@@ -1035,7 +1029,6 @@
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.06em;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -1063,7 +1056,6 @@
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.09em;
-  text-transform: uppercase;
   color: var(--md-fg-muted);
 }
 
@@ -1204,7 +1196,6 @@
 .md-stat-label {
   font-size: 0.76rem;
   letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--md-fg-muted);
 }
 
@@ -1223,7 +1214,6 @@
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.09em;
-  text-transform: uppercase;
   color: var(--md-fg-muted);
 }
 
@@ -1305,7 +1295,6 @@
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
   line-height: 1.4;
   transform: rotate(calc(var(--md-rotate-local, 0deg) * var(--md-rotate)));
 }
@@ -1489,7 +1478,6 @@ div.md-hand {
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.09em;
-  text-transform: uppercase;
   color: var(--md-fg-muted);
 }
 
