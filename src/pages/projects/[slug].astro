@@ -405,7 +405,7 @@ export async function getStaticPaths() {
 						class="scroll-mt-8 rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5"
 					>
 						<div class="flex items-center justify-between mb-3.5">
-							<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+							<h2 class="text-[10px] font-bold tracking-[0.18em] text-muted-foreground">
 								Releases
 							</h2>
 							<span class="font-mono text-[10px] text-muted-foreground bg-muted/50 border border-border/40 px-2 py-0.5 rounded-full tabular-nums">
@@ -426,7 +426,7 @@ export async function getStaticPaths() {
 									{latestRelease.tag_name}
 								</span>
 								{latestRelease.prerelease && (
-									<span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-500 border border-orange-500/20 shrink-0">
+									<span class="text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-500 border border-orange-500/20 shrink-0">
 										Pre-release
 									</span>
 								)}
@@ -510,12 +510,12 @@ export async function getStaticPaths() {
 														{release.tag_name}
 													</span>
 													{release.draft && (
-														<span class="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 border border-yellow-500/20 shrink-0">
+														<span class="text-[9px] font-semibold tracking-wide px-1.5 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 border border-yellow-500/20 shrink-0">
 															Draft
 														</span>
 													)}
 													{release.prerelease && (
-														<span class="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-orange-500/15 text-orange-500 border border-orange-500/20 shrink-0">
+														<span class="text-[9px] font-semibold tracking-wide px-1.5 py-0.5 rounded-full bg-orange-500/15 text-orange-500 border border-orange-500/20 shrink-0">
 															Pre
 														</span>
 													)}
@@ -574,7 +574,7 @@ export async function getStaticPaths() {
 			{
 				(project.topics?.length ?? 0) > 0 && (
 					<section class="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
-						<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3.5">
+						<h2 class="text-[10px] font-bold tracking-[0.18em] text-muted-foreground mb-3.5">
 							GitHub Topics
 						</h2>
 						<div class="flex flex-wrap gap-1.5">
@@ -598,7 +598,7 @@ export async function getStaticPaths() {
 			{
 				contributors.length > 1 && (
 					<section class="relative z-30 rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
-						<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-4">
+						<h2 class="text-[10px] font-bold tracking-[0.18em] text-muted-foreground mb-4">
 							Contributors
 						</h2>
 						<div class="flex flex-row items-center justify-start">
@@ -620,7 +620,7 @@ export async function getStaticPaths() {
 			{
 				project.languages.length > 0 && (
 					<section class="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
-						<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3.5">
+						<h2 class="text-[10px] font-bold tracking-[0.18em] text-muted-foreground mb-3.5">
 							Built With
 						</h2>
 						<ul class="flex flex-col gap-2.5">
@@ -665,12 +665,12 @@ export async function getStaticPaths() {
 						)}
 					</div>
 					{release.draft && (
-						<span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 border border-yellow-500/20 shrink-0">
+						<span class="text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 border border-yellow-500/20 shrink-0">
 							Draft
 						</span>
 					)}
 					{release.prerelease && (
-						<span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-500 border border-orange-500/20 shrink-0">
+						<span class="text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-500 border border-orange-500/20 shrink-0">
 							Pre-release
 						</span>
 					)}
