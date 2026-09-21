@@ -1,7 +1,8 @@
-import asyncio
+from services.parallel import gather_queries
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Query
+from services.snapshots import get_snapshot
 from fastapi.responses import Response
 
 from core.config import list_available_projects
@@ -18,24 +19,11 @@ from services import (
     merge_stats,
     filter_timeseries_by_date,
     filter_stats_by_date,
-    cached,
 )
 
 router = APIRouter(prefix="/v1", tags=["analytics"])
 
-POSTHOG_FALLBACK_DAYS = 90
 CLOUDFLARE_EFFECTIVE_LOOKBACK_DAYS = 184
-IN_PROCESS_CACHE_TTL = 300  # 5 minutes
-
-
-def _cache_control(days: int) -> str:
-    """Return Cache-Control header value based on data freshness needs."""
-    if days == 0:
-        return "public, s-maxage=14400, stale-while-revalidate=3600"
-    elif days <= 7:
-        return "public, s-maxage=1800, stale-while-revalidate=900"
-    else:
-        return "public, s-maxage=3600, stale-while-revalidate=1800"
 
 
 @router.get("/projects", response_model=ProjectListResponse)
@@ -90,7 +78,7 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
     if analytics_provider == "cloudflare" and cf_site_tag:
         ts_task = fetch_cf_timeseries(cf_site_tag, query_days)
         breakdowns_task = fetch_cf_all_breakdowns(cf_site_tag, query_days)
-        live_timeseries, live_breakdowns = await asyncio.gather(
+        live_timeseries, live_breakdowns = await gather_queries(
             ts_task, breakdowns_task
         )
 
@@ -98,16 +86,9 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
         ts_task = fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=30)
         breakdowns_task = fetch_all_breakdowns(ph_id, query_days)
 
-        live_timeseries, live_breakdowns = await asyncio.gather(
+        live_timeseries, live_breakdowns = await gather_queries(
             ts_task, breakdowns_task
         )
-
-        if query_days > POSTHOG_FALLBACK_DAYS and not live_timeseries:
-            ts_task = fetch_timeseries_batched(ph_id, total_days=POSTHOG_FALLBACK_DAYS, batch_days=30)
-            breakdowns_task = fetch_all_breakdowns(ph_id, POSTHOG_FALLBACK_DAYS)
-            live_timeseries, live_breakdowns = await asyncio.gather(
-                ts_task, breakdowns_task
-            )
 
     # 3. Merge Vercel and live data
     merged_timeseries = merge_timeseries(filtered_vercel_timeseries, live_timeseries)
@@ -124,51 +105,10 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
     )
 
 
-async def _get_project_timeseries_internal(project: dict, days: int) -> dict:
-    """Internal business logic to fetch timeseries for a single project."""
-    project_slug = project["slug"]
-    config = project["config"]
-
-    ph_id = config["ph_id"]
-    cf_site_tag = config.get("cf_site_tag", "")
-    vercel_file = config.get("vercel_file")
-    analytics_provider = config.get("analytics_provider", "posthog")
-
-    effective_days = (
-        CLOUDFLARE_EFFECTIVE_LOOKBACK_DAYS
-        if analytics_provider == "cloudflare" and days == 0
-        else days
-    )
-
-    filter_days = effective_days if effective_days > 0 else None
-    vercel_data = load_vercel_data(vercel_file) if vercel_file else None
-    vercel_ts = (
-        filter_timeseries_by_date(vercel_data.timeseries, filter_days)
-        if vercel_data
-        else []
-    )
-
-    live_ts = []
-    query_days = effective_days if effective_days > 0 else 912
-
-    if analytics_provider == "cloudflare" and cf_site_tag:
-        live_ts = await fetch_cf_timeseries(cf_site_tag, query_days)
-
-    elif ph_id:
-        live_ts = await fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=30)
-
-        if query_days > POSTHOG_FALLBACK_DAYS and not live_ts:
-            live_ts = await fetch_timeseries_batched(ph_id, total_days=POSTHOG_FALLBACK_DAYS, batch_days=30)
-
-    merged = merge_timeseries(vercel_ts, live_ts)
-
-    return {"project": project_slug, "days": days, "timeseries": merged}
-
-
 @router.get("/stats")
 async def get_project_stats(
     response: Response,
-    slugs: list[str] = Query(..., description="List of project slugs to fetch"),
+    slugs: list[str] = Query(..., max_length=8, description="List of project slugs to fetch"),
     days: int = Query(
         default=30,
         ge=0,
@@ -177,49 +117,36 @@ async def get_project_stats(
     ),
     refresh: bool = Query(
         default=False,
-        description="Bypass in-process and CDN caches and re-fetch live analytics",
+        description="Refresh the saved snapshot, preserving it if the provider fails",
     ),
 ):
     """
     Get unified analytics stats for one or multiple projects concurrently.
     """
-    if refresh:
-        # Don't let shared caches serve a stale body after a forced refresh.
-        response.headers["Cache-Control"] = "no-store"
-    else:
-        response.headers["Cache-Control"] = _cache_control(days)
+    # Snapshot freshness is explicit in the body. Never CDN-cache failures or
+    # a response saying a refresh is still running.
+    response.headers["Cache-Control"] = "no-store"
 
     async def fetch_one(slug: str):
-        try:
-            project = get_project(slug)
-            stats = await cached(
-                f"stats:{slug}:{days}",
-                IN_PROCESS_CACHE_TTL,
-                lambda p=project: _get_project_stats_internal(project=p, days=days),
-                force=refresh,
-            )
-            return {
-                "slug": slug,
-                "data": stats,
-                "error": None,
-            }
-        except Exception as e:
-            return {
-                "slug": slug,
-                "data": None,
-                "error": str(e),
-            }
+        project = get_project(slug)
+        payload = await get_snapshot(
+            f"stats:{slug}:{days}",
+            lambda: _get_project_stats_internal(project, days),
+            refresh=refresh,
+        )
+        return {"slug": slug, **payload}
 
-    results = await asyncio.gather(*(fetch_one(slug) for slug in slugs))
-    return {
-        "results": results,
-    }
+    # Validate before launching work, and avoid duplicate provider queries.
+    unique_slugs = list(dict.fromkeys(slugs))
+    for slug in unique_slugs:
+        get_project(slug)
+    return {"results": await gather_queries(*(fetch_one(slug) for slug in unique_slugs))}
 
 
 @router.get("/timeseries")
 async def get_project_timeseries(
     response: Response,
-    slugs: list[str] = Query(..., description="List of project slugs to fetch"),
+    slugs: list[str] = Query(..., max_length=8, description="List of project slugs to fetch"),
     days: int = Query(
         default=30,
         ge=0,
@@ -228,40 +155,29 @@ async def get_project_timeseries(
     ),
     refresh: bool = Query(
         default=False,
-        description="Bypass in-process and CDN caches and re-fetch live analytics",
+        description="Refresh the saved snapshot, preserving it if the provider fails",
     ),
 ):
     """
     Get only timeseries data for one or multiple projects concurrently.
     """
-    if refresh:
-        response.headers["Cache-Control"] = "no-store"
-    else:
-        response.headers["Cache-Control"] = _cache_control(days)
+    response.headers["Cache-Control"] = "no-store"
 
     async def fetch_one(slug: str):
-        try:
-            project = get_project(slug)
-            ts = await cached(
-                f"timeseries:{slug}:{days}",
-                IN_PROCESS_CACHE_TTL,
-                lambda p=project: _get_project_timeseries_internal(project=p, days=days),
-                force=refresh,
-            )
-            return {
-                "slug": slug,
-                "data": ts,
-                "error": None,
+        project = get_project(slug)
+        payload = await get_snapshot(
+            f"stats:{slug}:{days}",
+            lambda: _get_project_stats_internal(project, days),
+            refresh=refresh,
+        )
+        if payload["data"] is not None:
+            payload["data"] = {
+                "project": slug, "days": days,
+                "timeseries": payload["data"]["timeseries"],
             }
+        return {"slug": slug, **payload}
 
-        except Exception as e:
-            return {
-                "slug": slug,
-                "data": None,
-                "error": str(e),
-            }
-
-    results = await asyncio.gather(*(fetch_one(slug) for slug in slugs))
-    return {
-        "results": results,
-    }
+    unique_slugs = list(dict.fromkeys(slugs))
+    for slug in unique_slugs:
+        get_project(slug)
+    return {"results": await gather_queries(*(fetch_one(slug) for slug in unique_slugs))}

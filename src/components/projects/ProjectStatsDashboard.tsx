@@ -18,8 +18,11 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import DataFreshness from "@/components/common/DataFreshness";
-import { dispatchLiveRefreshed, writeStoredFetchedAt } from "@/lib/dataFreshness";
+import { formatFetchedAt } from "@/lib/dataFreshness";
+import { useProjectStats } from "@/hooks/useProjectStats";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { areaY, barX, defineChart, lineY } from "@tanstack/charts";
 import { Chart } from "@tanstack/charts/react";
 import { pie, polar, radialArc } from "@tanstack/charts/polar";
@@ -712,9 +715,7 @@ BreakdownChartCard.displayName = "BreakdownChartCard";
 export default function ProjectStatsDashboard() {
 	const [projects, setProjects] = useState<ProjectInfo[]>([]);
 	const [selectedSlug, setSelectedSlug] = useState<string>("");
-	const [stats, setStats] = useState<AllStats | null>(null);
-	const [loading, setLoading] = useState<boolean>(false);
-	const [error, setError] = useState<string | null>(null);
+	const [projectsError, setProjectsError] = useState<string | null>(null);
 	const [period, setPeriod] = useState<string>("0");
 	const [granularity, setGranularity] = useState<Granularity>("week");
 	const [retryToken, setRetryToken] = useState<number>(0);
@@ -735,50 +736,23 @@ export default function ProjectStatsDashboard() {
 		return "";
 	}, []);
 
-	const loadStats = useCallback(
-		async (
-			slug: string,
-			days: string,
-			opts: { refresh?: boolean; signal?: AbortSignal } = {},
-		) => {
-			const { refresh = false, signal } = opts;
-			const params = new URLSearchParams({
-				slugs: slug,
-				days,
-			});
-			if (refresh) params.set("refresh", "true");
-
-			const res = await fetch(`${API_BASE}/v1/stats?${params.toString()}`, {
-				signal,
-				cache: refresh ? "no-store" : "default",
-			});
-			if (!res.ok) {
-				let detail = "Failed to fetch stats";
-				try {
-					const body = await res.json();
-					if (body?.detail) detail = body.detail;
-				} catch {
-					// Ignore JSON parse errors and keep generic detail
-				}
-				throw new Error(`${detail} (${res.status})`);
-			}
-			const body = await res.json();
-			const result = body?.results?.[0];
-
-			if (result?.error) {
-				throw new Error(result.error);
-			}
-
-			return (result?.data as AllStats | null) || null;
-		},
-		[API_BASE],
-	);
+	const { snapshot, loading, slow, error: statsError, refresh } = useProjectStats<AllStats>(API_BASE, selectedSlug, period);
+	const stats = snapshot?.data ?? null;
+	const error = projectsError || statsError;
+	const displayedPeriod = snapshot?.days ?? period;
+	const [now, setNow] = useState<number | undefined>();
+	useEffect(() => {
+		setNow(Date.now());
+		const timer = window.setInterval(() => setNow(Date.now()), 30000);
+		return () => window.clearInterval(timer);
+	}, []);
 
 	// Fetch Projects List
 	useEffect(() => {
 		const controller = new AbortController();
 
 		async function fetchProjects() {
+			setProjectsError(null);
 			try {
 				const res = await fetch(`${API_BASE}/v1/projects`, {
 					signal: controller.signal
@@ -798,7 +772,7 @@ export default function ProjectStatsDashboard() {
 			} catch (err) {
 				if (err instanceof Error && err.name === 'AbortError') return;
 				console.error(err);
-				setError("Could not load projects from " + API_BASE);
+				setProjectsError("Could not load the project list. Try again.");
 			}
 		}
 		fetchProjects();
@@ -814,44 +788,6 @@ export default function ProjectStatsDashboard() {
 			window.history.replaceState({}, "", url.toString());
 		}
 	}, [selectedSlug]);
-
-	// Fetch Stats when selection / period changes (initial + normal loads)
-	useEffect(() => {
-		if (!selectedSlug) return;
-
-		const controller = new AbortController();
-
-		async function fetchStats() {
-			setLoading(true);
-			setError(null);
-			try {
-				const data = await loadStats(selectedSlug, period, {
-					signal: controller.signal,
-				});
-				setStats(data);
-			} catch (err) {
-				if (err instanceof Error && err.name === 'AbortError') return;
-				console.error(err);
-				setError(err instanceof Error ? err.message : "Failed to load stats for this project.");
-				setStats(null);
-			} finally {
-				setLoading(false);
-			}
-		}
-
-		fetchStats();
-
-		return () => controller.abort();
-	}, [selectedSlug, period, loadStats, retryToken]);
-
-	const handleRefreshStats = useCallback(async () => {
-		if (!selectedSlug) throw new Error("No project selected");
-		const data = await loadStats(selectedSlug, period, { refresh: true });
-		setStats(data);
-		const at = data?.metadata?.export_date ?? new Date().toISOString();
-		writeStoredFetchedAt("project-stats", at);
-		dispatchLiveRefreshed("project-stats", at);
-	}, [selectedSlug, period, loadStats]);
 
 	// Derived metrics
 	const totals = useMemo(() => {
@@ -907,21 +843,7 @@ export default function ProjectStatsDashboard() {
 		[stats]
 	);
 
-	// Initial project load
-	if (projects.length === 0 && !error) {
-		return (
-			<div className="flex flex-col items-center justify-center py-24 gap-4">
-				<div className="relative w-8 h-8">
-					<div className="absolute inset-0 border-[1.5px] border-primary/20 rounded-full" />
-					<div className="absolute inset-0 border-[1.5px] border-primary border-t-transparent rounded-full animate-spin" />
-				</div>
-				<p className="text-muted-foreground text-sm font-medium tracking-wide">Loading analytics...</p>
-			</div>
-		);
-	}
-
-	const selectedProjectName =
-		projects.find((p) => p.slug === selectedSlug)?.name ?? selectedSlug;
+	const displayedProjectName = projects.find((p) => p.slug === snapshot?.slug)?.name ?? snapshot?.slug;
 
 	return (
 		<div className="w-full max-w-7xl mx-auto pb-12 space-y-5">
@@ -934,15 +856,12 @@ export default function ProjectStatsDashboard() {
 					<p className="text-muted-foreground text-sm sm:text-base mt-1">
 						Live traffic and engagement metrics across deployed projects
 					</p>
-					{stats?.metadata?.export_date && (
-						<div className="mt-3">
-							<DataFreshness
-								source="project-stats"
-								fetchedAt={stats.metadata.export_date}
-								label="Project analytics"
-								description={`Re-fetch live analytics for ${selectedProjectName}. This bypasses the cache and may take a few seconds.`}
-								onRefresh={handleRefreshStats}
-							/>
+					{stats && (
+						<div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+							<time dateTime={stats.metadata.export_date} title={formatFetchedAt(stats.metadata.export_date).absolute}>
+								Updated {now ? formatFetchedAt(stats.metadata.export_date, now).relative : "…"}
+							</time>
+							<Button variant="ghost" size="sm" onClick={refresh} disabled={loading}>Refresh stats</Button>
 						</div>
 					)}
 				</div>
@@ -953,7 +872,6 @@ export default function ProjectStatsDashboard() {
 						value={selectedSlug}
 						onValueChange={(v) => {
 							trigger("selection");
-							setLoading(true);
 							setSelectedSlug(v);
 						}}
 					>
@@ -978,7 +896,6 @@ export default function ProjectStatsDashboard() {
 						value={period}
 						onValueChange={(v) => {
 							trigger("selection");
-							setLoading(true);
 							setPeriod(v);
 						}}
 					>
@@ -1017,8 +934,18 @@ export default function ProjectStatsDashboard() {
 				</div>
 			</div>
 
+			{(loading || (!selectedSlug && !error) || (error && stats) || (snapshot && (snapshot.slug !== selectedSlug || snapshot.days !== period))) && (
+				<Alert role="status" aria-live="polite">
+					<AlertDescription>
+						{error || (slow ? "Fetching historical data. This is taking longer than usual." : stats ? "Updating stats…" : "Loading analytics…")}
+						{stats && <span> Showing {displayedProjectName}, {displayedPeriod === "0" ? "lifetime" : `last ${displayedPeriod} days`}.</span>}
+						{error && stats && <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>Try again</Button>}
+					</AlertDescription>
+				</Alert>
+			)}
+
 			{/* Error */}
-			{error ? (
+			{error && !stats ? (
 				<div className="rounded-xl border border-destructive/40 bg-destructive/10 p-8 text-center">
 					<Activity className="w-5 h-5 text-destructive mx-auto mb-3" />
 					<p className="text-destructive font-semibold text-sm tracking-wide mb-1.5">
@@ -1029,23 +956,29 @@ export default function ProjectStatsDashboard() {
 						type="button"
 						onClick={() => {
 							trigger("selection");
-							setError(null);
-							setRetryToken((t) => t + 1);
+							if (projectsError) setRetryToken((t) => t + 1);
+							else refresh();
 						}}
 						className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:border-accent hover:bg-muted/50 transition-colors"
 					>
 						Try again
 					</button>
 				</div>
-			) : loading || !stats ? (
-				/* Skeleton */
-				<div className="space-y-6">
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+			) : !stats ? (
+				<div className="flex flex-col gap-6" aria-busy="true" aria-label="Loading analytics charts">
+					<div className="grid grid-cols-1 sm:grid-cols-3 gap-4" aria-hidden="true">
 						{[1, 2, 3].map((i) => (
-							<div key={i} className="h-32 rounded-xl bg-card border border-border animate-pulse" />
+							<div key={i} className={`${CARD} p-5 flex flex-col gap-4`}>
+								<Skeleton className="h-3 w-24 motion-reduce:animate-none" />
+								<Skeleton className="h-8 w-32 motion-reduce:animate-none" />
+								<Skeleton className="h-3 w-20 motion-reduce:animate-none" />
+							</div>
 						))}
 					</div>
-					<div className="h-[380px] rounded-xl bg-card border border-border animate-pulse" />
+					<div className={`${CARD} p-5 flex flex-col gap-6`} aria-hidden="true">
+						<Skeleton className="h-4 w-40 motion-reduce:animate-none" />
+						<Skeleton className="h-[300px] w-full motion-reduce:animate-none" />
+					</div>
 				</div>
 			) : (
 				<div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -1055,7 +988,7 @@ export default function ProjectStatsDashboard() {
 							title="Pageviews"
 							value={totals.views.toLocaleString()}
 							icon={Eye}
-							trend={period === "0" ? "Lifetime" : `Last ${period} days`}
+							trend={displayedPeriod === "0" ? "Lifetime" : `Last ${displayedPeriod} days`}
 							accentColor="var(--color-chart-2)"
 							spark={sparks.views}
 						/>
@@ -1104,7 +1037,7 @@ export default function ProjectStatsDashboard() {
 								</TabsList>
 								<div className="hidden md:block pb-3">
 									<span className="whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground bg-muted border border-border px-2.5 py-1 rounded-md">
-										{period === "0" ? "Lifetime" : `${period}d`} · {GRANULARITY_LABELS[granularity]}
+										{displayedPeriod === "0" ? "Lifetime" : `${displayedPeriod}d`} · {GRANULARITY_LABELS[granularity]}
 									</span>
 								</div>
 							</div>
@@ -1114,7 +1047,7 @@ export default function ProjectStatsDashboard() {
 								<TabsContent value="traffic" className="mt-0 space-y-4">
 									<div>
 										<h3 className="text-foreground font-semibold text-base">Pageviews Over Time</h3>
-										<p className="text-muted-foreground text-xs mt-0.5">{GRANULARITY_LABELS[granularity]} pageview count for the selected period</p>
+										<p className="text-muted-foreground text-xs mt-0.5">{GRANULARITY_LABELS[granularity]} pageview count for the displayed period</p>
 									</div>
 									<TimeseriesAreaChart
 										data={chartData}
@@ -1128,7 +1061,7 @@ export default function ProjectStatsDashboard() {
 								<TabsContent value="visitors" className="mt-0 space-y-4">
 									<div>
 										<h3 className="text-foreground font-semibold text-base">Visitors Over Time</h3>
-										<p className="text-muted-foreground text-xs mt-0.5">{GRANULARITY_LABELS[granularity]} unique visitor count for the selected period</p>
+										<p className="text-muted-foreground text-xs mt-0.5">{GRANULARITY_LABELS[granularity]} unique visitor count for the displayed period</p>
 									</div>
 									<TimeseriesAreaChart
 										data={chartData}

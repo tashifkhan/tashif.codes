@@ -7,6 +7,7 @@ Supports dynamic project ID for multi-project analytics.
 
 import httpx
 import asyncio
+from services.parallel import gather_queries
 from datetime import datetime
 
 from core.config import settings
@@ -36,7 +37,7 @@ async def query_posthog(project_id: str, hogql: str) -> list:
         List of result rows from the query
     """
     if not settings.posthog_api_key:
-        return []
+        raise RuntimeError("PostHog is not configured")
 
     url = f"{settings.posthog_base_url}/api/projects/{project_id}/query/"
     headers = {"Authorization": f"Bearer {settings.posthog_api_key}"}
@@ -53,11 +54,13 @@ async def query_posthog(project_id: str, hogql: str) -> list:
             },
         )
         response.raise_for_status()
-        return response.json().get("results", [])
+        payload = response.json()
+        if not isinstance(payload.get("results"), list):
+            raise RuntimeError("PostHog query did not return completed results")
+        return payload["results"]
 
     except httpx.HTTPError as e:
-        print(f"PostHog API error: {e}")
-        return []
+        raise RuntimeError("PostHog query failed") from e
 
 
 async def fetch_timeseries(project_id: str, days: int = 30) -> list[TimeseriesEntry]:
@@ -161,7 +164,7 @@ async def fetch_timeseries_batched(
         async with semaphore:
             return await fetch_timeseries_window(project_id, w_start, w_end)
 
-    chunks = await asyncio.gather(*(run_window(window) for window in windows))
+    chunks = await gather_queries(*(run_window(window) for window in windows))
 
     merged: dict[str, TimeseriesEntry] = {}
     for chunk in chunks:
@@ -243,6 +246,6 @@ async def fetch_all_breakdowns(
 
     # Execute all breakdown queries in parallel
     tasks = [fetch_breakdown(project_id, field, days) for field in fields]
-    results = await asyncio.gather(*tasks)
+    results = await gather_queries(*tasks)
 
     return dict(zip(fields, results))

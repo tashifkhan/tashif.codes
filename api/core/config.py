@@ -5,7 +5,7 @@ Uses pydantic-settings to manage environment variables and project registry.
 
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
+from pydantic import AliasChoices, Field
 
 # Base path for data files
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -13,6 +13,17 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 
 class Settings(BaseSettings):
     """Application Settings using environment variables."""
+
+    # Shared analytics snapshots. Leave empty for instance-only local development.
+    # The Vercel Upstash integration injects the KV_REST_API_* names.
+    upstash_redis_rest_url: str = Field(
+        default="",
+        validation_alias=AliasChoices("UPSTASH_REDIS_REST_URL", "KV_REST_API_URL"),
+    )
+    upstash_redis_rest_token: str = Field(
+        default="",
+        validation_alias=AliasChoices("UPSTASH_REDIS_REST_TOKEN", "KV_REST_API_TOKEN"),
+    )
 
     # PostHog Configuration
     posthog_api_key: str = Field(default="", validation_alias="POSTHOG_API_KEY")

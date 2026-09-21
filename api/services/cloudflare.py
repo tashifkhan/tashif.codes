@@ -4,7 +4,7 @@ Cloudflare Web Analytics Service Layer
 Handles all interactions with Cloudflare's GraphQL API for RUM (Real User Monitoring) data.
 """
 
-import asyncio
+from services.parallel import gather_queries
 import httpx
 from .client import http_client
 from core.config import settings
@@ -184,8 +184,7 @@ async def _fetch_cf_timeseries_range(
         return sorted(daily_data.values(), key=lambda x: x.date)
     
     except Exception as e:
-        print(f"Error parsing Cloudflare timeseries: {e!r}")
-        return []
+        raise RuntimeError("Invalid Cloudflare timeseries") from e
 
 
 async def _fetch_cf_breakdown_range(
@@ -255,8 +254,7 @@ async def _fetch_cf_breakdown_range(
 
         return entries
     except Exception as e:
-        print(f"Error parsing Cloudflare breakdown: {e!r}")
-        return []
+        raise RuntimeError("Invalid Cloudflare breakdown") from e
 
 
 async def query_cloudflare(query: str, variables: dict) -> dict:
@@ -268,10 +266,10 @@ async def query_cloudflare(query: str, variables: dict) -> dict:
         variables: Query variables
 
     Returns:
-        The response data or empty dict on error
+        The response data. Raises on provider errors.
     """
     if not settings.cloudflare_api_token or not settings.cloudflare_account_tag:
-        return {}
+        raise RuntimeError("Cloudflare analytics is not configured")
 
     headers = {
         "Authorization": f"Bearer {settings.cloudflare_api_token}",
@@ -291,26 +289,24 @@ async def query_cloudflare(query: str, variables: dict) -> dict:
             print(
                 f"Cloudflare API returned non-dict payload: {type(payload).__name__}"
             )
-            return {}
+            raise RuntimeError("Cloudflare returned an invalid response")
         
         if payload.get("errors"):
-            print(f"Cloudflare GraphQL errors: {payload['errors']}")
+            raise RuntimeError("Cloudflare analytics query failed")
         
         return payload
         
     except httpx.HTTPError as e:
-        print(f"Cloudflare API error: {e}")
-        return {}
+        raise RuntimeError("Cloudflare analytics request failed") from e
         
     except Exception as e:
-        print(f"Cloudflare unexpected error: {e}")
-        return {}
+        raise RuntimeError("Cloudflare analytics request failed") from e
 
 
 async def fetch_cf_timeseries(site_tag: str, days: int = 30) -> list[TimeseriesEntry]:
     """
     Fetch timeseries pageview/visit data from Cloudflare Web Analytics.
-    Uses parallel 30-day windows for all ranges to stay within the 10s function timeout.
+    Uses parallel 30-day windows to keep individual provider queries small.
 
     Args:
         site_tag: The Cloudflare site tag
@@ -331,7 +327,7 @@ async def fetch_cf_timeseries(site_tag: str, days: int = 30) -> list[TimeseriesE
         return await _fetch_cf_timeseries_range(site_tag, from_date, to_date)
 
     windows = _iter_time_windows(effective_days, CF_PARALLEL_WINDOW_DAYS)
-    results = await asyncio.gather(*(
+    results = await gather_queries(*(
         _fetch_cf_timeseries_range(site_tag, ws.isoformat(), we.isoformat())
         for ws, we in windows
     ))
@@ -370,7 +366,7 @@ async def fetch_cf_breakdown(
 
     per_window_limit = max(limit * 5, 100)
     windows = _iter_time_windows(effective_days, CF_PARALLEL_WINDOW_DAYS)
-    results = await asyncio.gather(*(
+    results = await gather_queries(*(
         _fetch_cf_breakdown_range(
             site_tag, dimension, ws.isoformat(), we.isoformat(), per_window_limit
         )
@@ -408,6 +404,6 @@ async def fetch_cf_all_breakdowns(
         for field, cf_dim in dimension_map.items()
     }
 
-    results = await asyncio.gather(*tasks.values())
+    results = await gather_queries(*tasks.values())
 
     return dict(zip(tasks.keys(), results))
