@@ -327,12 +327,25 @@ function normalizeFullPostsPayload(data: unknown): FullBlogPost[] {
 	return [];
 }
 
-/** Fetch all posts with full content, metrics, and comments (bulk). */
-export async function fetchAllPostsFull(): Promise<FullBlogPost[]> {
-	const res = await fetch(`${BLOG_API_BASE}/posts/full`);
-	if (!res.ok) throw new Error(`Failed to fetch all posts: ${res.status}`);
-	const data = await res.json();
-	return normalizeFullPostsPayload(data);
+let allPostsFullPromise: Promise<FullBlogPost[]> | undefined;
+
+/**
+ * Fetch all posts with full content, metrics, and comments (bulk).
+ *
+ * Build-time only, and both the reading-stats pass and the RSS feed need it,
+ * so the request is shared. A failed request is forgotten so the next caller
+ * retries.
+ */
+export function fetchAllPostsFull(): Promise<FullBlogPost[]> {
+	allPostsFullPromise ??= (async () => {
+		const res = await fetch(`${BLOG_API_BASE}/posts/full`);
+		if (!res.ok) throw new Error(`Failed to fetch all posts: ${res.status}`);
+		return normalizeFullPostsPayload(await res.json());
+	})().catch((err) => {
+		allPostsFullPromise = undefined;
+		throw err;
+	});
+	return allPostsFullPromise;
 }
 
 /** Post a new top-level comment or reply. */
