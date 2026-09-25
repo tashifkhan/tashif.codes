@@ -227,6 +227,20 @@ export function convertRelativeUrl(url: string, options: UrlOptions): string {
   // Root-relative handling comes first: it is the one case that applies even
   // without a repository URL, and the `repo` reading must not leak into posts.
   if (url.startsWith('/')) {
+    // Docs pages rewrite `images/…` to `/docs-assets/<project>/…`, then
+    // postProcessHtml runs convertRelativeUrl again on the rendered <img>.
+    // Keep those site paths local; treating them as repo-root would send the
+    // browser to a 404 on raw.githubusercontent.com.
+    // Site paths that docs/READMEs actually mean as this origin, not as a
+    // file in the repository. `/docs-assets/` is the bundled image prefix;
+    // `/docs/` and `/blog/` are in-site links from generated docs.
+    if (
+      url.startsWith('/docs-assets/') ||
+      url.startsWith('/docs/') ||
+      url.startsWith('/blog/')
+    ) {
+      return withAssetBase(url, assetBaseUrl)
+    }
     if (rootRelative === 'repo' && githubBaseUrl) {
       return rawBase(githubBaseUrl) + url
     }
@@ -260,6 +274,13 @@ export function convertRelativeUrl(url: string, options: UrlOptions): string {
   // Docs images are copied into the site rather than fetched from GitHub.
   if (project && (url.startsWith('images/') || url.startsWith('./images/'))) {
     return `/docs-assets/${project}/${url.replace(/^\.\//, '')}`
+  }
+
+  // Numbered docs pages (`1-overview`, `3.1-foo`) are siblings in this tree,
+  // not files in the GitHub repo the renderer otherwise guesses.
+  const sibling = url.replace(/^\.\//, '').replace(/\.md$/i, '')
+  if (project && /^\d[\w.-]*$/.test(sibling)) {
+    return `/docs/${project.toLowerCase()}/${sibling}`
   }
 
   const base = rawBase(githubBaseUrl)

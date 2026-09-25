@@ -119,6 +119,14 @@ const html = content
 
 <script>
   import Prism from "prismjs";
+  import "prismjs/components/prism-markup";
+  import "prismjs/components/prism-clike";
+  import "prismjs/components/prism-javascript";
+  import "prismjs/components/prism-typescript";
+  import "prismjs/components/prism-json";
+  import "prismjs/components/prism-bash";
+  import "prismjs/components/prism-http";
+  import "prismjs/components/prism-python";
   import "prismjs/plugins/autoloader/prism-autoloader";
 
   import {
@@ -129,6 +137,17 @@ const html = content
     renderMermaidBlocks,
     watchThemeChanges,
   } from "./pipeline/client";
+
+  // Prism's stock `http` grammar only matches `GET /path HTTP/1.1`. Docs
+  // route lists are method + path, so colour those too.
+  if (Prism.languages.http?.["request-line"]) {
+    Prism.languages.http["request-line"].pattern =
+      /^(?:CONNECT|DELETE|GET|HEAD|OPTIONS|PATCH|POST|PRI|PUT|SEARCH|TRACE)\s(?:https?:\/\/|\/)\S*(?:\sHTTP\/[\d.]+)?$/m;
+    const inside = Prism.languages.http["request-line"].inside;
+    if (inside?.["request-target"]) {
+      inside["request-target"].pattern = /^(\s)(?:https?:\/\/|\/)\S*/;
+    }
+  }
 
   // @ts-ignore - the autoloader plugin adds this property at runtime
   if (Prism.plugins.autoloader) {

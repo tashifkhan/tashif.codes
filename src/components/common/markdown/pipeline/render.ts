@@ -342,6 +342,48 @@ function isMermaid(lang: string, code: string): boolean {
 }
 
 /**
+ * Mermaid treats `#` as a line comment and `\"` inside `["…"]` as a broken
+ * quote. Docs diagrams also pick up unicode arrows from prose. Rewrite those
+ * before the client parser sees the source.
+ */
+function sanitizeMermaid(source: string): string {
+  let s = source
+    .replace(/<-\s+-->/g, '<-->')
+    .replace(/\u2192/g, '-->')
+    .replace(/\u2190/g, '<--')
+  s = s.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"/g, (_m, inner: string) => {
+    const cleaned = String(inner)
+      .replace(/\\"/g, "'")
+      .replace(/#/g, '#35;')
+    return `"${cleaned}"`
+  })
+  // classDef fill:#F0BB78 is a mermaid comment from the hash onward.
+  s = s.replace(
+    /\b((?:fill|stroke|color|bg|background):)#([0-9A-Fa-f]{3,8})\b/gi,
+    '$1#35;$2',
+  )
+  return s.trim()
+}
+
+function inferFenceLang(lang: string, code: string): string {
+  if (lang) return lang
+  const first = code.trimStart()
+  if (/^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s+\S/m.test(first)) return 'http'
+  if (
+    /^(git |npm |npx |pnpm |bun |uv |cd |export |curl |python3? |pip |docker |mkdir |chmod )/m.test(
+      first,
+    ) ||
+    first.startsWith('#!/')
+  ) {
+    return 'bash'
+  }
+  if (/^(from |import |def |class |async def )/m.test(first)) return 'python'
+  const trimmed = first.trim()
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) return 'json'
+  return 'text'
+}
+
+/**
  * Build the render context for a component occurrence.
  *
  * Called from both the open and the close rule. `spec.render` is a pure
@@ -414,13 +456,12 @@ function createParser(): MarkdownIt {
   // ---- code fences and diagrams ----
   rules.fence = (tokens: any[], idx: number, _opts: any, rawEnv: any) => {
     const { theme, mermaid } = env(rawEnv)
-    const lang = tokens[idx].info.trim() || 'text'
+    const lang = inferFenceLang(tokens[idx].info.trim(), tokens[idx].content)
     const rawCode = tokens[idx].content
     const escaped = md.utils.escapeHtml(rawCode)
 
     if (mermaid && isMermaid(lang, rawCode)) {
-      // The docs generator emits broken bidirectional arrows.
-      const normalized = rawCode.replace(/<-\s+-->/g, '<-->').trim()
+      const normalized = sanitizeMermaid(rawCode)
       // The source stays in a hidden <pre> and the client reads it back through
       // textContent, so a diagram that fails to parse degrades to its source
       // instead of mermaid's error glyph.
