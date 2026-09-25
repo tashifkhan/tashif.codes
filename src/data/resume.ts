@@ -91,7 +91,7 @@ export const resumeProjects: ResumeProject[] = [
 		],
 		points: [
 			"JIIT doesn't really do tech. Timetables lived in random PDFs, attendance was invisible until it already mattered, and companies visited campus while eligible students found out through WhatsApp groups. This suite exists because nobody at the university was going to build it.",
-			'<a href="https://jportal.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>JPortal</strong></a> (<strong>React</strong> PWA, <strong>18k+</strong> users) with <strong>Pyodide</strong> PDF parsing, so marks render on a phone.',
+			'<a href="https://codeblech.github.io/jportal/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>JPortal</strong></a> (<strong>React</strong> PWA, <strong>18k+</strong> users) with <strong>Pyodide</strong> PDF parsing, so marks render on a phone.',
 			'<a href="https://jiit-timetable.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Timetable</strong></a> used by <strong>6.5k+</strong> students; <a href="https://jiit-timetable.tashif.codes/mess-menu" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Mess Menu</strong></a> with daily/weekly meal plans, <strong>5.2k+</strong> readers.',
 			'<a href="https://jiit-placement-updates.tashif.codes/?shh" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Placement & Campus Updates</strong></a> portal so opportunities reach students when they can still apply (<strong>4k+/2k+</strong> users).',
 			'<a href="https://sophos-autologin.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Sophos Auto-Login</strong></a> scripts because the hostel wifi kicks you off every ~45 minutes (~100 users).',
@@ -122,9 +122,9 @@ export const resumeProjects: ResumeProject[] = [
 		],
 		points: [
 			'Run a self-hosted <a href="https://tashif.codes/fdroid" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">F-Droid repo</a> at <strong>tashif.codes/fdroid</strong> with 3 signed apps. Add it once, get updates automatically.',
-			'<a href="https://github.com/tashifkhan/Paisa" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Paisa</strong></a> keeps the ledger on the phone. It parses bank SMS on device for 100+ Indian banks. SMS never leaves the device, and you can bring your own key for statement imports.',
-			'<a href="https://github.com/tashifkhan/caldav-todo" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Patchwork</strong></a> is the task manager I actually use. CalDAV and Nextcloud Deck boards, AI draft from a photo or note, GitHub issues, and widgets that stay quiet until you need them.',
-			'<a href="https://github.com/tashifkhan/delhi-metro" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Delhi NCR Metro</strong></a> plans DMRC and NMRC trips. The app runs on a <a href="https://dmrc-rest-api.vercel.app/docs" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">FastAPI service</a> I built that wraps DMRC and NMRC endpoints and bridges the two networks for routes, fares and station search.',
+			'<a href="https://tashif.codes/fdroid" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Paisa</strong></a> keeps the ledger on the phone. It parses bank SMS on device for 100+ Indian banks. SMS never leaves the device, and you can bring your own key for statement imports.',
+			'<a href="https://tashif.codes/fdroid" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Patchwork</strong></a> is the task manager I actually use. CalDAV and Nextcloud Deck boards, AI draft from a photo or note, GitHub issues, and widgets that stay quiet until you need them.',
+			'<a href="https://delhi-metro.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Delhi NCR Metro</strong></a> plans DMRC and NMRC trips. The app runs on a <a href="https://dmrc-rest-api.vercel.app/docs" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">FastAPI service</a> I built that wraps DMRC and NMRC endpoints and bridges the two networks for routes, fares and station search.',
 		],
 	},
 ];
@@ -134,7 +134,7 @@ export const education: Education[] = [
 		institute: "Jaypee Institute of Information Technology",
 		period: "2022 - 2026",
 		degree: "B. Tech Electronics & Communication",
-		details: ["CGPA: 7.3/10.0"],
+		details: ["CGPA: 7.4/10.0"],
 		color: "orange",
 	},
 	{
@@ -209,11 +209,11 @@ export const skillCategories: SkillCategory[] = [
 	{
 		label: "Databases",
 		color: "green",
-		items: ["PostgreSQL", "MongoDB", "FAISS", "ChromaDB", "SQLite"],
+		items: ["PostgreSQL", "MongoDB", "OpenSearch", "SQLite"],
 	},
 	{
 		label: "Tools",
 		color: "purple",
-		items: ["Git", "Docker", "Vercel", "Pyodide", "Tailscale", "Nginx"],
+		items: ["Git", "Docker", "Vercel", "Codeberg", "Tailscale", "Nginx", "AWS"],
 	},
 ];
