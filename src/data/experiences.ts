@@ -21,7 +21,7 @@ export const experiences: ExperienceEntry[] = [
 		period: "April 2026 – Present",
 		color: "purple",
 		website: "https://sitg.dev",
-		logo: "https://35.86.142.168:3000/icon.svg?icon.46fd8538.svg",
+		logo: "https://44.255.46.29:3000/icon.svg?icon.46fd8538.svg",
 		points: [
 			"Own the compliance AI pipeline end-to-end; extended it to new regulatory frameworks and certificate scopes.",
 			"Built a real-time notification system (<strong>SSE</strong> + <strong>SMTP</strong> + <strong>Slack</strong>) monitoring <strong>Bugzilla</strong>, <strong>Google Groups</strong>, <strong>CCADB</strong>, and <strong>Regulatory Ballots</strong> for same-day compliance surfacing.",
