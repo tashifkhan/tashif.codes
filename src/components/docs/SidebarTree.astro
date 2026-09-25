@@ -1,4 +1,5 @@
 ---
+import { ChevronRight, FileText } from "lucide-react";
 import type { SidebarItem } from "@/types";
 
 interface Props {
@@ -16,82 +17,98 @@ const hasActiveDescendant = (item: SidebarItem): boolean =>
 		(child) => child.slug === activePath || hasActiveDescendant(child)
 	) ?? false;
 
-const leafClasses = (item: SidebarItem) => [
-	"flex w-full items-center rounded-lg px-2.5 py-1.5 text-sm leading-snug transition-colors",
+// Readable pages under a group, including nested groups' own index pages.
+const countPages = (item: SidebarItem): number =>
+	(item.children ?? []).reduce(
+		(n, child) =>
+			n + (child.slug !== "#" ? 1 : 0) + (child.children ? countPages(child) : 0),
+		0
+	);
+
+// Nested rows sit inside a guide line; the active row paints its own
+// segment of that line so the reader can trace where they are.
+const rowClasses = (item: SidebarItem) => [
+	"relative flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-sm leading-snug transition-colors",
 	isActive(item)
 		? "bg-primary/10 font-medium text-primary"
 		: "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-];
-
-const sectionLabelClasses = (item: SidebarItem) => [
-	"mb-1.5 flex items-center px-2.5 text-[10px] font-bold tracking-[0.18em] transition-colors",
-	isActive(item)
-		? "text-primary"
-		: hasActiveDescendant(item)
-			? "text-foreground"
-			: "text-muted-foreground hover:text-foreground",
+	depth > 0 &&
+		isActive(item) &&
+		"before:absolute before:-left-[9px] before:inset-y-1 before:w-px before:bg-primary",
 ];
 ---
 
-<div class:list={[depth === 0 ? "space-y-6" : "space-y-0.5"]}>
+<ul class:list={[depth === 0 ? "space-y-1" : "space-y-0.5"]} role={depth === 0 ? "tree" : "group"}>
 	{
 		items.map((item) =>
 			item.children && item.children.length > 0 ? (
-				<div>
-					{
-						// Group headers: top-level groups render as micro-labels
-						// (site convention), nested groups as regular links.
-						// A group whose child is active stays lit so the
-						// reader can tell which section they are in.
-						item.slug !== "#" ? (
-							<a
-								href={`/docs/${item.slug}`}
-								data-haptic-nav
-								data-sidebar-active={isActive(item) ? "true" : undefined}
-								aria-current={isActive(item) ? "page" : undefined}
-								class:list={
-									depth === 0 ? sectionLabelClasses(item) : leafClasses(item)
-								}
-							>
-								{item.title}
-							</a>
-						) : (
-							<div
-								class:list={
-									depth === 0
-										? "mb-1.5 px-2.5 text-[10px] font-bold tracking-[0.18em] text-muted-foreground"
-										: "px-2.5 py-1.5 text-xs font-semibold tracking-wider text-muted-foreground/70"
-								}
-							>
-								{item.title}
-							</div>
-						)
-					}
-					<div
-						class:list={[
-							depth === 0
-								? "space-y-0.5"
-								: "ml-2.5 mt-0.5 space-y-0.5 border-l border-border/60 pl-2",
-						]}
+				<li role="treeitem">
+					<details
+						open={depth === 0 || isActive(item) || hasActiveDescendant(item)}
+						class="tree-group"
 					>
-						<Astro.self
-							items={item.children}
-							activePath={activePath}
-							depth={depth + 1}
-						/>
-					</div>
-				</div>
+						<summary
+							class:list={[
+								"group flex cursor-pointer list-none items-start gap-2 rounded-md px-2 py-1.5 text-sm leading-snug transition-colors select-none [&::-webkit-details-marker]:hidden",
+								isActive(item)
+									? "bg-primary/10 text-primary"
+									: hasActiveDescendant(item)
+										? "text-foreground hover:bg-muted/60"
+										: "text-foreground/80 hover:bg-muted/60 hover:text-foreground",
+								depth === 0 ? "font-semibold" : "font-medium",
+							]}
+						>
+							<ChevronRight className="tree-chevron mt-[3px] h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-150" />
+							{
+								item.slug !== "#" ? (
+									<a
+										href={`/docs/${item.slug}`}
+										data-haptic-nav
+										data-sidebar-active={isActive(item) ? "true" : undefined}
+										aria-current={isActive(item) ? "page" : undefined}
+										class="min-w-0 flex-1 hover:underline underline-offset-4 decoration-border"
+									>
+										{item.title}
+									</a>
+								) : (
+									<span class="min-w-0 flex-1">{item.title}</span>
+								)
+							}
+							<span class="mt-[2px] shrink-0 rounded-full bg-muted/60 px-1.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+								{countPages(item)}
+							</span>
+						</summary>
+						<div class="ml-[15px] mt-0.5 border-l border-muted-foreground/25 pl-2">
+							<Astro.self
+								items={item.children}
+								activePath={activePath}
+								depth={depth + 1}
+							/>
+						</div>
+					</details>
+				</li>
 			) : (
-				<a
-					href={`/docs/${item.slug}`}
-					data-haptic-nav
-					data-sidebar-active={isActive(item) ? "true" : undefined}
-					aria-current={isActive(item) ? "page" : undefined}
-					class:list={leafClasses(item)}
-				>
-					{item.title}
-				</a>
+				<li role="treeitem">
+					<a
+						href={`/docs/${item.slug}`}
+						data-haptic-nav
+						data-sidebar-active={isActive(item) ? "true" : undefined}
+						aria-current={isActive(item) ? "page" : undefined}
+						class:list={rowClasses(item)}
+					>
+						<FileText
+							className={`mt-[3px] h-3.5 w-3.5 shrink-0 ${isActive(item) ? "text-primary" : "text-muted-foreground/70"}`}
+						/>
+						<span class="min-w-0">{item.title}</span>
+					</a>
+				</li>
 			)
 		)
 	}
-</div>
+</ul>
+
+<style>
+	details[open] > summary :global(.tree-chevron) {
+		transform: rotate(90deg);
+	}
+</style>
