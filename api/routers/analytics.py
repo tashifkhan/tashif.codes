@@ -1,6 +1,6 @@
 import datetime
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import Response
 
 from core.config import list_available_projects
@@ -18,7 +18,17 @@ from services import (
     merge_stats,
     merge_timeseries,
 )
+from services.cloudflare import CF_DIMENSIONS
+from services.filters import (
+    MAX_FILTERS,
+    Filter,
+    cache_suffix,
+    cloudflare_filters,
+    parse_filters,
+    posthog_where,
+)
 from services.parallel import gather_queries
+from services.posthog import PH_FIELDS
 from services.posthog_history import fetch_history
 from services.snapshots import get_snapshot
 
@@ -42,8 +52,11 @@ async def get_projects(response: Response):
     )
 
 
-async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
+async def _get_project_stats_internal(
+    project: dict, days: int, filters: list[Filter] | None = None
+) -> AllStats:
     """Internal business logic to fetch and merge stats for a single project."""
+    filters = filters or []
     project_slug = project["slug"]
     config = project["config"]
 
@@ -58,8 +71,9 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
         else days
     )
 
-    # 1. Load Vercel migration data and filter by days
-    if vercel_file:
+    # 1. Load Vercel migration data and filter by days. The export only has
+    # per-dimension totals, so filtered views leave it out entirely.
+    if vercel_file and not filters:
         vercel_data = load_vercel_data(vercel_file)
         if vercel_data is None:
             vercel_data = get_empty_stats()
@@ -79,8 +93,9 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
     query_days = effective_days if effective_days > 0 else 912
 
     if analytics_provider == "cloudflare" and cf_site_tag:
-        ts_task = fetch_cf_timeseries(cf_site_tag, query_days)
-        breakdowns_task = fetch_cf_all_breakdowns(cf_site_tag, query_days)
+        conditions = cloudflare_filters(filters, CF_DIMENSIONS)
+        ts_task = fetch_cf_timeseries(cf_site_tag, query_days, conditions)
+        breakdowns_task = fetch_cf_all_breakdowns(cf_site_tag, query_days, conditions)
         live_timeseries, live_breakdowns = await gather_queries(
             ts_task, breakdowns_task
         )
@@ -88,12 +103,13 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
     elif ph_id and query_days > 90:
         # Long ranges go quarter by quarter; past quarters come from cache.
         live_timeseries, live_breakdowns = await fetch_history(
-            ph_id, query_days, align=effective_days == 0
+            ph_id, query_days, align=effective_days == 0, where=posthog_where(filters, PH_FIELDS)
         )
 
     elif ph_id:
-        ts_task = fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=90)
-        breakdowns_task = fetch_all_breakdowns(ph_id, query_days)
+        where = posthog_where(filters, PH_FIELDS)
+        ts_task = fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=90, where=where)
+        breakdowns_task = fetch_all_breakdowns(ph_id, query_days, where=where)
 
         live_timeseries, live_breakdowns = await gather_queries(
             ts_task, breakdowns_task
@@ -108,6 +124,7 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
         metadata=Metadata(
             export_date=datetime.datetime.now(datetime.UTC),
             source=f"unified_{project_slug}",
+            excludes_history=bool(filters and vercel_file and vercel_file.exists()),
         ),
         timeseries=merged_timeseries,
         stats=merged_stats,
@@ -132,6 +149,11 @@ async def get_project_stats(
         default=False,
         description="Refresh the saved snapshot, preserving it if the provider fails",
     ),
+    filter: list[str] = Query(
+        default=[],
+        max_length=MAX_FILTERS,
+        description="Breakdown filters as field:value, e.g. country:🇮🇳 India. Filtered stats leave out Vercel migration history.",
+    ),
 ):
     """
     Get unified analytics stats for one or multiple projects concurrently.
@@ -139,12 +161,16 @@ async def get_project_stats(
     # Snapshot freshness is explicit in the body. Never CDN-cache failures or
     # a response saying a refresh is still running.
     response.headers["Cache-Control"] = "no-store"
+    try:
+        filters = parse_filters(filter)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
     async def fetch_one(slug: str):
         project = get_project(slug)
         payload = await get_snapshot(
-            f"stats:{slug}:{days}",
-            lambda: _get_project_stats_internal(project, days),
+            f"stats:{slug}:{days}{cache_suffix(filters)}",
+            lambda: _get_project_stats_internal(project, days, filters),
             refresh=refresh,
         )
         return {"slug": slug, **payload}

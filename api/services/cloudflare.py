@@ -22,6 +22,15 @@ CF_PARALLEL_WINDOW_DAYS = 30  # Chunk size for parallel fetching
 # request latency never push the oldest window past the limit.
 CF_MAX_LOOKBACK_DAYS = 183
 
+# Map our standard field names to Cloudflare dimensions
+CF_DIMENSIONS = {
+    "path": "requestPath",
+    "os_name": "userAgentOS",
+    "device_type": "deviceType",
+    "referrer": "refererHost",
+    "country": "countryName",
+}
+
 
 def _as_dict(value: object) -> dict:
     """Return value when it is a dict, otherwise an empty dict."""
@@ -115,7 +124,7 @@ def _merge_breakdown_entries(entries: list[StatEntry], limit: int) -> list[StatE
 
 
 async def _fetch_cf_timeseries_range(
-    site_tag: str, from_date: str, to_date: str
+    site_tag: str, from_date: str, to_date: str, conditions: list[dict]
 ) -> list[TimeseriesEntry]:
     """Fetch Cloudflare timeseries for a single date range window."""
     query = """
@@ -143,6 +152,7 @@ async def _fetch_cf_timeseries_range(
                 {"datetime_geq": from_date, "datetime_leq": to_date},
                 {"siteTag": site_tag},
                 {"bot": 0},
+                *conditions,
             ]
         },
     }
@@ -197,15 +207,16 @@ async def _fetch_cf_breakdown_range(
     from_date: str,
     to_date: str,
     limit: int,
+    conditions: list[dict],
 ) -> list[StatEntry]:
     """Fetch Cloudflare breakdown for a single date range window."""
     query = f"""
-    query GetRumBreakdown($accountTag: String!, $siteTag: String!, $from: Time!, $to: Time!) {{
+    query GetRumBreakdown($accountTag: String!, $filter: ZoneRumPageloadEventsAdaptiveGroupsFilter_InputObject!) {{
         viewer {{
             accounts(filter: {{ accountTag: $accountTag }}) {{
                 rumPageloadEventsAdaptiveGroups(
                     limit: {limit}
-                    filter: {{ datetime_geq: $from, datetime_leq: $to, siteTag: $siteTag, bot: 0 }}
+                    filter: $filter
                     orderBy: [sum_visits_DESC]
                 ) {{
                     dimensions {{
@@ -223,9 +234,14 @@ async def _fetch_cf_breakdown_range(
 
     variables = {
         "accountTag": settings.cloudflare_account_tag,
-        "siteTag": site_tag,
-        "from": from_date,
-        "to": to_date,
+        "filter": {
+            "AND": [
+                {"datetime_geq": from_date, "datetime_leq": to_date},
+                {"siteTag": site_tag},
+                {"bot": 0},
+                *conditions,
+            ]
+        },
     }
 
     result = await query_cloudflare(query, variables)
@@ -326,7 +342,9 @@ async def query_cloudflare(query: str, variables: dict) -> dict:
         raise RuntimeError("Cloudflare analytics request failed") from e
 
 
-async def fetch_cf_timeseries(site_tag: str, days: int = 30) -> list[TimeseriesEntry]:
+async def fetch_cf_timeseries(
+    site_tag: str, days: int = 30, conditions: list[dict] | None = None
+) -> list[TimeseriesEntry]:
     """
     Fetch timeseries pageview/visit data from Cloudflare Web Analytics.
     Uses parallel 30-day windows to keep individual provider queries small.
@@ -334,12 +352,14 @@ async def fetch_cf_timeseries(site_tag: str, days: int = 30) -> list[TimeseriesE
     Args:
         site_tag: The Cloudflare site tag
         days: Number of days to look back
+        conditions: Extra filter conditions from services.filters.cloudflare_filters
 
     Returns:
         List of TimeseriesEntry objects
     """
     if days <= 0:
         return []
+    conditions = conditions or []
 
     effective_days = min(days, CF_MAX_LOOKBACK_DAYS)
 
@@ -347,11 +367,11 @@ async def fetch_cf_timeseries(site_tag: str, days: int = 30) -> list[TimeseriesE
         now = datetime.now(UTC)
         from_date = (now - timedelta(days=effective_days)).isoformat()
         to_date = now.isoformat()
-        return await _fetch_cf_timeseries_range(site_tag, from_date, to_date)
+        return await _fetch_cf_timeseries_range(site_tag, from_date, to_date, conditions)
 
     windows = _iter_time_windows(effective_days, CF_PARALLEL_WINDOW_DAYS)
     results = await gather_queries(*(
-        _fetch_cf_timeseries_range(site_tag, ws.isoformat(), we.isoformat())
+        _fetch_cf_timeseries_range(site_tag, ws.isoformat(), we.isoformat(), conditions)
         for ws, we in windows
     ))
 
@@ -360,7 +380,11 @@ async def fetch_cf_timeseries(site_tag: str, days: int = 30) -> list[TimeseriesE
 
 
 async def fetch_cf_breakdown(
-    site_tag: str, dimension: str, days: int = 30, limit: int = 15
+    site_tag: str,
+    dimension: str,
+    days: int = 30,
+    limit: int = 15,
+    conditions: list[dict] | None = None,
 ) -> list[StatEntry]:
     """
     Fetch breakdown statistics for a specific dimension from Cloudflare.
@@ -370,12 +394,14 @@ async def fetch_cf_breakdown(
         dimension: The dimension to break down by (userAgentOS, userAgentBrowser, countryName, refererHost, requestPath)
         days: Number of days to look back
         limit: Maximum number of results to return
+        conditions: Extra filter conditions from services.filters.cloudflare_filters
 
     Returns:
         List of StatEntry objects
     """
     if days <= 0:
         return []
+    conditions = conditions or []
 
     effective_days = min(days, CF_MAX_LOOKBACK_DAYS)
 
@@ -384,14 +410,14 @@ async def fetch_cf_breakdown(
         from_date = (now - timedelta(days=effective_days)).isoformat()
         to_date = now.isoformat()
         return await _fetch_cf_breakdown_range(
-            site_tag, dimension, from_date, to_date, limit
+            site_tag, dimension, from_date, to_date, limit, conditions
         )
 
     per_window_limit = max(limit * 5, 100)
     windows = _iter_time_windows(effective_days, CF_PARALLEL_WINDOW_DAYS)
     results = await gather_queries(*(
         _fetch_cf_breakdown_range(
-            site_tag, dimension, ws.isoformat(), we.isoformat(), per_window_limit
+            site_tag, dimension, ws.isoformat(), we.isoformat(), per_window_limit, conditions
         )
         for ws, we in windows
     ))
@@ -401,7 +427,7 @@ async def fetch_cf_breakdown(
 
 
 async def fetch_cf_all_breakdowns(
-    site_tag: str, days: int = 30
+    site_tag: str, days: int = 30, conditions: list[dict] | None = None
 ) -> dict[str, list[StatEntry]]:
     """
     Fetch all breakdown statistics in parallel from Cloudflare.
@@ -409,22 +435,14 @@ async def fetch_cf_all_breakdowns(
     Args:
         site_tag: The Cloudflare site tag
         days: Number of days to look back
+        conditions: Extra filter conditions from services.filters.cloudflare_filters
 
     Returns:
         Dictionary mapping field names to lists of StatEntry objects
     """
-    # Map our standard field names to Cloudflare dimensions
-    dimension_map = {
-        "path": "requestPath",
-        "os_name": "userAgentOS",
-        "device_type": "deviceType",
-        "referrer": "refererHost",
-        "country": "countryName",
-    }
-
     tasks = {
-        field: fetch_cf_breakdown(site_tag, cf_dim, days)
-        for field, cf_dim in dimension_map.items()
+        field: fetch_cf_breakdown(site_tag, cf_dim, days, conditions=conditions)
+        for field, cf_dim in CF_DIMENSIONS.items()
     }
 
     results = await gather_queries(*tasks.values())

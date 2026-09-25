@@ -14,6 +14,9 @@ class Metadata(BaseModel):
 
     export_date: datetime
     source: str
+    # True when filters left out Vercel migration history, which has no
+    # per-event data to filter.
+    excludes_history: bool = False
 
 
 class TimeseriesEntry(BaseModel):

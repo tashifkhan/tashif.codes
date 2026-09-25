@@ -10,6 +10,7 @@ across Vercel and PostHog data, so someone who visits in two quarters counts
 twice in the breakdowns.
 """
 
+import hashlib
 import json
 import logging
 from datetime import date, datetime, timedelta, timezone
@@ -62,23 +63,23 @@ def _bounds(start: date, end: date) -> str:
     )
 
 
-async def _timeseries(project_id: str, start: date, end: date) -> list[dict]:
+async def _timeseries(project_id: str, start: date, end: date, where: str) -> list[dict]:
     rows = await query_posthog(project_id, f"""
         SELECT toStartOfDay(timestamp) as d, count() as pageviews, count(DISTINCT distinct_id) as visitors
         FROM events
-        WHERE event = '$pageview' AND {_bounds(start, end)}
+        WHERE event = '$pageview' AND {_bounds(start, end)}{where}
         GROUP BY d
         ORDER BY d ASC
     """)
     return [{"date": str(row[0]), "pageviews": row[1], "visitors": row[2]} for row in rows]
 
 
-async def _breakdown(project_id: str, field: str, start: date, end: date) -> list[dict]:
+async def _breakdown(project_id: str, field: str, start: date, end: date, where: str) -> list[dict]:
     target = PH_FIELDS[field]
     rows = await query_posthog(project_id, f"""
         SELECT {target} as key, count() as pageviews, count(DISTINCT distinct_id) as visitors
         FROM events
-        WHERE event = '$pageview' AND {_bounds(start, end)} AND {target} IS NOT NULL
+        WHERE event = '$pageview' AND {_bounds(start, end)} AND {target} IS NOT NULL{where}
         GROUP BY key
         ORDER BY pageviews DESC
         LIMIT {WINDOW_LIMIT}
@@ -86,21 +87,23 @@ async def _breakdown(project_id: str, field: str, start: date, end: date) -> lis
     return [{"key": str(row[0]), "pageviews": row[1], "visitors": row[2]} for row in rows]
 
 
-async def _fetch_window(project_id: str, start: date, end: date) -> dict:
+async def _fetch_window(project_id: str, start: date, end: date, where: str) -> dict:
     results = await gather_queries(
-        _timeseries(project_id, start, end),
-        *(_breakdown(project_id, field, start, end) for field in PH_FIELDS),
+        _timeseries(project_id, start, end, where),
+        *(_breakdown(project_id, field, start, end, where) for field in PH_FIELDS),
     )
     return {"timeseries": results[0], "breakdowns": dict(zip(PH_FIELDS, results[1:]))}
 
 
-async def _cached_window(project_id: str, start: date, end: date, today: date) -> dict:
+async def _cached_window(project_id: str, start: date, end: date, today: date, where: str = "") -> dict:
     # Only whole quarters that have ended are final.
     final = start == quarter_start(start) and end == next_quarter(start) and end <= today
     if not final:
-        return await _fetch_window(project_id, start, end)
+        return await _fetch_window(project_id, start, end, where)
 
     key = f"{PREFIX}{project_id}:{start.isoformat()}"
+    if where:
+        key += ":" + hashlib.sha256(where.encode()).hexdigest()[:16]
     if key in _memory:
         return _memory[key]
     if snapshots.configured():
@@ -112,7 +115,7 @@ async def _cached_window(project_id: str, start: date, end: date, today: date) -
         except Exception:
             logger.warning("Quarter cache read failed for %s", key)
 
-    window = await _fetch_window(project_id, start, end)
+    window = await _fetch_window(project_id, start, end, where)
     _memory[key] = window
     if snapshots.configured():
         try:
@@ -123,12 +126,15 @@ async def _cached_window(project_id: str, start: date, end: date, today: date) -
 
 
 async def fetch_history(
-    project_id: str, days: int, align: bool = False
+    project_id: str, days: int, align: bool = False, where: str = ""
 ) -> tuple[list[TimeseriesEntry], dict[str, list[StatEntry]]]:
-    """Fetch timeseries and breakdowns for the last `days` days, quarter by quarter."""
+    """Fetch timeseries and breakdowns for the last `days` days, quarter by quarter.
+
+    `where` holds extra HogQL conditions from services.filters.posthog_where.
+    """
     today = datetime.now(timezone.utc).date()
     parts = await gather_queries(
-        *(_cached_window(project_id, start, end, today) for start, end in windows(days, today, align))
+        *(_cached_window(project_id, start, end, today, where) for start, end in windows(days, today, align))
     )
 
     by_day: dict[str, TimeseriesEntry] = {}

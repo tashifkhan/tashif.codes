@@ -118,7 +118,7 @@ async def fetch_timeseries(project_id: str, days: int = 30) -> list[TimeseriesEn
 
 
 async def fetch_timeseries_window(
-    project_id: str, start_days_ago: int, end_days_ago: int
+    project_id: str, start_days_ago: int, end_days_ago: int, where: str = ""
 ) -> list[TimeseriesEntry]:
     """
     Fetch timeseries data for a specific historical window.
@@ -127,6 +127,7 @@ async def fetch_timeseries_window(
         project_id: The PostHog project ID
         start_days_ago: Window start offset from now in days (inclusive)
         end_days_ago: Window end offset from now in days (exclusive)
+        where: Extra HogQL conditions from services.filters.posthog_where
 
     Returns:
         List of TimeseriesEntry objects
@@ -139,7 +140,7 @@ async def fetch_timeseries_window(
         FROM events
         WHERE event = '$pageview'
             AND timestamp > now() - INTERVAL {end_days_ago} DAY
-            AND timestamp <= now() - INTERVAL {start_days_ago} DAY
+            AND timestamp <= now() - INTERVAL {start_days_ago} DAY{where}
         GROUP BY d
         ORDER BY d ASC
     """
@@ -162,6 +163,7 @@ async def fetch_timeseries_batched(
     total_days: int = 3650,
     batch_days: int = 90,
     max_concurrency: int = 4,
+    where: str = "",
 ) -> list[TimeseriesEntry]:
     """
     Fetch long-range PostHog timeseries in smaller windows and merge by day.
@@ -180,7 +182,7 @@ async def fetch_timeseries_batched(
     async def run_window(window: tuple[int, int]) -> list[TimeseriesEntry]:
         w_start, w_end = window
         async with semaphore:
-            return await fetch_timeseries_window(project_id, w_start, w_end)
+            return await fetch_timeseries_window(project_id, w_start, w_end, where)
 
     chunks = await gather_queries(*(run_window(window) for window in windows))
 
@@ -204,7 +206,7 @@ async def fetch_timeseries_batched(
 
 
 async def fetch_breakdown(
-    project_id: str, field: str, days: int = 30, limit: int = 15
+    project_id: str, field: str, days: int = 30, limit: int = 15, where: str = ""
 ) -> list[StatEntry]:
     """
     Fetch breakdown statistics for a specific field from PostHog.
@@ -214,6 +216,7 @@ async def fetch_breakdown(
         field: The field to break down by (path, device_type, referrer, os_name, country)
         days: Number of days to look back
         limit: Maximum number of results to return
+        where: Extra HogQL conditions from services.filters.posthog_where
 
     Returns:
         List of StatEntry objects
@@ -228,7 +231,7 @@ async def fetch_breakdown(
         FROM events
         WHERE event = '$pageview'
             AND timestamp > now() - INTERVAL {days} DAY
-            AND {target} IS NOT NULL
+            AND {target} IS NOT NULL{where}
         GROUP BY key
         ORDER BY pageviews DESC
         LIMIT {limit}
@@ -242,7 +245,7 @@ async def fetch_breakdown(
 
 
 async def fetch_all_breakdowns(
-    project_id: str, days: int = 30
+    project_id: str, days: int = 30, where: str = ""
 ) -> dict[str, list[StatEntry]]:
     """
     Fetch all breakdown statistics in parallel.
@@ -250,6 +253,7 @@ async def fetch_all_breakdowns(
     Args:
         project_id: The PostHog project ID
         days: Number of days to look back
+        where: Extra HogQL conditions from services.filters.posthog_where
 
     Returns:
         Dictionary mapping field names to lists of StatEntry objects
@@ -263,7 +267,7 @@ async def fetch_all_breakdowns(
     ]
 
     # Execute all breakdown queries in parallel
-    tasks = [fetch_breakdown(project_id, field, days) for field in fields]
+    tasks = [fetch_breakdown(project_id, field, days, where=where) for field in fields]
     results = await gather_queries(*tasks)
 
     return dict(zip(fields, results))

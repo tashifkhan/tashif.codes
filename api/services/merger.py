@@ -13,14 +13,34 @@ from models import StatEntry, Stats, TimeseriesEntry
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils import get_country_display
 
-_MAC_VARIANTS = {"mac", "macos", "mac os x", "macos x", "os x"}
+_MAC_VARIANTS = {"mac", "macos", "macosx", "mac os x", "macos x", "os x"}
+_LINUX_VARIANTS = {"linux", "gnu/linux"}
+# Android app referrers and alternate hosts that belong to one site.
+_REFERRER_ALIASES = {"com.linkedin.android": "linkedin.com"}
 
 
 def _normalize_os_name(key: str) -> str:
-    """Normalize OS name variants so mac/macos/macos x all collapse to 'Mac'."""
+    """Collapse OS name variants, e.g. mac/macos/macos x to 'Mac', gnu/linux to 'Linux'."""
     if key and key.lower() in _MAC_VARIANTS:
         return "Mac"
+    if key and key.lower() in _LINUX_VARIANTS:
+        return "Linux"
     return key
+
+
+def _normalize_referrer(key: str) -> str:
+    """Drop a leading www. so www.google.com and google.com count as one referrer."""
+    if not key:
+        return key
+    host = key.lower().removeprefix("www.")
+    return _REFERRER_ALIASES.get(host, host)
+
+
+def _normalized(entries: list[StatEntry], normalize) -> list[StatEntry]:
+    return [
+        StatEntry(key=normalize(e.key), pageviews=e.pageviews, visitors=e.visitors)
+        for e in entries
+    ]
 
 
 def merge_stat_lists(
@@ -147,11 +167,12 @@ def merge_stats(
             vercel_stats.device_type, posthog_stats.get("device_type", [])
         ),
         referrer=merge_stat_lists(
-            vercel_stats.referrer, posthog_stats.get("referrer", [])
+            _normalized(vercel_stats.referrer, _normalize_referrer),
+            _normalized(posthog_stats.get("referrer", []), _normalize_referrer),
         ),
         os_name=merge_stat_lists(
-            [StatEntry(key=_normalize_os_name(e.key), pageviews=e.pageviews, visitors=e.visitors) for e in vercel_stats.os_name],
-            [StatEntry(key=_normalize_os_name(e.key), pageviews=e.pageviews, visitors=e.visitors) for e in posthog_stats.get("os_name", [])],
+            _normalized(vercel_stats.os_name, _normalize_os_name),
+            _normalized(posthog_stats.get("os_name", []), _normalize_os_name),
         ),
         country=formatted_countries,
     )
