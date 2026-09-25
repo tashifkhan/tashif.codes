@@ -1,72 +1,78 @@
-# API endpoints: pull requests & organizations
+# API endpoints: pull requests and organizations
 
-Endpoints for tracking user contributions to their own projects and external organizations.
+Three routes in `routes/pr.py`. They return arrays of Pydantic models, not the canonical envelope. Tag in OpenAPI is Dashboard Details.
 
----
+## Pull requests in owned repos
 
-## 1. get user's pull requests (own repos)
+PRs the user opened in repositories they own.
 
-Returns all pull requests created by the user in their own repositories.
+- **Method and path.** `GET /{username}/me/pulls`
+- **Response.** `PullRequestDetail[]`. Failure to fetch is `500` with `Failed to retrieve pull requests`.
 
-- **Endpoint**: `GET /{username}/me/pulls`
-- **Description**: Includes status (merged, closed, or open) and PR metadata.
-
-### Response
+```bash
+curl -s https://github-stats.tashif.codes/tashifkhan/me/pulls
+```
 
 ```json
 [
-	{
-		"repo": "RepoName",
-		"number": 123,
-		"title": "Fix bug in feature X",
-		"state": "merged",
-		"url": "https://github.com/...",
-		"body": "This PR fixes ..."
-	}
+  {
+    "repo": "RepoName",
+    "number": 123,
+    "title": "Fix bug in feature X",
+    "state": "merged",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-02T00:00:00Z",
+    "closed_at": "2024-01-02T00:00:00Z",
+    "merged_at": "2024-01-02T00:00:00Z",
+    "user": "tashifkhan",
+    "url": "https://github.com/tashifkhan/RepoName/pull/123",
+    "body": "This PR fixes ..."
+  }
 ]
 ```
 
----
+`state` follows GitHub: open, closed, or merged when `merged_at` is set.
 
-## 2. get organizations contributed to
+## Organizations contributed to
 
-Returns organizations where the user has contributed via merged PRs.
+Orgs where the user has a merged PR, plus the repo names those PRs landed in.
 
-- **Endpoint**: `GET /{username}/org-contributions`
-- **Description**: Lists organizations and the specific repositories contributed to.
-
-### Response
+- **Method and path.** `GET /{username}/org-contributions`
+- **Response.** `OrganizationContribution[]`
 
 ```json
 [
-	{
-		"org": "openai",
-		"org_url": "https://github.com/openai",
-		"repos": ["repo1", "repo2"]
-	}
+  {
+    "org": "openai",
+    "org_id": 1,
+    "org_url": "https://github.com/openai",
+    "org_avatar_url": "https://avatars.githubusercontent.com/u/1",
+    "repos": ["repo1", "repo2"]
+  }
 ]
 ```
 
----
+## Pull requests in other repositories
 
-## 3. get PRs in other repositories
+PRs the user opened in repos they do not own.
 
-Returns pull requests opened by the user in external repositories (open source contributions).
-
-- **Endpoint**: `GET /{username}/prs`
-- **Description**: Tracks PRs not owned by the user.
-
-### Response
+- **Method and path.** `GET /{username}/prs`
+- **Response.** `PullRequestDetail[]`, same shape as `/{username}/me/pulls`.
 
 ```json
 [
-	{
-		"repo": "OtherRepo",
-		"number": 456,
-		"title": "Add new feature",
-		"state": "closed",
-		"user": "tashifkhan",
-		"url": "https://github.com/..."
-	}
+  {
+    "repo": "OtherRepo",
+    "number": 456,
+    "title": "Add new feature",
+    "state": "closed",
+    "created_at": "2024-03-01T00:00:00Z",
+    "updated_at": "2024-03-04T00:00:00Z",
+    "closed_at": "2024-03-04T00:00:00Z",
+    "merged_at": null,
+    "user": "tashifkhan",
+    "url": "https://github.com/someone/OtherRepo/pull/456",
+    "body": null
+  }
 ]
 ```

@@ -1,40 +1,78 @@
 # Interactive dashboard
 
-The GitHub Analytics Dashboard allows users to explore any GitHub profile by simply entering a username.
+The root URL is a custom HTML docs page, not a JSON payload. `/playground` is the live tester: one username, then run any canonical route against the same origin.
 
-## Key features
+## Docs homepage
 
-### 1. profile overview
+`GET /` returns the Command-Code HTML shell. It lists canonical paths, shows the shared envelope, and links to OpenAPI, ReDoc, the playground, and the GitHub repo. Search in the left nav filters those links client-side.
 
-Displays high-level metrics including:
+Recent playground lookups live in `localStorage` under `pg_recent_github`. The list keeps six handles. Clearing it only affects that browser.
 
-- **Total Commits**: Cumulative commit count across all public repositories.
-- **Longest Streak**: The maximum number of consecutive days with at least one contribution.
-- **Current Streak**: The current number of consecutive days with contributions.
-- **Total Stars**: Total stars received across all repositories.
-- **Repositories**: Total count of public repositories.
+## Playground
 
-### 2. top programming languages
+`GET /playground` is the UI the old "profile stalker" README was pointing at. Enter a GitHub username, then Run all or fire one row.
 
-A visual breakdown of the primary languages used in the user's projects, showing the percentage of total code for each language.
+- Path templates such as `/{username}/stats` get the input substituted and URL-encoded.
+- Each row shows status, latency, formatted fields, and raw JSON.
+- `/{username}/stats/svg` has `theme` and `exclude` controls and renders the SVG inline.
+- Run all walks the canonical list in parallel and fills a progress bar.
 
-### 3. contribution graph
+Nothing is proxied to a third-party API from the playground. The browser calls this FastAPI app. The app still uses the server `GITHUB_TOKEN` when it hits GitHub.
 
-An interactive chart showing the user's contribution activity over the past year.
+## UI data sources
 
-### 4. repository insights
+The playground does not invent a second backend. Each card is one GET on the live API.
 
-- **Pinned Repositories**: Shows the repositories pinned to the user's profile.
-- **Top Starred Repositories**: Lists repositories sorted by star count.
-- **Starred Lists**: Displays curated lists created by the user.
-- **All Repositories**: A complete list of the user's public repositories with commit counts and languages.
+```mermaid
+flowchart TB
+  UI["Playground form"]
+  Summary["GET /{username}"]
+  Profile["GET /{username}/profile"]
+  Stats["GET /{username}/stats"]
+  Svg["GET /{username}/stats/svg"]
+  Heat["GET /{username}/heatmap"]
+  Badges["GET /{username}/badges"]
+  Lang["GET /{username}/languages"]
+  Contrib["GET /{username}/contributions"]
+  Repos["GET /{username}/repos"]
+  Commits["GET /{username}/commits"]
+  Stars["GET /{username}/stars"]
+  Pulls["GET /{username}/me/pulls"]
+  Orgs["GET /{username}/org-contributions"]
+  Prs["GET /{username}/prs"]
 
-### 5. activity tracking
+  UI --> Summary
+  UI --> Profile
+  UI --> Stats
+  UI --> Svg
+  UI --> Heat
+  UI --> Badges
+  UI --> Lang
+  UI --> Contrib
+  UI --> Repos
+  UI --> Commits
+  UI --> Stars
+  UI --> Pulls
+  UI --> Orgs
+  UI --> Prs
+```
 
-- **Recent Commits**: A list of the latest commits across all owned repositories.
-- **Pull Requests**: Tracks PRs in the user's own repositories and external contributions.
-- **Organization Contributions**: Lists organizations where the user has contributed via merged pull requests.
+Those are the rows in `CANONICAL_ENDPOINTS` inside `routes/docs.py`. The playground does not auto-run `/{username}/contributions/breakdown`, `/{username}/pinned`, `/{username}/star-lists`, or `/{username}/profile-views`. Those still exist. Call them from curl, OpenAPI, or by editing the URL.
+
+## What the JSON is for
+
+Clients that are not the playground usually want a slice, not every row.
+
+| You want | Call |
+| --- | --- |
+| Name, avatar, bio, social | `GET /{username}/profile` |
+| Commits plus language topics | `GET /{username}/stats` |
+| Contribution calendar | `GET /{username}/heatmap` or `GET /{username}/contributions` |
+| README and topics for a portfolio | `GET /{username}/repos` |
+| Releases and commit counts | `GET /{username}/repos?full=true` |
+| Own-commit language mix | `GET /{username}/languages` and `GET /{username}/contributions/breakdown` |
+| README badge | `GET /{username}/stats/svg` |
 
 ## Search history
 
-The dashboard maintains a local history of recent searches, allowing you to quickly revisit profiles you've analyzed before.
+Focus the username field to reopen recent handles. The list is local only. It is not a server-side history API.
