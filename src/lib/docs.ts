@@ -190,7 +190,21 @@ function sentenceCaseWord(word: string, isFirst = false): string {
   return pre + out.join('') + post;
 }
 
+// formatTitle splits camelCase filenames ("GitHub" -> "Git Hub"), so rejoin
+// brand names before sentence-casing.
+const DOC_SPLIT_BRANDS: Record<string, string> = {
+  'Git Hub': 'GitHub', 'Git Lab': 'GitLab', 'You Tube': 'YouTube',
+  'Linked In': 'LinkedIn', 'Java Script': 'JavaScript',
+  'Type Script': 'TypeScript', 'Open AI': 'OpenAI', 'Fast API': 'FastAPI',
+  'Lang Chain': 'LangChain', 'Lang Graph': 'LangGraph', 'Mongo DB': 'MongoDB',
+  'Postgre SQL': 'PostgreSQL', 'Word Press': 'WordPress', 'i OS': 'iOS',
+  'Web Socket': 'WebSocket', 'Web Sockets': 'WebSockets',
+};
+
 export function sentenceCaseDocTitle(title: string): string {
+  for (const [split, joined] of Object.entries(DOC_SPLIT_BRANDS)) {
+    title = title.replace(new RegExp(`\\b${split}\\b`, 'gi'), joined);
+  }
   const stashed: string[] = [];
   for (const phrase of DOC_PROPER_PHRASES) {
     if (title.includes(phrase)) {
