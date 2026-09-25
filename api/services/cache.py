@@ -1,8 +1,9 @@
 """Simple async-safe in-process TTL cache for serverless environments."""
 
-import time
 import asyncio
-from typing import Any, Awaitable, Callable
+import time
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 _cache: dict[str, tuple[float, Any]] = {}
 _locks: dict[str, asyncio.Lock] = {}

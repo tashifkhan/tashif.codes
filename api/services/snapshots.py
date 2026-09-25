@@ -11,6 +11,7 @@ import httpx
 
 from core.config import settings
 from models import AllStats
+
 from .client import http_client
 
 logger = logging.getLogger(__name__)
@@ -60,7 +61,8 @@ def failures(exc: BaseException) -> list[list[BaseException]]:
 def describe_failure(exc: BaseException) -> str:
     # Provider errors carry the request URL and status, never the API key.
     return "; ".join(
-        " <- ".join(f"{type(e).__name__}: {e}" for e in chain) for chain in failures(exc)
+        " <- ".join(f"{type(e).__name__}: {e}" for e in chain)
+        for chain in failures(exc)
     )
 
 
@@ -78,7 +80,9 @@ async def read(key: str) -> dict | None:
             raw = await command("GET", PREFIX + key)
             if raw:
                 candidate = json.loads(raw)
-                candidate["data"] = AllStats.model_validate(candidate["data"]).model_dump(mode="json")
+                candidate["data"] = AllStats.model_validate(
+                    candidate["data"]
+                ).model_dump(mode="json")
                 candidate["saved_at"] = float(candidate["saved_at"])
                 snapshot = candidate
                 remember(key, snapshot)
@@ -92,14 +96,18 @@ async def read(key: str) -> dict | None:
 async def save(key: str, snapshot: dict):
     if configured():
         # Do not claim a shared refresh succeeded if persistence failed.
-        await command("SET", PREFIX + key, json.dumps(snapshot), "EX", RETENTION_SECONDS)
+        await command(
+            "SET", PREFIX + key, json.dumps(snapshot), "EX", RETENTION_SECONDS
+        )
     remember(key, snapshot)
 
 
 async def acquire(key: str) -> str | None:
     token = uuid4().hex
     if configured():
-        acquired = await command("SET", PREFIX + key + ":lock", token, "NX", "EX", LOCK_SECONDS)
+        acquired = await command(
+            "SET", PREFIX + key + ":lock", token, "NX", "EX", LOCK_SECONDS
+        )
         return token if acquired == "OK" else None
     now = time.monotonic()
     for expired in [k for k, (_, until) in _leases.items() if until <= now]:
@@ -116,7 +124,9 @@ async def release(key: str, token: str):
             await command(
                 "EVAL",
                 "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end",
-                1, PREFIX + key + ":lock", token,
+                1,
+                PREFIX + key + ":lock",
+                token,
             )
         except Exception:
             logger.warning("Snapshot lock release failed; lease will expire")
@@ -132,8 +142,15 @@ def result(snapshot: dict | None, *, refreshing=False, error=None) -> dict:
         "cache": {
             "stale": bool(stale),
             "refreshing": refreshing,
-            "refresh_error": error or ((snapshot or {}).get("refresh_error") if time.time() < (snapshot or {}).get("retry_at", 0) else None),
-            "retry_after": max(0, int((snapshot or {}).get("retry_at", 0) - time.time())),
+            "refresh_error": error
+            or (
+                (snapshot or {}).get("refresh_error")
+                if time.time() < (snapshot or {}).get("retry_at", 0)
+                else None
+            ),
+            "retry_after": max(
+                0, int((snapshot or {}).get("retry_at", 0) - time.time())
+            ),
         },
     }
 
@@ -144,7 +161,11 @@ async def get_snapshot(key: str, factory, *, refresh: bool = False) -> dict:
         refreshing = False
         if time.time() - snapshot["saved_at"] >= FRESH_SECONDS:
             try:
-                refreshing = bool(await command("GET", PREFIX + key + ":lock")) if configured() else _leases.get(key, (None, 0))[1] > time.monotonic()
+                refreshing = (
+                    bool(await command("GET", PREFIX + key + ":lock"))
+                    if configured()
+                    else _leases.get(key, (None, 0))[1] > time.monotonic()
+                )
             except Exception:
                 pass  # The snapshot remains usable during a Redis outage.
         return result(snapshot, refreshing=refreshing)
@@ -167,13 +188,27 @@ async def get_snapshot(key: str, factory, *, refresh: bool = False) -> dict:
         await save(key, snapshot)
         return result(snapshot)
     except Exception as exc:
-        logger.warning("Analytics refresh failed for %s: %s", key, describe_failure(exc))
+        logger.warning(
+            "Analytics refresh failed for %s: %s", key, describe_failure(exc)
+        )
         # Re-read the previous successful snapshot if the new write failed.
         previous = await read(key)
-        timed_out = any(isinstance(e, (TimeoutError, httpx.TimeoutException)) for chain in failures(exc) for e in chain)
-        message = "Analytics refresh timed out. Try again shortly." if timed_out else "Analytics refresh failed. Try again shortly."
+        timed_out = any(
+            isinstance(e, (TimeoutError, httpx.TimeoutException))
+            for chain in failures(exc)
+            for e in chain
+        )
+        message = (
+            "Analytics refresh timed out. Try again shortly."
+            if timed_out
+            else "Analytics refresh failed. Try again shortly."
+        )
         if previous:
-            previous = {**previous, "refresh_error": message, "retry_at": time.time() + RETRY_SECONDS}
+            previous = {
+                **previous,
+                "refresh_error": message,
+                "retry_at": time.time() + RETRY_SECONDS,
+            }
             try:
                 await save(key, previous)
             except Exception:

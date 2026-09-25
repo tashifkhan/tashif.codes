@@ -4,13 +4,15 @@ Cloudflare Web Analytics Service Layer
 Handles all interactions with Cloudflare's GraphQL API for RUM (Real User Monitoring) data.
 """
 
-from services.parallel import gather_queries
+from datetime import UTC, datetime, timedelta
+
 import httpx
-from .client import http_client
+
 from core.config import settings
 from models import StatEntry, TimeseriesEntry
-from datetime import datetime, timezone, timedelta
+from services.parallel import gather_queries
 
+from .client import http_client
 
 # Cloudflare API Configuration
 CF_API_URL = "https://api.cloudflare.com/client/v4/graphql"
@@ -53,7 +55,7 @@ def _iter_time_windows(
     days: int, window_days: int = CF_MAX_QUERY_DAYS
 ) -> list[tuple[datetime, datetime]]:
     """Build backward windows (newest first) to satisfy Cloudflare range limits."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     remaining = days
     window_end = now
     windows: list[tuple[datetime, datetime]] = []
@@ -165,7 +167,7 @@ async def _fetch_cf_timeseries_range(
             if not isinstance(ts, str) or not ts:
                 continue
 
-            date_obj = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            date_obj = datetime.fromisoformat(ts)
             day_key = date_obj.strftime("%Y-%m-%d")
 
             sum_data = _as_dict(group.get("sum"))
@@ -184,7 +186,7 @@ async def _fetch_cf_timeseries_range(
                 )
 
         return sorted(daily_data.values(), key=lambda x: x.date)
-    
+
     except Exception as e:
         raise RuntimeError("Invalid Cloudflare timeseries") from e
 
@@ -305,21 +307,21 @@ async def query_cloudflare(query: str, variables: dict) -> dict:
         )
         response.raise_for_status()
         payload = response.json()
-        
+
         if not isinstance(payload, dict):
             print(
                 f"Cloudflare API returned non-dict payload: {type(payload).__name__}"
             )
             raise RuntimeError("Cloudflare returned an invalid response")
-        
+
         if payload.get("errors"):
             raise RuntimeError("Cloudflare analytics query failed")
-        
+
         return payload
-        
+
     except httpx.HTTPError as e:
         raise RuntimeError("Cloudflare analytics request failed") from e
-        
+
     except Exception as e:
         raise RuntimeError("Cloudflare analytics request failed") from e
 
@@ -342,7 +344,7 @@ async def fetch_cf_timeseries(site_tag: str, days: int = 30) -> list[TimeseriesE
     effective_days = min(days, CF_MAX_LOOKBACK_DAYS)
 
     if effective_days <= CF_PARALLEL_WINDOW_DAYS:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         from_date = (now - timedelta(days=effective_days)).isoformat()
         to_date = now.isoformat()
         return await _fetch_cf_timeseries_range(site_tag, from_date, to_date)
@@ -378,7 +380,7 @@ async def fetch_cf_breakdown(
     effective_days = min(days, CF_MAX_LOOKBACK_DAYS)
 
     if effective_days <= CF_PARALLEL_WINDOW_DAYS:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         from_date = (now - timedelta(days=effective_days)).isoformat()
         to_date = now.isoformat()
         return await _fetch_cf_breakdown_range(

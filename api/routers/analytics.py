@@ -1,26 +1,26 @@
-from services.parallel import gather_queries
-from datetime import datetime, timezone
+import datetime
 
 from fastapi import APIRouter, Query
-from services.snapshots import get_snapshot
-from services.posthog_history import fetch_history
 from fastapi.responses import Response
 
 from core.config import list_available_projects
 from core.dependencies import get_project
 from models import AllStats, Metadata, ProjectInfo, ProjectListResponse
 from services import (
-    fetch_timeseries_batched,
     fetch_all_breakdowns,
-    fetch_cf_timeseries,
     fetch_cf_all_breakdowns,
-    load_vercel_data,
-    get_empty_stats,
-    merge_timeseries,
-    merge_stats,
-    filter_timeseries_by_date,
+    fetch_cf_timeseries,
+    fetch_timeseries_batched,
     filter_stats_by_date,
+    filter_timeseries_by_date,
+    get_empty_stats,
+    load_vercel_data,
+    merge_stats,
+    merge_timeseries,
 )
+from services.parallel import gather_queries
+from services.posthog_history import fetch_history
+from services.snapshots import get_snapshot
 
 router = APIRouter(prefix="/v1", tags=["analytics"])
 
@@ -33,7 +33,9 @@ async def get_projects(response: Response):
     List all projects available on this dashboard.
     Returns a list of projects with their slugs and display names.
     """
-    response.headers["Cache-Control"] = "public, s-maxage=86400, stale-while-revalidate=3600"
+    response.headers["Cache-Control"] = (
+        "public, s-maxage=86400, stale-while-revalidate=3600"
+    )
     projects = list_available_projects()
     return ProjectListResponse(
         projects=[ProjectInfo(**p) for p in projects], total=len(projects)
@@ -104,7 +106,7 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
     # 4. Build unified response
     return AllStats(
         metadata=Metadata(
-            export_date=datetime.now(timezone.utc),
+            export_date=datetime.datetime.now(datetime.UTC),
             source=f"unified_{project_slug}",
         ),
         timeseries=merged_timeseries,
@@ -115,7 +117,11 @@ async def _get_project_stats_internal(project: dict, days: int) -> AllStats:
 @router.get("/stats")
 async def get_project_stats(
     response: Response,
-    slugs: list[str] = Query(..., max_length=8, description="List of project slugs to fetch"),
+    slugs: list[str] = Query(
+        ...,
+        max_length=8,
+        description="List of project slugs to fetch",
+    ),
     days: int = Query(
         default=30,
         ge=0,
@@ -147,13 +153,19 @@ async def get_project_stats(
     unique_slugs = list(dict.fromkeys(slugs))
     for slug in unique_slugs:
         get_project(slug)
-    return {"results": await gather_queries(*(fetch_one(slug) for slug in unique_slugs))}
+    return {
+        "results": await gather_queries(*(fetch_one(slug) for slug in unique_slugs))
+    }
 
 
 @router.get("/timeseries")
 async def get_project_timeseries(
     response: Response,
-    slugs: list[str] = Query(..., max_length=8, description="List of project slugs to fetch"),
+    slugs: list[str] = Query(
+        ...,
+        max_length=8,
+        description="List of project slugs to fetch",
+    ),
     days: int = Query(
         default=30,
         ge=0,
@@ -179,12 +191,20 @@ async def get_project_timeseries(
         )
         if payload["data"] is not None:
             payload["data"] = {
-                "project": slug, "days": days,
+                "project": slug,
+                "days": days,
                 "timeseries": payload["data"]["timeseries"],
             }
-        return {"slug": slug, **payload}
+        return {
+            "slug": slug,
+            **payload,
+        }
 
     unique_slugs = list(dict.fromkeys(slugs))
+
     for slug in unique_slugs:
         get_project(slug)
-    return {"results": await gather_queries(*(fetch_one(slug) for slug in unique_slugs))}
+
+    return {
+        "results": await gather_queries(*(fetch_one(slug) for slug in unique_slugs))
+    }

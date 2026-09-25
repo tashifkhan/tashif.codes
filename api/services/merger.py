@@ -6,12 +6,12 @@ Handles the unification of Vercel migration data and PostHog live data.
 
 import sys
 from pathlib import Path
-from models import StatEntry, TimeseriesEntry, Stats
+
+from models import StatEntry, Stats, TimeseriesEntry
 
 # Add parent directory to path to import utils
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils import get_country_display
-
 
 _MAC_VARIANTS = {"mac", "macos", "mac os x", "macos x", "os x"}
 

@@ -5,15 +5,16 @@ Handles all interactions with the PostHog API using HogQL queries.
 Supports dynamic project ID for multi-project analytics.
 """
 
-import httpx
 import asyncio
-from services.parallel import gather_queries
 from datetime import datetime
 
-from core.config import settings
-from .client import http_client
-from models import StatEntry, TimeseriesEntry
+import httpx
 
+from core.config import settings
+from models import StatEntry, TimeseriesEntry
+from services.parallel import gather_queries
+
+from .client import http_client
 
 # Field mapping for PostHog internal property names
 PH_FIELDS = {
@@ -92,14 +93,14 @@ async def fetch_timeseries(project_id: str, days: int = 30) -> list[TimeseriesEn
         List of TimeseriesEntry objects
     """
     query = f"""
-        SELECT 
-            toStartOfDay(timestamp) as d, 
-            count() as pageviews, 
+        SELECT
+            toStartOfDay(timestamp) as d,
+            count() as pageviews,
             count(DISTINCT distinct_id) as visitors
-        FROM events 
-        WHERE event = '$pageview' 
+        FROM events
+        WHERE event = '$pageview'
             AND timestamp > now() - INTERVAL {days} DAY
-        GROUP BY d 
+        GROUP BY d
         ORDER BY d ASC
     """
 
@@ -220,16 +221,16 @@ async def fetch_breakdown(
     target = PH_FIELDS.get(field, "properties.$pathname")
 
     query = f"""
-        SELECT 
+        SELECT
             {target} as key,
             count() as pageviews,
             count(DISTINCT distinct_id) as visitors
-        FROM events 
-        WHERE event = '$pageview' 
+        FROM events
+        WHERE event = '$pageview'
             AND timestamp > now() - INTERVAL {days} DAY
             AND {target} IS NOT NULL
-        GROUP BY key 
-        ORDER BY pageviews DESC 
+        GROUP BY key
+        ORDER BY pageviews DESC
         LIMIT {limit}
     """
 
