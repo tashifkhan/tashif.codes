@@ -1,9 +1,7 @@
 # Notice formatter service
 
 ## Introduction
-The Notice Formatter Service is a sophisticated pipeline that transforms raw notice content from the SuperSet portal into standardized, human-readable messages optimized for multiple notification channels, with a focus on Telegram. It uses LLM-based classification, fuzzy matching, and structured extraction to deliver consistent, audience-appropriate formatting across different notice types including job postings, webinars, hackathons, shortlistings, and general announcements.
-
-The service integrates tightly with the broader notification ecosystem, supporting both automated scheduling and manual triggering via CLI commands. It ensures content safety through HTML cleaning, link handling, and Markdown/HTML rendering compatibility, while respecting Telegram's character limits and formatting capabilities.
+NoticeFormatterService maps categorized notices onto Telegram-ready templates. LLM classification, fuzzy job matching, and per-type layouts without blowing past message length limits.
 
 ## Project structure
 The Notice Formatter Service resides within the application's services layer and interacts with data clients, database services, and notification channels through a well-defined dependency injection architecture.
@@ -37,7 +35,7 @@ SS --> PO
 ## Core components
 The Notice Formatter Service is built around a LangGraph-based state machine that processes notices through distinct stages: text extraction, classification, job matching, enrichment, structured extraction, and final formatting. It maintains a compact set of helper utilities for date formatting, currency display, HTML breakdown parsing, and content prettification.
 
-Key capabilities include:
+It can:
 - Multi-stage LLM classification into categories (job posting, shortlisting, webinar, hackathon, announcement, update)
 - Fuzzy company name matching against structured job listings
 - Structured information extraction tailored to each notice category
@@ -46,7 +44,7 @@ Key capabilities include:
 - Content cleaning and sanitization for Telegram compatibility
 
 ## Architecture overview
-The formatter operates as a stateful pipeline that transforms unstructured notice content into standardized messages. The architecture emphasizes modularity, allowing for easy extension to new notice types and integration with additional channels.
+Stateful pipeline from messy notice text to a standard message. Add a notice type or channel by extending the maps, not by forking the class.
 
 ```mermaid
 sequenceDiagram
@@ -139,7 +137,7 @@ Telegram --> End([Standardized Message])
 ```
 
 ### Category-Specific formatting templates
-The formatter implements distinct templates for each notice type, ensuring consistent presentation across channels:
+The formatter implements distinct templates for each notice type, so consistent presentation across channels:
 
 #### Job posting template
 - **Header**: " Job Posting" with company and role
@@ -203,7 +201,7 @@ The formatter implements detailed content cleaning to ensure safe, readable outp
 - **HTML Stripping**: BeautifulSoup-based extraction with table parsing and paragraph handling
 - **Line Normalization**: Collapse excessive blank lines and trim trailing whitespace
 - **Special Character Encoding**: Proper handling of non-breaking spaces and Unicode characters
-- **Link Preservation**: Maintains hyperlinks while ensuring proper HTML anchor tags
+- **Link Preservation**: Maintains hyperlinks while keeping HTML anchor tags valid
 - **Markdown Compatibility**: Automatic escaping for Telegram MarkdownV2 special characters
 
 ### Integration with notification delivery system
@@ -313,6 +311,4 @@ Common issues and their resolutions:
 - Verify company name normalization
 
 ## Conclusion
-The Notice Formatter Service provides a reliable, extensible foundation for standardizing notice content across multiple channels. Its LLM-powered classification, structured extraction, and category-specific formatting ensure consistent, professional presentations while maintaining flexibility for future enhancements. The integration with Telegram's formatting requirements and the broader notification ecosystem makes it a critical component of the system's communication infrastructure.
-
-The service's modular design, detailed error handling, and performance optimizations position it well for scaling to additional notice types and notification channels as requirements evolve.
+Classify, extract structure, apply per-category templates aimed at Telegram. Add a notice type by extending the maps, not by forking the service.

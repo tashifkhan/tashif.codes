@@ -1,7 +1,7 @@
 # Configuration & environment
 
 ## Introduction
-This page explains the configuration and environment management for the SuperSet Telegram Notification Bot. It covers the Pydantic-based settings system, environment variable handling, credential management, configuration hierarchy, defaults, overrides, validation rules, and error handling. It also provides security best practices, backup strategies, and environment-specific guidance for development, staging, and production.
+Pydantic settings, env vars, credentials, and how overrides stack. Defaults, validation failures, and the boring security habits that keep tokens out of git.
 
 ## Project structure
 Configuration is centralized in a single module that defines strongly-typed settings, loads from environment variables, and supports caching. Clients and services consume configuration through the settings object or environment variables directly when appropriate. The CLI orchestrates daemonization and logging initialization.
@@ -31,14 +31,14 @@ SS --> CFG
 
 ## Core components
 - Centralized Settings: Strongly typed configuration using Pydantic Settings with validation aliases and defaults.
-- Configuration Loader: Lazy-loading with caching and.env discovery.
+- Configuration Loader: Lazy-loading with caching and .env discovery.
 - Logging Setup: Initializes loggers with configurable levels and handlers, supporting daemon mode.
 - Daemon Utilities: PID file management and Unix-style daemonization for background processes.
 - Client Integrations: Clients read credentials either from Settings or environment variables directly.
 
-Key responsibilities:
+It owns:
 - Settings define all configuration fields, validation rules, and defaults.
-- get_settings() loads from.env and environment variables, caches results.
+- get_settings() loads from .env and environment variables, caches results.
 - setup_logging() configures handlers and levels, respecting daemon mode.
 - Daemon utilities manage process lifecycle and logging redirection for background runs.
 
@@ -78,7 +78,8 @@ CFG-->>CL : validated values
 Configuration categories:
 - Database: MongoDB connection string.
 - Telegram: Bot token and default chat ID.
-- SuperSet: JSON list of credentials.
+- SuperSet: `SUPERSET_CREDENTIALS` and `SUPERSET_CREDENTIALS_BY_YEAR`.
+- Placement years: `PLACEMENT_YEARS`, `ACTIVE_PLACEMENT_YEAR`, `DEFAULT_PLACEMENT_YEAR`, `MONGO_DATABASE_NAME`, `GLOBAL_DATABASE_NAME`.
 - Google AI (Gemini): API key.
 - Email (placement): Email address and app password.
 - Web Push (VAPID): Private/public key and contact email.
@@ -88,7 +89,7 @@ Configuration categories:
 
 Environment resolution order:
 1. Environment variables (highest precedence).
-2..env file (if present).
+2 .env file (if present).
 3. Code defaults (lowest precedence).
 
 ```mermaid
@@ -106,7 +107,7 @@ Validate --> Done(["Settings ready"])
 
 ### Configuration loading and caching
 - get_settings() determines.env location relative to the config module, tries project root and app subdirectory, then falls back to default behavior.
-- Uses python-dotenv to load variables from.env.
+- Uses python-dotenv to load variables from .env.
 - Returns a cached Settings instance using LRU cache.
 
 Operational notes:
@@ -141,9 +142,15 @@ Integration with configuration:
 classDiagram
 class Settings {
 +mongo_connection_str
++mongo_database_name
++global_database_name
++active_placement_year
++default_placement_year
++placement_years
 +telegram_bot_token
 +telegram_chat_id
 +superset_credentials
++superset_credentials_by_year
 +google_api_key
 +placement_email
 +placement_app_password
@@ -152,6 +159,9 @@ class Settings {
 +vapid_email
 +webhook_port
 +webhook_host
++webhook_api_key
++cors_origins
++admin_telegram_user_ids
 +daemon_mode
 +log_level
 +log_file
@@ -184,48 +194,57 @@ SupersetClientService --> Settings : "no direct read"
 The following environment variables are recognized by the Settings model and related components. Required vs optional status is derived from the Settings defaults and client behavior.
 
 - Database
-  - MONGO_CONNECTION_STR (required): MongoDB connection URI. Used by DBClient.
+ - MONGO_CONNECTION_STR (required): MongoDB connection URI. Used by DBClient.
 
 - Telegram
-  - TELEGRAM_BOT_TOKEN (required): Telegram bot token. Used by TelegramClient.
-  - TELEGRAM_CHAT_ID (required): Default chat ID. Used by TelegramClient.
+ - TELEGRAM_BOT_TOKEN (required): Telegram bot token. Used by TelegramClient.
+ - TELEGRAM_CHAT_ID (required): Default chat ID. Used by TelegramClient.
 
 - SuperSet
-  - SUPERSET_CREDENTIALS (optional): JSON array of SuperSet credentials. Used by services that scrape SuperSet.
+ - SUPERSET_CREDENTIALS (optional): JSON array of SuperSet credentials.
+ - SUPERSET_CREDENTIALS_BY_YEAR (preferred): JSON map of compact year to credential list. `update` iterates these keys.
+
+- Placement years
+ - PLACEMENT_YEARS: years shown in the bot UI.
+ - ACTIVE_PLACEMENT_YEAR / DEFAULT_PLACEMENT_YEAR: fallbacks.
+ - MONGO_DATABASE_NAME / GLOBAL_DATABASE_NAME: year DB vs users DB.
 
 - Google AI (Gemini)
-  - GOOGLE_API_KEY (optional): API key for Gemini LLM. Used by LLM-enabled services.
+ - GOOGLE_API_KEY (optional): API key for Gemini LLM. Used by LLM-enabled services.
 
 - Email (placement)
-  - PLACEMENT_EMAIL (optional): Gmail address for monitoring. Used by GoogleGroupsClient.
-  - PLACEMENT_APP_PASSWORD (optional): App password for Gmail. Used by GoogleGroupsClient.
+ - PLACEMENT_EMAIL (optional, alias PLCAMENT_EMAIL): Gmail address for monitoring.
+ - PLACEMENT_APP_PASSWORD (optional, alias PLCAMENT_APP_PASSWORD): App password for Gmail.
 
 - Web Push (VAPID)
-  - VAPID_PRIVATE_KEY (optional): Private key for web push.
-  - VAPID_PUBLIC_KEY (optional): Public key for web push.
-  - VAPID_EMAIL (optional): Contact email for VAPID.
+ - VAPID_PRIVATE_KEY (optional): Private key for web push.
+ - VAPID_PUBLIC_KEY (optional): Public key for web push.
+ - VAPID_EMAIL (optional): Contact email for VAPID.
 
 - Server
-  - WEBHOOK_PORT (optional): Port for webhook server. Used by CLI.
-  - WEBHOOK_HOST (optional): Host for webhook server. Used by CLI.
+ - WEBHOOK_PORT (optional): Port for webhook server. Used by CLI.
+ - WEBHOOK_HOST (optional): Host for webhook server. Used by CLI.
+ - WEBHOOK_API_KEY (required for protected routes): fail closed if empty.
+ - CORS_ORIGINS: JSON list of allowed origins.
+ - ADMIN_TELEGRAM_USER_IDS: JSON list of Telegram user IDs. Empty list fail closed.
 
 - Daemon
-  - DAEMON_MODE (optional): Suppress stdout in daemon mode. Used by CLI and logging.
+ - DAEMON_MODE (optional): Suppress stdout in daemon mode. Used by CLI and logging.
 
 - Logging
-  - LOG_LEVEL (optional): Logging level. Used by setup_logging.
-  - LOG_FILE (optional): Log file path for bot. Used by setup_logging.
-  - SCHEDULER_LOG_FILE (optional): Log file path for scheduler. Used by CLI.
+ - LOG_LEVEL (optional): Logging level. Used by setup_logging.
+ - LOG_FILE (optional): Log file path for bot. Used by setup_logging.
+ - SCHEDULER_LOG_FILE (optional): Log file path for scheduler. Used by CLI.
 
 Notes:
-- Some variables documented in project docs (e.g., SCHEDULER_ENABLED, UPDATE_SCHEDULE, DEBUG, TESTING, etc.) are not defined in the Settings class shown in the code. They appear to be handled elsewhere or via environment variables consumed directly by services.
+- `SCHEDULER_ENABLED`, `UPDATE_SCHEDULE`, `DEBUG`, and `TESTING` are not Settings fields. Schedule lives in `app/servers/scheduler_server.py`.
 
-### Security best practices for credentials
+### Credential security
 - Never commit tokens or passwords to version control.
 - Use app-specific passwords for email services.
 - Limit API key scopes and rotate keys periodically.
 - Store secrets externally (e.g., secret managers) and inject via environment variables.
-- Restrict filesystem permissions for.env and log files.
+- Restrict filesystem permissions for .env and log files.
 - Avoid printing sensitive values; sanitize logs.
 
 [No sources needed since this section provides general guidance]
@@ -247,7 +266,7 @@ Notes:
 ## Dependency analysis
 External dependencies relevant to configuration:
 - pydantic-settings: Provides BaseSettings and environment variable loading/validation.
-- python-dotenv: Loads.env files.
+- python-dotenv: Loads .env files.
 - pydantic: Provides Field and validation capabilities.
 
 ```mermaid
@@ -270,20 +289,20 @@ CFG --> PD
 ## Troubleshooting guide
 Common issues and resolutions:
 - Missing or invalid database connection string:
-  - Symptom: Connection errors during DBClient.connect().
-  - Action: Verify MONGO_CONNECTION_STR format and credentials; ensure database name is correct.
+ - Symptom: Connection errors during DBClient.connect().
+ - Action: Verify MONGO_CONNECTION_STR format and credentials; ensure database name is correct.
 
 - Telegram token/chat ID misconfiguration:
-  - Symptom: Messages fail to send or rate-limited responses.
-  - Action: Confirm TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID values; ensure bot has permissions.
+ - Symptom: Messages fail to send or rate-limited responses.
+ - Action: Confirm TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID values; ensure bot has permissions.
 
 - Email credentials errors:
-  - Symptom: IMAP login failures.
-  - Action: Verify PLACEMENT_EMAIL and PLACEMENT_APP_PASSWORD; ensure 2FA and app password are configured.
+ - Symptom: IMAP login failures.
+ - Action: Verify PLACEMENT_EMAIL and PLACEMENT_APP_PASSWORD; ensure 2FA and app password are configured.
 
 - Daemon logging anomalies:
-  - Symptom: Logs not visible or missing after daemonization.
-  - Action: Clear settings cache, reinitialize logging, and confirm PID/log file paths.
+ - Symptom: Logs not visible or missing after daemonization.
+ - Action: Clear settings cache, reinitialize logging, and confirm PID/log file paths.
 
 ## Conclusion
-The configuration system is centralized, type-safe, and environment-driven. It supports flexible loading from.env and environment variables, with strong defaults and validation. Clients integrate smoothly by reading from Settings or environment variables directly. Adhering to the outlined best practices ensures secure, maintainable, and reliable deployments across environments.
+Central Settings object, typed fields, `.env` plus real env vars. Defaults and validation catch dumb mistakes early. Read through Settings in app code; keep secrets out of the repo.

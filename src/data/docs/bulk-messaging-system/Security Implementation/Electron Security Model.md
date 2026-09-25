@@ -1,10 +1,10 @@
 # Electron security model
 
 ## Introduction
-This page provides detailed security documentation for the Electron application's security model. It focuses on context isolation configuration, nodeIntegration and webPreferences hardening, preload script security architecture, IPC communication patterns, webSecurity implications, remote module restrictions, sandboxing techniques, privilege separation between main and renderer processes, and best practices for secure Electron development. It also covers vulnerability mitigation strategies, compliance considerations, and common pitfalls with prevention methods.
+Electron hardening in this app: contextIsolation on, nodeIntegration off, preload as the only bridge, no remote module.
 
 ## Project structure
-The Electron application follows a clear separation of concerns:
+Process boundaries:
 - Main process: Initializes BrowserWindow, configures webPreferences, registers IPC handlers, and manages external integrations (WhatsApp, Gmail, SMTP).
 - Renderer process: React UI that communicates with the main process via a controlled preload bridge.
 - Preload script: Exposes a minimal, auditable API surface to the renderer using contextBridge.
@@ -47,7 +47,7 @@ Security implications:
 - Disabling nodeIntegration and enabling context isolation prevents prototype pollution and DOM-based exploits.
 - Enabling webSecurity enforces CORS and same-origin policies.
 - Disabling remote module eliminates potential RCE vectors via remote.require.
-- Preload bridge ensures only explicitly exposed methods reach the renderer.
+- The preload bridge only exposes the methods listed in its API.
 
 ## Architecture overview
 The security architecture relies on strict privilege separation:
@@ -198,8 +198,6 @@ SH --> NM["nodemailer"]
 - QR code generation and rendering occur in main process to avoid heavy work in renderer.
 - Event-driven progress updates keep UI responsive without blocking.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common security-related issues and resolutions:
 - Renderer cannot access Node.js APIs: Ensure context isolation is enabled and nodeIntegration is disabled.
@@ -208,13 +206,12 @@ Common security-related issues and resolutions:
 - SMTP TLS errors: Validate host/port/security settings and certificate configuration.
 
 ## Conclusion
-The application implements a reliable Electron security model by using context isolation, disabling nodeIntegration and remote module, enforcing webSecurity, and using a minimal preload bridge. IPC handlers in the main process encapsulate all privileged operations, while the renderer remains UI-only. Additional hardening measures such as enabling sandbox and stricter CSP could further strengthen the model. Adhering to the best practices outlined below will help maintain a secure and compliant application.
 
-[No sources needed since this section summarizes without analyzing specific files]
+Do not weaken webPreferences for convenience. Debug with DevTools and logging instead of opening Node to the renderer.
 
 ## Appendices
 
-### Security best practices for electron applications
+### Electron security habits
 - Keep Electron and dependencies updated to benefit from security patches.
 - Use context isolation, disable nodeIntegration, disable remote module, and enable webSecurity.
 - Implement a minimal preload bridge and validate all IPC payloads.
@@ -224,8 +221,6 @@ The application implements a reliable Electron security model by using context i
 - Use HTTPS and TLS for all network communications.
 - Implement rate limiting and respect provider quotas.
 - Regularly audit third-party libraries for vulnerabilities.
-
-[No sources needed since this section provides general guidance]
 
 ### Compliance considerations
 - Follow platform-specific guidelines for desktop app distribution.

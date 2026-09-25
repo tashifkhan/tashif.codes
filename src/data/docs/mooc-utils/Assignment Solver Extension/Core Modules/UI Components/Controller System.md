@@ -1,10 +1,10 @@
 # Controller system
 
 ## Introduction
-This page describes the controller system architecture for the assignment solver UI. It focuses on four controllers: detection controller for assignment recognition, progress controller for status tracking, settings controller for configuration management, and solve controller for assignment processing. The document explains controller responsibilities, initialization patterns, inter-controller communication, dependency injection, event handling, lifecycle, state integration, error handling, and testing patterns.
+UI controllers for detection, progress, settings, and results. How each controller talks to state and to the background worker.
 
 ## Project structure
-The UI controllers live under the assignment-solver extension's frontend. The entry point initializes adapters, services, state, and controllers, wiring them together for a cohesive user experience.
+The UI controllers live under the assignment-solver extension's frontend. The entry point initializes adapters, services, state, and controllers, wiring them together for a connected user experience.
 
 ```mermaid
 graph TB
@@ -55,7 +55,7 @@ P --> E
 - Detection Controller: Checks current page for assignments, displays assignment info or empty state, and listens for tab updates.
 - Progress Controller: Manages status messages, progress bars, step indicators, and visibility of progress sections.
 - Settings Controller: Loads and saves API keys and model preferences, manages settings modal UI, and wires event listeners.
-- Solve Controller: Orchestrates the end-to-end solving flow, including extraction, AI processing, answer filling, optional submission, and results display.
+- Solve Controller: Orchestrates the full solving flow, including extraction, AI processing, answer filling, optional submission, and results display.
 
 ## Architecture overview
 The UI entry point initializes adapters and services, then constructs controllers with dependency injection. Controllers communicate via shared state, DOM elements, and runtime messaging.
@@ -165,8 +165,8 @@ Inter-controller communication:
 - Uses Gemini service for extraction and solving.
 
 Lifecycle:
-- handleSolve orchestrates the end-to-end flow with explicit steps and error handling.
-- Recursive splitting ensures robustness against token limits.
+- handleSolve orchestrates the full flow with explicit steps and error handling.
+- Recursive splitting keeps reliability against token limits.
 - Results are rendered into results section with formatted HTML.
 
 ### Controller factory functions and dependency injection
@@ -190,16 +190,16 @@ Dependency injection pattern:
 
 ### Controller lifecycle, state integration, and error handling
 - Lifecycle:
-  - Initialization: UI entry point constructs and wires controllers.
-  - Interaction: Users trigger actions (solve, settings open/save).
-  - Completion: Results displayed; state reset on next run.
+ - Initialization: UI entry point constructs and wires controllers.
+ - Interaction: Users trigger actions (solve, settings open/save).
+ - Completion: Results displayed; state reset on next run.
 - State integration:
-  - State manager tracks isProcessing flag and extraction data.
-  - Solve controller guards concurrent runs and stores extraction results.
+ - State manager tracks isProcessing flag and extraction data.
+ - Solve controller guards concurrent runs and stores extraction results.
 - Error handling:
-  - sendMessageWithRetry retries on connection errors.
-  - Solve controller splits work on MAX_TOKENS and aggregates results.
-  - Errors are surfaced to UI via progress status and debug logging.
+ - sendMessageWithRetry retries on connection errors.
+ - Solve controller splits work on MAX_TOKENS and aggregates results.
+ - Errors are surfaced to UI via progress status and debug logging.
 
 ### Testing patterns and mock implementations
 Recommended patterns:
@@ -214,8 +214,6 @@ Mock examples (descriptive):
 - Storage service mock: provide getApiKey/getModelPreferences returning known values; save methods record arguments.
 - Gemini service mock: resolve extract/solve with deterministic results; optionally reject to simulate errors.
 - Elements mock: return element references with innerHTML/className toggles for assertions.
-
-[No sources needed since this section provides general guidance]
 
 ## Dependency analysis
 Controllers depend on shared services and adapters. The solve controller has the most dependencies, reflecting its central role.
@@ -251,8 +249,6 @@ SET --> |updates| UI
 - Determinate progress: Progress controller uses determinate progress bars when counts are known; indeterminate mode otherwise.
 - Debouncing and pacing: Solve controller introduces small delays between answer fills to avoid overwhelming the target page.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and strategies:
 - Background not ready: UI entry point waits for background readiness with exponential backoff; ensure extension reloads if background fails to initialize.
@@ -262,4 +258,4 @@ Common issues and strategies:
 - Tab switching: Detection controller listens for tab updates; ensure runtime messages are flowing for accurate detection.
 
 ## Conclusion
-The controller system employs a clean dependency injection pattern, centralized initialization, and reliable messaging to coordinate UI state, user interactions, and external services. The solve controller orchestrates complex workflows while the progress and settings controllers provide clear feedback and configuration. The architecture supports testing through mocks and offers resilience via retry logic and recursive splitting.
+Controllers are orchestration, not DOM. Keep Gemini and storage calls behind services so the UI stays testable.

@@ -1,7 +1,7 @@
 # MCP protocol implementation
 
 ## Introduction
-This page explains the Model Context Protocol (MCP) implementation in the Agentic Browser project. It covers the MCP server architecture, tool definition and registration patterns, and AI agent integration through the MCP protocol. It documents communication protocols, message formats, state management between the MCP server and AI agents, and provides concrete examples of tool registration, command execution, and response handling. It also explains how the MCP protocol enables standardized AI tool integration, the role of prompt engineering in tool descriptions, and the abstraction layer that allows multiple LLM providers. Protocol-specific error handling, retry mechanisms, and performance considerations are addressed, along with integration patterns with the React agent system and how MCP facilitates extensible tool development.
+MCP server in this repo: tool schemas, registration, agent usage, errors, retries, and how it lines up with the React agent toolset.
 
 ## Project structure
 The MCP implementation centers around a dedicated MCP server module that exposes tools via stdio, while the broader React agent system integrates with FastAPI routes and services. The extension front-end provides a command parser and executor that route commands to backend endpoints, which may use the MCP server depending on configuration.
@@ -23,9 +23,9 @@ ReactResp["models/response/crawller.py"]
 PromptReact["prompts/react.py"]
 end
 subgraph "Extension Frontend"
-ExecAgent["extension/.../executeAgent.ts"]
-ParseCmd["extension/.../parseAgentCommand.ts"]
-AgentMap["extension/.../agent-map.ts"]
+ExecAgent["clients/browser-extension/entrypoints/utils/executeAgent.ts"]
+ParseCmd["clients/browser-extension/entrypoints/utils/parseAgentCommand.ts"]
+AgentMap["clients/browser-extension/entrypoints/sidepanel/lib/agent-map.ts"]
 end
 MainEntry["main.py"]
 MainEntry --> MCPInit
@@ -154,7 +154,7 @@ API-->>Ext : JSON {answer}
 - Context injection: The service injects client HTML as a system message to provide page context to the agent.
 
 ### Prompt engineering in tool descriptions
-- Tool descriptions are designed to be precise and actionable, aiding LLMs in selecting and invoking tools correctly.
+- Tool descriptions stay precise and actionable so the LLM can pick the right call.
 - Examples include explicit provider selection, required fields, and default values to guide tool usage.
 
 ### Abstraction layer for multiple LLM providers
@@ -163,11 +163,11 @@ API-->>Ext : JSON {answer}
 
 ### Protocol-Specific error handling and retry mechanisms
 - MCP server: Returns text content with error messages on exceptions during tool execution.
-- React agent service: Catches exceptions and returns a user-friendly message; logs errors for diagnostics.
+- React agent service: Catches exceptions and returns a plain message; logs errors for diagnostics.
 - Frontend: Validates command completion and throws descriptive errors for missing data (e.g., portal credentials).
 
 ### Integration patterns with the React agent system
-- The MCP server's tool definitions complement the React agent's toolset, ensuring consistent behavior across environments.
+- The MCP server's tool definitions match the React agent's toolset so behavior stays aligned.
 - The frontend maps slash commands to endpoints and payloads, enabling smooth orchestration of agent workflows.
 
 ## Dependency analysis
@@ -186,8 +186,8 @@ ReactService --> LLM
 ReactRouter["routers/react_agent.py"] --> ReactService
 ReactRouter --> ReactReq["models/requests/react_agent.py"]
 ReactRouter --> ReactResp["models/response/crawller.py"]
-ExecAgent["extension/.../executeAgent.ts"] --> AgentMap["extension/.../agent-map.ts"]
-ExecAgent --> ParseCmd["extension/.../parseAgentCommand.ts"]
+ExecAgent["clients/browser-extension/entrypoints/utils/executeAgent.ts"] --> AgentMap["clients/browser-extension/entrypoints/sidepanel/lib/agent-map.ts"]
+ExecAgent --> ParseCmd["clients/browser-extension/entrypoints/utils/parseAgentCommand.ts"]
 ExecAgent --> ReactRouter
 ```
 
@@ -196,8 +196,6 @@ ExecAgent --> ReactRouter
 - Provider configuration: Environment-driven configuration avoids repeated validation overhead and ensures correct defaults.
 - Payload normalization: Utilities normalize payloads to strings to ensure consistent message handling across agent states.
 - Frontend context capture: HTML capture is performed only when needed to minimize overhead.
-
-[No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 Common issues and resolutions:
@@ -208,9 +206,7 @@ Common issues and resolutions:
 - Frontend command parsing: Ensure slash commands are complete and mapped to valid endpoints.
 
 ## Conclusion
-The MCP implementation provides a standardized, extensible mechanism for exposing tools to AI agents. By defining clear tool schemas and using a reliable LLM abstraction, the system supports multiple providers and consistent behavior across environments. The React agent system integrates smoothly with these tools, while the FastAPI router and extension front-end enable practical user workflows. Together, these components form a cohesive framework for building and deploying agent-driven tool integrations.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Clear tool schemas and the shared LLM layer keep providers interchangeable. Slash commands map to endpoints through the agent map in the extension.
 
 ## Appendices
 

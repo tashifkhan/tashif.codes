@@ -1,7 +1,7 @@
 # Search integration API
 
 ## Introduction
-This page describes the Google Search integration API endpoints that enable web search operations, query processing, and result management. It covers HTTP method and URL patterns, request/response schemas, authentication requirements, and practical examples for search automation. The system integrates FastAPI routes, a service layer, and a Tavily-powered search pipeline to deliver structured search results suitable for downstream processing.
+Google Search via a POST endpoint backed by a Tavily pipeline. Request shape, result limits, and logging.
 
 ## Project structure
 The search integration spans three primary layers:
@@ -56,13 +56,13 @@ Note over S,P : "Logging and normalization happen in service and pipeline"
 - Method: POST
 - Path: /api/google-search
 - Request body: SearchRequest
-  - query: string (required)
-  - max_results: integer (optional, default 5)
+ - query: string (required)
+ - max_results: integer (optional, default 5)
 - Response body: Dictionary with results array
-  - results: array of objects with keys:
-    - url: string
-    - md_body_content: string
-    - title: string
+ - results: array of objects with keys:
+ - url: string
+ - md_body_content: string
+ - title: string
 
 Behavior:
 - Validates presence of query; returns 400 on missing query
@@ -83,17 +83,17 @@ Responsibilities:
 - Updates max_results per invocation
 - Executes a query and normalizes results
 - Maps external fields to internal schema:
-  - url → url
-  - content → md_body_content
-  - title → title (when present)
+ - url → url
+ - content → md_body_content
+ - title → title (when present)
 - Handles both dict and list response formats from the underlying tool
 - Returns an empty list on unexpected formats or exceptions
 
 ### Authentication and configuration
 - Endpoint-level authentication: Not enforced by the route
 - External provider credentials:
-  - GOOGLE_API_KEY environment variable is loaded via configuration
-  - TavilySearch tool is initialized in the pipeline
+ - GOOGLE_API_KEY environment variable is loaded via configuration
+ - TavilySearch tool is initialized in the pipeline
 - Provider library: langchain-tavily is declared as a dependency
 
 Note: Ensure environment variables are configured for the external search provider to function correctly.
@@ -107,14 +107,14 @@ The search integration depends on:
 
 ```mermaid
 graph TB
-A["api/main.py<br/>include_router"] --> B["routers/google_search.py<br/>router"]
+A["main.py<br/>include_router"] --> B["routers/google_search.py<br/>router"]
 B --> C["services/google_search_service.py<br/>GoogleSearchService"]
 C --> D["tools/google_search/seach_agent.py<br/>web_search_pipeline()"]
 D --> E["langchain-tavily<br/>TavilySearch"]
 ```
 
 ## Performance considerations
-- Result limit: max_results controls the number of items returned; tune for latency vs. comprehensiveness trade-offs
+- Result limit: max_results controls the number of items returned; tune for latency versus result count
 - Logging overhead: Each request logs at info level; adjust logging level in production environments
 - External dependency: Tavily response time and rate limits apply; implement retries and circuit-breaking as needed
 - Memory footprint: Results are materialized as lists; avoid excessively large max_results for constrained environments
@@ -132,32 +132,32 @@ Operational checks:
 - Review service logs for info/warning/error entries
 
 ## Conclusion
-The Google Search integration provides a streamlined POST endpoint for web search queries, with a service layer that logs and orchestrates a Tavily-backed pipeline. Requests are validated, results are normalized, and the system is designed for straightforward automation. Ensure proper configuration of external provider credentials and monitor logs for operational insights.
+Validate the query, call Tavily through the service layer, return normalized hits. Tune `max_results` for latency versus coverage, and keep provider credentials in env.
 
 ## Appendices
 
 ### API reference
 
 - Base URL
-  - http://localhost:5454 (default development host/port)
+ - http://localhost:5454 (default development host/port)
 - Endpoint
-  - POST /api/google-search
+ - POST /api/google-search
 - Request JSON Schema
-  - query: string (required)
-  - max_results: integer (optional, default 5)
+ - query: string (required)
+ - max_results: integer (optional, default 5)
 - Response JSON Schema
-  - results: array of objects
-    - url: string
-    - md_body_content: string
-    - title: string
+ - results: array of objects
+ - url: string
+ - md_body_content: string
+ - title: string
 
 Example request:
-- POST /api/google-search
+  - POST /api/google-search
 - Body: {"query": "example search", "max_results": 5}
 
 Example response:
 - Status: 200 OK
-- Body: {"results": [{"url": "...", "md_body_content": "...", "title": "..."},...]}
+- Body: {"results": [{"url": "...", "md_body_content": "...", "title": "..."}, ...]}
 
 Error responses:
 - 400 Bad Request: Missing query
@@ -165,14 +165,13 @@ Error responses:
 
 ### Client implementation patterns
 - Direct HTTP client
-  - Send POST to /api/google-search with JSON body
-  - Parse results array for downstream processing
+ - Send POST to /api/google-search with JSON body
+ - Parse results array for downstream processing
 - Automation workflows
-  - Chain multiple queries with varying max_results
-  - Filter results by title/url/content criteria
-  - Persist results to storage or cache
+ - Chain multiple queries with varying max_results
+ - Filter results by title/url/content criteria
+ - Persist results to storage or cache
 - Retry and timeout strategies
-  - Implement exponential backoff for transient failures
-  - Apply timeouts to external provider calls
+ - Implement exponential backoff for transient failures
+ - Apply timeouts to external provider calls
 
-[No sources needed since this section provides general guidance]

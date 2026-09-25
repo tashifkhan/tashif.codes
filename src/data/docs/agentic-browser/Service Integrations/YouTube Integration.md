@@ -1,7 +1,7 @@
 # YouTube integration
 
 ## Introduction
-This page explains the YouTube integration implemented in the project. It covers how video information is retrieved, subtitles are extracted, video IDs are parsed, and transcripts are generated and processed. It also documents the service layer, FastAPI router integration, prompt-driven answer generation, and the transcript processing pipeline including cleaning, timestamp handling, and duplicate removal. Guidance is included for authentication, quota management, content access patterns, limitations, filtering, performance optimization, and troubleshooting.
+yt-dlp metadata/subtitles, Whisper when needed, transcript cleaning, and LangChain answer generation over video text.
 
 ## Project structure
 The YouTube integration spans several modules:
@@ -50,13 +50,13 @@ R --> M4
 
 ## Core components
 - YouTubeService: Implements the primary workflow for answering questions about a YouTube video. It supports two modes:
-  - Attached file mode: Uploads a local file to a generative AI SDK and optionally augments the prompt with a YouTube transcript and chat history.
-  - Prompt-driven mode: Builds a context from the video transcript and passes it to a LangChain chain that invokes an LLM.
+ - Attached file mode: Uploads a local file to a generative AI SDK and optionally augments the prompt with a YouTube transcript and chat history.
+ - Prompt-driven mode: Builds a context from the video transcript and passes it to a LangChain chain that invokes an LLM.
 - Router: Validates inputs, constructs a chat history string, and delegates to the service.
 - Tools:
-  - extract_video_id: Parses YouTube URLs to extract the video ID from both www.youtube.com and youtu.be domains.
-  - get_info: Retrieves video metadata via yt-dlp and optionally attaches a cleaned transcript if available.
-  - get_subs: Downloads subtitles in preferred language, falls back to alternative languages, and finally to audio transcription via Whisper if needed.
+ - extract_video_id: Parses YouTube URLs to extract the video ID from both www.youtube.com and youtu.be domains.
+ - get_info: Retrieves video metadata via yt-dlp and optionally attaches a cleaned transcript if available.
+ - get_subs: Downloads subtitles in preferred language, falls back to alternative languages, and finally to audio transcription via Whisper if needed.
 - Transcript Generator: Cleans and normalizes subtitles/transcripts by removing timestamps, cue tags, speaker tags, and align directives; deduplicates lines; and merges into coherent paragraphs.
 - Models: Define typed request/response structures for video info and subtitles.
 
@@ -111,9 +111,9 @@ CallService --> Return["Return {answer}"]
 
 ### Service: YouTubeService
 - Two execution paths:
-  - Attached file mode: Uploads the file to a generative AI SDK, optionally appends a YouTube transcript and chat history, and generates content using a configured model.
-  - Prompt-driven mode: Uses a LangChain chain to build a context from the transcript and pass it to the LLM.
-- Reliable error handling: Catches exceptions during file processing and returns user-friendly messages.
+ - Attached file mode: Uploads the file to a generative AI SDK, optionally appends a YouTube transcript and chat history, and generates content using a configured model.
+ - Prompt-driven mode: Uses a LangChain chain to build a context from the transcript and pass it to the LLM.
+- Error handling: catches exceptions during file processing and returns plain messages.
 
 ```mermaid
 flowchart TD
@@ -170,7 +170,7 @@ Attach --> ReturnInfo
 - Single-pass attempt for preferred language subtitles (manual, auto-generated, auto-translated).
 - If unavailable, finds an alternative language from available tracks and retries.
 - Falls back to audio download and Whisper transcription if no subtitles are found.
-- Includes reliable error handling for rate limits and unavailable videos.
+- Handles rate limits and unavailable videos with explicit errors.
 
 ```mermaid
 flowchart TD
@@ -207,10 +207,10 @@ RemoveDupes --> TEnd["Return cleaned transcript"]
 ### Prompt chain and LLM integration
 - The prompt defines strict guidelines for answering questions using only the video's metadata and transcript.
 - A LangChain chain composes:
-  - A context builder that fetches and cleans the transcript.
-  - The prompt template.
-  - An LLM client.
-  - A string output parser.
+ - A context builder that fetches and cleans the transcript.
+ - The prompt template.
+ - An LLM client.
+ - A string output parser.
 - The service can bypass this chain when using an attached file.
 
 ```mermaid
@@ -260,9 +260,9 @@ class SubtitlesResponse {
 ## Dependency analysis
 - Router depends on YouTubeService.
 - YouTubeService depends on:
-  - Prompt chain (LangChain) for non-file mode.
-  - Generative AI SDK for file mode.
-  - Tools for video ID extraction, info retrieval, and subtitle fetching.
+ - Prompt chain (LangChain) for non-file mode.
+ - Generative AI SDK for file mode.
+ - Tools for video ID extraction, info retrieval, and subtitle fetching.
 - Tools depend on yt-dlp for metadata and subtitle retrieval, and optionally on Whisper for transcription.
 - Transcript generator utilities are composed into a single processing function.
 
@@ -278,58 +278,53 @@ U --> WHISPER["faster-whisper"]
 
 ## Performance considerations
 - Subtitle retrieval strategy:
-  - Single-pass preferred language request minimizes API calls and avoids rate limiting.
-  - Alternative language selection reduces retries.
-  - Whisper fallback ensures coverage when no subtitles are available.
+ - Single-pass preferred language request minimizes API calls and avoids rate limiting.
+ - Alternative language selection reduces retries.
+ - Whisper runs when no subtitles are available.
 - Transcript processing:
-  - Efficient regex-based cleaning and deduplication reduce memory overhead.
-  - Paragraph merging improves readability without heavy computation.
+ - Efficient regex-based cleaning and deduplication reduce memory overhead.
+ - Paragraph merging improves readability without heavy computation.
 - Audio transcription:
-  - Lightweight model size and CPU execution optimize resource usage.
-  - Temporary file cleanup prevents disk accumulation.
+ - Lightweight model size and CPU execution optimize resource usage.
+ - Temporary file cleanup prevents disk accumulation.
 - Router and service:
-  - Early validation and minimal string processing keep latency low.
-  - Logging helps identify bottlenecks without impacting performance.
-
-[No sources needed since this section provides general guidance]
+ - Early validation and minimal string processing keep latency low.
+ - Logging helps identify bottlenecks without impacting performance.
 
 ## Troubleshooting guide
 - API access issues:
-  - Rate limiting: The subtitle utility handles 429 errors by falling back to Whisper. Monitor logs for rate limit warnings.
-  - Video unavailable: Errors are normalized and surfaced to the caller; verify the video URL and privacy settings.
+ - Rate limiting: The subtitle utility handles 429 errors by falling back to Whisper. Monitor logs for rate limit warnings.
+ - Video unavailable: Errors are normalized and surfaced to the caller; verify the video URL and privacy settings.
 - Transcript generation problems:
-  - Empty or malformed transcripts: The processing pipeline removes timestamps and cue tags; confirm the source format.
-  - Repeated lines: Deduplication is applied; check for repeated segments in the original content.
+ - Empty or malformed transcripts: The processing pipeline removes timestamps and cue tags; confirm the source format.
+ - Repeated lines: Deduplication is applied; check for repeated segments in the original content.
 - Content availability concerns:
-  - No subtitles: The system attempts alternative languages and falls back to audio transcription.
-  - Language mismatch: Specify the desired language in the subtitles request schema.
+ - No subtitles: The system attempts alternative languages and falls back to audio transcription.
+ - Language mismatch: Specify the desired language in the subtitles request schema.
 - Service-level errors:
-  - Validation failures: Ensure url and question are provided in the request.
-  - Generative AI SDK errors: Confirm API keys and file upload permissions.
+ - Validation failures: Ensure url and question are provided in the request.
+ - Generative AI SDK errors: Confirm API keys and file upload permissions.
 
 ## Conclusion
-The YouTube integration provides a reliable pipeline for extracting video metadata, subtitles, and generating transcripts. It supports flexible answer generation via a LangChain prompt chain or direct file-based processing. The design emphasizes resilience against API limitations, efficient processing, and clear error handling. By using yt-dlp and Whisper, it maximizes content accessibility while maintaining performance and reliability.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Prefer captions; fall back to Whisper when you must. Clean transcripts before prompting. Quota and download failures should surface as clear errors.
 
 ## Appendices
 
 ### Example workflows
 
 - Video analysis workflow (prompt-driven):
-  - Client sends a question and URL.
-  - Router validates inputs and calls the service.
-  - Service builds a transcript-based context and invokes the LLM chain.
-  - Response is returned to the client.
+ - Client sends a question and URL.
+ - Router validates inputs and calls the service.
+ - Service builds a transcript-based context and invokes the LLM chain.
+ - Response is returned to the client.
 
 - Content extraction pattern (subtitle retrieval):
-  - Attempt single-pass preferred language.
-  - Select alternative language if available.
-  - Fall back to audio transcription if no subtitles exist.
+ - Attempt single-pass preferred language.
+ - Select alternative language if available.
+ - Fall back to audio transcription if no subtitles exist.
 
 - Transcript processing:
-  - Clean SRT/VTT artifacts.
-  - Remove timestamps and cue tags.
-  - Deduplicate and merge into paragraphs.
+ - Clean SRT/VTT artifacts.
+ - Remove timestamps and cue tags.
+ - Deduplicate and merge into paragraphs.
 
-[No sources needed since this section provides general guidance]

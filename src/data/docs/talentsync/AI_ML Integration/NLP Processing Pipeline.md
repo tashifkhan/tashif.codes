@@ -1,9 +1,8 @@
 # NLP processing pipeline
 
-## Introduction
-This page describes the NLP processing pipeline used in TalentSync-Normies for extracting and analyzing resume text from PDF and text files. The pipeline encompasses document parsing, text cleaning, named entity recognition, lemmatization, stopword removal, skill extraction via regex and predefined lists, and machine learning-based category prediction using TF-IDF vectorization. It also covers error handling for malformed resumes and validation mechanisms for extracted information.
+The NLP processing pipeline used in TalentSync-Normies for extracting and analyzing resume text from PDF and text files.
 
-## Project structure
+## Repository layout
 The NLP pipeline spans both backend services and frontend utilities:
 - Backend services handle document ingestion, parsing, formatting, and ML-driven analysis.
 - Frontend utilities convert structured resume data into clean text suitable for ATS evaluation.
@@ -37,7 +36,7 @@ APP --> TFIDF
 REQ --> APP
 ```
 
-## Core components
+## Building blocks
 - Document extraction and validation: Parses PDFs and text files, validates resume content, and falls back to LLM-based conversion when needed.
 - Text cleaning and preprocessing: Removes URLs, mentions, punctuation, lemmatizes tokens, and filters stopwords.
 - Named entity recognition and linguistic features: Uses spaCy for lemmatization and POS-based filtering.
@@ -45,7 +44,7 @@ REQ --> APP
 - ML-based category prediction: TF-IDF vectorization and gradient boosting classification.
 - Structured text generation: Converts structured resume data to plain text for ATS compatibility.
 
-## Architecture overview
+## How it fits together
 The pipeline integrates frontend text generation with backend extraction, formatting, and ML analysis.
 
 ```mermaid
@@ -71,9 +70,7 @@ Service-->>Route : ResumeUploadResponse
 Route-->>Client : Analysis results
 ```
 
-## Detailed component analysis
-
-### Document extraction and validation
+## Document extraction and validation
 - Supports TXT, MD, PDF, DOC, DOCX.
 - Uses PyMuPDF to render documents to Markdown for consistent parsing.
 - Validates resumes using keyword presence checks.
@@ -94,7 +91,7 @@ Validate --> |Valid| Next["Formatting and analysis"]
 Validate --> |Invalid| Error["HTTP 400 Invalid resume format"]
 ```
 
-### Text cleaning and preprocessing
+## Text cleaning and preprocessing
 - Removes URLs, mentions, and punctuation.
 - Lemmatizes tokens using spaCy.
 - Filters stopwords for English.
@@ -111,7 +108,7 @@ Lemmatize --> Stopwords["Filter stopwords"]
 Stopwords --> Output["Cleaned text"]
 ```
 
-### Named entity recognition and linguistic features
+## Named entity recognition and linguistic features
 - Uses spaCy for lemmatization and token-level transformations.
 - Integrates with frontend utility to generate plain text from structured data for consistent ATS evaluation.
 
@@ -128,10 +125,10 @@ class ResumeToText {
 SpacyNLP <.. ResumeToText : "ensures plain text for ATS"
 ```
 
-### Skill extraction algorithm
+## Skill extraction algorithm
 - Predefined skill list compiled from domain expertise.
 - Regex-based matching with word boundaries to avoid partial matches.
-- Case-insensitive matching for robustness.
+- Case-insensitive matching for reliability.
 
 ```mermaid
 flowchart TD
@@ -145,7 +142,7 @@ Add --> Next
 Next --> Output["Unique extracted skills"]
 ```
 
-### Machine learning model integration
+## Machine learning model integration
 - TF-IDF vectorization transforms cleaned text into numerical features.
 - Gradient Boosting Classifier trained on labeled resume dataset predicts categories.
 - Vectorizer and model persisted as pickle artifacts for inference.
@@ -160,7 +157,7 @@ TFIDF-->>Model : sparse matrix
 Model-->>Clean : category prediction
 ```
 
-### Complete preprocessing pipeline (from raw text to ML-ready features)
+## Complete preprocessing pipeline (from raw text to ML-ready features)
 - Document ingestion and fallback conversion.
 - LLM-based formatting for non-text files.
 - Resume validation via keyword checks.
@@ -178,12 +175,12 @@ Vectorize --> Predict["Predict category"]
 Predict --> Output["Structured response"]
 ```
 
-## Dependency analysis
+## Dependencies
 - Backend services depend on:
-  - PyMuPDF for PDF parsing.
-  - spaCy for lemmatization and tokenization.
-  - scikit-learn for TF-IDF and classification.
-  - LangChain chains for LLM-based formatting and JSON extraction.
+ - PyMuPDF for PDF parsing.
+ - spaCy for lemmatization and tokenization.
+ - scikit-learn for TF-IDF and classification.
+ - LangChain chains for LLM-based formatting and JSON extraction.
 - Frontend depends on structured resume data to produce plain text for ATS.
 
 ```mermaid
@@ -197,20 +194,18 @@ APP --> Sklearn["scikit-learn"]
 RTT["resume-to-text.ts"] --> FEUtil["Plain text generation"]
 ```
 
-## Performance considerations
+## Performance
 - Prefer native text formats (TXT/MD) to bypass expensive PDF parsing.
 - Cache TF-IDF vectorizer and model artifacts to avoid reloading overhead.
 - Limit LLM calls by validating early and formatting only when necessary.
 - Use streaming or chunked processing for large documents to reduce memory pressure.
 - Normalize text once and reuse cleaned text across tasks to minimize repeated computation.
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Unsupported file type: Ensure file extension is TXT, MD, PDF, DOC, or DOCX.
 - Malformed PDF: Enable fallback conversion when provider supports Google GenAI; otherwise, advise uploading a text-based resume.
 - Empty or invalid resume text: Validate using keyword checks; reject with HTTP 400 if validation fails.
 - LLM errors: Handle rate limits and authentication failures gracefully by falling back to original text.
 - JSON extraction failures: Validate and sanitize LLM responses; fall back to empty dict on parse errors.
-
-## Conclusion
-The NLP processing pipeline in TalentSync-Normies combines reliable document parsing, intelligent text cleaning, linguistic normalization, skill extraction, and ML-powered categorization. By integrating frontend plain-text generation and backend LLM-based formatting, it ensures consistent ATS evaluation while maintaining flexibility for diverse input formats. Proper error handling and validation guarantee reliable processing of malformed or ambiguous resumes, and performance optimizations enable scalable inference.

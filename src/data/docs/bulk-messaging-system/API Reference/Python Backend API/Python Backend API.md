@@ -1,12 +1,10 @@
 # Python backend API
 
 ## Introduction
-This page provides detailed API documentation for the Python backend Flask application that powers WhatsApp bulk messaging capabilities. The backend processes CSV, TXT, and Excel files to extract phone numbers and contact information, validates individual phone numbers, and supports manual number entry parsing.
-
-The system is designed as a microservice that integrates with the Electron desktop application, providing reliable contact processing capabilities with intelligent phone number formatting and validation.
+Flask app that extracts contacts from files, validates numbers, and parses pasted input. The Electron app can call it, or you can hit it directly during development.
 
 ## Project structure
-The Python backend follows a modular architecture with clear separation of concerns:
+Layout of the Flask app and helpers:
 
 ```mermaid
 graph TB
@@ -37,13 +35,13 @@ A --> J
 ```
 
 ## Core components
-The backend consists of four primary components working together to provide detailed contact processing capabilities:
+Four main pieces:
 
 ### Flask application core
 The main application (`app.py`) is the central API gateway, managing routing, file uploads, and business logic coordination.
 
 ### Contact extraction engine
-The extraction utilities (`extract_contacts.py`) handle sophisticated parsing of CSV, TXT, and Excel files with intelligent column detection and phone number extraction.
+The extraction utilities (`extract_contacts.py`) handle careful parsing of CSV, TXT, and Excel files with intelligent column detection and phone number extraction.
 
 ### Manual number processing
 The manual parser (`parse_manual_numbers.py`) processes human-entered phone numbers with flexible format support.
@@ -52,7 +50,7 @@ The manual parser (`parse_manual_numbers.py`) processes human-entered phone numb
 The validator (`validate_number.py`) provides standardized phone number cleaning and validation.
 
 ## Architecture overview
-The system employs a layered architecture with clear separation between presentation, business logic, and data processing layers:
+The system employs a layered architecture with presentation, business logic, and data processing layers:
 
 ```mermaid
 sequenceDiagram
@@ -78,16 +76,16 @@ Note over Client,Flask : End-to-end contact processing pipeline
 The health check endpoint provides system monitoring capabilities and service availability verification.
 
 #### Endpoint definition
-- **Method**: GET
-- **URL**: `/health`
-- **Authentication**: Not required
-- **Purpose**: Verify API service status
+- **Method.** GET
+- **URL.** `/health`
+- **Authentication.** Not required
+- **Purpose.** Verify API service status
 
 #### Response schema
 ```json
 {
-  "status": "healthy",
-  "message": "WhatsApp Contact Processor API is running"
+ "status": "healthy",
+ "message": "WhatsApp Contact Processor API is running"
 }
 ```
 
@@ -106,11 +104,11 @@ print(response.json())
 The upload endpoint processes CSV, TXT, and Excel files to extract contact information with intelligent parsing.
 
 #### Endpoint definition
-- **Method**: POST
-- **URL**: `/upload`
-- **Authentication**: Not required
-- **Content-Type**: multipart/form-data
-- **Required Field**: `file` (uploaded file)
+- **Method.** POST
+- **URL.** `/upload`
+- **Authentication.** Not required
+- **Content-Type.** multipart/form-data
+- **Required Field.** `file` (uploaded file)
 
 #### Request format
 ```bash
@@ -124,35 +122,35 @@ response = requests.post('http://localhost:5034/upload', files=files)
 ```
 
 #### Supported file types
-- **CSV**: Comma-separated values with automatic column detection
-- **TXT**: Plain text files with flexible formatting
-- **XLSX/XLS**: Excel spreadsheet files with multiple sheet support
+- **CSV.** Comma-separated values with automatic column detection
+- **TXT.** Plain text files with flexible formatting
+- **XLSX/XLS.** Excel spreadsheet files with multiple sheet support
 
 #### Response schema
 ```json
 {
-  "success": true,
-  "contacts": [
-    {
-      "number": "+1234567890",
-      "name": "John Doe"
-    }
-  ],
-  "count": 5,
-  "message": "Successfully extracted 5 contacts"
+ "success": true,
+ "contacts": [
+ {
+ "number": "+1234567890",
+ "name": "John Doe"
+ }
+ ],
+ "count": 5,
+ "message": "Successfully extracted 5 contacts"
 }
 ```
 
 #### Error responses
 ```json
 {
-  "error": "No file provided"
+ "error": "No file provided"
 }
 ```
 
 ```json
 {
-  "error": "Invalid file type. Allowed types: txt, csv, xlsx, xls"
+ "error": "Invalid file type. Allowed types: txt, csv, xlsx, xls"
 }
 ```
 
@@ -178,36 +176,36 @@ InvalidType --> ReturnError["Return Error Response"]
 This endpoint processes manually entered phone numbers with flexible formatting support.
 
 #### Endpoint definition
-- **Method**: POST
-- **URL**: `/parse-manual-numbers`
-- **Authentication**: Not required
-- **Content-Type**: application/json
+- **Method.** POST
+- **URL.** `/parse-manual-numbers`
+- **Authentication.** Not required
+- **Content-Type.** application/json
 
 #### Request schema
 ```json
 {
-  "numbers": "John Doe: +1234567890\nJane Smith - 555-123-4567\n+44 20 7946 0958"
+ "numbers": "John Doe: +1234567890\nJane Smith - 555-123-4567\n+44 20 7946 0958"
 }
 ```
 
 #### Supported input formats
-- **Simple format**: `+1234567890`
-- **With name**: `John Doe: +1234567890`
-- **Alternative**: `+1234567890 - John Doe`
-- **Mixed separators**: Newlines, commas, semicolons
+- **Simple format.** `+1234567890`
+- **With name.** `John Doe: +1234567890`
+- **Alternative.** `+1234567890 - John Doe`
+- **Mixed separators.** Newlines, commas, semicolons
 
 #### Response schema
 ```json
 {
-  "success": true,
-  "contacts": [
-    {
-      "number": "+1234567890",
-      "name": "John Doe"
-    }
-  ],
-  "count": 3,
-  "message": "Successfully parsed 3 contacts"
+ "success": true,
+ "contacts": [
+ {
+ "number": "+1234567890",
+ "name": "John Doe"
+ }
+ ],
+ "count": 3,
+ "message": "Successfully parsed 3 contacts"
 }
 ```
 
@@ -215,8 +213,8 @@ This endpoint processes manually entered phone numbers with flexible formatting 
 ```bash
 # Using curl
 curl -X POST http://localhost:5034/parse-manual-numbers \
-  -H "Content-Type: application/json" \
-  -d '{"numbers":"John Doe: +1234567890\nJane Smith - 555-123-4567"}'
+ -H "Content-Type: application/json" \
+ -d '{"numbers":"John Doe: +1234567890\nJane Smith - 555-123-4567"}'
 
 # Using Python requests
 import requests
@@ -228,39 +226,39 @@ response = requests.post('http://localhost:5034/parse-manual-numbers', json=data
 This endpoint validates individual phone numbers and returns standardized formatting.
 
 #### Endpoint definition
-- **Method**: POST
-- **URL**: `/validate-number`
-- **Authentication**: Not required
-- **Content-Type**: application/json
+- **Method.** POST
+- **URL.** `/validate-number`
+- **Authentication.** Not required
+- **Content-Type.** application/json
 
 #### Request schema
 ```json
 {
-  "number": "+1 (555) 123-4567"
+ "number": "+1 (555) 123-4567"
 }
 ```
 
 #### Response schema
 ```json
 {
-  "valid": true,
-  "cleaned_number": "+15551234567",
-  "original": "+1 (555) 123-4567"
+ "valid": true,
+ "cleaned_number": "+15551234567",
+ "original": "+1 (555) 123-4567"
 }
 ```
 
 #### Validation rules
-- **Length**: Minimum 7 digits, maximum 15 digits
-- **Format**: Accepts international (`+1234567890`) and formatted numbers
-- **Characters**: Only digits and optional `+` sign preserved
-- **Leading zeros**: Removed unless part of international format
+- **Length.** Minimum 7 digits, maximum 15 digits
+- **Format.** Accepts international (`+1234567890`) and formatted numbers
+- **Characters.** Only digits and optional `+` sign preserved
+- **Leading zeros.** Removed unless part of international format
 
 #### Usage examples
 ```bash
 # Using curl
 curl -X POST http://localhost:5034/validate-number \
-  -H "Content-Type: application/json" \
-  -d '{"number":"+1 (555) 123-4567"}'
+ -H "Content-Type: application/json" \
+ -d '{"number":"+1 (555) 123-4567"}'
 
 # Using Python requests
 import requests
@@ -297,74 +295,67 @@ H --> F
 ```
 
 ### External dependencies
-- **Flask**: Core web framework providing routing and request handling
-- **Flask-CORS**: Enables cross-origin resource sharing for frontend integration
-- **Pandas**: Advanced data manipulation for CSV and Excel processing
-- **OpenPyXL**: Modern Excel file format support
-- **xlrd**: Legacy Excel (.xls) file format support
-- **Werkzeug**: Secure filename handling and file upload utilities
+- **Flask.** Core web framework providing routing and request handling
+- **Flask-CORS.** Enables cross-origin resource sharing for frontend integration
+- **Pandas.** Advanced data manipulation for CSV and Excel processing
+- **OpenPyXL.** Modern Excel file format support
+- **xlrd.** Legacy Excel (.xls) file format support
+- **Werkzeug.** Secure filename handling and file upload utilities
 
 ## Performance considerations
 The backend is optimized for efficient contact processing with several performance enhancements:
 
 ### File processing optimizations
-- **Memory Management**: Files are processed in chunks to prevent memory overflow
-- **Early Validation**: Phone numbers are validated during extraction to reduce processing overhead
-- **Fallback Mechanisms**: Graceful degradation when primary parsing fails
+- **Memory Management.** Files are processed in chunks to prevent memory overflow
+- **Early Validation.** Phone numbers are validated during extraction to reduce processing overhead
+- **Fallback mechanisms.** Switch to the manual parser when pandas fails
 
 ### Rate limiting and concurrency
-- **Upload Size Limit**: Maximum 16MB file size to prevent resource exhaustion
-- **Processing Timeout**: Individual operations timeout after reasonable intervals
-- **Concurrent Processing**: Multiple files can be processed independently
+- **Upload Size Limit.** Maximum 16MB file size to prevent resource exhaustion
+- **Processing Timeout.** Individual operations timeout after reasonable intervals
+- **Concurrent Processing.** Multiple files can be processed independently
 
 ### Bulk operation recommendations
-- **Batch Processing**: For large datasets, consider splitting into smaller batches
-- **Parallel Execution**: Multiple concurrent requests can improve throughput
-- **Resource Monitoring**: Monitor CPU and memory usage during bulk operations
+- **Batch Processing.** For large datasets, consider splitting into smaller batches
+- **Parallel Execution.** Multiple concurrent requests can improve throughput
+- **Resource Monitoring.** Monitor CPU and memory usage during bulk operations
 
 ## Troubleshooting guide
 
 ### Common issues and solutions
 
 #### File upload problems
-**Issue**: "No file provided" error
-**Solution**: Ensure the form field name is exactly "file" and the file is properly attached
+**Issue.** "No file provided" error
+**Solution.** Ensure the form field name is exactly "file" and the file is properly attached
 
-**Issue**: "Invalid file type" error
-**Solution**: Verify file extension is one of: txt, csv, xlsx, xls
+**Issue.** "Invalid file type" error
+**Solution.** Verify file extension is one of: txt, csv, xlsx, xls
 
 #### Phone number processing issues
-**Issue**: Numbers not recognized
-**Solution**: Ensure numbers follow supported formats (+1234567890, (555) 123-4567, etc.)
+**Issue.** Numbers not recognized
+**Solution.** Ensure numbers follow supported formats (+1234567890, (555) 123-4567, etc.)
 
-**Issue**: Validation failures
-**Solution**: Check number length (7-15 digits) and format compliance
+**Issue.** Validation failures
+**Solution.** Check number length (7-15 digits) and format compliance
 
 #### CORS configuration issues
-**Issue**: Cross-origin request blocked
-**Solution**: The application has CORS enabled globally, but verify frontend origin matches
+**Issue.** Cross-origin request blocked
+**Solution.** The application has CORS enabled globally, but verify frontend origin matches
 
 ### Error response format
 All error responses follow a consistent JSON format:
 ```json
 {
-  "error": "Descriptive error message"
+ "error": "Descriptive error message"
 }
 ```
 
 ### Debugging tips
-1. **Enable Debug Mode**: Set Flask debug mode for detailed error information
-2. **Log Processing Steps**: Monitor file processing stages for failure points
-3. **Validate Input Data**: Ensure data conforms to expected formats before processing
-4. **Check File Encoding**: Verify CSV/TXT files use UTF-8 encoding
+1. **Enable Debug Mode.** Set Flask debug mode for detailed error information
+2. **Log Processing Steps.** Monitor file processing stages for failure points
+3. **Validate Input Data.** Ensure data conforms to expected formats before processing
+4. **Check File Encoding.** Verify CSV/TXT files use UTF-8 encoding
 
 ## Conclusion
-The Python backend provides a reliable foundation for WhatsApp bulk messaging contact processing. Its modular architecture, detailed error handling, and flexible input formats make it suitable for production deployment. The API endpoints offer reliable file processing, manual number parsing, and phone number validation capabilities essential for bulk messaging operations.
 
-Key strengths include:
-- **Detailed File Support**: Multi-format file processing with intelligent parsing
-- **Reliable Validation**: Intelligent phone number cleaning and validation
-- **Flexible Input Formats**: Support for various manual input styles
-- **Production Ready**: Proper error handling and resource management
-
-The system is designed to integrate smoothly with the Electron desktop application while maintaining independence for potential standalone usage.
+The backend is small on purpose. Extend extractors carefully and keep `clean_phone_number` as the single normalization choke point.

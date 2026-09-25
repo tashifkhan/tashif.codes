@@ -1,7 +1,7 @@
 # WhatsApp LocalAuth security
 
 ## Introduction
-This page explains the WhatsApp Web LocalAuth security implementation in the desktop application. It focuses on how persistent sessions are managed using LocalAuth, how QR code authentication works, and how session tokens are generated and stored. It also covers automatic reconnection mechanisms, security considerations such as session hijacking prevention and unauthorized access protection, and practical troubleshooting guidance for authentication failures and session restoration issues.
+LocalAuth session files on disk, QR login, logout cleanup, and the practical risk if someone copies the auth directory.
 
 ## Project structure
 The application is an Electron + React desktop app with a dedicated Electron main process that integrates WhatsApp Web via the whatsapp-web.js library. LocalAuth is configured in the main process to persist authentication state locally, enabling automatic reconnection across application restarts.
@@ -81,7 +81,7 @@ Preload-->>UI : onWhatsAppStatus callback
 
 ### LocalAuth strategy and persistent sessions
 - Strategy: LocalAuth persists authentication state in a local directory, enabling automatic reconnection when the client starts again.
-- Directory cleanup: The application deletes cached and auth directories on startup and logout to ensure fresh or cleaned sessions.
+- Directory cleanup: The application deletes cached and auth directories on startup and logout so sessions start clean.
 - Event-driven lifecycle: The main process emits status and QR events, allowing the renderer to reflect current state.
 
 Security implications:
@@ -98,8 +98,8 @@ References:
 - QR generation: The main process converts the QR string to a data URL using the qrcode library and sends it to the renderer.
 - Renderer display: The UI renders the QR code image and handles loading errors gracefully.
 - Security considerations:
-  - QR is ephemeral; ensure it is cleared upon authentication success.
-  - Avoid exposing QR data outside the renderer via IPC channels.
+ - QR is ephemeral; ensure it is cleared upon authentication success.
+ - Avoid exposing QR data outside the renderer via IPC channels.
 
 References:
 - QR event emission and data URL conversion: `main.js`
@@ -123,13 +123,13 @@ References:
 
 ### Security considerations
 - Session hijacking prevention:
-  - Clean up cached and auth directories on logout and app close to prevent reuse of stale artifacts.
-  - Avoid exposing QR data outside the renderer; rely on IPC for minimal data transfer.
+ - Clean up cached and auth directories on logout and app close to prevent reuse of stale artifacts.
+ - Avoid exposing QR data outside the renderer; rely on IPC for minimal data transfer.
 - Unauthorized access protection:
-  - Restrict filesystem permissions on the application directory.
-  - Use secure IPC to prevent malicious renderer access to sensitive operations.
+ - Restrict filesystem permissions on the application directory.
+ - Use secure IPC to prevent malicious renderer access to sensitive operations.
 - Secure session cleanup:
-  - Centralized cleanup functions ensure consistent removal of session artifacts.
+ - Centralized cleanup functions ensure consistent removal of session artifacts.
 
 References:
 - Cleanup functions: `main.js`
@@ -164,35 +164,34 @@ MAIN --> QR
 - Minimal IPC overhead: Only essential events (status, QR) are transmitted to the renderer.
 - Cleanup timing: Cleanup occurs on startup and shutdown to avoid accumulating stale artifacts.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions for authentication failures and session restoration problems:
 
 - QR code not loading
-  - Symptoms: Empty QR area or error message in UI.
-  - Actions: Retry connection, check network connectivity, and verify QR event handling.
-  - References: `main.js`, `WhatsAppForm.jsx`
+ - Symptoms: Empty QR area or error message in UI.
+ - Actions: Retry connection, check network connectivity, and verify QR event handling.
+ - References: `main.js`, `WhatsAppForm.jsx`
 
 - Authentication failure
-  - Symptoms: "Authentication failed" status messages.
-  - Actions: Clear cached and auth directories, restart the client, and ensure device is linked.
-  - References: `main.js`, `main.js`
+ - Symptoms: "Authentication failed" status messages.
+ - Actions: Clear cached and auth directories, restart the client, and ensure device is linked.
+ - References: `main.js`, `main.js`
 
 - Session not restored on restart
-  - Symptoms: Requires scanning QR on every launch.
-  - Actions: Verify LocalAuth directory exists and is writable; ensure startup cleanup is not removing artifacts prematurely.
-  - References: `main.js`, `main.js`
+ - Symptoms: Requires scanning QR on every launch.
+ - Actions: Verify LocalAuth directory exists and is writable; ensure startup cleanup is not removing artifacts prematurely.
+ - References: `main.js`, `main.js`
 
 - Logout issues
-  - Symptoms: Stuck in "Connected" state after logout.
-  - Actions: Trigger logout IPC handler; confirm cleanup of cached and auth directories.
-  - References: `main.js`, `preload.js`
+ - Symptoms: Stuck in "Connected" state after logout.
+ - Actions: Trigger logout IPC handler; confirm cleanup of cached and auth directories.
+ - References: `main.js`, `preload.js`
 
 - Disconnection handling
-  - Symptoms: "Client disconnected" status.
-  - Actions: Restart client; verify network stability and event listeners.
-  - References: `main.js`
+ - Symptoms: "Client disconnected" status.
+ - Actions: Restart client; verify network stability and event listeners.
+ - References: `main.js`
 
 ## Conclusion
-The application implements WhatsApp Web LocalAuth to achieve persistent sessions with QR code-based authentication. The main process manages client lifecycle, QR generation, and secure cleanup of session artifacts, while the renderer provides user feedback and status updates. By combining LocalAuth with reliable cleanup routines and secure IPC, the system balances convenience with security. Proper troubleshooting practices and awareness of session storage implications help maintain reliable and secure operation.
+
+Anyone with the auth directory can often resume the session. Logout and delete when the machine is shared.

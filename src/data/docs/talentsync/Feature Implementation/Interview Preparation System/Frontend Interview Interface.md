@@ -1,9 +1,8 @@
 # Frontend interview interface
 
-## Introduction
-This page describes the Frontend Interview Interface component built with React and Next.js. It covers the interview setup forms, question management, answer generation, and evaluation result presentation. The interface integrates with backend services using TanStack Query for state management and React hooks for reactive UI updates. Accessibility, responsive design, and cross-browser compatibility are addressed to ensure a reliable interview experience across devices.
+React/Next.js UI for interview setup, questions, answers, and evaluation results, wired through TanStack Query.
 
-## Project structure
+## Repository layout
 The interview interface spans several layers:
 - UI components for interview setup and question editing
 - Service layer for API communication
@@ -41,7 +40,7 @@ DashHome --> ModalMgr
 SeekerDash --> ModalMgr
 ```
 
-## Core components
+## Building blocks
 - InterviewDetailsForm: Collects role, company, word limit, optional company knowledge, and website.
 - QuestionsEditor: Manages dynamic lists of interview questions with add/remove and per-question editing.
 - GeneratedAnswersPanel: Displays generated answers for submitted questions.
@@ -55,7 +54,7 @@ Key capabilities:
 - Accessible markup with labels and semantic inputs
 - Responsive layouts using grid and flex utilities
 
-## Architecture overview
+## How it fits together
 The interview interface follows a layered architecture:
 - Presentation layer: UI components manage user interactions and render state
 - State layer: React hooks and TanStack Query manage data fetching, caching, and mutations
@@ -79,9 +78,7 @@ Hook-->>UI : Update state and re-render
 UI-->>User : Display generated answer
 ```
 
-## Detailed component analysis
-
-### InterviewDetailsForm
+## InterviewDetailsForm
 Purpose:
 - Capture essential interview setup details including role, company, word limit, optional company knowledge, and website.
 
@@ -105,7 +102,7 @@ Customization:
 - Accepts external state handler to integrate with parent forms
 - Reusable across different interview flows
 
-### QuestionsEditor
+## QuestionsEditor
 Purpose:
 - Dynamically manage a list of interview questions with add/remove actions and inline editing.
 
@@ -125,7 +122,7 @@ Accessibility:
 - Descriptive button labels with icons
 - Focus management during add/remove
 
-### GeneratedAnswersPanel
+## GeneratedAnswersPanel
 Purpose:
 - Present generated answers to interview questions, typically after submission to the backend.
 
@@ -144,7 +141,7 @@ Accessibility:
 - Focusable elements for actions
 - Semantic heading structure
 
-### use-interviews hook
+## use-interviews hook
 Purpose:
 - Centralize data fetching and mutations for interview sessions and answer generation.
 
@@ -158,7 +155,7 @@ State management:
 - Mutation errors surfaced via toast notifications
 - Success callbacks refresh dependent queries
 
-### interview.service
+## interview.service
 Purpose:
 - Provide typed wrappers around API endpoints for interview operations.
 
@@ -171,7 +168,7 @@ Integration:
 - Uses apiClient for HTTP requests
 - Returns typed responses aligned with InterviewSession and ApiResponse
 
-### Types
+## Types
 Purpose:
 - Define the shape of interview data structures for type safety.
 
@@ -184,7 +181,7 @@ Benefits:
 - Compile-time validation of props and API responses
 - Improved developer experience with autocompletion
 
-### Dashboard integration
+## Dashboard integration
 Purpose:
 - Display interview sessions, enable viewing details, and support deletion.
 
@@ -204,7 +201,7 @@ Accessibility:
 - Clear headings and descriptions
 - Keyboard-accessible close buttons
 
-## Dependency analysis
+## Dependencies
 The interview interface components depend on:
 - UI primitives (Button, Card, Input, Label, Loader) for consistent styling
 - Framer Motion for smooth animations
@@ -229,15 +226,16 @@ DashSeeker["seeker/page.tsx"] --> ModalMgr["ModalManager.tsx"]
 DashHome["dashboard/page.tsx"] --> ModalMgr
 ```
 
-## Performance considerations
+## Performance
 - Prefer controlled components to minimize unnecessary re-renders
 - Use React Query's background refetching and caching to avoid redundant network calls
 - Virtualize long lists in the interview sessions modal for large datasets
 - Defer heavy computations until after user input stabilizes
 - Optimize animations by limiting expensive transforms and using transform properties
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Form submission fails silently: Ensure mutation error handling displays toasts and logs error messages
 - Network errors: Verify api-client configuration and endpoint URLs
 - State not updating after deletion: Confirm query invalidation for ["interviews"] and ["dashboard"] keys
@@ -252,6 +250,3 @@ Responsive behavior:
 - Test grid layouts on small screens; adjust breakpoints as needed
 - Ensure modals are usable on mobile with appropriate touch targets
 - Validate font sizes and spacing across devices
-
-## Conclusion
-The Frontend Interview Interface uses React, TanStack Query, and a clean service-layer architecture to deliver a responsive, accessible, and efficient interview preparation experience. By centralizing state management, enforcing type safety, and providing intuitive UI patterns, the interface supports smooth interaction with backend services while maintaining excellent user experience across devices.

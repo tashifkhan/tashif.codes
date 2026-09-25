@@ -1,12 +1,7 @@
 # Server architecture
 
 ## Introduction
-This page explains the dual-server system design for the SuperSet Telegram Notification Bot. The system separates concerns into:
-- Telegram bot server: interactive commands and user session management
-- Webhook server: REST APIs for external integrations, web push subscriptions, and administrative endpoints
-- Scheduler server: automated update jobs (fetching data and sending notifications)
-
-The architecture emphasizes decoupling, dependency injection, daemon mode operation, and clear inter-server communication patterns. It supports both polling-based Telegram bot and webhook-based integration, plus a dedicated scheduler for periodic tasks.
+Two servers, one codebase. The Telegram bot talks to people. The FastAPI webhook talks to machines. Scheduler rides alongside for timed work. They share DatabaseService and NotificationService instead of growing their own copies.
 
 ## Project structure
 The repository organizes code by responsibility:
@@ -58,7 +53,7 @@ DBS --> DBC
 ```
 
 ## Core components
-- Telegram Bot Server: Handles user commands (/start, /help, /stop, /status, /stats, /noticestats, /userstats, /web), user registration and management, and admin commands via injected services.
+- Telegram Bot Server: User commands (`/start`, `/help`, `/stop`, `/status`, `/placement_year`, `/stats`, `/noticestats`, `/web`) plus admin `/userstats`, registration, and admin commands via injected services.
 - Webhook Server: FastAPI-based REST server exposing health checks, web push subscription endpoints, notification dispatch, and statistics endpoints.
 - Scheduler Server: Runs automated update jobs (SuperSet + Emails) and official placement scraping on a cron schedule, independent of the Telegram bot.
 - Configuration and Daemon Utilities: Centralized settings, logging, daemon mode, and PID management for process lifecycle.
@@ -101,16 +96,16 @@ NOTIF_RUN --> DB
 
 ### Telegram bot server
 - Responsibilities:
-  - Command routing (/start, /help, /stop, /status, /stats, /noticestats, /userstats, /web)
-  - User registration and deactivation
-  - Admin command delegation
-  - Asynchronous polling loop with graceful shutdown
+ - Command routing (`/start`, `/help`, `/stop`, `/status`, `/placement_year`, `/stats`, `/noticestats`, `/web`; admin `/userstats`)
+ - User registration and deactivation
+ - Admin command delegation
+ - Asynchronous polling loop with graceful shutdown
 - Dependency Injection:
-  - DatabaseService, NotificationService, AdminTelegramService, PlacementStatsCalculatorService
+ - DatabaseService, NotificationService, AdminTelegramService, PlacementStatsCalculatorService
 - Session and User Management:
-  - Adds users on /start, deactivates on /stop, retrieves user status and stats
+ - Adds users on /start, deactivates on /stop, retrieves user status and stats
 - Error Handling:
-  - Graceful shutdown, logging, and safe printing in daemon mode
+ - Graceful shutdown, logging, and safe printing in daemon mode
 
 ```mermaid
 classDiagram
@@ -123,6 +118,7 @@ class BotServer {
 +help_command(update, context)
 +stop_command(update, context)
 +status_command(update, context)
++placement_year_command(update, context)
 +stats_command(update, context)
 +notice_stats_command(update, context)
 +user_stats_command(update, context)
@@ -150,17 +146,17 @@ BotServer --> PlacementStatsCalculatorService : "uses"
 
 ### Webhook server (FastAPI)
 - Responsibilities:
-  - Health checks (/, /health)
-  - Web push subscription management (/api/push/subscribe, /api/push/unsubscribe, /api/push/vapid-key)
-  - Notification dispatch (/api/notify, /api/notify/telegram, /api/notify/web-push)
-  - Statistics endpoints (/api/stats, /api/stats/placements, /api/stats/notices, /api/stats/users)
-  - External integration webhook (/webhook/update)
+ - Health checks (/, /health)
+ - Web push subscription management (/api/push/subscribe, /api/push/unsubscribe, /api/push/vapid-key)
+ - Notification dispatch (/api/notify, /api/notify/telegram, /api/notify/web-push)
+ - Statistics endpoints (/api/stats, /api/stats/placements, /api/stats/notices, /api/stats/users)
+ - External integration webhook (/webhook/update)
 - Middleware and Routing:
-  - CORS middleware
-  - Dependency injection via app state and Depends
+ - CORS middleware
+ - Dependency injection via app state and Depends
 - Error Handling:
-  - HTTP exceptions with descriptive details
-  - Validation via Pydantic models
+ - HTTP exceptions with descriptive details
+ - Validation via Pydantic models
 
 ```mermaid
 sequenceDiagram
@@ -185,19 +181,19 @@ API-->>Client : 200 OK {placement_stats, notice_stats, user_stats}
 
 ### Scheduler server
 - Responsibilities:
-  - Scheduled update jobs (fetch SuperSet + Emails, send notifications)
-  - Official placement data scraping
-  - Independent operation from the Telegram bot
+ - Scheduled update jobs (fetch SuperSet + Emails, send notifications)
+ - Official placement data scraping
+ - Independent operation from the Telegram bot
 - Scheduling:
-  - Cron-based jobs at multiple times per day
-  - Daily official placement scrape at noon IST
+ - Update cron `hour="0,8-23"` IST (midnight plus 8 AM through 11 PM)
+ - Daily official placement scrape at noon IST
 - Execution:
-  - Uses runners and services directly (no service injection)
+ - Uses runners and services directly (no service injection)
 
 ```mermaid
 flowchart TD
 Start(["Scheduler Start"]) --> Setup["Setup AsyncIOScheduler"]
-Setup --> Jobs["Add Cron Jobs<br/>- Update every hour<br/>- Official scrape at noon"]
+Setup --> Jobs["Add Cron Jobs<br/>- Update hour=0,8-23 IST<br/>- Official scrape at noon"]
 Jobs --> Loop["Event Loop (keep running)"]
 Loop --> Trigger{"Cron Triggered?"}
 Trigger --> |Yes| RunUpdate["run_scheduled_update()"]
@@ -210,11 +206,11 @@ SendTG --> Loop
 
 ### Daemon mode operation and process management
 - Daemon Utilities:
-  - Double-fork daemonization, PID file management, status checks, and controlled stop
-  - Separate logging for scheduler daemon
+ - Double-fork daemonization, PID file management, status checks, and controlled stop
+ - Separate logging for scheduler daemon
 - CLI Integration:
-  - main.py supports daemon mode for bot and scheduler
-  - Reinitializes logging after fork to ensure proper file handles
+ - main.py supports daemon mode for bot and scheduler
+ - Reinitializes logging after fork to ensure proper file handles
 
 ```mermaid
 flowchart TD
@@ -232,12 +228,12 @@ Stop --> |No| Run
 
 ### Inter-Server communication patterns
 - No direct inter-server calls:
-  - Bot server manages user sessions and commands
-  - Webhook server exposes REST endpoints for external integrations
-  - Scheduler server operates independently and uses runners/services directly
+ - Bot server manages user sessions and commands
+ - Webhook server exposes REST endpoints for external integrations
+ - Scheduler server operates independently and uses runners/services directly
 - Shared infrastructure:
-  - All servers use the same configuration and logging setup
-  - Database access is centralized via DatabaseService and DBClient
+ - All servers use the same configuration and logging setup
+ - Database access is centralized via DatabaseService and DBClient
 
 ## Dependency analysis
 The system follows a layered dependency structure with clear inversion of control via dependency injection:
@@ -276,41 +272,39 @@ DBS --> DBC
 
 ## Performance considerations
 - Asynchronous design:
-  - Bot server uses asynchronous polling
-  - Scheduler uses AsyncIOScheduler for non-blocking jobs
+ - Bot server uses asynchronous polling
+ - Scheduler uses AsyncIOScheduler for non-blocking jobs
 - Rate limiting and batching:
-  - TelegramService applies rate limiting when broadcasting to users
-  - Long messages are split to comply with Telegram limits
+ - TelegramService applies rate limiting when broadcasting to users
+ - Long messages are split to comply with Telegram limits
 - Efficient data fetching:
-  - UpdateRunner pre-fetches existing IDs to minimize API calls
-  - Selective enrichment of jobs reduces expensive operations
+ - UpdateRunner pre-fetches existing IDs to minimize API calls
+ - Selective enrichment of jobs reduces expensive operations
 - Resource isolation:
-  - Separate daemon logs for bot and scheduler reduce contention
+ - Separate daemon logs for bot and scheduler reduce contention
 - Scalability:
-  - Webhook server can be horizontally scaled behind a load balancer
-  - MongoDB can be sharded for high-volume operations
+ - Webhook server can be horizontally scaled behind a load balancer
+ - MongoDB can be sharded for high-volume operations
 
 [No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 - Health checks:
-  - Use GET /health on the webhook server to verify service availability
+ - Use GET /health on the webhook server to verify service availability
 - Logs:
-  - Bot logs: logs/superset_bot.log
-  - Scheduler logs: logs/scheduler.log
+ - Bot logs: logs/superset_bot.log
+ - Scheduler logs: logs/scheduler.log
 - Daemon status:
-  - Use main.py status to check running daemons
-  - Use main.py stop <bot|scheduler> to stop a daemon
+ - Use main.py status to check running daemons
+ - Use main.py stop <bot|scheduler> to stop a daemon
 - Common issues:
-  - Missing environment variables cause configuration errors
-  - MongoDB connectivity failures require verifying MONGO_CONNECTION_STR
-  - Telegram bot token or chat ID misconfiguration affects message delivery
-  - Web push requires VAPID keys; missing keys disable web push
+ - Missing environment variables cause configuration errors
+ - MongoDB connectivity failures require verifying MONGO_CONNECTION_STR
+ - Telegram bot token or chat ID misconfiguration affects message delivery
+ - Web push requires VAPID keys; missing keys disable web push
 
 ## Conclusion
-The dual-server architecture cleanly separates concerns: the Telegram bot server focuses on user interactions, the webhook server exposes REST APIs for integrations, and the scheduler server automates data ingestion and notifications. The design uses dependency injection, daemon mode, and shared configuration to achieve maintainability, scalability, and operability. With clear inter-server boundaries and reliable error handling, the system supports both small deployments and larger-scale production environments.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Bot for humans, webhook for machines, scheduler for the clock. Shared DatabaseService and NotificationService underneath so you do not grow three data layers.
 
 ## Appendices
 
@@ -322,20 +316,20 @@ The dual-server architecture cleanly separates concerns: the Telegram bot server
 
 ### Scaling strategies
 - Horizontal scaling:
-  - Run multiple instances of the webhook server behind a load balancer
-  - Use Kubernetes deployments with readiness/liveness probes
+ - Run multiple instances of the webhook server behind a load balancer
+ - Use Kubernetes deployments with readiness/liveness probes
 - Database scaling:
-  - Enable MongoDB sharding for high-volume collections
+ - Enable MongoDB sharding for high-volume collections
 - Operational scaling:
-  - Separate bot and scheduler instances for independent scaling
-  - Use separate process managers for each server
+ - Separate bot and scheduler instances for independent scaling
+ - Use separate process managers for each server
 
 ### Monitoring approaches
 - Health endpoints:
-  - Use /health for liveness/readiness checks
+ - Use /health for liveness/readiness checks
 - Logging:
-  - Tail logs for errors and warnings
+ - Tail logs for errors and warnings
 - Alerts:
-  - Monitor health externally and send alerts on failure
+ - Monitor health externally and send alerts on failure
 - Metrics:
-  - Track unsent notices and send success/failure ratios
+ - Track unsent notices and send success/failure ratios

@@ -1,7 +1,7 @@
 # Authentication system
 
 ## Introduction
-This page explains the authentication system that enables OTP-based login with JWT cookie management and session handling. It covers the backend implementation (FastAPI), models, services, and schemas, as well as the frontend integration (Next.js) for a complete authentication flow from OTP request to successful login. Security measures, error handling, and API specifications are included to guide both developers and operators.
+OTP login with JWT cookies and session handling. Security choices, failure modes, and the HTTP surface clients call.
 
 ## Project structure
 The authentication system spans two primary parts:
@@ -88,16 +88,16 @@ AC-->>FE : "Navigate to dashboard"
 
 ### Backend authentication router
 - Routes:
-  - POST /auth/request-otp: generates and emails OTP; returns whether user is new and expiry time
-  - POST /auth/verify-otp: validates OTP, creates access/refresh tokens, sets secure cookies
-  - POST /auth/refresh: rotates refresh token and issues new access/refresh cookies
-  - POST /auth/logout: revokes refresh token and clears cookies
-  - GET /auth/me: protected route returning current user via access token cookie
+ - POST /auth/request-otp: generates and emails OTP; returns whether user is new and expiry time
+ - POST /auth/verify-otp: validates OTP, creates access/refresh tokens, sets secure cookies
+ - POST /auth/refresh: rotates refresh token and issues new access/refresh cookies
+ - POST /auth/logout: revokes refresh token and clears cookies
+ - GET /auth/me: protected route returning current user via access token cookie
 - Cookie policy:
-  - access_token: HttpOnly, SameSite=Lax, secure unless debug, path "/"
-  - refresh_token: HttpOnly, SameSite=Lax, secure unless debug, path "/"
+ - access_token: HttpOnly, SameSite=Lax, secure unless debug, path "/"
+ - refresh_token: HttpOnly, SameSite=Lax, secure unless debug, path "/"
 - Error handling:
-  - Returns HTTP 400/401 with descriptive messages for invalid/expired OTP or missing/invalid tokens
+ - Returns HTTP 400/401 with descriptive messages for invalid/expired OTP or missing/invalid tokens
 
 ### Authentication service implementation
 Responsibilities:
@@ -110,7 +110,7 @@ Responsibilities:
 Key behaviors:
 - Access token payload includes subject, email, issued-at, and expiry
 - Refresh token rotation invalidates previous token and issues a new one
-- OTP uniqueness per email and latest-first validation ensures freshness
+- OTP uniqueness per email and latest-first validation keep codes fresh
 
 ### Data models
 - User: identifier, email, optional name/telegram, activity flag, timestamps
@@ -149,17 +149,17 @@ USER ||--o{ REFRESH_TOKEN : "has many"
 
 ### JWT cookie management and session handling
 - Access token cookie:
-  - Name: access_token
-  - Attributes: HttpOnly, SameSite=Lax, secure unless debug, path "/"
-  - Max age: derived from settings
+ - Name: access_token
+ - Attributes: HttpOnly, SameSite=Lax, secure unless debug, path "/"
+ - Max age: derived from settings
 - Refresh token cookie:
-  - Name: refresh_token
-  - Attributes: HttpOnly, SameSite=Lax, secure unless debug, path "/"
-  - Max age: derived from settings
+ - Name: refresh_token
+ - Attributes: HttpOnly, SameSite=Lax, secure unless debug, path "/"
+ - Max age: derived from settings
 - Session retrieval:
-  - Protected route middleware reads access_token cookie, verifies JWT, loads user by sub claim
+ - Protected route middleware reads access_token cookie, verifies JWT, loads user by sub claim
 - Token refresh:
-  - Uses refresh_token cookie to validate, revoke old, issue new refresh token, and update cookies
+ - Uses refresh_token cookie to validate, revoke old, issue new refresh token, and update cookies
 
 ### Password hashing strategy
 - The system does not hash passwords; authentication relies on OTP delivery and JWT-based session management
@@ -167,17 +167,17 @@ USER ||--o{ REFRESH_TOKEN : "has many"
 
 ### Frontend authentication flow
 - Auth Context:
-  - Loads session on startup via /auth/me
-  - Provides requestOtp, verifyOtp, refresh, and logout
-  - Persists user state and navigates after successful login
+ - Loads session on startup via /auth/me
+ - Provides requestOtp, verifyOtp, refresh, and logout
+ - Persists user state and navigates after successful login
 - Login Page:
-  - Two-step UX: email → code
-  - Zod-based validation for email and 6-digit code
-  - Conditional rendering and error messaging
+ - Two-step UX: email → code
+ - Zod-based validation for email and 6-digit code
+ - Conditional rendering and error messaging
 - API Client:
-  - Fetch wrapper with credentials: include
-  - Centralized endpoints for auth operations
-  - Typed responses aligned with backend schemas
+ - Fetch wrapper with credentials: include
+ - Centralized endpoints for auth operations
+ - Typed responses aligned with backend schemas
 
 ```mermaid
 flowchart TD
@@ -194,16 +194,16 @@ ShowError --> ShowCode
 
 ## Dependency analysis
 - Router depends on:
-  - AuthService for OTP, token, and user operations
-  - Settings for cookie lifetimes and delivery configuration
+ - AuthService for OTP, token, and user operations
+ - Settings for cookie lifetimes and delivery configuration
 - AuthService depends on:
-  - Models for persistence
-  - OtpEmailService for delivery
-  - Settings for cryptographic and timing parameters
+ - Models for persistence
+ - OtpEmailService for delivery
+ - Settings for cryptographic and timing parameters
 - Frontend depends on:
-  - Auth Context for state management
-  - API Client for network requests
-  - Types for type safety
+ - Auth Context for state management
+ - API Client for network requests
+ - Types for type safety
 
 ```mermaid
 graph LR
@@ -223,61 +223,57 @@ ASVC --> EMAIL["OtpEmailService<br/>otp_email_service.py"]
 - Access token expiry is short-lived by default; balance usability with security
 - Email delivery is synchronous; consider queuing for production workloads
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Invalid or expired OTP:
-  - Cause: OTP not found, expired, or already used
-  - Resolution: Trigger new OTP request; ensure clock sync and correct email
+ - Cause: OTP not found, expired, or already used
+ - Resolution: Trigger new OTP request; ensure clock sync and correct email
 - Missing or invalid access token:
-  - Cause: Missing cookie, expired token, or invalid signature
-  - Resolution: Re-authenticate; verify JWT secret and clock
+ - Cause: Missing cookie, expired token, or invalid signature
+ - Resolution: Re-authenticate; verify JWT secret and clock
 - Missing refresh token:
-  - Cause: Not present or revoked/expired
-  - Resolution: Perform full OTP login; avoid long-lived sessions
+ - Cause: Not present or revoked/expired
+ - Resolution: Perform full OTP login; avoid long-lived sessions
 - Cookie not set:
-  - Cause: SameSite/secure flags mismatch with deployment
-  - Resolution: Adjust settings for local vs. production environments
+ - Cause: SameSite/secure flags mismatch with deployment
+ - Resolution: Adjust settings for local vs. production environments
 - SMTP configuration errors:
-  - Cause: Missing SMTP settings for non-console delivery
-  - Resolution: Provide required SMTP environment variables
+ - Cause: Missing SMTP settings for non-console delivery
+ - Resolution: Provide required SMTP environment variables
 
 ## Conclusion
-The authentication system provides a secure, cookie-backed OTP login flow with reliable JWT token management and refresh mechanisms. The backend enforces strict validation and persistence, while the frontend offers a smooth, validated user experience. Operators should configure environment variables carefully, especially for JWT secrets and SMTP settings, and deploy with appropriate CORS and cookie policies.
-
-[No sources needed since this section summarizes without analyzing specific files]
+OTP expiry and cookie flags matter more than clever token formats. Misconfigured CORS shows up as silent login failures in the browser.
 
 ## Appendices
 
 ### API endpoint specifications
 
 - POST /auth/request-otp
-  - Request: { email: string }
-  - Response: { message: string, is_new_user: boolean, expires_at: datetime }
-  - Description: Generates OTP and delivers it; returns expiry time and new-user flag
+ - Request: { email: string }
+ - Response: { message: string, is_new_user: boolean, expires_at: datetime }
+ - Description: Generates OTP and delivers it; returns expiry time and new-user flag
 
 - POST /auth/verify-otp
-  - Request: { email: string, code: string }
-  - Response: { user: UserResponse, is_new_user: boolean }
-  - Cookies: Sets access_token and refresh_token
-  - Description: Validates OTP, provisions user if needed, issues tokens
+ - Request: { email: string, code: string }
+ - Response: { user: UserResponse, is_new_user: boolean }
+ - Cookies: Sets access_token and refresh_token
+ - Description: Validates OTP, provisions user if needed, issues tokens
 
 - POST /auth/refresh
-  - Request: none (uses refresh_token cookie)
-  - Response: { user: UserResponse, is_new_user: boolean }
-  - Cookies: Rotates refresh token and updates access token cookie
-  - Description: Refreshes session using valid refresh token
+ - Request: none (uses refresh_token cookie)
+ - Response: { user: UserResponse, is_new_user: boolean }
+ - Cookies: Rotates refresh token and updates access token cookie
+ - Description: Refreshes session using valid refresh token
 
 - POST /auth/logout
-  - Request: none (uses refresh_token cookie)
-  - Response: 204 No Content
-  - Description: Revokes refresh token and clears cookies
+ - Request: none (uses refresh_token cookie)
+ - Response: 204 No Content
+ - Description: Revokes refresh token and clears cookies
 
 - GET /auth/me
-  - Request: none (uses access_token cookie)
-  - Response: UserResponse
-  - Description: Returns currently authenticated user
+ - Request: none (uses access_token cookie)
+ - Response: UserResponse
+ - Description: Returns currently authenticated user
 
 Security considerations:
 - Cookies are HttpOnly and use SameSite=Lax; secure flag is disabled only in debug mode
@@ -287,13 +283,13 @@ Security considerations:
 ### Client integration examples
 
 - Next.js usage pattern:
-  - Wrap app with AuthProvider
-  - Use useAuth hook to call requestOtp, verifyOtp, refresh, logout
-  - Navigate based on isAuthenticated and loading state
+ - Wrap app with AuthProvider
+ - Use useAuth hook to call requestOtp, verifyOtp, refresh, logout
+ - Navigate based on isAuthenticated and loading state
 
 - API client usage:
-  - requestOtp(email) → OtpRequestResponse
-  - verifyOtp(email, code) → AuthStatus
-  - refreshSession() → AuthStatus
-  - logout() → void
-  - getMe() → User
+ - requestOtp(email) → OtpRequestResponse
+ - verifyOtp(email, code) → AuthStatus
+ - refreshSession() → AuthStatus
+ - logout() → void
+ - getMe() → User

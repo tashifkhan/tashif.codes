@@ -1,14 +1,14 @@
 # Authentication and security
 
 ## Introduction
-This page provides detailed authentication and security documentation for the API server. It explains how authentication is applied across routers, documents the use of API keys, OAuth flows, session management, security headers, CORS policies, rate limiting strategies, JWT token handling, credential storage, and secure communication protocols. It also outlines security best practices, vulnerability prevention measures, and compliance considerations, along with mitigation strategies for common security threats across service integrations.
+How auth works on the API today: per-request tokens, provider API keys from env, OAuth for Google services. CORS middleware is enabled with allow_origins `*`. Rate limits are still missing.
 
 ## Project structure
-The API server is implemented using FastAPI and exposes multiple routers under a unified application. Routers are grouped by functional domains (e.g., health, GitHub, Gmail, Google Search, website, YouTube, PyjIIT, React Agent, website validator, browser use, file upload). Each router defines endpoints and delegates business logic to dedicated services. Environment variables are loaded via a configuration module, and the application entrypoint supports selecting between API and MCP modes.
+The API server is implemented using FastAPI and exposes multiple routers under a unified application. Routers are grouped by functional domains (e.g., health, GitHub, Gmail, Google Search, website, YouTube, PyjIIT, React Agent, website validator, browser use, file upload). Each router defines endpoints and delegates business logic to dedicated services. Environment variables are loaded via a configuration module. `main.py` starts FastAPI and mounts MCP at `/mcp`.
 
 ```mermaid
 graph TB
-A_main["main.py<br/>Entry point"] --> B_api_run["api/main.py<br/>FastAPI app"]
+A_main["main.py<br/>FastAPI app"] --> B_api_run["routers/*<br/>Mounted routers"]
 B_api_run --> C_routers["routers/*<br/>Routers per domain"]
 C_routers --> D_services["services/*<br/>Domain services"]
 B_api_run --> E_config["core/config.py<br/>Environment and logging"]
@@ -90,10 +90,10 @@ Router-->>Client : "200 OK with content"
 - Purpose: Provides operations against Gmail using an access token supplied in the request body.
 - Authentication: Requires an access token for all endpoints; validated at router level.
 - Endpoints:
-  - List unread messages
-  - Fetch latest messages
-  - Mark message read
-  - Send email
+ - List unread messages
+ - Fetch latest messages
+ - Mark message read
+ - Send email
 - Error Handling: Enforces required fields and returns structured errors.
 
 ```mermaid
@@ -145,10 +145,10 @@ Return200 --> End
 
 ### Security headers, CORS policies, and rate limiting
 - Security Headers: Not configured in the API application.
-- CORS: Not configured in the API application.
+- CORS: `CORSMiddleware` in `main.py` allows all origins (`allow_origins=["*"]`).
 - Rate Limiting: Not configured in the API application.
 Recommendations:
-- Add CORS middleware to restrict origins and methods.
+- Tighten CORS origins for production instead of allowing `*`.
 - Add security headers (e.g., Content-Security-Policy, Strict-Transport-Security).
 - Implement rate limiting at the router or application level.
 
@@ -175,22 +175,22 @@ C_cfg --> S_website
 - Cache or reuse external client instances where appropriate to reduce overhead.
 - Validate and sanitize inputs early to fail fast and reduce downstream processing.
 
-## Security controls and best practices
+## Security controls
 
 ### Authentication mechanisms
 - API Key Validation
-  - Use environment variables to store API keys.
-  - Restrict API key scopes and rotate keys periodically.
-  - Avoid logging sensitive values.
+ - Use environment variables to store API keys.
+ - Restrict API key scopes and rotate keys periodically.
+ - Avoid logging sensitive values.
 - OAuth Flows
-  - Accept access tokens in request bodies for endpoints requiring third-party authorization.
-  - Validate token audience and expiration when possible.
+ - Accept access tokens in request bodies for endpoints requiring third-party authorization.
+ - Validate token audience and expiration when possible.
 - Session Management
-  - No server-side sessions; rely on client-managed tokens.
-  - Implement token refresh logic in the client and avoid long-lived tokens.
+ - No server-side sessions; rely on client-managed tokens.
+ - Implement token refresh logic in the client and avoid long-lived tokens.
 
 ### Security headers, CORS, and rate limiting
-- Configure CORS to allowlist trusted origins and methods.
+- CORS is on in `main.py` with `allow_origins=["*"]`. Restrict origins in production.
 - Apply security headers to mitigate common attacks (X-Content-Type-Options, X-Frame-Options, Referrer-Policy).
 - Implement rate limiting per endpoint or globally to prevent abuse.
 
@@ -225,9 +225,10 @@ C_cfg --> S_website
 
 ## Troubleshooting guide
 - Missing Access Token (Gmail): Ensure the request includes a valid access token; otherwise, the router returns a 400 error.
-- Invalid or Expired Access Token (Gmail): The underlying service may raise exceptions; wrap and translate to user-friendly errors.
+- Invalid or Expired Access Token (Gmail): The underlying service may raise exceptions; wrap and translate to plain errors.
 - Session Errors (PyjIIT): Exceptions indicate session-related issues; surface actionable messages to users.
 - Health Endpoint: Use the health endpoint to confirm service availability.
 
 ## Conclusion
-The API server currently relies on request-time validation and environment-based API keys for external integrations, with no global authentication middleware. To harden the system, deploy CORS and security headers, implement rate limiting, and adopt reliable token management practices. The extension's token management capabilities complement server-side improvements to deliver a secure and compliant solution.
+No global auth middleware yet. Harden with CORS, security headers, rate limits, and careful token storage. The extension's OAuth flow is the other half of that story.
+

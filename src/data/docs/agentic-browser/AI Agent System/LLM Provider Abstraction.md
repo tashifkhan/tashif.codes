@@ -1,7 +1,7 @@
 # LLM provider abstraction
 
 ## Introduction
-This page explains the Large Language Model (LLM) provider abstraction layer that enables a model-agnostic design across multiple LLM providers (OpenAI, Anthropic, Google, Ollama, DeepSeek, OpenRouter). It covers provider configuration, credential management, model selection, and the binding mechanism that connects LLM clients with tool definitions for function calling. It also documents provider switching, fallback behavior, performance characteristics, and security considerations for API key management.
+One client interface over OpenAI, Anthropic, Google, Ollama, DeepSeek, and OpenRouter. Config, keys, model pick, tool binding, and what happens when you switch providers.
 
 ## Project structure
 The LLM abstraction spans three main areas:
@@ -23,7 +23,7 @@ REACT["ReAct Agent Graph<br/>agents/react_agent.py"]
 TOOLS["Agent Tools Library<br/>agents/react_tools.py"]
 end
 subgraph "Extension UI"
-UI["Unified Settings Menu<br/>extension/.../UnifiedSettingsMenu.tsx"]
+UI["Unified Settings Menu<br/>clients/browser-extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx"]
 end
 CFG --> LLM
 MCP --> LLM
@@ -116,7 +116,7 @@ Security considerations:
 - Provider defaults: If no model_name is provided, the provider's default is used.
 - MCP tool: The llm.generate tool accepts a model parameter to override defaults at runtime.
 
-Best practices:
+Notes:
 - Pin models explicitly in production for reproducibility.
 - Use provider defaults for experimentation; switch to explicit models for stability.
 
@@ -171,8 +171,6 @@ Note: There is no automatic provider fallback chain in the current implementatio
 - Temperature tuning: Lower temperature improves determinism; higher temperature increases creativity.
 - Tool execution: ToolNode execution adds latency; batch related tool calls when possible.
 
-[No sources needed since this section provides general guidance]
-
 ### Security considerations
 - API key handling: Prefer environment variables over hardcoding. The abstraction validates presence for providers that require keys.
 - Base URL exposure: Ensure base_url_env is set appropriately for local/private endpoints.
@@ -201,8 +199,6 @@ REACT --> LLM
 - Tool batching: Group related tool calls to reduce round-trips.
 - Concurrency: Use async patterns (as in the agent pipeline) to overlap I/O-bound operations.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Unsupported provider: Ensure the provider is one of the supported values; the abstraction raises a clear error with allowed options.
@@ -211,7 +207,7 @@ Common issues and resolutions:
 - Initialization failures: The abstraction surfaces detailed error messages; check API keys, base URLs, and model names.
 
 ## Conclusion
-The LLM provider abstraction layer delivers a model-agnostic interface across multiple providers while preserving provider-specific capabilities. It integrates cleanly with the MCP server and agent pipeline, enabling dynamic provider selection, secure credential handling, and structured function calling. By using environment variables, explicit parameters, and a centralized configuration registry, the system supports flexible deployment scenarios and strong security hygiene.
+Env vars and the config registry pick the backend. Function calling stays structured. Do not hardcode keys; pass them explicitly or from the environment.
 
 ## Appendices
 

@@ -1,9 +1,8 @@
 # Answer evaluation system
 
-## Introduction
-The Answer Evaluation System evaluates candidate responses during digital interviews using a multi-dimensional scoring framework. It integrates natural language understanding with structured prompts to assess technical competency, communication effectiveness, and cultural fit indicators. The system supports both non-streaming and streaming evaluation modes, enabling real-time feedback delivery via Server-Sent Events (SSE). It also incorporates code execution results for technical challenges, ensuring holistic evaluation across different question types.
+Scores interview answers on technical skill, communication, and fit signals. Supports plain and SSE streaming modes, and can fold in code-execution results for coding questions.
 
-## Project structure
+## Repository layout
 The Answer Evaluation System spans several modules:
 - Services orchestrate the interview flow and evaluation logic.
 - Data prompts define the evaluation criteria and output formats.
@@ -45,7 +44,7 @@ G --> IQ
 G --> IS
 ```
 
-## Core components
+## Building blocks
 - AnswerEvaluator: Orchestrates evaluation of textual answers and code submissions, parses structured outputs, and supports streaming responses.
 - InterviewGraph: Coordinates session lifecycle, question flow, and integrates evaluation and code execution.
 - SummaryGenerator: Produces detailed interview summaries with cultural fit and communication insights.
@@ -54,7 +53,7 @@ G --> IS
 - Prompts: Define evaluation rubrics and output formats for both evaluation and summary generation.
 - Schemas: Define data models for questions, answers, evaluation results, and session state.
 
-## Architecture overview
+## How it fits together
 The system follows a layered architecture:
 - API Layer: FastAPI routes handle requests and stream responses.
 - Orchestration Layer: InterviewGraph manages state transitions and delegates tasks.
@@ -82,9 +81,7 @@ Graph-->>Route : evaluation result + next question
 Route-->>Client : JSON response
 ```
 
-## Detailed component analysis
-
-### AnswerEvaluator
+## AnswerEvaluator
 The AnswerEvaluator class encapsulates the evaluation logic:
 - Non-streaming evaluation: Builds a LangChain prompt with role, difficulty, topic, question, expected keywords, and candidate answer; invokes the LLM; parses JSON or markdown to produce an EvaluationResult.
 - Streaming evaluation: Formats a streaming prompt and yields tokens incrementally for SSE.
@@ -114,8 +111,8 @@ class EvaluationResult {
 AnswerEvaluator --> EvaluationResult : "produces"
 ```
 
-### InterviewGraph
-InterviewGraph orchestrates the end-to-end interview flow:
+## InterviewGraph
+InterviewGraph runs the interview flow:
 - Creates sessions, generates questions, and updates state upon answer submission.
 - Streams evaluation tokens to clients via SSE and parses final results.
 - Executes code, streams execution results, and then streams code review.
@@ -138,7 +135,7 @@ AwaitNext --> End
 Error --> End
 ```
 
-### SummaryGenerator
+## SummaryGenerator
 The SummaryGenerator produces detailed interview summaries:
 - Calculates a final score as a percentage from question scores.
 - Formats questions and events for context.
@@ -154,7 +151,7 @@ Parse --> UpdateSession["Update Session with Summary Fields"]
 UpdateSession --> End(["Return Summary Data"])
 ```
 
-### CodeExecutor
+## CodeExecutor
 The CodeExecutor safely executes candidate code:
 - Validates language support and enforces length limits.
 - Performs basic security checks to prevent dangerous patterns.
@@ -173,7 +170,7 @@ Capture --> Cleanup["Cleanup Temporary File"]
 Cleanup --> Result(["Return CodeExecutionResult"])
 ```
 
-### SessionManager
+## SessionManager
 SessionManager maintains in-memory state for sessions and events:
 - Stores sessions and events keyed by session_id.
 - Tracks tab switches and other integrity events.
@@ -208,8 +205,8 @@ class InterviewSession {
 SessionManager --> InterviewSession : "manages"
 ```
 
-## Dependency analysis
-The system exhibits clear separation of concerns:
+## Dependencies
+The system splits work by layer:
 - Routes depend on InterviewGraph for orchestration.
 - InterviewGraph depends on AnswerEvaluator, CodeExecutor, SummaryGenerator, and SessionManager.
 - AnswerEvaluator and SummaryGenerator depend on prompt templates and LLM providers.
@@ -230,7 +227,7 @@ Graph --> Models
 SessionManager --> Models
 ```
 
-## Performance considerations
+## Performance
 - Streaming evaluation reduces perceived latency by delivering partial feedback incrementally.
 - Code execution timeouts and output truncation prevent resource exhaustion.
 - In-memory session storage simplifies deployment but requires persistence planning for production.
@@ -238,13 +235,10 @@ SessionManager --> Models
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
+## Troubleshooting
 Common issues and mitigations:
 - Evaluation service unavailable: The system returns a neutral default score and feedback when the LLM provider is unreachable.
-- Parsing failures: The parser attempts JSON extraction first, falling back to markdown parsing; ensure prompts consistently produce one of these formats.
+- Parsing failures: The parser attempts JSON extraction first, falling back to markdown parsing; keep prompts producing one of these formats.
 - Streaming interruptions: SSE endpoints wrap errors into structured messages for client handling.
 - Session validation errors: The graph validates current question state and raises explicit errors if mismatched.
 - Code execution errors: Security checks and timeouts guard against malicious or excessive code; results include stderr for diagnostics.
-
-## Conclusion
-The Answer Evaluation System provides a reliable, extensible framework for multi-dimensional candidate assessment. By combining structured prompts, streaming feedback, and contextual code evaluation, it delivers consistent, transparent scoring aligned with technical competency, communication effectiveness, and cultural fit indicators. The modular design enables incremental enhancements, such as integrating external LLM providers, expanding rubrics, and adding bias mitigation strategies.

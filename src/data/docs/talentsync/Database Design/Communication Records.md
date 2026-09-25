@@ -1,9 +1,8 @@
 # Communication records
 
-## Introduction
-This page describes the Communication Records data models and workflows for cold email and cover letter generation. It covers request and response schemas, field definitions, relationships between requests and generated responses, JSON storage approaches for dynamic content, temporal tracking, workflow patterns, approval and versioning considerations, data retention, audit trails, compliance, and integration with AI/ML services.
+The Communication Records data models and workflows for cold email and cover letter generation.
 
-## Project structure
+## Repository layout
 The communication record features are implemented across backend models, services, and routes, and surfaced to the frontend via typed interfaces and service clients.
 
 ```mermaid
@@ -34,61 +33,61 @@ SCM --> MCE
 SCL --> MCL
 ```
 
-## Core components
+## Building blocks
 This section documents the request and response models for cold email and cover letter workflows.
 
 - ColdMailRequest
-  - Purpose: Defines the input payload for generating cold emails.
-  - Fields:
-    - recipient_name: Name of the person being emailed.
-    - recipient_designation: Designation of the recipient.
-    - company_name: Company the recipient works for.
-    - sender_name: Your name (sender).
-    - sender_role_or_goal: Your primary goal or role you're interested in.
-    - key_points_to_include: Key points or achievements to highlight.
-    - additional_info_for_llm: Any other context for the LLM.
-    - company_url: URL of the company for research (optional).
-  - Notes: Validation enforces minimum lengths and optional URL handling.
+ - Purpose: Defines the input payload for generating cold emails.
+ - Fields:
+ - recipient_name: Name of the person being emailed.
+ - recipient_designation: Designation of the recipient.
+ - company_name: Company the recipient works for.
+ - sender_name: Your name (sender).
+ - sender_role_or_goal: Your primary goal or role you're interested in.
+ - key_points_to_include: Key points or achievements to highlight.
+ - additional_info_for_llm: Any other context for the LLM.
+ - company_url: URL of the company for research (optional).
+ - Notes: Validation enforces minimum lengths and optional URL handling.
 
 - ColdMailResponse
-  - Purpose: Standardized response for cold email generation.
-  - Fields:
-    - success: Boolean flag indicating success.
-    - message: Human-readable status message.
-    - subject: Generated email subject.
-    - body: Generated email body.
+ - Purpose: Standardized response for cold email generation.
+ - Fields:
+ - success: Boolean flag indicating success.
+ - message: Human-readable status message.
+ - subject: Generated email subject.
+ - body: Generated email body.
 
 - CoverLetterRequest
-  - Purpose: Defines the input payload for cover letter generation.
-  - Fields:
-    - recipient_name: Optional recipient name.
-    - company_name: Optional company name.
-    - sender_name: Sender's name (required).
-    - sender_role_or_goal: Optional sender role or goal.
-    - job_description: Job description text or content.
-    - jd_url: Optional URL to fetch job description content.
-    - key_points_to_include: Optional key points to highlight.
-    - additional_info_for_llm: Optional additional context for the LLM.
-    - company_url: Optional company URL for research.
-    - language: Output language code (default "en").
+ - Purpose: Defines the input payload for cover letter generation.
+ - Fields:
+ - recipient_name: Optional recipient name.
+ - company_name: Optional company name.
+ - sender_name: Sender's name (required).
+ - sender_role_or_goal: Optional sender role or goal.
+ - job_description: Job description text or content.
+ - jd_url: Optional URL to fetch job description content.
+ - key_points_to_include: Optional key points to highlight.
+ - additional_info_for_llm: Optional additional context for the LLM.
+ - company_url: Optional company URL for research.
+ - language: Output language code (default "en").
 
 - CoverLetterEditRequest
-  - Purpose: Extends CoverLetterRequest for editing an existing cover letter.
-  - Fields:
-    - generated_cover_letter: Previous cover letter content to edit.
-    - edit_instructions: Specific instructions for edits.
+ - Purpose: Extends CoverLetterRequest for editing an existing cover letter.
+ - Fields:
+ - generated_cover_letter: Previous cover letter content to edit.
+ - edit_instructions: Specific instructions for edits.
 
 - CoverLetterResponse
-  - Purpose: Standardized response for cover letter generation.
-  - Fields:
-    - success: Boolean flag indicating success.
-    - message: Human-readable status message.
-    - body: Generated cover letter content.
+ - Purpose: Standardized response for cover letter generation.
+ - Fields:
+ - success: Boolean flag indicating success.
+ - message: Human-readable status message.
+ - body: Generated cover letter content.
 
 - Shared Types
-  - types.py: Placeholder for shared types used across cold mail modules.
+ - types.py: Placeholder for shared types used across cold mail modules.
 
-## Architecture overview
+## How it fits together
 The system follows a request-response pattern with AI/ML integration. Requests are validated by Pydantic models, processed by service functions that orchestrate LLM chains, and returned as standardized response models. Frontend types mirror backend schemas for consistent client-server contracts.
 
 ```mermaid
@@ -112,20 +111,18 @@ SVC-->>API : "CoverLetterResponse(body)"
 API-->>FE : "JSON response"
 ```
 
-## Detailed component analysis
-
-### Cold email workflow
+## Cold email workflow
 - Request pattern
-  - File-based and text-based endpoints accept form-encoded inputs and optional resume files.
-  - Inputs include recipient, sender, company, key points, optional URLs, and additional context.
-  - Services validate and process documents, optionally reformatting resume text via LLM.
+ - File-based and text-based endpoints accept form-encoded inputs and optional resume files.
+ - Inputs include recipient, sender, company, key points, optional URLs, and additional context.
+ - Services validate and process documents, optionally reformatting resume text via LLM.
 
 - Content generation
-  - Services invoke LLM chains to produce structured content.
-  - Responses are parsed from raw LLM output, supporting JSON blocks and free-form text with embedded JSON.
+ - Services invoke LLM chains to produce structured content.
+ - Responses are parsed from raw LLM output, supporting JSON blocks and free-form text with embedded JSON.
 
 - Editing workflow
-  - Separate endpoints allow editing previously generated content with explicit instructions.
+ - Separate endpoints allow editing previously generated content with explicit instructions.
 
 ```mermaid
 sequenceDiagram
@@ -151,14 +148,14 @@ SVC-->>API : "RESP(subject, body)"
 API-->>FE : "JSON {success, message, subject, body}"
 ```
 
-### Cover letter workflow
+## Cover letter workflow
 - Request pattern
-  - Accepts resume text, recipient/company details, job description (or URL), key points, additional info, optional company URL, and language preference.
-  - Supports editing an existing cover letter with explicit instructions.
+ - Accepts resume text, recipient/company details, job description (or URL), key points, additional info, optional company URL, and language preference.
+ - Supports editing an existing cover letter with explicit instructions.
 
 - Content generation
-  - Uses curated prompts to guide the LLM to produce concise, professional content aligned with the job description and resume.
-  - Resolves job description from URL or manual text, combining both when provided.
+ - Uses curated prompts to guide the LLM to produce concise, professional content aligned with the job description and resume.
+ - Resolves job description from URL or manual text, combining both when provided.
 
 ```mermaid
 sequenceDiagram
@@ -182,55 +179,55 @@ SVC-->>API : "RESP(body)"
 API-->>FE : "JSON {success, message, body}"
 ```
 
-### Data models and field definitions
+## Data models and field definitions
 - ColdMailRequest
-  - recipient_name: Required, min length enforced.
-  - recipient_designation: Required, min length enforced.
-  - company_name: Required, min length enforced.
-  - sender_name: Required, min length enforced.
-  - sender_role_or_goal: Required, min length enforced.
-  - key_points_to_include: Required, min length enforced.
-  - additional_info_for_llm: Optional string.
-  - company_url: Optional URL string.
+ - recipient_name: Required, min length enforced.
+ - recipient_designation: Required, min length enforced.
+ - company_name: Required, min length enforced.
+ - sender_name: Required, min length enforced.
+ - sender_role_or_goal: Required, min length enforced.
+ - key_points_to_include: Required, min length enforced.
+ - additional_info_for_llm: Optional string.
+ - company_url: Optional URL string.
 
 - ColdMailResponse
-  - success: Boolean default true.
-  - message: String default success message.
-  - subject: Generated subject.
-  - body: Generated body.
+ - success: Boolean default true.
+ - message: String default success message.
+ - subject: Generated subject.
+ - body: Generated body.
 
 - CoverLetterRequest
-  - recipient_name: Optional string.
-  - company_name: Optional string.
-  - sender_name: Required, min length enforced.
-  - sender_role_or_goal: Optional string.
-  - job_description: Optional string.
-  - jd_url: Optional URL string.
-  - key_points_to_include: Optional string.
-  - additional_info_for_llm: Optional string.
-  - company_url: Optional URL string.
-  - language: Optional language code.
+ - recipient_name: Optional string.
+ - company_name: Optional string.
+ - sender_name: Required, min length enforced.
+ - sender_role_or_goal: Optional string.
+ - job_description: Optional string.
+ - jd_url: Optional URL string.
+ - key_points_to_include: Optional string.
+ - additional_info_for_llm: Optional string.
+ - company_url: Optional URL string.
+ - language: Optional language code.
 
 - CoverLetterEditRequest
-  - Extends CoverLetterRequest with:
-    - generated_cover_letter: Required string.
-    - edit_instructions: Required string.
+ - Extends CoverLetterRequest :
+ - generated_cover_letter: Required string.
+ - edit_instructions: Required string.
 
 - CoverLetterResponse
-  - success: Boolean default true.
-  - message: String default success message.
-  - body: Generated cover letter content.
+ - success: Boolean default true.
+ - message: String default success message.
+ - body: Generated cover letter content.
 
-### Relationship patterns and foreign keys
+## Relationship patterns and foreign keys
 - Session and Record Entities
-  - Frontend types define session and entry structures with identifiers and timestamps.
-  - Sessions group related records (emails or letters) by recipient/company and creation time.
-  - These structures indicate a logical parent-child relationship suitable for persistence modeling.
+ - Frontend types define session and entry structures with identifiers and timestamps.
+ - Sessions group related records (emails or letters) by recipient/company and creation time.
+ - These structures indicate a logical parent-child relationship suitable for persistence modeling.
 
 - Relationship Mapping
-  - ColdMailSession contains multiple ColdMailEmail entries.
-  - CoverLetterSession contains multiple CoverLetterEntry items.
-  - Timestamps enable chronological ordering and auditability.
+ - ColdMailSession contains multiple ColdMailEmail entries.
+ - CoverLetterSession contains multiple CoverLetterEntry items.
+ - Timestamps enable chronological ordering and auditability.
 
 ```mermaid
 classDiagram
@@ -264,63 +261,67 @@ ColdMailSession --> ColdMailEmail : "contains"
 CoverLetterSession --> CoverLetterEntry : "contains"
 ```
 
-### JSON storage approach for dynamic content
+## JSON storage approach for dynamic content
 - Cold Email Generation
-  - LLM responses are parsed for JSON blocks containing subject and body.
-  - The service supports raw JSON, fenced JSON, and embedded JSON extraction.
+ - LLM responses are parsed for JSON blocks containing subject and body.
+ - The service supports raw JSON, fenced JSON, and embedded JSON extraction.
 
 - Cover Letter Generation
-  - LLM output is plain text constrained by prompts; the service returns the generated body directly.
+ - LLM output is plain text constrained by prompts; the service returns the generated body directly.
 
 - Temporal Tracking
-  - Frontend types include createdAt fields for sessions and entries.
-  - Backend services can persist these timestamps alongside records.
+ - Frontend types include createdAt fields for sessions and entries.
+ - Backend services can persist these timestamps alongside records.
 
 ```mermaid
 flowchart TD
 Start(["LLM Response"]) --> Detect["Detect JSON format<br/>{} or
-```json ... ```"]
-  Detect --> Parse{"Valid JSON?"}
-  Parse -->|Yes| Extract["Extract subject and body"]
-  Parse -->|No| Search["Search for first {... } block"]
-  Search --> Found{"Found block?"}
-  Found -->|Yes| Validate["Validate non-empty JSON"]
-  Found -->|No| Error["Raise error: invalid JSON"]
-  Validate --> ParseOK{"Parse OK?"}
-  ParseOK -->|Yes| Return["Return {subject, body}"]
-  ParseOK -->|No| Error
-  Extract --> Return
 ```
 
-### Workflow patterns, approval, and version management
+Json...
+
+```"]
+ Detect --> Parse{"Valid JSON?"}
+ Parse -->|Yes| Extract["Extract subject and body"]
+ Parse -->|No| Search["Search for first {... } block"]
+ Search --> Found{"Found block?"}
+ Found -->|Yes| Validate["Validate non-empty JSON"]
+ Found -->|No| Error["Raise error: invalid JSON"]
+ Validate --> ParseOK{"Parse OK?"}
+ ParseOK -->|Yes| Return["Return {subject, body}"]
+ ParseOK -->|No| Error
+ Extract --> Return
+```
+
+## Workflow patterns, approval, and version management
 - Workflow Pattern
-  - File-based and text-based ingestion paths for cold emails.
-  - Cover letter generation supports URL-based job description resolution.
-  - Editing workflows preserve prior content and apply strict instructions.
+ - File-based and text-based ingestion paths for cold emails.
+ - Cover letter generation supports URL-based job description resolution.
+ - Editing workflows preserve prior content and apply strict instructions.
 
 - Approval and Versioning
-  - Current implementation returns generated content without explicit approval steps.
-  - Versioning is not implemented in the current code; however, the session-entry model supports version-like grouping by creation time.
+ - Current implementation returns generated content without explicit approval steps.
+ - Versioning is not implemented in the current code; however, the session-entry model supports version-like grouping by creation time.
 
 - Recommendations
-  - Add explicit approval flags and version fields in persistent models.
-  - Track request/response pairs with correlation IDs for auditability.
+ - Add explicit approval flags and version fields in persistent models.
+ - Track request/response pairs with correlation IDs for auditability.
 
-### Data retention, audit trails, and compliance
+## Data retention, audit trails, and compliance
 - Data Retention
-  - Implement lifecycle policies for sessions and entries (e.g., auto-delete after X months).
+ - Implement lifecycle policies for sessions and entries (e.g., auto-delete after X months).
 
 - Audit Trails
-  - Persist request metadata (inputs, timestamps) and response bodies.
-  - Store correlation IDs linking requests to responses.
+ - Persist request metadata (inputs, timestamps) and response bodies.
+ - Store correlation IDs linking requests to responses.
 
 - Compliance
-  - Ensure language preferences and content constraints align with export/import restrictions.
-  - Consider data minimization and user consent for stored content.
+ - Ensure language preferences and content constraints align with export/import restrictions.
+ - Consider data minimization and user consent for stored content.
 
 [No sources needed since this section provides general guidance]
 
-## Dependency analysis
+## Dependencies
 The backend composes routes → services → models, with AI/ML integration and optional document processing.
 
 ```mermaid
@@ -336,41 +337,38 @@ SVC_IMPL_COLD --> RESP_COLD["models/cold_mail/response.py"]
 SVC_IMPL_COVER --> MODELS_COVER["models/cover_letter/schemas.py"]
 ```
 
-## Performance considerations
+## Performance
 - LLM Invocation
-  - Batch or cache repeated prompts where feasible.
-  - Limit prompt sizes and enforce max word counts to reduce latency.
+ - Batch or cache repeated prompts where feasible.
+ - Limit prompt sizes and enforce max word counts to reduce latency.
 
 - Document Processing
-  - Avoid unnecessary reformatting for plain text or markdown inputs.
-  - Stream file uploads to reduce memory overhead.
+ - Avoid unnecessary reformatting for plain text or markdown inputs.
+ - Stream file uploads to reduce memory overhead.
 
 - Response Parsing
-  - Short-circuit invalid JSON detection to minimize retries.
+ - Short-circuit invalid JSON detection to minimize retries.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
+## Troubleshooting
 - JSON Parsing Failures
-  - Symptoms: Errors indicating invalid or missing JSON in LLM responses.
-  - Actions: Verify prompt formatting, ensure fenced JSON blocks when expected, and validate extracted substrings.
+ - Symptoms: Errors indicating invalid or missing JSON in LLM responses.
+ - Actions: Verify prompt formatting, prefer fenced JSON when the prompt asks for it, and validate extracted substrings.
 
 - Unsupported File Types
-  - Symptoms: Errors during resume processing.
-  - Actions: Confirm supported extensions and content types; handle fallbacks gracefully.
+ - Symptoms: Errors during resume processing.
+ - Actions: Confirm supported extensions and content types; handle fallbacks gracefully.
 
 - Company Research Failures
-  - Symptoms: Empty or partial company research data.
-  - Actions: Validate URLs and network connectivity; implement retry logic.
+ - Symptoms: Empty or partial company research data.
+ - Actions: Validate URLs and network connectivity; implement retry logic.
 
 - Route and Service Errors
-  - Symptoms: HTTP exceptions raised by services.
-  - Actions: Inspect request payloads, LLM availability, and error details returned by services.
+ - Symptoms: HTTP exceptions raised by services.
+ - Actions: Inspect request payloads, LLM availability, and error details returned by services.
 
-## Conclusion
-The Communication Records subsystem provides reliable request-response schemas for cold email and cover letter generation, integrates with AI/ML services, and exposes consistent models to the frontend. While current implementations focus on generation and editing, extending with approval, versioning, retention, and audit capabilities will strengthen operational and compliance readiness.
-
-## Appendices
+## Appendix
 - Frontend Contracts
-  - Cold Mail: Session and entry types with timestamps and optional identifiers.
-  - Cover Letter: Session and entry types mirroring the cold mail structure.
+ - Cold Mail: Session and entry types with timestamps and optional identifiers.
+ - Cover Letter: Session and entry types mirroring the cold mail structure.

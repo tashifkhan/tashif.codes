@@ -1,177 +1,211 @@
 # Overview
 
-## Purpose and scope
+JPortal is a client-side PWA that replaces the official JIIT web portal UI. Login skips the captcha. Attendance, grades, exams, subjects, and profile all run in the browser against jsjiit.
 
-This page introduces JPortal, a Progressive Web Application (PWA) that is a modern replacement for the JIIT Web Portal. It covers the application's purpose, key features, technology stack, and high-level architecture.
+Live app: https://codeblech.github.io/jportal/. Public stats: https://codeblech.github.io/jportal/#/stats.
 
-For detailed setup and deployment instructions, see [Getting Started](2-getting-started). For in-depth architecture discussions, see [Architecture Overview](3-architecture-overview). For information about individual features, see [Feature Modules](4-feature-modules).
+Related: [Getting Started](2-getting-started), [Architecture Overview](3-architecture-overview), [Feature Modules](4-feature-modules).
 
-## What is JPortal
+* Login without captcha through `jsjiit` (`WebPortal.student_login`)
+* React 18 UI on Radix primitives and Tailwind 4
+* Offline shell via `vite-plugin-pwa` and Workbox
+* Theme presets in `src/utils/theme-presets.ts`
+* Demo mode through `MockWebPortal` and `src/assets/fakedata.json`
+* Installable on Android, iOS, and Windows
 
-JPortal is a client-side Progressive Web App designed to provide JIIT students with an improved interface for accessing academic information. Unlike the official JIIT Web Portal, JPortal offers:
+The hosted GitHub Pages site is still https://codeblech.github.io/jportal/. This docs tree follows the [tashifkhan/jportal](https://github.com/tashifkhan/jportal) fork.
 
-* **No CAPTCHA authentication** - Uses the `jsjiit` library to bypass CAPTCHA requirements
-* **Modern UI** - Built with React and Radix UI primitives
-* **Offline capability** - PWA features enable offline access
-* **Customizable themes** - Extensive theming system with 15+ presets
-* **Demo mode** - Test the application without credentials using mock data
-* **Cross-platform** - Installable on Android, iOS, and Windows
+## What you get
 
-The application is hosted on GitHub Pages at `https://codeblech.github.io/jportal` and deployed automatically via GitHub Actions.
+Five protected modules after login, plus a public stats page:
 
-## Key features
-
-JPortal provides five primary feature modules accessible to authenticated users:
-
-| Feature | Description | Key Functionality |
+| Feature | Route | What it does |
 | --- | --- | --- |
-| **Attendance** | Class attendance tracking | Overview/daily tabs, attendance goals, subject-level details, attendance prediction |
-| **Grades** | Academic performance | SGPA/CGPA trends, grade cards, marks with PDF parsing |
-| **Exams** | Examination schedules | Semester/event selection, schedule display |
-| **Subjects** | Registered courses | Course information, credits, faculty details |
-| **Profile** | Student information | Personal, academic, contact, family, and address data |
-| **Analytics** | Usage statistics | Cloudflare analytics dashboard (public access) |
+| Attendance | `/attendance` | Overview and daily tabs, attendance goal, subject drill-down |
+| Grades | `/grades` | SGPA/CGPA chart, grade cards, marks from PDF parsing |
+| Exams | `/exams` | Semester and exam event selection, schedule list |
+| Subjects | `/subjects` | Registered courses and subject choices |
+| Profile | `/profile` | Personal, academic, contact, family, address, qualifications |
+| Analytics | `/stats` | Cloudflare Web Analytics (no login) |
 
 ### Authentication modes
 
-The application supports two authentication modes, managed through the `App` component:
+`App` keeps two portal instances and picks one:
 
-1. **Real Mode** - Authenticates against the official JIIT Web Portal using the `WebPortal` class from `jsjiit` library
-2. **Demo Mode** - Uses `MockWebPortal` with static data from `fakedata.json` for testing and demonstration
+1. Real mode. `realPortal` is `new WebPortal({ useProxy: true, proxyUrl: "https://jportal-cors-proxy.onrender.com" })` from jsjiit `0.0.27`.
+2. Demo mode. `mockPortal` is `MockWebPortal` reading `fakedata.json`. The login screen's Try Demo button sets `isDemoMode`.
 
 ## Technology stack
 
 ### Core framework
 
-![Diagram 1](images/1-overview_diagram_1.png)
-
-**Key Dependencies Table**
+```mermaid
+flowchart TD
+  indexHtml["index.html"] --> pyodide["Pyodide 0.23.4 CDN"]
+  indexHtml --> beacon["Cloudflare beacon"]
+  indexHtml --> mainJsx["src/main.jsx"]
+  mainJsx --> App["src/App.jsx"]
+  App --> Theme["ThemeScript + ThemeProvider + DynamicFontLoader"]
+  App --> Query["QueryClientProvider"]
+  App --> Router["HashRouter"]
+  App --> jsjiit["jsjiit@0.0.27 CDN ESM"]
+```
 
 | Category | Package | Version | Purpose |
 | --- | --- | --- | --- |
-| Authentication | `jsjiit` | 0.0.20 | JIIT Web Portal API client (CDN) |
-| Forms | `react-hook-form` | 7.53.1 | Form state management |
-| Validation | `zod` | 3.23.8 | Schema validation |
-| Date Handling | `date-fns` | 3.6.0 | Date manipulation |
-| Toast Notifications | `sonner` | 2.0.7 | Toast notifications |
-| PDF Parsing | Pyodide + PyMuPDF | - | Client-side PDF processing |
+| UI | `react` | 18.3.1 | Component tree |
+| Build | `vite` | 7.3.1 | Dev server and production bundle |
+| Routing | `react-router-dom` | 6.27.0 | `HashRouter` |
+| Theme state | `zustand` | 5.0.8 | Persisted theme store |
+| Server state | `@tanstack/react-query` | 5.90.2 | Cloudflare stats hooks |
+| Forms | `react-hook-form` | 7.53.1 | Login form |
+| Validation | `zod` | 3.23.8 | Login schema |
+| Charts | `recharts` | 2.15.4 | GPA, attendance, analytics |
+| Toasts | `sonner` | 2.0.7 | Login and error toasts |
+| Styling | `tailwindcss` | 4.1.12 | Utility CSS |
+| PWA | `vite-plugin-pwa` | 1.2.0 | Manifest and Workbox SW |
+| Portal client | `jsjiit` | 0.0.27 (CDN, not npm) | JIIT Web Portal API |
+| PDF parse | Pyodide 0.23.4 + PyMuPDF + `jiit_marks-0.2.0` | Wheels in `public/artifact/` | Marks tab |
 
-## High-Level architecture
+jsjiit is imported as `https://cdn.jsdelivr.net/npm/jsjiit@0.0.27/dist/jsjiit.esm.js`. It is not listed in `package.json`.
+
+## Top-level architecture
 
 ### Application entry point and authentication flow
 
-![Diagram 2](images/1-overview_diagram_2.png)
+```mermaid
+sequenceDiagram
+  participant App as App
+  participant LS as localStorage
+  participant Portal as realPortal
+  participant UI as LoginWrapper or AuthenticatedApp
 
-The `App` component ([App.jsx243-376](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L243-L376)) is the authentication gatekeeper:
+  App->>LS: getItem username password
+  alt credentials present
+    App->>Portal: student_login(username, password)
+    alt session exists
+      App->>UI: AuthenticatedApp w=realPortal
+    else LoginError
+      App->>LS: remove username password
+      App->>UI: LoginWrapper
+    end
+  else no credentials
+    App->>UI: LoginWrapper
+  end
+```
 
-1. On mount, attempts auto-login using stored credentials via `localStorage` ([App.jsx252-288](https://github.com/codeblech/jportal/blob/4df0fde4/App.jsx#L252-L288))
-2. Renders `LoginWrapper` for unauthenticated users
-3. Renders `AuthenticatedApp` for authenticated users
-4. Passes the appropriate portal instance (`realPortal` or `mockPortal`) as the `w` prop
+`App` is the auth gate:
+
+1. On mount it reads `username` and `password` from `localStorage` and calls `realPortal.student_login`.
+2. Unauthenticated users get `LoginWrapper` (`Login`).
+3. Authenticated users get `AuthenticatedApp` with `w={activePortal}`.
+4. `/stats` stays public and always renders `Cloudflare`.
 
 ### Feature module organization
 
-![Diagram 3](images/1-overview_diagram_3.png)
+```mermaid
+flowchart TD
+  AuthApp["AuthenticatedApp"] --> Header["Header"]
+  AuthApp --> Routes["protected Routes"]
+  AuthApp --> Navbar["Navbar"]
+  Routes --> Att["Attendance"]
+  Routes --> Gr["Grades"]
+  Routes --> Ex["Exams"]
+  Routes --> Sub["Subjects"]
+  Routes --> Pr["Profile"]
+  AuthApp -->|"w + state + setters"| Att
+  AuthApp -->|"w + state + setters"| Gr
+  AuthApp -->|"w + state + setters"| Ex
+  AuthApp -->|"w + state + setters"| Sub
+  AuthApp -->|"w + profileData"| Pr
+```
 
-The `AuthenticatedApp` component manages all authenticated routes and is a central state hub. It maintains separate state slices for each feature module and passes them down via props (props drilling pattern). Each feature component receives:
-
-* The `w` prop (portal instance)
-* State variables specific to that feature
-* State setter functions
-* Shared UI state (loading, error states)
+`AuthenticatedApp` holds feature state and drills it down. Each feature gets `w`, its cache objects, and the matching setters. Navigating between hash routes does not wipe that cache.
 
 ## Application data flow
 
 ### Portal abstraction layer
 
-The application uses a **strategy pattern** for data access, allowing smooth switching between real and demo modes:
+Feature components call the same methods on `w` whether `w` is `WebPortal` or `MockWebPortal`.
 
-![Diagram 4](images/1-overview_diagram_4.png)
+```mermaid
+flowchart LR
+  Feat["Attendance Grades Exams Subjects Profile"] --> W["w prop"]
+  W --> Real["realPortal WebPortal"]
+  W --> Mock["mockPortal MockWebPortal"]
+  Real --> Proxy["jportal-cors-proxy.onrender.com"]
+  Proxy --> JIIT["JIIT Web Portal"]
+  Mock --> Fake["src/assets/fakedata.json"]
+```
 
-All feature components interact with the portal through a uniform interface, calling methods like:
+Methods actually used:
 
-* `w.get_attendance()`
-* `w.get_grades()`
-* `w.get_exam_events()`
-* `w.get_registered_subjects()`
-* `w.get_student_info()`
+* `student_login`
+* `get_attendance_meta`, `get_attendance`, `get_subject_daily_attendance`
+* `get_registered_semesters`, `get_registered_subjects_and_faculties`, `get_subject_choices`
+* `get_semesters_for_exam_events`, `get_exam_events`, `get_exam_schedule`
+* `get_semesters_for_grade_card`, `get_grade_card`, `get_sgpa_cgpa`
+* `get_semesters_for_marks`, `download_marks`
+* `get_personal_info`
 
-This abstraction enables offline development and testing while maintaining production compatibility.
+There is no `get_grades()` or `get_student_info()` on this client.
 
 ### State persistence
 
-State persistence is handled through multiple mechanisms:
-
-| Data Type | Storage Method | Location in Code |
+| Data | Storage | Where |
 | --- | --- | --- |
-| Credentials | `localStorage` (username, password) | [jportal/src/components/Login.jsx54-55](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/components/Login.jsx#L54-L55) |
-| Attendance Goal | `localStorage` | [jportal/src/App.jsx53-61](https://github.com/codeblech/jportal/blob/4df0fde4/jportal/src/App.jsx#L53-L61) |
-| Theme Configuration | Zustand store (persisted) | Theme system components |
-| API Response Cache | Component state | Feature module state variables |
+| Credentials | `localStorage` `username`, `password` | `Login.jsx` |
+| Attendance goal | `localStorage` `attendanceGoal` | `AuthenticatedApp` in `App.jsx` |
+| Theme | Zustand persist | `src/stores/theme-store.ts` |
+| API responses | React state on `AuthenticatedApp` | Feature caches |
 
 ## PWA architecture
 
-JPortal is configured as a Progressive Web App using the VitePWA plugin:
+`VitePWA` in `jportal/vite.config.ts` generates the service worker. There is no hand-rolled `public/sw.js`.
 
-### Service worker and caching strategy
+1. Precache JS, CSS, HTML, ico, png, svg, and `.whl` files (30MB max).
+2. CacheFirst for Pyodide `v0.23.4`.
+3. Extra manifest entries for `jiit_marks-0.2.0` and PyMuPDF wheels under `${base}artifact/`.
 
-The application implements offline-first capabilities through:
-
-1. **Static Asset Caching** - HTML, CSS, JS, and images
-2. **Pyodide Runtime Caching** - Python runtime and wheel files for PDF parsing
-3. **Manifest Configuration** - App metadata, icons, and theme colors
-
-### Installation targets
-
-| Platform | Installation Method |
+| Platform | Install |
 | --- | --- |
-| Android (Chromium) | "Add to Home Screen" → "Install" |
-| iOS (Safari) | Share button → "Add to Home Screen" |
-| Windows | Install icon in URL bar |
-
-The PWA configuration enables JPortal to function as a standalone application without requiring app store distribution.
+| Android (Chromium) | Add to Home screen, then Install |
+| iOS (Safari) | Share, Add to Home Screen |
+| Windows | Install icon in the URL bar |
 
 ## Theme system overview
 
-JPortal features an advanced theming system with:
+* Presets live in `src/utils/theme-presets.ts` (`adefault`, `modern-minimal`, `violet-bloom`, and many more).
+* Light/dark toggle uses the View Transition API when the browser supports it.
+* `DynamicFontLoader` injects Google Fonts from the active preset.
+* CSS custom properties on `:root` feed Tailwind `@theme inline`.
+* Zustand store: `src/stores/theme-store.ts`.
 
-* **15+ predefined theme presets** - Defined in `theme-presets.ts`
-* **Light/Dark mode support** - Toggle with view transition animations
-* **Dynamic font loading** - Google Fonts loaded on theme change
-* **CSS custom properties** - Theme values mapped to Tailwind utilities
-* **Zustand state management** - Global theme state persistence
-
-The theme system integrates throughout the application via the `ThemeProvider`, `ThemeSelector`, and `DynamicFontLoader` components. For detailed theme architecture, see [Theme System](3.4-theme-system).
+See [Theme System](3.4-theme-system).
 
 ## Navigation structure
 
-The application uses React Router DOM with hash-based routing (`HashRouter`):
+`HashRouter` so GitHub Pages does not need rewrite rules.
 
-### Public routes
+Public:
 
-* `/stats` - Cloudflare Analytics Dashboard (no authentication required)
+* `/stats` → `Cloudflare`
 
-### Protected routes (require authentication)
+Protected:
 
-* `/` - Redirects to `/attendance`
-* `/attendance` - Attendance tracking
-* `/grades` - Academic performance
-* `/exams` - Examination schedules
-* `/subjects` - Registered courses
-* `/profile` - Student information
+* `/` and `/login` redirect to `/attendance`
+* `/attendance`, `/grades`, `/exams`, `/subjects`, `/profile`
 
-Navigation is provided through:
+Chrome:
 
-* **Header** - Theme selector, logout button (top of screen)
-* **Navbar** - Bottom navigation with 5 route links
+* `Header` (theme, stats link, logout)
+* `Navbar` (five feature links)
 
 ## Getting started
 
-To begin using or developing JPortal:
-
-* For installation and setup instructions, see [Getting Started](2-getting-started)
-* For detailed architecture information, see [Architecture Overview](3-architecture-overview)
-* For information about specific features, see [Feature Modules](4-feature-modules)
-* For UI component documentation, see [UI Components](5-ui-components)
-* For build and deployment processes, see [Build & Deployment](6-build-and-deployment)
-* For development guidelines, see [Development Guide](7-development-guide)
+* Install and run: [Getting Started](2-getting-started)
+* Structure: [Architecture Overview](3-architecture-overview)
+* Features: [Feature Modules](4-feature-modules)
+* UI: [UI Components](5-ui-components)
+* Build: [Build & Deployment](6-build-and-deployment)
+* Hacking: [Development Guide](7-development-guide)

@@ -1,11 +1,7 @@
 # Formatting services
 
 ## Introduction
-This page provides detailed documentation for the formatting services responsible for transforming processed data into notification-ready formats. It covers:
-- NoticeFormatterService: Converts categorized notices into standardized notification templates with proper formatting and metadata using LLM-based categorization, fuzzy matching, and structured extraction.
-- PlacementNotificationFormatter: Creates rich, structured notifications for placement offers including company details, role descriptions, and student eligibility criteria.
-- Template systems, formatting patterns, and consistency mechanisms across notification channels.
-- Examples of input/output transformations and customization options for different notification types.
+Turn structured records into messages people can read. NoticeFormatterService for general notices, PlacementNotificationFormatter for offers, including Telegram length limits and HTML/Markdown quirks.
 
 ## Project structure
 The formatting services are part of a modular notification pipeline:
@@ -60,7 +56,7 @@ A LangGraph-based LLM service that:
 - Extracts structured information based on category
 - Generates final formatted messages with consistent metadata and formatting
 
-Key capabilities:
+It can:
 - Category classification with explicit tie-break rules
 - Company name extraction and fuzzy matching with configurable thresholds
 - Structured extraction using LLM prompts tailored to each category
@@ -74,14 +70,14 @@ A dedicated service for placement offer notifications that:
 - Generates placement-specific summaries with emoji indicators and structured layouts
 - Maintains consistent metadata for database storage and channel distribution
 
-Key capabilities:
+It can:
 - Role breakdown calculation with package aggregation
 - Student selection tracking with role assignment
 - Placement update detection and messaging differentiation
 - Consistent NoticeDocument generation for database persistence
 
 ## Architecture overview
-The formatting services operate within a broader notification architecture with clear separation of concerns:
+The formatting services operate within a broader notification architecture :
 
 ```mermaid
 sequenceDiagram
@@ -198,7 +194,7 @@ PlacementNotificationFormatter --> UpdateOfferEvent
 ```
 
 #### Role breakdown and package formatting
-The formatter calculates role distributions with:
+The formatter calculates role distributions :
 - Package aggregation per role when available
 - Pluralization and suffix handling ("offer" vs "offers")
 - Consistent package display ("LPA" for lakhs per annum, "LPM" for lakhs per month)
@@ -295,4 +291,4 @@ Common issues and resolutions:
 - **Debugging**: Check timestamp conversion functions and formatting templates
 
 ## Conclusion
-The formatting services provide a reliable, extensible foundation for transforming raw data into consistent, channel-ready notifications. The NoticeFormatterService uses LLM capabilities for intelligent categorization and structuring, while the PlacementNotificationFormatter ensures specialized placement offer communications maintain rich detail and consistent presentation. Together, they support reliable multi-channel notification delivery with clear separation of concerns and maintainable architecture.
+NoticeFormatterService classifies and structures general notices. PlacementNotificationFormatter keeps offer messages detailed without inventing a second delivery path. Both feed the same channels.

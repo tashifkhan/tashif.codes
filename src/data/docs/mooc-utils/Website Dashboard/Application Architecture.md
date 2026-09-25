@@ -1,10 +1,10 @@
 # Application architecture
 
 ## Introduction
-This page explains the Next.js application architecture for the website module. It covers the App Router structure, root layout and metadata configuration, font loading strategy, provider system (authentication, theme, analytics), navigation header integration, global styling, component hierarchy, SSR/CSR patterns, and performance optimizations. It also details the authentication context provider setup, session management, and user state synchronization across components.
+Next.js App Router layout for the website: root layout, providers (auth, theme, analytics, query), and how pages compose.
 
 ## Project structure
-The website module follows Next.js App Router conventions with a clear separation of concerns:
+Next.js App Router layout:
 - Root layout defines global metadata, fonts, and providers.
 - Pages define route segments and render page-specific content.
 - Shared UI components encapsulate reusable elements like the navigation header and theme toggle.
@@ -248,20 +248,18 @@ Pkg --> TW["tailwindcss"]
 - Analytics: Manual pageview capture avoids redundant automatic tracking and reduces overhead.
 - SSR/CSR: AuthGuard renders a loader while checking authentication state, minimizing hydration jank for protected routes.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 - Authentication state not persisting:
-  - Verify session cookies are included in fetch requests and backend supports credentials.
-  - Check that getMe and refresh endpoints are reachable and return valid user objects.
+ - Verify session cookies are included in fetch requests and backend supports credentials.
+ - Check that getMe and refresh endpoints are reachable and return valid user objects.
 - Theme toggle not applying:
-  - Ensure next-themes is initialized and attribute is set to class.
-  - Confirm CSS custom properties are defined in globals and mapped to Tailwind variables.
+ - Ensure next-themes is initialized and attribute is set to class.
+ - Confirm CSS custom properties are defined in globals and mapped to Tailwind variables.
 - Analytics events not recorded:
-  - Confirm NEXT_PUBLIC_POSTHOG_KEY is set and PostHog client initializes in the browser.
-  - Verify rewrites are active and external host is reachable.
+ - Confirm NEXT_PUBLIC_POSTHOG_KEY is set and PostHog client initializes in the browser.
+ - Verify rewrites are active and external host is reachable.
 - Hydration warnings:
-  - Review root layout and header components for mismatched SSR/CSR content, especially around theme and dynamic content.
+ - Review root layout and header components for mismatched SSR/CSR content, especially around theme and dynamic content.
 
 ## Conclusion
-The application employs a reliable provider-first architecture with clear separation of concerns. The root layout centralizes metadata and fonts, while Providers compose authentication, theming, analytics, and data fetching. The authentication context manages session lifecycle and integrates with backend APIs. The navigation header and global styling provide a cohesive UX, and Next.js rewrites streamline analytics integration. Together, these patterns deliver a maintainable, performant, and user-friendly Next.js application.
+Providers wrap the tree once. Put new cross-cutting concerns there instead of per-page copies.

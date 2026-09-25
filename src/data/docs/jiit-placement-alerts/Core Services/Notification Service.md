@@ -1,10 +1,10 @@
 # Notification service
 
 ## Introduction
-This page provides detailed documentation for the NotificationService responsible for multi-channel notification delivery. It explains the service's architecture for coordinating notifications across Telegram, web push, and other channels, along with notification routing mechanisms, batch processing capabilities, and delivery strategies. It covers integration with user management systems, subscription handling, notification filtering based on user preferences, error handling and retry mechanisms, notification queuing, and delivery confirmation processes. It also includes examples of notification formatting, channel-specific adaptations, and the service's role in the overall notification workflow, along with performance optimization techniques, rate limiting considerations, and monitoring approaches.
+NotificationService fans out across Telegram and Web Push. Routing, batches, preference filters, retries, and when a notice gets marked sent.
 
 ## Project structure
-The notification system is organized around a service-oriented architecture with clear separation of concerns:
+The notification system is organized around a service-oriented architecture :
 - NotificationService acts as the orchestrator and router for multiple channels.
 - Channel services implement a simple interface contract (channel_name property and broadcast/send methods).
 - DatabaseService manages persistent state for notices and users.
@@ -79,15 +79,15 @@ Runner-->>CLI : results
 
 ### NotificationService
 - Responsibilities:
-  - Aggregates multiple channels and routes notifications accordingly.
-  - Performs batch processing of unsent notices.
-  - Broadcasts messages to specified channels and records delivery outcomes.
+ - Aggregates multiple channels and routes notifications accordingly.
+ - Performs batch processing of unsent notices.
+ - Broadcasts messages to specified channels and records delivery outcomes.
 - Key methods:
-  - add_channel: Adds a channel implementation.
-  - send_to_channel: Sends a message to a specific channel by name.
-  - broadcast: Broadcasts to specified channels or all if none specified.
-  - send_unsent_notices: Retrieves unsent notices and sends them to target channels, marking as sent upon success.
-  - send_new_posts_to_all_users: Alternative entry point for scheduled jobs.
+ - add_channel: Adds a channel implementation.
+ - send_to_channel: Sends a message to a specific channel by name.
+ - broadcast: Broadcasts to specified channels or all if none specified.
+ - send_unsent_notices: Retrieves unsent notices and sends them to target channels, marking as sent upon success.
+ - send_new_posts_to_all_users: Alternative entry point for scheduled jobs.
 
 ```mermaid
 classDiagram
@@ -119,16 +119,16 @@ NotificationService --> WebPushService : "routes to"
 
 ### TelegramService
 - Responsibilities:
-  - Implements channel_name property for routing.
-  - Formats messages for Telegram (MarkdownV2 and HTML).
-  - Splits long messages into chunks respecting Telegram limits.
-  - Broadcasts to all active users with rate limiting.
-  - Retries without formatting on failures.
+ - Implements channel_name property for routing.
+ - Formats messages for Telegram (MarkdownV2 and HTML).
+ - Splits long messages into chunks respecting Telegram limits.
+ - Broadcasts to all active users with rate limiting.
+ - Retries without formatting on failures.
 - Key methods:
-  - send_message: Sends a message to default chat with optional parse_mode.
-  - send_to_user: Sends a message to a specific user.
-  - broadcast_to_all_users: Iterates active users and sends messages with throttling.
-  - Message formatting helpers: convert_markdown_to_telegram, convert_markdown_to_html, escape_markdown_v2, split_long_message.
+ - send_message: Sends a message to default chat with optional parse_mode.
+ - send_to_user: Sends a message to a specific user.
+ - broadcast_to_all_users: Iterates active users and sends messages with throttling.
+ - Message formatting helpers: convert_markdown_to_telegram, convert_markdown_to_html, escape_markdown_v2, split_long_message.
 
 ```mermaid
 flowchart TD
@@ -152,16 +152,16 @@ PlainFallback --> ReturnTrue
 
 ### WebPushService
 - Responsibilities:
-  - Implements channel_name property for routing.
-  - Checks availability of pywebpush and VAPID keys.
-  - Broadcasts to all users with push subscriptions.
-  - Handles subscription removal for expired endpoints.
-  - Manages subscription persistence (save/remove/get_public_key).
+ - Implements channel_name property for routing.
+ - Checks availability of pywebpush and VAPID keys.
+ - Broadcasts to all users with push subscriptions.
+ - Handles subscription removal for expired endpoints.
+ - Manages subscription persistence (save/remove/get_public_key).
 - Key methods:
-  - send_message: Broadcasts to all subscriptions.
-  - send_to_user: Sends to a user's subscriptions.
-  - broadcast_to_all_users: Iterates users and subscriptions.
-  - _send_push: Sends a single push with VAPID claims and handles WebPushException.
+ - send_message: Broadcasts to all subscriptions.
+ - send_to_user: Sends to a user's subscriptions.
+ - broadcast_to_all_users: Iterates users and subscriptions.
+ - _send_push: Sends a single push with VAPID claims and handles WebPushException.
 
 ```mermaid
 flowchart TD
@@ -183,11 +183,11 @@ NextUser --> Done["Return totals"]
 
 ### DatabaseService and user management
 - Responsibilities:
-  - Provides get_unsent_notices and mark_as_sent for queued notifications.
-  - Supplies get_active_users for broadcasting.
-  - Manages user registration and deactivation.
+ - Provides get_unsent_notices and mark_as_sent for queued notifications.
+ - Supplies get_active_users for broadcasting.
+ - Manages user registration and deactivation.
 - Integration with NotificationService:
-  - NotificationService relies on DatabaseService to fetch unsent notices and mark them as sent after successful delivery.
+ - NotificationService relies on DatabaseService to fetch unsent notices and mark them as sent after successful delivery.
 
 ```mermaid
 classDiagram
@@ -208,11 +208,11 @@ NotificationService --> DatabaseService : "uses"
 
 ### NotificationRunner and CLI integration
 - Responsibilities:
-  - Creates and wires dependencies (TelegramService, WebPushService, DatabaseService).
-  - Initializes NotificationService with selected channels.
-  - Executes send_unsent_notices and returns results.
+ - Creates and wires dependencies (TelegramService, WebPushService, DatabaseService).
+ - Initializes NotificationService with selected channels.
+ - Executes send_unsent_notices and returns results.
 - CLI integration:
-  - main.py subcommand "send" invokes send_updates with telegram/web flags.
+ - main.py subcommand "send" invokes send_updates with telegram/web flags.
 
 ```mermaid
 sequenceDiagram
@@ -238,15 +238,15 @@ Runner-->>CLI : results
 
 ### WebhookServer integration
 - Responsibilities:
-  - Exposes endpoints to trigger notifications programmatically.
-  - Provides subscription management for web push.
-  - Integrates NotificationService and WebPushService via dependency injection.
+ - Exposes endpoints to trigger notifications programmatically.
+ - Provides subscription management for web push.
+ - Integrates NotificationService and WebPushService via dependency injection.
 - Endpoints:
-  - POST /api/notify: Broadcast to specified channels.
-  - POST /api/notify/telegram: Telegram-only.
-  - POST /api/notify/web-push: Web push-only.
-  - POST /api/push/subscribe and /api/push/unsubscribe: Manage subscriptions.
-  - GET /api/push/vapid-key: Retrieve VAPID public key.
+ - POST /api/notify: Broadcast to specified channels.
+ - POST /api/notify/telegram: Telegram-only.
+ - POST /api/notify/web-push: Web push-only.
+ - POST /api/push/subscribe and /api/push/unsubscribe: Manage subscriptions.
+ - GET /api/push/vapid-key: Retrieve VAPID public key.
 
 ```mermaid
 sequenceDiagram
@@ -265,15 +265,15 @@ API-->>Client : NotifyResponse(success, results)
 
 ## Dependency analysis
 - Coupling:
-  - NotificationService depends on channel implementations via channel_name and broadcast/send contracts.
-  - Channel services depend on DatabaseService for user and subscription data.
-  - TelegramService depends on TelegramClient for API calls.
+ - NotificationService depends on channel implementations via channel_name and broadcast/send contracts.
+ - Channel services depend on DatabaseService for user and subscription data.
+ - TelegramService depends on TelegramClient for API calls.
 - Cohesion:
-  - Each service has a single responsibility: routing (NotificationService), channel-specific delivery (TelegramService/WebPushService), and persistence (DatabaseService).
+ - Each service has a single responsibility: routing (NotificationService), channel-specific delivery (TelegramService/WebPushService), and persistence (DatabaseService).
 - External dependencies:
-  - Telegram Bot API (requests).
-  - Optional web push library (pywebpush) with graceful degradation.
-  - MongoDB via PyMongo.
+ - Telegram Bot API (requests).
+ - Optional web push library (pywebpush) with graceful degradation.
+ - MongoDB via PyMongo.
 
 ```mermaid
 graph LR
@@ -287,74 +287,32 @@ WPS -.->|"optional"| PYWP["pywebpush"]
 
 ## Performance considerations
 - Rate limiting:
-  - TelegramService applies throttling between user sends to avoid rate limits.
-  - TelegramClient handles 429 responses with Retry-After header.
+ - TelegramService applies throttling between user sends to avoid rate limits.
+ - TelegramClient handles 429 responses with Retry-After header.
 - Message chunking:
-  - TelegramService splits long messages into chunks respecting Telegram's character limits.
+ - TelegramService splits long messages into chunks respecting Telegram's character limits.
 - Graceful degradation:
-  - WebPushService disables itself if pywebpush is unavailable or VAPID keys are missing.
+ - WebPushService disables itself if pywebpush is unavailable or VAPID keys are missing.
 - Batch processing:
-  - NotificationService processes unsent notices in batches and marks as sent upon success.
+ - NotificationService processes unsent notices in batches and marks as sent upon success.
 - Caching and reuse:
-  - Settings are cached to reduce repeated environment parsing.
+ - Settings are cached to reduce repeated environment parsing.
 - Indexing:
-  - MongoDB collections are indexed for frequent queries (e.g., notices by sent flags, users by user_id).
+ - MongoDB collections are indexed for frequent queries (e.g., notices by sent flags, users by user_id).
 
 ## Troubleshooting guide
 - Telegram configuration issues:
-  - Missing bot token or chat ID leads to early return in TelegramService and TelegramClient.
-  - Rate limiting: TelegramClient retries with exponential backoff and respects Retry-After.
+ - Missing bot token or chat ID leads to early return in TelegramService and TelegramClient.
+ - Rate limiting: TelegramClient retries with exponential backoff and respects Retry-After.
 - Web push configuration issues:
-  - Missing pywebpush or VAPID keys disables web push functionality.
-  - Expired subscriptions (404/410) are handled by removing them.
+ - Missing pywebpush or VAPID keys disables web push functionality.
+ - Expired subscriptions (404/410) are handled by removing them.
 - Database connectivity:
-  - DBClient requires MONGO_CONNECTION_STR; connection failures are logged and raised.
-  - DatabaseService wraps operations with try/catch and logs errors.
+ - DBClient requires MONGO_CONNECTION_STR; connection failures are logged and raised.
+ - DatabaseService wraps operations with try/catch and logs errors.
 - Notification delivery failures:
-  - NotificationService logs errors per channel and continues processing remaining posts.
-  - WebhookServer returns HTTP 500 on exceptions with error details.
+ - NotificationService logs errors per channel and continues processing remaining posts.
+ - WebhookServer returns HTTP 500 on exceptions with error details.
 
 ## Conclusion
-The NotificationService provides a clean, extensible foundation for multi-channel notification delivery. Its design emphasizes separation of concerns, dependency injection, and graceful degradation. By using channel-specific services and reliable error handling, it ensures reliable delivery across Telegram and web push channels while maintaining operational simplicity and observability.
-
-## Appendices
-
-### Notification routing mechanisms
-- Channel selection:
-  - Channels are added to NotificationService dynamically and identified by channel_name.
-  - send_to_channel routes to a specific channel by name; broadcast targets specified channels or all.
-- Delivery strategies:
-  - TelegramService formats and chunks messages, retries without formatting on failure.
-  - WebPushService broadcasts to all subscriptions, handles expiration, and gracefully degrades.
-
-### Batch processing and queuing
-- Queuing:
-  - Notices are queued by storing them in MongoDB with sent flags.
-- Batch processing:
-  - NotificationService retrieves unsent notices and attempts delivery to target channels.
-  - On success, notices are marked as sent; otherwise, failures are tracked.
-
-### Integration with user management and subscriptions
-- User management:
-  - DatabaseService provides add_user, deactivate_user, get_active_users, and get_user_by_id.
-- Subscription handling:
-  - WebPushService manages subscriptions via save_subscription and remove_subscription.
-  - WebhookServer exposes endpoints for subscription management and VAPID key retrieval.
-
-### Error handling and retry mechanisms
-- Telegram:
-  - TelegramClient retries with exponential backoff and respects rate limits.
-  - TelegramService retries without formatting on initial failure.
-- Web push:
-  - WebPushService catches WebPushException and removes expired subscriptions.
-- General:
-  - NotificationService logs per-channel errors and continues processing.
-  - WebhookServer returns HTTP 500 with error details on failures.
-
-### Monitoring and delivery confirmation
-- Logging:
-  - Centralized logging via setup_logging with configurable log levels and daemon mode.
-  - Safe printing for non-daemon mode to avoid noisy output.
-- Statistics:
-  - DatabaseService provides notice and user statistics for monitoring.
-  - WebhookServer exposes /api/stats endpoints for placement, notices, and users.
+NotificationService routes to channel services, degrades when one channel is down, and marks sent only after a real success. Keep channel logic inside TelegramService / WebPushService.

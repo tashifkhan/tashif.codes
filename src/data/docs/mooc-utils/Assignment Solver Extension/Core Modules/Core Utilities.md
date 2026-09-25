@@ -1,15 +1,13 @@
 # Core utilities
 
 ## Introduction
-This page covers the core utility modules that provide foundational functionality for the NPTEL Assignment Solver extension. It focuses on three primary areas:
-- Logging system with factory pattern and contextual prefixes
+Shared utilities behind the extension:
+- Logging with a factory and contextual prefixes
 - Message protocol definitions for cross-script communication
-- Shared type definitions for type safety across the extension
-
-These utilities enable reliable communication between the background service worker, content scripts, and platform adapters while maintaining consistent logging and type safety.
+- Shared types for safer messaging across the extension
 
 ## Project structure
-The core utilities are organized under the assignment-solver/src/core directory and are consumed by various extension components:
+The core utilities are organized under the assignment-solver/src/core directory and are used across the extension:
 
 ```mermaid
 graph TB
@@ -100,7 +98,7 @@ Type safety benefits:
 - Runtime validation through property checking
 
 ## Architecture overview
-The core utilities enable a clean separation of concerns between logging, messaging, and type safety across the extension's architecture:
+Utilities split into logging, messaging, and shared types:
 
 ```mermaid
 sequenceDiagram
@@ -115,7 +113,7 @@ BG->>RT : sendMessage(message)
 RT-->>CS : onMessage(message)
 CS-->>RT : Response : {pong : true}
 RT-->>BG : Response
-BG-->>UI : {pong : true, timestamp : ...}
+BG-->>UI : {pong : true, timestamp :...}
 Note over BG,EXT : AI Processing Pipeline
 BG->>EXT : GEMINI_REQUEST
 EXT-->>BG : AI Response
@@ -158,8 +156,8 @@ class ContentLogger {
 }
 LoggerFactory --> BackgroundLogger : "creates"
 LoggerFactory --> ContentLogger : "creates"
-BackgroundLogger ..|> Logger : "implements"
-ContentLogger ..|> Logger : "implements"
+BackgroundLogger..|> Logger : "implements"
+ContentLogger..|> Logger : "implements"
 ```
 
 Logging usage patterns demonstrated in the extension:
@@ -170,7 +168,7 @@ Logging usage patterns demonstrated in the extension:
 - Extractor and applicator log DOM manipulation operations
 
 ### Message protocol implementation
-The messaging system provides a reliable communication framework with the following key features:
+The messaging system provides a communication framework with the following key features:
 
 ```mermaid
 flowchart TD
@@ -196,7 +194,7 @@ Message handling patterns:
 - Cross-browser compatibility through unified runtime adapter
 
 ### Type safety mechanisms
-The type system ensures consistency across module boundaries through JSDoc typedefs and runtime validation patterns:
+The type system keeps consistency across module boundaries through JSDoc typedefs and runtime validation patterns:
 
 ```mermaid
 classDiagram
@@ -274,7 +272,7 @@ Dependency relationships:
 - All consumers receive dependencies through constructor parameters or module imports
 
 ## Performance considerations
-The core utilities are designed for minimal overhead and optimal performance:
+The core utilities stay small on purpose:
 
 - Logger factory creates lightweight objects with minimal memory footprint
 - Message protocol avoids unnecessary serialization overhead
@@ -311,11 +309,4 @@ Resolving type-related problems:
 - Check for cross-browser differences in type support
 
 ## Conclusion
-The core utility modules provide a solid foundation for the NPTEL Assignment Solver extension through:
-
-- A consistent logging system with contextual prefixes and multiple log levels
-- A reliable message protocol with retry logic and cross-browser compatibility
-- Detailed type definitions that improve developer experience and code reliability
-- Minimal dependencies that enable easy maintenance and future enhancements
-
-These utilities enable the extension to maintain clean separation of concerns while providing reliable communication and consistent behavior across different browsers and environments.
+Logging and messaging helpers are intentionally small. Prefer adding a named helper over sprinkling raw browser APIs.

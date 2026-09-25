@@ -1,7 +1,6 @@
 # NLP and skill extraction
 
-## Introduction
-This page describes the NLP and skill extraction subsystem powering resume analysis, structured data extraction, and predictive capabilities. It covers:
+The NLP and skill extraction subsystem powering resume analysis, structured data extraction, and predictive capabilities.
 - Document ingestion and preprocessing
 - Structured extraction via LLM prompts aligned to Pydantic schemas
 - JSON validation and normalization
@@ -9,7 +8,7 @@ This page describes the NLP and skill extraction subsystem powering resume analy
 - TF-IDF vectorization for text similarity
 - Model versioning, fallback strategies, and performance optimization
 
-## Project structure
+## Repository layout
 The NLP subsystem spans three primary layers:
 - Routes: Expose endpoints for resume analysis and detailed extraction
 - Services: Orchestrate document processing, LLM calls, and schema validation
@@ -52,7 +51,7 @@ PR2 --> M1
 PR3 --> M2
 ```
 
-## Core components
+## Building blocks
 - Document processing and fallback conversion for PDFs and office documents
 - Structured extraction using Pydantic-aligned prompts
 - JSON normalization and validation
@@ -60,8 +59,8 @@ PR3 --> M2
 - TF-IDF vectorization for text similarity
 - Schema-driven outputs for work experience, education, projects, skills, and more
 
-## Architecture overview
-End-to-end flow from upload to structured output and predictions:
+## How it fits together
+Flow from upload to structured output and predictions:
 
 ```mermaid
 sequenceDiagram
@@ -84,11 +83,9 @@ Schema-->>Service : ResumeAnalysis model
 Service-->>Client : ResumeUploadResponse
 ```
 
-## Detailed component analysis
-
-### Document processing and fallback conversion
+## Document processing and fallback conversion
 - Converts TXT/MD/PDF/DOCX to plain text/markdown
-- Uses PyMuPDF and pymupdf4llm for reliable parsing
+- Uses PyMuPDF and pymupdf4llm for parsing
 - Falls back to Google GenAI multimodal conversion when PDF parsing fails and provider is Google/Gemini
 
 ```mermaid
@@ -107,7 +104,7 @@ Error --> End(["End"])
 Done --> End
 ```
 
-### Structured extraction with Pydantic schemas
+## Structured extraction with Pydantic schemas
 - Detailed analysis prompt defines a rich schema covering skills, work experience, projects, education, certifications, achievements, languages, and metadata
 - JSON extractor prompt normalizes raw LLM outputs to a strict schema with validation rules
 - Both prompts are constructed as LangChain PromptTemplates and chained to the LLM
@@ -178,14 +175,14 @@ ComprehensiveAnalysisData --> UIDetailedWorkExperienceEntry
 ComprehensiveAnalysisData --> UIProjectEntry
 ```
 
-### Career path prediction and skill gap analysis
+## Career path prediction and skill gap analysis
 - Trained scikit-learn model (GradientBoostingClassifier) stored as best_model.pkl
 - Used to predict candidate roles and assist in skill gap analysis
 - Typical workflow:
-  - Extract skills and normalize to canonical list
-  - Vectorize with TF-IDF (tfidf.pkl)
-  - Predict role/category and compute similarity scores
-  - Generate recommendations for missing skills
+ - Extract skills and normalize to canonical list
+ - Vectorize with TF-IDF (tfidf.pkl)
+ - Predict role/category and compute similarity scores
+ - Generate recommendations for missing skills
 
 ```mermaid
 flowchart TD
@@ -196,19 +193,19 @@ D --> E["Generate skill gap report"]
 E --> F["Recommend remediation actions"]
 ```
 
-### TF-IDF vectorization and similarity
+## TF-IDF vectorization and similarity
 - TF-IDF vectors enable semantic similarity comparisons between candidate profiles and job descriptions
 - Used alongside trained classifier for detailed scoring and recommendations
 
-### Skill catalog and normalization
+## Skill catalog and normalization
 - Canonical skill list maintained centrally for consistent extraction and matching
 - Supports normalization and enrichment during analysis
 
-### API endpoints and workflows
+## API endpoints and workflows
 - File-based analysis: Upload resume, preprocess, clean, validate, and return structured data
 - Detailed analysis: Full extraction pipeline with rich schema alignment
 - Text-based analysis: Accept preformatted text and run detailed extraction
-- Validation ensures robustness against malformed inputs
+- Validation catches malformed inputs
 
 ```mermaid
 sequenceDiagram
@@ -226,13 +223,13 @@ Schema-->>Service : validated model
 Service-->>Client : ComprehensiveAnalysisResponse
 ```
 
-## Dependency analysis
+## Dependencies
 - Routes depend on services for orchestration
 - Services depend on:
-  - Document processor for text extraction
-  - LLM chains for structured extraction
-  - Pydantic schemas for validation
-  - ML assets (best_model.pkl, tfidf.pkl) for predictions and similarity
+ - Document processor for text extraction
+ - LLM chains for structured extraction
+ - Pydantic schemas for validation
+ - ML assets (best_model.pkl, tfidf.pkl) for predictions and similarity
 - Prompts define the contract between unstructured text and structured outputs
 
 ```mermaid
@@ -245,18 +242,19 @@ Prompts --> LLM["LLM Provider"]
 Services --> Models["ML Models<br/>best_model.pkl<br/>tfidf.pkl"]
 ```
 
-## Performance considerations
+## Performance
 - Prefer plain text or markdown inputs to avoid heavy parsing overhead
 - Cache TF-IDF vectors and model predictions where feasible
 - Use streaming or chunked processing for long documents
 - Monitor LLM latency and apply retry/backoff strategies
 - Validate early to reduce downstream processing costs
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Unsupported file type: Ensure TXT/MD/PDF/DOCX; check extension handling
 - Empty or unreadable PDF: Trigger fallback conversion if provider supports it
-- LLM errors: Validate API keys and provider configuration; ensure model availability
+- LLM errors: Validate API keys and provider configuration; confirm the model is available
 - Schema validation failures: Review prompt instructions and refine extraction logic
 - Missing predictions: Verify model and vectorizer files are present and loadable
 
@@ -264,6 +262,3 @@ Operational checks:
 - Confirm GOOGLE_API_KEY and provider settings for fallback conversion
 - Validate Pydantic schema compliance for extracted data
 - Test TF-IDF and model loading independently
-
-## Conclusion
-The NLP and skill extraction subsystem integrates reliable document processing, schema-driven extraction, and trained ML models to deliver accurate, structured insights from resumes. By using Pydantic schemas, validated prompts, and trained classifiers with TF-IDF similarity, it enables detailed analysis, career path prediction, and actionable skill gap recommendations while maintaining reliability through fallback strategies and validation.

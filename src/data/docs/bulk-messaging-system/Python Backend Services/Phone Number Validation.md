@@ -1,7 +1,7 @@
 # Phone number validation
 
 ## Introduction
-This page explains the phone number validation and cleaning logic used across the application. It focuses on the clean_phone_number function that standardizes phone numbers by removing non-digit characters except plus signs, handling international number formatting, and validating length constraints (minimum 7, maximum 15 digits). It also documents the regex-based cleaning process, validation criteria, supported formats, and integration with the validation API endpoint and error handling strategies.
+`clean_phone_number` is the single cleaner: strip junk, keep plus, enforce 7-15 digits. Endpoints and Pyodide both call it.
 
 ## Project structure
 The phone number validation spans two layers:
@@ -179,4 +179,5 @@ Integration tips:
 - If Pyodide fails to load, verify network connectivity and that the Python script path is correct
 
 ## Conclusion
-The phone number validation and cleaning logic is centralized in clean_phone_number, which is reused across the backend endpoints and frontend Pyodide integration. It provides reliable normalization and validation with clear constraints, enabling reliable downstream processing for mass messaging workflows.
+
+Change cleaning rules in one place, then exercise upload, validate, and manual parse. Divergent copies are how bad numbers sneak into sends.

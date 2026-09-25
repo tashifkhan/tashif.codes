@@ -1,274 +1,201 @@
-# Deployment & DevOps
+# Deployment and DevOps
 
-## Introduction
-This page provides detailed deployment and DevOps guidance for the TalentSync-Normies platform. It covers Docker configuration with multi-stage builds, service orchestration using Docker Compose, environment variable management, CI/CD with GitHub Actions, production deployment strategies, infrastructure provisioning, database setup, monitoring and logging, health checks and alerting, backup and disaster recovery, and troubleshooting and performance optimization.
+Deploy the job-seeker TalentSync stack with Docker Compose. Kafka is required for AI routes. This file is not TalentSync-HR.
 
-## Project structure
-The platform consists of:
-- Backend service built with Python and FastAPI, exposing APIs for ATS evaluation, resume analysis, cold mail generation, cover letter generation, hiring assistant, and interview support.
-- Frontend Next.js application using Bun for building and runtime, with Prisma for database operations.
-- PostgreSQL database for persistent storage.
-- Docker Compose for local development and production orchestration.
-- GitHub Actions workflow for automated deployment to a VPS.
+## Repository layout
+
+- Backend: Python 3.13 FastAPI. One image, `APP_ROLE` = `api` | `worker` | `migrate`
+- Frontend: Next.js + Bun + Prisma migrate/seed
+- Postgres 16
+- Kafka 3.9.1 KRaft, topics via `infra/kafka/create-topics.sh`
+- Admin console + admin API on Compose profile `admin`
+- GitHub Actions → VPS using `docker-compose.prod.yaml`
 
 ```mermaid
 graph TB
 subgraph "Local Development"
 DC["docker-compose.yaml"]
-FE["frontend/Dockerfile"]
-BE["backend/Dockerfile"]
-DB["PostgreSQL 16"]
+HOST["frontend/docker-compose.yaml"]
 end
 subgraph "Production"
 DCP["docker-compose.prod.yaml"]
 NPM["nginx-proxy-manager network"]
 end
-DC --> FE
-DC --> BE
+subgraph "Services"
+DB["PostgreSQL 16"]
+K["Kafka"]
+BE["backend APP_ROLE=api"]
+W["worker APP_ROLE=worker"]
+FE["frontend :3000"]
+end
 DC --> DB
-DCP --> FE
-DCP --> BE
+DC --> K
+DC --> BE
+DC --> W
+DC --> FE
+HOST --> DB
+HOST --> K
 DCP --> DB
+DCP --> K
+DCP --> BE
+DCP --> W
+DCP --> FE
 DCP -.-> NPM
 ```
 
-## Core components
-- Backend service
-  - Built with Python 3.13 and FastAPI.
-  - Exposes multiple API routes for ATS evaluation, resume analysis, cold mail, cover letters, hiring assistant, tailored resume, tips, and interview features.
-  - Uses environment-driven configuration via Pydantic settings.
-  - Health and logging middleware are integrated.
-- Frontend service
-  - Next.js application built with Bun and TypeScript.
-  - Multi-stage Docker build: deps, builder, prod-deps, migrate, runner.
-  - Prisma migrations run during a dedicated migration stage.
-- Database
-  - PostgreSQL 16 with persistent volume for data durability.
-- Orchestration
-  - Local development via docker-compose.yaml.
-  - Production via docker-compose.prod.yaml with health checks and external network integration.
+## Building blocks
 
-## Architecture overview
-The system comprises three primary containers orchestrated by Docker Compose:
-- Frontend: Next.js application with Prisma migrations executed in a separate stage.
-- Backend: FastAPI application serving REST endpoints.
-- Database: PostgreSQL 16 with health checks and persistent storage.
+- Backend image
+  - `backend/Dockerfile` + `backend/docker-entrypoint.sh`
+  - `APP_ROLE=api`: uvicorn `app.main:app` :8000
+  - `APP_ROLE=worker`: uvicorn `app.stream.asgi:asgi_app` :8001
+  - `APP_ROLE=migrate`: `alembic upgrade head`
+- Frontend image
+  - Multi-stage Bun build, Prisma generate
+  - Dev compose runs `bunx prisma migrate deploy && bun prisma/seed.ts && bun run start`
+- Kafka
+  - `apache/kafka:3.9.1`, KRaft, replication factor 1
+  - Dev publishes 29092 for host backends and 8085 for kafka-ui
+  - Prod has no host listener
+- Admin (optional)
+  - `admin_backend` :8010 on `admin_net`
+  - Console :3010. Prod binds Tailscale, not the public NIC
+
+## How it fits together
 
 ```mermaid
 graph TB
-subgraph "Network: TalentSync"
+subgraph "Network TalentSync"
 FE["frontend:3000"]
 BE["backend:8000"]
+W["worker:8001"]
+K["kafka:9092"]
 DB["db:5432"]
 end
 FE --> |"HTTP"| BE
+BE --> |"enqueue"| K
+K --> W
 BE --> |"SQL"| DB
-FE --> |"Prisma Migrate"| DB
+W --> DB
+FE --> |"Prisma"| DB
 ```
 
-## Detailed component analysis
+See `KAFKA_MIGRATION.md`. Metered AI always enqueues. `KAFKA_ENABLED=false` makes those routes 503.
 
-### Backend service
-- Build and runtime
-  - Multi-stage Docker build targeting Python 3.13 slim image.
-  - Dependency installation via uv with caching.
-  - Application code copied and exposed on port 8000.
-- Environment configuration
-  - Settings loaded from.env with Pydantic BaseSettings.
-  - Includes API metadata, LLM provider configuration, CORS, and interview parameters.
-- Application lifecycle
-  - FastAPI app configured with CORS middleware and request/response logging.
-  - Routes organized under v1 and v2 namespaces for backward compatibility and feature evolution.
+## Backend service
+
+Settings from `.env` via Pydantic. LLM primary/small roles, Kafka block, JWT, encryption, CORS.
+
+Dev compose sets `RUN_MIGRATIONS_ON_START=true` on the api replica only. Prod uses a dedicated `talentsync_backend_migrate` service and leaves api/worker at false.
 
 ```mermaid
 classDiagram
 class Settings {
-+str APP_NAME
-+str APP_VERSION
-+bool DEBUG
-+str LOG_LEVEL
-+str GOOGLE_API_KEY
-+str MODEL_NAME
-+str FASTER_MODEL_NAME
-+float MODEL_TEMPERATURE
-+str LLM_PROVIDER
-+str LLM_MODEL
-+str LLM_API_KEY
-+str LLM_API_BASE
-+str ENCRYPTION_KEY
-+str[] CORS_ORIGINS
-+int INTERVIEW_MAX_QUESTIONS
-+int INTERVIEW_DEFAULT_QUESTIONS
-+int INTERVIEW_CODE_EXECUTION_TIMEOUT
-+int INTERVIEW_SESSION_MAX_AGE_HOURS
++LLM_PROVIDER
++SMALL_LLM_PROVIDER
++KAFKA_ENABLED
++KAFKA_BOOTSTRAP_SERVERS
++JWT_SECRET
++ENCRYPTION_KEY
++DATABASE_URL
 }
-class MainApp {
-+FastAPI app
-+lifespan()
-+request_id_middleware()
-+request_response_logging_middleware()
-+include_router(...)
+class Entrypoint {
++APP_ROLE api|worker|migrate
 }
-Settings <.. MainApp : "loaded via get_settings()"
+Settings <.. Entrypoint
 ```
 
-### Frontend service
-- Multi-stage Docker build
-  - deps: installs dev dependencies.
-  - builder: builds Next.js app and generates Prisma client.
-  - prod-deps: installs production-only dependencies.
-  - migrate: one-shot Prisma migrations.
-  - runner: slim runtime serving the built app.
-- Build-time configuration
-  - Accepts PostHog keys via build args.
-  - NODE_ENV set to production in builder and runner stages.
-- Runtime behavior
-  - Prisma migrations executed via a dedicated migration stage before starting the runner.
-  - Starts Next.js in production mode.
+## Frontend service
 
 ```mermaid
 flowchart TD
-Start(["Build Start"]) --> Deps["Stage 0: deps<br/>Install dev dependencies"]
-Deps --> Builder["Stage 1: builder<br/>Next build + Prisma generate"]
-Builder --> ProdDeps["Stage 2: prod-deps<br/>Install production deps"]
-ProdDeps --> Migrate["Stage 3: migrate<br/>Run Prisma migrations"]
-Migrate --> Runner["Stage 4: runner<br/>Serve built app"]
-Runner --> End(["Build Complete"])
+Start(["Build Start"]) --> Deps["Install with Bun"]
+Deps --> Builder["next build + prisma generate"]
+Builder --> Runner["bun run start"]
+Runner --> Migrate["compose command: prisma migrate deploy + seed"]
 ```
 
-### Database service
-- PostgreSQL 16 image with health check.
-- Persistent volume for data durability.
-- Environment variables sourced from.env for credentials and database name.
-- Health check uses pg_isready against localhost with configured credentials.
+`NEXTAUTH_URL` in compose is leftover naming for the public origin. Auth is Google OAuth on FastAPI.
+
+## Database service
+
+Postgres 16, volume, `pg_isready`. Dev also mounts `infra/postgres/init` and `admin_grants.sql`.
+
+## Kafka
 
 ```mermaid
 flowchart TD
-Init(["Service Start"]) --> WaitHealthy{"DB Healthy?"}
-WaitHealthy --> |No| Retry["Retry until healthy"]
-WaitHealthy --> |Yes| Proceed["Proceed to dependent services"]
-Retry --> WaitHealthy
+Perms["kafka_data_perms chown 1000"] --> Broker["kafka KRaft"]
+Broker --> Topics["create-topics.sh"]
+Topics --> API["backend can publish"]
+Topics --> Worker["worker can consume"]
 ```
 
-### CI/CD pipeline with GitHub Actions
-- Workflow triggers on pushes to main branch.
-- Steps:
-  - Checkout repository.
-  - SSH into VPS using secrets.
-  - Pull latest code.
-  - Build and start services using docker-compose.prod.yaml.
-- Secrets required:
-  - VPS_HOST, VPS_USER, SSH_PRIVATE_KEY, VPS_PROJECT_PATH.
+Dev UI: http://localhost:8085. Host bootstrap: `localhost:29092`. Compose-internal: `kafka:9092` or `talentsync_kafka:9092` in prod.
+
+## CI/CD
+
+Push to main, SSH to VPS, `docker compose --env-file .env -f docker-compose.prod.yaml up`. Images may already be in GHCR (`BACKEND_IMAGE`, `FRONTEND_IMAGE`, admin tags).
 
 ```mermaid
 sequenceDiagram
 participant GH as "GitHub Actions"
 participant VPS as "VPS Host"
-participant DC as "Docker Compose"
-GH->>VPS : "SSH login"
-GH->>VPS : "cd project path"
-GH->>VPS : "git pull origin main"
-GH->>DC : "compose -f docker-compose.prod.yaml build"
-GH->>DC : "compose -f docker-compose.prod.yaml up -d --force-recreate"
-GH-->>VPS : "Deployment complete"
+participant DC as "docker-compose.prod.yaml"
+GH->>VPS : SSH
+GH->>VPS : git pull
+GH->>DC : up -d --no-build or build
+GH-->>VPS : talentsync_* services
 ```
 
-### Environment configuration management
-- Centralized environment variables
-  - Root.env and per-service.env files (.env, backend/.env, frontend/.env).
-  - Variables include database credentials, OAuth clients, email settings, JWT secrets, API keys, and analytics keys.
-- Variable precedence and usage
-  - Docker Compose env_file loads variables from.env files.
-  - DATABASE_URL constructed from POSTGRES_* variables.
-  - Frontend NEXTAUTH_URL and BACKEND_URL configured for internal and external access.
-- Security considerations
-  - Encryption key and secrets are present in.env files; ensure secrets are managed securely in CI/CD and production environments.
+Prod service names use the `talentsync_` prefix so they never collide with TalentSync-HR.
 
-## Dependency analysis
-- Backend dependencies
-  - Core: FastAPI, asyncpg, datetime, cryptography.
-  - LLM integrations: langchain, langchain-google-genai, langchain-openai, langchain-anthropic, langchain-ollama, tavily-python, gitingest.
-  - Utilities: numpy, pydantic-settings, python-dotenv, httpx, sse-starlette, bs4, pymupdf, pymupdf4llm.
-- Frontend dependencies
-  - Next.js, NextAuth, Prisma client, PostHog JS, react ecosystem, nodemailer, recharts, mermaid, sharp, zod.
+## Environment
+
+Root `.env` from `.env.example`. Compose `env_file: ./.env`.
+
+Need: `POSTGRES_*`, `DATABASE_URL`, `JWT_SECRET`, `ENCRYPTION_KEY`, Google OAuth, `LLM_*` / `SMALL_LLM_*`, `KAFKA_*`, Razorpay keys for billing, `ADMIN_API_KEY` if you start admin.
+
+Do not commit secrets. Do not put keys in the YAML.
+
+## Dependencies
 
 ```mermaid
 graph LR
 BE["backend/pyproject.toml"] --> FastAPI["fastapi"]
 BE --> LangChain["langchain-*"]
-BE --> Crypto["cryptography"]
+BE --> FS["faststream kafka"]
 FE["frontend/package.json"] --> Next["next"]
-FE --> NextAuth["next-auth"]
 FE --> Prisma["@prisma/client"]
 FE --> PostHog["posthog-js"]
 ```
 
-## Performance considerations
-- Containerization
-  - Multi-stage builds reduce final image size and improve startup times.
-  - Use production-only dependencies in the frontend prod-deps stage.
-- Database
-  - Health checks ensure readiness before starting dependent services.
-  - Persistent volume prevents data loss and supports scaling strategies.
-- Application logging
-  - Structured request/response logging aids performance diagnostics.
-- Observability
-  - Integrate metrics and tracing in future enhancements for deeper insights.
+No `next-auth` package.
 
-[No sources needed since this section provides general guidance]
+## Performance
 
-## Troubleshooting guide
-- Health checks failing
-  - Verify PostgreSQL health check configuration and credentials.
-  - Confirm service_healthy conditions in docker-compose.prod.yaml.
-- Migration failures
-  - Ensure the frontend migrate stage completes successfully before starting the runner.
-  - Check Prisma configuration and database connectivity.
-- Environment variables
-  - Validate.env files and ensure required variables are present.
-  - Confirm DATABASE_URL construction and NEXTAUTH_URL alignment with deployment domain.
-- CI/CD deployment
-  - Confirm SSH access to VPS and availability of secrets.
-  - Verify docker-compose.prod.yaml path and permissions on the VPS.
+Multi-stage frontend. uv cache on backend. Worker memory is the expensive part; scale lanes, not API replicas, for LLM load. Single Kafka broker is an accepted SPOF; job payloads live in Postgres.
 
-## Conclusion
-The TalentSync-Normies platform uses reliable Docker multi-stage builds, orchestrated services with Docker Compose, and a streamlined GitHub Actions deployment pipeline. By adhering to environment variable management best practices, implementing health checks, and establishing secure CI/CD workflows, the platform achieves reliable deployments suitable for production environments. Future enhancements can focus on observability, autoscaling, and advanced backup strategies.
+## Troubleshooting
 
-[No sources needed since this section summarizes without analyzing specific files]
+- DB healthcheck: credentials and `pg_isready`
+- Prisma migrate: `DATABASE_URL` host `db` vs `localhost`
+- Alembic: api or migrate role must reach Postgres
+- Kafka volume permissions: `kafka_data_perms` must run first
+- AI 503: Kafka down or `KAFKA_ENABLED` false
+- OAuth: `GOOGLE_REDIRECT_URI` vs Cloud Console
+- Admin config 503: `ADMIN_DATABASE_URL` must use `ts_admin`
 
-## Appendices
+## Appendix
 
-### Production deployment strategies
-- Infrastructure
-  - Use a VPS or managed Kubernetes cluster for container orchestration.
-  - External load balancing via nginx-proxy-manager or equivalent.
-- Scaling
-  - Stateless frontend and backend services can scale horizontally.
-  - Database scaling via read replicas and connection pooling.
-- Security
-  - Store secrets in a secure secret manager and mount as environment variables.
-  - Enable HTTPS termination at the reverse proxy.
+### Production notes
 
-[No sources needed since this section provides general guidance]
+- NPM terminates TLS for talentsync.tashif.codes
+- Workers stay off the proxy network
+- Admin console is Tailscale-only in prod
+- Observability profile: Prometheus 9090, Grafana 3001
 
-### Monitoring and logging
-- Backend
-  - Structured logging middleware captures request/response payloads and durations.
-  - Integrate centralized logging and metrics collection for production visibility.
-- Frontend
-  - Use PostHog for product analytics and telemetry.
-- Alerts
-  - Configure health check alerts and log-based alerting for critical failures.
+### Backups
 
-[No sources needed since this section provides general guidance]
-
-### Backup and disaster recovery
-- Database backups
-  - Schedule regular logical backups of PostgreSQL data.
-  - Test restoration procedures periodically.
-- Artifact retention
-  - Retain container images and deployment artifacts for rollback scenarios.
-- DR procedures
-  - Define RTO/RPO targets and automate failover to secondary regions.
-
-[No sources needed since this section provides general guidance]
+- `pg_dump` the database. Kafka is transport; republish `QUEUED` jobs after a lost broker volume
+- Keep `backend/uploads` on a volume

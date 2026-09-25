@@ -1,10 +1,9 @@
 # Page routing and navigation
 
-## Introduction
-This page explains the Next.js routing system and navigation patterns used in the project. It covers page structure, dynamic routing, nested routing, and the navigation architecture. It also documents authentication-aware routing, role-based access control, protected route handling, and responsive navigation patterns across desktop, tablet, and mobile. Finally, it outlines performance considerations for routing and navigation.
+App Router routes and the shared navigation config that drives desktop and mobile chrome.
 
-## Project structure
-The application follows Next.js App Router conventions with a strict file-system-based routing hierarchy under the app directory. Pages are grouped by feature and role, with nested routes enabling deep linking and contextual navigation.
+## Repository layout
+The application follows Next.js App Router conventions with a strict file-system-based routing hierarchy under the app directory. Pages are grouped by feature and role, with nested routes for deep links and contextual nav.
 
 ```mermaid
 graph TB
@@ -35,21 +34,21 @@ G --> L
 - [dashboard/analysis/[id]/page.tsx](file://frontend/app/dashboard/analysis/[id]/page.tsx#L56-L223)
 - `dashboard/pdf-resume/page.tsx`
 
-## Core components
+## Building blocks
 - Root layout and providers: Sets global styles, theme fonts, manifest, and wraps children with Providers and LayoutContent.
 - Layout content provider: Hosts Navbar and applies responsive margins and sidebar offset.
 - Navigation library: Centralizes nav items, quick actions, and mobile navigation items.
 - Navbar: Desktop sidebar with collapsible behavior, user section, and quick actions; tablet and mobile menus.
 - Sidebar provider: Global state for sidebar collapse to synchronize layout spacing.
 - Mobile bottom navigation: Bottom tab bar with floating action button and active state handling.
-- Authentication and role-based access: NextAuth configuration and protected route guards.
+- Authentication and role-based access: FastAPI cookies, `proxy.ts`, `useSession()`.
 
-## Architecture overview
+## How it fits together
 The routing architecture combines:
 - Static routes for public pages (home, about, account).
 - Nested routes under dashboard for role-specific dashboards and analysis workspaces.
 - Dynamic routes for per-resume analysis ([id]).
-- Protected routes enforced via client-side guards and NextAuth callbacks.
+- Protected routes: `proxy.ts` cookie check plus client `useSession()` guards.
 
 ```mermaid
 graph TB
@@ -64,7 +63,7 @@ N2["Mobile Bottom Nav<br/>/dashboard/*"]
 N3["Quick Actions<br/>/dashboard/*"]
 end
 subgraph "Access Control"
-A1["NextAuth Config<br/>auth-options.ts"]
+A1["proxy.ts cookie check<br/>lib/session.ts"]
 A2["Protected Guards<br/>client-side redirects"]
 end
 R1 --> N1
@@ -80,11 +79,9 @@ A2 --> R3
 - [dashboard/analysis/[id]/page.tsx](file://frontend/app/dashboard/analysis/[id]/page.tsx#L56-L194)
 - `navbar.tsx`
 - `mobile-bottom-nav.tsx`
-- `auth-options.ts`
+- `lib/session.ts`
 
-## Detailed component analysis
-
-### Navigation library and menu systems
+## Navigation library and menu systems
 The navigation library defines:
 - Nav items for primary navigation.
 - Quick actions for authenticated users.
@@ -112,7 +109,7 @@ NavigationLibrary --> NavItem : "contains"
 NavigationLibrary --> ActionItem : "contains"
 ```
 
-### Navbar and sidebar integration
+## Navbar and sidebar integration
 The Navbar renders:
 - Collapsible desktop sidebar with active-state highlighting.
 - Quick actions for authenticated users.
@@ -135,31 +132,31 @@ N->>M : Render bottom nav (mobile)
 M->>M : Compute active index
 ```
 
-### Protected routes and authentication-aware routing
+## Protected routes and authentication-aware routing
 Protected routes are enforced through:
 - Client-side guards in dashboard pages redirect unauthenticated users to the sign-in page.
-- NextAuth callbacks inject role into session/token and enforce verification for credential-based sign-ins.
+- Role comes from Prisma `User.role` via `getSession()` / `/api/v1/auth/me`. Password verification is not a live path.
 
 ```mermaid
 sequenceDiagram
 participant U as "User"
 participant DP as "Dashboard Page"
-participant NA as "NextAuth Session"
+participant NA as "useSession /auth/me"
 participant AO as "Auth Options"
 U->>DP : Request /dashboard/*
 DP->>NA : useSession()
 NA-->>DP : status "unauthenticated"
 DP->>DP : router.push("/auth")
-U->>AO : Sign in (credentials/OAuth)
+U->>AO : Sign in with Google
 AO-->>U : Session with role
 DP->>NA : useSession()
 NA-->>DP : status "authenticated"
 DP-->>U : Render dashboard
 ```
 
-### Role-Based access control implementation
+## Role-Based access control implementation
 Role-based access is handled in:
-- NextAuth callbacks: role stored in JWT token and session.
+- Role stored on `User.role`. Access JWT `sub` is the user id. Session hydrates role from Postgres.
 - UI rendering: role displayed in user section and used to tailor quick actions.
 
 ```mermaid
@@ -174,10 +171,10 @@ StoreToken --> StoreSession["Attach role to session"]
 StoreSession --> End(["Authenticated"])
 ```
 
-### Dynamic routing and nested routing patterns
+## Dynamic routing and nested routing patterns
 Dynamic and nested routing patterns include:
 - Dynamic route for resume analysis: [id] under /dashboard/analysis.
-- Nested dashboards for roles: /dashboard/seeker, /dashboard/recruiter, /dashboard/admin.
+- Nested dashboards: `/dashboard/seeker` is the resume workspace. `/dashboard/recruiter` is leftover chrome, not TalentSync-HR. `/dashboard/admin` is operator UI.
 - Nested route for PDF resume generation: /dashboard/pdf-resume.
 
 ```mermaid
@@ -195,7 +192,7 @@ D --> P["/pdf-resume"]
 - [dashboard/analysis/[id]/page.tsx](file://frontend/app/dashboard/analysis/[id]/page.tsx#L56-L223)
 - `dashboard/pdf-resume/page.tsx`
 
-### Mobile-Responsive navigation patterns
+## Mobile-Responsive navigation patterns
 Mobile navigation integrates:
 - Bottom tab bar with active state tracking and a floating action button.
 - Tablet menu overlay with quick actions and user controls.
@@ -209,7 +206,7 @@ Render --> Click["Handle item click"]
 Click --> Push["router.push(href)"]
 ```
 
-### User workflow flows
+## User workflow flows
 Typical user workflows:
 - Unauthenticated user visits dashboard → redirected to sign-in.
 - Authenticated user lands on dashboard → quick actions and role-specific dashboards available.
@@ -233,10 +230,10 @@ PR-->>AR : Open workspace after select/upload
 
 - [dashboard/analysis/[id]/page.tsx](file://frontend/app/dashboard/analysis/[id]/page.tsx#L56-L223)
 
-## Dependency analysis
+## Dependencies
 The navigation stack depends on:
 - Next.js App Router for file-system routing.
-- NextAuth for session and role propagation.
+- FastAPI cookies and `session-provider.tsx` for session and role.
 - Framer Motion for animations.
 - Lucide icons for visual affordances.
 - React Context for sidebar state.
@@ -248,7 +245,7 @@ LC --> NB["navbar.tsx"]
 NB --> SP["sidebar-provider.tsx"]
 NB --> MB["mobile-bottom-nav.tsx"]
 NB --> NAV["navigation.ts"]
-NB --> NA["auth-options.ts"]
+NB --> NA["session-provider.tsx"]
 LC --> DP["dashboard/page.tsx"]
 DP --> DA["dashboard/analysis/[id]/page.tsx"]
 ```
@@ -257,19 +254,17 @@ DP --> DA["dashboard/analysis/[id]/page.tsx"]
 
 - [dashboard/analysis/[id]/page.tsx](file://frontend/app/dashboard/analysis/[id]/page.tsx#L56-L223)
 
-## Performance considerations
+## Performance
 - Client-side routing: Use Next.js automatic code splitting and route segments to minimize bundle sizes.
 - Navigation animations: Keep Framer Motion animations lightweight; avoid heavy transforms on frequently accessed routes.
 - Sidebar state: Persist collapsed state locally if needed to reduce re-computation across navigations.
 - Protected routes: Perform minimal checks on the client; rely on server-side session validation for sensitive operations.
 - Lazy loading: Consider lazy-loading heavy components within tabs (e.g., editor panels) to improve initial load performance.
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Unauthenticated redirect loops: Ensure client-side guards only redirect when status is unauthenticated and avoid infinite redirects by guarding against the auth route itself.
-- Role not reflected in UI: Confirm NextAuth callbacks attach role to token/session and that components read from session data.
+- Role not reflected in UI: confirm `User.role` and call `useSession().refresh()` after `/update-role`.
 - Mobile bottom nav not highlighting active route: Verify active index computation matches pathname and that hrefs align with route segments.
 - Sidebar offset incorrect: Confirm LayoutContent applies correct padding based on sidebar collapse state.
-
-## Conclusion
-The routing and navigation system uses Next.js App Router to organize pages by feature and role, with reliable protected routes powered by NextAuth. The Navbar and mobile bottom navigation provide a cohesive, responsive experience across devices. Dynamic and nested routes enable deep linking into analysis workspaces and role-specific dashboards. By following the outlined patterns and performance recommendations, teams can maintain a scalable and user-friendly navigation architecture.

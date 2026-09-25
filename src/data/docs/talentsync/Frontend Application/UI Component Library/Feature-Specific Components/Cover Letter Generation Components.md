@@ -1,9 +1,8 @@
 # Cover letter generation components
 
-## Introduction
-This page provides detailed documentation for the cover letter generation system, focusing on two primary frontend components and their backend integration. It explains how users input job details and personal information, how the system generates and customizes cover letters, and how it integrates with job descriptions, resume data, and backend APIs. The documentation covers the cover letter generation algorithm, template system, personalization features, formatting options, editing capabilities, and export functionality.
+React pieces for drafting and editing cover letters.
 
-## Project structure
+## Repository layout
 The cover letter generation feature spans frontend React components and backend FastAPI services. The frontend collects user inputs, manages state, and handles user interactions such as copying to clipboard and downloading. The backend processes the inputs, resolves job descriptions from URLs or text, personalizes content using LLM prompts, and returns formatted cover letters.
 
 ```mermaid
@@ -30,7 +29,7 @@ G --> I
 G --> H
 ```
 
-## Core components
+## Building blocks
 - CoverLetterDetailsForm: Collects personal details, job description (via URL or text), key points to highlight, additional context, and optional recipient/company information. Includes a mode toggle to switch between URL and text inputs for job descriptions.
 - GeneratedLetterPanel: Displays the generated cover letter, supports editing mode with instruction input, copy-to-clipboard, and text download functionality.
 - Backend Services: Handle generation and editing requests, resolve job descriptions, and apply LLM prompts to produce or refine cover letters.
@@ -39,7 +38,7 @@ Key responsibilities:
 - Frontend: Manage form state, validate inputs, assemble FormData, and orchestrate API calls.
 - Backend: Validate inputs, fetch external content when needed, execute LLM prompts, and return structured responses.
 
-## Architecture overview
+## How it fits together
 The system follows a client-server architecture:
 - Frontend collects inputs and sends them to backend endpoints.
 - Backend resolves job descriptions, builds prompts, and invokes an LLM to generate or edit cover letters.
@@ -65,9 +64,7 @@ S-->>F : "Update state with generated letter"
 F-->>U : "Display cover letter in panel"
 ```
 
-## Detailed component analysis
-
-### CoverLetterDetailsForm
+## CoverLetterDetailsForm
 Purpose:
 - Collects all necessary inputs for cover letter generation, including personal details, job description (URL or text), key points to highlight, additional context, and optional recipient/company information.
 
@@ -84,7 +81,7 @@ Validation and UX:
 - Labels and placeholders guide users on required and optional fields.
 - Animated transitions improve perceived responsiveness.
 
-### GeneratedLetterPanel
+## GeneratedLetterPanel
 Purpose:
 - Displays the generated cover letter, supports editing mode, and provides actions for copying and downloading.
 
@@ -102,7 +99,7 @@ Export and editing:
 - Copy to clipboard uses browser API with user feedback.
 - Download creates a Blob and triggers a temporary anchor download.
 
-### Frontend page orchestration (page.tsx)
+## Frontend page orchestration (page.tsx)
 Purpose:
 - Coordinates the entire cover letter generation flow, including resume selection, form submission, and editing.
 
@@ -117,7 +114,7 @@ Integration points:
 - Calls useGenerateCoverLetter and useEditCoverLetter hooks for mutations.
 - Builds FormData dynamically based on selected resume mode and form inputs.
 
-### Backend routes (cover_letter.py)
+## Backend routes (cover_letter.py)
 Purpose:
 - Expose REST endpoints for generating and editing cover letters.
 
@@ -130,14 +127,14 @@ Request handling:
 - Builds resume data dictionary from raw text or file content.
 - Delegates to LLM-based services for generation and editing.
 
-### Backend services (cover_letter.py)
+## Backend services (cover_letter.py)
 Purpose:
 - Implement the core logic for cover letter generation and editing using LLM prompts.
 
 Key functions:
-- generate_cover_letter(): Resolves job description (URL or text), constructs prompt, and invokes LLM.
-- edit_cover_letter(): Applies user instructions to refine an existing cover letter.
-- _resolve_job_description(): Fetches markdown from URL using web content agent and merges with manual text.
+- generate_cover_letter: Resolves job description (URL or text), constructs prompt, and invokes LLM.
+- edit_cover_letter: Applies user instructions to refine an existing cover letter.
+- _resolve_job_description: Fetches markdown from URL using web content agent and merges with manual text.
 
 Prompts:
 - COVER_LETTER_PROMPT: Defines structure, word limits, tone, and content requirements.
@@ -147,7 +144,7 @@ External integration:
 - Uses web_content_agent to fetch markdown from URLs.
 - Converts language codes to readable names for prompt localization.
 
-### Data models (schemas.py)
+## Data models (schemas.py)
 Purpose:
 - Define request/response models for cover letter operations using Pydantic.
 
@@ -160,7 +157,7 @@ Validation:
 - Enforces presence of required fields and defaults for optional ones.
 - Ensures consistent shape for frontend-backend communication.
 
-### Frontend types (cover-letter.ts)
+## Frontend types (cover-letter.ts)
 Purpose:
 - Define TypeScript interfaces for cover letter sessions, entries, requests, and response data.
 
@@ -172,7 +169,7 @@ Interfaces:
 Consistency:
 - Mirrors backend models to ensure type-safe integration.
 
-### Web content agent (web_content_agent.py)
+## Web content agent (web_content_agent.py)
 Purpose:
 - Fetch markdown content from external URLs using a third-party service.
 
@@ -181,7 +178,7 @@ Behavior:
 - Returns empty string on failure or invalid input.
 - Used to resolve job descriptions from URLs.
 
-## Architecture overview
+## How it fits together
 
 ```mermaid
 classDiagram
@@ -237,19 +234,17 @@ CoverLetterRoutes --> CoverLetterServices : "delegates"
 CoverLetterServices --> WebContentAgent : "fetches JD"
 ```
 
-## Detailed component analysis
-
-### Cover letter generation algorithm
+## Cover letter generation algorithm
 The generation algorithm follows a deterministic pipeline:
 1. Resolve job description:
-   - If a URL is provided, fetch markdown content via web content agent.
-   - Merge fetched content with manually entered text if both are present.
+ - If a URL is provided, fetch markdown content via web content agent.
+ - Merge fetched content with manually entered text if both are present.
 2. Construct prompt:
-   - Use COVER_LETTER_PROMPT with resolved job description, resume data, recipient/company details, and user-specified highlights.
+ - Use COVER_LETTER_PROMPT with resolved job description, resume data, recipient/company details, and user-specified highlights.
 3. Invoke LLM:
-   - Call LLM with a role-playing instruction to act as a professional career coach.
+ - Call LLM with a role-playing instruction to act as a professional career coach.
 4. Return result:
-   - Strip whitespace and return plain text cover letter.
+ - Strip whitespace and return plain text cover letter.
 
 ```mermaid
 flowchart TD
@@ -260,13 +255,13 @@ InvokeLLM --> PostProcess["Strip whitespace and normalize"]
 PostProcess --> End(["Return Cover Letter"])
 ```
 
-### Template system and personalization
+## Template system and personalization
 Template system:
 - Two prompts are defined:
-  - COVER_LETTER_PROMPT: Controls structure, word limits, tone, and content requirements for new cover letters.
-  - COVER_LETTER_EDIT_PROMPT: Guides refinement of existing letters based on explicit instructions.
+ - COVER_LETTER_PROMPT: Controls structure, word limits, tone, and content requirements for new cover letters.
+ - COVER_LETTER_EDIT_PROMPT: Guides refinement of existing letters based on explicit instructions.
 - Language localization:
-  - Output language is derived from language codes and injected into prompts.
+ - Output language is derived from language codes and injected into prompts.
 
 Personalization features:
 - Candidate details: sender name, desired role/goal.
@@ -278,7 +273,7 @@ Formatting options:
 - Plain text output enforced to avoid markdown or JSON in responses.
 - Word limits and paragraph counts specified in prompts.
 
-### Integration with job descriptions and resume data
+## Integration with job descriptions and resume data
 Job description resolution:
 - URL mode: Uses web content agent to fetch markdown from the provided URL.
 - Text mode: Uses manually entered job description.
@@ -291,7 +286,7 @@ Resume data integration:
 Backend request models:
 - Pydantic models validate and normalize inputs for generation and editing.
 
-### Editing capabilities
+## Editing capabilities
 Editing workflow:
 - User enables edit mode and provides specific instructions.
 - Frontend packages current resume data, job details, previous cover letter, and edit instructions.
@@ -301,7 +296,7 @@ User controls:
 - Edit instructions input with validation to prevent empty submissions.
 - Disabled states during editing to prevent concurrent operations.
 
-### Export functionality
+## Export functionality
 Export options:
 - Copy to clipboard: Uses browser clipboard API with user feedback.
 - Download as text: Creates a Blob with text/plain type and triggers a temporary download link.
@@ -310,8 +305,8 @@ Frontend implementation:
 - Clipboard: Handles errors gracefully and notifies the user.
 - Download: Constructs filename and URL, removes DOM elements after download.
 
-## Dependency analysis
-The system exhibits clear separation of concerns:
+## Dependencies
+The system splits work by layer:
 - Frontend components depend on service clients and type definitions.
 - Service clients depend on backend routes.
 - Routes depend on service functions.
@@ -335,14 +330,15 @@ Services --> Agent["agents/web_content_agent.py"]
 Services --> Models["models/cover_letter/schemas.py"]
 ```
 
-## Performance considerations
+## Performance
 - Job description fetching: Network latency for URL-based JDs can impact generation time. Consider caching or pre-fetching strategies.
 - LLM invocation: Asynchronous calls are used; ensure proper timeout handling and retry logic if needed.
 - Frontend rendering: Large cover letters are rendered efficiently using a dedicated Markdown renderer component.
 - FormData assembly: Minimize unnecessary fields to reduce payload size and improve network performance.
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Missing resume: Ensure a resume is selected or uploaded before generating.
 - Empty sender name: Required field; provide candidate name to proceed.
 - Invalid JD URL: Verify URL accessibility and correctness; fallback to text mode if needed.
@@ -352,6 +348,3 @@ Common issues and resolutions:
 User feedback:
 - Toast notifications provide immediate feedback for success and error states.
 - Disabled states prevent concurrent operations and improve reliability.
-
-## Conclusion
-The cover letter generation system combines intuitive frontend components with reliable backend services to deliver personalized, high-quality cover letters. Users can quickly input details, choose between URL and text job descriptions, and use AI-driven generation and editing. The modular architecture, clear data models, and explicit prompts ensure maintainability and extensibility. Integrations with resume data and external job description sources enable precise tailoring to specific roles and companies.

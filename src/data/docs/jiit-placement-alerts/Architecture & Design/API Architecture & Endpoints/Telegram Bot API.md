@@ -1,10 +1,10 @@
 # Telegram bot API
 
 ## Introduction
-This page provides detailed documentation for the Telegram Bot API endpoints and command handlers. It covers user commands (/start, /stop, /status, /stats, /web), admin commands (/users, /boo, /fu, /logs), dual-mode operation (long-polling and webhook), command routing, user session management, subscription handling, MongoDB integration, and the message formatting system. Practical examples, error handling, and troubleshooting guidance are included.
+Bot commands users actually type: `/start`, `/stop`, `/status`, `/placement_year`, `/stats`, `/noticestats`, `/web`, `/help`. Admin ones too (`/users`, `/boo`, `/fu`, `/logs`, `/userstats`). Long-polling for the bot, FastAPI webhook for the REST API, how routing works, and how replies get formatted before they hit Telegram.
 
 ## Project structure
-The project is organized around a modular architecture with clear separation of concerns:
+The project is organized around a modular architecture :
 - CLI entry point orchestrating servers and jobs
 - Telegram bot server with command handlers
 - Webhook/FastAPI server exposing REST endpoints
@@ -80,6 +80,8 @@ User->>Bot : "/stats"
 Bot->>DB : get_placement_stats()
 DB-->>Bot : stats
 Bot-->>User : formatted stats
+User->>Bot : "/placement_year"
+Bot-->>User : year keyboard
 User->>Bot : "/web"
 Bot-->>User : links
 User->>Bot : "/stop"
@@ -102,8 +104,8 @@ Admin-->>User : user list
 - Request: /start
 - Response: Welcome message with available commands and links.
 - Database actions:
-  - Insert or update user record in Users collection.
-  - Set active subscription and timestamps.
+ - Insert or update user record in Users collection.
+ - Set active subscription and timestamps.
 
 ```mermaid
 sequenceDiagram
@@ -125,7 +127,7 @@ end
 - Request: /stop
 - Response: Confirmation or inactive message.
 - Database actions:
-  - Deactivate user subscription.
+ - Deactivate user subscription.
 
 ```mermaid
 sequenceDiagram
@@ -143,7 +145,7 @@ Bot-->>User : Unsubscribed confirmation
 - Request: /status
 - Response: Active/inactive status with registration date and user ID.
 - Database actions:
-  - Retrieve user by ID.
+ - Retrieve user by ID.
 
 ```mermaid
 sequenceDiagram
@@ -161,7 +163,7 @@ Bot-->>User : Status + metadata
 - Request: /stats
 - Response: Formatted statistics including overall placement percentage, packages, and branch-wise stats.
 - Database actions:
-  - Compute and return placement statistics.
+ - Compute and return placement statistics.
 
 ```mermaid
 sequenceDiagram
@@ -176,6 +178,11 @@ DB-->>Stats : stats
 Stats-->>Bot : stats
 Bot-->>User : Markdown formatted stats
 ```
+
+#### /placement_year
+- Purpose: Choose which placement year notifications follow.
+- Request: `/placement_year` (also `/placement-year`)
+- Response: Inline keyboard of `PLACEMENT_YEARS`. Callback `placement_year:<year>` writes the preference.
 
 #### /web
 - Purpose: Get useful links to JIIT tools.
@@ -193,14 +200,14 @@ Bot-->>User : HTML links
 ### Admin commands
 
 #### Authentication and permission checks
-- Admin commands are restricted to a specific chat ID configured in settings.
-- The AdminTelegramService validates the sender's chat ID against the configured admin chat ID.
+- Admin commands are restricted to Telegram user IDs in `ADMIN_TELEGRAM_USER_IDS`.
+- AdminTelegramService checks the sender against that list. An empty list fails closed.
 
 ```mermaid
 flowchart TD
-Start([Admin Command Received]) --> CheckChat["Compare sender chat_id with admin_chat_id"]
+Start([Admin Command Received]) --> CheckChat["Compare sender user_id with ADMIN_TELEGRAM_USER_IDS"]
 CheckChat --> |Match| Allow["Allow command execution"]
-CheckChat --> |Mismatch| Deny["Reply: Unauthorized<br/>Only admin allowed"]
+CheckChat --> |Mismatch| Deny["Ignore or unauthorized"]
 Allow --> Execute["Execute admin command"]
 Execute --> End([Done])
 Deny --> End
@@ -292,7 +299,7 @@ WAPI --> |"External integrations"| EXTERNAL["External Clients"]
 
 ```mermaid
 flowchart TD
-Init["BotServer.setup_handlers()"] --> RegUser["Register user commands:<br/>/start, /stop, /status, /stats, /web"]
+Init["BotServer.setup_handlers()"] --> RegUser["Register user commands:<br/>/start, /stop, /status, /placement_year, /stats, /web"]
 RegUser --> RegAdmin["Register admin commands:<br/>/users, /boo, /fu, /logs"]
 RegAdmin --> Ready["Handlers ready"]
 ```

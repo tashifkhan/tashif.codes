@@ -1,9 +1,8 @@
 # Next.js application architecture
 
-## Introduction
-This page provides detailed documentation for the Next.js application architecture. It explains the App Router structure, page organization, and component hierarchy. It documents the application layout system, providers setup, and global configuration. It details the build configuration including PWA setup, image optimization, webpack customization, and external package handling. It covers routing patterns, middleware integration, and deployment considerations. It also addresses performance optimization strategies, code splitting, and bundle analysis, along with TypeScript configuration and type safety implementation throughout the application.
+The Next.js application architecture.
 
-## Project structure
+## Repository layout
 The frontend application follows Next.js App Router conventions with a strict file-system-based routing structure under the app directory. Pages are organized by feature and route segments, with nested layouts and providers at the root level. Utility libraries and services are modularized under dedicated folders, while UI components are structured by feature and shared patterns.
 
 Key structural highlights:
@@ -63,7 +62,7 @@ NEXT_CONFIG --> POSTCSS
 NEXT_CONFIG --> MANIFEST
 ```
 
-## Core components
+## Building blocks
 This section outlines the foundational components that define the application's layout, providers, and global configuration.
 
 - Root layout and metadata: Defines application metadata, fonts, and the root HTML wrapper with theme and manifest integration.
@@ -72,7 +71,8 @@ This section outlines the foundational components that define the application's 
 - Global error boundaries: Implements error and not-found handlers for graceful degradation and user feedback.
 - Tooling configuration: Next.js configuration for PWA, images, webpack, and PostHog proxying; TypeScript strictness and module resolution; Tailwind and PostCSS setup.
 
-Key implementation references:
+Code to read:
+
 - Root layout and metadata: `app/layout.tsx`
 - Layout content and sidebar provider: `app/layout-content.tsx`
 - Providers and React Query configuration: `app/providers.tsx`
@@ -82,11 +82,11 @@ Key implementation references:
 - Tailwind and PostCSS: `tailwind.config.ts`, `postcss.config.js`
 - PWA manifest: `public/manifest.json`
 
-## Architecture overview
+## How it fits together
 The application architecture centers around the Next.js App Router with a layered approach:
 - Presentation layer: Root layout, layout content, and feature pages
 - State management: Session and query providers for authentication and data fetching
-- Routing and middleware: NextAuth middleware for authentication and role-based redirection
+- Routing and middleware: `proxy.ts` cookie presence check, then `getSession()` on server routes
 - Analytics and observability: PostHog client-side initialization
 - Build and deployment: PWA, image optimization, webpack customization, and external packages
 
@@ -98,8 +98,8 @@ LAYOUT["Root Layout<br/>app/layout.tsx"]
 LAYOUT_CONTENT["Layout Content<br/>app/layout-content.tsx"]
 PROVIDERS["Providers<br/>app/providers.tsx"]
 NAV["Navigation<br/>lib/navigation.ts"]
-AUTH["NextAuth Middleware<br/>proxy.ts"]
-AUTH_OPTIONS["Auth Options<br/>lib/auth-options.ts"]
+AUTH["Cookie guard<br/>proxy.ts"]
+AUTH_OPTIONS["getSession<br/>lib/session.ts"]
 PWA["PWA Config<br/>next.config.js"]
 IMAGES["Images Config<br/>next.config.js"]
 WEBPACK["Webpack Customization<br/>next.config.js"]
@@ -119,9 +119,7 @@ CLIENT --> POSTHOG
 NEXT --> MANIFEST
 ```
 
-## Detailed component analysis
-
-### Layout system and providers
+## Layout system and providers
 The layout system establishes a consistent shell across pages:
 - Root layout sets metadata, fonts, theme variables, and mounts the Providers and LayoutContent wrappers.
 - LayoutContent manages the main content area, navigation bar, sidebar provider, and toast notifications.
@@ -152,8 +150,8 @@ RootLayout --> LayoutContent : "wraps"
 LayoutContent --> Providers : "contains"
 ```
 
-### Routing patterns and middleware integration
-Routing uses Next.js App Router conventions with dynamic routes and catch-all patterns. Authentication and role-based redirection are handled via NextAuth middleware:
+## Routing patterns and middleware integration
+Routing uses Next.js App Router conventions with dynamic routes and catch-all patterns. `proxy.ts` redirects unsigned-in users to `/auth`. It does not verify the JWT.
 - Dynamic routes: e.g., dashboard pages with slug-based routing
 - Catch-all routes: e.g., API namespaces with dynamic segments
 - Middleware enforces role selection for authenticated users without roles and redirects accordingly
@@ -161,24 +159,21 @@ Routing uses Next.js App Router conventions with dynamic routes and catch-all pa
 ```mermaid
 sequenceDiagram
 participant Browser as "Browser"
-participant Middleware as "NextAuth Middleware<br/>proxy.ts"
-participant NextAuth as "NextAuth<br/>lib/auth-options.ts"
+participant Middleware as "proxy.ts"
+participant Session as "lib/session.ts"
 participant Router as "App Router"
 Browser->>Middleware : Request page
-Middleware->>Middleware : Check token and pathname
-alt Has role and on role selection
-Middleware-->>Browser : Redirect to dashboard
-else No role and not on role selection
-Middleware-->>Browser : Redirect to select-role
-else Public PostHog proxy
-Middleware-->>Browser : Allow request
+alt Public path
+Middleware-->>Router : Allow
+else No ts_access_token
+Middleware-->>Browser : Redirect /auth
+else Cookie present
+Note over Session : Signature check is getSession on the server
+Middleware-->>Router : Proceed
 end
-Middleware->>NextAuth : Authorize via authOptions
-NextAuth-->>Middleware : Token/session data
-Middleware-->>Router : Proceed to requested page
 ```
 
-### Build configuration and PWA setup
+## Build configuration and PWA setup
 The build configuration integrates PWA capabilities, image optimization, and webpack customization:
 - PWA: Enabled via next-pwa with service worker registration and skipWaiting
 - Images: Unoptimized mode with remote patterns for avatar providers
@@ -196,7 +191,7 @@ Rewrites --> Externals["External Packages<br/>serverExternalPackages"]
 Externals --> End(["Build Complete"])
 ```
 
-### TypeScript configuration and type safety
+## TypeScript configuration and type safety
 TypeScript is configured for strict type checking and modern module resolution:
 - Strict mode enabled with noEmit
 - Bundler module resolution and isolated modules
@@ -216,7 +211,7 @@ Aliases --> DX["Developer Experience"]
 Types --> Autocomplete["IDE Autocomplete"]
 ```
 
-### UI theme and styling
+## UI theme and styling
 Tailwind CSS and PostCSS provide a consistent design system:
 - Dark mode support with class strategy
 - Extended color palette and typography tokens
@@ -232,7 +227,7 @@ THEME --> STYLES["Global Styles"]
 PLUGINS --> ANIM["Animations"]
 ```
 
-### Navigation and UI components
+## Navigation and UI components
 Navigation items and action cards guide users through features:
 - Navigation items for desktop and mobile
 - Action items for quick feature access
@@ -251,7 +246,7 @@ class ActionItem {
 NavItem <|-- ActionItem
 ```
 
-### Error boundaries and user feedback
+## Error boundaries and user feedback
 Error boundaries provide graceful handling of errors and not-found scenarios:
 - Page-level error boundary with reset functionality
 - Global error boundary for top-level failures
@@ -273,7 +268,7 @@ Router->>GlobalError : Top-level error
 GlobalError-->>Router : Render global error UI
 ```
 
-### Analytics integration
+## Analytics integration
 PostHog client-side initialization supports analytics and event tracking:
 - Client-side initialization with environment keys
 - Proxy configuration for API and static assets
@@ -291,7 +286,7 @@ Browser->>Proxy : Request /ph/*
 Proxy-->>Browser : Forward to PostHog endpoints
 ```
 
-## Dependency analysis
+## Dependencies
 The application's dependencies span UI libraries, state management, authentication, analytics, and build tools. The dependency graph highlights core integrations and potential coupling points.
 
 ```mermaid
@@ -299,7 +294,7 @@ graph TB
 subgraph "Runtime"
 NEXT["next"]
 REACT["react, react-dom"]
-NEXT_AUTH["next-auth"]
+NEXT_AUTH["jose + session.ts"]
 QUERY["@tanstack/react-query"]
 POSTHOG["posthog-js"]
 PRISMA["@prisma/client"]
@@ -328,7 +323,7 @@ RECHARTS --> REACT
 MOTION --> REACT
 ```
 
-## Performance considerations
+## Performance
 Performance is addressed through several mechanisms:
 - Image optimization: Unoptimized images with controlled remote patterns to reduce unnecessary processing
 - PWA: Service worker registration and skipWaiting improve offline readiness and load performance
@@ -342,8 +337,9 @@ Recommendations:
 - Use React Suspense boundaries for data-intensive pages
 - Use Next.js static generation where feasible
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Authentication loops: Verify middleware redirection logic and token presence
 - Role selection redirects: Ensure proper handling of authenticated users without roles
 - PostHog proxy errors: Confirm rewrite rules and trailing slash configuration
@@ -351,15 +347,12 @@ Common issues and resolutions:
 - Build errors for Node.js modules: Confirm webpack fallbacks and replacements
 
 Diagnostics:
-- Review NextAuth callbacks and session/token updates
+- Review `getSession()` and `/api/v1/auth/me` if the navbar role is stale
 - Inspect React Query cache behavior and stale times
 - Check PWA registration and service worker lifecycle
 - Validate Tailwind content paths and purge behavior
 
-## Conclusion
-The Next.js application employs a reliable App Router architecture with strong layout and provider patterns, detailed authentication via NextAuth, and integrated analytics through PostHog. The build configuration emphasizes PWA readiness, controlled image optimization, and webpack customization for compatibility. TypeScript and Tailwind contribute to type safety and maintainable styling. The middleware ensures secure and role-aware routing, while error boundaries provide resilient user experiences.
-
-## Appendices
+## Appendix
 
 ### Deployment considerations
 - Environment variables for authentication and analytics

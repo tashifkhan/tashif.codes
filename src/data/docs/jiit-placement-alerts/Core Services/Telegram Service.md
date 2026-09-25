@@ -1,7 +1,7 @@
 # Telegram service
 
 ## Introduction
-This page provides detailed documentation for the TelegramService component that powers the Telegram bot functionality and user interaction within the SuperSet placement notification system. It explains how TelegramService integrates with the python-telegram-bot library, handles command processing, manages users, and participates in the broader notification ecosystem. It also covers the bot server implementation, message handling patterns, subscription management, and security considerations.
+TelegramService wraps python-telegram-bot for commands, user state, and outbound messages. Works with BotServer, DatabaseService, and NotificationService without owning the whole delivery path.
 
 ## Project structure
 The TelegramService resides in the services layer and collaborates with the bot server, database service, and notification service. The configuration module centralizes environment-driven settings, and the main entry point wires the dependency injection for the Telegram bot server.
@@ -74,7 +74,7 @@ TelegramService encapsulates Telegram-specific functionality:
 - Long message splitting and chunked delivery
 - Fallback to plain text on formatting failures
 
-Key responsibilities:
+It owns:
 - Implementing the INotificationChannel protocol for Telegram
 - Integrating with TelegramClient for API calls
 - Using DatabaseService for user lookups during broadcasts
@@ -268,9 +268,7 @@ Common issues and resolutions:
 - Logging: Use safe_print and centralized logging via setup_logging.
 
 ## Conclusion
-The TelegramService provides a reliable, modular foundation for Telegram bot functionality within the notification system. It integrates cleanly with the broader architecture, handles user onboarding and subscription management, and ensures reliable message delivery with built-in resilience against API limitations. AdminTelegramService improves operational capabilities, while NotificationService and DatabaseService round out the ecosystem for scalable, production-grade notifications.
-
-[No sources needed since this section summarizes without analyzing specific files]
+TelegramService owns bot I/O and user-facing commands. AdminTelegramService covers operator messages. NotificationService and DatabaseService sit beside it, not inside it.
 
 ## Appendices
 

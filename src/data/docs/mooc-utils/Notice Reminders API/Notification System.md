@@ -1,9 +1,7 @@
 # Notification system
 
 ## Introduction
-This page describes the notification delivery system for the notice reminders application. It explains the multi-channel notification architecture, real-time alert mechanisms, and notification scheduling. It documents the notification service implementation, channel-specific delivery logic, and retry mechanisms. It also covers notification templates, personalization options, and delivery status tracking. Finally, it lists API endpoints for notification queries, delivery logs, and channel management, and provides examples of notification workflows, channel configurations, and troubleshooting common delivery issues.
-
-The project is a FastAPI-based backend with Tortoise ORM for persistence. Notifications are stored in the database and associated with users, subscriptions, and channels. The system currently supports listing notifications, marking them as read, and managing notification channels.
+Storing and listing notifications, tying them to users and subscriptions, and tracking read state. Channels exist in the model; async delivery and retries are still ahead.
 
 ## Project structure
 The notification system resides in the notice-reminders package under app/. The structure relevant to notifications includes:
@@ -55,11 +53,11 @@ Key capabilities:
 - User-scoped access control enforced in API
 
 ## Architecture overview
-The notification architecture follows a layered design:
+The notification architecture splits into:
 - API layer: FastAPI routers handle requests and delegate to services
 - Service layer: NotificationService and NotificationChannelService encapsulate business logic
 - Persistence layer: Tortoise ORM models persist notifications and channels
-- Access control: Authentication decorator ensures only authorized users access their notifications
+- Access control: Authentication decorator keeps only authorized users access their notifications
 
 ```mermaid
 sequenceDiagram
@@ -216,28 +214,24 @@ Current implementation:
 - No explicit scheduler or queue workers are implemented
 - Real-time delivery is not implemented; delivery is triggered synchronously during creation
 
-Recommendations for future enhancements:
+Recommendations for later changes:
 - Introduce a task queue (e.g., Celery) to offload channel delivery
 - Add retry logic with exponential backoff for transient failures
 - Implement rate limiting per channel/address
 - Add webhook or push notification hooks for real-time delivery
-
-[No sources needed since this section provides general guidance]
 
 ### Templates and personalization
 Current implementation:
 - Notification creation is straightforward and does not include templating
 - Personalization is minimal (only user association)
 
-Recommendations for future enhancements:
+Recommendations for later changes:
 - Add template engine (e.g., Jinja2) to render subject/body per channel
 - Support dynamic placeholders (user name, course name, date)
 - Allow per-user customization of notification preferences
 
-[No sources needed since this section provides general guidance]
-
 ## Dependency analysis
-The notification system exhibits clean separation of concerns:
+Notification layers:
 - API depends on services for business logic
 - Services depend on models for persistence
 - Models define relationships and constraints
@@ -262,52 +256,48 @@ CHSVC --> CHSCHEMA["NotificationChannelCreate/Response Schema"]
 - Batch operations: When scaling to multiple channels, batch deliveries and avoid N+1 queries
 - Asynchronous delivery: Offload channel delivery to background tasks to prevent blocking API requests
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Access denied when listing notifications for another user:
-  - Cause: Ownership check fails
-  - Resolution: Ensure the authenticated user matches the requested user_id
-  - Reference: `notifications.py`
+ - Cause: Ownership check fails
+ - Resolution: Ensure the authenticated user matches the requested user_id
+ - Reference: `notifications.py`
 
 - Notification not found when marking as read:
-  - Cause: Invalid notification_id or wrong user
-  - Resolution: Verify notification exists and belongs to the authenticated user
-  - Reference: `notifications.py`
+ - Cause: Invalid notification_id or wrong user
+ - Resolution: Verify notification exists and belongs to the authenticated user
+ - Reference: `notifications.py`
 
 - Duplicate channel entries:
-  - Cause: Unique constraint violation on (user, channel, address)
-  - Resolution: Use service create method which handles duplicates; or query existing channel
-  - Reference: `notification_channel.py`, `notification_channel_service.py`
+ - Cause: Unique constraint violation on (user, channel, address)
+ - Resolution: Use service create method which handles duplicates; or query existing channel
+ - Reference: `notification_channel.py`, `notification_channel_service.py`
 
 - Channel disabled:
-  - Cause: is_active is False
-  - Resolution: Re-enable the channel via disable/enable operations
-  - Reference: `notification_channel_service.py`
+ - Cause: is_active is False
+ - Resolution: Re-enable the channel via disable/enable operations
+ - Reference: `notification_channel_service.py`
 
 ## Conclusion
-The notification system provides a solid foundation for storing and retrieving notifications, associating them with users and subscriptions, and tracking read/unread status. Multi-channel support is modeled via NotificationChannel, and access control is enforced at the API level. Future enhancements should focus on asynchronous delivery, retry mechanisms, scheduling, templating, and real-time alerts to improve scalability and user experience.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Records and read state are solid. Async send, retries, and templates are the next real work if you need multi-channel delivery.
 
 ## Appendices
 
 ### API endpoints summary
 - GET /notifications
-  - Description: List notifications for the authenticated user
-  - Response: Array of NotificationResponse
-  - Reference: `notifications.py`
+ - Description: List notifications for the authenticated user
+ - Response: Array of NotificationResponse
+ - Reference: `notifications.py`
 
 - GET /notifications/users/{user_id}
-  - Description: List notifications for a specific user (owner-only)
-  - Response: Array of NotificationResponse
-  - Reference: `notifications.py`
+ - Description: List notifications for a specific user (owner-only)
+ - Response: Array of NotificationResponse
+ - Reference: `notifications.py`
 
 - PATCH /notifications/{notification_id}/read
-  - Description: Mark a notification as read (owner-only)
-  - Response: NotificationResponse
-  - Reference: `notifications.py`
+ - Description: Mark a notification as read (owner-only)
+ - Response: NotificationResponse
+ - Reference: `notifications.py`
 
 ### Notification workflow example
 - A new announcement triggers creation of a Notification linked to the user's Subscription

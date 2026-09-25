@@ -1,7 +1,7 @@
 # Phone number validation and normalization
 
 ## Introduction
-This page explains the phone number validation and normalization system used by the application's contact processing pipeline. It covers the cleaning algorithm that removes separators, handles international formats, enforces length constraints, and integrates with the main contact extraction workflows for CSV, Excel, and text files. It also documents the regex patterns used for phone number detection, fallback mechanisms for edge cases, and how the system behaves during manual number entry and file-based import.
+Shared phone cleaning: strip separators, keep a leading plus, require 7-15 digits. Same rules in Python utilities and Pyodide.
 
 ## Project structure
 The phone number validation and normalization logic is implemented in the Python backend and invoked from the Electron frontend via Pyodide. The relevant components are organized as follows:
@@ -34,7 +34,7 @@ Req --> PB_API
 ```
 
 ## Core components
-- Phone number cleaning and normalization: Implemented in shared functions across multiple modules to ensure consistent behavior for manual input and file-based extraction.
+- Phone number cleaning and normalization: Shared helpers used by manual input and file extractors so both paths clean numbers the same way.
 - Manual number parsing: Parses user-entered text into structured contacts, extracting names and numbers with flexible delimiters.
 - File-based contact extraction: Reads CSV, Excel, and text files, detects phone number columns, and normalizes entries.
 - Flask API: Exposes endpoints for validating individual numbers and parsing manual inputs, plus uploading files for batch processing.
@@ -181,7 +181,7 @@ Skip --> Done
 - International format: Numbers that are 11+ digits without a leading plus are auto-prefixed with a plus sign
 - National format: Leading zeros are removed for national numbers unless the number is already internationalized
 
-These rules ensure compatibility with typical global phone number lengths while preserving user-friendly input formats.
+These rules ensure compatibility with typical global phone number lengths while preserving clear input formats.
 
 ### Supported input formats and normalized outputs
 Examples of supported inputs and their normalized outputs:
@@ -198,7 +198,7 @@ Notes:
 ### Integration with the main contact extraction pipeline
 - Manual numbers: Executed in-browser via Pyodide, returning structured contacts immediately.
 - File uploads: Sent to the Flask API, processed server-side, and returned as contacts.
-- Consistent normalization: All paths funnel through the same cleaning/validation functions to ensure uniform behavior.
+- Consistent normalization: All paths funnel through the same cleaning/validation functions.
 
 ## Dependency analysis
 The phone number validation depends on:
@@ -233,37 +233,34 @@ API --> JSON
 - The API enforces a maximum upload size to prevent memory issues.
 - Manual parsing is lightweight and executed in the browser via Pyodide, minimizing server load.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Validation fails (returns None)
-  - Cause: Number has fewer than 7 or more than 15 digits after cleaning.
-  - Resolution: Ensure the number contains only digits and a leading plus if international.
+ - Cause: Number has fewer than 7 or more than 15 digits after cleaning.
+ - Resolution: Ensure the number contains only digits and a leading plus if international.
 - Leading zero stripped unexpectedly
-  - Cause: National number without a leading plus and length > 10 triggers automatic prefixing.
-  - Resolution: Prefix with a plus sign to indicate international format.
+ - Cause: National number without a leading plus and length > 10 triggers automatic prefixing.
+ - Resolution: Prefix with a plus sign to indicate international format.
 - Mixed format not recognized
-  - Cause: Ambiguous separators or short candidate segments.
-  - Resolution: Use "Name: Number" or "Number - Name" formats; ensure at least 7 digits remain after cleaning.
+ - Cause: Ambiguous separators or short candidate segments.
+ - Resolution: Use "Name: Number" or "Number - Name" formats; ensure at least 7 digits remain after cleaning.
 - File parsing errors
-  - Cause: Unsupported file type or encoding issues.
-  - Resolution: Confirm file extension (.csv,.txt,.xlsx,.xls) and UTF-8 encoding; verify column headers or structure.
+ - Cause: Unsupported file type or encoding issues.
+ - Resolution: Confirm file extension (.csv, .txt, .xlsx, .xls) and UTF-8 encoding; verify column headers or structure.
 
 ## Conclusion
-The phone number validation and normalization system provides a reliable, consistent pipeline across manual entry and file-based import. Its cleaning algorithm, regex-based detection, and strict length constraints ensure reliable processing of diverse input formats while maintaining international compatibility. The integration with the Electron frontend via Pyodide and the Flask API ensures smooth operation in both browser and server contexts.
 
-[No sources needed since this section summarizes without analyzing specific files]
+Keep the 7-15 digit rule unless you have a real reason to widen it. Diverging Python and Pyodide copies will create hard-to-spot bugs.
 
 ## Appendices
 
 ### API endpoints reference
 - POST /parse-manual-numbers
-  - Request body: { numbers: string }
-  - Response: { success: boolean, contacts: [{ number: string, name: string|null }], count: number, message: string }
+ - Request body: { numbers: string }
+ - Response: { success: boolean, contacts: [{ number: string, name: string|null }], count: number, message: string }
 - POST /validate-number
-  - Request body: { number: string }
-  - Response: { valid: boolean, cleaned_number: string|null, original: string }
+ - Request body: { number: string }
+ - Response: { valid: boolean, cleaned_number: string|null, original: string }
 - POST /upload
-  - Form-data: file (txt, csv, xlsx, xls)
-  - Response: { success: boolean, contacts: [{ number: string, name: string|null }], count: number, message: string }
+ - Form-data: file (txt, csv, xlsx, xls)
+ - Response: { success: boolean, contacts: [{ number: string, name: string|null }], count: number, message: string }

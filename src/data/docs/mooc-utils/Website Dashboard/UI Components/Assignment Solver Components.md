@@ -1,7 +1,7 @@
 # Assignment solver components
 
 ## Introduction
-This page focuses on the assignment solver's browser extension and its integration with the website's user interface. It explains how the ExtensionDownload component guides users through installing the extension, how the extension integrates with the website's authentication system, and how the extension coordinates with the browser to solve assignments on supported MOOC platforms. It also covers installation instructions, permissions, troubleshooting, and customization options for different deployment scenarios.
+Website UI for the assignment solver, mainly the ExtensionDownload flow and how it points people at Chrome or Firefox installs.
 
 ## Project structure
 The assignment solver spans two major parts:
@@ -145,7 +145,7 @@ Mechanisms:
 - Optional API checks prevent failures when certain APIs are unavailable.
 
 ## Dependency analysis
-The extension's UI and background communicate via a well-defined message protocol. Platform adapters encapsulate browser differences, enabling cross-browser compatibility.
+The extension's UI and background communicate via a fixed message protocol. Platform adapters encapsulate browser differences, enabling cross-browser compatibility.
 
 ```mermaid
 graph LR
@@ -167,8 +167,6 @@ MAN --> UI
 - Backoff and retry: UI initialization waits for the background worker with exponential backoff to handle timing differences (notably in Firefox).
 - Batch operations: Answer application is performed incrementally with small delays to balance responsiveness and stability.
 - Optional screenshots: Screenshot capture is attempted but gracefully continues without screenshots if unavailable.
-
-[No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 Common installation issues:
@@ -192,4 +190,4 @@ Background readiness:
 - If the UI reports "Background may not be ready," wait and retry. The UI performs ping attempts with exponential backoff.
 
 ## Conclusion
-The ExtensionDownload component is the onboarding entry point for the assignment solver extension, guiding users through installation and manual setup. The extension's side panel integrates tightly with the background worker and content scripts to deliver a smooth assignment-solving experience across supported browsers. With unified adapters and dynamic manifest generation, the extension maintains compatibility while providing reliable error handling and performance optimizations.
+Download CTAs should deep-link to the right store or zip. Do not pretend install succeeded until the user confirms the extension ID.

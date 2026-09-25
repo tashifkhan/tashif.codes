@@ -1,7 +1,7 @@
 # Tool integration system
 
 ## Introduction
-This page explains the tool integration system within the AI agent framework. It focuses on how tools are defined as StructuredTool instances, how the AGENT_TOOLS registry is constructed, how tools are selected and invoked via tools_condition, and how tool outputs are integrated back into the agent's message flow. It also covers tool registration, parameter validation, error handling, context management, and how to add new tools to the ecosystem.
+`StructuredTool` definitions, the `AGENT_TOOLS` registry, `tools_condition` selection, `ToolNode` execution, and how results re-enter the message list.
 
 ## Project structure
 The tool integration spans several layers:
@@ -54,7 +54,7 @@ BUS --> AS
 - Context propagation: The agent receives credentials and optional page context via the service layer and passes them to the tool builder.
 
 ## Architecture overview
-The system integrates frontend commands, backend orchestration, and tool execution into a cohesive pipeline.
+Frontend commands, backend orchestration, and tool execution share one pipeline.
 
 ```mermaid
 sequenceDiagram
@@ -87,21 +87,21 @@ API-->>FE : "response"
 
 ### AGENT_TOOLS registry and StructuredTool instances
 - The registry is built by build_agent_tools(context) which:
-  - Loads default tools (GitHub, web search, website, YouTube, browser action).
-  - Conditionally adds Gmail and Calendar tools when a Google access token is present.
-  - Conditionally adds PyJIIT tool when a login session payload is present.
-- Each tool is a StructuredTool with:
-  - name and description for LLM tool selection.
-  - args_schema (Pydantic model) for input validation.
-  - coroutine implementing the tool logic.
+ - Loads default tools (GitHub, web search, website, YouTube, browser action).
+ - Conditionally adds Gmail and Calendar tools when a Google access token is present.
+ - Conditionally adds PyJIIT tool when a login session payload is present.
+- Each tool is a StructuredTool :
+ - name and description for LLM tool selection.
+ - args_schema (Pydantic model) for input validation.
+ - coroutine implementing the tool logic.
 
 Examples of tool registration and validation:
 - GitHub tool: Validates URL and question, converts repository to markdown, and queries a chain.
 - Web search tool: Validates query and max_results bounds, runs Tavily search, and formats results.
 - Website tool: Fetches page markdown and answers questions.
 - YouTube tool: Uses transcript and metadata to answer questions.
-- Gmail tools: Validate access tokens and enforce max result bounds; handle errors gracefully.
-- Calendar tools: Validate time ranges and access tokens; handle errors gracefully.
+- Gmail tools: Validate access tokens and enforce max result bounds; handle errors .
+- Calendar tools: Validate time ranges and access tokens; handle errors .
 - PyJIIT tool: Validates session payload and handles mapping of registration codes to IDs.
 - Browser action tool: Accepts goal, target_url, DOM structure, and constraints; generates an action plan.
 
@@ -141,34 +141,34 @@ AN-->>AN : "Reason and decide next step"
 
 ### Tool registration, parameter validation, and error handling
 - Registration:
-  - Tools are declared as StructuredTool instances with args_schema.
-  - build_agent_tools dynamically augments tools based on context (tokens, session payloads).
+ - Tools are declared as StructuredTool instances with args_schema.
+ - build_agent_tools dynamically augments tools based on context (tokens, session payloads).
 - Parameter validation:
-  - Pydantic models define required fields, types, and constraints (e.g., URL formats, numeric ranges).
+ - Pydantic models define required fields, types, and constraints (e.g., URL formats, numeric ranges).
 - Error handling:
-  - Tools wrap external calls in try/except and return informative error strings.
-  - Some tools enforce bounds (e.g., max_results) and normalize inputs.
-  - Action plan generation includes sanitization to prevent unsafe patterns.
+ - Tools wrap external calls in try/except and return informative error strings.
+ - Some tools enforce bounds (e.g., max_results) and normalize inputs.
+ - Action plan generation includes sanitization to prevent unsafe patterns.
 
 ### Tool execution context management and state preservation
 - Context injection:
-  - ReactAgentService builds a context dictionary from incoming request fields (e.g., google_access_token, pyjiit_login_response, client_html).
-  - GraphBuilder(context) passes this context to build_agent_tools, enabling conditional tool availability.
+ - ReactAgentService builds a context dictionary from incoming request fields (e.g., google_access_token, pyjiit_login_response, client_html).
+ - GraphBuilder(context) passes this context to build_agent_tools, enabling conditional tool availability.
 - Page context:
-  - When client_html is provided, the service converts it to markdown and injects it as a SystemMessage to guide the agent.
+ - When client_html is provided, the service converts it to markdown and injects it as a SystemMessage to guide the agent.
 - State preservation:
-  - The agent maintains a messages list; ToolMessage preserves tool_call_id to correlate tool outputs with tool_calls.
+ - The agent maintains a messages list; ToolMessage preserves tool_call_id to correlate tool outputs with tool_calls.
 
-### Relationship between agent tools and the broader tool ecosystem
+### How agent tools relate to other tools
 - Tool modules encapsulate domain-specific logic:
-  - Web search via Tavily.
-  - Website context conversion to markdown.
-  - Browser automation via an LLM-generated action plan.
+ - Web search via Tavily.
+ - Website context conversion to markdown.
+ - Browser automation via an LLM-generated action plan.
 - The browser action tool bridges the agent to the extension's automation:
-  - It accepts goal, target_url, DOM structure, and constraints.
-  - It delegates to AgentService to generate a validated action plan.
+ - It accepts goal, target_url, DOM structure, and constraints.
+ - It delegates to AgentService to generate a validated action plan.
 
-### Adding new tools to the ecosystem
+### Adding new tools
 To add a new tool:
 1. Define a Pydantic args_schema for input validation.
 2. Implement a coroutine that performs the tool logic and returns a string or structured output.
@@ -186,21 +186,21 @@ D --> E["Expose via API or extension"]
 
 ## Dependency analysis
 - Agents depend on:
-  - LangGraph ToolNode and tools_condition for execution control.
-  - AGENT_TOOLS registry for available tools.
+ - LangGraph ToolNode and tools_condition for execution control.
+ - AGENT_TOOLS registry for available tools.
 - Tools depend on:
-  - External services (e.g., Tavily, Gmail, Calendar APIs).
-  - Internal services (e.g., AgentService for browser automation).
+ - External services (e.g., Tavily, Gmail, Calendar APIs).
+ - Internal services (e.g., AgentService for browser automation).
 - Frontend depends on:
-  - AgentMap to route commands to backend endpoints.
-  - executeAgent to construct payloads and handle responses.
+ - AgentMap to route commands to backend endpoints.
+ - executeAgent to construct payloads and handle responses.
 
 ```mermaid
 graph LR
 RT["agents/react_tools.py"] --> RA["agents/react_agent.py"]
 RA --> LG["langgraph ToolNode"]
 LG --> RT
-EA["extension/.../executeAgent.ts"] --> API["routers/react_agent.py"]
+EA["clients/browser-extension/entrypoints/utils/executeAgent.ts"] --> API["routers/react_agent.py"]
 API --> SVC["services/react_agent_service.py"]
 SVC --> RA
 BA["tools/browser_use/tool.py"] --> BUS["services/browser_use_service.py"]
@@ -213,22 +213,21 @@ BUS --> AS["utils/agent_sanitizer.py"]
 - Payload minimization: Tools return concise summaries or structured outputs; avoid returning overly large documents.
 - Caching: GraphBuilder uses caching to avoid recompiling the workflow.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Missing credentials:
-  - Symptom: Tools return messages indicating missing tokens or session data.
-  - Resolution: Ensure google_access_token and/or pyjiit_login_response are provided in the request context.
+ - Symptom: Tools return messages indicating missing tokens or session data.
+ - Resolution: Ensure google_access_token and/or pyjiit_login_response are provided in the request context.
 - Tool execution errors:
-  - Symptom: Tool outputs include error strings.
-  - Resolution: Inspect tool-specific error handling and logs; verify external API keys and scopes.
+ - Symptom: Tool outputs include error strings.
+ - Resolution: Inspect tool-specific error handling and logs; verify external API keys and scopes.
 - Action plan validation failures:
-  - Symptom: Generated action plans are rejected due to missing fields or unsafe patterns.
-  - Resolution: Review agent-sanitizer validations and adjust action plan generation logic.
+ - Symptom: Generated action plans are rejected due to missing fields or unsafe patterns.
+ - Resolution: Review agent-sanitizer validations and adjust action plan generation logic.
 - Frontend routing:
-  - Symptom: Commands do not reach the intended backend endpoint.
-  - Resolution: Verify agent-map entries and executeAgent payload construction.
+ - Symptom: Commands do not reach the intended backend endpoint.
+ - Resolution: Verify agent-map entries and executeAgent payload construction.
 
 ## Conclusion
-The tool integration system combines a reliable AGENT_TOOLS registry, strict parameter validation, and resilient error handling to enable reliable agent-driven workflows. Tools are structured as LangGraph-compatible StructuredTool instances, selected via tools_condition, and executed through ToolNode. Context is propagated from frontend to backend and injected into the agent runtime, while tool outputs are integrated back into the message flow. The system supports easy addition of new tools and safe automation via validated action plans.
+Register tools with strict schemas, let `tools_condition` choose, execute through `ToolNode`, and push `ToolMessage` results back into state. Context from the extension is injected before the run.
+

@@ -1,7 +1,7 @@
 # Testing strategy
 
 ## Introduction
-This page defines a detailed testing strategy for Agentic Browser. It covers unit testing, integration testing, API testing, and browser extension testing methodologies. It explains the frameworks and patterns used, mock strategies for external dependencies, and how to test AI agent behavior, tool execution, service integrations, and browser automation. It also documents MCP protocol communication, WebSocket functionality, and extension messaging. Guidance is included for asynchronous operations, browser automation scenarios, and external API interactions, along with examples of test implementation, CI setup, and automated workflows. Challenges specific to AI systems, browser automation, and multi-component architectures are addressed, alongside performance, security, and user acceptance testing approaches.
+How we test Agentic Browser: unit and integration for Python, API checks, extension messaging, and the awkward bits (async agents, MCP, WebSockets). Mock external APIs; do not hit real Gmail in CI.
 
 ## Project structure
 Agentic Browser comprises:
@@ -16,7 +16,7 @@ Agentic Browser comprises:
 graph TB
 subgraph "Backend"
 MCP["MCP Server<br/>mcp_server/server.py"]
-API["FastAPI Server<br/>api/run.py"]
+API["FastAPI Server<br/>main.py"]
 CFG["Config & Env<br/>core/config.py"]
 LLM["LLM Adapter<br/>core/llm.py"]
 AG["React Agent<br/>agents/react_agent.py"]
@@ -24,8 +24,8 @@ RT["Agent Tools<br/>agents/react_tools.py"]
 BRSVC["Browser Use Service<br/>services/browser_use_service.py"]
 end
 subgraph "Extension"
-EXT["React Extension<br/>extension/*"]
-WS["WebSocket Client<br/>extension/entrypoints/utils/websocket-client.ts"]
+EXT["React Extension<br/>clients/browser-extension/*"]
+WS["WebSocket Client<br/>clients/browser-extension/entrypoints/utils/websocket-client.ts"]
 end
 subgraph "External"
 GAPI["Gmail API"]
@@ -60,7 +60,7 @@ AG --> RT
 
 ## Architecture overview
 The system is composed of:
-- CLI entrypoint selecting between API and MCP modes
+- CLI entrypoint: FastAPI via `main.py` / `agentic-api-run`, stdio MCP via `agentic-mcp`
 - MCP server exposing tools and invoking LLM adapters
 - Agent runtime orchestrating tool use and execution
 - Services and tools integrating with external APIs
@@ -136,7 +136,7 @@ Mock strategies:
 - Inject environment variables for API keys and base URLs
 - Simulate provider-specific exceptions to validate error handling
 
-Best practices:
+Notes:
 - Keep provider-specific logic isolated behind a configuration map
 - Validate inputs early and fail fast with clear error messages
 
@@ -251,8 +251,6 @@ WS --> API["FastAPI Server"]
 - Browser automation: Limit DOM size and action plan complexity; validate sanitization overhead
 - WebSocket throughput: Test message batching and reconnection logic
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and remedies:
 - Missing environment variables for API keys or base URLs: Validate configuration loading and provide clear error messages
@@ -261,19 +259,15 @@ Common issues and remedies:
 - WebSocket connection drops: Implement retry logic and UI feedback; test disconnection/reconnection flows
 
 ## Conclusion
-This testing strategy emphasizes isolation of external dependencies, deterministic mocking, and detailed coverage of asynchronous flows. By structuring tests around the MCP server, agent runtime, tools, services, and extension, teams can ensure reliable behavior across model providers, browser automation, and multi-component integrations.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Isolate providers and browsers behind fakes, cover async paths on purpose, and keep fixtures small. If a test needs a live network, it does not belong in the default suite.
 
 ## Appendices
 
-### Testing best practices for asynchronous operations
+### Testing asynchronous operations
 - Use pytest-asyncio for async tests
 - Prefer deterministic mocks over real network calls
 - Test timeout and cancellation paths
 - Validate concurrency and resource cleanup
-
-[No sources needed since this section provides general guidance]
 
 ### Browser automation scenarios
 - Simulate DOM structures and constraints
@@ -283,7 +277,7 @@ This testing strategy emphasizes isolation of external dependencies, determinist
 
 ### External API interactions
 - Mock OAuth flows and API responses
-- Validate error propagation and user-friendly messages
+- Validate error propagation and plain messages
 - Test optional credentials and default session handling
 
 ### Continuous integration setup
@@ -292,25 +286,18 @@ This testing strategy emphasizes isolation of external dependencies, determinist
 - Extension job: run TypeScript checks and build verification
 - Cache dependencies and reuse virtual environments
 
-[No sources needed since this section provides general guidance]
-
 ### Automated testing workflows
 - Pre-submit checks: lint, type checks, unit tests
 - Post-submit checks: integration tests against staging
-- Nightly smoke tests: end-to-end MCP and WebSocket flows
-
-[No sources needed since this section provides general guidance]
+- Nightly smoke tests: MCP and WebSocket flows
 
 ### Security testing approaches
 - Input validation and sanitization for agent inputs and DOM structures
 - Authorization checks for tools requiring credentials
 - Audit logs for all tool invocations and browser actions
 
-[No sources needed since this section provides general guidance]
-
 ### User acceptance testing
 - Define scenarios for agent workflows and browser automation
 - Validate UI rendering and user feedback for WebSocket status
 - Collect regression tests from real-world usage
 
-[No sources needed since this section provides general guidance]

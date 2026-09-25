@@ -1,15 +1,10 @@
 # Email processing & classification
 
 ## Introduction
-This page explains the email processing and classification system that powers the notification pipeline for general notices and updates. It covers:
-- Notice classification algorithms using LLM-based prompts
-- Email parsing pipeline (headers, bodies, metadata)
-- Notice types, priority, filtering, and content enrichment
-- Integration with email clients, authentication, and batch processing
-- Examples of processed data structures, accuracy considerations, and handling of malformed or suspicious emails
+How general notices get classified. Header/body parsing, LLM prompts for type and priority, filtering noise, and enriching content before it hits the formatters.
 
 ## Project structure
-The email processing system centers around a LangGraph pipeline that classifies incoming emails and extracts structured notices. It integrates with:
+The email processing system centers around a LangGraph pipeline that classifies incoming emails and extracts structured notices. It integrates :
 - Google Groups client for fetching unread emails
 - LLM prompts for classification and extraction
 - Database persistence for notices and policy documents
@@ -247,7 +242,7 @@ WH --> WP["WebPushService"]
 
 ## Performance considerations
 - Batch processing: The CLI orchestrator fetches unread IDs and processes emails sequentially, marking as read upon success to prevent reprocessing.
-- Retry strategy: Up to two retries for extraction failures to improve robustness.
+- Retry strategy: up to two retries when extraction fails.
 - Lazy enrichment: Jobs are enriched only when matched by the LLM, minimizing expensive API calls.
 - Connection reuse: GoogleGroupsClient connects per-operation and disconnects to avoid stale connections.
 - Logging and daemon mode: Centralized logging and daemon mode reduce overhead in production.
@@ -264,8 +259,6 @@ Common issues and resolutions:
 
 ## Conclusion
 The email processing and classification system uses LLM-driven prompts to reliably extract and structure notices from multiple sources. It integrates smoothly with email clients, enforces deduplication, and delivers notifications across channels while maintaining a modular, testable architecture.
-
-[No sources needed since this section summarizes without analyzing specific files]
 
 ## Appendices
 

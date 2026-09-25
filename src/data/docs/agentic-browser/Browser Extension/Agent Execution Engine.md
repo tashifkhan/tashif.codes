@@ -1,14 +1,7 @@
 # Agent execution engine
 
 ## Introduction
-This page describes the Agent Execution Engine that powers AI agent interactions within the Agentic Browser extension. It focuses on:
-- Orchestrating agent interactions via the AgentExecutor component
-- Parsing user commands with parseAgentCommand
-- Executing agent invocations with executeAgent
-- Real-time streaming via WebSocket integration
-- Conversation history management and session persistence
-- Browser automation actions triggered by agent responses
-- Backend orchestration for the React agent and tooling
+From side-panel command to backend agent: parsing, HTTP vs WebSocket modes, conversation state, and handing browser plans to the extension runtime.
 
 ## Project structure
 The Agent Execution Engine spans the extension UI, utilities, and the backend API:
@@ -28,8 +21,7 @@ BG["background.ts"]
 CT["content.ts"]
 end
 subgraph "Backend API"
-API["api/main.py"]
-RUN["api/run.py"]
+API["main.py"]
 REACT_SVC["services/react_agent_service.py"]
 REACT_GRAPH["agents/react_agent.py"]
 REACT_TOOLS["agents/react_tools.py"]
@@ -68,7 +60,7 @@ participant UI as "AgentExecutor.tsx"
 participant Parser as "parseAgentCommand.ts"
 participant Exec as "executeAgent.ts"
 participant WS as "websocket-client.ts"
-participant API as "api/main.py"
+participant API as "main.py"
 participant Svc as "services/react_agent_service.py"
 participant Graph as "agents/react_agent.py"
 participant Tools as "agents/react_tools.py"
@@ -169,11 +161,11 @@ Key processing steps:
 - Capture client HTML for context-aware agents
 - Normalize GitHub URLs to repository base when appropriate
 - Build payloads for:
-  - React agent: question + chat_history + tokens + optional HTML + file path
-  - YouTube/Website/GitHub: url + question + chat_history + optional HTML + file path
-  - Browser action script generator: goal + target_url + DOM structure + constraints
-  - Skills execution: skill_name + prompt + chat_history + tokens + optional HTML + file path
-  - JIIT login/attendance: credentials/session payloads
+ - React agent: question + chat_history + tokens + optional HTML + file path
+ - YouTube/Website/GitHub: url + question + chat_history + optional HTML + file path
+ - Browser action script generator: goal + target_url + DOM structure + constraints
+ - Skills execution: skill_name + prompt + chat_history + tokens + optional HTML + file path
+ - JIIT login/attendance: credentials/session payloads
 - Dispatch GET for health endpoint, otherwise POST with JSON body
 - Return parsed JSON or throw formatted HTTP errors
 
@@ -209,7 +201,7 @@ AgentExecutor integrates wsClient when the command is not yet complete or when W
 sequenceDiagram
 participant UI as "AgentExecutor.tsx"
 participant WS as "websocket-client.ts"
-participant API as "api/main.py"
+participant API as "main.py"
 UI->>WS : executeAgent(command, onProgress)
 WS->>API : emit execute_agent {command}
 API-->>WS : on generation_progress : {status,message}
@@ -250,7 +242,7 @@ The backend routes requests to specialized services:
 
 ```mermaid
 graph TB
-API["api/main.py"] --> Router["Routers"]
+API["main.py"] --> Router["Routers"]
 Router --> React["/api/genai/react"]
 Router --> Tools["/api/* (tools, gmail, calendar, pyjiit, upload, skills)"]
 React --> Svc["services/react_agent_service.py"]
@@ -260,20 +252,20 @@ Graph --> ToolsList["agents/react_tools.py"]
 
 ## Dependency analysis
 - AgentExecutor depends on:
-  - parseAgentCommand for command interpretation
-  - executeAgent for HTTP execution
-  - wsClient for WebSocket execution
-  - executeActions for browser automation
-  - agent-map for endpoint resolution
+ - parseAgentCommand for command interpretation
+ - executeAgent for HTTP execution
+ - wsClient for WebSocket execution
+ - executeActions for browser automation
+ - agent-map for endpoint resolution
 - executeAgent depends on:
-  - AGENT_MAP for endpoint mapping
-  - browser APIs for tabs, scripting, storage
-  - URL normalization and HTML capture
+ - AGENT_MAP for endpoint mapping
+ - browser APIs for tabs, scripting, storage
+ - URL normalization and HTML capture
 - wsClient depends on:
-  - Socket.IO client and emits/receives events
+ - Socket.IO client and emits/receives events
 - Backend depends on:
-  - LangGraph workflow and tool registry
-  - Tool implementations for external integrations
+ - LangGraph workflow and tool registry
+ - Tool implementations for external integrations
 
 ```mermaid
 graph LR
@@ -282,7 +274,7 @@ UI --> Exec["executeAgent.ts"]
 UI --> WS["websocket-client.ts"]
 UI --> Actions["executeActions.ts"]
 Exec --> Map["agent-map.ts"]
-WS --> API["api/main.py"]
+WS --> API["main.py"]
 API --> Svc["services/react_agent_service.py"]
 Svc --> Graph["agents/react_agent.py"]
 Graph --> Tools["agents/react_tools.py"]
@@ -295,25 +287,24 @@ Graph --> Tools["agents/react_tools.py"]
 - Tab operations: Avoid unnecessary tab queries; cache active tab URL when available.
 - Tool execution: Batch actions with small delays to prevent overwhelming the page context.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and strategies:
 - Command parsing failures:
-  - Ensure slash commands follow the "agent-action" pattern or start with "/"
-  - Use agent/action suggestions to validate spelling and availability
+ - Ensure slash commands follow the "agent-action" pattern or start with "/"
+ - Use agent/action suggestions to validate spelling and availability
 - WebSocket connectivity:
-  - Verify wsClient is connected; reconnect attempts are automatic
-  - Inspect "connection_status" events and error messages
+ - Verify wsClient is connected; reconnect attempts are automatic
+ - Inspect "connection_status" events and error messages
 - HTTP errors:
-  - executeAgent throws formatted errors with HTTP status and body text
-  - For file upload endpoint, use the attachment button; direct slash command without a file is rejected
+ - executeAgent throws formatted errors with HTTP status and body text
+ - For file upload endpoint, use the attachment button; direct slash command without a file is rejected
 - Tab context and HTML capture:
-  - If no active tab is found, fallback to empty context
-  - HTML capture failures are logged; ensure permissions and tab availability
+ - If no active tab is found, fallback to empty context
+ - HTML capture failures are logged; ensure permissions and tab availability
 - Browser actions:
-  - CLICK/TYPE rely on content script messaging; ensure the active tab is reachable
-  - SWITCH_TAB is a placeholder; implement tab lookup logic if needed
+ - CLICK/TYPE rely on content script messaging; ensure the active tab is reachable
+ - SWITCH_TAB is a placeholder; implement tab lookup logic if needed
 
 ## Conclusion
-The Agent Execution Engine combines a React-driven UI, reliable command parsing, flexible execution modes (HTTP/WebSocket), and integrated browser automation to deliver a smooth agent experience. Its modular design allows easy extension of agents and tools while maintaining clear separation of concerns between frontend orchestration and backend processing.
+UI parses the command, transport runs it, automation executes approved plans. Keep frontend orchestration separate from backend graph logic.
+

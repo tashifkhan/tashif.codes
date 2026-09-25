@@ -1,13 +1,11 @@
 # Utility components
 
 ## Introduction
-This page explains the utility and helper components that support the overall application functionality. It focuses on:
-- AuthGuard: route protection and authentication state management
-- ModeToggle: dark/light/system theme switching
+Smaller helpers used across the site:
+- AuthGuard: route protection and auth state
+- ModeToggle: dark/light/system theme
 - NavHeader: navigation and branding
-- Example components: development reference and UI showcase
-
-It describes responsibilities, integration patterns with the authentication system, props and events, and how these components contribute to user experience and application architecture.
+- Example components: reference compositions for cards, forms, dialogs, and menus
 
 ## Project structure
 The utility components live under website/components and integrate with the authentication provider and theme provider via website/lib/providers. The layout composes NavHeader globally, while AuthGuard wraps protected routes.
@@ -42,7 +40,7 @@ EXAMPLE --> EXWRAPPER
 - AuthGuard: Protects routes by checking authentication state and redirecting unauthenticated users to the login page while rendering a loading indicator during initialization.
 - ModeToggle: Provides theme switching (light, dark, system) using next-themes and UI dropdown primitives.
 - NavHeader: Implements responsive navigation with logo, desktop links, action buttons, and mobile menu, integrating ModeToggle and scroll-aware styling.
-- Example components: Provide a development reference and showcase of UI primitives for cards, forms, dialogs, and menus.
+- Example components: Provide a development reference and examples of UI primitives for cards, forms, dialogs, and menus.
 
 ## Architecture overview
 The authentication and theming systems are initialized at the root level and consumed by utility components and pages.
@@ -191,7 +189,7 @@ Composition:
 
 Usage:
 - Used in development and documentation contexts to show component behavior
-- Demonstrates nested components like AlertDialog inside Card
+- Shows nested components like AlertDialog inside Card
 
 ## Dependency analysis
 The components depend on shared libraries and providers:
@@ -219,20 +217,14 @@ TYPES --> API
 ## Troubleshooting guide
 Common issues and resolutions:
 - AuthGuard redirect loop on login:
-  - Ensure the login page does not require authentication and guards against authenticated users.
-  - Verify AuthProvider initializes correctly and useAuth returns expected values.
+ - Ensure the login page does not require authentication and guards against authenticated users.
+ - Verify AuthProvider initializes correctly and useAuth returns expected values.
 - AuthGuard shows loader indefinitely:
-  - Confirm the session loading completes and isAuthenticated transitions after initial hydration.
+ - Confirm the session loading completes and isAuthenticated transitions after initial hydration.
 - Theme toggle not applying:
-  - Check that next-themes provider is mounted and ModeToggle invokes setTheme.
+ - Check that next-themes provider is mounted and ModeToggle invokes setTheme.
 - Navigation not responsive:
-  - Verify mobileOpen state toggles and Tailwind classes apply correctly on small screens.
+ - Verify mobileOpen state toggles and Tailwind classes apply correctly on small screens.
 
 ## Conclusion
-These utility components form the backbone of user experience and application structure:
-- AuthGuard ensures secure access to protected areas
-- ModeToggle improves accessibility and personalization
-- NavHeader delivers consistent navigation and branding across contexts
-- Example components provide a practical reference for building UIs
-
-They integrate cleanly with the authentication and theming providers, enabling scalable and maintainable frontend architecture.
+Examples exist so you can copy a working Dialog or Field pattern instead of inventing another.

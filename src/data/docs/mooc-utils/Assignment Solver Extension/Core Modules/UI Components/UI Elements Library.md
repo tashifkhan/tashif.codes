@@ -1,23 +1,19 @@
 # UI elements library
 
 ## Introduction
-This page describes the UI elements library and utility functions across two distinct UI systems in the repository:
-- A browser extension side panel UI built with vanilla JavaScript and a dependency injection pattern.
-- A Next.js website UI built with React components and Tailwind CSS utility functions.
-
-It explains the element factory pattern for DOM element acquisition, DOM selection strategies, component composition approaches, utility functions for UI helpers and event handling, styling and responsive design patterns, accessibility considerations, examples of element creation and dynamic UI updates, error handling, performance optimization, and cross-browser compatibility strategies.
+Building blocks used in the side panel UI, plus related website UI helpers where they overlap.
 
 ## Project structure
 The UI systems are organized as follows:
 - Browser extension side panel:
-  - UI entry point initializes controllers and wiring.
-  - Element registry centralizes DOM queries.
-  - Controllers encapsulate UI logic and state.
-  - Utilities provide escaping and formatting helpers.
+ - UI entry point initializes controllers and wiring.
+ - Element registry centralizes DOM queries.
+ - Controllers encapsulate UI logic and state.
+ - Utilities provide escaping and formatting helpers.
 - Website (Next.js):
-  - Shared utility for Tailwind class merging.
-  - Reusable React UI primitives (Button, Input, Dialog, Card).
-  - Example page-level component demonstrating composition.
+ - Shared utility for Tailwind class merging.
+ - Reusable React UI primitives (Button, Input, Dialog, Card).
+ - Example page-level component demonstrating composition.
 
 ```mermaid
 graph TB
@@ -56,13 +52,13 @@ Hero --> CardComp
 ```
 
 ## Core components
-- Element factory pattern: Centralized DOM retrieval via a single function returning a map of element references. This improves maintainability and testability by isolating DOM queries.
+- Element factory pattern: Centralized DOM retrieval via a single function returning a map of element references. Centralizing DOM queries keeps tests from scraping the whole panel.
 - State manager: Encapsulated state with getters/setters and reset capability, enabling predictable UI state transitions.
-- Controller factory pattern: Each controller exposes initialization and lifecycle methods, promoting separation of concerns and DI-friendly wiring.
+- Controller factory pattern: Each controller exposes initialization and lifecycle methods, promoting layer boundaries and DI-friendly wiring.
 - Utilities:
-  - HTML escaping for safe innerHTML insertion.
-  - Question type formatting for display.
-  - Tailwind class merging utility for React components.
+ - HTML escaping for safe innerHTML insertion.
+ - Question type formatting for display.
+ - Tailwind class merging utility for React components.
 
 Examples of element creation and dynamic updates are covered in the detailed component analysis.
 
@@ -102,9 +98,9 @@ CtlSolve->>CtlSolve : handleSolve() -> extract -> solve -> fill -> submit
 - Safe nested queries: Uses chained getElementById and querySelector to access nested nodes (e.g., status text inside status bar).
 - Modal and form elements: Captures inputs, selects, and buttons for settings and progress UI.
 - Selection strategies:
-  - Prefer getElementById for unique identifiers.
-  - Use querySelector for scoped children to avoid global conflicts.
-  - Guard against missing elements to prevent runtime errors.
+ - Prefer getElementById for unique identifiers.
+ - Use querySelector for scoped children to avoid global conflicts.
+ - Guard against missing elements to prevent runtime errors.
 
 ```mermaid
 flowchart TD
@@ -178,7 +174,7 @@ Ctl-->>UI : return success/failure
 ```
 
 ### Solve controller
-- Orchestrates the end-to-end flow: extract HTML/screenshots, AI extraction, AI solving, filling answers, optional auto-submit, and results rendering.
+- Orchestrates the full flow: extract HTML/screenshots, AI extraction, AI solving, filling answers, optional auto-submit, and results rendering.
 - Implements recursive splitting on MAX_TOKENS errors to handle long inputs.
 - Uses progress controller for status and progress updates.
 - Uses utilities for HTML escaping and question type formatting.
@@ -234,7 +230,7 @@ Listen --> Reload["Re-check on update"]
 - Input component: Base UI input with consistent styling and accessibility props.
 - Dialog component: Portal-backed overlay with optional close button and slots for header/footer/title/description.
 - Card component: Flexible card with header/content/footer/title/action and size variants.
-- Hero page component: Demonstrates composition of UI primitives and responsive layout.
+- Hero page component: composes UI primitives in a responsive layout.
 
 ```mermaid
 classDiagram
@@ -277,18 +273,18 @@ TailwindUtils <.. Card : "cn()"
 
 ### Event handling and user interaction management
 - Event delegation and listener initialization are centralized in controller init methods.
-- Modal interactions (open/close/save) are handled with clear separation of concerns.
+- Modal open/close/save logic stays out of the content render path.
 - Dynamic UI updates (progress bars, status text, step indicators) occur in response to controller actions.
 
 ### Styling approaches and responsive design patterns
 - Extension UI:
-  - Uses CSS variables for accent colors and status dot styling.
-  - Applies classes conditionally to reflect loading/error states.
-  - Progress bar width and pulse animation are toggled dynamically.
+ - Uses CSS variables for accent colors and status dot styling.
+ - Applies classes conditionally to reflect loading/error states.
+ - Progress bar width and pulse animation are toggled dynamically.
 - Website UI:
-  - Tailwind utilities for responsive spacing, typography, and layout.
-  - Component-level variants (size/variant) and data attributes for styling hooks.
-  - Responsive breakpoints and fluid typography via clamp and grid layouts.
+ - Tailwind utilities for responsive spacing, typography, and layout.
+ - Component-level variants (size/variant) and data attributes for styling hooks.
+ - Responsive breakpoints and fluid typography via clamp and grid layouts.
 
 ### Accessibility considerations
 - Focus management and keyboard navigation are supported by underlying Base UI primitives.
@@ -332,28 +328,22 @@ CardComp["card.tsx"] --> UtilsTS
 - Message retries: Use retry mechanisms with exponential backoff for background communication.
 - Virtualization: For large lists, consider virtualizing results rendering.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 - Missing elements: Guard DOM queries and log warnings when elements are absent.
 - Background readiness: Wait for background script readiness before proceeding, especially on Firefox.
 - Error propagation: Surface errors to UI with setStatus and optionally relay to background for debugging.
 - Storage failures: Validate required settings (API key) before starting flows.
-- Cross-tab operations: Pin target tab ID early to ensure subsequent messages route correctly.
+- Cross-tab operations: Pin target tab ID early so subsequent messages route correctly.
 
 ## Conclusion
-The UI library combines a clean element factory pattern, DI-driven controllers, and reliable utilities to deliver a maintainable and extensible UI system. The extension UI emphasizes resilient DOM manipulation and progress feedback, while the website UI uses React components and Tailwind utilities for consistent, accessible, and responsive design. Together, they demonstrate best practices in component composition, event handling, styling, and cross-browser compatibility.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Reuse the small element helpers before inventing new markup. Visual consistency beats one-off CSS.
 
 ## Appendices
 - Cross-browser compatibility:
-  - Use Base UI primitives for standardized behavior.
-  - Feature-detect and polyfill where necessary (e.g., message passing APIs).
-  - Test modal overlays and transitions across browsers.
+ - Use Base UI primitives for standardized behavior.
+ - Feature-detect and polyfill where necessary (e.g., message passing APIs).
+ - Test modal overlays and transitions across browsers.
 - Accessibility checklist:
-  - Ensure focus order and visible focus indicators.
-  - Provide ARIA labels and roles where custom elements are used.
-  - Maintain sufficient color contrast for status indicators.
-
-[No sources needed since this section provides general guidance]
+ - Ensure focus order and visible focus indicators.
+ - Provide ARIA labels and roles where custom elements are used.
+ - Maintain sufficient color contrast for status indicators.

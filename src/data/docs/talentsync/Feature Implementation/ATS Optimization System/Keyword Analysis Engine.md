@@ -1,14 +1,11 @@
 # Keyword analysis engine
 
-## Introduction
-
-The Keyword Analysis Engine is a sophisticated system designed to extract, analyze, and match keywords from resumes and job descriptions. This system combines traditional keyword extraction techniques with modern machine learning approaches to provide detailed ATS (Applicant Tracking System) compatibility analysis and semantic matching capabilities.
-
-The engine operates through two primary pathways: a traditional TF-IDF based classification system for resume categorization, and an advanced semantic analysis system powered by Large Language Models (LLMs) for contextual keyword matching and job description analysis.
+The Keyword Analysis Engine extracts and matches keywords between resumes and job descriptions for ATS scoring and semantic overlap.
+Two paths run in parallel: TF-IDF classification for resume categories, and LLM prompts for contextual keyword matching against a job description.
 
 ## System architecture
 
-The Keyword Analysis Engine follows a modular architecture with clear separation of concerns:
+The Keyword Analysis Engine is split into preprocessing, analysis, and output stages:
 
 ```mermaid
 graph TB
@@ -36,7 +33,7 @@ M --> N
 end
 ```
 
-## Core components
+## Building blocks
 
 ### Traditional TF-IDF classification system
 
@@ -120,7 +117,7 @@ G --> H[Normalized Text]
 
 ### Stage 2: skill pattern recognition
 
-The system employs sophisticated pattern matching for skill identification:
+The system employs pattern matching for skill identification:
 
 | Skill Category | Pattern Type | Examples |
 |---|---|---|
@@ -272,7 +269,7 @@ E --> F[Enhanced Keyword Set]
 
 ### Document processing workflow
 
-The preprocessing pipeline handles multiple document formats with reliable error handling:
+The preprocessing pipeline handles multiple document formats with clear error handling:
 
 ```mermaid
 flowchart TD
@@ -406,7 +403,7 @@ The system generates detailed ATS compatibility assessments:
 | Formatting | Section structure | 10% |
 | Semantic Alignment | Contextual relevance | 10% |
 
-## Performance considerations
+## Performance
 
 ### Optimization strategies
 
@@ -431,7 +428,7 @@ F --> G[Response Handler]
 G --> H[Client Response]
 ```
 
-## Troubleshooting guide
+## Troubleshooting
 
 ### Common issues and solutions
 
@@ -457,17 +454,3 @@ E --> |Yes| F[Retry with Backoff]
 E --> |No| G[Return Error]
 F --> B
 ```
-
-## Conclusion
-
-The Keyword Analysis Engine represents a detailed solution for modern talent acquisition needs. By combining traditional TF-IDF classification with advanced LLM-powered semantic analysis, the system provides both precise keyword matching and contextual understanding capabilities.
-
-Key strengths of the system include:
-
-- **Dual-approach Architecture**: Traditional and modern methods complement each other
-- **Industry Adaptability**: Dynamic skill categorization across domains
-- **Scalable Design**: Optimized for enterprise-scale deployments
-- **Reliable Error Handling**: Detailed fault tolerance mechanisms
-- **Flexible Integration**: Multiple API patterns for diverse use cases
-
-The system continues to evolve with advances in NLP and machine learning, ensuring it remains at the forefront of intelligent keyword analysis and semantic matching technologies.

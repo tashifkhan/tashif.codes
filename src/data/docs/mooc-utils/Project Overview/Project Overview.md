@@ -1,67 +1,66 @@
 # Project overview
 
-## Introduction
-MOOC Utils is a cohesive suite of tools designed to improve the experience of learners enrolled in Massive Open Online Course (MOOC) platforms such as NPTEL and SWAYAM. The project's mission is to streamline study workflows by combining three complementary systems:
-- Assignment Solver: A browser extension that assists with online assignments using AI.
-- Notice Reminders: A CLI tool and FastAPI backend for course announcements and subscriptions.
-- Website: A Next.js web application serving as a landing and dashboard for the ecosystem.
+MOOC Utils is a toolkit for NPTEL and SWAYAM learners: a browser assignment helper, a notices CLI/API, and a Next.js dashboard. Less tab switching, fewer missed announcements.
 
-Together, these systems form a unified learning companion that reduces friction in assignment completion, keeps learners informed about course updates, and provides a centralized place to manage preferences and integrations.
+Who it is for:
 
-Target audience
-- Learners enrolled in NPTEL/SWAYAM courses who want efficient assignment assistance and timely course notifications.
-- Educators and learners seeking a privacy-first, open-source toolkit for study support.
+- Learners on NPTEL/SWAYAM who want assignment help and timely course notices.
+- People who want a privacy-first, open-source study toolkit.
 
-Key benefits
-- Smooth integration across tools with shared authentication and data models.
-- Privacy-focused design: client-side operations for sensitive tasks, local storage for secrets.
-- Modular, maintainable architecture enabling easy contributions and future enhancements.
+Why the split:
+
+- Website and API share auth cookies and models.
+- Gemini work stays in the browser. The key never leaves the extension except for Google.
+- Each package has its own README, so you can change one without knowing the others.
+
+Repo: https://github.com/tashifkhan/MOOC-utils
 
 ## Project structure
-The repository is organized as a monorepo with three primary subsystems, each with its own documentation, configuration, and build processes. The Website acts as the front door and dashboard hub, while Assignment Solver and Notice Reminders operate independently but share a common vision.
+
+Three packages, each with its own build:
 
 ```mermaid
 graph TB
 subgraph "MOOC Utils Ecosystem"
 Website["Website (Next.js)<br/>Landing + Dashboard"]
-Solver["Assignment Solver<br/>(Chrome Extension)"]
+Solver["Assignment Solver<br/>(Chrome/Firefox Extension)"]
 Reminders["Notice Reminders<br/>(CLI + FastAPI)"]
 end
 Website --> |"REST API calls"| Reminders
 Solver -.->|"Browser extension"<br/>"Side panel ↔ Content script ↔ Page"| Solver
-Reminders --> |"Database and scraping"| Reminders
+Reminders --> |"SQLite and scraping"| Reminders
 ```
 
 ## Core components
-This section introduces each component and its role in the ecosystem.
 
-- Assignment Solver (Chrome Extension)
-  - Role: AI-powered assignment assistance integrated directly into course pages.
-  - Technology: JavaScript, Gemini API, cross-browser extension architecture.
-  - Key capabilities: question extraction, AI-driven hints and solutions, manual and automated modes, export functionality, cross-browser support.
-  - Privacy: BYOK model with client-side processing and local storage of keys.
+- Assignment Solver (Chrome/Firefox extension)
+  - Role: assignment help on the course page.
+  - Tech: JavaScript, Vite 5, Gemini API, webextension-polyfill.
+  - Capabilities: extract questions, study hints, auto-solve, screenshots, JSON export.
+  - Privacy: BYOK. Key in `browser.storage.local`. No MOOC Utils server.
 
-- Notice Reminders (CLI Tool + API Backend)
-  - Role: Course discovery, announcement retrieval, and subscription management.
-  - Technology: Python 3.12+, FastAPI, Tortoise ORM, HTTPX, BeautifulSoup.
-  - Key capabilities: course search, announcement listing, OTP-based authentication, subscription CRUD, planned notification channels.
-  - Data persistence: database-backed models and migrations.
+- Notice Reminders (CLI + FastAPI)
+  - Role: course search, announcements, subscriptions.
+  - Tech: Python 3.12+, FastAPI, Tortoise ORM, HTTPX, BeautifulSoup.
+  - Capabilities: Swayam search, announcement fetch, email OTP + JWT cookies, subscription CRUD. Telegram/email notify is still planned.
+  - Data: SQLite at `data/db/db.sqlite3` by default. Code lives under `app/`, not `package/cli` or `package/api`.
 
-- Website (Next.js Web Application)
-  - Role: Marketing site and dashboard for Notice Reminders and Assignment Solver.
-  - Technology: Next.js App Router, React, TypeScript, Tailwind, TanStack Query.
-  - Key capabilities: OTP login/dashboard, public course search, responsive UI, analytics integration.
+- Website (Next.js App Router)
+  - Role: marketing site and dashboard for Notice Reminders, plus an Assignment Solver download page.
+  - Tech: Next.js 16.1.6, React 19.2.3, TypeScript, Tailwind 4, TanStack Query.
+  - Capabilities: OTP login, public search, subscriptions, inbox, profile.
 
-How they work together
-- Website provides a unified entry point and dashboard. It communicates with the Notice Reminders API for user management, subscriptions, and announcements.
-- Assignment Solver operates as a standalone browser extension and does not depend on the Website for its core functionality.
-- Notice Reminders powers the backend services consumed by the Website and can be used independently via CLI.
+How they work together:
+
+- The website calls the Notice Reminders API for users, subscriptions, and announcements.
+- Assignment Solver is standalone. It does not need the website or the API to solve questions.
+- Notice Reminders also runs as `uv run python main.py cli` with no database.
 
 ## Architecture overview
-The overall architecture emphasizes modularity, separation of concerns, and interoperability:
-- Website (frontend) consumes the Notice Reminders API for user and subscription data.
-- Notice Reminders (backend) manages data models, authentication, and scraping logic.
-- Assignment Solver (browser extension) runs client-side within the learner's browser.
+
+- Website consumes the Notice Reminders API.
+- Notice Reminders owns models, OTP auth, and scraping.
+- Assignment Solver talks to Gemini from the browser.
 
 ```mermaid
 graph TB
@@ -70,7 +69,7 @@ UI["Next.js Website<br/>Pages + Components"]
 end
 subgraph "Backend"
 API["FastAPI Backend<br/>Routers + Services"]
-DB["Database<br/>Tortoise ORM"]
+DB["SQLite<br/>Tortoise ORM"]
 end
 subgraph "Extension"
 EXT["Chrome/Firefox Extension<br/>Side Panel + Content Script"]
@@ -80,21 +79,11 @@ API --> DB
 EXT -.->|"Gemini API (client-side)"| EXT
 ```
 
-## Detailed component analysis
+## Assignment solver (browser extension)
 
-### Assignment solver (browser extension)
-Purpose and scope
-- Provides AI-powered assignment assistance with Study Hints and Auto-Solve modes.
-- Operates entirely client-side with the user's Gemini API key, ensuring privacy and no server involvement.
+Study Hints and Auto-Solve. Your Gemini key, your browser.
 
-Architecture highlights
-- Separation of concerns across core, platform, services, background, content, and UI layers.
-- Dependency injection pattern for testability and flexibility.
-- Cross-browser compatibility via webextension-polyfill and dynamic manifest generation.
-
-Message flow overview
-- Side panel → Background → Content script → Page DOM manipulation.
-- Background ↔ Gemini API for extraction and answer generation.
+Layers: `src/core`, `src/platform`, `src/services`, `src/background`, `src/content`, `src/ui`. Factories inject adapters so tests can swap them. Chrome uses `side_panel`; Firefox uses `sidebar_action`.
 
 ```mermaid
 sequenceDiagram
@@ -116,24 +105,16 @@ CS->>Page : "Fill answers and submit"
 Panel-->>User : "Summary and results"
 ```
 
-Build and deployment
-- Vite-based build system with separate targets for Chrome and Firefox.
-- Dynamic manifest generation supports side_panel (Chrome) and sidebar_action (Firefox).
+Build: `bun run build` writes `dist/chrome/` and `dist/firefox/`. Default model is `gemini-3-flash-preview` in `src/services/gemini/index.js`.
 
-Security and privacy
-- API key stored locally; no server-side processing except official Gemini endpoints.
-- Content security policy restricts API connections to trusted domains.
+## Notice reminders (CLI + FastAPI)
 
-### Notice reminders (CLI + FastAPI backend)
-Purpose and scope
-- Enables learners to discover courses, fetch announcements, and manage subscriptions.
-- Provides both interactive CLI usage and a production-ready API server.
+Discover courses, fetch announcements, manage subscriptions. One entry point:
 
-Technology stack
-- FastAPI for REST endpoints, Tortoise ORM for database abstraction, HTTPX for HTTP operations, BeautifulSoup for parsing, Pydantic settings for configuration.
-
-Entry point and modes
-- Single entry point supports CLI and API modes with argument parsing and runtime selection.
+```bash
+uv run python main.py cli
+uv run python main.py api --reload
+```
 
 ```mermaid
 flowchart TD
@@ -150,17 +131,11 @@ DB --> Listen["Listen on Host/Port"]
 Listen --> End(["Ready"])
 ```
 
-Data model example
-- User model demonstrates typical fields and constraints managed by Tortoise ORM.
+CLI uses `app/cli` and `SwayamScraper`. API uses `app/api/routers/` (users, search, courses, announcements, subscriptions, notifications).
 
-### Website (Next.js landing + dashboard)
-Purpose and scope
-- Marketing site introducing the suite and a dashboard for Notice Reminders.
-- Integrates with the Notice Reminders API for authentication, subscriptions, and announcements.
+## Website (Next.js landing + dashboard)
 
-Frontend architecture
-- App Router-based pages, TypeScript for type safety, Tailwind for styling, TanStack Query for data fetching.
-- Centralized API client encapsulates HTTP requests and error handling.
+App Router pages: `/`, `/notice-reminders`, `/notice-reminders/login`, `/notice-reminders/dashboard`, `/assignment-solver`, `/privacy`. `lib/api.ts` wraps `fetch` with cookies. `NEXT_PUBLIC_API_URL` defaults to `http://localhost:8000`. Do not use `npm run dev` or `bun dev`.
 
 ```mermaid
 sequenceDiagram
@@ -177,54 +152,27 @@ API-->>Site : "Subscriptions"
 Site-->>Visitor : "Dashboard with data"
 ```
 
-Environment and setup
-- Requires NEXT_PUBLIC_API_URL pointing to the backend.
-- Recommended to use Bun for development and build.
-
 ## Dependency analysis
-High-level dependencies and integration points:
-- Website depends on Notice Reminders API for user, subscription, and announcement data.
-- Notice Reminders depends on external services for course data and uses a database for persistence.
-- Assignment Solver is independent of the Website and Notice Reminders; it interacts with Gemini via browser APIs.
 
 ```mermaid
 graph LR
 Website["Website (Next.js)"] --> |HTTP| NoticeAPI["Notice Reminders API"]
-NoticeAPI --> DB["Database"]
+NoticeAPI --> DB["SQLite"]
 Solver["Assignment Solver (Extension)"] -.->|"Gemini API"| Solver
 ```
 
-## Performance considerations
-- Assignment Solver
-  - Rate limiting and delays between API calls and DOM operations prevent throttling and ensure reliability.
-  - Client-side processing avoids network latency for UI interactions.
+## Performance
 
-- Notice Reminders
-  - Asynchronous scraping and caching strategies can improve responsiveness.
-  - Database indexing on frequently queried fields (e.g., user email) improves lookup performance.
+- Assignment Solver: 500ms between answer calls, 200ms between DOM writes.
+- Notice Reminders: `cache_ttl_minutes` is 60. Index email lookups if search grows.
+- Website: TanStack Query cache; invalidate after mutations.
 
-- Website
-  - TanStack Query caching and optimistic updates reduce perceived latency.
-  - Image optimization and minimal payload sizes improve load times.
+## Troubleshooting
 
-[No sources needed since this section provides general guidance]
-
-## Troubleshooting guide
-- Assignment Solver
-  - "Could not get page HTML": ensure the page is fully loaded and try re-extracting.
-  - "Question container not found": re-extract or adjust selectors for the platform.
-  - "API Key invalid": verify the key at the provider's portal and ensure no extra spaces.
-  - "Answers not being applied": platform-specific components may require manual application.
-
-- Notice Reminders
-  - CLI/API mode misconfiguration: confirm mode selection and arguments.
-  - Database connectivity: ensure database URL and migrations are configured.
-
-- Website
-  - API connection failures: verify NEXT_PUBLIC_API_URL and backend availability.
-  - Authentication issues: ensure cookies are accepted and session refresh is handled.
+- Assignment Solver: page not loaded, bad selectors, invalid Gemini key, custom inputs.
+- Notice Reminders: wrong `cli` vs `api` args, missing `jwt_secret`, SQLite path not writable.
+- Website: API down, `NEXT_PUBLIC_API_URL` wrong, cookies blocked.
 
 ## Conclusion
-MOOC Utils delivers a cohesive, privacy-focused toolkit for MOOC learners. By separating concerns across a browser extension, a reliable backend, and a modern web dashboard, the project enables a smooth learning experience. The modular architecture, explicit dependency management, and clear integration points position the ecosystem for continued growth and community contribution.
 
-[No sources needed since this section summarizes without analyzing specific files]
+Three packages, one learner-facing story. Contribute at the package boundary that matches the bug.

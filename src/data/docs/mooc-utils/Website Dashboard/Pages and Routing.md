@@ -1,7 +1,7 @@
 # Pages and routing
 
 ## Introduction
-This page explains the Next.js App Router implementation and page structure for the website. It covers the routing hierarchy, page components, navigation patterns, and the notice reminders dashboard (login, dashboard, and course management). It also documents the assignment solver page and its integration with the browser extension, along with the marketing landing page, privacy policy, and sitemap generation. Route protection, dynamic routing, error handling, SEO optimization, and the 404 page implementation are addressed, including fallback routing strategies.
+App Router pages, protected routes, SEO bits, and the 404 path. Marketing home versus authenticated dashboard routes.
 
 ## Project structure
 The website uses Next.js App Router conventions under the app directory. Key pages include:
@@ -93,9 +93,9 @@ PG-->>U : "Display page"
 - Root route (/): Renders the marketing landing page composed of Hero, Features, ProductShowcase, FAQ, and Footer.
 - Assignment solver route (/assignment-solver): Dedicated landing page with metadata and structured sections.
 - Notice reminders routes:
-  - Landing (/notice-reminders): Onboarding with course search and subscription setup.
-  - Login (/notice-reminders/login): Two-step OTP authentication flow.
-  - Dashboard (/notice-reminders/dashboard): Protected route with notifications, subscriptions, and user profile.
+ - Landing (/notice-reminders): Onboarding with course search and subscription setup.
+ - Login (/notice-reminders/login): Two-step OTP authentication flow.
+ - Dashboard (/notice-reminders/dashboard): Protected route with notifications, subscriptions, and user profile.
 - Privacy policy route (/privacy): Legal page with structured sections.
 - Sitemap and robots: Generated dynamically for SEO and crawlability.
 
@@ -105,17 +105,17 @@ Navigation patterns:
 
 ### Notice reminders dashboard: login, dashboard, and course management
 - Login page:
-  - Two-step OTP flow: email collection, code verification, and redirect to dashboard upon success.
-  - Validation with Zod schemas and controlled inputs.
-  - Redirects authenticated users away from the login page.
+ - Two-step OTP flow: email collection, code verification, and redirect to dashboard upon success.
+ - Validation with Zod schemas and controlled inputs.
+ - Redirects authenticated users away from the login page.
 - Dashboard page:
-  - Wrapped in AuthGuard to enforce authentication.
-  - Displays notifications, subscriptions, and user profile.
-  - Provides logout action.
+ - Wrapped in AuthGuard to enforce authentication.
+ - Displays notifications, subscriptions, and user profile.
+ - Provides logout action.
 - Course management:
-  - SignupFlow component orchestrates course search, account setup, OTP verification, and subscription creation.
-  - Uses React Query for search debouncing and mutations for OTP, channel creation, and subscriptions.
-  - Supports optional Telegram and email notification channels.
+ - SignupFlow component orchestrates course search, account setup, OTP verification, and subscription creation.
+ - Uses React Query for search debouncing and mutations for OTP, channel creation, and subscriptions.
+ - Supports optional Telegram and email notification channels.
 
 ```mermaid
 sequenceDiagram
@@ -156,7 +156,7 @@ Footer --> End(["User navigates or converts"])
 
 ### Marketing landing page
 - The root page composes multiple marketing sections: Hero, ProductShowcase, Features, FAQ, and Footer.
-- This structure emphasizes value proposition and conversion.
+- This structure leads with the pitch, then the signup and download CTAs.
 
 ### Privacy policy page
 - The privacy page defines metadata and renders structured sections with icons and data inventories.
@@ -168,27 +168,27 @@ Footer --> End(["User navigates or converts"])
 
 ### Route protection and dynamic routing
 - Route protection:
-  - AuthGuard checks authentication state and redirects unauthenticated users to the login page.
-  - AuthProvider initializes session state and exposes authentication functions.
+ - AuthGuard checks authentication state and redirects unauthenticated users to the login page.
+ - AuthProvider initializes session state and exposes authentication functions.
 - Dynamic routing:
-  - Notice reminders routes are nested under /notice-reminders with subpages for login and dashboard.
-  - The login page uses dynamic steps (email/code) and redirects based on state.
+ - Notice reminders routes are nested under /notice-reminders with subpages for login and dashboard.
+ - The login page uses dynamic steps (email/code) and redirects based on state.
 
 ### Error handling and 404 page implementation
 - Global 404 page:
-  - Client component with decorative visuals and contextual links to home and assignment solver.
-  - Provides helpful suggestions and links to related tools.
+ - Client component with decorative visuals and contextual links to home and assignment solver.
+ - Provides helpful suggestions and links to related tools.
 - Fallback routing:
-  - Next.js App Router's not-found.tsx is used for unmatched routes.
-  - Combined with programmatic sitemap and robots for SEO-friendly crawlers.
+ - Next.js App Router's not-found.tsx is used for unmatched routes.
+ - Combined with programmatic sitemap and robots for SEO-friendly crawlers.
 
 ### SEO optimization
 - Metadata:
-  - Root layout sets title template, description, keywords, author, publisher, OG, Twitter, robots, and icons.
-  - Individual pages override or augment metadata (e.g., assignment solver, privacy).
+ - Root layout sets title template, description, keywords, author, publisher, OG, Twitter, robots, and icons.
+ - Individual pages override or augment metadata (e.g., assignment solver, privacy).
 - Sitemap and robots:
-  - Sitemap includes URLs, last modified, change frequency, and priority.
-  - Robots disallows API paths and points to sitemap.
+ - Sitemap includes URLs, last modified, change frequency, and priority.
+ - Robots disallows API paths and points to sitemap.
 
 ## Dependency analysis
 The following diagram shows key dependencies among pages, components, and providers.
@@ -213,23 +213,19 @@ AC --> API
 - React Query defaults minimize refetch overhead while keeping data fresh.
 - Static metadata and programmatic sitemap/robots improve SEO and reduce server load.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Authentication loops:
-  - Ensure AuthGuard and AuthProvider are both rendered by the layout and that session initialization completes before navigation.
+ - Ensure AuthGuard and AuthProvider are both rendered by the layout and that session initialization completes before navigation.
 - OTP flow errors:
-  - Validate email and code inputs with Zod schemas and surface API errors from OTP requests/verification.
+ - Validate email and code inputs with Zod schemas and surface API errors from OTP requests/verification.
 - Protected route access:
-  - Confirm AuthGuard runs before rendering dashboard content and that redirects occur on unauthenticated state.
+ - Confirm AuthGuard runs before rendering dashboard content and that redirects occur on unauthenticated state.
 - API connectivity:
-  - Verify NEXT_PUBLIC_API_URL is set and that credentials include cookies for authenticated endpoints.
+ - Verify NEXT_PUBLIC_API_URL is set and that credentials include cookies for authenticated endpoints.
 
 ## Conclusion
-The Next.js App Router implementation organizes the website into clear, SEO-friendly pages with reliable navigation and state management. The notice reminders feature employs a secure, multi-step login flow and protected routes, while the assignment solver page and marketing content are optimized for engagement and conversions. Sitemap and robots generation support search engine visibility, and the global layout ensures consistent branding and UX.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Marketing on `/`, app routes behind auth. Keep SEO metadata on public pages and skip it on empty loading shells.
 
 ## Appendices
 - Global metadata and fonts are configured in the root layout.

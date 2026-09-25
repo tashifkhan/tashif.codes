@@ -1,237 +1,196 @@
 # Authentication API
 
-## Introduction
-This page describes the authentication API for TalentSync-Normies, focusing on NextAuth.js integration, OAuth provider configuration, session management, and related flows such as user registration, email verification, password reset, and account deletion. It also explains JWT token handling, session persistence, role-based access control, and authorization patterns, along with practical examples, error handling, and production security considerations.
+FastAPI owns sign-in. Routes live under `/api/v1/auth` in `backend/app/routes/auth.py`. The Next.js app rewrites `/api/v1/:path*` to the backend so cookies stay first-party.
 
-## Project structure
-Authentication is implemented via NextAuth.js with a dedicated API route and several custom endpoints under the frontend app's API surface. Providers are configured in a central options file, and database interactions use Prisma.
+This is the job-seeker TalentSync app. NextAuth is gone.
+
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Frontend API"
-NA["NextAuth route<br/>app/api/auth/[...nextauth]/route.ts"]
-REG["POST /auth/register<br/>app/api/auth/register/route.ts"]
-VER["POST /auth/verify-email<br/>app/api/auth/verify-email/route.ts"]
-RV["POST /auth/resend-verification<br/>app/api/auth/resend-verification/route.ts"]
-RP["POST /auth/reset-password<br/>app/api/auth/reset-password/route.ts"]
-CR["POST /auth/confirm-reset<br/>app/api/auth/confirm-reset/route.ts"]
-DA["DELETE /auth/delete-account<br/>app/api/auth/delete-account/route.ts"]
-UR["POST /auth/update-role<br/>app/api/auth/update-role/route.ts"]
+subgraph "Frontend"
+AUTHUI["app/auth/page.tsx"]
+SP["session-provider.tsx"]
+SESS["lib/session.ts"]
 end
-subgraph "Auth Core"
-AO["NextAuth Options<br/>frontend/lib/auth-options.ts"]
-PRISMA["Prisma Client<br/>frontend/lib/prisma.ts"]
+subgraph "FastAPI /api/v1/auth"
+R["routes/auth.py"]
+OAUTH["services/auth/oauth.py"]
+SVC["services/auth/service.py"]
+TOK["services/auth/tokens.py"]
 end
-NA --> AO
-AO --> PRISMA
-REG --> PRISMA
-VER --> PRISMA
-RV --> PRISMA
-RP --> PRISMA
-CR --> PRISMA
-DA --> PRISMA
-UR --> PRISMA
+subgraph "Postgres"
+U["User"]
+A["Account"]
+S["Session"]
+end
+AUTHUI --> SP
+SP --> R
+SESS --> U
+R --> OAUTH
+R --> SVC
+R --> TOK
+SVC --> U
+SVC --> A
+SVC --> S
 ```
 
-- [[...nextauth]/route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- `auth-options.ts`
-- `prisma.ts`
-- `register/route.ts`
-- `verify-email/route.ts`
-- `resend-verification/route.ts`
-- `reset-password/route.ts`
-- `confirm-reset/route.ts`
-- `delete-account/route.ts`
-- `update-role/route.ts`
+- `backend/app/routes/auth.py`
+- `backend/app/services/auth/oauth.py`
+- `backend/app/services/auth/service.py`
+- `backend/app/services/auth/tokens.py`
+- `backend/app/core/deps.py`
+- `backend/app/core/settings.py`
+- `frontend/lib/session.ts`
+- `frontend/components/providers/session-provider.tsx`
+- `frontend/next.config.js` (rewrite)
 
-- [[...nextauth]/route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- `auth-options.ts`
-- `prisma.ts`
+## Building blocks
 
-## Core components
-- NextAuth.js configuration and callbacks for JWT/session propagation, OAuth verification handling, and role/image synchronization.
-- Custom endpoints for user registration, email verification, resend verification, password reset initiation, password reset confirmation, account deletion, and role updates.
-- Prisma adapter integration for user storage and token management.
+- Google OAuth authorize + callback
+- Access JWT cookie + opaque refresh cookie
+- `GET /me`, `POST /refresh`, `POST /logout`
+- `POST /update-role`, `DELETE /delete-account`
+- Password routes gated by `CREDENTIALS_AUTH_ENABLED` (410 by default)
 
-Key capabilities:
-- OAuth providers: Google, GitHub, Email, and Credentials.
-- Session strategy: JWT.
-- Role propagation via JWT and session callbacks.
-- Email-based verification and password reset tokens with expiration.
+Cookie names: `COOKIE_ACCESS_NAME` (`ts_access_token`), `COOKIE_REFRESH_NAME` (`ts_refresh_token`).
 
-## Architecture overview
-The authentication system combines NextAuth.js for provider orchestration and session/JWT lifecycle with custom endpoints for user actions requiring server-side processing and email delivery.
+## How it fits together
 
 ```mermaid
 sequenceDiagram
-participant Client as "Client"
-participant NextAuth as "NextAuth Route"
-participant Auth as "Auth Options"
-participant DB as "Prisma"
-Client->>NextAuth : "GET/POST /api/auth/[...nextauth]"
-NextAuth->>Auth : "Resolve provider and callbacks"
-Auth->>DB : "Read/Write user, tokens, roles"
-Auth-->>NextAuth : "Session/JWT payload"
-NextAuth-->>Client : "Set cookies or return JWT"
+participant Client
+participant Rewrite as "Next.js /api/v1"
+participant Auth as "auth.py"
+participant OAuth as "oauth.py"
+participant DB as "Postgres"
+Client->>Rewrite : GET /api/v1/auth/oauth/google
+Rewrite->>Auth : same path
+Auth->>OAuth : build_authorize_url
+OAuth-->>Client : 302 Google
+Client->>Auth : GET /oauth/google/callback
+Auth->>OAuth : exchange_code
+Auth->>DB : oauth_login + issue_session
+Auth-->>Client : Set-Cookie + 302 FRONTEND_URL
 ```
 
-- [[...nextauth]/route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- `auth-options.ts`
-- `prisma.ts`
+## Endpoints
 
-## Detailed component analysis
+Prefix: `/api/v1/auth`. Mounted in `backend/app/main.py`.
 
-### NextAuth.js integration and session management
-- Providers: Credentials, Google, GitHub, Email.
-- Secret and session strategy: JWT.
-- Callbacks:
-  - signIn: Enforces email verification for credentials, auto-verifies OAuth users, preserves profile images.
-  - session: Injects user id and role into session payload.
-  - jwt: Synchronizes role and image from DB on token creation/refresh; preserves OAuth images.
-- Pages: Sign-in page mapped to a UI route.
+### Live (Google product)
+
+| Method | Path | Auth | Notes |
+| --- | --- | --- | --- |
+| GET | `/oauth/{provider}` | no | `provider` must be `google` |
+| GET | `/oauth/{provider}/callback` | no | sets cookies, redirects |
+| GET | `/google` | no | alias of `/oauth/google` |
+| GET | `/google/callback` | no | alias of `/oauth/google/callback` |
+| POST | `/refresh` | refresh cookie | rotates session |
+| POST | `/logout` | refresh cookie optional | revokes + clears cookies |
+| GET | `/me` | access cookie or Bearer | current user |
+| POST | `/update-role` | yes | body `{ role }` |
+| DELETE | `/delete-account` | yes | cascade delete + clear cookies |
+
+### 410 unless `CREDENTIALS_AUTH_ENABLED`
+
+`POST /register`, `/verify-email`, `/resend-verification`, `/login`, `/forgot-password`, `/reset-password`.
+
+Message: `Password sign-in has been removed. Continue with Google instead.` Code `CREDENTIALS_AUTH_DISABLED`.
+
+## Session cookies
 
 ```mermaid
 flowchart TD
-Start(["Sign-in Request"]) --> ProviderSel["Select Provider"]
-ProviderSel --> OAuth{"OAuth or Credentials?"}
-OAuth --> |Credentials| CheckVerified["Check isVerified"]
-CheckVerified --> Verified{"Verified?"}
-Verified --> |No| RedirectUnverified["Redirect to /auth/verify-email?error=unverified"]
-Verified --> |Yes| Continue
-OAuth --> |OAuth| AutoVerify["Ensure isVerified=true"]
-AutoVerify --> Continue
-Continue --> JWT["Generate/Refresh JWT with role and image"]
-JWT --> Session["Attach role/id to session"]
-Session --> Done(["Authenticated"])
+Login["oauth_callback / login"] --> Set["set_cookie access + refresh"]
+Set --> Browser["Browser stores httpOnly cookies"]
+Browser --> Me["GET /me via rewrite"]
+Me --> Current["get_current_user"]
+Browser --> Refresh["POST /refresh"]
+Refresh --> Rotate["rotate_session"]
+Rotate --> Set
+Browser --> Logout["POST /logout"]
+Logout --> Revoke["revoke_session"]
+Revoke --> Clear["delete cookies"]
 ```
 
-- [[...nextauth]/route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
+Access cookie path `/`. Refresh cookie path `/api/v1/auth`. SameSite from `COOKIE_SAME_SITE` (default `lax`). `COOKIE_SECURE` off in local dev.
 
-### Login endpoints
-- NextAuth route handles OAuth and credentials login via provider-specific flows.
-- For credentials, password validation occurs against hashed passwords stored in the database.
-- For OAuth, automatic verification is applied and profile images are preserved.
+`issue_session` returns both tokens. JSON still includes `accessToken` for non-browser clients.
+
+## Login
+
+Product path is Google only.
 
 ```mermaid
 sequenceDiagram
-participant Client as "Client"
-participant NextAuth as "NextAuth Route"
-participant Auth as "Auth Options"
-participant DB as "Prisma"
-Client->>NextAuth : "POST /api/auth/[...nextauth] (credentials)"
-NextAuth->>Auth : "authorize(credentials)"
-Auth->>DB : "Find user by email"
-DB-->>Auth : "User with passwordHash"
-Auth->>Auth : "Compare password"
-Auth-->>NextAuth : "User payload"
-NextAuth-->>Client : "Session/JWT"
+participant Client
+participant Auth as "auth.py"
+participant Google
+participant DB
+Client->>Auth : GET /oauth/google?redirect=/dashboard
+Auth-->>Client : 302 Google + ts_oauth_state
+Client->>Google : consent
+Google-->>Auth : code, state
+Auth->>Google : token + userinfo
+Auth->>DB : User + Account
+Auth->>DB : Session hash of refresh
+Auth-->>Client : cookies + 302
 ```
 
-- [[...nextauth]/route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
+`GET /me` after that:
 
-### Logout
-- Logout is handled by NextAuth; clients should call the NextAuth logout endpoint to invalidate the session/JWT.
-
-- [[...nextauth]/route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- `auth-options.ts`
-
-### User registration
-- Validates input, checks for existing user, ensures role exists, hashes password, creates user with unverified status, generates a 24-hour verification token, and sends an email with a verification link.
-- Returns success even if email sending fails to avoid blocking registration.
-
-```mermaid
-sequenceDiagram
-participant Client as "Client"
-participant Reg as "POST /auth/register"
-participant DB as "Prisma"
-Client->>Reg : "JSON {name,email,password,roleId,avatarUrl}"
-Reg->>DB : "Check unique email"
-DB-->>Reg : "Not found"
-Reg->>DB : "Check role exists"
-DB-->>Reg : "Role OK"
-Reg->>DB : "Create user (isVerified=false)"
-Reg->>DB : "Create emailVerificationToken"
-Reg-->>Client : "201 Created + message"
+```json
+{
+  "user": {
+    "id": "...",
+    "name": "...",
+    "email": "...",
+    "image": "...",
+    "role": "USER",
+    "isVerified": true,
+    "roleSelectionRequired": true
+  }
+}
 ```
 
-### Email verification
-- Verifies a token, enforces expiration, prevents reuse, and marks the user as verified while recording confirmation.
+`roleSelectionRequired` is true when `roleSelectedAt` is null and an OAuth account exists.
 
-```mermaid
-sequenceDiagram
-participant Client as "Client"
-participant Verify as "POST /auth/verify-email"
-participant DB as "Prisma"
-Client->>Verify : "JSON {token}"
-Verify->>DB : "Find token"
-DB-->>Verify : "Token record"
-Verify->>Verify : "Validate expiry and reuse"
-Verify->>DB : "Update user.isVerified=true and token.confirmedAt"
-Verify-->>Client : "200 OK"
-```
+## Logout
 
-### Resend verification
-- Generates a new 24-hour verification token and re-sends the verification email for unverified, password-bearing accounts.
+`POST /logout` reads the refresh cookie, revokes the `Session` row, deletes both cookies. Client `signOut()` in `session-provider.tsx` POSTs this then navigates.
 
-### Password reset initiation
-- Accepts an email, checks for existence and password presence, deletes old reset tokens, creates a new 1-hour token, and emails a reset link. Responses are intentionally generic to prevent enumeration.
+## Refresh
 
-### Confirm password reset
-- Validates token, enforces expiration and reuse, hashes the new password, and records token usage.
+`POST /refresh` requires `ts_refresh_token`. `rotate_session` rewrites the row, stores `previousToken`, and issues a new pair. Replay of an old refresh clears cookies and 401s.
 
-### Account deletion
-- Requires an authenticated session, performs cascading deletions respecting foreign keys, and returns success upon completion.
+The session provider refreshes on a 401 from `/me` and on a 15-minute timer.
 
-### Role updates
-- Updates a user's role based on UI-provided identifiers, mapping to canonical role names in the database.
+## Role update and account deletion
 
-## Dependency analysis
-- NextAuth route depends on centralized auth options.
-- Auth options depend on Prisma adapter and database for user/role/token operations.
-- Custom endpoints depend on Prisma for user and token management.
+`POST /update-role` with `{ "role": "USER" | "RECRUITER" | "ADMIN" }` via `auth_service.update_role`.
+
+`DELETE /delete-account` deletes the user (cascades Account, Session, domain rows) and clears cookies.
+
+Avatar writes are `POST /api/v1/user/update-avatar` in `backend/app/routes/user.py`, not this router.
+
+## Dependencies
 
 ```mermaid
 graph LR
-NA["NextAuth Route"] --> AO["Auth Options"]
-AO --> PRISMA["Prisma Adapter"]
-REG["Register Endpoint"] --> PRISMA
-VER["Verify Email Endpoint"] --> PRISMA
-RV["Resend Verification"] --> PRISMA
-RP["Reset Password"] --> PRISMA
-CR["Confirm Reset"] --> PRISMA
-DA["Delete Account"] --> PRISMA
-UR["Update Role"] --> PRISMA
+R["routes/auth.py"] --> SVC["services/auth/service.py"]
+R --> OAUTH["services/auth/oauth.py"]
+R --> DEPS["get_current_user"]
+SVC --> TOK["tokens.py"]
+DEPS --> TOK
+R --> SET["settings.py"]
 ```
 
-- [[...nextauth]/route.ts](file://frontend/app/api/auth/[...nextauth]/route.ts#L1-L7)
-- `auth-options.ts`
-- `prisma.ts`
-- `register/route.ts`
-- `verify-email/route.ts`
-- `resend-verification/route.ts`
-- `reset-password/route.ts`
-- `confirm-reset/route.ts`
-- `delete-account/route.ts`
-- `update-role/route.ts`
+## Troubleshooting
 
-## Performance considerations
-- Use HTTPS in production to protect cookies and JWTs.
-- Keep bcrypt cost reasonable to balance security and latency.
-- Batch token cleanup jobs for expired verification/reset tokens.
-- Cache frequently accessed role and user metadata in JWT claims to reduce DB reads during session refresh.
-
-## Troubleshooting guide
-Common issues and resolutions:
-- Email verification failures:
-  - Ensure email server configuration matches environment variables.
-  - Verify token expiration and reuse checks.
-- Password reset failures:
-  - Confirm token validity and expiration.
-  - Ensure user has a password hash (OAuth users cannot reset password via this flow).
-- OAuth sign-in blocked:
-  - Check verification gating for credentials provider and ensure OAuth users are auto-verified.
-- Role updates failing:
-  - Confirm canonical role names and that the role exists in the database.
-
-## Conclusion
-TalentSync-Normies integrates NextAuth.js with a reliable set of custom endpoints to support secure user registration, email verification, password reset, and account lifecycle management. JWT-based sessions propagate roles and profile images, enabling straightforward authorization patterns. Production deployments should enforce HTTPS, secure secrets, and monitor token lifecycles to maintain strong security posture.
+- 400 unsupported provider: only `google`.
+- 400 Google not configured: missing `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
+- Callback `?error=oauth`: bad state, missing code, or token exchange failure.
+- `?error=oauth_email_taken`: email already on a local account.
+- 401 no session to refresh: refresh cookie not sent (path/domain).
+- 410 on `/login`: credentials auth is off. Use Google.

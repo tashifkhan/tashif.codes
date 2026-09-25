@@ -1,7 +1,7 @@
 # SMTP troubleshooting and error handling
 
 ## Introduction
-This page provides detailed troubleshooting guidance for SMTP integration issues within the application. It explains common error scenarios, diagnostic steps for network and provider-specific problems, and practical resolutions. It also covers log analysis, SSL/TLS certificate handling, and performance optimization strategies such as connection verification, rate limiting, and progress reporting.
+Connection refused, bad credentials, TLS mismatches, rate limits. How the app surfaces them and what to check first.
 
 ## Project structure
 The application integrates SMTP email sending through Electron's main process and a React UI. The Electron main process exposes IPC handlers for email operations, while the renderer invokes them securely via a preload bridge. SMTP operations are handled by a dedicated handler that validates configuration, verifies connectivity, and sends emails with progress updates.
@@ -146,20 +146,20 @@ Recommendations:
 
 ### Common SMTP errors and meanings
 - Authentication failure
-  - Cause: Incorrect username/password or missing/invalid app-specific credentials.
-  - Symptom: Immediate failure during authentication or initial connection verification.
+ - Cause: Incorrect username/password or missing/invalid app-specific credentials.
+ - Symptom: Immediate failure during authentication or initial connection verification.
 - Connection timeout
-  - Cause: Network issues, firewall blocking, or incorrect port/security settings.
-  - Symptom: Failure during verification or first send attempt.
+ - Cause: Network issues, firewall blocking, or incorrect port/security settings.
+ - Symptom: Failure during verification or first send attempt.
 - TLS/SSL handshake failure
-  - Cause: Mismatched security mode (port vs. secure flag), unsupported cipher, or self-signed certificate.
-  - Symptom: Handshake errors or certificate warnings.
+ - Cause: Mismatched security mode (port vs. secure flag), unsupported cipher, or self-signed certificate.
+ - Symptom: Handshake errors or certificate warnings.
 - Certificate validation error
-  - Cause: Untrusted CA, expired certificate, or hostname mismatch.
-  - Symptom: Certificate-related error messages.
+ - Cause: Untrusted CA, expired certificate, or hostname mismatch.
+ - Symptom: Certificate-related error messages.
 - Delivery rejection
-  - Cause: Spam filters, blocked sender, or recipient domain policy.
-  - Symptom: SMTP response indicating rejection; often surfaced as a thrown error in the send operation.
+ - Cause: Spam filters, blocked sender, or recipient domain policy.
+ - Symptom: SMTP response indicating rejection; often surfaced as a thrown error in the send operation.
 
 Provider-specific notes:
 - Gmail SMTP typically requires App Passwords or OAuth2. The project supports Gmail API integration via OAuth2; for SMTP, ensure App Passwords are used when required.
@@ -167,92 +167,92 @@ Provider-specific notes:
 
 ### Diagnostic steps
 - Verify SMTP configuration
-  - Confirm host, port, user, and pass are provided and correct.
-  - Match secure flag with the intended port (SSL/TLS).
+ - Confirm host, port, user, and pass are provided and correct.
+ - Match secure flag with the intended port (SSL/TLS).
 - Test connectivity
-  - Use a command-line SMTP client or online SMTP tester to validate host/port/firewall.
-  - Ensure outbound ports are open (commonly 587, 465).
+ - Use a command-line SMTP client or online SMTP tester to validate host/port/firewall.
+ - Ensure outbound ports are open (commonly 587, 465).
 - Inspect DNS and MX records
-  - Resolve the SMTP host and verify MX records for the sender domain.
+ - Resolve the SMTP host and verify MX records for the sender domain.
 - Check firewall and proxy
-  - Temporarily disable firewall or add exceptions for the app.
-  - If behind a corporate proxy, configure proxy settings appropriately.
+ - Temporarily disable firewall or add exceptions for the app.
+ - If behind a corporate proxy, configure proxy settings appropriately.
 - Validate certificates
-  - For self-signed certificates, review TLS options and consider CA trust chain.
-  - Ensure system clock is correct to avoid certificate expiry issues.
+ - For self-signed certificates, review TLS options and consider CA trust chain.
+ - Ensure system clock is correct to avoid certificate expiry issues.
 
 ### Provider-Specific troubleshooting
 - Gmail
-  - Use App Passwords or enable 2FA and generate an App Password.
-  - Confirm TLS on port 587 or SSL on port 465.
-  - Prefer OAuth2 for API-based sending when available.
+ - Use App Passwords or enable 2FA and generate an App Password.
+ - Confirm TLS on port 587 or SSL on port 465.
+ - Prefer OAuth2 for API-based sending when available.
 - Outlook/Hotmail
-  - Use TLS on port 587.
-  - Ensure account allows SMTP access and is not restricted by policies.
+ - Use TLS on port 587.
+ - Ensure account allows SMTP access and is not restricted by policies.
 - Yahoo
-  - Use TLS on port 587.
-  - Confirm SMTP access is enabled in account settings.
+ - Use TLS on port 587.
+ - Confirm SMTP access is enabled in account settings.
 
 ### Log analysis and debugging approaches
 - Enable verbose logging
-  - Capture Electron main process logs and renderer logs during SMTP operations.
-  - Use the progress events to correlate timestamps and statuses.
+ - Capture Electron main process logs and renderer logs during SMTP operations.
+ - Use the progress events to correlate timestamps and statuses.
 - Inspect error messages
-  - Errors thrown during sendMail or verification include actionable details.
+ - Errors thrown during sendMail or verification include actionable details.
 - UI activity log
-  - The UI displays per-recipient status and error messages for quick diagnosis.
+ - The UI displays per-recipient status and error messages for quick diagnosis.
 
 ### Certificate validation, SSL/TLS, and CA issues
 - TLS options
-  - The handler sets TLS to reject unauthorized certificates by default; adjust only if necessary for self-signed environments.
+ - The handler sets TLS to reject unauthorized certificates by default; adjust only if necessary for self-signed environments.
 - Certificate authorities
-  - Ensure system trust stores include the CA chain for the SMTP host.
+ - Ensure system trust stores include the CA chain for the SMTP host.
 - Hostname verification
-  - Mismatches cause certificate errors; verify the SMTP host matches the certificate.
+ - Mismatches cause certificate errors; verify the SMTP host matches the certificate.
 
 ### Solutions and step-by-step resolution guides
 
 #### Authentication failures
 1. Verify credentials
-   - Confirm username/email and password/app password are correct.
+ - Confirm username/email and password/app password are correct.
 2. Enable less secure apps or use App Passwords (where applicable)
-   - Some providers require App Passwords for SMTP access.
+ - Some providers require App Passwords for SMTP access.
 3. Check provider-specific requirements
-   - Ensure two-factor authentication settings and app permissions are configured.
+ - Ensure two-factor authentication settings and app permissions are configured.
 
 #### Connection timeouts
 1. Validate host and port
-   - Confirm the SMTP host resolves and the port is reachable.
+ - Confirm the SMTP host resolves and the port is reachable.
 2. Check firewall and network
-   - Temporarily disable firewall or whitelist the app.
+ - Temporarily disable firewall or whitelist the app.
 3. Test with a known-good client
-   - Use telnet or openssl s_client to test connectivity.
+ - Use telnet or openssl s_client to test connectivity.
 
 #### TLS/SSL handshake failures
 1. Match security mode to port
-   - Use SSL on port 465; TLS on port 587.
+ - Use SSL on port 465; TLS on port 587.
 2. Update TLS options cautiously
-   - Only modify TLS settings if dealing with self-signed certificates.
+ - Only modify TLS settings if dealing with self-signed certificates.
 3. Update system trust store
-   - Ensure intermediate CAs are installed.
+ - Ensure intermediate CAs are installed.
 
 #### Certificate authority issues
 1. Verify certificate chain
-   - Ensure the server presents a valid chain recognized by the OS.
+ - Ensure the server presents a valid chain recognized by the OS.
 2. Update trust store
-   - Install missing intermediate certificates.
+ - Install missing intermediate certificates.
 3. Consider temporary TLS adjustments (self-signed environments only)
-   - Use TLS options carefully and revert afterward.
+ - Use TLS options carefully and revert afterward.
 
 #### Delivery rejections
 1. Check recipient validity
-   - Ensure recipient addresses are properly formatted.
+ - Ensure recipient addresses are properly formatted.
 2. Review provider policies
-   - Exceeding rate limits or triggering spam filters causes rejections.
+ - Exceeding rate limits or triggering spam filters causes rejections.
 3. Use lower rate and monitor progress
-   - Increase delays between emails to avoid throttling.
+ - Increase delays between emails to avoid throttling.
 
-### Best practices and recommendations
+### Practical recommendations
 - Always verify configuration before sending.
 - Use rate limiting to avoid throttling.
 - Monitor progress events to identify failing recipients quickly.
@@ -260,4 +260,5 @@ Provider-specific notes:
 - Keep TLS settings aligned with provider requirements.
 
 ## Conclusion
-This guide consolidates SMTP troubleshooting practices grounded in the application's implementation. By validating configuration, verifying connections, aligning TLS settings with provider requirements, and monitoring progress events, most SMTP issues can be diagnosed and resolved efficiently. Adopt rate limiting and provider-specific configurations to maintain reliable delivery.
+
+Read the nodemailer error string before rewriting config. "Self signed certificate" and "Invalid login" want different fixes.

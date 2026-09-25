@@ -1,168 +1,118 @@
 # Overview
 
-- [.gitignore](https://github.com/codelif/pyjiit/blob/0fe02955/.gitignore)
-- [LICENSE](https://github.com/codelif/pyjiit/blob/0fe02955/LICENSE)
-- [README.rst](https://github.com/codelif/pyjiit/blob/0fe02955/README.rst)
-- [pyjiit/exceptions.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/exceptions.py)
-- [pyjiit/init.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/init.py)
-- [pyproject.toml](https://github.com/codelif/pyjiit/blob/0fe02955/pyproject.toml)
+pyjiit is a Python client for the JIIT Student Webportal APIs. Version **0.1.0a8**, Python **>=3.9**. Harsh Sharma (`codelif`) wrote it. This site documents the fork at [tashifkhan/pyjiit](https://github.com/tashifkhan/pyjiit). Upstream is [codelif/pyjiit](https://github.com/codelif/pyjiit).
 
-## Purpose and scope
+The package talks to `https://webportal.jiit.ac.in:6011/StudentPortalAPI` with `requests`. Payloads that the portal encrypts go through AES-CBC in `pyjiit.encryption`. Login takes a `Captcha` object. A filled default lives in `pyjiit.default.CAPTCHA`.
 
-This page provides a high-level introduction to **pyjiit**, a Python library for programmatic access to the JIIT Webportal system. It covers what pyjiit is, its architectural design, core components, and how data flows through the system. This overview is intended for developers who want to understand the library's structure before using it or contributing to it.
+Install and first call: [Getting started](2-getting-started). Method list: [Core API reference](3-core-api-reference). Crypto: [Security and encryption](4-security-and-encryption).
 
-For detailed API reference, see [Core API Reference](3-core-api-reference). For installation and usage instructions, see [Getting Started](2-getting-started). For information about the encryption mechanisms, see [Security and Encryption](4-security-and-encryption).
+README.rst still points at the Sphinx site: [https://pyjiit.codelif.in](https://pyjiit.codelif.in).
 
----
+## What it does
 
-## What is pyjiit
+`from pyjiit import Webportal` is the public entry. The class is **Webportal**, not WebPortal. After `student_login`, the same instance holds a `WebportalSession` and you call attendance, registration, exam, marks, fees, and account methods on it.
 
-**pyjiit** is a Python wrapper library that provides programmatic access to the JIIT (Jaypee Institute of Information Technology) Webportal's internal APIs. The library enables Python applications to authenticate with the webportal and retrieve student data including attendance records, exam events, and course registration information.
+```mermaid
+flowchart LR
+  App["Your script"] --> WP["Webportal"]
+  WP --> Enc["pyjiit.encryption"]
+  WP --> Req["requests"]
+  Req --> API["StudentPortalAPI"]
+  WP --> Models["attendance / exam / registration / tokens"]
+```
 
-The library reverse-engineers the webportal's proprietary encryption scheme to communicate with the backend APIs at `webportal.jiit.ac.in:6011`. It abstracts the complexity of payload encryption, session management, and API authentication behind a simple Python interface.
+## Package layout
 
-### Primary use cases
+```mermaid
+flowchart TB
+  Init["pyjiit/__init__.py"] --> Wrapper["wrapper.py Webportal"]
+  Wrapper --> Session["WebportalSession"]
+  Wrapper --> Enc["encryption.py"]
+  Wrapper --> Utils["utils.py"]
+  Wrapper --> Tokens["tokens.py Captcha"]
+  Wrapper --> Default["default.py CAPTCHA"]
+  Wrapper --> Att["attendance.py"]
+  Wrapper --> Exam["exam.py"]
+  Wrapper --> Reg["registration.py"]
+  Wrapper --> Exc["exceptions.py"]
+  Enc --> Utils
+  Default --> Tokens
+```
 
-| Use Case                | Description                                                                               |
-| ----------------------- | ----------------------------------------------------------------------------------------- |
-| **Attendance Tracking** | Query class attendance data including headers, semesters, and detailed attendance records |
-| **Exam Information**    | Retrieve exam event schedules and details                                                 |
-| **Registration Data**   | Access course registration information and registered subjects                            |
-| **Session Management**  | Handle authentication, token generation, and session lifecycle                            |
+| Module | Role |
+| --- | --- |
+| `pyjiit/__init__.py` | `from pyjiit.wrapper import Webportal` |
+| `pyjiit/wrapper.py` | `Webportal`, `WebportalSession`, `@authenticated`, `__hit` |
+| `pyjiit/encryption.py` | AES-CBC, `serialize_payload`, `generate_local_name` |
+| `pyjiit/utils.py` | Date sequence and random chars for the daily key |
+| `pyjiit/attendance.py` | `AttendanceHeader`, `Semester`, `AttendanceMeta` |
+| `pyjiit/exam.py` | `ExamEvent` |
+| `pyjiit/registration.py` | `RegisteredSubject`, `Registrations` |
+| `pyjiit/tokens.py` | `Captcha` |
+| `pyjiit/default.py` | Premade `CAPTCHA` used in the usage docs |
+| `pyjiit/exceptions.py` | `APIError`, `LoginError`, `SessionError`, `SessionExpired`, `NotLoggedIn`, `AccountAPIError` |
+| `pyjiit/init.py` | `__version__ = "0.1.0a8"` |
 
----
+## Login and a typical call
 
-## Core components
+Login is two POSTs. Both bodies are encrypted with `serialize_payload`. Unauthenticated requests still send a `LocalName` header from `generate_local_name()`.
 
-pyjiit is organized into four primary subsystems that work together to provide its functionality:
+1. `POST /token/pretoken-check` with username, `usertype: "S"`, and `captcha.payload()`.
+2. Take `response`, drop `rejectedData`, set `Modulename` to `STUDENTMODULE` and `passwordotpvalue` to the password.
+3. `POST /token/generate-token1`. Store `WebportalSession(resp["response"])` on `self.session`.
 
-![Diagram 1](images/1-overview_diagram_1.png)
+Most later methods go through `__hit`. `@authenticated` raises `NotLoggedIn` if `self.session` is `None`. The JWT expiry check is commented out because the portal's expiry claim is wrong for cookies that still work.
 
-### Component descriptions
+```mermaid
+sequenceDiagram
+  participant App
+  participant WP as Webportal
+  participant Enc as encryption
+  participant API as StudentPortalAPI
+  App->>WP: student_login(user, pass, Captcha)
+  WP->>Enc: serialize_payload
+  WP->>API: POST /token/pretoken-check
+  API-->>WP: response minus rejectedData
+  WP->>Enc: serialize_payload with password
+  WP->>API: POST /token/generate-token1
+  API-->>WP: regdata plus JWT
+  WP-->>App: WebportalSession
+  App->>WP: get_attendance_meta()
+  WP->>API: POST with Bearer plus LocalName
+  API-->>WP: JSON
+  WP-->>App: AttendanceMeta
+```
 
-| Component             | File Path                                                                                                                                                                                                                                                                                                                                                           | Purpose                                                                                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Webportal**         | [pyjiit/wrapper.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py)                                                                                                                                                                                                                                                                              | Main API client class; orchestrates all operations including authentication, data retrieval, and session management                                      |
-| **WebportalSession**  | [pyjiit/wrapper.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py)                                                                                                                                                                                                                                                                              | Encapsulates session state including tokens, client ID, and user information                                                                             |
-| **Encryption Module** | [pyjiit/encryption.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/encryption.py)                                                                                                                                                                                                                                                                        | Implements AES-CBC encryption with daily key rotation; handles payload serialization/deserialization and LocalName header generation                     |
-| **Data Models**       | [pyjiit/attendance.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/attendance.py) [pyjiit/exam.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/exam.py) [pyjiit/registration.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/registration.py) [pyjiit/tokens.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/tokens.py) | Structured classes for API responses; provide type-safe access to attendance, exam, registration, and token data                                         |
-| **Exceptions**        | [pyjiit/exceptions.py1-18](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/exceptions.py#L1-L18)                                                                                                                                                                                                                                                             | Custom exception hierarchy for error handling; includes `APIError`, `LoginError`, `SessionError`, `SessionExpired`, `NotLoggedIn`, and `AccountAPIError` |
-| **Utilities**         | [pyjiit/utils.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/utils.py)                                                                                                                                                                                                                                                                                  | Helper functions for date sequence generation and random character sequences used in encryption                                                          |
+## Exceptions
 
----
+```mermaid
+classDiagram
+  class Exception
+  class APIError
+  class LoginError
+  class SessionError
+  class SessionExpired
+  class NotLoggedIn
+  class AccountAPIError
+  Exception <|-- APIError
+  APIError <|-- LoginError
+  Exception <|-- SessionError
+  SessionError <|-- SessionExpired
+  SessionError <|-- NotLoggedIn
+  Exception <|-- AccountAPIError
+```
 
-## System architecture
+`__hit` raises `SessionExpired` when `status` is the integer `401`. Any other non-`Success` `responseStatus` raises the method's exception type, default `APIError`. `set_password` uses `AccountAPIError`.
 
-The following diagram shows how the core components interact during a typical API request flow:
+## Crypto in one line
 
-![Diagram 2](images/1-overview_diagram_2.png)
-
-### Authentication flow
-
-The authentication process uses a two-phase approach:
-
-1. **Pretoken Check** (`/token/pretoken-check`): Validates credentials and establishes initial session parameters
-2. **Token Generation** (`/token/generate-token1`): Generates the final authentication token
-
-Both phases require encrypted payloads and a `LocalName` header. The encryption key rotates daily at 00:00 IST.
-
-### Data retrieval pattern
-
-All data retrieval methods follow a consistent pattern:
-
-1. Application calls a `Webportal` method (e.g., `get_attendance()`)
-2. `Webportal` encrypts the request payload using the `Encryption Module`
-3. HTTP POST request sent to JIIT API with encrypted payload and `LocalName` header
-4. Response is decrypted by the `Encryption Module`
-5. Raw JSON is parsed into a structured `Data Model` object
-6. Structured object returned to application
-
----
-
-## Key abstractions
-
-### Webportal class
-
-The `Webportal` class (defined in [pyjiit/wrapper.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py)) is the primary interface for all interactions with the JIIT Webportal. It provides methods for:
-
-- **Authentication**: `student_login()`, `logout()`
-- **Attendance Queries**: `get_attendance_meta()`, `get_attendance()`
-- **Exam Data**: `get_exam_events()`
-- **Registration**: `get_registrations()`
-- **Account Management**: `set_password()`
-
-The class maintains an internal `WebportalSession` object that tracks authentication state and tokens.
-
-### WebportalSession class
-
-The `WebportalSession` class (defined in [pyjiit/wrapper.py](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/wrapper.py)) encapsulates session state including:
-
-- Authentication tokens
-- Client ID
-- User information (username, member type)
-- Session metadata (registration ID, curriculum semester)
-
-Sessions can expire (typically after HTTP 401 responses), at which point methods raise `SessionExpired` exceptions.
-
-### Data models
-
-Data model classes provide structured, type-safe access to API responses:
-
-- **AttendanceMeta** / **AttendanceHeader**: Organize attendance data by semester and subject
-- **ExamEvent**: Represents individual exam schedules
-- **RegisteredSubject** / **Registrations**: Encapsulate course registration information
-- **Captcha**: Represents captcha image data for authentication
-
-All data models provide a `from_json()` class method for construction from API responses.
-
-### Exception hierarchy
-
-The exception hierarchy (defined in [pyjiit/exceptions.py1-18](https://github.com/codelif/pyjiit/blob/0fe02955/pyjiit/exceptions.py#L1-L18)) provides granular error handling:
-
-![Diagram 3](images/1-overview_diagram_3.png)
-
----
-
-## Encryption and security
-
-pyjiit implements a proprietary encryption scheme reverse-engineered from the JIIT Webportal. The encryption system uses:
-
-- **Algorithm**: AES-CBC with a fixed 16-byte IV
-- **Key Derivation**: Daily rotating key based on current date in IST timezone
-- **Payload Format**: JSON → Encrypt → Base64 encode
-- **Headers**: Every request includes an encrypted `LocalName` header
-
-The encryption key is generated using the pattern: `"qa8y" + date_sequence + "ty1pn"`, where `date_sequence` is derived from the current date. Keys rotate at 00:00 IST, providing a 24-hour validity window.
-
-For detailed information about the encryption implementation, see [Security and Encryption](4-security-and-encryption).
-
----
+Key is `b"qa8y" + generate_date_seq() + b"ty1pn"` (16 bytes). IV is the fixed `b"dcek9wb8frty1pnm"`. AES-CBC with PKCS padding. The date sequence changes at calendar midnight of the machine running the client. The module comment says 0000 IST.
 
 ## Dependencies
 
-pyjiit has minimal runtime dependencies:
+| Package | Constraint | Why |
+| --- | --- | --- |
+| `requests` | `>=2.32.3,<3.0.0` | HTTP. Not fetch. |
+| `pycryptodome` | `>=3.22.0,<4.0.0` | AES. README.rst calls this out as explicit on purpose. |
 
-| Dependency       | Version Constraint | Purpose                           |
-| ---------------- | ------------------ | --------------------------------- |
-| **requests**     | >=2.32.3, <3.0.0   | HTTP client for API communication |
-| **pycryptodome** | >=3.22.0, <4.0.0   | AES encryption implementation     |
-
-The library requires Python 3.9 or higher. Development dependencies (for documentation) include Sphinx and the Furo theme.
-
----
-
-## Distribution and documentation
-
-pyjiit is distributed through:
-
-- **PyPI**: Package name `pyjiit`, installable via `pip install pyjiit`
-- **GitHub**: Source repository at `https://github.com/codelif/pyjiit`
-- **Documentation**: Hosted at `https://pyjiit.codelif.in` (GitHub Pages)
-
-The project uses:
-
-- **Poetry** for dependency management and packaging
-- **Sphinx** with Furo theme for documentation generation
-- **GitHub Actions** for automated testing, documentation builds, and PyPI publishing
-
-For information about building and deploying documentation, see [Documentation System](6-documentation-system). For information about the CI/CD pipeline, see [Deployment and CI/CD](7-deployment-and-cicd).
+Docs extra (Poetry group `docs`): Sphinx `>=7.4.7`, Furo `^2024.8.6`. License MIT. Credits in README.rst go to [arvindpunk](https://github.com/arvindpunk) for reversing the payload crypto.

@@ -1,7 +1,7 @@
 # SMTP authentication
 
 ## Introduction
-This page explains SMTP authentication methods and credential management in the application. It covers username/password authentication, encrypted credential storage, OAuth2 Gmail authentication, and best practices for secure operation. It also documents common failure scenarios, troubleshooting steps, and step-by-step setup guides for popular email providers.
+SMTP username/password auth, what gets saved (not the password), and how that differs from Gmail's OAuth path.
 
 ## Project structure
 The application is an Electron + React desktop app with dedicated modules for authentication and email sending:
@@ -114,7 +114,7 @@ Security considerations:
 - TLS verification occurs before sending
 - Self-signed certificate verification can be disabled for testing environments
 
-### Gmail OAuth2 authentication
+### Gmail oAuth2 authentication
 The application uses Google OAuth2 with a browser window for consent and token exchange. Tokens are stored securely and reused for sending emails.
 
 ```mermaid
@@ -209,43 +209,40 @@ SMTPHandler --> Store
 - Batch progress: real-time updates minimize perceived latency
 - Token reuse: OAuth2 tokens avoid repeated consent prompts
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 
 Common SMTP errors and resolutions:
 - Invalid credentials
-  - Verify username/email and password
-  - Ensure secure flag matches server requirements (SSL/TLS)
-  - Confirm firewall and network access to SMTP host/port
+ - Verify username/email and password
+ - Ensure secure flag matches server requirements (SSL/TLS)
+ - Confirm firewall and network access to SMTP host/port
 - Account disabled or locked
-  - Reset password or unlock account via provider portal
-  - Use app-specific passwords for providers requiring it
+ - Reset password or unlock account via provider portal
+ - Use app-specific passwords for providers requiring it
 - Two-factor authentication requirements
-  - Use app-specific passwords for Gmail
-  - Enable less secure apps or use OAuth2 where supported
+ - Use app-specific passwords for Gmail
+ - Enable less secure apps or use OAuth2 where supported
 - Provider-specific issues
-  - Gmail: Use App Passwords and correct host/port
-  - Outlook: Use TLS on port 587
+ - Gmail: Use App Passwords and correct host/port
+ - Outlook: Use TLS on port 587
 
 Common Gmail OAuth2 errors and resolutions:
 - Missing environment variables
-  - Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set
+ - Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set
 - Consent screen issues
-  - Re-run OAuth flow; ensure prompt consent is configured
+ - Re-run OAuth flow; ensure prompt consent is configured
 - Token exchange failures
-  - Check redirect URI and network connectivity
-  - Clear stored token and re-authenticate
+ - Check redirect URI and network connectivity
+ - Clear stored token and re-authenticate
 
 Credential storage issues:
 - Encrypted store not available
-  - Ensure electron-store is installed and initialized
-  - Check permissions for app data directory
+ - Ensure electron-store is installed and initialized
+ - Check permissions for app data directory
 
 ## Conclusion
-The application supports both SMTP username/password and Gmail OAuth2 authentication. SMTP credentials are not persisted, while Gmail tokens are stored securely. The UI provides guided workflows, progress tracking, and reliable error handling. Follow the provider-specific setup guides and best practices to maintain secure, reliable email delivery.
 
-[No sources needed since this section summarizes without analyzing specific files]
+Enter the password each session or accept the risk of storing it yourself outside this app. The code will not save it for you.
 
 ## Appendices
 
@@ -260,7 +257,7 @@ The application supports both SMTP username/password and Gmail OAuth2 authentica
 - Enter username and password in SMTP form
 - Optionally save non-sensitive SMTP metadata
 
-### Best practices for credential security
+### Credential security habits
 - Prefer OAuth2 where available (Gmail)
 - Use app-specific passwords for SMTP providers
 - Limit saved metadata; never persist passwords

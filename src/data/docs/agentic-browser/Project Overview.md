@@ -1,15 +1,16 @@
 # Project overview
 
 ## Introduction
-Agentic Browser is a next-generation browser extension designed to act as an intelligent agent that understands and controls web content. Its mission is to bridge modern LLM reasoning with real browser interactivity, enabling users to issue natural-language commands that are translated into safe, human-approved actions on live web pages. The project emphasizes model-agnostic intelligence, privacy-respecting design, and open-source extensibility, positioning itself as an adaptive, secure platform for AI-driven web automation.
+Agentic Browser is a browser extension that turns natural-language commands into actions on live pages. An LLM plans the work. The extension runs it only after you approve. Providers are swappable, keys stay local, and the code is open for extension.
 
 ## Project structure
-The repository is organized into cohesive layers:
-- Core runtime and configuration
-- Agent orchestration and tooling
-- MCP server for model-agnostic communication
-- Browser extension (background, content scripts, UI)
-- Services and tools for specialized workflows
+The repo splits into a few layers:
+- Core runtime and configuration (`core/`)
+- Agent orchestration and tooling (`agents/`, `tools/`)
+- MCP server for model-agnostic communication (`mcp_server/`)
+- FastAPI app in `main.py` with `routers/`, `services/`, `skills/`
+- Memory stores (sqlmodel/asyncpg, Neo4j, OpenSearch)
+- Browser clients under `clients/` (`browser-extension`, `debug-web`, `shared`)
 - Prompts and utilities for grounded reasoning
 
 ```mermaid
@@ -26,8 +27,8 @@ subgraph "MCP Server"
 MCP["mcp_server/server.py"]
 end
 subgraph "Extension"
-BG["extension/entrypoints/background.ts"]
-CT["extension/entrypoints/content.ts"]
+BG["clients/browser-extension/entrypoints/background.ts"]
+CT["clients/browser-extension/entrypoints/content.ts"]
 end
 subgraph "Tools"
 BA["tools/browser_use/tool.py"]
@@ -48,12 +49,12 @@ CT --> BG
 ## Core components
 - Model-agnostic LLM integration: A unified adapter supporting multiple providers and local models.
 - MCP-compliant server: Exposes tools and LLM generation via the Model Context Protocol.
-- Agent orchestration: LangGraph-based ReAct agent with a rich toolset for web, calendar, email, and browser actions.
+- Agent orchestration: LangGraph-based ReAct agent with tools for web, calendar, email, and browser actions.
 - Browser extension: Secure background and content scripts with declarative action execution.
 - Prompt engineering: Specialized prompts for generating safe, structured action plans for browser automation.
 
 ## Architecture overview
-Agentic Browser follows a layered architecture:
+Main pieces:
 - Frontend: Extension UI and messaging channels
 - Backend: FastAPI server and MCP server
 - Agent runtime: LangGraph workflows and tooling
@@ -201,7 +202,7 @@ BG-->>Agent : "status"
 ```
 
 ### Extension messaging and security
-The extension uses explicit message types for agent tool execution, tab/window control, and action execution. Every action is logged and requires user consent, ensuring transparency and safety.
+The extension uses explicit message types for agent tool execution, tab/window control, and action execution. Every action is logged and requires user consent.
 
 ```mermaid
 sequenceDiagram
@@ -227,7 +228,7 @@ DOT["python-dotenv"]
 LLM["core/llm.py"] --> LCA
 LLM --> LCG
 MCP["mcp_server/server.py"] --> MCP
-API["api/run.py"] --> UVI
+API["main.py"] --> UVI
 CFG["core/config.py"] --> DOT
 ```
 
@@ -237,8 +238,6 @@ CFG["core/config.py"] --> DOT
 - Minimal DOM manipulation: Content scripts inject only necessary scripts and dispatch minimal events.
 - Efficient prompting: Prompt templates are concise and output-only JSON to reduce parsing overhead.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Missing environment variables: Ensure API keys and base URLs are configured in the environment.
@@ -247,4 +246,5 @@ Common issues and resolutions:
 - MCP tool errors: Validate tool names and argument schemas; check server logs for exceptions.
 
 ## Conclusion
-Agentic Browser delivers a model-agnostic, secure, and extensible platform for intelligent web automation. By combining MCP-compliant tooling, a declarative action system, and reliable guardrails, it enables users to safely automate complex web tasks while maintaining control and transparency. The modular architecture invites community contributions and positions the project as a foundation for adaptive AI browser automation.
+You get MCP tooling, JSON action plans, and guardrails that keep you in the loop. Swap providers without rewriting the agent. Add tools without touching the UI. That is the whole bet.
+

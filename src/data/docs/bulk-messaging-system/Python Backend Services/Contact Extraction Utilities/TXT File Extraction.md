@@ -1,7 +1,7 @@
 # TXT file extraction
 
 ## Introduction
-This page provides detailed documentation for TXT file contact extraction capabilities within the Bulk Messaging System. It focuses on the regex-based phone number detection algorithm, multi-separator splitting logic, name extraction when names are combined with phone numbers, supported TXT formats, mixed format handling, edge cases, and fallback parsing strategies.
+TXT import with regex phone detection, multi-separator splits, and optional name extraction when name and number share a line.
 
 ## Project structure
 The TXT extraction functionality is implemented in two primary locations:
@@ -89,7 +89,7 @@ Note over TXT,CLEAN : Fallback processing when initial parsing fails
 ## Detailed component analysis
 
 ### TXT extraction algorithm
-The TXT extraction algorithm implements sophisticated pattern matching and parsing logic.
+The TXT extraction algorithm implements careful pattern matching and parsing logic.
 
 ```mermaid
 flowchart TD
@@ -115,7 +115,7 @@ NextLine --> End([End])
 ```
 
 ### Phone number detection patterns
-The system uses sophisticated regex patterns for phone number identification:
+The system uses careful regex patterns for phone number identification:
 
 #### Primary detection pattern
 The main pattern `[\d+\-\(\)\s]{7,}` identifies phone numbers by:
@@ -161,9 +161,9 @@ When names are combined with phone numbers, the system implements intelligent ex
 
 #### Mixed format handling
 The algorithm prioritizes:
-1. **First phone candidate**: Selected when multiple phone-like segments exist
-2. **First non-empty segment**: Used as name when no clear phone candidate exists
-3. **Fallback extraction**: When separators are absent, the system extracts from the entire line
+1. **First phone candidate.** Selected when multiple phone-like segments exist
+2. **First non-empty segment.** Used as name when no clear phone candidate exists
+3. **Fallback extraction.** When separators are absent, the system extracts from the entire line
 
 #### Name candidate selection
 ```mermaid
@@ -203,13 +203,13 @@ Alice Brown,555.123.4567
 #### Edge case examples
 ```
 John Doe,123-456-7890,,Extra Field
-  
+
 123-456-7890
 Jane Smith
 ```
 
 ### Error recovery mechanisms
-The system implements detailed error handling:
+The system implements clear error handling:
 
 #### File processing errors
 - UTF-8 encoding enforcement
@@ -264,18 +264,18 @@ API --> EXCEL_EXTRACT
 ```
 
 ### External dependencies impact
-- **pandas**: Enables structured data processing for CSV/Excel files
-- **openpyxl/xlrd**: Provides Excel file format support
-- **flask/flask-cors**: Powers the web API interface
-- **werkzeug**: Handles file uploads and security
+- **pandas.** Enables structured data processing for CSV/Excel files
+- **openpyxl/xlrd.** Provides Excel file format support
+- **flask/flask-cors.** Powers the web API interface
+- **werkzeug.** Handles file uploads and security
 
 ## Performance considerations
 The TXT extraction system is optimized for efficiency and scalability:
 
 ### Algorithm complexity
-- **Time Complexity**: O(n × m) where n is number of lines and m is average parts per line
-- **Space Complexity**: O(k) where k is number of valid contacts extracted
-- **Memory Usage**: Linear with respect to file size
+- **Time Complexity.** O(n × m) where n is number of lines and m is average parts per line
+- **Space Complexity.** O(k) where k is number of valid contacts extracted
+- **Memory Usage.** Linear with respect to file size
 
 ### Optimization strategies
 - Single-pass line processing
@@ -294,49 +294,57 @@ The TXT extraction system is optimized for efficiency and scalability:
 ### Common issues and solutions
 
 #### Phone number not detected
-**Symptoms**: Phone numbers appear as empty or invalid
-**Causes**:
+**Symptoms.** Phone numbers appear as empty or invalid
+**Causes.**
+
 - Numbers shorter than 7 digits or longer than 15 digits
 - Unrecognized separators or formatting
 - Leading zeros in international numbers
 
-**Solutions**:
+**Solutions.**
+
 - Ensure numbers meet length requirements
 - Use recognized separators (spaces, hyphens, parentheses)
 - Include country codes for international numbers
 
 #### Mixed format problems
-**Symptoms**: Names incorrectly extracted or phone numbers missed
-**Causes**:
+**Symptoms.** Names incorrectly extracted or phone numbers missed
+**Causes.**
+
 - Ambiguous separators causing misinterpretation
 - Names containing phone number patterns
 - Missing separators in lines
 
-**Solutions**:
+**Solutions.**
+
 - Use consistent separator usage
 - Place phone numbers first when mixing formats
 - Include explicit separators between name and number
 
 #### File encoding issues
-**Symptoms**: Characters appear corrupted or parsing fails
-**Causes**:
+**Symptoms.** Characters appear corrupted or parsing fails
+**Causes.**
+
 - Non-UTF-8 file encoding
 - Special characters not properly handled
 - BOM (Byte Order Mark) interference
 
-**Solutions**:
+**Solutions.**
+
 - Save files in UTF-8 encoding
 - Remove BOM if present
 - Verify character encoding compatibility
 
 #### Performance issues
-**Symptoms**: Slow processing for large files
-**Causes**:
+**Symptoms.** Slow processing for large files
+**Causes.**
+
 - Very large file sizes exceeding limits
 - Complex regex patterns
 - Memory constraints
 
-**Solutions**:
+**Solutions.**
+
 - Split large files into smaller chunks
 - Optimize regex patterns
 - Monitor memory usage during processing
@@ -349,13 +357,5 @@ The system provides structured error reporting:
 - Validation failures with specific reasons
 
 ## Conclusion
-The TXT file extraction system provides reliable, flexible contact processing with sophisticated regex-based phone number detection and intelligent name extraction. Its multi-layered approach ensures reliable parsing across various formats while maintaining strong error handling and performance characteristics. The system successfully handles edge cases, mixed formats, and provides detailed fallback mechanisms for maximum compatibility with diverse contact data sources.
 
-The implementation demonstrates best practices in:
-- Progressive parsing with multiple fallback strategies
-- Detailed error handling and recovery
-- Efficient regex pattern matching
-- Flexible separator support
-- International phone number normalization
-
-This foundation enables reliable bulk messaging operations while maintaining data integrity and user experience across different contact data formats.
+TXT is the messy format. Expect skipped lines; tighten your separators if too many valid numbers are dropped.

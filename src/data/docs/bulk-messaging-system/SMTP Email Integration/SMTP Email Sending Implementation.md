@@ -1,7 +1,7 @@
 # SMTP email sending implementation
 
 ## Introduction
-This page provides detailed technical documentation for the SMTP email sending implementation and bulk messaging capabilities within the desktop application. It covers email composition with HTML content support and automatic plain text fallback generation, attachment handling limitations and workarounds, bulk sending implementation with configurable delays, progress tracking and real-time status updates, rate limiting mechanisms and delivery throttling, error handling for individual message failures and partial delivery scenarios, email validation requirements and recipient formatting, and practical guidance for common sending issues including spam filtering, deliverability problems, and provider-specific restrictions.
+Nodemailer send path: HTML plus stripped text, per-recipient delay, progress IPC, and the current no-attachments limit.
 
 ## Project structure
 The email sending functionality is implemented across the Electron main process, preload bridge, React components, and handler modules. The key components include:
@@ -46,7 +46,7 @@ Key implementation highlights:
 - Attachment handling limitations and suggested workarounds
 
 ## Architecture overview
-The email sending architecture follows a layered approach with clear separation of concerns:
+Send path layers:
 
 ```mermaid
 sequenceDiagram
@@ -128,7 +128,7 @@ The email composition system supports rich HTML content with automatic plain tex
 
 Implementation considerations:
 - HTML emails should use proper HTML structure with DOCTYPE declarations for best rendering
-- Plain text fallback ensures compatibility with email clients that disable HTML rendering
+- Plain text fallback exists for clients that ignore HTML
 - Content length validation should be considered for large HTML documents
 
 ### Attachment handling limitations and workarounds
@@ -176,7 +176,7 @@ Rate limiting and throttling mechanisms:
 - Individual error handling with partial delivery reporting
 
 ### Progress tracking and real-time status updates
-The system provides detailed progress tracking through IPC events:
+The system tracks progress through IPC events:
 
 ```mermaid
 stateDiagram-v2
@@ -229,7 +229,7 @@ Recipient formatting:
 - Support for comma-separated values in CSV files
 
 ### UI components for SMTP configuration
-The SMTP form provides a detailed interface for email composition:
+The SMTP form is the UI for email composition:
 
 Key UI elements:
 - SMTP server configuration fields (host, port, username, password)
@@ -327,7 +327,7 @@ Outlook/Hotmail SMTP:
 - Implement proper DKIM/SPF/DNS configurations for improved deliverability
 
 ### Deliverability and spam prevention
-Best practices:
+Habits that help:
 - Implement proper sender reputation management
 - Use consistent sender identity across messages
 - Include unsubscribe links and proper headers
@@ -346,7 +346,8 @@ Progress tracking issues:
 - Ensure UI components are subscribed to progress updates
 
 ## Conclusion
-The SMTP email sending implementation provides a reliable foundation for bulk email delivery with detailed features including HTML content support, automatic plain text fallback generation, configurable rate limiting, real-time progress tracking, and detailed error handling. The modular architecture ensures maintainability while the UI components provide an intuitive interface for managing email campaigns. While current limitations exist around attachment handling, the system's design allows for future enhancements and provides clear pathways for extending functionality. Proper configuration, adherence to provider guidelines, and implementation of best practices for deliverability will ensure reliable email delivery at scale.
+
+No attachment pipeline yet. If you need files, say so in the body or extend nodemailer usage deliberately.
 
 ## Appendices
 

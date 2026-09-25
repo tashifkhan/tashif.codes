@@ -1,7 +1,7 @@
 # Security model and isolation
 
 ## Introduction
-This page explains the Electron security model implementation in the project, focusing on context isolation, preload scripts, and IPC security patterns. It documents the BrowserWindow webPreferences configuration, the responsibilities of the preload script, and how the main process restricts sensitive operations. It also covers input validation strategies and best practices for desktop application security aligned with Electron security guidelines.
+Context isolation, disabled nodeIntegration, a narrow preload API, and why sensitive work stays in the main process.
 
 ## Project structure
 The Electron application is organized into:
@@ -82,7 +82,7 @@ PB-->>R : "auth result"
 ### BrowserWindow security configuration
 The BrowserWindow is created with strict security defaults:
 - nodeIntegration: false prevents Node.js APIs from being directly accessible in the renderer
-- contextIsolation: true ensures the renderer runs in an isolated world separate from the main context
+- contextIsolation: true means the renderer runs in an isolated world separate from the main context
 - enableRemoteModule: false disables the remote module that could bypass context isolation
 - webSecurity: true enforces same-origin policy and related security checks
 - preload: path specifies the preload script that bridges the secure IPC channel
@@ -183,21 +183,19 @@ The renderer implements client-side validation:
 - Numeric delay validation and bounds
 - Contact list validation for WhatsApp bulk messaging
 
-Best practices:
+Habits that help:
 - Validate early and fail fast
 - Sanitize inputs before IPC
 - Provide clear user feedback on validation failures
 - Avoid relying solely on client-side validation for security-sensitive operations
 
-### Security best practices and compliance
+### Security habits and compliance
 - Context Isolation: Enforced via webPreferences and contextBridge
 - Minimal API Exposure: Only necessary methods exposed via preload
 - IPC Validation: Main process validates all inputs and configuration
 - Resource Cleanup: Sessions and temporary files cleaned on logout and app exit
 - Environment Separation: Development vs production loading paths
 - Secure Transport: SMTP TLS configuration and Gmail OAuth2 flow
-
-[No sources needed since this section provides general guidance]
 
 ## Dependency analysis
 The main process depends on:
@@ -223,8 +221,6 @@ BM --> SF["SMTPForm.jsx"]
 - Efficient event handling to avoid memory leaks (removing listeners)
 - Minimize IPC chatter by batching operations when possible
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Electron API not available: Ensure preload is correctly configured and window.electronAPI is present
@@ -233,4 +229,5 @@ Common issues and resolutions:
 - WhatsApp client initialization failures: Confirm network connectivity and puppeteer arguments
 
 ## Conclusion
-The application implements a reliable Electron security model by enforcing context isolation, exposing a minimal preload API, and centralizing sensitive operations in the main process. Input validation occurs at both the renderer and main process boundaries, and IPC handlers provide structured, validated access to external services. These patterns align with Electron security guidelines and help protect against common vulnerabilities in desktop applications.
+
+The threat model is a compromised renderer. Assume HTML/content can be hostile and keep Node APIs unreachable from it.

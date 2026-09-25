@@ -1,7 +1,7 @@
 # Prompts and prompt engineering
 
 ## Introduction
-This page explains the Prompts and Prompt Engineering system used across the platform. It covers how domain-specific prompts are organized and managed for different agent capabilities, including React agents, browser automation, GitHub integration, website analysis, and YouTube processing. It also documents the prompt injection validation system, security measures, prompt optimization techniques, template system design, dynamic prompt generation patterns, and the relationship between prompts and agent behavior, tool selection, and response quality. Finally, it provides best practices, A/B testing approaches, performance optimization, versioning and localization considerations, debugging techniques, and guidelines for creating effective prompts.
+Prompt layout for the project: system defaults, browser-action templates, service prompts, and where validation hooks in.
 
 ## Project structure
 The prompt system is organized by domain and capability:
@@ -53,22 +53,22 @@ PV --> CL
 
 ## Core components
 - Prompt templates and chains:
-  - React agent prompt template for tool-use orchestration.
-  - Browser automation script generator prompt with explicit JSON action plan and strict rules.
-  - GitHub prompt with structured context windows and guidelines.
-  - Website prompt combining server-fetched and client-rendered contexts.
-  - YouTube prompt focused on video metadata and transcripts.
-  - Prompt injection validator prompt for safety checks.
+ - React agent prompt template for tool-use orchestration.
+ - Browser automation script generator prompt with explicit JSON action plan and strict rules.
+ - GitHub prompt with structured context windows and guidelines.
+ - Website prompt combining server-fetched and client-rendered contexts.
+ - YouTube prompt focused on video metadata and transcripts.
+ - Prompt injection validator prompt for safety checks.
 - LLM abstraction:
-  - Provider-agnostic initialization supporting multiple providers and environment-driven configuration.
+ - Provider-agnostic initialization supporting multiple providers and environment-driven configuration.
 - Agent orchestration:
-  - React agent graph with tool selection and execution.
-  - Tool integrations that feed domain-specific prompts and chains.
+ - React agent graph with tool selection and execution.
+ - Tool integrations that feed domain-specific prompts and chains.
 - Endpoints:
-  - Routers for React agent, browser automation, GitHub, website, and YouTube workflows.
+ - Routers for React agent, browser automation, GitHub, website, and YouTube workflows.
 
 ## Architecture overview
-The prompt architecture follows a layered design:
+Prompt stack:
 - Templates define the instruction and context framing for each domain.
 - Chains assemble templates with LLM clients and output parsers.
 - Tools integrate chains into agent workflows.
@@ -165,7 +165,7 @@ Parser --> Answer["Answer"]
 
 ### YouTube processing prompt
 - Purpose: Answer questions about a YouTube video using metadata and transcripts.
-- Structure: Guidelines for summaries, statistics, sentiment, and recommendations; reliable error handling for transcript retrieval.
+- Structure: Guidelines for summaries, statistics, sentiment, and recommendations; clear errors when transcript retrieval fails.
 - Chain: RunnableParallel that fetches transcript context and feeds PromptTemplate.
 
 ```mermaid
@@ -222,14 +222,14 @@ Tools --> Chains : "invokes"
 
 ## Dependency analysis
 - Prompt-to-chain mapping:
-  - GitHub prompt maps to GitHub chain.
-  - Website prompt maps to website chain.
-  - YouTube prompt maps to YouTube chain.
-  - Browser prompt maps to a chain built with LargeLanguageModel.
+ - GitHub prompt maps to GitHub chain.
+ - Website prompt maps to website chain.
+ - YouTube prompt maps to YouTube chain.
+ - Browser prompt maps to a chain built with LargeLanguageModel.
 - Agent-to-tool mapping:
-  - React agent builds a toolset dynamically from context and invokes tools that use domain prompts.
+ - React agent builds a toolset dynamically from context and invokes tools that use domain prompts.
 - LLM provider configuration:
-  - Provider selection and model initialization are centralized, enabling consistent behavior across prompts.
+ - Provider selection and model initialization are centralized, enabling consistent behavior across prompts.
 
 ```mermaid
 graph LR
@@ -249,41 +249,35 @@ Tools --> YC
 
 ## Performance considerations
 - Asynchronous tool invocation:
-  - Tools use threads for blocking operations to avoid blocking the event loop during prompt execution.
+ - Tools use threads for blocking operations to avoid blocking the event loop during prompt execution.
 - RunnableParallel composition:
-  - Parallel merging of inputs reduces overhead and aligns with LangChain best practices.
+ - Parallel merging of inputs reduces overhead and matches how LangChain expects chains to be built.
 - LLM provider configuration:
-  - Centralized provider selection and environment-driven configuration enable tuning of latency and cost.
+ - Centralized provider selection and environment-driven configuration enable tuning of latency and cost.
 - Prompt reuse and caching:
-  - Reusable prompt templates and cached compiled graphs reduce repeated work.
-
-[No sources needed since this section provides general guidance]
+ - Reusable prompt templates and cached compiled graphs reduce repeated work.
 
 ## Troubleshooting guide
 - Prompt injection detection:
-  - Use the injection validator prompt to flag unsafe inputs before invoking domain prompts.
+ - Use the injection validator prompt to flag unsafe inputs before invoking domain prompts.
 - Error handling in chains:
-  - GitHub and YouTube chains wrap invocations with try/catch and return informative error messages.
+ - GitHub and YouTube chains wrap invocations with try/catch and return informative error messages.
 - Logging and observability:
-  - Services log messages and errors to aid debugging; routers propagate exceptions appropriately.
+ - Services log messages and errors to aid debugging; routers propagate exceptions appropriately.
 - Environment configuration:
-  - Ensure provider credentials and base URLs are configured; initialization failures indicate misconfiguration.
+ - Ensure provider credentials and base URLs are configured; initialization failures indicate misconfiguration.
 
 ## Conclusion
-The prompt system is modular, provider-agnostic, and tailored to distinct domains. By structuring prompts around clear context windows, enforcing strict formatting, and integrating them with asynchronous tooling and agent orchestration, the system achieves reliable, high-quality responses. Security is addressed through explicit validation prompts and careful input handling. Performance is optimized through parallel composition and efficient chain design. The architecture supports future enhancements such as A/B testing, localization, and versioning.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Keep prompts next to the domain they serve. Version changes with the tools that depend on them. Test with hostile inputs, not just happy paths.
 
 ## Appendices
 
-### Prompt engineering best practices
+### Prompt engineering habits
 - Define clear roles and constraints in system prompts.
 - Use structured context windows and explicit formatting rules.
 - Enforce output constraints (e.g., JSON-only) to reduce ambiguity.
 - Include examples and preferred patterns for complex tasks.
 - Validate inputs and sanitize context to prevent prompt injection.
-
-[No sources needed since this section provides general guidance]
 
 ### A/B testing approaches
 - Maintain multiple prompt variants per domain.
@@ -291,22 +285,16 @@ The prompt system is modular, provider-agnostic, and tailored to distinct domain
 - Track response quality metrics and latency.
 - Roll out changes gradually and monitor for regressions.
 
-[No sources needed since this section provides general guidance]
-
 ### Performance optimization
 - Use RunnableParallel to merge inputs efficiently.
 - Cache compiled agent graphs and chains where appropriate.
 - Prefer streaming or chunked processing for long contexts.
 - Tune provider parameters (temperature, max tokens) per domain.
 
-[No sources needed since this section provides general guidance]
-
 ### Prompt versioning and localization
 - Version prompts alongside semantic versioning of features.
 - Store prompt variants in separate files or branches for controlled rollouts.
 - Localize prompts by adapting examples and cultural references while preserving structure.
-
-[No sources needed since this section provides general guidance]
 
 ### Debugging techniques
 - Log raw inputs and outputs for each chain.
@@ -314,4 +302,3 @@ The prompt system is modular, provider-agnostic, and tailored to distinct domain
 - Validate prompt injection risks before production deployment.
 - Monitor provider quotas and latency to detect anomalies.
 
-[No sources needed since this section provides general guidance]

@@ -1,12 +1,12 @@
 # Gmail integration
 
 ## Introduction
-This page explains the Gmail service integration implemented in the project. It covers the API surface for listing unread messages, fetching latest messages, marking messages as read, and sending emails. It also documents the OAuth2 authentication flow used by the browser extension, the FastAPI router and service layer, and outlines best practices for rate limiting, caching, and error recovery. The goal is to help developers integrate Gmail capabilities reliably and efficiently.
+Gmail list/send/read flows: extension OAuth, FastAPI router, service layer, and agent tools. Quotas and error recovery.
 
 ## Project structure
 The Gmail integration spans several layers:
 - Tools: Lightweight, focused functions that call the Gmail API directly.
-- Service: A cohesive service layer that orchestrates tool invocations and centralizes error logging.
+- Service: Service layer that calls tools and centralizes error logging.
 - Router: FastAPI endpoints that validate requests, enforce defaults, and delegate to the service.
 - Frontend: Chrome extension authentication flow that obtains and manages access tokens.
 - Agents: Optional integration points for agent-driven workflows.
@@ -40,7 +40,7 @@ Key responsibilities:
 - Token usage: All operations require a valid access token supplied by the caller.
 
 ## Architecture overview
-The integration follows a layered pattern:
+Call path:
 - Router validates requests and delegates to the service.
 - Service wraps tool calls and logs exceptions.
 - Tools call the Gmail API directly using Bearer tokens.
@@ -192,30 +192,29 @@ SVC --> TL4["tools/gmail/send_email.py"]
 - Rate limiting: Respect Gmail API quotas. Monitor rate limit headers and implement backoff strategies. Consider batching writes and reads where feasible.
 - Logging: Centralized logging in the service helps track performance and error patterns.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Authentication failures
-  - Symptoms: 400/401 responses, inability to exchange code for tokens.
-  - Checks: Ensure the frontend launched the web auth flow with correct scopes and redirect URI. Verify the backend /exchange-code endpoint is reachable and returns tokens.
-  - Actions: Re-initiate OAuth, confirm scopes include Gmail read/modify/send/labels, and ensure offline access is requested if refresh is needed.
+ - Symptoms: 400/401 responses, inability to exchange code for tokens.
+ - Checks: Ensure the frontend launched the web auth flow with correct scopes and redirect URI. Verify the backend /exchange-code endpoint is reachable and returns tokens.
+ - Actions: Re-initiate OAuth, confirm scopes include Gmail read/modify/send/labels, and ensure offline access is requested if refresh is needed.
 - Missing access token
-  - Symptoms: 400 responses indicating missing access_token.
-  - Checks: Confirm the request includes access_token and that it is not empty.
-  - Actions: Prompt the user to authenticate again or pass a valid token.
+ - Symptoms: 400 responses indicating missing access_token.
+ - Checks: Confirm the request includes access_token and that it is not empty.
+ - Actions: Prompt the user to authenticate again or pass a valid token.
 - Rate limiting
-  - Symptoms: 429 responses or throttled requests.
-  - Checks: Inspect response headers for quota metrics and adjust request frequency.
-  - Actions: Implement exponential backoff, reduce max_results, and cache results to minimize repeated queries.
+ - Symptoms: 429 responses or throttled requests.
+ - Checks: Inspect response headers for quota metrics and adjust request frequency.
+ - Actions: Implement exponential backoff, reduce max_results, and cache results to minimize repeated queries.
 - Message parsing errors
-  - Symptoms: Empty or partial message lists.
-  - Checks: Validate that metadata retrieval succeeded and headers are present.
-  - Actions: Retry failed message fetches individually and log skipped entries.
+ - Symptoms: Empty or partial message lists.
+ - Checks: Validate that metadata retrieval succeeded and headers are present.
+ - Actions: Retry failed message fetches individually and log skipped entries.
 - Sending failures
-  - Symptoms: Non-200 responses when posting to send.
-  - Checks: Confirm raw message encoding and required fields.
-  - Actions: Rebuild the raw message and resend; check recipient address validity.
+ - Symptoms: Non-200 responses when posting to send.
+ - Checks: Confirm raw message encoding and required fields.
+ - Actions: Rebuild the raw message and resend; check recipient address validity.
 
 ## Conclusion
-The Gmail integration is cleanly separated into tools, a service layer, and a FastAPI router. The browser extension handles OAuth2 and token lifecycle, enabling secure access to Gmail APIs. By following the outlined patterns for request validation, error handling, and performance considerations, teams can extend and maintain the integration effectively. For production workloads, incorporate reliable retry/backoff, caching, and careful monitoring of API quotas.
+Tools, service, router, extension OAuth. Stay inside Gmail quotas and refresh tokens before they expire mid-batch.
+

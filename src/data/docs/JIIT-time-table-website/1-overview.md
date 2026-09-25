@@ -1,251 +1,203 @@
 # Overview
 
-The JIIT Personalized Timetable Creator is a browser-based Progressive Web App (PWA) that generates customized class schedules for students at Jaypee Institute of Information Technology. The system executes Python timetable generation logic entirely in the browser using Pyodide WebAssembly, eliminating traditional backend infrastructure. The application operates fully offline through service worker caching and provides features including personalized schedule generation, timeline visualization, timetable comparison, academic calendar integration, and Google Calendar synchronization.
+JIIT Timetable Creator is a browser PWA that builds a personal class schedule. Python parsing runs in the page through Pyodide, so timetable generation does not need a backend. A Workbox service worker keeps the app usable offline after the first load.
 
-**Architectural Approach**: The system implements a three-layer architecture: React frontend (Next.js App Router), Python processing layer (Pyodide WASM), and PWA/offline layer (Service Worker with Workbox). Static JSON data files are the data layer, generated at build time from Excel sources.
+Live site: [https://jiit-timetable.tashif.codes/](https://jiit-timetable.tashif.codes/)
+Source: [github.com/tashifkhan/JIIT-time-table-website](https://github.com/tashifkhan/JIIT-time-table-website)
 
-**Scope**: This page provides a high-level overview of the system architecture, core features, technology stack, and data flow. For detailed information about specific subsystems, refer to:
+Deeper pages:
 
-* System architecture: [#3](3-system-architecture)
-* Schedule generation pipeline: [#4](4-schedule-generation-(core-feature))
-* Pyodide WASM integration: [#3.2](3.2-pyodide-wasm-integration)
-* PWA and offline capabilities: [#3.3](3.3-pwa-and-offline-capabilities)
-* State management: [#3.5](3.5-state-management)
-* Export and sharing mechanisms: [#9](9-export-and-sharing)
+* System architecture: [3](3-system-architecture)
+* Schedule generation: [4](4-schedule-generation-(core-feature))
+* Pyodide WASM: [3.2](3.2-pyodide-wasm-integration)
+* PWA and offline: [3.3](3.3-pwa-and-offline-capabilities)
+* State management: [3.5](3.5-state-management)
+* Export and sharing: [9](9-export-and-sharing)
 
-## System overview
+## System layers
 
-The application consists of three primary runtime layers operating in the browser: React frontend (UI and routing), Python processing layer (Pyodide WASM), and PWA/offline layer (Service Worker). Static JSON files provide timetable and calendar data, while external services handle Google Calendar integration and Pyodide runtime delivery.
+Three runtime layers sit in the browser. Static JSON is the data layer. Next.js App Router API routes only serve that JSON (and a mess-menu proxy). They do not generate schedules.
 
-**System Architecture Diagram**
-
-![Diagram 1](images/1-overview_diagram_1.png)
-
-**Key Architectural Characteristics**:
+```mermaid
+flowchart TB
+  subgraph browser [Browser]
+    UI["website/ Next.js 16 App Router"]
+    CTX["UserContext + nuqs + localStorage"]
+    PY["Pyodide 0.27.0 WASM"]
+    WHEEL["parser wheel<br/>/parser/jiit_timetable_parser-0.1.0-py3-none-any.whl"]
+    SW["Workbox SW<br/>website/public/sw.js"]
+    UI --> CTX
+    UI --> PY
+    PY --> WHEEL
+    SW --> UI
+    SW --> PY
+  end
+  JSON["website/data JSON<br/>time-table, calender, exam"]
+  API["app/api/* routes"]
+  CDN["jsDelivr Pyodide CDN"]
+  GCal["Google Calendar API"]
+  Mess["Mess JSON / n8n proxy"]
+  UI --> API
+  API --> JSON
+  PY --> CDN
+  UI --> GCal
+  API --> Mess
+```
 
 | Aspect | Implementation |
 | --- | --- |
-| **Frontend Framework** | Next.js 15 with App Router, React 18, TypeScript |
-| **Backend Alternative** | Pyodide WebAssembly (Python 3.11) running client-side |
-| **Data Layer** | Static JSON files served via service worker cache |
-| **Offline Support** | Service worker with Workbox caching strategies |
-| **State Persistence** | React Context API + localStorage + URL parameters |
-| **External Integrations** | Google Calendar API (OAuth 2.0), PostHog analytics |
+| Frontend | Next.js 16 App Router, React 18, TypeScript, Tailwind CSS v4, shadcn/ui |
+| Schedule engine | Pyodide 0.27.0 (Python 3.12 package, no stdlib extras) loaded from jsDelivr |
+| Parser | `create_time_table`, `compare_timetables`, `create_and_compare_timetable` in the `parser/` wheel |
+| Data | Static JSON under `website/data/` (and repo-root `data/`), read by `app/api/*` |
+| Offline | `@ducanh2912/next-pwa` + Workbox at `website/public/sw.js` |
+| State | React Context, localStorage, `nuqs` query params |
+| Analytics | PostHog via `/ph/*` rewrite, Vercel Analytics |
 
-The service worker at [public/sw.js](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/sw.js) implements three caching strategies:
+The service worker at [`website/public/sw.js`](https://github.com/tashifkhan/JIIT-time-table-website/blob/main/website/public/sw.js) uses three strategies:
 
-* **NetworkFirst**: Root path `/` to prioritize fresh content
-* **CacheFirst**: Pyodide CDN assets with 1-year TTL for performance
-* **Precache**: Static assets (Next.js chunks, JSON data, Python modules)
+* NetworkFirst for `/` (`start-url` cache)
+* CacheFirst for `https://cdn.jsdelivr.net/pyodide/v0.27.0/full/*` with a 1-year TTL
+* Precache for Next.js chunks, fonts, `manifest.json`, leftover `/modules/*.py` files, and `_creator.py`
 
-## Core features
+## Features and routes
 
-The system provides five primary feature areas, each implemented as a distinct route and component:
-
-| Feature | Route | Primary Component | Purpose |
-| --- | --- | --- | --- |
-| Schedule Generation | `/` | `App.tsx` | Create personalized timetables based on campus, year, batch, and electives |
-| Timeline View | `/timeline` | `timeline-wrapper.tsx` | Display schedules in calendar format with event details |
-| Timetable Comparison | `/compare-timetables` | `compare-timetable.tsx` | Compare two schedules to find common free slots |
-| Academic Calendar | `/academic-calendar` | `academic-calendar.tsx` | View institutional calendar with Google Calendar sync |
-| Mess Menu | `/mess-menu` | `mess-menu.tsx` | Display weekly dining schedule |
-
-### Schedule generation workflow
-
-The schedule generation process involves user input collection, Python-based parsing, and display rendering:
-
-![Diagram 2](images/1-overview_diagram_2.png)
-
-## Architecture highlights
-
-### Client-Side Python execution
-
-The most distinctive architectural decision is using Pyodide to execute Python code client-side. The `initializePyodide()` function in `pyodide.ts` loads the Pyodide WASM runtime (~10MB) from CDN, then fetches and executes the `_creator.py` module containing timetable generation logic.
-
-![Diagram 3](images/1-overview_diagram_3.png)
-
-The `evaluteTimeTable()` function at [src/App.tsx115-152](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L115-L152) implements function selection logic that maps user parameters to specific Python functions:
-
-* Campus 62, Year 1: `time_table_creator`
-* Campus 62, Year 2-4: `time_table_creator_v2`
-* Campus 128, Year 1: `bando128_year1`
-* Campus 128, Year 2-4: `banado128`
-* Campus BCA, Year 1: `bca_creator_year1`
-* Campus BCA, Year 2-3: `bca_creator`
-
-### State management strategy
-
-The application implements a three-tier state persistence model:
-
-![Diagram 4](images/1-overview_diagram_4.png)
-
-The `UserContext` defined in [src/context/userContext.ts](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/context/userContext.ts) and provided by `UserContextProvider` [src/context/userContextProvider.tsx](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/context/userContextProvider.tsx) maintains two schedule objects:
-
-* `schedule`: Base schedule generated by Python processing
-* `editedSchedule`: User modifications that override the base schedule
-
-The `nuqs` library synchronizes form state with URL parameters, enabling shareable links. When URL parameters conflict with cached data, the `UrlParamsDialog` component [src/components/url-params-dialog.tsx](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/components/url-params-dialog.tsx) prompts the user to choose between overriding, prefilling, or viewing the existing schedule.
-
-## Technology stack
-
-### Technology stack
-
-**Frontend Technologies**
-
-| Category | Technology | Version/Details | Purpose |
-| --- | --- | --- | --- |
-| **Framework** | Next.js | 15.x (App Router) | React meta-framework with routing |
-| **UI Library** | React | 18.x + TypeScript | Component-based UI with type safety |
-| **Styling** | Tailwind CSS | 3.x | Utility-first CSS framework |
-| **UI Components** | shadcn/ui | Built on Radix UI | Accessible, composable component library |
-| **Animation** | Framer Motion | 11.x | Declarative animations and transitions |
-| **Icons** | Lucide React | 0.x | Icon library |
-| **State Management** | React Context API | Native | Global state management |
-| **URL State** | nuqs | Latest | URL query parameter synchronization |
-| **Mobile Gestures** | react-swipeable | Latest | Touch navigation support |
-
-**Python Processing Layer**
-
-| Component | Technology | Purpose |
+| Feature | Route | Page / component |
 | --- | --- | --- |
-| **Runtime** | Pyodide | v0.27.0 - WebAssembly Python runtime |
-| **Delivery** | jsdelivr CDN | Pyodide distribution delivery |
-| **Modules** | Custom Python | `_creator.py`, `BE62_creator.py`, `BE128_creator.py` |
-| **Integration** | `pyodide.ts` | JavaScript-Python bridge with `initializePyodide()`, `callPythonFunction()` |
+| Schedule generation | `/` | `app/page.tsx` → `HomeContent` |
+| Timeline | `/timeline` | `app/timeline/page.tsx` → `TimelineView` |
+| Compare | `/compare-timetables` | `app/compare-timetables/page.tsx` |
+| Academic calendar | `/academic-calendar` | `app/academic-calendar/page.tsx` → `CalendarContent` |
+| Exam schedule | `/exam-schedule` | `app/exam-schedule/page.tsx` → `ExamContent` |
+| Mess menu | `/mess-menu` | `app/mess-menu/page.tsx` → `MenuContent` |
+| API docs | `/api-doc` | Swagger UI from `/swagger.json` |
 
-The `initializePyodide()` function at [src/utils/pyodide.ts](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/utils/pyodide.ts) performs one-time initialization, downloading ~10MB Pyodide runtime from CDN and caching the instance globally. The `callPythonFunction()` bridge converts JavaScript objects to Python using `toPy()` and Python objects to JavaScript using `toJs()`.
+### Schedule generation
 
-**PWA & Performance**
-
-| Component | Technology | Purpose |
-| --- | --- | --- |
-| **PWA Plugin** | `@ducanh2912/next-pwa` | Next.js PWA generation |
-| **Service Worker** | Workbox | Caching strategies and offline support |
-| **Build Tool** | Turbopack | Fast Next.js bundler |
-| **Deployment** | Vercel | Static hosting with edge functions |
-
-**External Integrations**
-
-| Service | Purpose | Implementation |
-| --- | --- | --- |
-| **Google Calendar API** | Schedule synchronization | OAuth 2.0 + REST API via `calendar.ts`, `calendar-AC.ts` |
-| **PostHog** | Analytics | Proxied through `/ph/*` routes |
-| **Google Identity** | OAuth authentication | `@react-oauth/google` library |
-
-**Development Tools**
-
-The development environment supports multiple package managers (npm, yarn, pnpm, bun) and includes ESLint configuration [eslint.config.mjs](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/eslint.config.mjs) PostCSS configuration [postcss.config.mjs](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/postcss.config.mjs) and Tailwind configuration [tailwind.config.ts](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/tailwind.config.ts) The `.gitignore` file at [.gitignore](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/.gitignore) excludes build artifacts (`.next/`, `out/`), dependency directories (`node_modules/`), and environment files.
-
-### Data sources & build pipeline
-
-**Static JSON Data Layer**
-
-| Data Type | Location Pattern | Structure | Access |
-| --- | --- | --- | --- |
-| **Timetable Data** | `/data/time-table/{semester}/{campus}.json` | Campus-specific schedules with subjects, time slots, batches | `fetch()` via service worker |
-| **Academic Calendar** | `/data/calender/{academic_year}/calender.json` | Institutional events with dates, descriptions, types | API routes or direct fetch |
-| **Python Modules** | `/public/_creator.py`, `/public/modules/*.py` | Schedule generation logic | Loaded by Pyodide runtime |
-
-**Example data paths**:
-
-* Timetable: `/data/time-table/ODD25/62.json`, `/data/time-table/EVEN25/128.json`, `/data/time-table/ODD25/BCA.json`
-* Calendar: `/data/calender/2425/calendar.json`, `/data/calender/2526/calender.json`
-
-**Data Preparation Pipeline**
-
-![Diagram 5](images/1-overview_diagram_5.png)
-
-The `json_creater.py` Streamlit application at [json\_creater.py](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/json_creater.py) converts Excel files to JSON format. The timetable parser ([JIIT-time-table-parser](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/JIIT-time-table-parser)) and academic calendar parser ([JIIT-Academic-Calender](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/JIIT-Academic-Calender)) are external tools that process raw Excel data.
-
-The Next.js build process at [next.config.ts](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/next.config.ts) integrates the `@ducanh2912/next-pwa` plugin, which generates service worker files with precache manifests. See [Timetable Data Format Reference](11-timetable-data-format-reference) for detailed JSON structure specifications.
-
-## Data flow overview
-
-![Diagram 6](images/1-overview_diagram_6.png)
-
-The data flow follows a unidirectional pattern:
-
-1. User provides parameters through `ScheduleForm` component
-2. `App.tsx` component fetches appropriate JSON data based on campus selection [src/App.tsx43-53](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L43-L53)
-3. `handleFormSubmit()` function invokes Pyodide execution [src/App.tsx154-229](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L154-L229)
-4. Generated schedule updates `UserContext` and persists to `localStorage`
-5. Display components consume schedule from context
-6. Export utilities transform schedule data to PDF, PNG, or Google Calendar events
-
-## Project structure
-
-The codebase is organized into functional directories:
-
-```
-src/
-├── components/          # React components for UI
-│   ├── schedule-form.tsx        # Input collection
-│   ├── schedule-display.tsx     # Grid timetable view
-│   ├── timeline.tsx             # Calendar visualization
-│   ├── compare-timetable.tsx    # Comparison tool
-│   ├── academic-calendar.tsx    # Institutional calendar
-│   └── mess-menu.tsx            # Dining schedule
-├── context/             # Global state management
-│   ├── userContext.ts           # Context definition
-│   └── userContextProvider.tsx  # Context provider
-├── utils/               # Utility functions
-│   ├── pyodide.ts               # Python WASM integration
-│   ├── calendar.ts              # Google Calendar sync
-│   └── download.ts              # PDF/PNG export
-├── App.tsx              # Main schedule creator page
-└── main.tsx             # Application entry point
-
-public/
-├── _creator.py          # Main Python module
-├── modules/             # Campus-specific Python modules
-│   ├── BE62_creator.py
-│   └── BE128_creator.py
-└── data/                # Static JSON data
-    ├── time-table/      # Timetable data by semester
-    └── calender/        # Academic calendar by year
+```mermaid
+sequenceDiagram
+  participant Form as ScheduleForm
+  participant Home as HomeContent
+  participant API as /api/time-table
+  participant Py as callTimeTableCreator
+  participant Ctx as UserContext
+  Form->>Home: campus, year, batch, electives
+  Home->>API: semester + campus JSON
+  API-->>Home: timetable + subjects
+  Home->>Py: create_time_table(...)
+  Py-->>Home: YourTietable
+  Home->>Ctx: setSchedule + localStorage
 ```
 
-The entry point at [src/main.tsx1-73](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/main.tsx#L1-L73) configures routing with `BrowserRouter`, wraps the application in `UserContextProvider`, and integrates analytics through Vercel and PostHog. The `Navbar` component provides navigation with mobile gesture support via `react-swipeable`.
+`HomeContent` fetches mappings with TanStack Query (`useTimeTables`, `useBatchMappings`), then calls `callTimeTableCreator` in [`website/utils/pyodide.ts`](https://github.com/tashifkhan/JIIT-time-table-website/blob/main/website/utils/pyodide.ts). Campus and year routing lives in Python `create_time_table`, not in a JS function-name switch.
 
-## Key interfaces
+## Architecture notes
 
-### YourTietable type
+### Client-side Python
 
-The primary data structure for generated schedules:
+`initializePyodide()` injects `pyodide.js` from jsDelivr, loads micropip, installs `/parser/jiit_timetable_parser-0.1.0-py3-none-any.whl`, then runs:
 
+```python
+from main import create_time_table, compare_timetables, create_and_compare_timetable
 ```
+
+`create_time_table` in [`parser/main.py`](https://github.com/tashifkhan/JIIT-time-table-website/blob/main/parser/main.py) picks the campus parser:
+
+| Campus | Year 1 | Year 2+ |
+| --- | --- | --- |
+| 62 | `time_table_creator` | `time_table_creator_v2` |
+| 128 | `bando_year1` | `banado` |
+| BCA | `creator_year1` | `creator` |
+
+### State
+
+```mermaid
+flowchart LR
+  URL["URL query<br/>nuqs"]
+  CTX["UserContext<br/>schedule / editedSchedule"]
+  LS["localStorage<br/>cachedSchedule, params,<br/>classConfigs, editedSchedule"]
+  URL <--> Form["ScheduleForm"]
+  Form --> CTX
+  CTX --> LS
+  LS --> CTX
+```
+
+`UserContext` holds `schedule` (Python output) and `editedSchedule` (user edits). `nuqs` keeps `year`, `batch`, `campus`, `selectedSubjects` in the URL. When those params disagree with a cached schedule, `UrlParamsDialog` offers override, prefill, or keep existing.
+
+## Stack
+
+| Category | Package | Role |
+| --- | --- | --- |
+| Framework | Next.js ^16.0.7 | App Router, API routes |
+| UI | React 18, Tailwind 4, Radix/shadcn, Framer Motion 11 | Layout and motion |
+| URL state | nuqs 2 | Shareable query params |
+| Data fetching | @tanstack/react-query 5 | `/api/*` cache |
+| Python | pyodide 0.27.0 | In-browser parser |
+| Export | html-to-image, jspdf | PNG / PDF |
+| Calendar | googleapis, GSI client | OAuth + events |
+| PWA | @ducanh2912/next-pwa, workbox | Service worker |
+| Analytics | posthog-js, @vercel/analytics | Usage |
+| Search | fuse.js | Subject picker |
+
+Creator tools (`creator/`) are Streamlit + Typer. They convert Excel/PDF into JSON and use Gemini for PDF notices. They are not part of the website runtime.
+
+## Data flow
+
+1. User picks campus, year, batch, electives on `/`.
+2. `HomeContent` loads `/api/time-table/{semester}/{campus}` JSON.
+3. Pyodide runs `create_time_table`.
+4. Result is stored in context and `cachedSchedule`.
+5. `ScheduleDisplay` and `/timeline` render it. Export tools read `editedSchedule || schedule`.
+
+```mermaid
+flowchart TD
+  A[Form submit] --> B[Fetch campus JSON]
+  B --> C[create_time_table in Pyodide]
+  C --> D[UserContext + localStorage]
+  D --> E[Grid / timeline]
+  D --> F[PNG PDF iCal Google Calendar]
+  D --> G[Share URL via nuqs]
+```
+
+## Repo layout
+
+```text
+.
+├── website/                 Next.js 16 app
+│   ├── app/                 pages and API routes
+│   ├── components/
+│   ├── context/
+│   ├── data/                calendars, timetables, exams
+│   ├── public/              sw.js, parser wheel, manifest
+│   └── utils/               pyodide.ts, download.ts, calendar.ts
+├── parser/                  Python package, built as a wheel
+├── creator/                 Streamlit + Typer JSON converters
+└── data/                    shared JSON (API also looks here)
+```
+
+There is no `src/App.tsx` and no Vite `main.tsx`. Routing is App Router under `website/app/`.
+
+## Core type
+
+```ts
 interface YourTietable {
   [day: string]: {
     [timeSlot: string]: {
       subject_name: string;
-      type: "L" | "T" | "P" | "C";  // Lecture, Tutorial, Practical, Club
+      type: "L" | "T" | "P" | "C";
       location: string;
     };
   };
 }
 ```
 
-Defined at [src/App.tsx28-36](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/src/App.tsx#L28-L36) and used throughout the application for schedule representation.
+Defined in [`website/types/index.ts`](https://github.com/tashifkhan/JIIT-time-table-website/blob/main/website/types/index.ts).
 
-### Schedule generation functions
+## Deployment
 
-Python functions exposed to JavaScript:
+Vercel hosts the Next app. [`website/vercel.json`](https://github.com/tashifkhan/JIIT-time-table-website/blob/main/website/vercel.json) proxies PostHog:
 
-* `time_table_creator()` - Campus 62, Year 1
-* `time_table_creator_v2()` - Campus 62, Years 2-4
-* `bando128_year1()` - Campus 128, Year 1
-* `banado128()` - Campus 128, Years 2-4
-* `bca_creator_year1()` - BCA, Year 1
-* `bca_creator()` - BCA, Years 2-3
-* `compare_timetables()` - Compare two schedules
+* `/ph/static/*` → `eu-assets.i.posthog.com`
+* `/ph/*` → `eu.i.posthog.com`
 
-Each function accepts `time_table_json`, `subject_json`, `batch`, and `electives_subject_codes` parameters and returns a `YourTietable` object.
-
-## Deployment architecture
-
-The application is deployed on Vercel with custom rewrites defined in [vercel.json1-17](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/vercel.json#L1-L17):
-
-* PostHog analytics proxied through `/ph/*` routes
-* All other routes serve `index.html` for client-side routing
-
-The system operates as a Progressive Web App (PWA) with service worker [public/service-worker.js](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/service-worker.js) for offline functionality and web manifest [public/manifest.json](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/public/manifest.json) for installability.
+`website/next.config.ts` adds the same `/ph/:path*` rewrite and PWA Workbox options. There is no SPA `index.html` fallback. App Router owns the routes.

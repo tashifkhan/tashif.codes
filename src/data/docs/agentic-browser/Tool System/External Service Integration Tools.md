@@ -1,7 +1,7 @@
 # External service integration tools
 
 ## Introduction
-This page explains the external service integration tools that connect the application to GitHub repositories, Gmail, Google Calendar, and Google search. It covers the service abstraction layer, authentication mechanisms, API integration patterns, request/response handling, error management, and practical usage examples. It also addresses rate limiting, API quotas, authentication security, and service-specific troubleshooting approaches.
+Tools for GitHub, Gmail, Calendar, and search: auth, quotas, request/response handling, and failure modes.
 
 ## Project structure
 The integration is organized around four primary services:
@@ -59,11 +59,11 @@ S4 --> T4a
 Each service exposes straightforward methods that wrap tool-level functions and handle exceptions consistently.
 
 ## Architecture overview
-The system follows a layered architecture:
+Stack from the outside in:
 - Routers define HTTP endpoints and validate inputs.
 - Services encapsulate business logic and orchestrate tool invocations.
 - Tools implement provider-specific API calls and return normalized results.
-- Logging and error propagation ensure reliable operation.
+- Logging and error propagation make failures visible.
 
 ```mermaid
 sequenceDiagram
@@ -189,7 +189,7 @@ Router-->>Client : "HTTP JSON response"
 Implementation highlights:
 - Max results is configurable per request.
 - Results are normalized to include URL and content preview.
-- Unexpected response formats are handled gracefully with logging.
+- Unexpected response formats are handled with logging.
 
 ## Dependency analysis
 The service layer depends on tool modules that encapsulate provider-specific logic. Routers depend on services and enforce input validation and error translation to HTTP responses.
@@ -212,55 +212,51 @@ SearchService --> SATool["tools/google_search/seach_agent.py"]
 
 ## Performance considerations
 - GitHub repository ingestion: Content is truncated to a bounded size to fit within model context windows. Large repositories may still exceed limits; prefer targeted questions or smaller subsets.
-- Gmail operations: Requests include timeouts to prevent long waits. Batch operations should be designed to avoid exceeding provider quotas.
+- Gmail operations: Requests include timeouts to prevent long waits. Batch operations should be built to avoid exceeding provider quotas.
 - Calendar operations: Listing events filters by current time and orders results; consider reducing max_results for performance.
 - Google search: Max results can be tuned to balance quality and latency.
-
-[No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - Authentication failures
-  - Ensure the access token is valid and not expired.
-  - Verify scopes for Gmail and Calendar APIs match required permissions.
-  - Confirm the Authorization header is set correctly in requests.
+ - Ensure the access token is valid and not expired.
+ - Verify scopes for Gmail and Calendar APIs match required permissions.
+ - Confirm the Authorization header is set correctly in requests.
 - Rate limiting and quota errors
-  - Implement retry with exponential backoff for 429/5xx responses.
-  - Reduce request frequency or batch size.
-  - Monitor provider dashboards for quota usage.
+ - Implement retry with exponential backoff for 429/5xx responses.
+ - Reduce request frequency or batch size.
+ - Monitor provider dashboards for quota usage.
 - GitHub repository ingestion
-  - Invalid repository URL: Use the repository root (owner/repo).
-  - Private or inaccessible repositories: Ensure public access or proper authentication.
-  - Excessive content size: Ask focused questions or reduce repository scope.
+ - Invalid repository URL: Use the repository root (owner/repo).
+ - Private or inaccessible repositories: Ensure public access or proper authentication.
+ - Excessive content size: Ask focused questions or reduce repository scope.
 - Gmail operations
-  - Empty results: Verify label filters and query parameters.
-  - Message modification failures: Confirm message ID and UNREAD label presence.
+ - Empty results: Verify label filters and query parameters.
+ - Message modification failures: Confirm message ID and UNREAD label presence.
 - Calendar operations
-  - Invalid time format: Ensure ISO 8601 strings for start/end times.
-  - Event creation errors: Validate timezone and required fields.
+ - Invalid time format: Ensure ISO 8601 strings for start/end times.
+ - Event creation errors: Validate timezone and required fields.
 - Google search
-  - Empty results: Adjust query or increase max_results.
-  - Unexpected response format: Inspect tool logs for parsing anomalies.
+ - Empty results: Adjust query or increase max_results.
+ - Unexpected response format: Inspect tool logs for parsing anomalies.
 
 ## Conclusion
-The external service integration layer cleanly separates concerns across routers, services, and tools. It standardizes authentication via access tokens, provides reliable error handling, and offers practical workflows for GitHub crawling, Gmail operations, Calendar management, and web search. Following the guidance above will help ensure reliable, secure, and efficient integrations.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Routers, services, and tools stay separate. Access tokens on the wire, timeouts on the client, quotas in mind for Gmail batches.
 
 ## Appendices
 
 ### API endpoints and usage patterns
 - GitHub
-  - Endpoint: POST /
-  - Inputs: url, question, chat_history, optional attached_file_path
-  - Behavior: Ingests repository, optionally attaches a file, and generates an answer.
+ - Endpoint: POST /
+ - Inputs: url, question, chat_history, optional attached_file_path
+ - Behavior: Ingests repository, optionally attaches a file, and generates an answer.
 - Gmail
-  - /gmail/unread: Lists unread messages with max_results.
-  - /gmail/latest: Fetches latest messages with max_results.
-  - /gmail/mark_read: Marks a message as read using message_id.
-  - /gmail/send: Sends an email to a recipient with subject and body.
+ - /gmail/unread: Lists unread messages with max_results.
+ - /gmail/latest: Fetches latest messages with max_results.
+ - /gmail/mark_read: Marks a message as read using message_id.
+ - /gmail/send: Sends an email to a recipient with subject and body.
 - Calendar
-  - /calendar/events: Lists upcoming events with max_results.
-  - /calendar/create: Creates an event with summary, start_time, end_time, description.
+ - /calendar/events: Lists upcoming events with max_results.
+ - /calendar/create: Creates an event with summary, start_time, end_time, description.
 - Google Search
-  - /google_search/: Performs a web search with query and max_results.
+ - /google_search/: Performs a web search with query and max_results.

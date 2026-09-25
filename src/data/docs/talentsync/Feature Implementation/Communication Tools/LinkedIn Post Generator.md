@@ -1,21 +1,21 @@
 # LinkedIn post generator
 
-## Introduction
-The LinkedIn Post Generator is an AI-powered system designed to streamline professional social media content creation on LinkedIn. It enables users to generate multiple, high-quality posts tailored to specific topics, tones, audiences, and lengths. The system integrates optional research enhancements, GitHub project insights, and content personalization to produce authentic, brand-consistent posts optimized for engagement.
+Generates LinkedIn posts from topic, tone, audience, and length. Optional web research and GitHub project context can feed the prompt. The UI configures the run and can ask the model to edit a draft.
 
-Key capabilities include:
+What it can do:
+
 - AI-driven post generation with customizable tone, length, emoji level, and hashtag suggestions
 - Optional web research to enrich posts with current industry insights
 - GitHub project integration to surface technical achievements and hooks
 - Frontend interface for configuring generation parameters and reviewing outputs
 - Optional post editing using AI instructions
 
-## Project structure
-The system spans backend services and frontend UI:
+## Repository layout
+Backend routes plus a frontend form:
 - Backend exposes FastAPI routes for LinkedIn post generation and page composition
 - Services orchestrate LLM calls, optional agent integrations, and data shaping
 - Agents provide web research and GitHub project analysis
-- Frontend offers a user-friendly form and results display
+- Frontend has a form and results panel
 
 ```mermaid
 graph TB
@@ -40,14 +40,14 @@ PROFILE_SVC --> WEB_AGENT
 PROFILE_SVC --> GH_AGENT
 ```
 
-## Core components
+## Building blocks
 - Routes: Define endpoints for generating posts, editing posts, and generating a complete LinkedIn page
 - Post Service: Orchestrates LLM invocation, optional research, GitHub context, cleaning, and post structuring
 - Profile Service: Generates headline, summary, about section, experience highlights, skills, and suggested posts for a full LinkedIn presence
 - Agents: WebSearchAgent for topic research and GitHubAgent for project insights
-- Frontend UI: Provides a form to configure generation parameters and displays results with copy/download actions
+- Frontend UI: form for generation params, plus results with copy/download actions
 
-## Architecture overview
+## How it fits together
 The system follows a layered architecture:
 - Presentation Layer: Next.js UI with form controls and result rendering
 - API Layer: FastAPI routes exposing generation endpoints
@@ -84,9 +84,7 @@ PostSvc-->>API : PostGenerationResponse
 API-->>Client : JSON response
 ```
 
-## Detailed component analysis
-
-### Post generation workflow
+## Post generation workflow
 The core workflow generates one or more posts based on user-provided parameters, optional research, and GitHub context. It cleans LLM output, optionally suggests hashtags and CTAs, and structures the response.
 
 ```mermaid
@@ -115,7 +113,7 @@ Collect --> LoopPosts
 LoopPosts --> Done(["Return PostGenerationResponse"])
 ```
 
-### Personalization strategies
+## Personalization strategies
 Personalization is achieved through:
 - Tone and audience parameters shaping the LLM prompt
 - Optional mimic examples to align style with user preferences
@@ -125,14 +123,14 @@ Personalization is achieved through:
 
 These inputs are mapped into prompt guidance and passed to the LLM for content generation.
 
-### Content formatting and engagement features
+## Content formatting and engagement features
 - Hashtag suggestions: Optional LLM-generated hashtags when enabled
 - Call-to-action suggestions: Optional LLM-generated CTAs or user-provided
 - Sources: Research results included when available
 - GitHub project name: Derived from context for attribution
 - Frontend formatting: Displays posts with hashtags and optional sources; supports copying and downloading
 
-### Tone and style customization
+## Tone and style customization
 - Tone: Selectable from predefined options (e.g., Professional, Conversational, Inspirational, Analytical, Friendly)
 - Length: Short, Medium, Long, Any
 - Emoji level: Integer scale controlling emoji usage
@@ -141,38 +139,38 @@ These inputs are mapped into prompt guidance and passed to the LLM for content g
 
 These parameters are embedded into the generation prompt to steer the LLM's output.
 
-### Integration with user profiles and network insights
+## Integration with user profiles and network insights
 - Profile Composition: The profile service composes headline, summary, about section, experience highlights, and skills based on user input and optional GitHub insights
 - Content Calendar: Suggests weekly posting themes and goals
 - Engagement Tips: Personalized advice based on experience, GitHub presence, and industry
 - Optional GitHub Integration: Analyzes repositories for LinkedIn-friendly hooks and hashtags
 
-### Content planning and scheduling
+## Content planning and scheduling
 - Weekly Themes: Industry insights, career growth, technology trends, and project highlights
 - Bi-weekly and Monthly Ideas: Industry commentary and milestone reflections
 - Hashtag Suggestions: Tailored to content type and industry
 - Engagement Goals: Drive discussions, position as thought leader, connect and inspire
 
-### Example templates and engagement strategies
+## Example templates and engagement strategies
 - Achievement Announcement Template: Hook with project name, impact statement, and optional CTA
-- Industry Insight Template: Trend summary with a professional hook and 2–3 relevant hashtags
+- Industry Insight Template: Trend summary with a professional hook and 2-3 relevant hashtags
 - Networking Template: Personal anecdote or reflection with a subtle CTA to connect
 
 Engagement strategies:
-- Consistent posting cadence (2–3 times per week)
+- Consistent posting cadence (2-3 times per week)
 - Mix of insights, personal experiences, and behind-the-scenes content
 - Authentic engagement with thoughtful responses
-- Strategic hashtag usage (3–5 per post)
+- Strategic hashtag usage (3-5 per post)
 - Use of stories/live and long-form articles for deeper reach
 
 [No sources needed since this section provides general guidance]
 
-### Content authenticity, brand consistency, and professional presentation
+## Content authenticity, brand consistency, and professional presentation
 - Authenticity: LLM output is cleaned to remove explanatory text and meta-commentary; prompts emphasize "authentic, valuable" content
 - Brand Consistency: Tone and audience parameters keep messaging aligned with user-defined style and target
-- Professional Presentation: Structured prompts, optional research grounding, and optional GitHub context ensure polished, credible posts
+- Professional Presentation: Structured prompts, optional research grounding, and optional GitHub context keep posts polished and credible
 
-## Dependency analysis
+## Dependencies
 The backend components depend on:
 - LangChain LLM clients for asynchronous content generation
 - Optional agents for research and GitHub analysis
@@ -191,7 +189,7 @@ FRONT_UI["frontend/page.tsx"] --> FRONT_SVC["frontend/linkedin.service.ts"]
 FRONT_SVC --> ROUTER
 ```
 
-## Performance considerations
+## Performance
 - Asynchronous LLM calls minimize latency during generation
 - Optional research and GitHub analysis are gated by flags to reduce overhead when not needed
 - Output cleaning avoids unnecessary post-processing
@@ -199,19 +197,15 @@ FRONT_SVC --> ROUTER
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Missing TAVILY API key: Web research will log warnings and return empty results; disable research or configure the key
-- Invalid GitHub URL: Project analysis returns an error; ensure a valid GitHub repository URL
+- Invalid GitHub URL: Project analysis returns an error; pass a valid GitHub repository URL
 - Empty topic: Frontend prevents generation until a topic is provided
 - LLM unavailability: Research summaries fall back to raw content extraction; post generation may still succeed depending on prompt structure
 
-## Conclusion
-The LinkedIn Post Generator delivers a reliable, extensible solution for AI-assisted LinkedIn content creation. By combining configurable prompts, optional research and GitHub insights, and a clean frontend interface, it empowers professionals to craft authentic, engaging, and brand-consistent posts efficiently. The modular architecture supports incremental enhancements, such as scheduling, advanced personalization, and expanded agent integrations.
-
-[No sources needed since this section summarizes without analyzing specific files]
-
-## Appendices
+## Appendix
 
 ### API endpoints overview
 - POST /linkedin/generate-posts: Generate multiple posts based on parameters

@@ -1,7 +1,7 @@
 # Gemini API handler
 
 ## Introduction
-This page explains the Gemini API handler used by the NPTEL Assignment Solver extension. It covers the AI question analysis workflow, API request formatting, response parsing, error handling, integration with Google's Gemini API, request throttling and rate-limiting considerations, question preprocessing, response validation, error recovery mechanisms, and API key management and security considerations.
+Formats Gemini requests, parses responses, and handles failures for assignment analysis. Also covers throttling, preprocessing, validation, recovery, and how the API key is stored and used.
 
 ## Project structure
 The Gemini integration spans three layers:
@@ -42,13 +42,13 @@ ST --- UI
 - Response Parser: Validates candidates, handles finish reasons, and extracts JSON from raw text, including fenced code blocks and truncated JSON repair.
 - Response Schema: Defines strict JSON schemas for extraction-only and extraction-with-answers responses.
 - Background Handler: Receives GEMINI_REQUEST messages, calls the Gemini service, and returns responses.
-- Message Router: Routes messages to appropriate handlers and ensures asynchronous responses are handled safely.
+- Message Router: Routes messages to appropriate handlers and keeps async responses flowing safely.
 - Content Extractor: Gathers HTML, images, and page metadata for AI analysis.
 - Applicator: Applies AI-generated answers to form elements and submits assignments.
 - Storage and Settings: Persist API keys and model preferences; UI binds to storage.
 
 ## Architecture overview
-The end-to-end flow for question analysis and solving:
+The full flow for question analysis and solving:
 
 ```mermaid
 sequenceDiagram
@@ -99,8 +99,8 @@ Key behaviors:
 - Generation config enforces JSON response and schema validation.
 - Thinking budget is applied conditionally based on model family and reasoning level.
 - Two call modes:
-  - callAPI: routes through background worker for cross-browser stability.
-  - directAPICall: used by background worker to avoid timeouts.
+ - callAPI: routes through background worker for cross-browser stability.
+ - directAPICall: used by background worker to avoid timeouts.
 
 ```mermaid
 flowchart TD
@@ -120,10 +120,10 @@ Responsibilities:
 - Validate presence of candidates and prompt feedback.
 - Inspect finish reason and warn on truncation or blockage.
 - Extract text content from parts and attempt multiple parsing strategies:
-  - Direct JSON parse.
-  - Extract from fenced code blocks.
-  - Locate outermost JSON delimiters.
-  - Repair truncated JSON by adding missing braces/brackets.
+ - Direct JSON parse.
+ - Extract from fenced code blocks.
+ - Locate outermost JSON delimiters.
+ - Repair truncated JSON by adding missing braces/brackets.
 - Throw descriptive errors when parsing fails.
 
 ```mermaid
@@ -165,7 +165,7 @@ Responsibilities:
 
 Messaging:
 - sendMessageWithRetry provides exponential backoff for transient connection errors.
-- Router ensures async handlers keep the message channel open (critical for Firefox).
+- Router keeps the message channel open for async handlers (important on Firefox).
 
 ```mermaid
 sequenceDiagram
@@ -205,9 +205,9 @@ Compose --> EEnd(["Return {html, images, url, title, button IDs}"])
 ### Answer application and submission
 Responsibilities:
 - Apply answers to the page based on question type:
-  - Single choice: click matching radio button.
-  - Multi choice: toggle checkboxes by ID/value/name.
-  - Fill in the blank: set input/textarea value and dispatch events.
+ - Single choice: click matching radio button.
+ - Multi choice: toggle checkboxes by ID/value/name.
+ - Fill in the blank: set input/textarea value and dispatch events.
 - Submit the assignment using identified submit and confirmation button IDs.
 
 ### API key management and security
@@ -247,8 +247,6 @@ ST --- GS
 - JSON parsing resilience: Parser attempts multiple strategies to recover from varied AI outputs, reducing retries and failures.
 - Retry strategy: sendMessageWithRetry mitigates transient connection issues, especially in Firefox.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and recovery steps:
 - No candidates returned: Indicates empty or blocked responses; check prompt feedback and adjust prompts.
@@ -263,4 +261,4 @@ Operational tips:
 - Confirm model selection supports reasoning if required.
 
 ## Conclusion
-The Gemini API handler integrates tightly with the extension's content and background layers to deliver reliable AI-powered assignment analysis and solving. It emphasizes resilient request formatting, strict response validation, and practical error recovery. With thoughtful configuration of models and reasoning budgets, and secure local API key management, the system provides a reliable foundation for AI-assisted MOOC assessments.
+Prompt carefully, parse strictly, and back off on rate limits. The key never leaves extension storage in the intended design.

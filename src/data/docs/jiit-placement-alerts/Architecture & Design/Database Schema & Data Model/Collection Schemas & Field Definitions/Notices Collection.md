@@ -1,7 +1,7 @@
 # Notices collection
 
 ## Introduction
-This page provides detailed documentation for the Notices collection schema in the SuperSet notification system. It explains the complete document structure, including the unique id field (distinct from MongoDB's ObjectId), title and content fields, source enumeration, category taxonomy, nested sent_to_telegram and sent_to_webpush tracking, metadata structure, timestamps, validation rules, and practical examples for different notice types.
+Notices schema: custom id separate from ObjectId, title/content, source and category, nested sent_to_telegram / sent_to_webpush tracking, metadata, timestamps, and examples for the notice types we actually see.
 
 ## Project structure
 The Notices collection is part of the MongoDB database used by the SuperSet Telegram Notification Bot. The schema and operational flow are defined across documentation and service modules.
@@ -95,19 +95,19 @@ Fields and semantics:
 ### Validation rules and required fields
 Validation is enforced at ingestion and persistence layers:
 - Required fields for successful insertion:
-  - id
-  - title
-  - content
-  - source
-  - category
-  - created_at
-  - updated_at
+ - id
+ - title
+ - content
+ - source
+ - category
+ - created_at
+ - updated_at
 - Optional fields:
-  - formatted_content
-  - sent_to_telegram (value, timestamp)
-  - sent_to_webpush (value, timestamp)
-  - metadata (company, role, deadline, tags)
-  - scraped_at
+ - formatted_content
+ - sent_to_telegram (value, timestamp)
+ - sent_to_webpush (value, timestamp)
+ - metadata (company, role, deadline, tags)
+ - scraped_at
 
 Behavioral constraints:
 - Unique constraint on id
@@ -121,7 +121,7 @@ Behavioral constraints:
 These enumerations guide downstream processing and filtering.
 
 ### Delivery tracking objects
-Each channel maintains a nested object with:
+Each channel maintains a nested object :
 - value: boolean flag indicating whether the notice was sent
 - timestamp: date when the notice was marked as sent
 
@@ -153,7 +153,7 @@ Values --> End(["Stored in MongoDB"])
 ### Extraction and validation pipeline
 Email-derived notices are extracted and validated before persistence:
 - LLM-based extraction produces structured notice data
-- Validation ensures required fields and type correctness
+- Validation checks required fields and types
 - On success, the notice is transformed into the database-ready schema
 
 ```mermaid
@@ -210,4 +210,4 @@ Common issues and resolutions:
 - Querying unsent notices: Use appropriate filters on sent_to_telegram and sent_to_webpush
 
 ## Conclusion
-The Notices collection schema provides a reliable foundation for storing diverse notice types across multiple sources. Its design balances flexibility with strong constraints, enabling reliable ingestion, validation, persistence, and delivery. Adhering to the documented fields, enumerations, and validation rules ensures consistent operation across the notification pipeline.
+Notices covers the messy mix of sources and categories. Follow the fields and enums and ingestion stays boring.

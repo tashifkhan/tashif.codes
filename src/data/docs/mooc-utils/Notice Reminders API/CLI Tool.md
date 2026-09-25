@@ -1,7 +1,7 @@
 # CLI tool
 
 ## Introduction
-This page describes the command-line interface tool for the MOOC Notice Reminders project. It explains the CLI commands, arguments, operational modes, configuration options, environment variables, and execution workflows. It also provides examples of common CLI operations, automation scripts, and integration with system scheduling, along with troubleshooting guidance and performance optimization tips.
+Interactive CLI for course search and announcement checks without standing up the full API stack. Commands, env vars, and when CLI mode is enough.
 
 ## Project structure
 The CLI tool is part of a larger project with a shared core and dual interfaces (CLI and API). The CLI mode runs independently without requiring a database.
@@ -46,7 +46,7 @@ Key CLI-specific files:
 - `core/config.py`
 
 ## Architecture overview
-The CLI mode follows a straightforward flow: parse arguments, initialize the scraper, and run an interactive loop to search and fetch course announcements.
+The CLI mode follows a straightforward flow. parse arguments, initialize the scraper, and run an interactive loop to search and fetch course announcements.
 
 ```mermaid
 sequenceDiagram
@@ -73,12 +73,12 @@ CLI->>User : "Display announcements"
 ### Command-Line interface commands and modes
 - Command: notice-reminders
 - Subcommands:
-  - cli: Run the interactive CLI.
-  - api: Run the FastAPI server (not covered here).
+ - cli: Run the interactive CLI.
+ - api: Run the FastAPI server (not covered here).
 - Arguments for api mode:
-  - --host: Host binding address (default: 127.0.0.1).
-  - --port: Port binding (default: 8000).
-  - --reload: Enable auto-reload for development.
+ - --host: Host binding address (default: 127.0.0.1).
+ - --port: Port binding (default: 8000).
+ - --reload: Enable auto-reload for development.
 
 Execution flow:
 - The entry point parses subcommands and routes to the appropriate handler.
@@ -166,7 +166,7 @@ Settings are loaded via Pydantic Settings with defaults and environment variable
 - jwt_secret, jwt_access_token_expire_minutes, jwt_refresh_token_expire_days: JWT settings.
 - otp_*: OTP settings.
 
-Environment variables are loaded from a.env file.
+Environment variables are loaded from a .env file.
 
 ### Batch processing capabilities
 The CLI is interactive and does not provide built-in batch processing. To process multiple queries programmatically:
@@ -192,7 +192,7 @@ graph LR
 Main["notice-reminders/main.py"] --> CLI["app/cli/__init__.py"]
 CLI --> Scraper["app/scrapers/__init__.py"]
 Scraper --> Models["app/domain/models.py"]
-Main -. optional .-> API["app/api/main.py"]
+Main -. optional.-> API["app/api/main.py"]
 API --> Config["app/core/config.py"]
 ```
 
@@ -201,8 +201,6 @@ API --> Config["app/core/config.py"]
 - Respect rate limits and avoid excessive polling to minimize load on upstream servers.
 - Cache results locally if extending the CLI to batch operations.
 - Keep the CLI responsive by avoiding long-running synchronous operations.
-
-[No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 Common issues and resolutions:
@@ -213,17 +211,15 @@ Common issues and resolutions:
 - API mode differences: The API mode requires a database and differs from CLI behavior.
 
 ## Conclusion
-The CLI tool provides an easy way to search for MOOC courses and fetch announcements without requiring a database. It uses asynchronous scraping, reliable error handling, and a simple interactive loop. For automation and scheduling, combine the CLI with system schedulers and redirect output for logging and further processing.
-
-[No sources needed since this section summarizes without analyzing specific files]
+CLI mode skips the database when you only need discovery. Use the API when you need users and subscriptions.
 
 ## Appendices
 
 ### Appendix A: CLI command reference
 - Command: notice-reminders
 - Subcommands:
-  - cli: Interactive mode for searching courses and viewing announcements.
-  - api: Starts the FastAPI server (not covered here).
+ - cli: Interactive mode for searching courses and viewing announcements.
+ - api: Starts the FastAPI server (not covered here).
 
 Arguments for api:
 - --host: Host binding address (default: 127.0.0.1)
@@ -231,7 +227,7 @@ Arguments for api:
 - --reload: Enable auto-reload for development
 
 ### Appendix B: environment variables
-Settings are loaded from a.env file via Pydantic Settings. Typical variables include:
+Settings are loaded from a .env file via Pydantic Settings. Typical variables include:
 - Database URL
 - Base URLs for scraping
 - Notification credentials

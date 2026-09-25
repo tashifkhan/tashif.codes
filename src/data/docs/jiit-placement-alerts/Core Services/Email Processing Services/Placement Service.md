@@ -1,7 +1,7 @@
 # Placement service
 
 ## Introduction
-This page provides detailed technical documentation for the PlacementService, which powers LLM-enabled extraction of placement offers from email sources. It explains the placement offer detection algorithms, structured data extraction workflows, and integration with Google Gemini for intelligent content processing. The document covers the placement offer schema, email processing pipeline tailored for placement notifications, LLM prompt engineering, examples of processing different offer types, error handling strategies, and integration with the notification system for delivering updates to users.
+PlacementService runs the LLM offer extractor. Detection heuristics, Gemini prompts, the offer schema, retries, and how validated offers reach notification delivery.
 
 ## Project structure
 The placement system is composed of modular services that work together to fetch, process, validate, and publish placement offers:
@@ -296,4 +296,4 @@ Common issues and resolutions:
 - Notification Delivery: Check unsent notices and channel configurations; verify database marking as sent.
 
 ## Conclusion
-The PlacementService provides a reliable, LLM-powered pipeline for extracting and publishing placement offers from email sources. Its strict classification and extraction prompts, combined with validation and privacy sanitization, ensure high-quality, normalized data. The integration with the notification system enables timely delivery of placement updates to users, while the database layer supports historical tracking and statistical reporting.
+Classify hard, extract into a schema, validate, strip privacy fields, publish. Notification delivery and historical stats both read the same stored offers.

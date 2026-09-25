@@ -1,7 +1,6 @@
 # System configuration API
 
-## Introduction
-This page provides detailed API documentation for system configuration and Large Language Model (LLM) provider management. It covers:
+System configuration and Large Language Model (LLM) provider management.
 - LLM configuration endpoints for listing, creating, updating, and deleting user-specific configurations
 - Provider switching capabilities and model selection criteria
 - Schemas for configuration management, environment variable handling, and runtime parameter updates
@@ -9,7 +8,7 @@ This page provides detailed API documentation for system configuration and Large
 - Configuration validation, default settings, and security considerations for sensitive parameters
 - Practical examples of configuration workflows, provider migration procedures, and troubleshooting
 
-## Project structure
+## Repository layout
 The configuration system spans backend and frontend layers:
 - Backend FastAPI application exposes LLM-related endpoints and manages provider instantiation
 - Frontend Next.js API routes handle user sessions, persistence, encryption/decryption, and proxying tests to the backend
@@ -52,20 +51,20 @@ BE_LLM --> BE_Settings
 BE_Config --> BE_Settings
 ```
 
-## Core components
+## Building blocks
 - Settings and Defaults
-  - Centralized configuration via Pydantic settings with environment-backed defaults
-  - Supports legacy and multi-provider fields for backward compatibility and flexibility
+ - Centralized configuration via Pydantic settings with environment-backed defaults
+ - Supports legacy and multi-provider fields for backward compatibility and flexibility
 - Provider Abstraction Layer
-  - Factory-based creation of LLM instances across providers (OpenAI, Anthropic, Google, Ollama, OpenRouter, DeepSeek)
-  - Temperature support varies by provider/model
+ - Factory-based creation of LLM instances across providers (OpenAI, Anthropic, Google, Ollama, OpenRouter, DeepSeek)
+ - Temperature support varies by provider/model
 - Encryption for Sensitive Data
-  - AES-256-GCM encryption/decryption for API keys stored in the database
+ - AES-256-GCM encryption/decryption for API keys stored in the database
 - Frontend Configuration Management
-  - UI panel to manage labeled, active LLM configurations per user
-  - Test endpoint to validate connectivity without exposing secrets
+ - UI panel to manage labeled, active LLM configurations per user
+ - Test endpoint to validate connectivity without exposing secrets
 
-## Architecture overview
+## How it fits together
 The configuration lifecycle integrates frontend UI, backend routes, and provider instantiation:
 - Users create and manage labeled configurations in the frontend panel
 - Frontend persists configurations to the database and optionally stores encrypted API keys
@@ -92,27 +91,25 @@ BE_Test-->>FE_Test : {success,message}
 FE_Test-->>UI : Result
 ```
 
-## Detailed component analysis
-
-### Backend settings and environment variables
+## Backend settings and environment variables
 - Purpose: Define application-wide defaults and secrets
 - Key fields:
-  - Legacy: GOOGLE_API_KEY, MODEL_NAME, FASTER_MODEL_NAME, MODEL_TEMPERATURE
-  - Multi-provider: LLM_PROVIDER, LLM_MODEL, LLM_API_KEY, LLM_API_BASE, ENCRYPTION_KEY
+ - Legacy: GOOGLE_API_KEY, MODEL_NAME, FASTER_MODEL_NAME, MODEL_TEMPERATURE
+ - Multi-provider: LLM_PROVIDER, LLM_MODEL, LLM_API_KEY, LLM_API_BASE, ENCRYPTION_KEY
 - Behavior:
-  - Case-insensitive environment loading
-  - Extra fields ignored
-  - LRU caching for performance
+ - Case-insensitive environment loading
+ - Extra fields ignored
+ - LRU caching for performance
 
-### Provider abstraction and LLM factory
+## Provider abstraction and LLM factory
 - Supported providers: google/gemini, openai, anthropic, ollama, openrouter, deepseek
 - Temperature support:
-  - Disabled for certain OpenAI models (e.g., o1, o3 variants)
+ - Disabled for certain OpenAI models (e.g., o1, o3 variants)
 - Fallback behavior:
-  - Unknown provider falls back to Google with a warning
+ - Unknown provider falls back to Google with a warning
 - Singleton LLM retrieval:
-  - get_llm() initializes default provider/model from settings
-  - get_faster_llm() uses FASTER_MODEL_NAME or similar logic
+ - get_llm initializes default provider/model from settings
+ - get_faster_llm uses FASTER_MODEL_NAME or similar logic
 
 ```mermaid
 flowchart TD
@@ -134,72 +131,72 @@ DeepSeek --> Return
 Fallback --> Return
 ```
 
-### Backend LLM test endpoint
+## Backend LLM test endpoint
 - Endpoint: POST /api/v1/llm/test
 - Request schema:
-  - provider: string
-  - model: string
-  - api_key: optional string
-  - api_base: optional string
+ - provider: string
+ - model: string
+ - api_key: optional string
+ - api_base: optional string
 - Behavior:
-  - Creates LLM instance using factory
-  - Performs lightweight ainvoke("Hi")
-  - Returns success with truncated response content or failure with error message
+ - Creates LLM instance using factory
+ - Performs lightweight ainvoke("Hi")
+ - Returns success with truncated response content or failure with error message
 
-### Frontend LLM configuration API
+## Frontend LLM configuration API
 - Authentication:
-  - Uses NextAuth session to authorize requests
+ - Uses `get_current_user` / `requireApiUser()` (FastAPI cookie or minted Bearer)
 - Endpoints:
-  - GET /api/llm-config: List user's configs (ordered by active then recent)
-  - POST /api/llm-config: Create new config; auto-activate first config
-  - PUT /api/llm-config/[id]: Update config; supports label uniqueness and key re-encryption
-  - DELETE /api/llm-config/[id]: Delete config; if active, activates most recent remaining config
-  - POST /api/llm-config/test: Test connection using stored or provided API key
+ - GET /api/llm-config: List user's configs (ordered by active then recent)
+ - POST /api/llm-config: Create new config; auto-activate first config
+ - PUT /api/llm-config/[id]: Update config; supports label uniqueness and key re-encryption
+ - DELETE /api/llm-config/[id]: Delete config; if active, activates most recent remaining config
+ - POST /api/llm-config/test: Test connection using stored or provided API key
 
 - Validation and defaults:
-  - Provider and model required
-  - Label required and unique per user
-  - First config becomes active automatically
-  - API key encryption handled by frontend encryption module
+ - Provider and model required
+ - Label required and unique per user
+ - First config becomes active automatically
+ - API key encryption handled by frontend encryption module
 
-### Frontend UI panel (configuration management)
+## Frontend UI panel (configuration management)
 - Features:
-  - Provider/model selection with predefined lists and custom model support
-  - API key field with masked input; indicates presence of stored key
-  - Base URL override per provider
-  - Test connection button with validation
-  - Create/Edit/Delete actions; activation toggles active config
+ - Provider/model selection with predefined lists and custom model support
+ - API key field with masked input; indicates presence of stored key
+ - Base URL override per provider
+ - Test connection button with validation
+ - Create/Edit/Delete actions; activation toggles active config
 - Behavior:
-  - On save, sends label, provider, model, optional apiKey, optional apiBase
-  - On test, forwards to backend test endpoint with optional configId to resolve stored key
+ - On save, sends label, provider, model, optional apiKey, optional apiBase
+ - On test, forwards to backend test endpoint with optional configId to resolve stored key
 
-### Encryption for sensitive parameters
+## Encryption for sensitive parameters
 - Backend:
-  - AES-256-GCM encryption/decryption using ENCRYPTION_KEY derived via SHA-256
-  - Raises explicit errors if ENCRYPTION_KEY is missing
+ - AES-256-GCM encryption/decryption using ENCRYPTION_KEY derived via SHA-256
+ - Raises explicit errors if ENCRYPTION_KEY is missing
 - Frontend:
-  - AES-256-GCM encryption using ENCRYPTION_KEY derived via SHA-256
-  - Throws if ENCRYPTION_KEY is not defined
+ - AES-256-GCM encryption using ENCRYPTION_KEY derived via SHA-256
+ - Throws if ENCRYPTION_KEY is not defined
 
-### Database schema and migrations
+## Database schema and migrations
 - Initial schema (LlmConfig):
-  - Columns: id, userId, provider, model, encryptedKey, apiBase, createdAt, updatedAt
-  - Unique constraint on userId (single config per user)
+ - Columns: id, userId, provider, model, encryptedKey, apiBase, createdAt, updatedAt
+ - Unique constraint on userId (single config per user)
 - Migration to multi-config:
-  - Adds label, isActive, and compound unique index on (userId, label)
-  - Index on (userId, isActive) for fast lookup
-  - Updates existing single config to be active
+ - Adds label, isActive, and compound unique index on (userId, label)
+ - Index on (userId, isActive) for fast lookup
+ - Updates existing single config to be active
 
-## Dependency analysis
+## Dependencies
 - Backend dependencies:
-  - FastAPI app registers LLM routes under /api/v1
-  - LLM factory depends on settings and provider SDKs
-  - Encryption utilities depend on settings for ENCRYPTION_KEY
+ - FastAPI app registers LLM routes under /api/v1
+ - LLM factory depends on settings and provider SDKs
+ - Encryption utilities depend on settings for ENCRYPTION_KEY
 - Frontend dependencies:
-  - NextAuth session for authorization
-  - Prisma for persistence
-  - Encryption module for secure storage
-  - Backend proxy for LLM connectivity tests
+ - FastAPI session (`get_current_user`) for authorization
+ - Prisma for persistence
+ - Encryption module for secure storage
+ - Backend proxy for LLM connectivity tests
 
 ```mermaid
 graph LR
@@ -212,98 +209,94 @@ FE_Route["/api/llm-config/*"] --> DB
 BE_Route["/api/v1/llm/test"] --> LLM
 ```
 
-## Performance considerations
+## Performance
 - Singleton LLM instances:
-  - get_llm() and get_faster_llm() cache instances globally to avoid repeated initialization
+ - get_llm and get_faster_llm cache instances globally to avoid repeated initialization
 - Environment loading:
-  - Settings are cached via LRU to reduce repeated parsing
+ - Settings are cached via LRU to reduce repeated parsing
 - Test invocation:
-  - Lightweight ainvoke("Hi") minimizes network overhead during connectivity checks
+ - Lightweight ainvoke("Hi") minimizes network overhead during connectivity checks
 - Recommendations:
-  - Prefer faster model variants for low-latency tasks
-  - Limit frequent re-initialization by using cached instances
-  - Use local providers (e.g., Ollama) for internal environments to reduce latency and cost
+ - Prefer faster model variants for low-latency tasks
+ - Limit frequent re-initialization by using cached instances
+ - Use local providers (e.g., Ollama) for internal environments to reduce latency and cost
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Missing API key
-  - Symptom: LLM functionality disabled or test failures
-  - Resolution: Provide apiKey in request or configure stored key; ensure ENCRYPTION_KEY is set for encryption/decryption
+ - Symptom: LLM functionality disabled or test failures
+ - Resolution: Provide apiKey in request or configure stored key; set ENCRYPTION_KEY for encryption/decryption
 - Invalid provider or model
-  - Symptom: Unknown provider warning or provider-specific errors
-  - Resolution: Use supported providers and models; consult provider-specific defaults
+ - Symptom: Unknown provider warning or provider-specific errors
+ - Resolution: Use supported providers and models; consult provider-specific defaults
 - Temperature unsupported
-  - Symptom: Ignored temperature for specific models
-  - Resolution: Adjust temperature expectations for provider/model combinations
+ - Symptom: Ignored temperature for specific models
+ - Resolution: Adjust temperature expectations for provider/model combinations
 - Session unauthorized
-  - Symptom: 401 Unauthorized on config endpoints
-  - Resolution: Ensure NextAuth session is established
+ - Symptom: 401 Unauthorized on config endpoints
+ - Resolution: sign in with Google so `ts_access_token` is set; BFF routes call `requireApiUser()`
 - Duplicate label
-  - Symptom: 409 Conflict when creating/updating
-  - Resolution: Use a unique label per user
+ - Symptom: 409 Conflict when creating/updating
+ - Resolution: Use a unique label per user
 - Deleting active config
-  - Symptom: Active config lost unexpectedly
-  - Resolution: Backend automatically activates the most recent remaining config
+ - Symptom: Active config lost unexpectedly
+ - Resolution: Backend automatically activates the most recent remaining config
 
-## Conclusion
-The system provides a reliable, extensible configuration framework for managing LLM providers and models. It balances flexibility with security through encrypted storage, clear validation, and a provider abstraction layer. The frontend panel simplifies user workflows while the backend ensures safe, efficient provider instantiation and connectivity validation.
-
-[No sources needed since this section summarizes without analyzing specific files]
-
-## Appendices
+## Appendix
 
 ### API definitions
 
 - GET /api/llm-config
-  - Description: Retrieve all user LLM configurations
-  - Response: { success: boolean, configs: array of config objects }
-  - Config object fields: id, label, provider, model, apiBase, hasApiKey, isActive, createdAt, updatedAt
+ - Description: Retrieve all user LLM configurations
+ - Response: { success: boolean, configs: array of config objects }
+ - Config object fields: id, label, provider, model, apiBase, hasApiKey, isActive, createdAt, updatedAt
 
 - POST /api/llm-config
-  - Description: Create a new configuration
-  - Request body: { label, provider, model, apiKey?, apiBase? }
-  - Response: { success: boolean, message: string, config: ConfigObject }
+ - Description: Create a new configuration
+ - Request body: { label, provider, model, apiKey?, apiBase? }
+ - Response: { success: boolean, message: string, config: ConfigObject }
 
 - PUT /api/llm-config/[id]
-  - Description: Update an existing configuration
-  - Request body: { label?, provider, model, apiKey?, apiBase? }
-  - Response: { success: boolean, message: string, config: ConfigObject }
+ - Description: Update an existing configuration
+ - Request body: { label?, provider, model, apiKey?, apiBase? }
+ - Response: { success: boolean, message: string, config: ConfigObject }
 
 - DELETE /api/llm-config/[id]
-  - Description: Delete a configuration; if active, activate the most recent remaining config
-  - Response: { success: boolean, message: string }
+ - Description: Delete a configuration; if active, activate the most recent remaining config
+ - Response: { success: boolean, message: string }
 
 - POST /api/llm-config/test
-  - Description: Test LLM connectivity using stored or provided API key
-  - Request body: { provider, model, apiKey?, apiBase?, configId? }
-  - Response: { success: boolean, message: string }
+ - Description: Test LLM connectivity using stored or provided API key
+ - Request body: { provider, model, apiKey?, apiBase?, configId? }
+ - Response: { success: boolean, message: string }
 
 - POST /api/v1/llm/test (Backend)
-  - Description: Backend-side LLM connectivity test
-  - Request body: { provider, model, api_key?, api_base? }
-  - Response: { success: boolean, message: string }
+ - Description: Backend-side LLM connectivity test
+ - Request body: { provider, model, api_key?, api_base? }
+ - Response: { success: boolean, message: string }
 
 ### Configuration workflows
 
 - Create a new configuration
-  - Use the panel to enter label, provider, model, optional API key, optional base URL
-  - Submit; backend validates and stores encrypted key if provided
+ - Use the panel to enter label, provider, model, optional API key, optional base URL
+ - Submit; backend validates and stores encrypted key if provided
 - Switch provider or model
-  - Update provider/model in the panel; test connection before activating
-  - If successful, mark as active to become the default for downstream services
+ - Update provider/model in the panel; test connection before activating
+ - If successful, mark as active to become the default for downstream services
 - Migrate providers
-  - Create a new configuration with the target provider and model
-  - Test connectivity; update active configuration
-  - Delete the old configuration if satisfied
+ - Create a new configuration with the target provider and model
+ - Test connectivity; update active configuration
+ - Delete the old configuration if satisfied
 
 ### Security considerations
 - Encryption
-  - Store API keys encrypted in the database; require ENCRYPTION_KEY configured
-  - Frontend encrypts before sending; backend decrypts only when necessary
+ - Store API keys encrypted in the database; require ENCRYPTION_KEY configured
+ - Frontend encrypts before sending; backend decrypts only when necessary
 - Secrets
-  - Keep ENCRYPTION_KEY secret and consistent across environments
-  - Avoid logging sensitive payloads; middleware logs sanitized payloads
+ - Keep ENCRYPTION_KEY secret and consistent across environments
+ - Avoid logging sensitive payloads; middleware logs sanitized payloads
 - Access control
-  - All config endpoints require a valid NextAuth session
+ - Config endpoints require `get_current_user` (cookie or Bearer). NextAuth is gone.

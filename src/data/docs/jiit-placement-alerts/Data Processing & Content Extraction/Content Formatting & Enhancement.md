@@ -1,12 +1,7 @@
 # Content formatting & enhancement
 
 ## Introduction
-This page explains the content formatting and enhancement services that transform raw, structured data into human-readable notifications for Telegram and other channels. It covers:
-- Placement notification formatting for placement offers and updates
-- General notice formatting with LLM-based classification, matching, and formatting
-- Formatting rules, character limits, Markdown/HTML rendering, and media handling
-- Integration with the notification delivery system
-- Validation, sanitization, and accessibility considerations
+Formatting path after extraction. Placement summaries, general notice templates, character limits, Markdown/HTML rendering, and the handoff into multi-channel send.
 
 ## Project structure
 The formatting and enhancement pipeline spans multiple services:
@@ -248,16 +243,16 @@ PLACEMENT_OFFER ||--o{ NOTICE : "emits events for"
 
 ## Dependency analysis
 - NoticeFormatterService depends on:
-  - LLM (ChatGoogleGenerativel) for classification and extraction
-  - BeautifulSoup for HTML parsing
-  - RapidFuzz for fuzzy matching of company names
-  - SupersetClient models (Notice, Job, EligibilityMark) for unified typing
+ - LLM (ChatGoogleGenerativel) for classification and extraction
+ - BeautifulSoup for HTML parsing
+ - RapidFuzz for fuzzy matching of company names
+ - SupersetClient models (Notice, Job, EligibilityMark) for unified typing
 - PlacementNotificationFormatter depends on:
-  - Pydantic models for typed data structures
-  - Core config for safe printing/logging
+ - Pydantic models for typed data structures
+ - Core config for safe printing/logging
 - NotificationService and TelegramService depend on:
-  - DatabaseService for retrieving unsent notices and user lists
-  - TelegramClient for actual message sending
+ - DatabaseService for retrieving unsent notices and user lists
+ - TelegramClient for actual message sending
 - UpdateRunner and NotificationRunner orchestrate dependencies via DI.
 
 ```mermaid
@@ -297,38 +292,36 @@ Common issues and resolutions:
 - Job enrichment: Enrichment callback requires matched job presence; otherwise, fallback to extracted data.
 
 ## Conclusion
-The formatting and enhancement services provide a reliable pipeline for transforming diverse content into consistent, readable notifications. PlacementNotificationFormatter focuses on placement-specific summaries, while NoticeFormatterService uses LLM classification and extraction for general notices. The system integrates cleanly with database persistence and multi-channel delivery, with careful attention to message length, formatting, and reliability.
-
-[No sources needed since this section summarizes without analyzing specific files]
+PlacementNotificationFormatter handles placement summaries. NoticeFormatterService classifies and extracts general notices. Both feed the same persistence and delivery path, with Telegram's length limits in mind.
 
 ## Appendices
 
 ### Formatting rules and examples
 
 - Placement new offer summary:
-  - Example structure: Total placements, role breakdowns, optional time_sent attribution, and a celebratory note.
-  - Use case: Announce placement results for a company.
+ - Example structure: Total placements, role breakdowns, optional time_sent attribution, and a celebratory note.
+ - Use case: Announce placement results for a company.
 
 - Placement update summary:
-  - Example structure: Highlight newly placed students, total count, role breakdowns with "new" prefix, and celebratory note.
+ - Example structure: Highlight newly placed students, total count, role breakdowns with "new" prefix, and celebratory note.
 
 - Announcement passthrough:
-  - Example structure: Title bolded, body lightly prettified, attribution footer with author and posted date.
+ - Example structure: Title bolded, body lightly prettified, attribution footer with author and posted date.
 
 - Update via LLM:
-  - Example structure: Category-specific concise formatting with Markdown/HTML, emojis, and footers.
+ - Example structure: Category-specific concise formatting with Markdown/HTML, emojis, and footers.
 
 - Shortlisting:
-  - Example structure: Total shortlisted, student list, role/company, optional package info and hiring flow.
+ - Example structure: Total shortlisted, student list, role/company, optional package info and hiring flow.
 
 - Webinar:
-  - Example structure: Event title, topic, speaker, date/time, venue/platform, registration link, deadline.
+ - Example structure: Event title, topic, speaker, date/time, venue/platform, registration link, deadline.
 
 - Hackathon:
-  - Example structure: Event title, theme, duration, team size, prize pool, venue/platform, registration link, deadline.
+ - Example structure: Event title, theme, duration, team size, prize pool, venue/platform, registration link, deadline.
 
 - Job posting:
-  - Example structure: Company, role, location, package (with monthly/yearly suffix), eligibility criteria, hiring flow, deadline, and link to details.
+ - Example structure: Company, role, location, package (with monthly/yearly suffix), eligibility criteria, hiring flow, deadline, and link to details.
 
 ### Character limits and media handling
 - Telegram message length: Messages exceeding 4000 characters are automatically split into chunks.

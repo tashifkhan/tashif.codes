@@ -1,17 +1,16 @@
 # Structured data extraction
 
-## Introduction
-This page explains the structured data extraction system that parses resume layouts, extracts semantic information, and standardizes it into structured formats. It covers:
+The structured data extraction system that parses resume layouts, extracts semantic information, and standardizes it into structured formats.
 - Format analysis prompts that guide LLM-based parsing and normalization
 - The ComprehensiveAnalysisData schema that standardizes extracted information
 - The ResumeAnalysis model with fields for personal info, work experience, education, projects, skills, and portfolio links
-- Data cleaning and validation processes ensuring consistency across formats
+- Data cleaning and validation processes that keep formats consistent
 - Frontend integration for displaying and editing extracted data
 - Filtering logic for work experience and project validation that removes incomplete entries
 - Examples of before/after transformations from raw text to structured JSON
 - Data enrichment strategies and cross-field validation rules
 
-## Project structure
+## Repository layout
 The system spans backend LLM orchestration, schema definitions, and frontend editing UI:
 - Backend prompt templates define extraction tasks and schemas
 - Services orchestrate document processing, LLM calls, and validation
@@ -47,7 +46,7 @@ FE_ResumeForm --> FE_WorkExp
 FE_ResumeForm --> FE_Projects
 ```
 
-## Core components
+## Building blocks
 - Format analysis prompts: Define extraction tasks and Pydantic schemas for LLM parsing
 - ComprehensiveAnalysisData: Standardized schema capturing personal info, skills, languages, education, work experience, projects, publications, positions of responsibility, certifications, achievements, and portfolio links
 - ResumeAnalysis: Model for upload responses with normalized fields and timestamps
@@ -55,7 +54,7 @@ FE_ResumeForm --> FE_Projects
 - Validation and filtering: Removes incomplete entries from work experience and projects
 - Frontend integration: Renders and edits structured resume data with drag-and-drop ordering and inline editing
 
-## Architecture overview
+## How it fits together
 The system follows a pipeline:
 - Upload resume file or send formatted text
 - Optionally format raw text with LLM
@@ -84,9 +83,7 @@ Service-->>API : ResumeUploadResponse
 API-->>Client : JSON payload
 ```
 
-## Detailed component analysis
-
-### Format analysis prompts
+## Format analysis prompts
 The prompts define extraction tasks and Pydantic schemas for LLM parsing:
 - comprehensive_analysis.py: Defines ComprehensiveAnalysisData with fields for personal info, skills, languages, education, work experience, projects, publications, positions of responsibility, certifications, achievements, and portfolio links
 - format_analyse.py: Mirrors the same schema for format-and-analyze workflows
@@ -96,17 +93,17 @@ Key behaviors:
 - Output format requires a single JSON object instantiating ComprehensiveAnalysisData
 - Aliased fields support flexible mapping for portfolio links
 
-### ComprehensiveAnalysisData schema
+## ComprehensiveAnalysisData schema
 Standardized schema capturing:
 - Personal info: name, email, contact, LinkedIn, GitHub, blog, portfolio
-- Skills: top 5–7 skills with percentages
+- Skills: top 5-7 skills with percentages
 - Languages, education, work experience, projects, publications, positions of responsibility, certifications, achievements
 - Predicted field: inferred role/category
 - Aliased portfolio field supports multiple link aliases
 
-This schema ensures consistent downstream processing and UI rendering.
+This schema keeps downstream processing and UI rendering.
 
-### ResumeAnalysis model
+## ResumeAnalysis model
 Fields include:
 - Personal info and portfolio
 - Predicted field
@@ -118,18 +115,18 @@ Fields include:
 
 The model normalizes extracted data into a concise upload response.
 
-### Data cleaning and validation
+## Data cleaning and validation
 Backend validation and filtering:
 - Text formatting: Attempts to clean/format raw text using LLM when needed
 - JSON formatting: Reliable parsing of LLM JSON output with multiple fallbacks
 - Validation: Converts dict to ResumeAnalysis; handles alias mapping for portfolio
 - Filtering:
-  - Work experience: Removes entries with more than two missing/empty fields and missing role/duration combinations
-  - Projects: Keeps entries with fewer than two missing fields among title, technologies_used, description
+ - Work experience: Removes entries with more than two missing/empty fields and missing role/duration combinations
+ - Projects: Keeps entries with fewer than two missing fields among title, technologies_used, description
 
-These steps ensure minimal noise and consistent quality across diverse resume formats.
+These steps cut noise and consistent quality across diverse resume formats.
 
-### Frontend integration
+## Frontend integration
 Frontend components:
 - ResumeForm orchestrates section rendering, expansion, visibility toggles, and drag-and-drop reordering
 - PersonalInfoForm edits name, email, contact, LinkedIn, GitHub, portfolio, and blog
@@ -197,7 +194,7 @@ ResumeData --> Project
 ResumeData --> AdditionalInfo
 ```
 
-### Filtering logic for work experience and projects
+## Filtering logic for work experience and projects
 Filtering criteria:
 - Work experience: Remove entries where more than two fields are null/empty; also remove if role is missing and duration is missing
 - Projects: Keep entries where fewer than two of {title, technologies_used, description} are missing
@@ -222,14 +219,14 @@ KeepProj --> Done(["Done"])
 DropProj --> Done
 ```
 
-### Before/After data transformation examples
+## Before/After data transformation examples
 - Raw text: Unstructured resume content with varied formatting and free-text descriptions
-- After LLM extraction and normalization: Structured JSON conforming to ComprehensiveAnalysisData, with:
-  - Personal info fields
-  - Skills with percentages
-  - Work experience entries with role, company_and_duration, and bullet_points
-  - Projects with title, technologies_used, live_link, repo_link, description
-  - Portfolio links mapped via aliases
+- After LLM extraction and normalization: Structured JSON conforming to ComprehensiveAnalysisData, :
+ - Personal info fields
+ - Skills with percentages
+ - Work experience entries with role, company_and_duration, and bullet_points
+ - Projects with title, technologies_used, live_link, repo_link, description
+ - Portfolio links mapped via aliases
 
 The transformation pipeline:
 - Extract raw text from uploaded file
@@ -239,7 +236,7 @@ The transformation pipeline:
 - Filter incomplete entries
 - Return standardized data for frontend display/editing
 
-### Data enrichment strategies and cross-field validation
+## Data enrichment strategies and cross-field validation
 Enrichment strategies:
 - Inference rules: When fields are missing, infer based on predicted_field and statistical averages; mark inferred values distinctly
 - Statistical defaults: Suggest typical roles, skills, and education based on predicted_category
@@ -249,7 +246,7 @@ Cross-field validation rules:
 - Filtering thresholds: Enforce minimum completeness for work experience and projects
 - AI phrase replacements: Normalize bullet points and descriptions for consistency
 
-## Dependency analysis
+## Dependencies
 High-level dependencies:
 - Routes depend on services
 - Services depend on data_processor for LLM orchestration
@@ -267,7 +264,7 @@ PROC --> MODELS["backend/models/resume/schemas.py"]
 FE --> MODELS
 ```
 
-## Performance considerations
+## Performance
 - LLM retries and fallbacks: The JSON formatter includes multiple strategies to recover from malformed outputs
 - Rate limiting and auth handling: Text formatter gracefully falls back to original text on rate limit or auth errors
 - Validation cost: Filtering occurs after LLM parsing to minimize unnecessary processing
@@ -275,20 +272,16 @@ FE --> MODELS
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Unsupported file type or processing errors: The service raises HTTP 400 with details
 - Invalid resume format: Validation checks fail and return descriptive errors
 - LLM unavailability or empty results: Dedicated exception class and HTTP 500 responses
 - JSON parsing failures: Multiple fallbacks attempt to extract and parse JSON substrings
 - Portfolio alias mismatch: Ensure one of the supported aliases is present; mapping logic normalizes to portfolio
 
-## Conclusion
-The structured data extraction system combines reliable prompt engineering, strict schema enforcement, and pragmatic validation to transform heterogeneous resume inputs into standardized, editable data. The frontend enables efficient authoring and refinement, while backend safeguards ensure reliability and consistency across diverse inputs.
-
-[No sources needed since this section summarizes without analyzing specific files]
-
-## Appendices
+## Appendix
 
 ### Endpoint reference
 - POST /resume/analysis: Analyze uploaded resume file

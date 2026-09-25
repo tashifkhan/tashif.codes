@@ -1,16 +1,7 @@
 # Query patterns & practical examples
 
 ## Introduction
-This page consolidates MongoDB query patterns and practical examples used across the notification system. It focuses on:
-- Finding unsent notifications
-- Retrieving recent placement data
-- Counting active users
-- Aggregating statistics (company-wise, branch-wise)
-- Bulk operations (insertMany, updateMany, delete)
-- Performance optimization (hints, indexes, cursor management)
-- Error handling and query debugging (explain, profiling)
-
-The goal is to provide actionable, code-mapped guidance for efficient data access and processing in the SuperSet Telegram Notification Bot.
+Real queries the services run: pending notices, job upserts, offer merges, active subscribers, stats aggregations. Patterns you can copy when extending the bot.
 
 ## Project structure
 The notification system is organized around a layered architecture:
@@ -49,31 +40,31 @@ DB --> DBC
 This section maps the primary query patterns to concrete code paths and database operations.
 
 - Finding unsent notices
-  - Code path: `app/services/notification_service.py` calls `app/services/database_service.py` which executes a find with sorting.
-  - Query pattern: find with filter on sent flags, sort by creation time, limit results.
-  - Projection and sorting: see `app/services/database_service.py`.
+ - Code path: `app/services/notification_service.py` calls `app/services/database_service.py` which executes a find with sorting.
+ - Query pattern: find with filter on sent flags, sort by creation time, limit results.
+ - Projection and sorting: see `app/services/database_service.py`.
 
 - Retrieving recent placement data
-  - Code path: `app/services/database_service.py` retrieves recent offers.
-  - Query pattern: find with sort by created_at descending and limit.
+ - Code path: `app/services/database_service.py` retrieves recent offers.
+ - Query pattern: find with sort by created_at descending and limit.
 
 - Counting active users
-  - Code path: `app/services/database_service.py` and `app/services/database_service.py` use countDocuments.
-  - Query pattern: countDocuments with filter on active flag.
+ - Code path: `app/services/database_service.py` and `app/services/database_service.py` use countDocuments.
+ - Query pattern: countDocuments with filter on active flag.
 
 - Aggregation examples
-  - Company-wise totals: `app/services/database_service.py` computes per-company stats in-memory; MongoDB aggregation is also supported conceptually via `docs/DATABASE.md`.
-  - Branch statistics: `docs/DATABASE.md` shows retrieval of branch_wise data from OfficialPlacementData.
+ - Company-wise totals: `app/services/database_service.py` computes per-company stats in-memory; MongoDB aggregation is also supported conceptually via `docs/DATABASE.md`.
+ - Branch statistics: `docs/DATABASE.md` shows retrieval of branch_wise data from OfficialPlacementData.
 
 - Bulk operations
-  - Insert many notices/jobs/placement offers: `docs/DATABASE.md` and `app/services/database_service.py` demonstrate upsert/merge logic and batch-like processing.
-  - Update many: `docs/DATABASE.md` shows updateMany for marking notifications as sent.
+ - Insert many notices/jobs/placement offers: `docs/DATABASE.md` and `app/services/database_service.py` demonstrate upsert/merge logic and batch-like processing.
+ - Update many: `docs/DATABASE.md` shows updateMany for marking notifications as sent.
 
 - Pagination patterns
-  - Limit and sort: `app/services/database_service.py`, `app/services/database_service.py`, `app/services/database_service.py`, `app/services/database_service.py`.
+ - Limit and sort: `app/services/database_service.py`, `app/services/database_service.py`, `app/services/database_service.py`, `app/services/database_service.py`.
 
 - Projections
-  - Selective fields: `app/services/database_service.py`, `app/services/database_service.py`, `app/services/database_service.py`, `docs/DATABASE.md`.
+ - Selective fields: `app/services/database_service.py`, `app/services/database_service.py`, `app/services/database_service.py`, `docs/DATABASE.md`.
 
 ## Architecture overview
 The notification pipeline integrates data ingestion, formatting, and dispatch.
@@ -104,14 +95,14 @@ NS->>DB : "mark_as_sent(_id)"
 ### Finding unsent notifications
 - Purpose: Retrieve notices not yet sent to Telegram/WebPush for broadcast.
 - Implementation:
-  - DatabaseService.get_unsent_notices() builds a query on sent flags, sorts by creation time, and filters post-hoc for safety.
-  - NotificationService.send_unsent_notices() iterates over results, sends via channels, and marks as sent.
+ - DatabaseService.get_unsent_notices() builds a query on sent flags, sorts by creation time, and filters post-hoc for safety.
+ - NotificationService.send_unsent_notices() iterates over results, sends via channels, and marks as sent.
 - Query pattern:
-  - Filter: sent flags (conceptually similar to docs examples)
-  - Sort: createdAt ascending
-  - Limit: caller-controlled batching
+ - Filter: sent flags (conceptually similar to docs examples)
+ - Sort: createdAt ascending
+ - Limit: caller-controlled batching
 - Projections and pagination:
-  - Use find with projection to minimize payload; combine with limit for pagination.
+ - Use find with projection to minimize payload; combine with limit for pagination.
 
 ```mermaid
 sequenceDiagram
@@ -130,11 +121,11 @@ end
 ### Retrieving recent placement data
 - Purpose: Fetch latest placement offers for display or processing.
 - Implementation:
-  - DatabaseService.get_all_offers() finds documents, sorts by created_at descending, and applies limit.
+ - DatabaseService.get_all_offers() finds documents, sorts by created_at descending, and applies limit.
 - Query pattern:
-  - Filter: none (or optional filters in future)
-  - Sort: created_at desc
-  - Limit: configurable
+ - Filter: none (or optional filters in future)
+ - Sort: created_at desc
+ - Limit: configurable
 
 ```mermaid
 flowchart TD
@@ -147,10 +138,10 @@ Limit --> Return["Return list"]
 ### Counting active users
 - Purpose: Compute active vs inactive user counts for analytics.
 - Implementation:
-  - DatabaseService.get_users_stats() uses countDocuments on is_active flag.
+ - DatabaseService.get_users_stats() uses countDocuments on is_active flag.
 - Query pattern:
-  - Filter: is_active true/false
-  - Count: countDocuments
+ - Filter: is_active true/false
+ - Count: countDocuments
 
 ```mermaid
 flowchart TD
@@ -162,10 +153,10 @@ Inactive --> Return["Return counts"]
 
 ### Aggregating statistics (company-wise and branch-wise)
 - Company-wise placement counts:
-  - In-memory aggregation in DatabaseService.get_placement_stats() demonstrates grouping by company and computing metrics.
-  - MongoDB aggregation is conceptually supported; see docs example for summing student counts per company.
+ - In-memory aggregation in DatabaseService.get_placement_stats() groups by company and computes metrics.
+ - MongoDB aggregation is conceptually supported; see docs example for summing student counts per company.
 - Branch statistics:
-  - docs/DATABASE.md shows retrieving branch_wise data from OfficialPlacementData snapshots.
+ - docs/DATABASE.md shows retrieving branch_wise data from OfficialPlacementData snapshots.
 
 ```mermaid
 flowchart TD
@@ -177,12 +168,12 @@ Serialize --> Return["Return stats"]
 
 ### Bulk operations for efficient data processing
 - Insert many:
-  - docs/DATABASE.md shows insertMany for notices/jobs/placement offers.
-  - DatabaseService.save_placement_offers() performs batch-like upsert/merge per offer.
+ - docs/DATABASE.md shows insertMany for notices/jobs/placement offers.
+ - DatabaseService.save_placement_offers() performs batch-like upsert/merge per offer.
 - Update many:
-  - docs/DATABASE.md shows updateMany to mark notifications as sent.
+ - docs/DATABASE.md shows updateMany to mark notifications as sent.
 - Delete:
-  - docs/DATABASE.md outlines TTL indexes for auto-cleanup; deletion patterns can be modeled similarly.
+ - docs/DATABASE.md outlines TTL indexes for auto-cleanup; deletion patterns can be modeled similarly.
 
 ```mermaid
 flowchart TD
@@ -194,13 +185,13 @@ Update --> Done(["Batch complete"])
 
 ### Practical query patterns: find, projections, sorting, pagination
 - Find unsent notices:
-  - Filter by sent flags; sort by createdAt asc; limit results.
+ - Filter by sent flags; sort by createdAt asc; limit results.
 - Projections:
-  - Select only needed fields (e.g., id, title, formatted_message) to reduce payload.
+ - Select only needed fields (e.g., id, title, formatted_message) to reduce payload.
 - Sorting:
-  - createdAt desc for recent items; asc for chronological order.
+ - createdAt desc for recent items; asc for chronological order.
 - Pagination:
-  - Combine sort + limit; maintain consistent sort key for reliable pagination.
+ - Combine sort + limit; maintain consistent sort key for reliable pagination.
 
 ## Dependency analysis
 Key dependencies and their roles:
@@ -223,35 +214,35 @@ UR["UpdateRunner"] --> NFS
 
 ## Performance considerations
 - Efficient queries:
-  - Avoid full collection scans; filter early and use indexes.
+ - Avoid full collection scans; filter early and use indexes.
 - Projections:
-  - Retrieve only required fields to minimize network and memory overhead.
+ - Retrieve only required fields to minimize network and memory overhead.
 - Batch operations:
-  - Prefer insertMany/updateMany for bulk writes; disable ordering when acceptable.
+ - Prefer insertMany/updateMany for bulk writes; disable ordering when acceptable.
 - TTL indexes:
-  - Use expireAfterSeconds for auto-cleanup of transient data.
+ - Use expireAfterSeconds for auto-cleanup of transient data.
 - Connection pooling:
-  - Rely on PyMongo's built-in pooling; tune maxPoolSize appropriately.
+ - Rely on PyMongo's built-in pooling; tune maxPoolSize appropriately.
 - Cursor management:
-  - Use sort + limit; avoid toArray() on large datasets.
+ - Use sort + limit; avoid toArray() on large datasets.
 - Index usage:
-  - Ensure appropriate indexes exist for frequent filters and sorts (refer to schema and indexing docs).
+ - Ensure appropriate indexes exist for frequent filters and sorts (refer to schema and indexing docs).
 - Query hints:
-  - Use hint() when necessary to force index usage for critical queries.
+ - Use hint() when necessary to force index usage for critical queries.
 
 [No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 - Query debugging:
-  - Use explain("executionStats") to inspect query plans and index usage.
-  - Enable profiling to capture slow queries.
+ - Use explain("executionStats") to inspect query plans and index usage.
+ - Enable profiling to capture slow queries.
 - Error handling patterns:
-  - Wrap database calls in try/catch; log errors and return safe defaults.
-  - Validate inputs (e.g., notice ids, user ids) before querying.
+ - Wrap database calls in try/catch; log errors and return safe defaults.
+ - Validate inputs (e.g., notice ids, user ids) before querying.
 - Common pitfalls:
-  - Forgetting to sort consistently for pagination.
-  - Not limiting results in long-running find operations.
-  - Performing expensive operations in-memory when aggregation could be used.
+ - Forgetting to sort consistently for pagination.
+ - Not limiting results in long-running find operations.
+ - Performing expensive operations in-memory when aggregation could be used.
 
 ## Conclusion
-This page mapped MongoDB query patterns and practical examples used in the notification system. By using targeted filters, projections, sorting, and pagination, combined with bulk operations and proper indexing, the system achieves efficient data access and processing. The provided diagrams and code-path references enable developers to implement, debug, and optimize queries confidently.
+Filters, projections, sort, pagination, bulk writes, and the indexes that make them cheap. Use the diagrams and call sites when you add a query instead of inventing a new access pattern.

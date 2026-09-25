@@ -1,208 +1,219 @@
 # API reference
 
-## Purpose and scope
+Public surface of jsjiit **0.0.22**. Architecture: [Architecture and design](4-architecture-and-design). Examples: [Quick start guide](2.2-quick-start-guide).
 
-This page provides detailed reference documentation for all public classes, methods, constants, and interfaces exposed by the jsjiit library. It is the authoritative guide to the library's API surface, detailing the types, signatures, and purposes of all exported constructs.
+`src/index.js` is the only public barrel.
 
-For implementation details and internal architecture, see [Architecture and Design](4-architecture-and-design). For step-by-step usage examples, see [Quick Start Guide](2.2-quick-start-guide). For detailed information about specific API categories, refer to the subsections below.
+## Exports
 
----
-
-## Public API surface
-
-The jsjiit library exports its entire public API through [src/index.js1-32](https://github.com/codeblech/jsjiit/blob/d123b782/src/index.js#L1-L32) All imports should be made from this module or its compiled distribution bundles.
-
-### Complete export table
-
-| Export Name | Type | Module | Purpose |
-| --- | --- | --- | --- |
-| `WebPortal` | Class | [src/wrapper.js75-671](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L75-L671) | Main class for interacting with JIIT web portal API |
-| `WebPortalSession` | Class | [src/wrapper.js25-70](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L25-L70) | Represents an authenticated session with the portal |
-| `API` | Constant | [src/wrapper.js14](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L14-L14) | Base API endpoint URL |
-| `DEFCAPTCHA` | Constant | [src/wrapper.js20](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L20-L20) | Default CAPTCHA bypass values |
-| `AttendanceHeader` | Class | src/attendance.js | Represents attendance header metadata |
-| `Semester` | Class | src/attendance.js | Represents semester information |
-| `AttendanceMeta` | Class | src/attendance.js | Container for attendance metadata |
-| `RegisteredSubject` | Class | src/registration.js | Represents a registered subject |
-| `Registrations` | Class | src/registration.js | Container for registration data |
-| `ExamEvent` | Class | src/exam.js | Represents an exam event |
-| `APIError` | Class | src/exceptions.js | Base exception for API errors |
-| `LoginError` | Class | src/exceptions.js | Exception for login failures |
-| `AccountAPIError` | Class | src/exceptions.js | Exception for account operation failures |
-| `NotLoggedIn` | Class | src/exceptions.js | Exception when authentication is required |
-| `SessionError` | Class | src/exceptions.js | Exception for session-related errors |
-| `SessionExpired` | Class | src/exceptions.js | Exception when session token expires |
-| `generate_local_name` | Function | src/encryption.js | Generates LocalName header for requests |
-
----
-
-## API architecture diagram
-
-The following diagram illustrates the relationship between the primary API classes and their dependencies:
-
-![Diagram 1](images/3-api-reference_diagram_1.png)
-
----
-
-## WebPortal class overview
-
-The `WebPortal` class is the primary interface for all portal interactions. It provides methods organized into functional categories.
-
-### Method categories
-
-![Diagram 2](images/3-api-reference_diagram_2.png)
-
-### Method reference table
-
-| Method | Authentication Required | Return Type | Purpose |
-| --- | --- | --- | --- |
-| `student_login(username, password, captcha)` | No | `Promise<WebPortalSession>` | Authenticates and creates session |
-| `get_attendance_meta()` | Yes | `Promise<AttendanceMeta>` | Retrieves attendance headers and semesters |
-| `get_attendance(header, semester)` | Yes | `Promise<Object>` | Gets attendance details for a semester |
-| `get_subject_daily_attendance(...)` | Yes | `Promise<Object>` | Gets daily attendance for a subject |
-| `get_registered_semesters()` | Yes | `Promise<Array<Semester>>` | Lists semesters with registrations |
-| `get_registered_subjects_and_faculties(semester)` | Yes | `Promise<Registrations>` | Gets subjects and faculty for semester |
-| `get_semesters_for_exam_events()` | Yes | `Promise<Array<Semester>>` | Lists semesters with exam events |
-| `get_exam_events(semester)` | Yes | `Promise<Array<ExamEvent>>` | Gets exam events for semester |
-| `get_exam_schedule(exam_event)` | Yes | `Promise<Object>` | Gets schedule for an exam event |
-| `get_semesters_for_marks()` | Yes | `Promise<Array<Semester>>` | Lists semesters with marks available |
-| `download_marks(semester)` | Yes | `Promise<void>` | Downloads marks PDF for semester |
-| `get_semesters_for_grade_card()` | Yes | `Promise<Array<Semester>>` | Lists semesters with grade cards |
-| `get_grade_card(semester)` | Yes | `Promise<Object>` | Gets grade card for semester |
-| `get_sgpa_cgpa()` | Yes | `Promise<Object>` | Retrieves SGPA and CGPA data |
-| `get_personal_info()` | Yes | `Promise<Object>` | Gets student personal information |
-| `get_student_bank_info()` | Yes | `Promise<Object>` | Gets student bank details |
-| `change_password(old_password, new_password)` | Yes | `Promise<Object>` | Changes account password |
-| `get_hostel_details()` | Yes | `Promise<Object>` | Gets hostel allocation details |
-| `get_fee_summary()` | Yes | `Promise<Object>` | Gets fee summary information |
-| `get_fines_msc_charges()` | Yes | `Promise<Object>` | Gets pending fines/charges |
-| `get_subject_choices(semester)` | Yes | `Promise<Object>` | Gets subject choice preferences |
-| `fill_feedback_form(feedback_option)` | Yes | `Promise<void>` | Submits feedback forms |
-
-For detailed documentation of each method, see:
-
-* [Authentication and Session Management](3.2-authentication-and-session-management)
-* [Attendance Methods](3.3-attendance-methods)
-* [Registration and Subject Methods](3.4-registration-and-subject-methods)
-* [Exam and Schedule Methods](3.5-exam-and-schedule-methods)
-* [Academic Records Methods](3.6-academic-records-methods)
-* [Feedback and Account Methods](3.7-feedback-and-account-methods)
-
----
-
-## WebPortalSession class
-
-The `WebPortalSession` class represents an authenticated session with the JIIT web portal. It is created automatically by `WebPortal.student_login()` and should not be instantiated directly.
-
-### Session properties
-
-| Property | Type | Description |
+| Name | Kind | Defined in |
 | --- | --- | --- |
-| `raw_response` | Object | Complete API response from login |
-| `regdata` | Object | Registration data from response |
-| `institute` | string | Institute name/label |
-| `instituteid` | string | Institute identifier |
-| `memberid` | string | Member/student ID |
-| `userid` | string | User ID |
-| `token` | string | JWT authentication token |
-| `expiry` | Date | Token expiration timestamp |
-| `clientid` | string | Client identifier |
-| `membertype` | string | Type of member (student) |
-| `name` | string | Student name |
-| `enrollmentno` | string | Enrollment number |
+| `WebPortal` | class | `src/wrapper.js` |
+| `WebPortalSession` | class | `src/wrapper.js` |
+| `API` | string | `src/wrapper.js` |
+| `DEFCAPTCHA` | object | `src/wrapper.js` |
+| `AttendanceHeader` | class | `src/attendance.js` |
+| `Semester` | class | `src/attendance.js` |
+| `AttendanceMeta` | class | `src/attendance.js` |
+| `RegisteredSubject` | class | `src/registration.js` |
+| `Registrations` | class | `src/registration.js` |
+| `ExamEvent` | class | `src/exam.js` |
+| `APIError` | class | `src/exceptions.js` |
+| `LoginError` | class | `src/exceptions.js` |
+| `AccountAPIError` | class | `src/exceptions.js` |
+| `NotLoggedIn` | class | `src/exceptions.js` |
+| `SessionError` | class | `src/exceptions.js` |
+| `SessionExpired` | class | `src/exceptions.js` |
+| `generate_local_name` | function | `src/encryption.js` |
 
-### Session methods
+`FeedbackOptions` is a default export of `src/feedback.js` and is **not** in this list.
 
-| Method | Return Type | Purpose |
+This clone has no `useProxy` or `proxyUrl` on `WebPortal`. If a newer CDN build has them, they are not documented here.
+
+```mermaid
+flowchart TB
+  idx[src/index.js]
+  idx --> WP[WebPortal]
+  idx --> WPS[WebPortalSession]
+  idx --> models[AttendanceMeta Semester ExamEvent Registrations]
+  idx --> errs[APIError LoginError SessionError]
+  idx --> consts["API DEFCAPTCHA generate_local_name"]
+  WP --> WPS
+  WP --> models
+  WP --> errs
+```
+
+## WebPortal methods
+
+```mermaid
+flowchart TB
+  WP[WebPortal]
+  WP --> auth[student_login]
+  WP --> att[attendance]
+  WP --> rec[grades marks sgpa]
+  WP --> reg[registration]
+  WP --> exam[exams]
+  WP --> acct[account fees hostel feedback]
+```
+
+| Method | Auth | Returns |
 | --- | --- | --- |
-| `get_headers()` | `Promise<Object>` | Generates authentication headers for API requests |
+| `student_login(username, password, captcha)` | no | `Promise<WebPortalSession>` |
+| `get_attendance_meta()` | yes | `Promise<AttendanceMeta>` |
+| `get_attendance(header, semester)` | yes | `Promise<Object>` |
+| `get_subject_daily_attendance(semester, subjectid, individualsubjectcode, subjectcomponentids)` | yes | `Promise<Object>` |
+| `get_registered_semesters()` | yes | `Promise<Semester[]>` |
+| `get_registered_subjects_and_faculties(semester)` | yes | `Promise<Registrations>` |
+| `get_semesters_for_exam_events()` | yes | `Promise<Semester[]>` |
+| `get_exam_events(semester)` | yes | `Promise<ExamEvent[]>` |
+| `get_exam_schedule(exam_event)` | yes | `Promise<Object>` |
+| `get_semesters_for_marks()` | yes | `Promise<Semester[]>` |
+| `download_marks(semester)` | yes | `Promise<void>` |
+| `get_semesters_for_grade_card()` | yes | `Promise<Semester[]>` |
+| `get_grade_card(semester)` | yes | `Promise<Object>` |
+| `get_sgpa_cgpa()` | yes | `Promise<Object>` |
+| `get_personal_info()` | yes | `Promise<Object>` |
+| `get_student_bank_info()` | yes | `Promise<Object>` |
+| `change_password(old_password, new_password)` | yes | `Promise<Object>` |
+| `get_hostel_details()` | yes | `Promise<Object>` |
+| `get_fee_summary()` | yes | `Promise<Object>` |
+| `get_fines_msc_charges()` | yes | `Promise<Object>` |
+| `get_subject_choices(semester)` | yes | `Promise<Object>` |
+| `fill_feedback_form(feedback_option)` | **not wrapped** | `Promise<void>` |
 
----
+`fill_feedback_form` is **missing** from `authenticatedMethods`. Calling it with `session === null` still blows up later when it reads `this.session.instituteid`.
 
-## Data models
+Private helpers used by public methods: `__hit`, `__get_program_id`, `__get_semester_number`. Those two helpers **are** in `authenticatedMethods`.
 
-The library provides typed data model classes to represent portal data structures. These classes parse and structure raw API responses.
+Pages:
 
-### Data model hierarchy
+- [Authentication and session management](3.2-authentication-and-session-management)
+- [Attendance methods](3.3-attendance-methods)
+- [Registration and subject methods](3.4-registration-and-subject-methods)
+- [Exam and schedule methods](3.5-exam-and-schedule-methods)
+- [Academic records methods](3.6-academic-records-methods)
+- [Feedback and account methods](3.7-feedback-and-account-methods)
 
-![Diagram 3](images/3-api-reference_diagram_3.png)
+## WebPortalSession
 
-For complete documentation of data model properties and methods, see [Data Models](3.9-data-models).
+Created by `student_login`. Do not construct it yourself unless you have a login `response` object.
 
----
+| Property | Type |
+| --- | --- |
+| `raw_response` | object |
+| `regdata` | object |
+| `institute` | string (`institutelist[0].label`) |
+| `instituteid` | string (`institutelist[0].value`) |
+| `memberid` | string |
+| `userid` | string |
+| `token` | JWT string |
+| `expiry` | `Date` from JWT `exp` |
+| `clientid` | string |
+| `membertype` | string |
+| `name` | string |
+| `enrollmentno` | string |
 
-## Error handling
+`get_headers()` returns `{ Authorization: "Bearer " + token, LocalName }`. `download_marks` calls `this.session.get_headers(localname)` with an extra argument that **`get_headers` ignores**.
 
-The library provides a hierarchy of exception classes for different error scenarios. All exceptions extend from `Error`.
+There is no `branch_id` assignment in the constructor. `get_grade_card` still sends `branchid: this.session.branch_id`.
 
-### Exception hierarchy
+## Models
 
-![Diagram 4](images/3-api-reference_diagram_4.png)
-
-### Exception reference
-
-| Exception | Thrown By | When Thrown |
-| --- | --- | --- |
-| `APIError` | All API methods | Generic API errors, network failures, non-Success status |
-| `LoginError` | `student_login()` | Authentication failures, invalid credentials |
-| `AccountAPIError` | `change_password()` | Password change failures |
-| `NotLoggedIn` | All authenticated methods | Method called without prior login |
-| `SessionExpired` | All authenticated methods | JWT token has expired (HTTP 401) |
-| `SessionError` | Session operations | Generic session-related errors |
-
-For detailed error handling strategies and examples, see [Error Handling](3.8-error-handling).
-
----
-
-## Constants and utilities
-
-### Constants
-
-#### API
-
+```mermaid
+classDiagram
+  class AttendanceMeta {
+    headers
+    semesters
+    latest_header()
+    latest_semester()
+  }
+  class AttendanceHeader {
+    branchdesc
+    name
+    programdesc
+    stynumber
+  }
+  class Semester {
+    registration_code
+    registration_id
+  }
+  class Registrations {
+    total_credits
+    subjects
+  }
+  class RegisteredSubject {
+    employee_name
+    credits
+    subject_code
+    subject_id
+  }
+  class ExamEvent {
+    exam_event_code
+    exam_event_id
+    registration_id
+  }
+  AttendanceMeta --> AttendanceHeader
+  AttendanceMeta --> Semester
+  Registrations --> RegisteredSubject
 ```
-const API = "https://webportal.jiit.ac.in:6011/StudentPortalAPI"
+
+[Data models](3.9-data-models).
+
+## Errors
+
+```mermaid
+classDiagram
+  Error <|-- APIError
+  APIError <|-- LoginError
+  Error <|-- SessionError
+  SessionError <|-- SessionExpired
+  SessionError <|-- NotLoggedIn
+  Error <|-- AccountAPIError
 ```
 
-Base endpoint URL for all API requests. Defined in [src/wrapper.js14](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L14-L14)
+[Error handling](3.8-error-handling).
 
-#### DEFCAPTCHA
+## Constants
 
-```
-const DEFCAPTCHA = { captcha: "phw5n", hidden: "gmBctEffdSg=" }
-```
-
-Default CAPTCHA bypass values used by `student_login()`. Defined in [src/wrapper.js20](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L20-L20)
-
-### Utility functions
-
-#### generate\_local\_name()
-
-```
-async generate_local_name(): Promise<string>
+```javascript
+export const API = "https://webportal.jiit.ac.in:6011/StudentPortalAPI";
+export const DEFCAPTCHA = { captcha: "phw5n", hidden: "gmBctEffdSg=" };
 ```
 
-Generates a `LocalName` header value required for all API requests. This function is exported for advanced use cases but is typically called internally by the library. Defined in [src/encryption.js](https://github.com/codeblech/jsjiit/blob/d123b782/src/encryption.js)
+`generate_local_name(date?)` returns a base64 AES-CBC blob for the `LocalName` header. `__hit` and `get_headers` already call it.
 
----
+## `__hit` path
 
-## API request flow
-
-The following diagram illustrates the typical request flow through the `WebPortal` class:
-
-![Diagram 5](images/3-api-reference_diagram_5.png)
-
----
-
-## Authentication decorator pattern
-
-All methods requiring authentication are decorated with the `authenticated` decorator. This pattern is implemented at [src/wrapper.js679-719](https://github.com/codeblech/jsjiit/blob/d123b782/src/wrapper.js#L679-L719)
-
-### Authenticated methods list
-
-The following methods are automatically wrapped with authentication checks:
-
+```mermaid
+sequenceDiagram
+  participant M as WebPortal method
+  participant H as __hit
+  participant S as WebPortalSession
+  participant F as fetch
+  M->>H: method, url, options
+  alt authenticated
+    H->>S: get_headers()
+  else
+    H->>H: generate_local_name()
+  end
+  H->>F: POST/GET JSON
+  F-->>H: status plus JSON
+  alt 513
+    H-->>M: exception unavailable
+  else 401
+    H-->>M: SessionExpired
+  else status.responseStatus not Success
+    H-->>M: exception
+  else
+    H-->>M: resp
+  end
 ```
+
+`__hit` logs `options` and the fetch call with `console.log`.
+
+## `authenticated` wrapper
+
+```javascript
 const authenticatedMethods = [
   "get_personal_info",
   "get_student_bank_info",
@@ -225,93 +236,57 @@ const authenticatedMethods = [
   "get_hostel_details",
   "get_fines_msc_charges",
   "get_fee_summary",
-  "get_subject_choices"
+  "get_subject_choices",
 ];
 ```
 
-Any attempt to call these methods without first calling `student_login()` will throw a `NotLoggedIn` exception.
+`fill_feedback_form` is not in this array.
 
----
+## Endpoints
 
-## Method endpoint mapping
+Base: `https://webportal.jiit.ac.in:6011/StudentPortalAPI`
 
-The following table maps `WebPortal` methods to their corresponding API endpoints for reference:
-
-| Method | API Endpoint |
+| Method | Path |
 | --- | --- |
-| `student_login()` | `/token/pretoken-check`, `/token/generate-token1` |
-| `get_personal_info()` | `/studentpersinfo/getstudent-personalinformation` |
-| `get_student_bank_info()` | `/studentbankdetails/getstudentbankinfo` |
-| `change_password()` | `/clxuser/changepassword` |
-| `get_attendance_meta()` | `/StudentClassAttendance/getstudentInforegistrationforattendence` |
-| `get_attendance()` | `/StudentClassAttendance/getstudentattendancedetail` |
-| `get_subject_daily_attendance()` | `/StudentClassAttendance/getstudentsubjectpersentage` |
-| `get_registered_semesters()` | `/reqsubfaculty/getregistrationList` |
-| `get_registered_subjects_and_faculties()` | `/reqsubfaculty/getfaculties` |
-| `get_semesters_for_exam_events()` | `/studentcommonsontroller/getsemestercode-withstudentexamevents` |
-| `get_exam_events()` | `/studentcommonsontroller/getstudentexamevents` |
-| `get_exam_schedule()` | `/studentsttattview/getstudent-examschedule` |
-| `get_semesters_for_marks()` | `/studentcommonsontroller/getsemestercode-exammarks` |
-| `download_marks()` | `/studentsexamview/printstudent-exammarks/...` |
-| `get_semesters_for_grade_card()` | `/studentgradecard/getregistrationList` |
-| `get_grade_card()` | `/studentgradecard/showstudentgradecard` |
-| `get_sgpa_cgpa()` | `/studentsgpacgpa/getallsemesterdata` |
-| `get_hostel_details()` | `/myhostelallocationdetail/gethostelallocationdetail` |
-| `get_fines_msc_charges()` | `/collectionpendingpayments/getpendingpaymentsdata` |
-| `get_fee_summary()` | `/studentfeeledger/loadfeesummary` |
-| `get_subject_choices()` | `/studentchoiceprint/getsubjectpreference` |
-| `fill_feedback_form()` | `/feedbackformcontroller/getFeedbackEvent`, `/feedbackformcontroller/getGriddataForFeedback`, `/feedbackformcontroller/getIemQuestion`, `/feedbackformcontroller/savedatalist` |
+| `student_login` | `/token/pretoken-check`, `/token/generate-token1` |
+| `get_personal_info` | `/studentpersinfo/getstudent-personalinformation` |
+| `get_student_bank_info` | `/studentbankdetails/getstudentbankinfo` |
+| `change_password` | `/clxuser/changepassword` |
+| `get_attendance_meta` | `/StudentClassAttendance/getstudentInforegistrationforattendence` |
+| `get_attendance` | `/StudentClassAttendance/getstudentattendancedetail` |
+| `get_subject_daily_attendance` | `/StudentClassAttendance/getstudentsubjectpersentage` |
+| `get_registered_semesters` | `/reqsubfaculty/getregistrationList` |
+| `get_registered_subjects_and_faculties` | `/reqsubfaculty/getfaculties` |
+| `get_semesters_for_exam_events` | `/studentcommonsontroller/getsemestercode-withstudentexamevents` |
+| `get_exam_events` | `/studentcommonsontroller/getstudentexamevents` |
+| `get_exam_schedule` | `/studentsttattview/getstudent-examschedule` |
+| `get_semesters_for_marks` | `/studentcommonsontroller/getsemestercode-exammarks` |
+| `download_marks` | `/studentsexamview/printstudent-exammarks/{instituteid}/{registration_id}/{registration_code}` |
+| `get_semesters_for_grade_card` | `/studentgradecard/getregistrationList` |
+| `__get_program_id` | `/studentgradecard/getstudentinfo` |
+| `get_grade_card` | `/studentgradecard/showstudentgradecard` |
+| `__get_semester_number` | `/studentsgpacgpa/checkIfstudentmasterexist` |
+| `get_sgpa_cgpa` | `/studentsgpacgpa/getallsemesterdata` |
+| `get_hostel_details` | `/myhostelallocationdetail/gethostelallocationdetail` |
+| `get_fines_msc_charges` | `/collectionpendingpayments/getpendingpaymentsdata` |
+| `get_fee_summary` | `/studentfeeledger/loadfeesummary` |
+| `get_subject_choices` | `/studentchoiceprint/getsubjectpreference` |
+| `fill_feedback_form` | `/feedbackformcontroller/getFeedbackEvent`, `getGriddataForFeedback`, `getIemQuestion`, `savedatalist` |
 
----
+`get_exam_events` sends `registationid` (portal spelling). `get_personal_info` sends `clinetid: "SOAU"`.
 
-## Usage pattern
+## Call order
 
-The typical usage pattern for the jsjiit API follows this sequence:
+```javascript
+import { WebPortal } from "jsjiit";
 
-1. **Import the library**
+const portal = new WebPortal();
+await portal.student_login(username, password);
+const meta = await portal.get_attendance_meta();
+```
 
-   ```
-   ```
-   import { WebPortal } from 'jsjiit';
-   ```
-   ```
-2. **Create a WebPortal instance**
+Version in this clone: **0.0.22**. CDN:
 
-   ```
-   ```
-   const portal = new WebPortal();
-   ```
-   ```
-3. **Authenticate**
-
-   ```
-   ```
-   await portal.student_login(username, password);
-   ```
-   ```
-4. **Call API methods**
-
-   ```
-   ```
-   const meta = await portal.get_attendance_meta();
-   const grades = await portal.get_grade_card(semester);
-   ```
-   ```
-
-All authenticated methods return Promises and should be awaited. Errors should be caught and handled appropriately using try-catch blocks.
-
-For complete usage examples, see [Quick Start Guide](2.2-quick-start-guide).
-
----
-
-## Version and compatibility
-
-The current API version is **0.0.23** as defined in package.json. The library targets ES2020+ browsers and is distributed as ES modules.
-
-### Import paths
-
-* **NPM**: `import { WebPortal } from 'jsjiit'`
-* **CDN (Production)**: `import { WebPortal } from 'https://cdn.jsdelivr.net/npm/jsjiit@0.0.23/dist/jsjiit.min.esm.js'`
-* **CDN (Development)**: `import { WebPortal } from 'https://cdn.jsdelivr.net/npm/jsjiit@0.0.23/dist/jsjiit.esm.js'`
-
-For installation instructions, see [Installation](2.1-installation).
+```javascript
+import { WebPortal } from "https://cdn.jsdelivr.net/npm/jsjiit@0.0.22/dist/jsjiit.min.esm.js";
+```

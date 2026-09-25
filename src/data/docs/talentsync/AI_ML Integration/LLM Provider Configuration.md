@@ -1,9 +1,8 @@
 # LLM provider configuration
 
-## Introduction
-This page explains how TalentSync manages Large Language Model (LLM) providers and configurations. It covers the dynamic provider switching mechanism supporting OpenAI, Gemini, Anthropic, OpenRouter, DeepSeek, Ollama, and Mistral. It documents the configuration system including API key management, rate limiting considerations, and fallback strategies. It also details cost optimization techniques such as token usage tracking, model selection based on complexity, and response caching. The provider abstraction layer, authentication handling, and error recovery mechanisms are explained, along with deployment configurations, environment variable setup, and monitoring approaches for provider performance metrics.
+How TalentSync manages Large Language Model (LLM) providers and configurations.
 
-## Project structure
+## Repository layout
 The LLM configuration spans backend and frontend components:
 - Backend provides provider factories, settings, dependencies, encryption utilities, and a test endpoint.
 - Frontend exposes a UI panel to manage multiple LLM configurations per user, including encryption and testing.
@@ -50,26 +49,26 @@ E --> D
 - `frontend/lib/encryption.ts`
 - `frontend/prisma/migrations/20260214000000_multi_llm_configs/migration.sql`
 
-## Core components
+## Building blocks
 - Provider factory and singleton management:
-  - Dynamic provider creation supports OpenAI, Gemini, Anthropic, OpenRouter, DeepSeek, Ollama, and Mistral.
-  - Temperature support varies by provider/model; factory enforces compatibility.
-  - Singleton instances for default and "faster" models reduce initialization overhead.
+ - Dynamic provider creation supports OpenAI, Gemini, Anthropic, OpenRouter, DeepSeek, Ollama, and Mistral.
+ - Temperature support varies by provider/model; factory enforces compatibility.
+ - Singleton instances for default and "faster" models reduce initialization overhead.
 - Settings and environment:
-  - Centralized configuration via Pydantic settings with environment file loading.
-  - Supports legacy and multi-provider fields for backward compatibility.
+ - Centralized configuration via Pydantic settings with environment file loading.
+ - Supports legacy and multi-provider fields for backward compatibility.
 - Dependencies and request-time selection:
-  - FastAPI dependency injects a per-request LLM instance using headers from the frontend proxy.
-  - Falls back to server defaults when user-specific headers are absent.
+ - FastAPI dependency injects a per-request LLM instance using headers from the frontend proxy.
+ - Falls back to server defaults when user-specific headers are absent.
 - Encryption:
-  - Backend encryption utilities for secure storage of API keys.
-  - Frontend encryption utilities mirror the backend key derivation strategy.
+ - Backend encryption utilities for secure storage of API keys.
+ - Frontend encryption utilities mirror the backend key derivation strategy.
 - JSON helpers:
-  - Reliable extraction and JSON parsing for LLM responses.
+ - Reliable extraction and JSON parsing for LLM responses.
 - Test endpoint:
-  - Validates provider connectivity and response content.
+ - Validates provider connectivity and response content.
 
-## Architecture overview
+## How it fits together
 The system separates concerns across layers:
 - Frontend UI manages multiple user LLM configurations, encrypts keys, and tests connections.
 - Backend validates and stores encrypted keys, exposes a test endpoint, and creates provider instances.
@@ -106,9 +105,7 @@ DEP-->>BE : "LLM instance"
 - `backend/app/core/deps.py`
 - `backend/app/core/llm.py`
 
-## Detailed component analysis
-
-### Provider abstraction and dynamic switching
+## Provider abstraction and dynamic switching
 The provider abstraction encapsulates LangChain chat model constructors behind a single factory function. Supported providers include OpenAI, Gemini, Anthropic, OpenRouter, DeepSeek, Ollama, and Mistral. The factory:
 - Selects the appropriate constructor based on provider string.
 - Applies provider-specific base URLs and API key fields.
@@ -133,15 +130,15 @@ OL --> End
 F --> End
 ```
 
-### Configuration system and API key management
+## Configuration system and API key management
 - Frontend:
-  - Users can define multiple configurations with labels, provider, model, optional base URL, and optional API key.
-  - API keys are encrypted client-side before being sent to the backend.
-  - A dedicated test action validates connectivity against the selected provider/model/base.
+ - Users can define multiple configurations with labels, provider, model, optional base URL, and optional API key.
+ - API keys are encrypted client-side before being sent to the backend.
+ - A dedicated test action validates connectivity against the selected provider/model/base.
 - Backend:
-  - Stores encrypted keys in the database and exposes endpoints to list, create, update, and delete configurations.
-  - Provides a test endpoint that instantiates an LLM and checks response content.
-  - Uses a server-side encryption utility to derive a 32-byte key via SHA-256 and AES-256-GCM for secure storage.
+ - Stores encrypted keys in the database and exposes endpoints to list, create, update, and delete configurations.
+ - test endpoint that instantiates an LLM and checks response content.
+ - Uses a server-side encryption utility to derive a 32-byte key via SHA-256 and AES-256-GCM for secure storage.
 
 ```mermaid
 sequenceDiagram
@@ -164,47 +161,47 @@ FE-->>UI : "Success"
 - `frontend/lib/encryption.ts`
 - `backend/app/core/encryption.py`
 
-### Rate limiting and fallback strategies
+## Rate limiting and fallback strategies
 - Rate limiting:
-  - Implemented at the provider level via upstream API constraints. The system does not enforce application-level rate limits.
+ - Implemented at the provider level via upstream API constraints. The system does not enforce application-level rate limits.
 - Fallback strategies:
-  - Unknown provider falls back to Google/Gemini with a warning.
-  - Per-request selection uses headers; missing headers fall back to server-default singleton.
-  - If the default singleton cannot be initialized (e.g., missing API key), a 503 error is raised advising the user to configure LLM settings.
+ - Unknown provider falls back to Google/Gemini with a warning.
+ - Per-request selection uses headers; missing headers fall back to server-default singleton.
+ - If the default singleton cannot be initialized (e.g., missing API key), a 503 error is raised advising the user to configure LLM settings.
 
-### Cost optimization techniques
+## Cost optimization techniques
 - Token usage tracking:
-  - Not implemented in the current codebase. Recommendation: Integrate token counters around LLM invocations and persist usage metrics per configuration.
+ - Not implemented in the current codebase. Recommendation: Integrate token counters around LLM invocations and persist usage metrics per configuration.
 - Model selection based on complexity:
-  - Use a "faster" model for lightweight tasks and reserve larger models for complex prompts. The system maintains separate singleton instances for default and faster models.
+ - Use a "faster" model for lightweight tasks and reserve larger models for complex prompts. The system maintains separate singleton instances for default and faster models.
 - Response caching:
-  - Not implemented in the current codebase. Recommendation: Cache deterministic prompts keyed by provider, model, and hashed prompt content with TTL.
+ - Not implemented in the current codebase. Recommendation: Cache deterministic prompts keyed by provider, model, and hashed prompt content with TTL.
 
-### Authentication handling and error recovery
+## Authentication handling and error recovery
 - Authentication:
-  - Frontend requires a session for configuration management endpoints.
-  - Per-request LLM selection relies on headers injected by the frontend proxy when a user has a custom configuration.
+ - Frontend requires a session for configuration management endpoints.
+ - Per-request LLM selection relies on headers injected by the frontend proxy when a user has a custom configuration.
 - Error recovery:
-  - Per-request dependency catches instantiation errors and returns a 503 with a user-friendly message.
-  - Test endpoint wraps LLM invocation and returns structured success/failure messages.
-  - Frontend displays user-friendly messages for failures and allows retesting.
+ - Per-request dependency catches instantiation errors and returns a 503 with a message.
+ - Test endpoint wraps LLM invocation and returns structured success/failure messages.
+ - Frontend displays messages for failures and allows retesting.
 
-### Deployment configurations and environment variables
+## Deployment configurations and environment variables
 - Backend environment variables:
-  - GOOGLE_API_KEY, LLM_API_KEY, LLM_API_BASE, LLM_PROVIDER, LLM_MODEL, MODEL_NAME, FASTER_MODEL_NAME, MODEL_TEMPERATURE, ENCRYPTION_KEY.
+ - GOOGLE_API_KEY, LLM_API_KEY, LLM_API_BASE, LLM_PROVIDER, LLM_MODEL, MODEL_NAME, FASTER_MODEL_NAME, MODEL_TEMPERATURE, ENCRYPTION_KEY.
 - Frontend environment variables:
-  - ENCRYPTION_KEY must match the backend key for client-side encryption to interoperate.
+ - ENCRYPTION_KEY must match the backend key for client-side encryption to interoperate.
 - Example backend.env entries are provided in the repository.
 
-### Monitoring dashboards for provider performance metrics
+## Monitoring dashboards for provider performance metrics
 - Current codebase does not include built-in metrics collection.
 - Recommended approach:
-  - Instrument LLM invocations to capture latency, success rates, and token counts.
-  - Aggregate metrics per provider/model and expose them via a metrics endpoint or external monitoring stack.
+ - Instrument LLM invocations to capture latency, success rates, and token counts.
+ - Aggregate metrics per provider/model and expose them via a metrics endpoint or external monitoring stack.
 
 [No sources needed since this section provides general guidance]
 
-## Dependency analysis
+## Dependencies
 The following diagram shows key dependencies among components involved in LLM configuration and runtime selection.
 
 ```mermaid
@@ -220,39 +217,37 @@ FE_API --> FE_Enc["Frontend Encryption<br/>encryption.ts"]
 BE_Enc["Backend Encryption<br/>core/encryption.py"] --> FE_Enc
 ```
 
-## Performance considerations
+## Performance
 - Initialization costs:
-  - Use singleton instances for default and faster models to avoid repeated initialization overhead.
+ - Use singleton instances for default and faster models to avoid repeated initialization overhead.
 - Provider selection:
-  - Prefer smaller, cheaper models for routine tasks; reserve larger models for complex reasoning.
+ - Prefer smaller, cheaper models for routine tasks; reserve larger models for complex reasoning.
 - Network latency:
-  - Local providers (e.g., Ollama) can reduce latency compared to cloud APIs.
+ - Local providers (e.g., Ollama) can reduce latency compared to cloud APIs.
 - Caching:
-  - Implement deterministic prompt caching to reduce redundant calls.
+ - Implement deterministic prompt caching to reduce redundant calls.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Missing API key:
-  - Backend logs a warning and disables LLM functionality if the default provider key is missing.
+ - Backend logs a warning and disables LLM functionality if the default provider key is missing.
 - Invalid provider or model:
-  - Factory falls back to Google/Gemini with a warning; adjust provider/model accordingly.
+ - Factory falls back to Google/Gemini with a warning; adjust provider/model accordingly.
 - Per-request configuration errors:
-  - Dependency raises a 503 with a user-friendly message if custom configuration fails to initialize.
+ - Dependency raises a 503 with a message if custom configuration fails to initialize.
 - Frontend encryption mismatch:
-  - Ensure ENCRYPTION_KEY matches between frontend and backend for encrypted API keys to work.
+ - Ensure ENCRYPTION_KEY matches between frontend and backend for encrypted API keys to work.
 
-## Conclusion
-TalentSync's LLM configuration system provides a flexible, secure, and extensible foundation for managing multiple providers and models. The provider abstraction layer, combined with per-request selection and reliable encryption, enables dynamic switching while maintaining strong security. Future enhancements, such as token tracking, response caching, and metrics, will further optimize cost and performance.
-
-## Appendices
+## Appendix
 
 ### Environment variables reference
 - Backend:
-  - GOOGLE_API_KEY, LLM_API_KEY, LLM_API_BASE, LLM_PROVIDER, LLM_MODEL, MODEL_NAME, FASTER_MODEL_NAME, MODEL_TEMPERATURE, ENCRYPTION_KEY.
+ - GOOGLE_API_KEY, LLM_API_KEY, LLM_API_BASE, LLM_PROVIDER, LLM_MODEL, MODEL_NAME, FASTER_MODEL_NAME, MODEL_TEMPERATURE, ENCRYPTION_KEY.
 - Frontend:
-  - ENCRYPTION_KEY (must match backend).
+ - ENCRYPTION_KEY (must match backend).
 
 ### Database schema notes
 - Migration adds label, isActive, and indices to support multiple user configurations and fast lookup of active config.

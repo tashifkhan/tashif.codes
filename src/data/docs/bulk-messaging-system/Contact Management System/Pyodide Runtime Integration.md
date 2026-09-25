@@ -1,7 +1,7 @@
 # Pyodide runtime integration
 
 ## Introduction
-This page explains how the project integrates Pyodide to enable browser-based Python execution for contact processing. It covers the WebAssembly-based Python interpreter setup, script loading mechanisms, dynamic import system for Python modules, and IPC communication between JavaScript and Python contexts. It also documents the file processing workflow that uses Pyodide for manual number parsing without server dependencies, along with performance considerations, memory limitations, optimization strategies, build process for embedding Python scripts, distribution of Pyodide runtime assets, error handling, and debugging approaches.
+Pyodide loads a bundled Python parser in the renderer so manual number entry can run without a live Flask server.
 
 ## Project structure
 The Pyodide integration is primarily implemented in the Electron renderer process. The key elements are:
@@ -46,7 +46,7 @@ PKG --> HTML
 - IPC bridge: Exposes Electron APIs to the renderer process and manages WhatsApp-related IPC channels.
 
 Key responsibilities:
-- Pyodide loader: Ensures the runtime is loaded once, initializes it, and injects the Python script into the Python interpreter.
+- Pyodide loader: Loads the runtime once, initializes it, and injects the Python script into the interpreter.
 - Python parser: Validates and formats phone numbers, splits name-number pairs, and returns a normalized contact list.
 - UI integration: Handles user input, error reporting, and updates the contact list upon successful parsing.
 - IPC bridge: Enables secure communication between the renderer and main process for non-Python tasks (e.g., WhatsApp operations).
@@ -83,7 +83,7 @@ UI->>Main : (other operations via IPC)
 ## Detailed component analysis
 
 ### Pyodide loader and executor
-The loader ensures the Pyodide runtime is available, initializes it with a specific index URL, and injects the Python script into the interpreter. It also provides a convenience function to parse manual numbers by escaping special characters and invoking the Python function, returning a structured result.
+The loader checks that the Pyodide runtime is available, initializes it with a specific index URL, and injects the Python script into the interpreter. It also provides a convenience function to parse manual numbers by escaping special characters and invoking the Python function, returning a structured result.
 
 Implementation highlights:
 - Dynamic script injection for Pyodide runtime from a CDN
@@ -207,27 +207,24 @@ PRE --> MAIN["main.js"]
 - Regex complexity: Phone number parsing uses multiple regex operations; keep input sizes reasonable to avoid long processing times.
 - UI responsiveness: Long-running parsing should be offloaded to worker threads or scheduled to avoid blocking the UI thread.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Pyodide not loaded: Ensure the CDN URL is reachable and the script injection completes successfully.
 - Python script not found: Verify the path to the Python script in the built assets matches the fetch URL.
 - JSON serialization errors: Confirm the Python function returns a serializable structure and that the result is parsed correctly in JavaScript.
 - CORS or asset serving: Confirm the built assets are served correctly by the development server or production static hosting.
-- Error handling in UI: Wrap parsing calls in try/catch blocks and display user-friendly messages.
+- Error handling in UI: Wrap parsing calls in try/catch blocks and display clear messages.
 
 ## Conclusion
-The project successfully integrates Pyodide to enable browser-based Python execution for contact processing. The loader initializes the runtime, injects the Python script, and exposes a simple API to parse manual numbers. The React UI smoothly orchestrates user input and displays results, while Electron's IPC bridge manages non-Python tasks. The build pipeline embeds Python scripts into the renderer's static assets, and the CDN-hosted runtime provides a portable execution environment. Proper error handling, performance awareness, and optimization strategies ensure reliable operation in production.
 
-[No sources needed since this section summarizes without analyzing specific files]
+If manual parse fails only offline, check that the Pyodide assets and parser script were copied into the renderer build.
 
 ## Appendices
 
 ### Build process for embedding Python scripts
 - Vite configuration outputs the React app to dist-react with a base path suitable for Electron packaging.
-- Python scripts are placed under dist-react/py and public/py to ensure availability at runtime.
-- The loader fetches the script from the built assets path, ensuring it is bundled with the renderer.
+- Python scripts are placed under dist-react/py and public/py.
+- The loader fetches the script from the built assets path, so it is bundled with the renderer.
 
 ### Distribution of pyodide runtime assets
 - The loader initializes Pyodide with a specific index URL pointing to the CDN-hosted runtime assets.

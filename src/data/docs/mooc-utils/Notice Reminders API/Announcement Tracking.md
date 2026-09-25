@@ -1,16 +1,16 @@
 # Announcement tracking
 
 ## Introduction
-This page explains the announcement tracking system that monitors course announcements from Swayam, parses and caches them, and prepares the foundation for real-time alerts. It covers the automated monitoring pipeline, parsing mechanisms, scheduling and caching strategies, notification triggering logic, and the data model. It also documents the API endpoints for querying announcements, managing subscriptions, and retrieving notification history.
+How announcements are scraped, stored, and surfaced for subscribed courses.
 
-The system currently supports:
-- Course search and announcement retrieval via Swayam
-- Announcement caching with deduplication and content updates
-- User subscription management
-- Notification history tracking
+What works today
+- Course search and announcement fetch via Swayam
+- Announcement cache with dedupe and content updates
+- User subscriptions
+- Notification history
 - REST API for authenticated users
 
-Planned enhancements include integrating Telegram and Email channels for real-time alerts.
+Still on the roadmap: Telegram and email for real-time alerts.
 
 ## Project structure
 The announcement tracking system resides in the notice-reminders package under app/. The structure separates concerns into:
@@ -140,7 +140,7 @@ COURSE ||--o{ ANNOUNCEMENT : "has many"
 ```
 
 ### Announcement parsing and caching workflow
-The AnnouncementService fetches announcements from SwayamService, deduplicates by course, title, and date, and updates content if changed. It ensures efficient caching and avoids redundant database writes.
+The AnnouncementService fetches announcements from SwayamService, deduplicates by course, title, and date, and updates content if changed. It keeps efficient caching and avoids redundant database writes.
 
 ```mermaid
 sequenceDiagram
@@ -223,28 +223,28 @@ NOTIFICATION_CHANNEL ||--o{ NOTIFICATION : "has many"
 
 ### API endpoints for announcements, subscriptions, and notifications
 - GET /courses/{course_code}/announcements
-  - Purpose: Retrieve and cache announcements for a course
-  - Authentication: Required
-  - Response: List of AnnouncementResponse
-  - Implementation: `announcements.py`
+ - Purpose: Retrieve and cache announcements for a course
+ - Authentication: Required
+ - Response: List of AnnouncementResponse
+ - Implementation: `announcements.py`
 
 - GET /users/{user_id}/subscriptions
-  - Purpose: List a user's course subscriptions
-  - Authentication: Required
-  - Response: List of SubscriptionResponse
-  - Implementation: `subscriptions.py`
+ - Purpose: List a user's course subscriptions
+ - Authentication: Required
+ - Response: List of SubscriptionResponse
+ - Implementation: `subscriptions.py`
 
 - GET /users/{user_id}/notifications
-  - Purpose: List notification history for a user
-  - Authentication: Required
-  - Response: List of NotificationResponse
-  - Implementation: `notifications.py`
+ - Purpose: List notification history for a user
+ - Authentication: Required
+ - Response: List of NotificationResponse
+ - Implementation: `notifications.py`
 
 - GET /users/me
-  - Purpose: Get current user profile
-  - Authentication: Required
-  - Response: UserResponse
-  - Implementation: `users.py`
+ - Purpose: Get current user profile
+ - Authentication: Required
+ - Response: UserResponse
+ - Implementation: `users.py`
 
 Note: The endpoints above reflect the current API surface. Additional endpoints for managing subscriptions and notifications are defined in their respective routers.
 
@@ -292,7 +292,7 @@ end
 ```
 
 ## Dependency analysis
-The system exhibits clear separation of concerns:
+Layers and who owns what:
 - AnnouncementService depends on Settings and SwayamService
 - SwayamService depends on Settings and the Swayam scraper
 - API routers depend on services via dependency injection
@@ -318,8 +318,6 @@ API_Router --> CourseService
 - Pagination: For large datasets, consider adding pagination to announcement listing endpoints.
 - Asynchronous I/O: SwayamService and AnnouncementService use async patterns to improve throughput.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Course not found: The announcements endpoint raises a 404 if the course code does not exist. Verify the course code and ensure it exists in the Course model.
@@ -328,29 +326,27 @@ Common issues and resolutions:
 - Database connectivity: Verify database URL in Settings.database_url and that migrations have been applied.
 
 ## Conclusion
-The announcement tracking system provides a reliable foundation for monitoring course announcements from Swayam, caching parsed content efficiently, and preparing the infrastructure for real-time alerts. The modular design with clear separation of concerns enables easy extension for additional notification channels and improved scheduling strategies.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Scrape, store, list. Wire Telegram or email when you have a worker; until then the inbox is the delivery surface.
 
 ## Appendices
 
 ### API definitions
 - GET /courses/{course_code}/announcements
-  - Description: Returns cached announcements for a course after refreshing from Swayam
-  - Authentication: Required
-  - Response: List of AnnouncementResponse
+ - Description: Returns cached announcements for a course after refreshing from Swayam
+ - Authentication: Required
+ - Response: List of AnnouncementResponse
 
 - GET /users/{user_id}/subscriptions
-  - Description: Lists a user's course subscriptions
-  - Authentication: Required
-  - Response: List of SubscriptionResponse
+ - Description: Lists a user's course subscriptions
+ - Authentication: Required
+ - Response: List of SubscriptionResponse
 
 - GET /users/{user_id}/notifications
-  - Description: Lists notification history for a user
-  - Authentication: Required
-  - Response: List of NotificationResponse
+ - Description: Lists notification history for a user
+ - Authentication: Required
+ - Response: List of NotificationResponse
 
 - GET /users/me
-  - Description: Returns the current authenticated user
-  - Authentication: Required
-  - Response: UserResponse
+ - Description: Returns the current authenticated user
+ - Authentication: Required
+ - Response: UserResponse

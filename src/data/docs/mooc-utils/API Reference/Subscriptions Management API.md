@@ -1,7 +1,7 @@
 # Subscriptions management API
 
 ## Introduction
-This page provides detailed API documentation for subscription management endpoints within the notice-reminders system. It covers CRUD operations for course subscriptions, subscription preferences, and notification settings. It explains subscription validation, duplicate prevention, status management, lifecycle handling, automatic renewal behavior, cancellation procedures, analytics, usage tracking, and preference-based filtering. The documentation includes endpoint definitions, request/response schemas, error handling, and practical workflows for creating, modifying, and deleting subscriptions.
+CRUD for course subscriptions in notice-reminders. Create, update, and delete subscriptions, with duplicate checks and ownership enforced in the service layer. Preference and notification settings that exist in code are documented; anything not implemented yet is marked as such.
 
 ## Project structure
 The subscription management feature is implemented in the notice-reminders backend (FastAPI application). Key components include:
@@ -61,7 +61,7 @@ The subscription management architecture follows a layered pattern:
 - API Router handles HTTP requests and injects services via FastAPI Depends
 - Service layer encapsulates business logic and interacts with models
 - Persistence layer uses Tortoise ORM with unique constraints to prevent duplicates
-- Authentication middleware ensures only authenticated users can access subscription endpoints
+- Authentication middleware so only authenticated users can access subscription endpoints
 
 ```mermaid
 sequenceDiagram
@@ -101,22 +101,22 @@ end
 
 Endpoints:
 - POST /subscriptions
-  - Purpose: Create a subscription for a course by code
-  - Request body: SubscriptionCreate (course_code)
-  - Response: SubscriptionResponse (id, user_id, course_id, is_active, created_at)
-  - Status codes: 201 Created, 404 Not Found (course missing)
-  - Validation: Course existence checked before subscription creation
+ - Purpose: Create a subscription for a course by code
+ - Request body: SubscriptionCreate (course_code)
+ - Response: SubscriptionResponse (id, user_id, course_id, is_active, created_at)
+ - Status codes: 201 Created, 404 Not Found (course missing)
+ - Validation: Course existence checked before subscription creation
 
 - GET /subscriptions
-  - Purpose: List all subscriptions for the authenticated user
-  - Response: Array of SubscriptionResponse
-  - Status codes: 200 OK
+ - Purpose: List all subscriptions for the authenticated user
+ - Response: Array of SubscriptionResponse
+ - Status codes: 200 OK
 
 - DELETE /subscriptions/{subscription_id}
-  - Purpose: Cancel a subscription
-  - Path parameter: subscription_id (int)
-  - Response: No content (204)
-  - Status codes: 404 Not Found (subscription missing), 403 Forbidden (access denied)
+ - Purpose: Cancel a subscription
+ - Path parameter: subscription_id (int)
+ - Response: No content (204)
+ - Status codes: 404 Not Found (subscription missing), 403 Forbidden (access denied)
 
 Authorization and ownership checks:
 - DELETE endpoint verifies that the subscription belongs to the current user before deletion
@@ -195,27 +195,27 @@ SubSvc --> UserModel["User model"]
 
 ## Performance considerations
 - Unique constraints on (user, course) and (user, channel, address) prevent redundant writes and improve lookup performance
-- Ordering by created_at in list queries ensures recent subscriptions appear first
+- Ordering by created_at in list queries so recent subscriptions appear first
 - Announcement caching reduces repeated external API calls and database writes
 - Consider adding pagination for listing endpoints if subscription volumes grow large
 
 ## Troubleshooting guide
 Common errors and resolutions:
 - 404 Not Found when creating subscription:
-  - Cause: Course code does not exist
-  - Resolution: Verify course code or fetch course list first
+ - Cause: Course code does not exist
+ - Resolution: Verify course code or fetch course list first
 
 - 404 Not Found when deleting subscription:
-  - Cause: Subscription ID does not exist
-  - Resolution: Refresh subscription list and confirm ID
+ - Cause: Subscription ID does not exist
+ - Resolution: Refresh subscription list and confirm ID
 
 - 403 Forbidden when deleting subscription:
-  - Cause: Subscription does not belong to the current user
-  - Resolution: Ensure user context matches subscription owner
+ - Cause: Subscription does not belong to the current user
+ - Resolution: Ensure user context matches subscription owner
 
 - Duplicate subscription creation:
-  - Behavior: Service returns existing subscription instead of raising error
-  - Resolution: No action needed; idempotent behavior prevents duplication
+ - Behavior: Service returns existing subscription instead of raising error
+ - Resolution: No action needed; idempotent behavior prevents duplication
 
 ## Conclusion
-The subscription management API provides a reliable foundation for course subscriptions with built-in duplicate prevention, user ownership enforcement, and integration with course and notification systems. While explicit subscription status toggling and automatic renewal are not implemented in the current code, the underlying models and services support extending the feature set. The architecture cleanly separates concerns across API, service, and persistence layers, enabling future enhancements such as subscription analytics, preference-based filtering, and lifecycle automation.
+Subscriptions are owned rows with duplicate prevention. Status toggles and renewals are not in the handlers yet, even if the models could grow into them.

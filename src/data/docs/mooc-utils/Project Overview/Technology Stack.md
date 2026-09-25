@@ -1,18 +1,12 @@
 # Technology stack
 
-## Introduction
-This page provides a detailed technology stack overview for MOOC Utils, detailing the complete technology landscape across three major components:
-- Browser Extension (Assignment Solver): JavaScript/TypeScript with Vite, webextension-polyfill, and Google Gemini SDK integration
-- Backend API (Notice Reminders): Python with FastAPI, Tortoise ORM, and HTTPX
-- Website: Next.js 16, React 19, and Tailwind CSS
+What each package actually uses.
 
-The document explains the rationale behind each technology choice, version requirements, compatibility considerations, development tools, build systems, and deployment technologies. It also covers cross-platform considerations for the browser extension and how these choices support the project's goals of performance, security, and maintainability.
+- Assignment Solver: JavaScript, Vite 5.4, webextension-polyfill 0.12, Gemini over `fetch`.
+- Notice Reminders: Python 3.12+, FastAPI 0.110+, Tortoise ORM 0.20+, HTTPX 0.27+.
+- Website: Next.js 16.1.6, React 19.2.3, TanStack Query 5.90, Tailwind 4.
 
 ## Project structure
-The repository is organized into three primary modules:
-- assignment-solver: A modern browser extension built with Vite and TypeScript-like module system
-- notice-reminders: A Python FastAPI application with database abstraction via Tortoise ORM
-- website: A Next.js 16 application with React 19 and Tailwind CSS
 
 ```mermaid
 graph TB
@@ -25,62 +19,46 @@ end
 subgraph "Website"
 WEB["website<br/>Next.js 16 + React 19 + Tailwind CSS"]
 end
-AS --> NR
 WEB --> NR
 ```
 
-## Core components
-This section documents the technology choices and their roles in each component.
+The extension does not depend on Notice Reminders.
 
-### Browser extension (assignment solver)
-- Build System: Vite 5.4.x
+## Browser extension (assignment solver)
+
+- Build: Vite 5.4.x
 - Polyfill: webextension-polyfill 0.12.x
-- Manifest Generation: Custom Vite plugin generates dynamic manifest.json for Chrome and Firefox
-- Gemini Integration: Direct fetch-based API calls to Google Generative Language API
-- Cross-browser Compatibility: Manifest v3 with browser-specific adaptations
+- Manifest: Vite plugin writes Chrome vs Firefox `manifest.json`
+- Gemini: `https://generativelanguage.googleapis.com/v1beta/models` from `src/services/gemini/index.js`
+- Package name: `nptel-assignment-solver` 1.1.0
 
-Key capabilities:
-- Chrome: Uses side_panel API and service_worker
-- Firefox: Uses sidebar_action and script-based background
-- Shared content scripts for NPTEL domains
+Chrome uses `side_panel` and a service worker. Firefox uses `sidebar_action` and a script background. Shared content scripts target NPTEL-style pages.
 
-### Backend API (notice reminders)
-- Language: Python 3.12+
-- Framework: FastAPI 0.110.x
-- Database ORM: Tortoise ORM 0.20.x with Aerich migrations
-- HTTP Client: HTTPX 0.27.x
-- Authentication: PyJWT 2.8.x
-- Validation: Pydantic Settings 2.2.x
-- Web Server: Uvicorn [standard] 0.27.1
+## Backend API (notice reminders)
 
-Security and reliability features:
-- CORS middleware with configurable origins
-- SQLite-first approach with automatic schema generation
-- JWT-based session management
-- Email OTP verification support
+- Python 3.12+ (`requires-python = ">=3.12"`)
+- FastAPI, Uvicorn, Tortoise, Aerich, HTTPX, BeautifulSoup, Pydantic Settings, PyJWT
+- Default `database_url`: `sqlite://./data/db/db.sqlite3`
+- CORS: `http://localhost:3000`
+- OTP: `otp_delivery` defaults to `console`
+- Hatchling wheel of the `app` package
+- Scripts: `notice-reminders = "main:main"`
 
-### Website (Next.js application)
-- Framework: Next.js 16.1.6
-- UI Library: React 19.2.3 (client and server components)
-- Styling: Tailwind CSS 4.x with @tailwindcss/postcss
-- State Management: TanStack React Query 5.90.x
-- Analytics: PostHog JS 1.358.0
-- Type Safety: TypeScript 5.x
-- UI Components: Base UI React 1.1.0, shadcn/ui ecosystem
+## Website (Next.js)
 
-Development experience:
-- Next.js App Router with server actions
-- PostCSS pipeline for Tailwind compilation
-- Strict TypeScript configuration
-- ESLint integration
+- Next.js 16.1.6, React 19.2.3, TypeScript 5
+- Tailwind CSS 4 with `@tailwindcss/postcss`
+- TanStack React Query 5.90
+- PostHog JS 1.358
+- Base UI / shadcn
+- Scripts: `build` and `lint` only for day-to-day work. Do not use `npm run dev` or `bun dev`.
 
 ## Architecture overview
-The system follows a distributed architecture with clear separation of concerns:
 
 ```mermaid
 graph TB
 subgraph "Client Layer"
-EXT["Browser Extension<br/>Vite + Gemini SDK"]
+EXT["Browser Extension<br/>Vite + Gemini fetch"]
 WEB["Website<br/>Next.js 16 + React 19"]
 end
 subgraph "API Layer"
@@ -90,17 +68,14 @@ subgraph "Data Layer"
 DB["SQLite Database<br/>Tortoise ORM"]
 GEMINI["Google Gemini API<br/>Generative Language"]
 end
-EXT --> API
 WEB --> API
 API --> DB
 EXT --> GEMINI
-API --> GEMINI
 ```
 
-## Detailed component analysis
+Gemini is called from the extension, not from FastAPI.
 
-### Assignment solver architecture
-The browser extension implements a modular architecture with clear separation between background services, content scripts, and UI components.
+## Assignment solver architecture
 
 ```mermaid
 sequenceDiagram
@@ -120,14 +95,9 @@ GS-->>BG : Parsed answer data
 BG-->>User : Display solutions
 ```
 
-Key implementation patterns:
-- Message-based communication between extension contexts
-- Gemini API integration with structured prompts and schemas
-- Cross-browser manifest generation for Chrome and Firefox
-- Side panel UI with dynamic HTML transformation
+Messages between UI, background, and content script. Dynamic manifests for Chrome and Firefox.
 
-### Notice reminders API
-The backend implements a clean architecture with clear separation between concerns:
+## Notice reminders API
 
 ```mermaid
 classDiagram
@@ -149,7 +119,6 @@ class DatabaseManager {
 }
 class APIServices {
 +announcement_service
-+auth_service
 +course_service
 +notification_service
 +subscription_service
@@ -160,14 +129,15 @@ FastAPIApp --> APIServices : "includes"
 DatabaseManager --> Settings : "reads config"
 ```
 
-### Website frontend architecture
-The Next.js application follows modern React patterns with server-side rendering and client-side interactivity:
+Routers live in `app/api/routers/`. CLI lives in `app/cli`.
+
+## Website frontend architecture
 
 ```mermaid
 flowchart TD
 Start(["Next.js App"]) --> Config["Next Config<br/>PostCSS Rewrites"]
-Config --> Pages["Page Components<br/>Server Actions"]
-Pages --> API["API Client<br/>HTTPX-based"]
+Config --> Pages["Page Components"]
+Pages --> API["API Client<br/>fetch"]
 API --> Backend["Notice Reminders API"]
 Pages --> State["React Query<br/>TanStack Query"]
 State --> Cache["Local Cache<br/>Automatic Refetch"]
@@ -175,8 +145,9 @@ Pages --> UI["UI Components<br/>Base UI + shadcn"]
 UI --> Styles["Tailwind CSS<br/>PostCSS Pipeline"]
 ```
 
+The website API client is `fetch` in `lib/api.ts`, not HTTPX.
+
 ## Dependency analysis
-The technology stack demonstrates careful selection for performance, security, and maintainability:
 
 ```mermaid
 graph LR
@@ -190,12 +161,12 @@ WEBEXT[webextension-polyfill 0.12]
 FASTAPI[FastAPI 0.110]
 REACT[React 19.2.3]
 end
-subgraph "ORM & Database"
+subgraph "ORM and Database"
 TORTOISE[Tortoise ORM 0.20]
 SQLITE[SQLite]
 end
 subgraph "AI Integration"
-GEMINI[Gemini SDK]
+GEMINI[Gemini fetch]
 HTTPX[HTTPX 0.27]
 end
 subgraph "Styling"
@@ -213,47 +184,20 @@ NEXT --> TAILWIND
 TAILWIND --> POSTCSS
 ```
 
-## Performance considerations
-The technology choices prioritize performance through several mechanisms:
+## Performance
 
-- **Build System Efficiency**: Vite provides instant server start and lightning-fast hot module replacement for rapid iteration
-- **Modular Architecture**: Clear separation of concerns reduces coupling and enables independent optimization
-- **Database Abstraction**: Tortoise ORM's async-first design minimizes blocking operations
-- **Caching Strategy**: HTTPX caching with configurable TTL for reduced network overhead
-- **Bundle Optimization**: Next.js automatic code splitting and React 19's concurrent rendering features
-- **Resource Loading**: Tailwind CSS purging and efficient asset handling
+Vite for extension rebuilds. Tortoise stays async. HTTPX plus a 60 minute cache on Swayam searches. Next.js splits routes. Tailwind 4 through PostCSS.
 
-Cross-platform considerations for the browser extension:
-- Manifest v3 ensures consistent APIs across Chrome and Firefox
-- webextension-polyfill provides compatibility layer for feature differences
-- Dynamic manifest generation handles browser-specific permissions and APIs
-- Side panel vs sidebar_action abstraction maintains unified UX
+Chrome vs Firefox: Manifest v3, polyfill, generated manifests, `side_panel` vs `sidebar_action`.
 
-## Troubleshooting guide
-Common issues and their resolutions:
+## Troubleshooting
 
-**Extension Development Issues**:
-- Manifest generation failures: Verify Vite plugins are properly configured and browser targets match expectations
-- Gemini API rate limiting: Implement retry logic with exponential backoff in production deployments
-- Cross-browser compatibility: Test against both Chrome and Firefox manifest variants
-
-**Backend API Issues**:
-- Database migration conflicts: Use Aerich migrations to manage schema changes safely
-- CORS configuration errors: Ensure frontend origin matches configured CORS settings
-- Authentication failures: Verify JWT secret configuration and token expiration settings
-
-**Frontend Issues**:
-- Build failures: Check TypeScript strict mode configuration and resolve type errors
-- Styling inconsistencies: Verify Tailwind CSS configuration and PostCSS pipeline
-- API connectivity: Confirm environment variable configuration for API base URLs
+- Manifest generation: Vite mode `chrome` or `firefox`, then load the matching `dist/` folder.
+- Gemini quota: wait, shrink the batch, check AI Studio.
+- Aerich vs a fresh SQLite file: delete `data/db/db.sqlite3` only in local throwaway work.
+- CORS: frontend origin must be in `cors_origins`.
+- Website types: `bun run build` / `bun run lint`. Set `NEXT_PUBLIC_API_URL`.
 
 ## Conclusion
-MOOC Utils demonstrates a well-architected technology stack that balances modern development practices with practical deployment considerations. The choice of Vite for the browser extension ensures rapid development cycles while maintaining cross-browser compatibility. The Python FastAPI backend provides reliable API capabilities with excellent type safety and async support. The Next.js website uses modern React features with a detailed UI component library.
 
-The stack emphasizes:
-- **Performance**: Optimized build systems, efficient database access, and modern frontend patterns
-- **Security**: Proper authentication with JWT, CORS configuration, and secure API design
-- **Maintainability**: Clean architecture, detailed type checking, and modular design
-- **Scalability**: Async-first backend design and flexible frontend architecture
-
-These technology choices position MOOC Utils for continued growth while maintaining developer productivity and user experience quality.
+Current stack on purpose. Swap a library only inside the package that owns it.

@@ -1,16 +1,7 @@
 # File upload API
 
 ## Introduction
-This page provides detailed API documentation for the file upload and processing endpoints. It covers:
-- Endpoint definition and usage
-- Multipart form handling
-- File validation rules
-- Storage behavior
-- Integration patterns with downstream services
-- Client implementation examples
-- Security and performance considerations
-
-The file upload capability is implemented as a dedicated FastAPI router and integrated into the main application under the "/api/upload" prefix. Uploaded files are validated by extension and size, persisted to disk, and returned with metadata for subsequent processing.
+Multipart upload endpoint: allowed extensions, storage path, returned metadata, and how downstream tools consume `attached_file_path`.
 
 ## Project structure
 The file upload feature spans several modules:
@@ -22,7 +13,7 @@ The file upload feature spans several modules:
 ```mermaid
 graph TB
 subgraph "API Layer"
-APP["FastAPI App<br/>api/main.py"]
+APP["FastAPI App<br/>main.py"]
 ROUTER["File Upload Router<br/>routers/file_upload.py"]
 end
 subgraph "Core"
@@ -55,17 +46,17 @@ YOUTUBE --> ROUTER
 - File Upload Router: Implements a single POST endpoint that validates file extensions and sizes, saves the file with a unique name, and returns metadata.
 - Application Registration: The router is included under the "/api/upload" prefix.
 - Validation Rules:
-  - Allowed file extensions include images, documents, and code files.
-  - Maximum file size is enforced.
+ - Allowed file extensions include images, documents, and code files.
+ - Maximum file size is enforced.
 - Storage Behavior:
-  - Files are written to a local directory named "uploads".
-  - A unique filename is generated to prevent collisions.
+ - Files are written to a local directory named "uploads".
+ - A unique filename is generated to prevent collisions.
 - Logging:
-  - Successful uploads and errors are logged.
+ - Successful uploads and errors are logged.
 
 Key implementation references:
 - Router and validation: `routers/file_upload.py`
-- Application routing: `api/main.py`
+- Application routing: `main.py`
 - Router export: `routers/__init__.py`
 
 ## Architecture overview
@@ -96,15 +87,15 @@ Router-->>Client : "JSON response with metadata"
 - Request Type: multipart/form-data
 - Form Field: file (required)
 - Response Schema (success):
-  - ok: boolean
-  - filename: string
-  - saved_as: string (unique filename)
-  - path: string (absolute path to saved file)
-  - size: integer (bytes)
-  - content_type: string (original content-type or default)
+ - ok: boolean
+ - filename: string
+ - saved_as: string (unique filename)
+ - path: string (absolute path to saved file)
+ - size: integer (bytes)
+ - content_type: string (original content-type or default)
 - Response Schema (error):
-  - detail: string (error message)
-  - Additional HTTP status indicates failure (e.g., 400 or 500)
+ - detail: string (error message)
+ - Additional HTTP status indicates failure (e.g., 400 or 500)
 
 Validation Rules:
 - Allowed Extensions: png, jpg, jpeg, gif, webp, svg, pdf, txt, md, csv, json, xml, py, js, ts, html, css, java, c, cpp, go, rs
@@ -117,12 +108,12 @@ Behavior:
 
 ### Client implementation examples
 - Frontend Example (React/TSX): Demonstrates constructing FormData and sending a POST request to /api/upload/.
-  - Appends a single file field named "file".
-  - Handles non-OK responses by reading the body and raising an error.
-  - On success, reads JSON and stores filename, path, and size.
+ - Appends a single file field named "file".
+ - Handles non-OK responses by reading the body and raising an error.
+ - On success, reads JSON and stores filename, path, and size.
 - Integration Notes:
-  - Ensure the base URL is configured (environment variable).
-  - The frontend expects a JSON response containing the metadata fields described above.
+ - Ensure the base URL is configured (environment variable).
+ - The frontend expects a JSON response containing the metadata fields described above.
 
 ### Downstream processing workflows
 Uploaded files can be referenced by downstream services for advanced processing. These services accept an attached file path and upload it to an external provider for analysis.
@@ -163,16 +154,16 @@ Service-->>Client : "Answer incorporating file content"
 
 ## Dependency analysis
 - Router Registration:
-  - The router is exported and included in the main application under the "/api/upload" prefix.
+ - The router is exported and included in the main application under the "/api/upload" prefix.
 - External Dependencies:
-  - python-multipart is used for multipart parsing.
-  - FastAPI provides UploadFile/File handling.
+ - python-multipart is used for multipart parsing.
+ - FastAPI provides UploadFile/File handling.
 - Logging:
-  - Centralized logger is used for upload events and errors.
+ - Centralized logger is used for upload events and errors.
 
 ```mermaid
 graph LR
-MAIN["api/main.py"] --> REG["include_router(prefix='/api/upload')"]
+MAIN["main.py"] --> REG["include_router(prefix='/api/upload')"]
 REG --> ROUTER["routers/file_upload.py"]
 ROUTER --> LOG["core/config.py (logger)"]
 ROUTER --> DEP["python-multipart (uv.lock)"]
@@ -183,8 +174,6 @@ ROUTER --> DEP["python-multipart (uv.lock)"]
 - Disk I/O: Writes occur synchronously; consider asynchronous storage or streaming for very large files.
 - Concurrency: The endpoint does not implement concurrency controls; ensure appropriate deployment scaling.
 - Memory: Entire file contents are read into memory during validation; this is acceptable for the size limit but should be considered for future scaling.
-
-[No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 Common issues and resolutions:
@@ -197,9 +186,7 @@ Operational checks:
 - Verify router registration under "/api/upload".
 
 ## Conclusion
-The file upload API provides a straightforward, validated mechanism for accepting multipart/form-data, persisting files securely under a controlled directory, and returning metadata for downstream consumption. Combined with downstream services that accept an attached file path, it enables reliable file-based automation scenarios across browsing, repository, website, and YouTube contexts.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Whitelist extensions, cap size, write unique names, log failures. Downstream services take the returned path rather than re-uploading bytes.
 
 ## Appendices
 
@@ -207,17 +194,17 @@ The file upload API provides a straightforward, validated mechanism for acceptin
 - Method: POST
 - URL: /api/upload/
 - Request Body: multipart/form-data
-  - file: binary (required)
+ - file: binary (required)
 - Success Response: 200 OK with JSON object containing:
-  - ok: boolean
-  - filename: string
-  - saved_as: string
-  - path: string
-  - size: integer
-  - content_type: string
+ - ok: boolean
+ - filename: string
+ - saved_as: string
+ - path: string
+ - size: integer
+ - content_type: string
 - Error Responses:
-  - 400 Bad Request: Invalid extension or oversized file
-  - 500 Internal Server Error: Unexpected error
+ - 400 Bad Request: Invalid extension or oversized file
+ - 500 Internal Server Error: Unexpected error
 
 ### Supported formats and limits
 - Allowed Extensions: png, jpg, jpeg, gif, webp, svg, pdf, txt, md, csv, json, xml, py, js, ts, html, css, java, c, cpp, go, rs

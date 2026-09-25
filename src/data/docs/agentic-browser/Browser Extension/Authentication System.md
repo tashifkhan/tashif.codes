@@ -1,13 +1,7 @@
 # Authentication system
 
 ## Introduction
-This page explains the Authentication System for the Agentic Browser extension. It focuses on:
-- The useAuth hook that manages user authentication state, token handling, and session management
-- The SignInScreen component that provides login interfaces for Google OAuth and a demo GitHub flow
-- The authentication flow from initial login through token refresh cycles
-- Browser storage integration and automatic logout mechanisms
-- Examples of authentication state management, error handling, and security considerations
-- Backend integration points and token validation processes
+Extension auth: React hook, browser OAuth via `identity`, token refresh, logout, and session persistence with the backend.
 
 ## Project structure
 The authentication system spans the extension's side panel (React + browser APIs) and the backend (FastAPI). The key files are:
@@ -27,7 +21,7 @@ A_Profile["ProfileSidebar.tsx"]
 A_Settings["UnifiedSettingsMenu.tsx"]
 end
 subgraph "Backend API"
-B_API["api/main.py"]
+B_API["main.py"]
 B_Router["routers/github.py"]
 B_Service["services/github_service.py"]
 end
@@ -44,18 +38,18 @@ B_Router --> B_Service
 
 ## Core components
 - useAuth hook
-  - Initializes auth state from browser local storage
-  - Detects token age and refreshes automatically when appropriate
-  - Exposes login via browser.identity OAuth, GitHub demo login, logout, and manual refresh
-  - Provides helpers to compute token age and expiry
+ - Initializes auth state from browser local storage
+ - Detects token age and refreshes automatically when appropriate
+ - Exposes login via browser.identity OAuth, GitHub demo login, logout, and manual refresh
+ - Provides helpers to compute token age and expiry
 - SignInScreen component
-  - Renders two login options: Google OAuth and GitHub demo
-  - Uses styled buttons and animations for UX
+ - Renders two login options: Google OAuth and GitHub demo
+ - Uses styled buttons and animations for UX
 - App shell
-  - Renders SignInScreen when unauthenticated or UnifiedSettingsMenu when authenticated
-  - Handles first-time setup redirection flag
+ - Renders SignInScreen when unauthenticated or UnifiedSettingsMenu when authenticated
+ - Handles first-time setup redirection flag
 - Settings UI
-  - Displays token info and exposes manual refresh and logout actions
+ - Displays token info and exposes manual refresh and logout actions
 
 ## Architecture overview
 The authentication flow integrates browser identity APIs, a backend service, and local storage. The diagram below maps the actual code paths.
@@ -65,7 +59,7 @@ sequenceDiagram
 participant UI as "SignInScreen.tsx"
 participant Hook as "useAuth.ts"
 participant Browser as "browser.identity"
-participant Backend as "api/main.py<br/>routers/github.py"
+participant Backend as "main.py<br/>routers/github.py"
 participant Store as "browser.storage.local"
 UI->>Hook : "handleLogin()"
 Hook->>Browser : "launchWebAuthFlow(authUrl)"
@@ -123,8 +117,8 @@ StatusValid --> DoneInit
 The component renders:
 - A hero section with animated visuals
 - Two login buttons:
-  - Continue with Google (OAuth)
-  - Continue with GitHub (demo bypass)
+ - Continue with Google (OAuth)
+ - Continue with GitHub (demo bypass)
 - Responsive styling and hover effects
 
 ```mermaid
@@ -182,17 +176,17 @@ class ProfileSidebar {
 
 ## Dependency analysis
 - Frontend-to-backend dependencies
-  - useAuth.ts calls backend endpoints for token exchange and refresh
-  - App.tsx depends on useAuth for rendering decisions
-  - Settings components depend on useAuth for token display and actions
+ - useAuth.ts calls backend endpoints for token exchange and refresh
+ - App.tsx depends on useAuth for rendering decisions
+ - Settings components depend on useAuth for token display and actions
 - Backend routing
-  - api/main.py registers routers under various prefixes
-  - routers/github.py defines a GitHub endpoint used by services
-  - services/github_service.py orchestrates GitHub-related operations
+ - main.py registers routers under various prefixes
+ - routers/github.py defines a GitHub endpoint used by services
+ - services/github_service.py orchestrates GitHub-related operations
 
 ```mermaid
 graph LR
-Hook["useAuth.ts"] --> Backend["api/main.py"]
+Hook["useAuth.ts"] --> Backend["main.py"]
 Backend --> Routers["routers/github.py"]
 Routers --> Service["services/github_service.py"]
 App["App.tsx"] --> Hook
@@ -202,36 +196,33 @@ Sidebar["ProfileSidebar.tsx"] --> Hook
 
 ## Performance considerations
 - Token refresh threshold
-  - The hook refreshes tokens before they reach a configured age threshold, reducing latency during requests
+ - The hook refreshes tokens before they reach a configured age threshold, reducing latency during requests
 - Local storage synchronization
-  - Subscribing to storage changes ensures UI remains consistent across sessions
+ - Storage change subscriptions keep the UI in sync across sessions
 - UI responsiveness
-  - Loading states and alerts provide feedback during long-running operations like OAuth and network requests
-
-[No sources needed since this section provides general guidance]
+ - Loading states and alerts provide feedback during long-running operations like OAuth and network requests
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - Authentication cancelled or denied
-  - The hook detects cancellation/denial keywords and shows a user-friendly alert
+ - The hook detects cancellation/denial keywords and shows a plain alert
 - Backend service not running
-  - Errors during token exchange or refresh trigger alerts instructing to verify backend availability
+ - Errors during token exchange or refresh trigger alerts instructing to verify backend availability
 - Token expired or refresh failed
-  - The hook sets explicit status messages and advises re-authentication when refresh fails
+ - The hook sets explicit status messages and advises re-authentication when refresh fails
 - Manual refresh unavailable
-  - If no refresh token is present, the UI disables manual refresh and prompts re-login
+ - If no refresh token is present, the UI disables manual refresh and prompts re-login
 
 ## Security considerations
 - Token storage
-  - Tokens are stored in browser local storage; consider encrypting sensitive fields for production
+ - Tokens are stored in browser local storage; consider encrypting sensitive fields for production
 - Token exposure
-  - The settings UI supports toggling token visibility; use caution when sharing screens
+ - The settings UI supports toggling token visibility; use caution when sharing screens
 - Refresh token handling
-  - Refresh tokens enable smooth renewal; ensure secure transport and storage
+ - Refresh tokens renew the session; keep transport and storage locked down
 - OAuth consent
-  - The Google OAuth flow requests offline access and broad scopes; review and minimize scopes as needed
-
-[No sources needed since this section provides general guidance]
+ - The Google OAuth flow requests offline access and broad scopes; review and minimize scopes as needed
 
 ## Conclusion
-The Authentication System combines a React hook, a browser-native OAuth flow, and a backend service to deliver a reliable login experience. It supports automatic token refresh, manual refresh, logout, and persistent session state across browser restarts via local storage. The UI components provide clear feedback and controls for token management, while the backend routes integrate with services that consume authenticated tokens.
+OAuth in the browser, refresh on expiry, clear storage on logout. The hook is the only API the UI should talk to for session state.
+

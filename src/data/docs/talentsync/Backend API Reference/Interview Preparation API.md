@@ -1,9 +1,8 @@
 # Interview preparation API
 
-## Introduction
-This page provides detailed API documentation for the Interview Preparation system. It covers interview session lifecycle, question generation, answer evaluation, coding question execution, and summary generation. It explains schemas for interview setup, candidate response processing, and performance analytics. It also details the question generation algorithm, difficulty scaling, domain-specific question selection, and the streaming evaluation and code review workflows. Real-time interview features, session management, and progress tracking are documented alongside integration patterns for mock interview systems.
+The Interview Preparation system.
 
-## Project structure
+## Repository layout
 The interview functionality is implemented in the backend under the app/services/interview and app/models/interview packages, with FastAPI routes under app/routes. The system orchestrates session creation, question generation, evaluation, code execution, and summary generation through a LangGraph-based InterviewGraph.
 
 ```mermaid
@@ -43,7 +42,7 @@ G1 --> E1
 G1 --> T1
 ```
 
-## Core components
+## Building blocks
 - InterviewGraph: Orchestrates session lifecycle, question generation, answer evaluation, code execution, and summary generation.
 - SessionManager: Manages in-memory interview sessions and events, supports CRUD and event recording.
 - QuestionGenerator: Generates questions using templates or LLM prompts with difficulty scaling and domain focus.
@@ -53,7 +52,7 @@ G1 --> T1
 - Schemas and Enums: Define interview data models, statuses, difficulty levels, and event types.
 - Templates: Predefined interview templates for common roles with curated question banks.
 
-## Architecture overview
+## How it fits together
 The Interview API exposes endpoints for session management, question delivery, answer evaluation, code execution, and summary generation. The InterviewGraph coordinates services and persists state via SessionManager. Streaming responses are delivered via Server-Sent Events (SSE) for real-time feedback.
 
 ```mermaid
@@ -88,16 +87,14 @@ Graph->>Store : update question + move index
 Routes-->>Client : SSE chunks + complete
 ```
 
-## Detailed component analysis
-
-### Interview session creation
+## Interview session creation
 - Endpoint: POST /interview/sessions
 - Request body: CreateInterviewRequest (profile, config)
 - Behavior:
-  - Creates a new InterviewSession with status pending.
-  - Generates questions based on InterviewConfig (role, num_questions, difficulty_distribution, template_id, topic, includes_coding).
-  - Sets status to in_progress and started_at.
-  - Returns InterviewSessionResponse with current_question.
+ - Creates a new InterviewSession with status pending.
+ - Generates questions based on InterviewConfig (role, num_questions, difficulty_distribution, template_id, topic, includes_coding).
+ - Sets status to in_progress and started_at.
+ - Returns InterviewSessionResponse with current_question.
 
 ```mermaid
 sequenceDiagram
@@ -115,17 +112,17 @@ G->>S : save(session with questions)
 R-->>C : InterviewSessionResponse
 ```
 
-### Question generation algorithm
+## Question generation algorithm
 - Difficulty Scaling:
-  - Builds question_specs from difficulty_distribution and pads/truncates to num_questions.
-  - Falls back to medium/easy/hard cycling to meet target.
+ - Builds question_specs from difficulty_distribution and pads/truncates to num_questions.
+ - Falls back to medium/easy/hard cycling to meet target.
 - Domain-Specific Selection:
-  - Uses template_id to select InterviewTemplate and filters QuestionTemplate by difficulty and uniqueness.
-  - Falls back to LLM-generated questions using a structured prompt.
+ - Uses template_id to select InterviewTemplate and filters QuestionTemplate by difficulty and uniqueness.
+ - Falls back to LLM-generated questions using a structured prompt.
 - LLM Prompt:
-  - Prompts define system role and human template with role, difficulty, topic, question_type, candidate background, and existing questions.
+ - Prompts define system role and human template with role, difficulty, topic, question_type, candidate background, and existing questions.
 - Parsing:
-  - Attempts JSON extraction; falls back to question text if parsing fails.
+ - Attempts JSON extraction; falls back to question text if parsing fails.
 
 ```mermaid
 flowchart TD
@@ -143,17 +140,17 @@ Next --> |More| ForEach
 Next --> |Done| ReturnQs["Return questions[]"]
 ```
 
-### Candidate response processing and answer evaluation
+## Candidate response processing and answer evaluation
 - Endpoints:
-  - Non-streaming: POST /interview/sessions/{session_id}/answer
-  - Streaming: POST /interview/sessions/{session_id}/answer/stream
+ - Non-streaming: POST /interview/sessions/{session_id}/answer
+ - Streaming: POST /interview/sessions/{session_id}/answer/stream
 - Workflow:
-  - Validates session and current question matches.
-  - Calls AnswerEvaluator to produce EvaluationResult (score 1–5, feedback, strengths, improvements).
-  - Updates question with answer, score, feedback, strengths, improvements, answered_at.
-  - Advances to next question; completes session if last question reached.
+ - Validates session and current question matches.
+ - Calls AnswerEvaluator to produce EvaluationResult (score 1-5, feedback, strengths, improvements).
+ - Updates question with answer, score, feedback, strengths, improvements, answered_at.
+ - Advances to next question; completes session if last question reached.
 - Streaming:
-  - Streams evaluation tokens until completion event with final score and next question.
+ - Streams evaluation tokens until completion event with final score and next question.
 
 ```mermaid
 sequenceDiagram
@@ -173,16 +170,16 @@ end
 R-->>C : {score, feedback, strengths, improvements, next_question, is_complete}
 ```
 
-### Coding question execution and review
+## Coding question execution and review
 - Endpoints:
-  - Non-streaming: POST /interview/sessions/{session_id}/code
-  - Streaming: POST /interview/sessions/{session_id}/code/stream
+ - Non-streaming: POST /interview/sessions/{session_id}/code
+ - Streaming: POST /interview/sessions/{session_id}/code/stream
 - Workflow:
-  - Executes code via CodeExecutor with language and optional test_input.
-  - Stores code_submission and code_language on the question.
-  - Streams execution result, then streams code review from AnswerEvaluator.
-  - Parses final review into score, feedback, strengths, improvements.
-  - Advances to next question; completes session if last question reached.
+ - Executes code via CodeExecutor with language and optional test_input.
+ - Stores code_submission and code_language on the question.
+ - Streams execution result, then streams code review from AnswerEvaluator.
+ - Parses final review into score, feedback, strengths, improvements.
+ - Advances to next question; completes session if last question reached.
 - Supported Languages: python, javascript, typescript.
 
 ```mermaid
@@ -210,15 +207,15 @@ G->>S : update question + index
 R-->>C : SSE "chunk" + "complete"
 ```
 
-### Summary generation and hiring recommendation
+## Summary generation and hiring recommendation
 - Endpoints:
-  - GET /interview/sessions/{session_id}/summary
-  - POST /interview/sessions/{session_id}/summary/stream
+ - GET /interview/sessions/{session_id}/summary
+ - POST /interview/sessions/{session_id}/summary/stream
 - Workflow:
-  - Formats questions_summary and calculates final_score as percentage.
-  - Calls SummaryGenerator to produce structured summary with strengths, weaknesses, recommendations, hiring_recommendation.
-  - Updates session with summary, strengths, weaknesses, recommendations, hiring_recommendation, status completed, completed_at.
-  - Streaming yields chunks until completion event with final_score and recommendation.
+ - Formats questions_summary and calculates final_score as percentage.
+ - Calls SummaryGenerator to produce structured summary with strengths, weaknesses, recommendations, hiring_recommendation.
+ - Updates session with summary, strengths, weaknesses, recommendations, hiring_recommendation, status completed, completed_at.
+ - Streaming yields chunks until completion event with final_score and recommendation.
 
 ```mermaid
 sequenceDiagram
@@ -241,20 +238,20 @@ G->>Sm : update session + status completed
 R-->>C : SSE "chunk" + "complete"
 ```
 
-### Session management and progress tracking
+## Session management and progress tracking
 - Endpoints:
-  - GET /interview/sessions/{session_id}
-  - DELETE /interview/sessions/{session_id}
-  - GET /interview/sessions?status=&limit=
-  - GET /interview/health
+ - GET /interview/sessions/{session_id}
+ - DELETE /interview/sessions/{session_id}
+ - GET /interview/sessions?status=&limit=
+ - GET /interview/health
 - Features:
-  - CRUD operations for sessions.
-  - Listing with status filter and pagination.
-  - Health check reporting active sessions.
+ - CRUD operations for sessions.
+ - Listing with status filter and pagination.
+ - Health check reporting active sessions.
 - Progress Tracking:
-  - current_question_index advances after each answer.
-  - tab_switch_count increments on tab switch events.
-  - Events recorded for integrity tracking.
+ - current_question_index advances after each answer.
+ - tab_switch_count increments on tab switch events.
+ - Events recorded for integrity tracking.
 
 ```mermaid
 flowchart TD
@@ -266,101 +263,101 @@ D --> E
 E --> F["Return sessions + count"]
 ```
 
-### Interview event recording and integrity tracking
+## Interview event recording and integrity tracking
 - Endpoints:
-  - POST /interview/sessions/{session_id}/events
-  - GET /interview/sessions/{session_id}/events?event_type=
+ - POST /interview/sessions/{session_id}/events
+ - GET /interview/sessions/{session_id}/events?event_type=
 - Behavior:
-  - Records InterviewEvent with event_type and metadata.
-  - Maintains event counts (e.g., tab_switch_count).
-  - Returns warning flag if tab switches exceed threshold.
+ - Records InterviewEvent with event_type and metadata.
+ - Maintains event counts (e.g., tab_switch_count).
+ - Returns warning flag if tab switches exceed threshold.
 
-### API reference
+## API reference
 
-#### Authentication and dependencies
+### Authentication and dependencies
 - All endpoints accept an LLM dependency via get_request_llm; streaming endpoints use astream for SSE.
 
-#### Interview sessions
+### Interview sessions
 - POST /interview/sessions
-  - Request: CreateInterviewRequest
-  - Response: InterviewSessionResponse
-- GET /interview/sessions/{session_id}
-  - Response: InterviewSessionResponse
-- DELETE /interview/sessions/{session_id}
-  - Response: {deleted: true, session_id}
+ - Request: CreateInterviewRequest
+ - Response: InterviewSessionResponse
+  - GET /interview/sessions/{session_id}
+ - Response: InterviewSessionResponse
+  - DELETE /interview/sessions/{session_id}
+ - Response: {deleted: true, session_id}
 - GET /interview/sessions
-  - Query: status (enum), limit (default 100)
-  - Response: {sessions: [...], count: number}
-- GET /interview/health
-  - Response: {status: "healthy", active_sessions: number}
+ - Query: status (enum), limit (default 100)
+ - Response: {sessions: [...], count: number}
+  - GET /interview/health
+ - Response: {status: "healthy", active_sessions: number}
 
-#### Answer submission
+### Answer submission
 - POST /interview/sessions/{session_id}/answer
-  - Request: SubmitAnswerRequest
-  - Response: {score, feedback, strengths, improvements, next_question, is_complete}
+ - Request: SubmitAnswerRequest
+ - Response: {score, feedback, strengths, improvements, next_question, is_complete}
 - POST /interview/sessions/{session_id}/answer/stream
-  - SSE Events: chunk (partial), complete (final), error
+ - SSE Events: chunk (partial), complete (final), error
 
-#### Coding execution
+### Coding execution
 - POST /interview/sessions/{session_id}/code
-  - Request: CodeExecutionRequest
-  - Response: CodeExecutionResult
+ - Request: CodeExecutionRequest
+ - Response: CodeExecutionResult
 - POST /interview/sessions/{session_id}/code/stream
-  - SSE Events: execution, chunk, complete, error
+ - SSE Events: execution, chunk, complete, error
 - GET /interview/code/languages
-  - Response: {languages: [...]}
+ - Response: {languages: [...]}
 
-#### Summary
-- GET /interview/sessions/{session_id}/summary
-  - Response: {session_id, final_score, summary, strengths, weaknesses, recommendations, hiring_recommendation}
-- POST /interview/sessions/{session_id}/summary/stream
-  - SSE Events: chunk, complete, error
+### Summary
+  - GET /interview/sessions/{session_id}/summary
+ - Response: {session_id, final_score, summary, strengths, weaknesses, recommendations, hiring_recommendation}
+  - POST /interview/sessions/{session_id}/summary/stream
+ - SSE Events: chunk, complete, error
 
-#### Events
-- POST /interview/sessions/{session_id}/events
-  - Request: InterviewEventRequest
-  - Response: {recorded: true, event_type, tab_switch_count, warning}
+### Events
+  - POST /interview/sessions/{session_id}/events
+ - Request: InterviewEventRequest
+ - Response: {recorded: true, event_type, tab_switch_count, warning}
 - GET /interview/sessions/{session_id}/events
-  - Query: event_type (optional)
-  - Response: {events: [...], count: number}
+ - Query: event_type (optional)
+ - Response: {events: [...], count: number}
 
-#### Templates
+### Templates
 - GET /interview/templates
-  - Response: {templates: [...]}
+ - Response: {templates: [...]}
 - GET /interview/templates/{template_id}
-  - Response: {template: {...}}
+ - Response: {template: {...}}
 
-### Schemas and data models
+## Schemas and data models
 
-#### Interview setup
+### Interview setup
 - InterviewConfig: role, template_id, topic, num_questions, difficulty_distribution, time_limit_minutes, includes_coding, coding_languages, voice_enabled, voice_language
 - CandidateProfile: name, email, phone, resume_text, resume_data
 - InterviewSession: session_id, status, profile, config, questions, current_question_index, final_score, summary, strengths, weaknesses, recommendations, hiring_recommendation, tab_switch_count, events, timestamps
 
-#### Candidate response processing
+### Candidate response processing
 - SubmitAnswerRequest: question_id, answer, code_submission, code_language
 - CodeExecutionRequest: question_id, code, language, test_input
-- EvaluationResult: score (1–5), feedback, strengths, improvements
+- EvaluationResult: score (1-5), feedback, strengths, improvements
 - CodeExecutionResult: success, stdout, stderr, execution_time_ms, memory_usage_mb, test_results
 
-#### Performance analytics
+### Performance analytics
 - InterviewQuestion: id, index, question, difficulty, source, topic, expected_keywords, follow_up_questions, code_challenge, answer, code_submission, code_language, score, feedback, strengths, improvements, answered_at
 - InterviewEvent: id, session_id, event_type, timestamp, metadata
 
-### Answer evaluation criteria, scoring rubrics, and feedback
-- EvaluationResult fields: score (1–5), feedback, strengths, improvements.
+## Answer evaluation criteria, scoring rubrics, and feedback
+- EvaluationResult fields: score (1-5), feedback, strengths, improvements.
 - Streaming parsing extracts score, strengths, and improvements from formatted text.
 - Code review prompt defines correctness, code quality, efficiency, edge cases, strengths, improvements, alternative approach.
 
-### Real-Time interview features and streaming
+## Real-Time interview features and streaming
 - SSE Streaming:
-  - Answer streaming: yields "chunk" tokens, then "complete" with score and next question.
-  - Code streaming: yields "execution" result, then "chunk" tokens, then "complete".
-  - Summary streaming: yields "chunk" tokens, then "complete" with final_score and recommendation.
+ - Answer streaming: yields "chunk" tokens, then "complete" with score and next question.
+ - Code streaming: yields "execution" result, then "chunk" tokens, then "complete".
+ - Summary streaming: yields "chunk" tokens, then "complete" with final_score and recommendation.
 - Security and Limits:
-  - CodeExecutor enforces language support, code length, timeouts, and security checks.
+ - CodeExecutor enforces language support, code length, timeouts, and security checks.
 
-### Integration patterns for mock interview systems
+## Integration patterns for mock interview systems
 - Use POST /interview/sessions to bootstrap a mock interview with role/topic and difficulty distribution.
 - Poll GET /interview/sessions/{session_id} to track progress.
 - Submit answers via POST /interview/sessions/{session_id}/answer or stream via POST /interview/sessions/{session_id}/answer/stream.
@@ -368,7 +365,8 @@ E --> F["Return sessions + count"]
 - Record tab switches and other events via POST /interview/sessions/{session_id}/events to maintain integrity.
 - Retrieve final summary via GET /interview/sessions/{session_id}/summary or stream via POST /interview/sessions/{session_id}/summary/stream.
 
-## Dependency analysis
+## Dependencies
+
 ```mermaid
 graph LR
 Routes["routes/interview.py"] --> Graph["services/interview/graph.py"]
@@ -385,7 +383,7 @@ Graph --> Enums["models/interview/enums.py"]
 Graph --> Templates["models/interview/templates.py"]
 ```
 
-## Performance considerations
+## Performance
 - Streaming Responses: Use streaming endpoints to reduce latency and improve perceived performance for evaluations and summaries.
 - Code Execution: Enforce timeouts and output limits to prevent resource exhaustion.
 - In-Memory Storage: SessionManager uses in-memory storage; for production, integrate with persistent storage via API routes or direct database connections.
@@ -393,29 +391,24 @@ Graph --> Templates["models/interview/templates.py"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
+## Troubleshooting
 - Session Not Found:
-  - Symptom: 404 when accessing sessions or submitting answers.
-  - Resolution: Ensure session_id is valid and created via POST /interview/sessions.
+ - Symptom: 404 when accessing sessions or submitting answers.
+ - Resolution: Ensure session_id is valid and created via POST /interview/sessions.
 - Question Mismatch:
-  - Symptom: Validation error indicating question does not match current state.
-  - Resolution: Use the current_question.id returned by GET /interview/sessions/{session_id}.
+ - Symptom: Validation error indicating question does not match current state.
+ - Resolution: Use the current_question.id returned by GET /interview/sessions/{session_id}.
 - Unsupported Language:
-  - Symptom: Code execution returns unsupported language error.
-  - Resolution: Use supported languages: python, javascript, typescript.
+ - Symptom: Code execution returns unsupported language error.
+ - Resolution: Use supported languages: python, javascript, typescript.
 - Timeout During Execution:
-  - Symptom: Execution timed out after configured seconds.
-  - Resolution: Simplify code or reduce complexity; adjust language-specific timeouts.
+ - Symptom: Execution timed out after configured seconds.
+ - Resolution: Simplify code or reduce complexity; adjust language-specific timeouts.
 - Streaming Errors:
-  - Symptom: SSE error event received.
-  - Resolution: Check network stability and retry; verify LLM availability.
+ - Symptom: SSE error event received.
+ - Resolution: Check network stability and retry; verify LLM availability.
 
-## Conclusion
-The Interview Preparation API provides a reliable, extensible framework for conducting mock interviews with automated question generation, real-time evaluation, coding execution, and detailed summaries. Its modular design enables easy integration into larger ATS or hiring platforms, while streaming capabilities improve the candidate experience. By using templates, structured prompts, and event tracking, the system supports both standardized and adaptive interview experiences.
-
-[No sources needed since this section summarizes without analyzing specific files]
-
-## Appendices
+## Appendix
 
 ### Example workflows
 
@@ -435,6 +428,7 @@ The Interview Preparation API provides a reliable, extensible framework for cond
 - Execute code (stream): POST /interview/sessions/{id}/code/stream
 
 ### Data model diagram
+
 ```mermaid
 erDiagram
 INTERVIEW_SESSION {

@@ -1,7 +1,7 @@
 # Notice reminders API
 
 ## Introduction
-This page describes the Notice Reminders API system, a FastAPI-based backend that enables users to discover MOOC courses on Swayam/NPTEL and receive timely announcements via cookie-based JWT authentication. It covers the backend architecture, database models, services layer, authentication flow, course discovery, announcement tracking, CLI tool usage, and configuration options. The system supports both API and CLI modes, with optional web scraping integration for course data.
+FastAPI backend for discovering Swayam/NPTEL courses and tracking announcements. Cookie-based JWT auth, CLI and API modes, subscriptions, and notification records.
 
 ## Project structure
 The repository is a monorepo with a shared core and multiple interfaces. The Notice Reminders API resides under the notice-reminders package and exposes:
@@ -222,23 +222,23 @@ AuthService --> OtpEmailService : "uses"
 
 ### API endpoints overview
 - Authentication
-  - POST /auth/request-otp: Initiates OTP delivery.
-  - POST /auth/verify-otp: Verifies OTP and sets access/refresh cookies.
-  - POST /auth/refresh: Rotates tokens using a valid refresh cookie.
-  - POST /auth/logout: Revokes refresh token and clears cookies.
-  - GET /auth/me: Returns authenticated user profile.
+ - POST /auth/request-otp: Initiates OTP delivery.
+ - POST /auth/verify-otp: Verifies OTP and sets access/refresh cookies.
+ - POST /auth/refresh: Rotates tokens using a valid refresh cookie.
+ - POST /auth/logout: Revokes refresh token and clears cookies.
+ - GET /auth/me: Returns authenticated user profile.
 - Course Discovery
-  - POST /search/courses: Searches courses on supported platforms.
-  - GET /courses/{code}: Retrieves course details.
+ - POST /search/courses: Searches courses on supported platforms.
+ - GET /courses/{code}: Retrieves course details.
 - Announcements
-  - GET /courses/{code}/announcements: Lists announcements for a course.
+ - GET /courses/{code}/announcements: Lists announcements for a course.
 - Subscriptions
-  - GET /subscriptions: Lists user subscriptions.
-  - POST /subscriptions: Creates a subscription.
-  - DELETE /subscriptions/{id}: Cancels a subscription.
+ - GET /subscriptions: Lists user subscriptions.
+ - POST /subscriptions: Creates a subscription.
+ - DELETE /subscriptions/{id}: Cancels a subscription.
 - Notifications
-  - GET /notifications: Lists user notifications.
-  - POST /notifications/deliver: Triggers delivery via configured channels.
+ - GET /notifications: Lists user notifications.
+ - POST /notifications/deliver: Triggers delivery via configured channels.
 
 Note: Endpoint definitions are implemented in routers under app/api/routers/*.py.
 
@@ -274,7 +274,7 @@ APP --> EMAIL["email-validator"]
 
 ## Performance considerations
 - Caching: Platform base URLs and cache TTL are configurable; consider caching announcements and course metadata to reduce scrape frequency.
-- Database: SQLite is default; for production, use a reliable database engine and enable connection pooling.
+- Database: SQLite is default; for production, use a database engine and enable connection pooling.
 - Token Lifetimes: Short-lived access tokens minimize exposure; refresh tokens are long-lived but rotated securely.
 - Scraping Efficiency: Batch requests, respect robots.txt, and throttle to avoid rate limits.
 
@@ -287,12 +287,12 @@ Common issues and resolutions:
 - Token Validation Failures: Confirm cookie presence and expiration; use refresh endpoint to obtain new tokens.
 
 Operational checks:
-- Environment variables: Load via.env using pydantic-settings.
+- Environment variables: Load via .env using pydantic-settings.
 - Database connectivity: Confirm database_url is reachable.
 - Cookie Security: Insecure environments (debug=true) set non-Secure cookies; production should disable debug.
 
 ## Conclusion
-The Notice Reminders API provides a cohesive backend for discovering MOOC courses on Swayam/NPTEL and tracking announcements. Its OTP-based authentication with JWT cookies ensures secure session management, while the modular services and ORM-backed models support extensibility. The CLI offers a lightweight path for discovery without a database, and the API enables user management, subscriptions, and notifications. With proper configuration and operational hygiene, the system scales to serve users reliably.
+One backend, two entrypoints. Configure secrets, run migrations, and keep scrapers polite.
 
 ## Appendices
 
@@ -315,11 +315,11 @@ Environment variables loaded via pydantic-settings (.env file):
 
 ### Usage examples
 - API Mode:
-  - Start server: uv run python main.py api --reload
-  - Authenticate:
-    - POST /auth/request-otp with email
-    - POST /auth/verify-otp with email and OTP
-    - Use cookies for subsequent requests
+ - Start server: uv run python main.py api --reload
+ - Authenticate:
+ - POST /auth/request-otp with email
+ - POST /auth/verify-otp with email and OTP
+ - Use cookies for subsequent requests
 - CLI Mode:
-  - uv run python main.py cli
-  - Interactively search and view course announcements
+ - uv run python main.py cli
+ - Interactively search and view course announcements

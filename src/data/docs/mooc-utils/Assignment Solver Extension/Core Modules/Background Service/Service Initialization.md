@@ -1,7 +1,7 @@
 # Service initialization
 
 ## Introduction
-This page explains the background service worker initialization process for the assignment-solver extension. It focuses on the dependency injection pattern, platform adapter setup, service creation workflow, and logger configuration. It also details the factory function pattern used throughout the codebase to pass dependencies to handlers and services, and outlines the initialization sequence and error handling during startup.
+How the background worker boots: dependency injection, platform adapters, service construction, and logging. Read this before changing startup order.
 
 ## Project structure
 The service worker entry point initializes logging, platform adapters, services, handlers, and registers the message router. Platform adapters abstract browser APIs for cross-browser compatibility. Services encapsulate business logic and expose factory functions that accept a dependency bag. Handlers are factory-created functions that receive adapters and logger instances. The router dispatches incoming messages to the appropriate handler.
@@ -50,7 +50,7 @@ GS --> MS
 - Platform adapters: Provide cross-browser wrappers around browser APIs (runtime, tabs, scripting, panel, storage, browser detection).
 - Services: Factory-created modules exposing business logic (Gemini service, storage service).
 - Handlers: Factory-created functions receiving adapters and logger to process messages.
-- Router: Central dispatcher that invokes handlers and ensures response semantics.
+- Router: Central dispatcher that invokes handlers and keeps response semantics.
 
 ## Architecture overview
 The initialization follows a deterministic sequence:
@@ -247,7 +247,7 @@ Each factory accepts a dependency bag and returns a function or object ready to 
 
 ### Message routing and handler dispatch
 - Router receives handlers mapped by message type and logs incoming messages.
-- It ensures asynchronous handlers resolve and always calls sendResponse.
+- It waits for asynchronous handlers to resolve and always calls sendResponse.
 - Handlers use adapters and logger to perform operations and respond appropriately.
 
 ```mermaid
@@ -275,7 +275,7 @@ EH-->>UI : sendResponse(result)
 - UI setup: `index.js`
 
 ### Error handling during startup
-- Router catches synchronous and asynchronous errors and ensures sendResponse is called.
+- Router catches sync and async errors and still calls sendResponse.
 - Handlers wrap operations and return meaningful error messages to callers.
 - Panel adapter logs and rethrows errors when panel APIs are unavailable.
 - Gemini service logs failures and throws parsed errors for invalid responses.
@@ -301,7 +301,7 @@ RG --> PH["background/handlers/pageinfo.js"]
 ```
 
 ## Performance considerations
-- Cross-browser compatibility relies on webextension-polyfill; ensure minimal overhead by avoiding redundant API checks.
+- Cross-browser compatibility relies on webextension-polyfill; skip redundant API checks.
 - Asynchronous handlers must return true to keep the message channel open (especially for Firefox).
 - Content script injection delays accommodate slower environments like Firefox; tune timing based on observed performance.
 - Gemini API calls bypass message channels in the background worker to reduce latency and avoid timeouts.
@@ -313,4 +313,4 @@ RG --> PH["background/handlers/pageinfo.js"]
 - Gemini API errors: Service parses raw responses and logs candidate details to aid debugging.
 
 ## Conclusion
-The assignment-solver extension employs a clean dependency injection pattern with factory functions to initialize platform adapters, services, and handlers. The background worker orchestrates this initialization, registers a reliable message router, and integrates UI interactions. Consistent logging and explicit error handling ensure reliable operation across browsers.
+Construct adapters first, then services, then the router. Changing that order usually breaks messaging at runtime.

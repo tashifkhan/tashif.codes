@@ -1,7 +1,7 @@
 # UI components
 
 ## Introduction
-This page describes the reusable UI component library used across the Next.js website application. It covers shared components (buttons, forms, dialogs, cards, inputs), notice reminders components for subscription management and user profiles, assignment solver components for extension download and integration, and landing page components showing features and product showcase. The guide explains component props, customization options, styling approaches using Tailwind CSS and class variance authority (CVA), component composition patterns, accessibility compliance, and responsive design implementation.
+UI library overview for the website: shared primitives, notice-reminders feature components, assignment-solver download UI, and landing sections.
 
 ## Project structure
 The UI library is organized under website/components/ui with reusable base components and specialized components grouped by feature area:
@@ -49,51 +49,51 @@ PS --> B
 This section documents the shared UI primitives that form the foundation of the component library.
 
 - Button
-  - Purpose: Primary interactive element with variant and size variants.
-  - Props:
-    - variant: default, outline, secondary, ghost, destructive, link
-    - size: default, xs, sm, lg, icon, icon-xs, icon-sm, icon-lg
-    - className: optional tailwind classes
-  - Customization: Uses CVA for variant and size tokens; integrates with data-slot attributes for consistent styling.
-  - Accessibility: Inherits focus-visible ring and aria-invalid states for form integration.
+ - Purpose: Primary interactive element with variant and size variants.
+ - Props:
+ - variant: default, outline, secondary, ghost, destructive, link
+ - size: default, xs, sm, lg, icon, icon-xs, icon-sm, icon-lg
+ - className: optional tailwind classes
+ - Customization: Uses CVA for variant and size tokens; integrates with data-slot attributes for consistent styling.
+ - Accessibility: Inherits focus-visible ring and aria-invalid states for form integration.
 
 - Input
-  - Purpose: Text input primitive with consistent focus states and invalid feedback.
-  - Props: type, className, plus standard input attributes.
-  - Customization: Tailwind classes applied via cn; integrates aria-invalid for form validation.
+ - Purpose: Text input primitive with consistent focus states and invalid feedback.
+ - Props: type, className, plus standard input attributes.
+ - Customization: Tailwind classes applied via cn; integrates aria-invalid for form validation.
 
 - Textarea
-  - Purpose: Multi-line text input with consistent focus and invalid states.
-  - Props: className, plus standard textarea attributes.
+ - Purpose: Multi-line text input with consistent focus and invalid states.
+ - Props: className, plus standard textarea attributes.
 
 - Card
-  - Purpose: Container with header, title, description, action, content, and footer slots.
-  - Props:
-    - size: default, sm
-    - className
-  - Slots: card-header, card-title, card-description, card-action, card-content, card-footer.
+ - Purpose: Container with header, title, description, action, content, and footer slots.
+ - Props:
+ - size: default, sm
+ - className
+ - Slots: card-header, card-title, card-description, card-action, card-content, card-footer.
 
 - Dialog
-  - Purpose: Modal overlay with trigger, portal, close, overlay, content, header, footer, title, and description.
-  - Props:
-    - DialogContent: showCloseButton flag
-    - DialogFooter: showCloseButton flag
-    - size variants for alert-style dialogs
-  - Composition: Composes Base UI Dialog with internal Button and XIcon for close.
+ - Purpose: Modal overlay with trigger, portal, close, overlay, content, header, footer, title, and description.
+ - Props:
+ - DialogContent: showCloseButton flag
+ - DialogFooter: showCloseButton flag
+ - size variants for alert-style dialogs
+ - Composition: Composes Base UI Dialog with internal Button and XIcon for close.
 
 - AlertDialog
-  - Purpose: Confirmation dialog with action and cancel bindings to Button.
-  - Props:
-    - size: default, sm
-    - AlertDialogAction: Button props
-    - AlertDialogCancel: variant, size defaults to outline, default size
+ - Purpose: Confirmation dialog with action and cancel bindings to Button.
+ - Props:
+ - size: default, sm
+ - AlertDialogAction: Button props
+ - AlertDialogCancel: variant, size defaults to outline, default size
 
 - Badge
-  - Purpose: Label or indicator with variant variants.
-  - Props:
-    - variant: default, secondary, destructive, outline, ghost, link
-    - render: optional renderer for advanced composition
-    - className
+ - Purpose: Label or indicator with variant variants.
+ - Props:
+ - variant: default, secondary, destructive, outline, ghost, link
+ - render: optional renderer for advanced composition
+ - className
 
 Styling approach
 - Tailwind classes are combined using cn from lib/utils.
@@ -105,7 +105,7 @@ Styling approach
 The UI library follows a composition-first pattern:
 - Primitive components (Button, Input, Card) encapsulate base styling and behavior.
 - Feature components (NotificationInbox, UserProfile, SubscriptionManager) compose primitives to implement domain logic.
-- Landing components (Features, ProductShowcase) demonstrate product capabilities using primitives and links.
+- Landing components (Features, ProductShowcase) build product demos from primitives and links.
 
 ```mermaid
 graph TB
@@ -201,7 +201,7 @@ Card --> CardContent
 Card --> CardFooter
 ```
 
-### Dialog and AlertDialog components
+### Dialog and alertdialog components
 - Dialog: Root, Trigger, Portal, Close, Overlay, Content, Header, Footer, Title, Description.
 - AlertDialog: Root, Trigger, Portal, Overlay, Content (with size), Header, Footer, Media, Title, Description, Action, Cancel.
 
@@ -236,7 +236,7 @@ class Badge {
 
 #### NotificationInbox
 - Fetches notifications via React Query, displays unread count, and allows marking as read.
-- Composes Card, Button, Input, and Badge for a cohesive inbox experience.
+- Composes Card, Button, Input, and Badge for a connected inbox experience.
 
 ```mermaid
 sequenceDiagram
@@ -397,4 +397,4 @@ Common issues and resolutions:
 - SubscriptionManager expansion not toggling: Verify expandedSub state and toggle handler logic.
 
 ## Conclusion
-The UI component library provides a consistent, accessible, and responsive foundation for the application. By composing primitive components and using CVA for variants, teams can rapidly build feature-rich pages while maintaining design system coherence. Notice reminders and landing components demonstrate practical usage patterns for real-world scenarios, ensuring maintainability and scalability.
+Primitives first, feature components second. Landing and inbox code are the reference compositions.

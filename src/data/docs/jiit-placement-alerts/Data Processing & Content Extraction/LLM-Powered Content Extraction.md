@@ -1,13 +1,7 @@
 # LLM-Powered content extraction
 
 ## Introduction
-This page explains the LLM-powered content extraction system that processes placement-related emails using Google Gemini (via LangChain and LangGraph). The system implements a four-stage pipeline:
-1. Intelligent email classification using keyword scoring and confidence thresholds
-2. Reliable information extraction guided by strict schema requirements and JSON formatting
-3. Validation and enhancement of extracted data
-4. Privacy sanitization to remove sensitive metadata
-
-It also documents the Pydantic models used for data representation, the LangGraph state machine, integration with LangChain/LangGraph, and practical guidance for retry mechanisms, error handling, and data sanitization.
+Gemini through LangChain and LangGraph for placement emails. Four stages: classify, extract, validate/enhance, sanitize privacy. Pydantic schemas keep the graph honest.
 
 ## Project structure
 The system is organized around services and clients that encapsulate responsibilities:
@@ -131,8 +125,8 @@ E --> |No| G["Mark not relevant"]
 
 ### Extraction prompt engineering and JSON formatting
 - Two-phase prompt:
-  - Phase 1: Final placement offer classification with strict criteria.
-  - Phase 2: Structured extraction with strict schema and privacy rules.
+ - Phase 1: Final placement offer classification with strict criteria.
+ - Phase 2: Structured extraction with strict schema and privacy rules.
 - Output format: Raw JSON only, no markdown or explanations.
 - Privacy rules: Do not include headers, sender info, or forwarded markers in extracted fields.
 
@@ -275,7 +269,7 @@ end
 ```
 
 ## Dependency analysis
-External dependencies include LangChain, LangGraph, and Pydantic for LLM integration, state management, and schema enforcement. Internal dependencies show clear separation of concerns:
+External dependencies include LangChain, LangGraph, and Pydantic for LLM integration, state management, and schema enforcement. Internal dependencies stay separate:
 - PlacementService depends on GoogleGroupsClient, ChatGoogleGenerativeAI, and DatabaseService.
 - EmailNoticeService depends on GoogleGroupsClient, ChatGoogleGenerativeAI, and PlacementPolicyService.
 - PlacementNotificationFormatter depends on Pydantic models and DatabaseService.
@@ -316,9 +310,7 @@ Operational tips:
 - Verify forwarded metadata extraction and sanitization for accurate timestamps and sender attribution.
 
 ## Conclusion
-The LLM-powered content extraction system uses Google Gemini through LangChain and LangGraph to deliver a reliable, schema-driven pipeline for placement offers. Its four-stage design, classification, extraction, validation/enhancement, and privacy sanitization, ensures high-quality, privacy-compliant outputs. Strong Pydantic models, retry logic, and careful privacy handling make the system resilient and maintainable.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Gemini via LangChain/LangGraph runs a four-stage placement pipeline: classify, extract, validate/enhance, sanitize privacy. Pydantic models and retries keep the output usable.
 
 ## Appendices
 

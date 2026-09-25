@@ -1,7 +1,7 @@
 # File operations IPC
 
 ## Introduction
-This page provides detailed documentation for file operation IPC handlers focused on importing and reading email lists. It covers the 'import-email-list' dialog handler and the 'read-email-list-file' parser, including dialog configuration, supported file formats, parsing logic, path resolution, error handling, return value schemas, and security considerations. It also includes practical examples for batch processing, duplicate removal, and format conversion.
+`import-email-list` opens a dialog. `read-email-list-file` parses the chosen path. Both live in the main process so the renderer never touches the filesystem directly.
 
 ## Project structure
 The file operation IPC handlers are implemented in the Electron main process and exposed to the renderer via a secure preload bridge. The frontend component demonstrates usage of these handlers to import and parse email lists.
@@ -72,9 +72,9 @@ Purpose:
 Dialog configuration:
 - Properties: openFile
 - Filters:
-  - Text Files: txt
-  - CSV Files: csv
-  - All Files: * (fallback)
+ - Text Files: txt
+ - CSV Files: csv
+ - All Files: * (fallback)
 
 Return value schema:
 - canceled: boolean indicating whether the dialog was canceled
@@ -94,13 +94,13 @@ Purpose:
 
 Processing logic:
 - CSV parsing:
-  - Uses streaming to avoid memory pressure on large files.
-  - Detects email columns by common names (email, Email, EMAIL, address, Address, ADDRESS) or falls back to the first column.
-  - Validates entries by presence of '@'.
-  - Joins extracted emails with newline separators.
+ - Uses streaming to avoid memory pressure on large files.
+ - Detects email columns by common names (email, Email, EMAIL, address, Address, ADDRESS) or falls back to the first column.
+ - Validates entries by presence of '@'.
+ - Joins extracted emails with newline separators.
 - Text file processing:
-  - Splits content by newline.
-  - Trims whitespace and filters lines containing '@'.
+ - Splits content by newline.
+ - Trims whitespace and filters lines containing '@'.
 
 Return value schema:
 - String containing newline-delimited email addresses.
@@ -152,18 +152,16 @@ Recommendations:
 - For very large files, consider chunked processing and progress reporting.
 - Ensure adequate delay between operations to avoid overwhelming the system.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Dialog canceled or no file selected:
-  - The handler returns canceled true and empty filePaths. The frontend should check these values before proceeding.
+ - The handler returns canceled true and empty filePaths. The frontend should check these values before proceeding.
 - Unsupported file type:
-  - The handler does not explicitly reject unsupported extensions; ensure the dialog filters are respected.
+ - The handler does not explicitly reject unsupported extensions; ensure the dialog filters are respected.
 - File access failures:
-  - Errors are thrown and surfaced to the frontend. Verify file permissions and path correctness.
+ - Errors are thrown and surfaced to the frontend. Verify file permissions and path correctness.
 - Parsing errors:
-  - CSV parsing errors are caught and rethrown. Validate CSV headers or switch to text format with '@' separated entries.
+ - CSV parsing errors are caught and rethrown. Validate CSV headers or switch to text format with '@' separated entries.
 
 Security considerations:
 - Context isolation and secure IPC are enabled, preventing direct Node.js access from the renderer.
@@ -171,4 +169,5 @@ Security considerations:
 - Rate limiting is implemented in email handlers to prevent abuse.
 
 ## Conclusion
-The file operation IPC handlers provide a reliable foundation for importing and parsing email lists. The 'import-email-list' dialog offers configurable filters, while 'read-email-list-file' delivers flexible CSV parsing and text processing with clear return schemas. Combined with frontend validation and secure IPC, these handlers support reliable batch email list processing workflows.
+
+Path handling stays in main. The renderer should only display returned emails or error strings, never open arbitrary paths itself.

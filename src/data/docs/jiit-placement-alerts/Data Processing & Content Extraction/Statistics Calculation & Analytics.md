@@ -1,7 +1,7 @@
 # Statistics calculation & analytics
 
 ## Introduction
-This page provides detailed documentation for the statistics calculation and analytics service powering placement analytics at JIIT. It explains how placement statistics are computed, including company-wise offer counts, package distribution analysis, student selection trends, and placement rate calculations. It also covers data aggregation for historical tracking, trend analysis, and statistical reporting, along with calculation methods for average packages, highest/lowest offers, branch-wise placement statistics, and time-series analysis. Integration with the database for data retrieval, caching strategies for performance optimization, and real-time statistics updates are documented. Examples of calculated metrics, visualization data formats, export capabilities, and data privacy considerations are included.
+Placement math: company offer counts, package distributions, selection trends, branch splits, time series. What gets cached, what hits MongoDB live, and privacy limits on student-level data.
 
 ## Project structure
 The statistics service is implemented as a modular Python service integrated into the broader notification bot ecosystem. Key components include:
@@ -38,28 +38,28 @@ Calc --> Trends
 ```
 
 ## Core components
-This section outlines the core components responsible for statistics computation and analytics.
+This section outlines the core components that compute statistics.
 
 - PlacementStatsCalculatorService
-  - Computes overall statistics, branch-wise metrics, and company-wise aggregations
-  - Filters students by company, role, location, package range, and search query
-  - Provides CSV export functionality for administrative reporting
-  - Calculates average, median, and highest packages per unique student
-  - Computes placement percentages by branch and overall
+ - Computes overall statistics, branch-wise metrics, and company-wise aggregations
+ - Filters students by company, role, location, package range, and search query
+ - Provides CSV export functionality for administrative reporting
+ - Calculates average, median, and highest packages per unique student
+ - Computes placement percentages by branch and overall
 
 - DatabaseService
-  - Retrieves placement offers from MongoDB for analytics
-  - Provides raw statistics computation for official placement data
-  - Manages collections for notices, jobs, placement offers, users, and official placement data
+ - Retrieves placement offers from MongoDB for analytics
+ - Provides raw statistics computation for official placement data
+ - Manages collections for notices, jobs, placement offers, users, and official placement data
 
 - PlacementService
-  - Extracts and structures placement offers from emails using LLM orchestration
-  - Sanitizes privacy-sensitive information
-  - Emits events for new offers and updates for real-time updates
+ - Extracts and structures placement offers from emails using LLM orchestration
+ - Sanitizes privacy-sensitive information
+ - Emits events for new offers and updates for real-time updates
 
 - DBClient and Configuration
-  - Manages MongoDB connection and collection access
-  - Centralized configuration via Pydantic Settings with environment variables
+ - Manages MongoDB connection and collection access
+ - Centralized configuration via Pydantic Settings with environment variables
 
 ## Architecture overview
 The statistics architecture integrates data ingestion, processing, persistence, and analytics computation across services and databases.
@@ -165,7 +165,7 @@ Stats --> End(["End"])
 ```
 
 ### Email processing and privacy sanitization
-The PlacementService orchestrates intelligent classification, extraction, validation, and privacy sanitization of placement emails. It ensures only final placement offers are processed and sanitized to protect privacy.
+PlacementService classifies, extracts, validates, and strips privacy fields. Only final offers make it through.
 
 ```mermaid
 sequenceDiagram
@@ -271,30 +271,4 @@ Common issues and resolutions:
 - Export issues: Confirm CSV export filters and ensure placements are available
 
 ## Conclusion
-The statistics calculation and analytics service provides a reliable, modular framework for computing placement metrics, enabling branch-wise and company-wise analysis, filtering, and export capabilities. Through integration with the database and email processing pipeline, it supports real-time updates and historical trend analysis while maintaining privacy and performance best practices.
-
-[No sources needed since this section summarizes without analyzing specific files]
-
-## Appendices
-
-### Calculation methods and metrics
-- Average package: Sum of highest packages per unique student divided by count
-- Median package: Middle value of sorted packages for unique students
-- Highest package: Maximum package among unique students
-- Placement percentage: Unique placed students in tracked branches divided by total eligible students, multiplied by 100
-- Company-wise average package: Sum of packages per company divided by number of packages
-- Branch-wise statistics: Total offers, unique students, total eligible students, average/median/highest packages, and placement percentage
-
-### Visualization data formats
-- Branch-wise metrics: Dictionary with branch names as keys and computed statistics as values
-- Company-wise metrics: Dictionary with company names as keys and counts, profiles, and average packages
-- Available filters: Lists of companies, roles, and locations derived from placements
-
-### Export capabilities
-- CSV export: Generates rows with student name, enrollment number, company, role, package, job location, and joining date
-- Filtered exports: Applies filters before generating CSV rows
-
-### Data privacy and compliance
-- Privacy sanitization: Removal of email headers, forwarded markers, and sender information during extraction
-- Data retention: Consider TTL indexes for auto-cleanup of logs and temporary data
-- Institutional policies: Ensure compliance with educational institution data policies and student privacy regulations
+Stats service rolls offers into company, branch, and package views, with filters and export hooks. It reads the same MongoDB the email pipeline writes, so numbers move when new offers land. Keep student-level fields out of exports.

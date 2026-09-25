@@ -2,9 +2,7 @@
 
 ## Introduction
 
-This page provides detailed SMTP server configuration and setup documentation for the bulk messaging application. It covers host configuration requirements, port selection guidelines, security protocol settings, TLS/SSL configuration options, certificate validation settings, provider-specific server settings for major email providers, firewall and network configuration requirements, connection timeout settings, retry mechanisms, and troubleshooting guides for common connection issues.
-
-The application supports both Gmail API and SMTP server configurations, with a focus on secure email delivery through configurable transport protocols and reliable error handling mechanisms.
+Host, port, TLS/SSL, timeouts, and provider examples (Gmail, Outlook, and similar) for the SMTP form.
 
 ## Project structure
 
@@ -45,11 +43,11 @@ The user interface component allows users to configure SMTP server settings incl
 The backend handler manages the actual SMTP connection, authentication, and email sending process using Nodemailer.
 
 ### IPC communication layer
-The Electron IPC system facilitates secure communication between the renderer process (UI) and main process (SMTP operations).
+The Electron IPC system handles secure communication between the renderer process (UI) and main process (SMTP operations).
 
 ## Architecture overview
 
-The SMTP configuration follows a layered architecture with clear separation of concerns:
+SMTP config layers:
 
 ```mermaid
 sequenceDiagram
@@ -84,7 +82,7 @@ Mailer-->>User : Progress Updates
 
 ### SMTP configuration form component
 
-The SMTP form component provides a detailed interface for configuring email server settings:
+The SMTP form component is the UI for configuring email server settings:
 
 ```mermaid
 classDiagram
@@ -212,7 +210,7 @@ For custom SMTP servers, the configuration follows standard patterns:
 
 ### TLS/SSL configuration options
 
-The SMTP handler provides flexible security configuration options:
+SMTP security options the handler exposes:
 
 ```mermaid
 classDiagram
@@ -241,17 +239,17 @@ SMTPTransportConfig --> SecurityProtocols : "uses"
 
 The application provides certificate validation flexibility:
 
-- **Certificate Validation**: Disabled for self-signed certificates (`rejectUnauthorized: false`)
-- **Custom CA Certificates**: Can be configured for enterprise environments
-- **Hostname Verification**: Server name verification for secure connections
+- **Certificate Validation.** Disabled for self-signed certificates (`rejectUnauthorized: false`)
+- **Custom CA Certificates.** Can be pointed at a private CA
+- **Hostname Verification.** Server name verification for secure connections
 
 ### Credential storage and security
 
 The application implements secure credential storage:
 
-- **Encrypted Storage**: SMTP credentials are stored securely using electron-store
-- **Selective Storage**: Host, port, and user are stored; passwords are not saved
-- **Memory Management**: Credentials are loaded only when needed
+- **Encrypted Storage.** SMTP credentials are stored securely using electron-store
+- **Selective Storage.** Host, port, and user are stored; passwords are not saved
+- **Memory Management.** Credentials are loaded only when needed
 
 ## Connection and network requirements
 
@@ -284,19 +282,19 @@ Block -.-> SMTPClient
 
 The application requires:
 
-- **Outbound Access**: TCP connections to SMTP servers on configured ports
-- **DNS Resolution**: Ability to resolve SMTP server hostnames
-- **Time Synchronization**: Accurate system time for certificate validation
-- **Proxy Support**: Optional proxy configuration for restricted networks
+- **Outbound Access.** TCP connections to SMTP servers on configured ports
+- **DNS Resolution.** Ability to resolve SMTP server hostnames
+- **Time Synchronization.** Accurate system time for certificate validation
+- **Proxy Support.** Optional proxy configuration for restricted networks
 
 ### Rate limiting and throttling
 
 The system implements intelligent rate limiting:
 
-- **Default Delay**: 1000ms between email sends
-- **Configurable Delays**: Users can adjust delay intervals
-- **Provider Limits**: Respects provider-specific sending limits
-- **Backoff Strategies**: Gradual increase in delays for failed attempts
+- **Default Delay.** 1000ms between email sends
+- **Configurable Delays.** Users can adjust delay intervals
+- **Provider Limits.** Respects provider-specific sending limits
+- **Backoff Strategies.** Gradual increase in delays for failed attempts
 
 ## Timeouts and retry mechanisms
 
@@ -324,83 +322,83 @@ MaxRetries --> |Yes| FinalFailure[Final Failure]
 
 The system employs progressive retry strategies:
 
-- **Immediate Retry**: First failure triggers immediate retry
-- **Exponential Backoff**: Subsequent failures use increasing delays
-- **Maximum Attempts**: Configurable maximum retry attempts
-- **Error Classification**: Different handling for different error types
+- **Immediate Retry.** First failure triggers immediate retry
+- **Exponential Backoff.** Subsequent failures use increasing delays
+- **Maximum Attempts.** Configurable maximum retry attempts
+- **Error Classification.** Different handling for different error types
 
 ### Progress tracking
 
-Real-time progress tracking provides detailed feedback:
+Real-time progress tracking reports status:
 
-- **Individual Email Status**: Success/failure for each recipient
-- **Overall Progress**: Percentage completion indicator
-- **Error Details**: Specific error messages for failed attempts
-- **Timing Information**: Delivery timestamps and durations
+- **Individual Email Status.** Success/failure for each recipient
+- **Overall Progress.** Percentage completion indicator
+- **Error Details.** Specific error messages for failed attempts
+- **Timing Information.** Delivery timestamps and durations
 
 ## Troubleshooting guide
 
 ### Common SMTP connection issues
 
 #### Authentication failures
-- **Symptoms**: "Authentication failed" or "Invalid credentials"
-- **Solutions**:
+- **Symptoms.** "Authentication failed" or "Invalid credentials"
+- **Solutions.**
   - Verify username/password combination
-  - Check for App Password requirements (Gmail)
-  - Ensure two-factor authentication settings are correct
+ - Check for App Password requirements (Gmail)
+ - Ensure two-factor authentication settings are correct
 
 #### Port blocking issues
-- **Symptoms**: Connection timeouts or refused connections
-- **Solutions**:
+- **Symptoms.** Connection timeouts or refused connections
+- **Solutions.**
   - Verify firewall allows outbound connections on configured port
-  - Check with network administrator for blocked ports
-  - Try alternative ports (587 vs 465)
+ - Check with network administrator for blocked ports
+ - Try alternative ports (587 vs 465)
 
 #### Certificate validation errors
-- **Symptoms**: "Certificate verification failed" errors
-- **Solutions**:
+- **Symptoms.** "Certificate verification failed" errors
+- **Solutions.**
   - Check system date/time synchronization
-  - Verify certificate chain validity
-  - Consider enterprise certificate authority configuration
+ - Verify certificate chain validity
+ - Point nodemailer at your private CA if you use one
 
 #### DNS resolution problems
-- **Symptoms**: "Host not found" or "DNS resolution failed"
-- **Solutions**:
+- **Symptoms.** "Host not found" or "DNS resolution failed"
+- **Solutions.**
   - Verify SMTP server hostname spelling
-  - Test DNS resolution using command line tools
-  - Check network connectivity and DNS server configuration
+ - Test DNS resolution using command line tools
+ - Check network connectivity and DNS server configuration
 
 ### Network connectivity failures
 
 #### Proxy configuration issues
-- **Symptoms**: Connection timeouts behind corporate firewalls
-- **Solutions**:
+- **Symptoms.** Connection timeouts behind corporate firewalls
+- **Solutions.**
   - Configure proxy settings in network preferences
-  - Verify proxy authentication requirements
-  - Test proxy connectivity independently
+ - Verify proxy authentication requirements
+ - Test proxy connectivity independently
 
 #### ISP blocking issues
-- **Symptoms**: Consistent connection failures to specific providers
-- **Solutions**:
+- **Symptoms.** Consistent connection failures to specific providers
+- **Solutions.**
   - Contact ISP to unblock SMTP ports
-  - Use alternative SMTP providers
-  - Configure SMTP over different ports
+ - Use alternative SMTP providers
+ - Configure SMTP over different ports
 
 ### Performance and rate limiting issues
 
 #### Excessive rate limiting
-- **Symptoms**: Slow sending speeds or frequent delays
-- **Solutions**:
+- **Symptoms.** Slow sending speeds or frequent delays
+- **Solutions.**
   - Adjust delay settings in configuration
-  - Reduce batch sizes for large mailing lists
-  - Implement staggered sending schedules
+ - Reduce batch sizes for large mailing lists
+ - Implement staggered sending schedules
 
 #### Memory and resource issues
-- **Symptoms**: Application slowdown or crashes during bulk sending
-- **Solutions**:
+- **Symptoms.** Application slowdown or crashes during bulk sending
+- **Solutions.**
   - Monitor system resources during operation
-  - Reduce concurrent connections
-  - Optimize email content size
+ - Reduce concurrent connections
+ - Optimize email content size
 
 ## Configuration examples
 
@@ -408,11 +406,11 @@ Real-time progress tracking provides detailed feedback:
 
 ```javascript
 const gmailSMTPConfig = {
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false, // Use TLS
-    user: "your-email@gmail.com",
-    pass: "your-app-password"
+ host: "smtp.gmail.com",
+ port: 587,
+ secure: false, // Use TLS
+ user: "your-email@gmail.com",
+ pass: "your-app-password"
 };
 ```
 
@@ -420,11 +418,11 @@ const gmailSMTPConfig = {
 
 ```javascript
 const outlookSMTPConfig = {
-    host: "smtp-mail.outlook.com",
-    port: 587,
-    secure: true, // Use SSL
-    user: "your-email@outlook.com",
-    pass: "your-password"
+ host: "smtp-mail.outlook.com",
+ port: 587,
+ secure: true, // Use SSL
+ user: "your-email@outlook.com",
+ pass: "your-password"
 };
 ```
 
@@ -432,11 +430,11 @@ const outlookSMTPConfig = {
 
 ```javascript
 const customSMTPConfig = {
-    host: "smtp.yourcompany.com",
-    port: 587,
-    secure: false, // Use TLS
-    user: "sender@yourcompany.com",
-    pass: "your-password"
+ host: "smtp.yourcompany.com",
+ port: 587,
+ secure: false, // Use TLS
+ user: "sender@yourcompany.com",
+ pass: "your-password"
 };
 ```
 
@@ -444,28 +442,18 @@ const customSMTPConfig = {
 
 ```javascript
 const enterpriseSMTPConfig = {
-    host: "smtp.internal.company.com",
-    port: 465,
-    secure: true,
-    user: "username@company.com",
-    pass: "enterprise-password",
-    tls: {
-        rejectUnauthorized: true,
-        ca: ["path/to/certificate.pem"]
-    }
+ host: "smtp.internal.company.com",
+ port: 465,
+ secure: true,
+ user: "username@company.com",
+ pass: "enterprise-password",
+ tls: {
+ rejectUnauthorized: true,
+ ca: ["path/to/certificate.pem"]
+ }
 };
 ```
 
 ## Conclusion
 
-The SMTP server configuration system provides a detailed solution for secure email delivery with reliable error handling, flexible security options, and extensive provider support. The implementation follows modern security practices while maintaining ease of use for end users.
-
-Key strengths of the configuration system include:
-
-- **Flexible Security Options**: Support for TLS, SSL, and custom certificate validation
-- **Provider-Specific Optimizations**: Pre-configured settings for major email providers
-- **Reliable Error Handling**: Detailed error reporting and recovery mechanisms
-- **Performance Optimization**: Intelligent rate limiting and progress tracking
-- **Security Best Practices**: Encrypted credential storage and secure communication
-
-The system is designed to handle various deployment scenarios from individual users to enterprise environments, with clear configuration options for different network and security requirements.
+Copy provider host/port from their current docs, not from memory. App passwords and TLS ports change more often than this code does.

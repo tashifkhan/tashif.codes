@@ -1,13 +1,8 @@
 # Key features
 
-## Introduction
-This page presents the key features of MOOC Utils across its three components: Assignment Solver, Notice Reminders, and the Website. It highlights AI-powered capabilities, dual-mode operation, cross-platform support, privacy-first design, course search, announcement tracking, interactive CLI, and OTP-based authentication. It also provides feature comparisons, use cases, and value propositions for each component within the ecosystem.
+Feature list across Assignment Solver, Notice Reminders, and the Website.
 
 ## Project structure
-MOOC Utils is organized as a multi-component system:
-- Assignment Solver: A browser extension using AI to extract, analyze, and solve assignment questions with dual-mode operation and privacy-focused client-side processing.
-- Notice Reminders: A Python-based system offering CLI and API modes for course search, announcement tracking, and user subscriptions.
-- Website: A Next.js marketing and dashboard site integrating OTP authentication, course search, and user dashboards.
 
 ```mermaid
 graph TB
@@ -47,15 +42,12 @@ WEB_DASH --> WEB_INBOX
 ```
 
 ## Core components
-- Assignment Solver: AI-powered browser extension with dual-mode operation (Study Hints vs Auto-Solve), multi-format question support, image handling, export, and BYOK privacy model.
-- Notice Reminders: CLI and API modes for course search, announcement retrieval, and subscription management; integrates with Swayam; provides interactive dashboard and OTP authentication.
-- Website: Marketing site and dashboard with OTP-based authentication, public course search, and user-centric views.
+
+- Assignment Solver: Study Hints vs Auto-Solve, multi-format questions, images, export, BYOK.
+- Notice Reminders: CLI and API, Swayam search, announcements, OTP, subscriptions.
+- Website: marketing, OTP dashboard, public search, extension page.
 
 ## Architecture overview
-The system comprises three distinct but complementary modules:
-- Assignment Solver: Client-side extraction and AI solving via Gemini, with secure local storage and optional screenshots.
-- Notice Reminders: Python backend with FastAPI, database-backed models, and Swayam integration; supports CLI and API modes.
-- Website: Next.js frontend with OTP authentication, TanStack Query for data fetching, and dashboard components.
 
 ```mermaid
 graph TB
@@ -91,22 +83,9 @@ DASH --> AUTH
 AUTH --> INBOX
 ```
 
-## Detailed component analysis
+## Assignment solver
 
-### Assignment solver: AI-powered assignment solving
-Key features:
-- AI-powered question extraction and solving via Gemini with structured schemas.
-- Dual-mode operation: Study Hints (educational guidance) and Auto-Solve (automated completion).
-- Multi-format support: single choice, multi choice, fill-in-the-blank.
-- Image support: embeds screenshots and extracted images for visual context.
-- Privacy-focused BYOK model with client-side processing and local storage.
-- Cross-browser support for Chrome and Firefox.
-
-Feature deep dive:
-- Extraction pipeline: content script extracts HTML and images, background worker orchestrates Gemini requests, and results are applied to the page.
-- Recursive splitting: handles token limits by splitting HTML or question sets and merging results.
-- Progress tracking: multi-step UI with determinate progress and status updates.
-- Assignment detection: identifies NPTEL/Swayam assignment pages and counts questions.
+Gemini extracts structured questions from page HTML. Study Hints explains without dumping the answer first. Auto-Solve fills and can submit. Single choice, multi choice, fill-in-the-blank. Screenshots plus per-question images go to Gemini. Key stays in the browser. Chrome and Firefox.
 
 ```mermaid
 sequenceDiagram
@@ -132,34 +111,11 @@ BG-->>UI : "submitted"
 UI-->>User : "results + summary"
 ```
 
-Practical examples:
-- Study Hints mode: Extract questions, click "Get Study Hints" to receive guidance, then manually apply answers and submit.
-- Auto-Solve mode: Extract questions, click "Solve All + Submit," confirm, and review the summary.
-- Handling images: The system captures full-page screenshots and embeds extracted images to aid AI understanding.
+If HTML is too large, the extractor splits and merges. Selectors live in `src/content/extractor.js`. Academic honesty is on you. The README says as much.
 
-Privacy and security:
-- API keys are stored locally and never sent to third-party servers.
-- All processing occurs client-side or via official Gemini endpoints.
+## Notice reminders
 
-Use cases and value:
-- Reduces time spent on repetitive assessments while preserving learning intent via hints mode.
-- Automates submission for busy learners, with manual review controls.
-- Addresses platform-specific layouts through selector-based extraction and recursive splitting.
-
-### Notice reminders: course search, announcements, and subscriptions
-Key features:
-- CLI mode for interactive scraping without a database.
-- API mode with FastAPI backend, CORS-enabled, and database registration.
-- Course search by keyword against Swayam.
-- Announcement retrieval and notification inbox.
-- User authentication via OTP (email) with httpOnly cookies.
-- Subscription management for courses and channels.
-
-Feature deep dive:
-- Entry point selects CLI or API mode; API bootstraps routers and registers the database.
-- Search router delegates to a service that caches and returns course results.
-- Swayam integration encapsulated in a service layer returning typed models.
-- Frontend dashboard components use TanStack Query for notifications and user profile.
+CLI for interactive scraping. API for the dashboard. Search by keyword on Swayam. Announcements into the inbox. OTP cookies. Subscriptions per course.
 
 ```mermaid
 sequenceDiagram
@@ -180,28 +136,11 @@ Search-->>API : "200 OK"
 API-->>User : "JSON courses"
 ```
 
-Practical examples:
-- CLI mode: Launch the CLI and browse announcements interactively without a backend.
-- API mode: Start the server, search courses, create subscriptions, and manage notification channels.
-- Dashboard: View unread notifications, mark as read, and manage subscriptions.
+`uv run python main.py cli` needs no DB. `uv run python main.py api` does.
 
-Use cases and value:
-- Keeps learners informed about course announcements across Swayam.
-- Provides flexible deployment modes (CLI for personal use, API for team dashboards).
-- Simplifies course discovery and subscription management.
+## Website
 
-### Website: marketing site, OTP authentication, and dashboard
-Key features:
-- Marketing site with hero, showcase, features, FAQ, and footer.
-- Notice Reminders dashboard with subscriptions, notifications, and user profile.
-- OTP-based authentication using httpOnly cookies and React Query.
-- Public course search integrated with backend APIs.
-
-Feature deep dive:
-- Marketing page composes landing components.
-- Dashboard page renders notification inbox and subscription manager inside an auth guard.
-- Auth context manages OTP request/verify, session refresh, and logout.
-- API client centralizes backend calls with credential inclusion and error handling.
+Hero, product demo, features, FAQ. Dashboard with inbox, subscriptions, profile, behind an auth guard. Public search still needs the API.
 
 ```mermaid
 sequenceDiagram
@@ -228,21 +167,7 @@ API-->>Auth : "AuthStatus"
 Auth-->>Page : "setUser"
 ```
 
-Practical examples:
-- Login: Request OTP, receive email, enter code to authenticate.
-- Dashboard: Add subscriptions, view notifications, mark as read, and sign out.
-- Public search: Use the search bar to discover courses and subscribe to announcements.
-
-Use cases and value:
-- Central hub for marketing and user onboarding.
-- Secure, cookie-based authentication removes reliance on localStorage tokens.
-- Unified dashboard streamlines course and announcement management.
-
 ## Dependency analysis
-Inter-module relationships:
-- Website depends on backend APIs for authentication, search, subscriptions, and notifications.
-- Notice Reminders provides the data layer consumed by the Website dashboard.
-- Assignment Solver is independent and does not depend on the other modules.
 
 ```mermaid
 graph TB
@@ -258,64 +183,28 @@ API --> BE
 BE --> NR
 WEB --> NR
 AS -.-> WEB
-AS -.-> BE
 ```
 
-## Performance considerations
-- Assignment Solver:
-  - Recursive splitting mitigates token limits by chunking HTML or questions and merging results.
-  - Delays between API calls and DOM operations prevent throttling and ensure reliability.
-- Notice Reminders:
-  - FastAPI app enables efficient API responses; caching and database indexing improve search performance.
-- Website:
-  - TanStack Query optimizes data fetching and caching; cookie-based auth avoids frequent re-authentication.
+The dashed line is the extension download page, not a Gemini proxy.
 
-[No sources needed since this section provides general guidance]
+## Performance
 
-## Troubleshooting guide
-- Assignment Solver:
-  - "Could not get page HTML": Ensure you are on a valid assignment page and refresh.
-  - "Question container not found": Re-extract or adjust selectors for the platform.
-  - "API Key invalid": Verify the key at the provider's portal and remove extra spaces.
-  - "Answers not being applied": Platform-specific components may require manual application.
-  - "Rate limit errors": Wait and reduce concurrent operations.
-- Notice Reminders:
-  - CLI mode requires Python 3.12+ and uv; ensure dependencies are installed.
-  - API mode needs a running database; CORS must be configured for the frontend origin.
-- Website:
-  - Backend must be running for login and dashboard data.
-  - Environment variable for API URL must be set for local development.
+Recursive HTML splits on token limits. Gemini/DOM delays. FastAPI plus cache TTL. TanStack Query on the dashboard.
+
+## Troubleshooting
+
+- Extension: page HTML, selectors, Gemini key, custom inputs, quota.
+- Notice Reminders: Python 3.12+, `uv`, writable SQLite, CORS.
+- Website: API up, `NEXT_PUBLIC_API_URL` set.
 
 ## Conclusion
-MOOC Utils delivers a cohesive ecosystem:
-- Assignment Solver accelerates assessment completion with AI while preserving learning via hints.
-- Notice Reminders keeps learners informed through course search, announcements, and subscriptions.
-- Website provides a secure, user-friendly interface for authentication, discovery, and dashboard management.
 
-Together, they address common MOOC learning pain points: time management, information overload, and fragmented workflows.
-
-[No sources needed since this section summarizes without analyzing specific files]
+AI help where it is private, notices where they are easy to miss, dashboard where settings live.
 
 ## Appendices
 
-### Feature comparison matrix
-- Assignment Solver
-  - AI extraction and solving
-  - Dual-mode operation
-  - Multi-format question types
-  - Image support
-  - BYOK and privacy
-  - Cross-browser
-- Notice Reminders
-  - CLI and API modes
-  - Course search
-  - Announcement tracking
-  - Subscriptions
-  - OTP authentication
-- Website
-  - Marketing site
-  - Dashboard
-  - Public course search
-  - OTP authentication
+### Feature comparison
 
-[No sources needed since this section provides general guidance]
+- Assignment Solver: extraction, dual modes, question types, images, BYOK, Chrome/Firefox.
+- Notice Reminders: CLI and API, search, announcements, subscriptions, OTP.
+- Website: marketing, dashboard, public search, OTP.

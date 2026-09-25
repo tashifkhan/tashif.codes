@@ -1,12 +1,7 @@
 # Email processing services
 
 ## Introduction
-This page explains the email processing services that power intelligent notice classification, content extraction, and standardized formatting for placement and general notices. It covers:
-- EmailNoticeService for general notice classification and extraction
-- PlacementService for LLM-powered placement offer extraction
-- Formatter services for content transformation and notification-ready output
-- Integration with Google Gemini LLMs, including prompt engineering and structured data extraction
-- The end-to-end pipeline from raw email ingestion to structured data storage and notification delivery
+Email stack overview: EmailNoticeService for general notices, PlacementService for offers, formatters that turn structured data into sendable text. How main.py runs them in order.
 
 ## Project structure
 The email processing system is organized around modular services and clients:
@@ -94,16 +89,16 @@ end
 ### EmailNoticeService
 - Purpose: Classify and extract general notices from Google Groups emails using LLM prompts and LangGraph.
 - Key features:
-  - LLM-based classification (no keyword filtering) with a dedicated prompt template
-  - Structured extraction into ExtractedNotice with detailed fields (job postings, webinars, hackathons, shortlistings, internship NOCs, reminders)
-  - Retry logic with validation and error handling
-  - Integration with NoticeFormatterService for standardized formatting
-  - Special handling for placement policy updates via PlacementPolicyService
-  - Creation of NoticeDocument for database storage and Telegram formatting
+ - LLM-based classification (no keyword filtering) with a dedicated prompt template
+ - Structured extraction into ExtractedNotice with detailed fields (job postings, webinars, hackathons, shortlistings, internship NOCs, reminders)
+ - Retry logic with validation and error handling
+ - Integration with NoticeFormatterService for standardized formatting
+ - Special handling for placement policy updates via PlacementPolicyService
+ - Creation of NoticeDocument for database storage and Telegram formatting
 - Processing pipeline:
-  - Classify -> Extract -> Validate -> Display
-  - JSON extraction from LLM responses with reliable error handling
-  - Advanced policy extraction with a secondary prompt for policy updates
+ - Classify -> Extract -> Validate -> Display
+ - JSON extraction from LLM responses with reliable error handling
+ - Advanced policy extraction with a secondary prompt for policy updates
 
 ```mermaid
 flowchart TD
@@ -124,13 +119,13 @@ Reject --> Done
 ### PlacementService
 - Purpose: Extract final placement offers from emails using keyword-based classification and LLM extraction.
 - Key features:
-  - Keyword scoring for placement-related signals, company indicators, and negative filters
-  - LLM extraction with structured validation and retry logic
-  - Privacy sanitization to remove headers and forwarded metadata
-  - Improved validation (roles, students, packages)
-  - Integration with PlacementNotificationFormatter for notification creation
+ - Keyword scoring for placement-related signals, company indicators, and negative filters
+ - LLM extraction with structured validation and retry logic
+ - Privacy sanitization to remove headers and forwarded metadata
+ - Improved validation (roles, students, packages)
+ - Integration with PlacementNotificationFormatter for notification creation
 - Processing pipeline:
-  - Classify (keyword scoring) -> Extract (LLM) -> Validate & Improve -> Sanitize Privacy -> Display
+ - Classify (keyword scoring) -> Extract (LLM) -> Validate & Improve -> Sanitize Privacy -> Display
 
 ```mermaid
 flowchart TD
@@ -149,13 +144,13 @@ Reject --> Done
 ### NoticeFormatterService
 - Purpose: Standardize and format notices into notification-ready content using LLM prompts and LangGraph.
 - Key features:
-  - Text extraction from HTML content
-  - Single-label classification (update, shortlisting, announcement, hackathon, webinar, job posting)
-  - Fuzzy company name matching against job listings
-  - Structured extraction based on category
-  - Formatting into Telegram-ready messages with consistent styles and deadlines
+ - Text extraction from HTML content
+ - Single-label classification (update, shortlisting, announcement, hackathon, webinar, job posting)
+ - Fuzzy company name matching against job listings
+ - Structured extraction based on category
+ - Formatting into Telegram-ready messages with consistent styles and deadlines
 - Processing pipeline:
-  - Extract Text -> Classify -> Match Job -> Enrich Matched Job -> Extract Info -> Format Message
+ - Extract Text -> Classify -> Match Job -> Enrich Matched Job -> Extract Info -> Format Message
 
 ```mermaid
 flowchart TD
@@ -173,14 +168,14 @@ Format --> Done(["Return formatted_message"])
 ### PlacementNotificationFormatter
 - Purpose: Create notification-ready documents for placement events (new offers and updates).
 - Key features:
-  - Role breakdown and counts
-  - Package formatting helpers
-  - New offer and update offer formatting
-  - Integration with DatabaseService for persistence
+ - Role breakdown and counts
+ - Package formatting helpers
+ - New offer and update offer formatting
+ - Integration with DatabaseService for persistence
 - Processing:
-  - NewOfferEvent -> format_new_offer_notice
-  - UpdateOfferEvent -> format_update_offer_notice
-  - process_events orchestrates multiple events and saves to DB
+ - NewOfferEvent -> format_new_offer_notice
+ - UpdateOfferEvent -> format_update_offer_notice
+ - process_events orchestrates multiple events and saves to DB
 
 ```mermaid
 flowchart TD
@@ -195,12 +190,12 @@ Save --> Done(["Return NoticeDocument"])
 ### PlacementPolicyService
 - Purpose: Manage placement policy documents (Markdown, TOC, year extraction, CRUD).
 - Key features:
-  - Advanced LLM extraction for policy updates with strict JSON schema
-  - Slug generation for GitHub-style TOC IDs
-  - Year and update date extraction
-  - Upsert operations for MongoDB
+ - Advanced LLM extraction for policy updates with strict JSON schema
+ - Slug generation for GitHub-style TOC IDs
+ - Year and update date extraction
+ - Upsert operations for MongoDB
 - Processing:
-  - process_policy_email orchestrates extraction and persistence
+ - process_policy_email orchestrates extraction and persistence
 
 ```mermaid
 flowchart TD
@@ -217,10 +212,10 @@ Persist --> Done(["Return PolicyDocument"])
 ### GoogleGroupsClient
 - Purpose: Decoupled email ingestion for Google Groups using IMAP.
 - Key features:
-  - Connect/disconnect management
-  - Fetch unread IDs and emails
-  - Forwarded date and sender extraction
-  - Mark as read/unread
+ - Connect/disconnect management
+ - Fetch unread IDs and emails
+ - Forwarded date and sender extraction
+ - Mark as read/unread
 
 ```mermaid
 classDiagram
@@ -240,12 +235,12 @@ class GoogleGroupsClient {
 ### DatabaseService
 - Purpose: Centralized MongoDB operations for notices, jobs, placement offers, policies, and users.
 - Key features:
-  - Notice CRUD and stats
-  - Job upsert and retrieval
-  - Placement offers save with merge logic and event emission
-  - Official placement data save with content hashing
-  - Policies CRUD and retrieval
-  - Users management
+ - Notice CRUD and stats
+ - Job upsert and retrieval
+ - Placement offers save with merge logic and event emission
+ - Official placement data save with content hashing
+ - Policies CRUD and retrieval
+ - Users management
 
 ```mermaid
 classDiagram
@@ -270,18 +265,18 @@ class DatabaseService {
 
 ## Dependency analysis
 - EmailNoticeService depends on:
-  - GoogleGroupsClient for email ingestion
-  - NoticeFormatterService for standardized formatting
-  - PlacementPolicyService for policy update handling
-  - DatabaseService for persistence
+ - GoogleGroupsClient for email ingestion
+ - NoticeFormatterService for standardized formatting
+ - PlacementPolicyService for policy update handling
+ - DatabaseService for persistence
 - PlacementService depends on:
-  - DatabaseService for saving offers and emitting events
-  - PlacementNotificationFormatter for notification creation
+ - DatabaseService for saving offers and emitting events
+ - PlacementNotificationFormatter for notification creation
 - NoticeFormatterService depends on:
-  - LLM prompts and LangGraph for classification and extraction
-  - DatabaseService for job matching and enrichment
+ - LLM prompts and LangGraph for classification and extraction
+ - DatabaseService for job matching and enrichment
 - PlacementNotificationFormatter depends on:
-  - DatabaseService for saving notices
+ - DatabaseService for saving notices
 - GoogleGroupsClient is a standalone email ingestion client
 - DatabaseService is a central persistence layer
 
@@ -310,16 +305,16 @@ GGC --> DB
 ## Troubleshooting guide
 Common issues and resolutions:
 - LLM JSON parsing failures:
-  - PlacementService: Validates JSON and retries up to a maximum; check LLM prompt templates and content normalization.
-  - EmailNoticeService: Extracts JSON from fenced blocks and retries on validation errors.
+ - PlacementService: Validates JSON and retries up to a maximum; check LLM prompt templates and content normalization.
+ - EmailNoticeService: Extracts JSON from fenced blocks and retries on validation errors.
 - Email fetching errors:
-  - GoogleGroupsClient raises clear exceptions for missing credentials and connection failures; verify environment variables and network connectivity.
+ - GoogleGroupsClient raises clear exceptions for missing credentials and connection failures; verify environment variables and network connectivity.
 - Privacy sanitization:
-  - PlacementService strips headers and forwarded markers; ensure additional_info and package details are sanitized consistently.
+ - PlacementService strips headers and forwarded markers; ensure additional_info and package details are sanitized consistently.
 - Database persistence:
-  - DatabaseService returns explicit success/error tuples; inspect returned messages for detailed failure reasons.
+ - DatabaseService returns explicit success/error tuples; inspect returned messages for detailed failure reasons.
 - Daemon mode:
-  - Safe printing is disabled in daemon mode; rely on logging to file for visibility.
+ - Safe printing is disabled in daemon mode; rely on logging to file for visibility.
 
 ## Conclusion
-The email processing services provide a reliable, LLM-powered pipeline for extracting, classifying, validating, and formatting placement and general notices. The modular design enables clear separation of concerns, strong integration with MongoDB, and extensible formatting for notifications. The orchestration in main.py demonstrates a practical approach to handling mixed email sources and ensuring reliable persistence and delivery.
+Classify, extract, validate, format, persist. The split keeps MongoDB writes and notification delivery boring in a good way. main.py shows how mixed mail sources land in one place.

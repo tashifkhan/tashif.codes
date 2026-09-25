@@ -1,7 +1,7 @@
 # Status monitoring and progress tracking
 
 ## Introduction
-This page explains the real-time status monitoring and progress tracking system for bulk messaging operations. It covers the event-driven status reporting pipeline, including client initialization and authentication, QR code generation, progress updates during message sending, and the frontend UI integration that displays live feedback. It also documents the status message types, progress tracking interface, error reporting, and troubleshooting guidance.
+Status and progress events from the WhatsApp client and send loop, and how the React UI renders the activity log.
 
 ## Project structure
 The status monitoring spans three layers:
@@ -32,13 +32,13 @@ BM --> WF
 
 ## Core components
 - WhatsApp client lifecycle and status events:
-  - Client initialization, QR code generation, authentication, readiness, and disconnection events are emitted to the renderer.
-  - Progress events during mass sending include per-contact status and final summary.
+ - Client initialization, QR code generation, authentication, readiness, and disconnection events are emitted to the renderer.
+ - Progress events during mass sending include per-contact status and final summary.
 - Gmail and SMTP progress reporting:
-  - Per-message progress events include current index, total count, recipient, and status ("sending", "sent", "failed").
+ - Per-message progress events include current index, total count, recipient, and status ("sending", "sent", "failed").
 - Renderer integration:
-  - Event subscriptions for status, QR, and send progress.
-  - Real-time UI updates and activity log aggregation.
+ - Event subscriptions for status, QR, and send progress.
+ - Real-time UI updates and activity log aggregation.
 
 ## Architecture overview
 The status monitoring follows an event-driven pattern:
@@ -83,12 +83,12 @@ BM-->>UI : Show totals
 
 ### WhatsApp status reporting pipeline
 - Client lifecycle events:
-  - Initialization, QR generation, ready, authenticated, auth failure, and disconnect notifications are sent to the renderer.
+ - Initialization, QR generation, ready, authenticated, auth failure, and disconnect notifications are sent to the renderer.
 - QR code generation:
-  - QR string is converted to a data URL and sent to the renderer for display.
+ - QR string is converted to a data URL and sent to the renderer for display.
 - Progress tracking during mass sending:
-  - Per-contact status updates ("Sent to...", "Failed to send...").
-  - Final summary with sent and failed counts.
+ - Per-contact status updates ("Sent to...", "Failed to send...").
+ - Final summary with sent and failed counts.
 
 ```mermaid
 sequenceDiagram
@@ -119,11 +119,11 @@ BM-->>WF : Show totals
 ```
 
 ### Gmail and SMTP progress tracking
-- Both handlers emit per-message progress events with:
-  - current index
-  - total count
-  - recipient
-  - status ("sending", "sent", "failed")
+- Both handlers emit per-message progress events :
+ - current index
+ - total count
+ - recipient
+ - status ("sending", "sent", "failed")
 - Failed messages include an error message payload for detailed troubleshooting.
 
 ```mermaid
@@ -147,26 +147,26 @@ end
 
 ### Status message types and interpretation
 - WhatsApp client status:
-  - Initializing WhatsApp client...
-  - Scan QR code to authenticate
-  - Client is ready!
-  - Authenticated!
-  - Authentication failed: <reason>
-  - Client disconnected: <reason>
-  - Starting WhatsApp client...
-  - Failed to initialize client: <error>
-  - Disconnected
-  - Disconnected (forced)
+ - Initializing WhatsApp client...
+ - Scan QR code to authenticate
+ - Client is ready!
+ - Authenticated!
+ - Authentication failed: <reason>
+ - Client disconnected: <reason>
+ - Starting WhatsApp client...
+ - Failed to initialize client: <error>
+ - Disconnected
+ - Disconnected (forced)
 - WhatsApp send progress:
-  - Sending messages to N contacts...
-  - Sent to <number>
-  - Failed: <number> not registered
-  - Failed to send to <number>: <error>
-  - Mass messaging complete. Sent: X, Failed: Y
+ - Sending messages to N contacts...
+ - Sent to <number>
+ - Failed: <number> not registered
+ - Failed to send to <number>: <error>
+ - Mass messaging complete. Sent: X, Failed: Y
 - Email progress (Gmail/SMTP):
-  - email-progress with status "sending", "sent", or "failed"
-  - Includes current/total and recipient
-  - "failed" includes error message
+ - email-progress with status "sending", "sent", or "failed"
+ - Includes current/total and recipient
+ - "failed" includes error message
 
 Interpretation guidelines:
 - "Initializing" and "Starting" indicate setup phase.
@@ -177,41 +177,41 @@ Interpretation guidelines:
 
 ### Progress tracking interface
 - Sent/Failed counts:
-  - Final summary after mass sending includes total sent and failed.
+ - Final summary after mass sending includes total sent and failed.
 - Individual recipient status:
-  - Each status update is appended to the activity log with timestamp and color-coded indicators.
+ - Each status update is appended to the activity log with timestamp and color-coded indicators.
 - Real-time rendering:
-  - Status text updates immediately upon receiving events.
-  - QR code appears/disappears based on authentication state.
+ - Status text updates immediately upon receiving events.
+ - QR code appears/disappears based on authentication state.
 
 ### Error reporting system
 - WhatsApp:
-  - Authentication failures report the reason.
-  - Disconnection reasons are reported.
-  - Initialization failures include error messages.
-  - Per-contact send failures include the error message.
+ - Authentication failures report the reason.
+ - Disconnection reasons are reported.
+ - Initialization failures include error messages.
+ - Per-contact send failures include the error message.
 - Gmail/SMTP:
-  - Detailed error messages are attached to "failed" progress events.
-  - Transport verification and token presence are validated before sending.
+ - Detailed error messages are attached to "failed" progress events.
+ - Transport verification and token presence are validated before sending.
 
 Troubleshooting guidance:
 - WhatsApp QR code not loading:
-  - Retry connection; check network and browser cache.
+ - Retry connection; check network and browser cache.
 - Authentication failures:
-  - Verify credentials and service availability.
+ - Verify credentials and service availability.
 - SMTP connection issues:
-  - Confirm host/port/security settings and firewall rules.
+ - Confirm host/port/security settings and firewall rules.
 - Contact import errors:
-  - Validate file format and encoding.
+ - Validate file format and encoding.
 
 ### Integration with frontend UI
 - Event subscriptions:
-  - onWhatsAppStatus, onWhatsAppQR, onWhatsAppSendStatus for WhatsApp.
-  - onProgress for email progress.
+ - onWhatsAppStatus, onWhatsAppQR, onWhatsAppSendStatus for WhatsApp.
+ - onProgress for email progress.
 - UI updates:
-  - Status text color changes based on state (ready, initializing, error).
-  - QR code displayed until authenticated.
-  - Activity log shows chronological status updates with color-coded severity.
+ - Status text color changes based on state (ready, initializing, error).
+ - QR code displayed until authenticated.
+ - Activity log shows chronological status updates with color-coded severity.
 
 ## Dependency analysis
 The status monitoring relies on:
@@ -234,22 +234,23 @@ SHJS["smtp-handler.js"] --> NM
 
 ## Performance considerations
 - Rate limiting:
-  - Delays between messages reduce the risk of throttling and improve reliability.
+ - Delays between messages reduce the risk of throttling and improve reliability.
 - Asynchronous processing:
-  - Events are emitted asynchronously to keep the UI responsive.
+ - Events are emitted asynchronously to keep the UI responsive.
 - Efficient rendering:
-  - Only appending new log entries prevents unnecessary re-renders.
+ - Only appending new log entries prevents unnecessary re-renders.
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - WhatsApp QR code not loading:
-  - Retry connection; clear browser cache; ensure network connectivity.
+ - Retry connection; clear browser cache; ensure network connectivity.
 - Gmail authentication failed:
-  - Verify OAuth2 credentials and Google Cloud Console settings; confirm Gmail API enabled.
+ - Verify OAuth2 credentials and Google Cloud Console settings; confirm Gmail API enabled.
 - SMTP connection issues:
-  - Validate server settings, ports, and security; check firewall and TLS configuration.
+ - Validate server settings, ports, and security; check firewall and TLS configuration.
 - Contact import errors:
-  - Confirm file format compatibility and UTF-8 encoding; ensure proper column headers.
+ - Confirm file format compatibility and UTF-8 encoding; ensure proper column headers.
 
 ## Conclusion
-The status monitoring system provides reliable, real-time feedback for bulk messaging operations. It uses Electron IPC to deliver client lifecycle events, QR code generation, and per-message progress updates to the frontend. The UI integrates these events smoothly, enabling users to track sent/failed counts, monitor individual recipient statuses, and troubleshoot issues effectively.
+
+If the log freezes, check that the renderer still holds the event subscription and that main is still emitting after errors.

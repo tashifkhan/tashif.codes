@@ -1,20 +1,16 @@
 # What is MOOC utils
 
-## Introduction
-MOOC Utils is a collection of utilities designed to improve the experience of learners on Massive Open Online Course (MOOC) platforms, primarily focusing on NPTEL and SWAYAM. The project's mission is to streamline online learning workflows by reducing manual effort and improving focus on studying. It achieves this through three complementary components:
+MOOC Utils is a set of tools for NPTEL and SWAYAM learners who are tired of repetitive busywork. Three parts: an AI assignment helper extension, a notices CLI/API, and a Next.js marketing site plus dashboard.
 
-- Assignment Solver: A browser extension that assists with online assignments using AI to extract, analyze, and solve questions.
-- Notice Reminders: A CLI tool and FastAPI backend that tracks course announcements and delivers notifications.
-- Website: A Next.js web application serving as a marketing site and a dashboard for user authentication, subscriptions, and notifications.
-
-Together, these components aim to save time, improve learning outcomes, and increase engagement by automating repetitive tasks and keeping learners informed about course updates.
+Repo: https://github.com/tashifkhan/MOOC-utils
 
 ## Project structure
-MOOC Utils is organized as a monorepo with three distinct packages, each with its own technology stack and responsibilities:
 
-- assignment-solver: A cross-browser Chrome/Firefox extension built with modern tooling and AI integration.
-- notice-reminders: A Python-based CLI and API backend with a FastAPI server and database persistence.
-- website: A Next.js web application providing a landing page, marketing content, and a user dashboard.
+Three packages, each with its own stack:
+
+- `assignment-solver/`: Chrome/Firefox extension (Vite, Gemini).
+- `notice-reminders/`: Python 3.12+ CLI and FastAPI backend.
+- `website/`: Next.js App Router landing page and dashboard.
 
 ```mermaid
 graph TB
@@ -24,34 +20,33 @@ NR["notice-reminders<br/>CLI + FastAPI Backend"]
 WEB["website<br/>Next.js Landing + Dashboard"]
 end
 NR --> WEB
-AS -. "UI/UX" .-> WEB
+AS -. "UI/UX".-> WEB
 ```
 
 ## Core components
-This section defines each component and its role within MOOC Utils.
 
 - Assignment Solver
-  - Purpose: Automate assignment solving on MOOC platforms using AI.
-  - Key capabilities: AI-powered question extraction, Study Hints and Auto-Solve modes, support for single/multi-choice and fill-in-the-blank questions, client-side privacy with BYOK (Bring Your Own Key), and export functionality.
-  - Target platforms: NPTEL and similar MOOC sites; cross-browser support for Chrome and Firefox.
-  - Technical highlights: Vite build system, webextension-polyfill, dynamic manifests, and Gemini API integration.
+  - Purpose: extract and solve assignment questions on MOOC pages.
+  - Modes: Study Hints and Auto-Solve.
+  - Types: single choice, multi choice, fill-in-the-blank, plus screenshots for image questions.
+  - Privacy: BYOK. Client-side only. Key stored in the browser.
+  - Browsers: Chrome 116+, Firefox 121+.
 
 - Notice Reminders
-  - Purpose: Keep learners informed about course updates without manually checking the web UI.
-  - Key capabilities: Course search, announcement retrieval, interactive CLI, email OTP authentication, and planned notification channels.
-  - Technical highlights: FastAPI backend, Tortoise ORM, HTTPX, BeautifulSoup, and a modular architecture supporting both CLI and API modes.
+  - Purpose: course updates without hunting the Swayam UI.
+  - CLI: search and list announcements, no database.
+  - API: users, search, courses, announcements, subscriptions, notifications.
+  - Auth: email OTP, JWT access/refresh cookies.
+  - Notify: Telegram and email still planned.
 
 - Website
-  - Purpose: Marketing site and user dashboard for Notice Reminders and Assignment Solver.
-  - Key capabilities: OTP-based login/signup, course search, subscription management, notification inbox, and user profile management.
-  - Technical highlights: Next.js App Router, React with TypeScript, TanStack Query, Tailwind CSS, and shadcn/ui.
+  - Purpose: marketing plus the Notice Reminders dashboard, and an Assignment Solver page.
+  - Auth: OTP against the Notice Reminders API.
+  - Also: public course search, subscription manager, inbox, profile.
 
 ## Architecture overview
-The system architecture connects the three components through a cohesive data and control flow:
 
-- Assignment Solver runs as a browser extension and communicates with AI services to assist with assignments.
-- Notice Reminders provides a backend API and CLI to manage subscriptions and announcements.
-- Website is the frontend for user onboarding, authentication, and dashboard interactions, integrating with the Notice Reminders API.
+The extension talks to Gemini. The website talks to Notice Reminders. Those two paths do not share a server.
 
 ```mermaid
 graph TB
@@ -63,7 +58,7 @@ EXT["Assignment Solver Extension"]
 end
 subgraph "Backend"
 API["Notice Reminders API"]
-DB["Database"]
+DB["SQLite"]
 end
 subgraph "Frontend"
 WEB["Website (Next.js)"]
@@ -72,13 +67,12 @@ U --> EXT
 U --> WEB
 WEB --> API
 API --> DB
-EXT -. "AI Services" .-> U
+EXT -. "Gemini API".-> U
 ```
 
-## Detailed component analysis
+## Assignment solver
 
-### Assignment solver
-Assignment Solver is a browser extension that integrates AI to assist with MOOC assignments. It operates in two primary modes, Study Hints (educational guidance) and Auto-Solve (automation), and supports various question types. The extension is built with a clear separation of concerns across background scripts, content scripts, UI panels, and service integrations.
+Layered background, content script, side panel, and Gemini service.
 
 ```mermaid
 sequenceDiagram
@@ -103,18 +97,11 @@ Ext->>CS : "Apply answers to page"
 CS-->>User : "Answers filled/submitted"
 ```
 
-Key implementation patterns:
-- Message routing and handlers in the background script coordinate UI, content script, and AI services.
-- Cross-browser compatibility is achieved via platform adapters and dynamic manifests.
-- Privacy-first design stores API keys locally and performs processing client-side.
+Extraction turns page HTML into JSON. Solving asks Gemini per question. Application clicks radios, checks boxes, or types fill-ins.
 
-Operational characteristics:
-- Extraction phase converts raw HTML into structured question data.
-- Solving phase queries AI for answers and stores results in extension state.
-- Application phase simulates DOM interactions to apply answers and submit forms.
+## Notice reminders
 
-### Notice reminders
-Notice Reminders offers both CLI and API modes to search courses, fetch announcements, and manage subscriptions. The API is built with FastAPI and integrates with a database through Tortoise ORM. Authentication uses email OTP with JWT cookies, and the system is designed for extensibility with future notification channels.
+`uv run python main.py cli` or `uv run python main.py api`. CLI uses `app/cli`. API uses Tortoise against SQLite.
 
 ```mermaid
 sequenceDiagram
@@ -133,13 +120,11 @@ User->>API : "POST /auth/verify-otp"
 API-->>User : "JWT cookies set"
 ```
 
-Operational characteristics:
-- CLI mode provides an interactive experience without requiring a database.
-- API mode exposes endpoints for user management, course search, announcements, subscriptions, and notifications.
-- CORS is configured for secure frontend integration.
+Public: `GET /search`, `GET /courses`, `GET /courses/{code}`. Everything else needs auth. CORS defaults to `http://localhost:3000`.
 
-### Website
-The Website component is both a marketing site and a dashboard. It provides OTP-based authentication, course search, subscription management, and a notification inbox. It integrates with the Notice Reminders API and uses TanStack Query for efficient data fetching and caching.
+## Website
+
+OTP login, course search, subscriptions, inbox. TanStack Query for dashboard fetches.
 
 ```mermaid
 sequenceDiagram
@@ -158,63 +143,39 @@ Site->>API : "GET /subscriptions"
 API-->>Site : "Subscriptions"
 ```
 
-Key implementation patterns:
-- Authentication context manages OTP login, session refresh, and logout.
-- Dashboard composes reusable components for notifications, subscriptions, and user profiles.
-- TanStack Query optimizes data fetching and state synchronization.
+`lib/auth-context.tsx` owns request/verify OTP, refresh, and logout. Do not use `npm run dev` or `bun dev`.
 
 ## Dependency analysis
-The three components are loosely coupled and communicate primarily through the Notice Reminders API and the browser extension's internal messaging. The website depends on the backend for authentication and data, while the extension interacts with external AI services.
 
 ```mermaid
 graph TB
 AS["Assignment Solver"]
 NR_API["Notice Reminders API"]
-NR_DB["Notice Reminders DB"]
+NR_DB["Notice Reminders SQLite"]
 WEB["Website"]
-AS --> |"AI Services"| AS
+AS --> |"Gemini"| AS
 WEB --> NR_API
 NR_API --> NR_DB
 ```
 
-## Performance considerations
-- Assignment Solver
-  - Rate limiting and delays are implemented to prevent API throttling and ensure reliable DOM updates.
-  - Client-side processing minimizes latency and protects privacy.
-- Notice Reminders
-  - Database-backed API requires careful indexing and query optimization for search and announcement retrieval.
-  - CORS and middleware configuration ensure secure and responsive interactions.
-- Website
-  - TanStack Query enables efficient caching and background refetching.
-  - Next.js App Router improves navigation performance and reduces bundle sizes.
+## Performance
 
-[No sources needed since this section provides general guidance]
+- Assignment Solver: delays between Gemini calls and DOM writes so quota and the page keep up.
+- Notice Reminders: cache TTL 60 minutes; SQLite is the local default.
+- Website: Query cache and App Router splits.
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
 
-- Assignment Solver
-  - "Could not get page HTML": Ensure the assignment page is fully loaded and try re-extracting.
-  - "Question container not found": Re-extract questions or check console for errors.
-  - "API Key invalid": Verify the key at the provider's portal and ensure it has API access enabled.
-  - "Answers not being applied": Some platforms use custom components; inspect console and apply answers individually.
-  - "Rate limit errors": Wait before retrying, upgrade quota, or reduce concurrent operations.
-
-- Notice Reminders
-  - CLI vs API confusion: Use the appropriate mode depending on whether a database is required.
-  - CORS errors: Ensure the frontend is configured to call the correct backend origin.
-
-- Website
-  - Authentication failures: Confirm backend is running and cookies are accepted.
-  - Dashboard not loading data: Check network requests and query keys for TanStack Query.
+- Assignment Solver: page HTML, missing containers, invalid key, custom widgets, rate limits.
+- Notice Reminders: CLI vs API, CORS origin, `jwt_secret`.
+- Website: API down, cookies blocked, wrong `NEXT_PUBLIC_API_URL`.
 
 ## Conclusion
-MOOC Utils consolidates practical tools to elevate the MOOC learning journey. By combining an AI-powered assignment assistant, a reliable notice reminder system, and a user-friendly dashboard, it reduces manual overhead, keeps learners engaged, and supports better study outcomes. The modular architecture and clear separation of concerns enable maintainability and scalability across components.
 
-[No sources needed since this section summarizes without analyzing specific files]
+Less manual checking, fewer missed notices, assignment help that does not ship your key to a random server.
 
 ## Appendices
-- Getting started with each component:
-  - Assignment Solver: Follow the build and installation steps for Chrome or Firefox.
-  - Notice Reminders: Install dependencies and run in CLI or API mode.
-  - Website: Install dependencies, configure environment variables, and run the Next.js app.
+
+- Assignment Solver: `cd assignment-solver && bun install && bun run build`, load `dist/chrome` or `dist/firefox`.
+- Notice Reminders: `cd notice-reminders && uv sync`, then `cli` or `api`.
+- Website: `cd website && bun install`, set `NEXT_PUBLIC_API_URL`, `bun run build`.

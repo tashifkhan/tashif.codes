@@ -1,9 +1,8 @@
 # Resume and analysis data
 
-## Introduction
-This page provides detailed documentation for the Resume and Analysis data models in TalentSync-Normies. It explains the Resume model with fields for user association, custom naming, raw text storage, upload metadata, and source tracking (UPLOADED vs MANUAL). It also documents the Analysis model with structured fields for personal information, professional links, predicted career field, skills analysis JSON, recommended roles array, and detailed sections for education, work experience, projects, publications, positions of responsibility, certifications, and achievements. The document covers the parent-child relationship for tailored resumes with cascade deletion policies, JSON field usage for flexible data structures, indexing strategies for performance optimization, and data lifecycle management. It further addresses resume versioning patterns, master resume tracking, analysis result storage mechanisms, validation rules, text search capabilities, and performance considerations for large text fields.
+Prisma `Resume` and `Analysis` models: storage, relations, JSON fields, and how services read and write them.
 
-## Project structure
+## Repository layout
 The Resume and Analysis data models are defined in the Prisma schema and consumed by backend services and routes. The relevant files include:
 - Prisma schema defining models and indexes
 - Services orchestrating resume processing and analysis
@@ -35,15 +34,15 @@ RESUME_ANALYSIS --> PROCESS_RESUME
 TAILORED_ROUTE --> RESUME_ANALYSIS
 ```
 
-## Core components
+## Building blocks
 - Resume model
-  - Fields: id, userId, customName, rawText, uploadDate, showInCentral, source, isMaster, parentId
-  - Relations: belongs to User, optional Analysis, parent-child relationship via parentId with SetNull on child delete
-  - Indexes: composite index on userId and isMaster
+ - Fields: id, userId, customName, rawText, uploadDate, showInCentral, source, isMaster, parentId
+ - Relations: belongs to User, optional Analysis, parent-child relationship via parentId with SetNull on child delete
+ - Indexes: composite index on userId and isMaster
 - Analysis model
-  - Fields: id, resumeId (unique), name, email, contact, linkedin, github, blog, portfolio, predictedField, skillsAnalysis (JSON), recommendedRoles (array), and multiple JSON sections (languages, education, workExperience, projects, publications, positionsOfResponsibility, certifications, achievements)
-  - Relations: belongs to Resume
-  - Timestamps: uploadedAt, updatedAt
+ - Fields: id, resumeId (unique), name, email, contact, linkedin, github, blog, portfolio, predictedField, skillsAnalysis (JSON), recommendedRoles (array), and multiple JSON sections (languages, education, workExperience, projects, publications, positionsOfResponsibility, certifications, achievements)
+ - Relations: belongs to Resume
+ - Timestamps: uploadedAt, updatedAt
 
 These models support:
 - Resume ingestion and storage of raw text
@@ -51,7 +50,7 @@ These models support:
 - Master resume tracking and tailored resume hierarchy
 - Efficient querying via indexes
 
-## Architecture overview
+## How it fits together
 The system processes uploaded resumes, extracts and validates text, performs analysis, and stores structured results. The flow integrates file processing, LLM-based extraction, and persistence.
 
 ```mermaid
@@ -72,25 +71,23 @@ Service-->>Route : "ResumeUploadResponse"
 Route-->>Client : "Response"
 ```
 
-## Detailed component analysis
-
-### Resume model
+## Resume model
 - Purpose: Store user-associated resume with raw text and metadata
 - Key fields
-  - userId: foreign key to User
-  - customName: human-friendly display name
-  - rawText: large text content stored as Text
-  - uploadDate: creation timestamp
-  - showInCentral: visibility flag
-  - source: "UPLOADED" or "MANUAL"
-  - isMaster: master resume flag
-  - parentId: nullable parent for tailored resumes
+ - userId: foreign key to User
+ - customName: human-friendly display name
+ - rawText: large text content stored as Text
+ - uploadDate: creation timestamp
+ - showInCentral: visibility flag
+ - source: "UPLOADED" or "MANUAL"
+ - isMaster: master resume flag
+ - parentId: nullable parent for tailored resumes
 - Relationships
-  - belongs to User
-  - optional Analysis
-  - parent-child via parentId with SetNull on child delete
+ - belongs to User
+ - optional Analysis
+ - parent-child via parentId with SetNull on child delete
 - Indexing
-  - Composite index on (userId, isMaster) for efficient lookups
+ - Composite index on (userId, isMaster) for efficient lookups
 
 ```mermaid
 classDiagram
@@ -149,18 +146,18 @@ Resume "1" --> "many" Resume : "child (tailored)"
 Resume --> Resume : "parent via parentId"
 ```
 
-### Analysis model
+## Analysis model
 - Purpose: Persist structured analysis results with flexible JSON sections
 - Core fields
-  - Personal info: name, email, contact
-  - Professional links: linkedin, github, blog, portfolio
-  - Predicted field: predictedField
-  - Skills: skillsAnalysis (JSON)
-  - Recommended roles: recommendedRoles (array)
-  - Sections: languages, education, workExperience, projects, publications, positionsOfResponsibility, certifications, achievements (all JSON)
+ - Personal info: name, email, contact
+ - Professional links: linkedin, github, blog, portfolio
+ - Predicted field: predictedField
+ - Skills: skillsAnalysis (JSON)
+ - Recommended roles: recommendedRoles (array)
+ - Sections: languages, education, workExperience, projects, publications, positionsOfResponsibility, certifications, achievements (all JSON)
 - Timestamps
-  - uploadedAt: initial insertion
-  - updatedAt: last modification
+ - uploadedAt: initial insertion
+ - updatedAt: last modification
 
 ```mermaid
 classDiagram
@@ -190,7 +187,7 @@ class Analysis {
 }
 ```
 
-### Parent-Child relationship for tailored resumes
+## Parent-Child relationship for tailored resumes
 - Tailored resumes are children of a master resume
 - Deletion policy: child delete sets parentId to NULL (SetNull)
 - Master resume tracking: isMaster flag distinguishes primary resume per user
@@ -206,15 +203,15 @@ DeleteChild --> SetNull["parentId becomes NULL (SetNull)"]
 SetNull --> End(["Tailored Resume Disconnected"])
 ```
 
-### JSON field usage and structured data
+## JSON field usage and structured data
 - JSON fields enable flexible storage of complex nested structures (e.g., lists of entries, proficiency data)
 - Validation and normalization are handled by Pydantic models:
-  - ComprehensiveAnalysisData: aggregates all analysis sections
-  - Individual section validators coerce text and lists consistently
+ - ComprehensiveAnalysisData: aggregates all analysis sections
+ - Individual section validators coerce text and lists consistently
 - Typical JSON sections include:
-  - skillsAnalysis: list of skill-proficiency pairs
-  - recommendedRoles: array of role names
-  - languages, education, workExperience, projects, publications, positionsOfResponsibility, certifications, achievements: arrays of normalized entries
+ - skillsAnalysis: list of skill-proficiency pairs
+ - recommendedRoles: array of role names
+ - languages, education, workExperience, projects, publications, positionsOfResponsibility, certifications, achievements: arrays of normalized entries
 
 ```mermaid
 classDiagram
@@ -240,7 +237,7 @@ class ComprehensiveAnalysisData {
 }
 ```
 
-### Data lifecycle management
+## Data lifecycle management
 - Ingestion: file upload processed into raw text
 - Validation: checks for supported formats and resume keywords
 - Analysis: LLM-driven extraction into structured JSON
@@ -259,7 +256,7 @@ G --> H["Indexing (userId, isMaster)"]
 H --> I["Ready for Queries"]
 ```
 
-### Resume versioning patterns and master resume tracking
+## Resume versioning patterns and master resume tracking
 - Master resume: identified by isMaster flag per user
 - Tailored resumes: children of a master resume via parentId
 - Versioning: achieved by creating new child resumes while preserving the master; deletion of a tailored resume does not affect the master (SetNull on parentId)
@@ -273,7 +270,7 @@ TailoredResume --> MasterResume : "Delete child (parentId set to NULL)"
 MasterResume --> [*]
 ```
 
-### Analysis result storage mechanisms
+## Analysis result storage mechanisms
 - Results are stored as JSON in dedicated fields for each section
 - A unified ComprehensiveAnalysisData model aggregates all sections for downstream use
 - Enrichment and regeneration workflows operate on this structured JSON
@@ -302,7 +299,7 @@ class ComprehensiveAnalysisData {
 }
 ```
 
-### Data validation rules
+## Data validation rules
 - Resume validation ensures presence of typical resume keywords
 - Pydantic models validate and normalize JSON structures
 - Portfolio link aliasing accommodates varied LLM outputs
@@ -315,12 +312,12 @@ Normalize --> PortfolioAlias["Map portfolio alias"]
 PortfolioAlias --> Pass["Validated Output"]
 ```
 
-### Text search capabilities
+## Text search capabilities
 - rawText is stored as Text for large content
 - No explicit text search index is defined in the schema; consider adding GIN or trigram indexes for full-text search if needed
 - Current indexing focuses on userId and isMaster for filtering master resumes per user
 
-## Dependency analysis
+## Dependencies
 The Resume and Analysis models depend on:
 - Prisma schema for database definitions and indexes
 - Backend services for processing and analysis
@@ -340,34 +337,31 @@ SERVICE --> PROCESSOR
 SERVICE --> PRISMA
 ```
 
-## Performance considerations
+## Performance
 - Large text fields
-  - rawText is stored as Text; consider partitioning or external storage for very large documents
-  - Full-text search: add GIN/trigram indexes if frequent text searches are required
+ - rawText is stored as Text; consider partitioning or external storage for very large documents
+ - Full-text search: add GIN/trigram indexes if frequent text searches are required
 - Indexing
-  - Composite index on (userId, isMaster) optimizes fetching master resumes per user
-  - Consider additional indexes for frequent filters (e.g., source, uploadDate)
+ - Composite index on (userId, isMaster) optimizes fetching master resumes per user
+ - Consider additional indexes for frequent filters (e.g., source, uploadDate)
 - JSON fields
-  - JSON queries may be slower than relational joins; denormalize selectively if needed
-  - Use targeted projections to minimize JSON payload sizes
+ - JSON queries may be slower than relational joins; denormalize selectively if needed
+ - Use targeted projections to minimize JSON payload sizes
 - LLM processing
-  - Batch processing and caching can reduce latency
-  - Monitor LLM availability and handle fallbacks gracefully
+ - Batch processing and caching can reduce latency
+ - Monitor LLM availability and handle fallbacks gracefully
 - Cascading deletes
-  - Tailored resumes use SetNull on parentId; ensure appropriate cleanup of unused records
+ - Tailored resumes use SetNull on parentId; clean up of unused records
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
+## Troubleshooting
 - Unsupported file type or processing errors
-  - The processor returns None for unsupported types; ensure file extensions are TXT, MD, PDF, or DOCX
+ - The processor returns None for unsupported types; accept only TXT, MD, PDF, or DOCX
 - Validation failures
-  - Resume must contain typical resume keywords; otherwise rejected
-  - Pydantic validation errors indicate malformed LLM outputs; review extracted keys and aliases
+ - Resume must contain typical resume keywords; otherwise rejected
+ - Pydantic validation errors indicate malformed LLM outputs; review extracted keys and aliases
 - LLM unavailability
-  - Empty or non-dictionary results lead to service errors; verify LLM configuration and availability
+ - Empty or non-dictionary results lead to service errors; verify LLM configuration and availability
 - Portfolio aliasing
-  - Portfolio field mapping handles various LLM output keys; ensure consistent alias handling
-
-## Conclusion
-The Resume and Analysis models in TalentSync-Normies provide a reliable foundation for storing and managing resume data with flexible JSON structures. The schema supports master/tailored resume hierarchies, efficient user-based queries, and detailed analysis outputs. By using Pydantic validation, structured JSON sections, and strategic indexing, the system balances flexibility with performance. Future enhancements could include full-text search indexes, denormalized fields for high-frequency queries, and improved cascading deletion policies for tailored resumes.
+ - Portfolio field mapping handles various LLM output keys; keep alias handling consistent

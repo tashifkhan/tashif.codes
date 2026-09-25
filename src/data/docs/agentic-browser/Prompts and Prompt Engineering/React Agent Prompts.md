@@ -1,14 +1,7 @@
 # React agent prompts
 
 ## Introduction
-This page explains the React agent prompt system and patterns used to orchestrate tool-enabled reasoning and response generation. It covers:
-- The core prompt structure that integrates available tools and manages conversation context
-- How the agent decides whether to use tools and how it formats responses
-- Dynamic tool injection based on runtime context
-- Multi-turn conversation handling and context propagation
-- Prompt variations for different domains (websites, GitHub repositories, YouTube videos)
-- Best practices for prompt optimization, error handling, and debugging
-- Scalability and performance considerations for production deployments
+System and tool prompts for the ReAct agent: default grounding, when the system message is auto-prepended, and domain add-ons.
 
 ## Project structure
 The React agent pipeline spans prompts, tools, agent orchestration, and service layers:
@@ -108,7 +101,7 @@ Router-->>Client : CrawllerResponse(answer)
 ### React prompt template and tool integration
 - Purpose: Introduce the agent's role, enumerate available tools, and instruct tool invocation syntax. The template is parameterized with the formatted tools list and the incoming question.
 - Dynamic tool integration: Tools are bound to the LLM at runtime via the agent node. The prompt itself does not change; the tool list injected into the LLM call determines which tools are available.
-- Conversation context: The system message is prepended automatically if missing, ensuring continuity across turns.
+- Conversation context: The system message is prepended automatically if missing.
 
 References:
 - Template definition and ChatPromptTemplate creation: `prompts/react.py`
@@ -211,7 +204,7 @@ References:
 - Payload normalization: `agents/react_agent.py`
 
 ## Conclusion
-The React agent prompt system combines a flexible tool registry with a LangGraph-driven reasoning loop. The prompt template focuses on tool availability and invocation syntax, while dynamic tool injection and context management enable reliable, multi-domain responses. By using structured tool schemas, careful context assembly, and provider-agnostic LLM configuration, the system supports scalable deployment and maintainable prompt engineering.
+If the conversation lacks a system message, the runtime adds one. Keep tool descriptions concrete. See `prompts/prompt_injection_validator.py` for the injection template.
 
 ## Appendices
 
@@ -224,7 +217,7 @@ The React agent prompt system combines a flexible tool registry with a LangGraph
 References:
 - Prompt template: `prompts/react.py`
 
-### Best practices for prompt optimization
+### Prompt optimization
 - Use explicit instructions for tool usage and response formatting
 - Inject only necessary context to reduce token usage
 - Validate and sanitize inputs to prevent prompt injection

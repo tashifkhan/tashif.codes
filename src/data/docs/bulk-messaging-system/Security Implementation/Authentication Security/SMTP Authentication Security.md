@@ -1,7 +1,7 @@
 # SMTP authentication security
 
 ## Introduction
-This page provides detailed security-focused documentation for SMTP authentication and transport within the application. It covers credential storage and encryption using electron-store, SSL/TLS enforcement for secure connections, server verification, and best practices for configuration and troubleshooting. The goal is to help developers and operators deploy secure SMTP functionality while minimizing risk exposure.
+SMTP security defaults: TLS options, verify-before-send, and why the saved config omits the password.
 
 ## Project structure
 The SMTP security implementation spans three primary areas:
@@ -63,7 +63,7 @@ Bridge-->>UI : "update UI with results"
 ## Detailed component analysis
 
 ### SMTP handler security behavior
-- Configuration validation: Ensures host, port, user, and pass are present before proceeding.
+- Configuration validation: Requires host, port, user, and pass before proceeding.
 - Optional credential persistence: When requested, stores host, port, secure flag, and user; intentionally excludes password.
 - Transport creation: Sets secure mode based on user selection and passes credentials; TLS options include rejectUnauthorized toggling.
 - Connection verification: Calls verify() to confirm connectivity and basic authentication readiness.
@@ -137,24 +137,22 @@ Operational guidance:
 - Run verification in development to catch configuration mistakes quickly.
 - Monitor progress events for failed attempts to diagnose server-side issues.
 
-### Security best practices for SMTP configuration
+### SMTP security habits
 - Ports and TLS:
-  - Use port 465 with implicit TLS when available.
-  - Use port 587 with explicit TLS (STARTTLS) when 465 is not supported.
-  - Disable insecure plaintext ports for authentication.
+ - Use port 465 with implicit TLS when available.
+ - Use port 587 with explicit TLS (STARTTLS) when 465 is not supported.
+ - Disable insecure plaintext ports for authentication.
 - STARTTLS:
-  - Prefer servers that enforce STARTTLS upgrades.
-  - Avoid configurations that disable certificate validation in production.
+ - Prefer servers that enforce STARTTLS upgrades.
+ - Avoid configurations that disable certificate validation in production.
 - Credential handling:
-  - Never persist passwords.
-  - Use app-specific or OAuth-based credentials when possible.
-  - Limit permissions granted to credentials.
+ - Never persist passwords.
+ - Use app-specific or OAuth-based credentials when possible.
+ - Limit permissions granted to credentials.
 - Network and runtime:
-  - Enforce context isolation and disable remote modules.
-  - Minimize exposed IPC surfaces.
-  - Validate and sanitize all user-provided configuration values.
-
-[No sources needed since this section provides general guidance]
+ - Enforce context isolation and disable remote modules.
+ - Minimize exposed IPC surfaces.
+ - Validate and sanitize all user-provided configuration values.
 
 ## Dependency analysis
 External libraries and their roles in SMTP security:
@@ -175,33 +173,32 @@ Main --> Handler
 - Batch size: Consider chunking large recipient lists to balance throughput and reliability.
 - Connection reuse: The transport is created per operation; reusing a single transport could improve performance but requires careful error handling.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common SMTP authentication and connection issues:
 
 - Incomplete configuration
-  - Symptom: Immediate failure with a configuration error.
-  - Cause: Missing host, port, user, or password.
-  - Action: Ensure all required fields are filled in the form.
+ - Symptom: Immediate failure with a configuration error.
+ - Cause: Missing host, port, user, or password.
+ - Action: Ensure all required fields are filled in the form.
 
 - Authentication failures
-  - Symptom: Verification or sendMail errors indicating bad credentials.
-  - Causes: Incorrect username/password, disabled 2FA/app-specific passwords, or server policy changes.
-  - Actions: Confirm credentials, enable required security settings, and retry verification.
+ - Symptom: Verification or sendMail errors indicating bad credentials.
+ - Causes: Incorrect username/password, disabled 2FA/app-specific passwords, or server policy changes.
+ - Actions: Confirm credentials, enable required security settings, and retry verification.
 
 - TLS/certificate errors
-  - Symptom: Certificate validation failures or handshake errors.
-  - Causes: Self-signed certificates, expired certificates, or mismatched hostnames.
-  - Actions: Use a server with a valid certificate chain, or adjust TLS settings only for testing.
+ - Symptom: Certificate validation failures or handshake errors.
+ - Causes: Self-signed certificates, expired certificates, or mismatched hostnames.
+ - Actions: Use a server with a valid certificate chain, or adjust TLS settings only for testing.
 
 - Server verification failures
-  - Symptom: Failure during the verification step.
-  - Causes: Wrong host/port, firewall restrictions, or server misconfiguration.
-  - Actions: Test connectivity externally, verify DNS resolution, and confirm server availability.
+ - Symptom: Failure during the verification step.
+ - Causes: Wrong host/port, firewall restrictions, or server misconfiguration.
+ - Actions: Test connectivity externally, verify DNS resolution, and confirm server availability.
 
 - Progress monitoring
-  - Use the emitted progress events to track per-recipient status and capture error messages for diagnostics.
+ - Use the emitted progress events to track per-recipient status and capture error messages for diagnostics.
 
 ## Conclusion
-The application's SMTP implementation emphasizes secure defaults and explicit user control. It validates configuration, verifies connectivity, and securely handles credentials by avoiding password persistence. For production, prefer secure connections with strict certificate validation, enforce STARTTLS, and apply reliable credential policies. The modular architecture isolates sensitive operations in the main process and minimizes exposed surfaces through the preload bridge.
+
+TLS on, verify before bulk, password not persisted. Deviate from that only with a clear threat-model reason.

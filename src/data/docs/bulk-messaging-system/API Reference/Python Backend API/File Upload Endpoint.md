@@ -1,7 +1,7 @@
 # File upload endpoint
 
 ## Introduction
-This page describes the /upload endpoint used to import contacts from files for the WhatsApp bulk messaging system. It covers the HTTP method, request format, supported file types, validation rules, request and response schemas, security measures, and practical examples for uploading files using curl and Python requests. It also documents error handling and cleanup procedures.
+`POST /upload` accepts CSV, TXT, or Excel, extracts contacts, then deletes the temp file. Used when the desktop app hands a file to the Flask backend.
 
 ## Project structure
 The /upload endpoint is implemented in the Python backend service. The relevant files are:
@@ -26,15 +26,15 @@ A -. references .-> C
 - Supported file types: txt, csv, xlsx, xls
 - File size limit: 16 MB
 - Security measures:
-  - Filename sanitization using secure_filename
-  - Allowed file extension validation
-  - Temporary file storage in uploads directory
-  - Cleanup of uploaded files after processing or failure
+ - Filename sanitization using secure_filename
+ - Allowed file extension validation
+ - Temporary file storage in uploads directory
+ - Cleanup of uploaded files after processing or failure
 - Response schema:
-  - success: boolean
-  - contacts: array of contact objects
-  - count: integer
-  - message: string
+ - success: boolean
+ - contacts: array of contact objects
+ - count: integer
+ - message: string
 
 ## Architecture overview
 The /upload endpoint receives a multipart/form-data request, validates the file, saves it temporarily, extracts contacts based on file type, removes the temporary file, and returns a structured response.
@@ -85,7 +85,7 @@ Cleanup:
 Supported formats:
 - CSV (.csv)
 - Text (.txt)
-- Excel (.xlsx,.xls)
+- Excel (.xlsx, .xls)
 
 Parsing behavior:
 - CSV: Attempts pandas read_csv; falls back to manual CSV reader if needed
@@ -105,36 +105,36 @@ Phone number cleaning:
 - Content-Type: multipart/form-data
 - Form Field Name: file
 - Example curl command:
-  - curl -X POST -F "file=@/path/to/contacts.csv" http://localhost:5000/upload
+ - curl -X POST -F "file=@/path/to/contacts.csv" http://localhost:5000/upload
 - Example Python requests:
-  - requests.post("http://localhost:5000/upload", files={"file": open("contacts.xlsx", "rb")})
+ - requests.post("http://localhost:5000/upload", files={"file": open("contacts.xlsx", "rb")})
 
 Response schema:
-- success: boolean
+  - success: boolean
 - contacts: array of objects with keys number and optional name
-- count: integer
-- message: string
+  - count: integer
+  - message: string
 
 Example successful response:
 - {
-  "success": true,
-  "contacts": [{"number": "+1234567890", "name": "John Doe"},...],
-  "count": 42,
-  "message": "Successfully extracted 42 contacts"
+ "success": true,
+ "contacts": [{"number": "+1234567890", "name": "John Doe"}, ...],
+ "count": 42,
+ "message": "Successfully extracted 42 contacts"
 }
 
 Error responses:
 - {
-  "error": "No file provided"
+ "error": "No file provided"
 }
 - {
-  "error": "No file selected"
+ "error": "No file selected"
 }
 - {
-  "error": "Invalid file type. Allowed types: txt, csv, xlsx, xls"
+ "error": "Invalid file type. Allowed types: txt, csv, xlsx, xls"
 }
 - {
-  "error": "Failed to process file: <details>"
+ "error": "Failed to process file: <details>"
 }
 
 ### Security measures
@@ -191,8 +191,6 @@ Flask --> Werkzeug
 - Excel parsing uses pandas and openpyxl/xlrd
 - Contact extraction avoids heavy operations by focusing on phone number normalization and column detection
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Invalid file type error: Ensure the file has extension txt, csv, xlsx, or xls
@@ -201,25 +199,24 @@ Common issues and resolutions:
 - Cleanup failures: Temporary files are removed automatically; if not, verify filesystem permissions
 
 ## Conclusion
-The /upload endpoint provides a straightforward way to import contacts from CSV, TXT, and Excel files. It enforces strict validation, sanitizes filenames, limits file sizes, and returns a consistent response schema. The implementation includes reliable parsing and cleanup procedures to maintain reliability.
 
-[No sources needed since this section summarizes without analyzing specific files]
+Always check `success` in the JSON. Temp files are removed after processing, so failed uploads will not leave orphans unless the process dies mid-write.
 
 ## Appendices
 
 ### Practical examples
 
 - Using curl to upload a CSV file:
-  - curl -X POST -F "file=@/path/to/contacts.csv" http://localhost:5000/upload
+ - curl -X POST -F "file=@/path/to/contacts.csv" http://localhost:5000/upload
 
 - Using Python requests to upload an Excel file:
-  - import requests
-  - files = {"file": open("contacts.xlsx", "rb")}
-  - response = requests.post("http://localhost:5000/upload", files=files)
-  - print(response.json())
+ - import requests
+ - files = {"file": open("contacts.xlsx", "rb")}
+ - response = requests.post("http://localhost:5000/upload", files=files)
+ - print(response.json())
 
 - Using Python requests to upload a text file:
-  - import requests
-  - files = {"file": open("contacts.txt", "rb")}
-  - response = requests.post("http://localhost:5000/upload", files=files)
-  - print(response.json())
+ - import requests
+ - files = {"file": open("contacts.txt", "rb")}
+ - response = requests.post("http://localhost:5000/upload", files=files)
+ - print(response.json())

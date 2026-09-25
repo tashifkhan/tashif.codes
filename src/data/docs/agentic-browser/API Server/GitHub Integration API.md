@@ -1,14 +1,7 @@
 # GitHub integration API
 
 ## Introduction
-This page describes the GitHub integration API that enables repository analysis and contextual Q&A powered by a large language model. It supports:
-- Repository ingestion via a normalized GitHub URL
-- Context-aware question answering using repository summary, file tree, and content
-- Optional file attachment processing via a cloud generative AI SDK
-- Chat history integration for conversational context
-- Reliable error handling and user-friendly messages for common failure modes
-
-The API exposes a single endpoint that accepts a GitHub repository URL and a question, returning a Markdown-formatted answer derived from the repository context.
+GitHub repo analysis and Q&A: normalize a URL, ingest content, optionally attach a file, run a prompt chain, return Markdown.
 
 ## Project structure
 The GitHub integration spans several modules:
@@ -73,12 +66,12 @@ Router-->>Client : "{ content }"
 - Method: POST
 - Path: /api/genai/github
 - Request JSON schema:
-  - url: string (HTTP URL; must resolve to a GitHub repository)
-  - question: string (required)
-  - chat_history: array of objects (optional)
-  - attached_file_path: string (optional; absolute path to a local file)
+ - url: string (HTTP URL; must resolve to a GitHub repository)
+ - question: string (required)
+ - chat_history: array of objects (optional)
+ - attached_file_path: string (optional; absolute path to a local file)
 - Response JSON schema:
-  - content: string (Markdown-formatted answer)
+ - content: string (Markdown-formatted answer)
 
 Behavior highlights:
 - Validates presence of question and url
@@ -91,7 +84,7 @@ Responsibilities:
 - Ingest repository content (summary, tree, content)
 - Optionally attach a file and query a cloud generative AI SDK
 - Build and execute the prompt chain with repository context
-- Return user-friendly error messages for common failure modes
+- Return plain error messages for common failure modes
 
 Key logic:
 - URL normalization strips non-repository path segments (e.g., commits, issues, pulls, tree, blob)
@@ -103,7 +96,7 @@ flowchart TD
 Start(["Entry: generate_answer"]) --> Normalize["Normalize GitHub URL"]
 Normalize --> Ingest["Ingest repository content"]
 Ingest --> IngestOK{"Ingestion OK?"}
-IngestOK --> |No| HandleError["Return user-friendly error"]
+IngestOK --> |No| HandleError["Return plain error"]
 IngestOK --> |Yes| AttachFile{"Attached file?"}
 AttachFile --> |Yes| UploadFile["Upload file via cloud SDK"]
 UploadFile --> BuildPrompt["Build prompt with repo context + chat history"]
@@ -172,27 +165,23 @@ Tool --> Gitingest["gitingest"]
 - Asynchronous ingestion: When available, asynchronous ingestion reduces latency in the request path.
 - Optional file attachments: Uploading and processing attached files adds overhead; use judiciously and ensure the file size remains within SDK limits.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Invalid or non-repository URL:
-  - Symptom: Error indicating the URL does not point to a valid repository root
-  - Resolution: Navigate to the main repository page (e.g., github.com/owner/repo)
+ - Symptom: Error indicating the URL does not point to a valid repository root
+ - Resolution: Navigate to the main repository page (e.g., github.com/owner/repo)
 - Repository access errors:
-  - Symptom: Could not access the repository; ensure the URL is correct and the repository is public
-  - Resolution: Verify repository visibility and URL correctness
+ - Symptom: Could not access the repository; ensure the URL is correct and the repository is public
+ - Resolution: Verify repository visibility and URL correctness
 - Repository too large:
-  - Symptom: Token limit exceeded even after truncation
-  - Resolution: Ask about a specific file or directory instead of the entire repository
+ - Symptom: Token limit exceeded even after truncation
+ - Resolution: Ask about a specific file or directory instead of the entire repository
 - Attached file processing errors:
-  - Symptom: Failure to process the attached file
-  - Resolution: Confirm the file path exists and the environment has a valid Google API key configured
+ - Symptom: Failure to process the attached file
+ - Resolution: Confirm the file path exists and the environment has a valid Google API key configured
 
 ## Conclusion
-The GitHub integration API provides a streamlined pathway to analyze repositories and answer contextual questions. By normalizing URLs, truncating content, and using a structured prompt pipeline, it delivers reliable, Markdown-formatted answers. Optional file attachment support extends capabilities for multimodal workflows. For production deployments, consider adding authentication, rate limiting, and observability around ingestion and LLM calls.
-
-[No sources needed since this section summarizes without analyzing specific files]
+URL normalization and context truncation matter more than prompt cleverness. Add auth, rate limits, and timing logs before you call this production.
 
 ## Appendices
 
@@ -202,23 +191,23 @@ The GitHub integration API provides a streamlined pathway to analyze repositorie
 - Method: POST
 - Path: /
 - Headers:
-  - Content-Type: application/json
+ - Content-Type: application/json
 - Request body schema:
-  - url: string (HTTP URL; must resolve to a GitHub repository)
-  - question: string (required)
-  - chat_history: array of objects (optional)
-  - attached_file_path: string (optional; absolute path to a local file)
+ - url: string (HTTP URL; must resolve to a GitHub repository)
+ - question: string (required)
+ - chat_history: array of objects (optional)
+ - attached_file_path: string (optional; absolute path to a local file)
 - Response body schema:
-  - content: string (Markdown-formatted answer)
+ - content: string (Markdown-formatted answer)
 
 Example request payload:
 - url: "https://github.com/example/repo"
 - question: "Explain the main entry point"
-- chat_history: [] or [{"role": "user", "content": "..."},...]
+- chat_history: [] or [{"role": "user", "content": "..."}, ...]
 - attached_file_path: null or "/absolute/path/to/file"
 
 Example response payload:
-- content: "Markdown-formatted answer..."
+- content: "Markdown-formatted answer."
 
 Authentication:
 - Not enforced by the endpoint; secure access according to your deployment needs

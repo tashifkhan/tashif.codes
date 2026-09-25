@@ -1,14 +1,11 @@
 # Screenshot capture handler
 
 ## Introduction
-
-The screenshot capture handler is a core component of the assignment solver extension that enables full-page screenshot capture for NPTEL assignment pages. This system provides visual context to AI models during the assignment solving process, allowing for accurate interpretation of complex layouts, diagrams, and visual elements that may not be fully represented in HTML alone.
-
-The handler operates through a sophisticated multi-step process that captures screenshots of scrolled content, processes them into a standardized format, and delivers them to the UI panel for preview functionality. It integrates smoothly with the Gemini AI service to improve extraction accuracy and provides reliable error handling for various edge cases encountered in production environments.
+Captures full-page screenshots for visual context in Gemini prompts. Stitching long pages, data URL handling, and failure modes are the main topics.
 
 ## System architecture
 
-The screenshot capture system follows a layered architecture pattern with clear separation of concerns:
+The screenshot capture system follows a layered architecture pattern :
 
 ```mermaid
 graph TB
@@ -44,11 +41,11 @@ MT -.-> SH
 MT -.-> SS
 ```
 
-The architecture ensures loose coupling between components while maintaining clear data flow patterns. The system handles cross-browser compatibility through platform adapters and provides reliable error handling mechanisms.
+Components stay loosely coupled with a straightforward data flow. The system handles cross-browser compatibility through platform adapters and provides reliable error handling mechanisms.
 
 ## Screenshot generation process
 
-The screenshot generation process employs a sophisticated multi-step approach designed to handle long web pages efficiently:
+The screenshot generation process uses a detailed multi-step approach built to handle long web pages efficiently:
 
 ```mermaid
 sequenceDiagram
@@ -83,7 +80,7 @@ The process begins by analyzing the page dimensions to determine the number of v
 
 ## Image encoding and response formatting
 
-The screenshot capture system implements a standardized encoding and response format that ensures compatibility across different browsers and platforms:
+The screenshot capture system implements a standardized encoding and response format that keeps compatibility across different browsers and platforms:
 
 ### Data URL processing
 
@@ -116,11 +113,11 @@ class Screenshot {
 ScreenshotResponse --> Screenshot : contains
 ```
 
-The response format is designed for immediate consumption by the Gemini AI service, which expects structured image data with proper metadata for context preservation.
+The response shape matches what Gemini expects: image bytes plus enough metadata to keep context.
 
 ## Supported formats and quality settings
 
-The screenshot capture system currently supports a single image format with carefully tuned quality settings:
+Screenshot capture currently uses one image format with fixed quality settings:
 
 ### Image format specifications
 
@@ -134,7 +131,7 @@ The screenshot capture system currently supports a single image format with care
 
 The JPEG format was chosen for several strategic reasons:
 
-1. **Compression Efficiency**: Reduces file size significantly while maintaining acceptable quality
+1. **Compression Efficiency**: Reduces file size significantly and keeps acceptable quality
 2. **Universal Support**: Ensures compatibility across all supported browsers
 3. **Memory Efficiency**: Lower memory footprint compared to PNG or WebP formats
 4. **AI Optimization**: Balanced quality-to-size ratio suitable for AI processing
@@ -148,7 +145,7 @@ The selected quality setting of 60 provides an optimal balance between:
 
 ## Size limitations
 
-The screenshot capture system implements multiple layers of size limitation to ensure reliable operation under various conditions:
+Size limits stack so captures stay within browser and API caps:
 
 ### Per-Screenshot limits
 
@@ -222,7 +219,7 @@ The side panel maintains synchronized state during screenshot operations:
 
 ## Error handling
 
-The screenshot capture system implements detailed error handling strategies to ensure reliable operation:
+The screenshot capture system implements detailed error handling strategies so operation stays reliable:
 
 ### Error categories and handling
 
@@ -234,7 +231,7 @@ The screenshot capture system implements detailed error handling strategies to e
 | **Memory Issues** | `OutOfMemoryError` | Limit screenshot count | Reduced visual context |
 | **Network Failure** | `Connection error` | Retry with exponential backoff | Temporary unavailability |
 
-### Robustness features
+### Reliability features
 
 The system incorporates several built-in safeguards:
 
@@ -270,13 +267,13 @@ The most common usage scenario involves capturing full-page screenshots for assi
 ```javascript
 // Example: Capturing screenshots for an NPTEL assignment
 const screenshotResult = await sendMessageWithRetry(
-  runtime,
-  {
-    type: MESSAGE_TYPES.CAPTURE_FULL_PAGE,
-    tabId: targetTabId,
-    windowId: targetWindowId,
-  },
-  { maxRetries: 3, baseDelay: 200 }
+ runtime,
+ {
+ type: MESSAGE_TYPES.CAPTURE_FULL_PAGE,
+ tabId: targetTabId,
+ windowId: targetWindowId,
+ },
+ { maxRetries: 3, baseDelay: 200 }
 );
 
 // Process the returned screenshots
@@ -291,36 +288,36 @@ Screenshots are smoothly integrated with the Gemini AI service:
 ```javascript
 // Example: Using screenshots with AI extraction
 const extraction = await gemini.extract(
-  apiKey,
-  pageData.html,
-  pageInfo,
-  pageData.images || [],
-  screenshots, // ← Screenshots passed here
-  model,
-  reasoningLevel
+ apiKey,
+ pageData.html,
+ pageInfo,
+ pageData.images || [],
+ screenshots, // ← Screenshots passed here
+ model,
+ reasoningLevel
 );
 ```
 
 ### Error handling implementation
 
 ```javascript
-// Example: Robust screenshot capture with error handling
+// Example: screenshot capture with error handling
 let screenshots = [];
 try {
-  const screenshotResult = await this.captureFullPageScreenshots(
-    targetTabId,
-    pageData.windowId
-  );
-  screenshots = screenshotResult?.screenshots || [];
+ const screenshotResult = await this.captureFullPageScreenshots(
+ targetTabId,
+ pageData.windowId
+ );
+ screenshots = screenshotResult?.screenshots || [];
 } catch (ssError) {
-  logger.log(`Screenshot capture failed: ${ssError.message}`);
-  // Continue without screenshots
+ logger.log(`Screenshot capture failed: ${ssError.message}`);
+ // Continue without screenshots
 }
 ```
 
 ## Performance considerations
 
-The screenshot capture system is optimized for performance across various scenarios:
+Performance notes for common capture cases:
 
 ### Memory optimization
 
@@ -366,19 +363,8 @@ The system adapts to different browser capabilities:
 The system provides detailed logging for troubleshooting:
 - **Operation Timing**: Capture duration and processing times
 - **Error Tracking**: Detailed error messages and stack traces
-- **Resource Usage**: Memory and CPU utilization metrics
+- **Resource usage.** Memory and CPU use
 - **Success Rates**: Capture success statistics over time
 
 ## Conclusion
-
-The screenshot capture handler represents a sophisticated solution for automated full-page screenshot generation within web browser extensions. Its architecture balances performance, reliability, and user experience while providing reliable error handling and cross-browser compatibility.
-
-The system's integration with the Gemini AI service demonstrates the practical value of visual context in automated assignment solving, enabling more accurate problem interpretation and solution generation. The modular design allows for easy maintenance and future enhancements while maintaining backward compatibility.
-
-Key strengths of the implementation include:
-- **Reliable Error Handling**: Graceful degradation and recovery mechanisms
-- **Performance Optimization**: Memory-efficient processing and intelligent limiting
-- **Cross-Browser Compatibility**: Unified API abstraction layer
-- **Extensible Design**: Modular architecture supporting future enhancements
-
-The screenshot capture handler is a foundation for advanced AI-powered automation while maintaining reliability and user trust through transparent error reporting and graceful degradation.
+Long pages are scrolled and stitched. Prefer screenshots when text extraction alone loses diagrams or equations.

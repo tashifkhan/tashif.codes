@@ -1,7 +1,6 @@
 # Bulk upload and admin data
 
-## Introduction
-This page explains the Bulk Upload and Admin data models in the TalentSync application, focusing on:
+Bulk upload tables and admin data models in TalentSync.
 - BulkUpload: administrative file upload tracking, success/failure metrics, and batch processing status
 - Recruiter: administrator/recruiter profiles with company information and administrative privileges
 - Relationship patterns between admin users and bulk upload operations
@@ -10,7 +9,7 @@ This page explains the Bulk Upload and Admin data models in the TalentSync appli
 - Security considerations for file uploads, virus scanning integration, and data validation for batch processing
 - Integration with the resume analysis pipeline for automated processing of uploaded files and notification systems for upload completion status
 
-## Project structure
+## Repository layout
 The data model is defined in the frontend Prisma schema and enforced via database migrations. The frontend Next.js API routes expose administrative capabilities for recruiters, while the backend FastAPI application orchestrates file processing and integrates with the resume analysis pipeline.
 
 ```mermaid
@@ -40,20 +39,20 @@ ANALYSIS_ROUTE --> RESUME_SERVER
 FASTAPI --> ANALYSIS_ROUTE
 ```
 
-## Core components
+## Building blocks
 - BulkUpload model
-  - Tracks administrative uploads with file metadata, counts of processed files, and timestamps
-  - Links uploads to an admin user via a foreign key
+ - Tracks administrative uploads with file metadata, counts of processed files, and timestamps
+ - Links uploads to an admin user via a foreign key
 - Recruiter model
-  - Stores recruiter/admin profiles with company information and a unique link to the admin user
+ - Stores recruiter/admin profiles with company information and a unique link to the admin user
 - Roles and access control
-  - Seed script creates default roles including Admin
-  - UI reflects Admin as "Recruiter" for user-facing labeling
+ - Seed script creates default roles including Admin
+ - UI reflects Admin as "Recruiter" for user-facing labeling
 - API exposure
-  - Recruiter dashboard endpoint retrieves centralized resumes with optional filters
-  - Frontend service consumes the endpoint to display recruiter data
+ - Recruiter dashboard endpoint retrieves centralized resumes with optional filters
+ - Frontend service consumes the endpoint to display recruiter data
 
-## Architecture overview
+## How it fits together
 The system separates concerns across frontend, backend, and database layers:
 - Frontend Prisma schema defines models and relationships
 - Frontend API routes enforce access checks and expose administrative endpoints
@@ -74,9 +73,7 @@ PIPE-->>BE : "Structured analysis response"
 BE-->>UI : "Upload & analysis result"
 ```
 
-## Detailed component analysis
-
-### BulkUpload model
+## BulkUpload model
 Purpose:
 - Track administrative bulk file uploads
 - Maintain counts of successful and failed files per batch
@@ -116,7 +113,7 @@ timestamp uploadedAt
 USER ||--o{ BULKUPLOAD : "uploads"
 ```
 
-### Recruiter model
+## Recruiter model
 Purpose:
 - Store administrator/recruiter profiles with company information
 - Provide a unique link to the admin User record
@@ -150,7 +147,7 @@ timestamp createdAt
 USER ||--o| RECRUITER : "has profile"
 ```
 
-### Administrative access controls and role-based permissions
+## Administrative access controls and role-based permissions
 - Roles are seeded with default entries including Admin
 - UI maps Admin to "Recruiter" for display
 - Recruiter dashboard endpoint currently has commented access checks; future development should enforce Admin/Recruiter role validation
@@ -164,16 +161,16 @@ IsAdmin --> |No| DenyAccess["Deny access or redirect"]
 AssignRecruiter --> Redirect["Redirect to dashboard"]
 ```
 
-### File management workflows and upload progress tracking
+## File management workflows and upload progress tracking
 - Single-file upload and analysis flow:
-  - Frontend component collects file, custom name, and visibility preference
-  - Next.js route validates presence of file and custom name
-  - Backend FastAPI app registers analysis routes
-  - Resume server performs cleaning and structured extraction
+ - Frontend component collects file, custom name, and visibility preference
+ - Next.js route validates presence of file and custom name
+ - Backend FastAPI app registers analysis routes
+ - Resume server performs cleaning and structured extraction
 - Progress indication:
-  - Frontend component shows "Analyzing..." during submission
+ - Frontend component shows "Analyzing..." during submission
 - Centralized resume retrieval:
-  - Recruiter API route supports filtering by central-only flag and search term
+ - Recruiter API route supports filtering by central-only flag and search term
 
 ```mermaid
 sequenceDiagram
@@ -189,7 +186,7 @@ FA-->>API : "Response"
 API-->>Uploader : "Success or error"
 ```
 
-### Error handling mechanisms
+## Error handling mechanisms
 - Frontend routes log backend errors and attempt to parse JSON error messages
 - Frontend falls back to extracting meaningful info from HTML error responses
 - Backend FastAPI logs request/response payloads for observability
@@ -206,36 +203,36 @@ E --> G
 F --> G
 ```
 
-### Audit trail requirements for bulk operations
+## Audit trail requirements for bulk operations
 - BulkUpload tracks uploadedAt for auditability
-- Recruiter records are deleted alongside admin user deletion, ensuring referential cleanup
-- Future enhancements could include:
-  - Operation logs with adminId, fileUrl, counts, and timestamps
-  - Status transitions (queued, processing, completed, failed)
-  - Metadata for each processed file (original filename, size, processing duration)
+- Recruiter records are deleted alongside admin user deletion, which cleans up related rows
+- Possible follow-ups:
+ - Operation logs with adminId, fileUrl, counts, and timestamps
+ - Status transitions (queued, processing, completed, failed)
+ - Metadata for each processed file (original filename, size, processing duration)
 
-### Security considerations for file uploads
+## Security considerations for file uploads
 - File type validation:
-  - Restrict accepted MIME types and extensions
-  - Reject unknown or potentially unsafe formats
+ - Restrict accepted MIME types and extensions
+ - Reject unknown or potentially unsafe formats
 - Virus scanning integration:
-  - Integrate with an external AV service prior to processing
-  - Block uploads until scan completes and returns clean status
+ - Integrate with an external AV service prior to processing
+ - Block uploads until scan completes and returns clean status
 - Data validation:
-  - Validate customName presence and length limits
-  - Enforce showInCentral boolean semantics
+ - Validate customName presence and length limits
+ - Enforce showInCentral boolean semantics
 - Access control:
-  - Enforce Admin/Recruiter role checks in API routes
-  - Scope retrievals to authorized users
+ - Enforce Admin/Recruiter role checks in API routes
+ - Scope retrievals to authorized users
 
-### Notification systems for upload completion status
+## Notification systems for upload completion status
 - Centralized resume retrieval supports a "centralOnly" filter for downstream notifications
 - Recruiter service fetches resumes and totals for UI updates
 - Suggested enhancement:
-  - Emit events upon BulkUpload completion (success/failure thresholds met)
-  - Notify admins via in-app notifications or email
+ - Emit events upon BulkUpload completion (success/failure thresholds met)
+ - Notify admins via in-app notifications or email
 
-## Dependency analysis
+## Dependencies
 - Prisma schema defines models and foreign keys
 - Migrations enforce primary and unique constraints
 - Seed script initializes roles
@@ -253,26 +250,23 @@ API --> BE["main.py"]
 BE --> PIPE["server.py"]
 ```
 
-## Performance considerations
+## Performance
 - Asynchronous processing:
-  - Offload heavy file processing to background tasks or separate services
+ - Offload heavy file processing to background tasks or separate services
 - Concurrency limits:
-  - Gate concurrent uploads per admin to prevent resource exhaustion
+ - Gate concurrent uploads per admin to prevent resource exhaustion
 - Caching:
-  - Cache frequently accessed centralized resumes for reduced DB load
+ - Cache frequently accessed centralized resumes for reduced DB load
 - Observability:
-  - Use request/response logging and structured metrics for latency and throughput
+ - Use request/response logging and structured metrics for latency and throughput
 
-## Troubleshooting guide
+## Troubleshooting
 - Authentication failures:
-  - Verify session presence and role mapping
+ - Verify session presence and role mapping
 - Access denials:
-  - Confirm Admin/Recruiter role checks are enabled in API routes
+ - Confirm Admin/Recruiter role checks are enabled in API routes
 - Upload errors:
-  - Check file type validation and size limits
-  - Inspect backend error logs for detailed messages
+ - Check file type validation and size limits
+ - Inspect backend error logs for detailed messages
 - Cleanup issues:
-  - Ensure Recruiter records are deleted with admin user removal
-
-## Conclusion
-The BulkUpload and Recruiter models provide a foundation for administrative file ingestion and recruiter profile management. The frontend API routes and services enable centralized resume retrieval and UI integration, while the backend FastAPI app and resume analysis pipeline handle file processing. To meet production requirements, implement reliable access controls, file validation, virus scanning, and detailed audit trails, along with scalable error handling and notification systems.
+ - Ensure Recruiter records are deleted with admin user removal

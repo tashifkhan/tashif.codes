@@ -1,10 +1,10 @@
 # Overall system design
 
 ## Introduction
-This page describes the overall system design of Agentic Browser, a browser-centric AI agent platform. The system integrates a React-based browser extension, a Python MCP server, a FastAPI backend, and modular service/tool layers. It emphasizes a model-agnostic design, strong separation of concerns between frontend and backend, reliable security and transparency controls, and a flexible, extensible tool ecosystem. The architecture supports asynchronous communication and distributed operation across components.
+Top-level design: extension frontend, REST + MCP backend, service/tool modules, async messaging, and where security sits.
 
 ## Project structure
-The repository is organized into distinct layers:
+Layout:
 - Extension: React UI, background/content scripts, and WebSocket client for browser integration
 - Backend: FastAPI application exposing REST endpoints
 - MCP Server: Python MCP server implementing standardized tool protocols
@@ -22,7 +22,7 @@ CT["content.ts"]
 WS["websocket-client.ts"]
 end
 subgraph "FastAPI Backend"
-API["api/main.py"]
+API["main.py"]
 ROUTERS["Routers"]
 MODELS["Models"]
 end
@@ -47,7 +47,7 @@ REACT --> LLM
 ```
 
 ## Core components
-- Entry point and process orchestrator: main.py selects between API and MCP modes
+- Entry point: `main.py` starts FastAPI and mounts MCP at `/mcp`; `agentic-mcp` is stdio MCP
 - FastAPI backend: exposes REST endpoints for agent scripting, validators, and integrations
 - MCP server: standardizes tool execution via the Model Context Protocol
 - Core LLM abstraction: provider-agnostic LLM client supporting multiple providers
@@ -63,18 +63,18 @@ Responsibilities:
 - Agents/Services: reasoning, tool binding, and domain logic
 
 ## Architecture overview
-Agentic Browser operates in two primary modes:
-- API mode: REST-driven orchestration via FastAPI
-- MCP mode: Protocol-driven tool execution via MCP
+Agentic Browser runs FastAPI for REST and MCP together:
+- API: REST-driven orchestration via FastAPI
+- MCP: tool execution over stdio (`agentic-mcp`) or HTTP (`/mcp` on the API process)
 
-The system boundary separates the browser extension (UI and automation) from the backend services. The extension communicates with the backend either through REST or MCP, depending on mode. The backend invokes services and tools, which may call external providers through the LLM abstraction.
+The system boundary separates the browser extension (UI and automation) from the backend services. The extension talks HTTP/WebSocket to FastAPI and can use MCP tools. The backend invokes services and tools, which may call external providers through the LLM abstraction.
 
 ```mermaid
 graph TB
 U["User"]
 EX["Extension UI<br/>background.ts / content.ts"]
 WS["WebSocket Client<br/>websocket-client.ts"]
-API["FastAPI App<br/>api/main.py"]
+API["FastAPI App<br/>main.py"]
 MCP["MCP Server<br/>mcp_server/server.py"]
 CORE["Core Config & LLM<br/>core/config.py, core/llm.py"]
 SVC["Services<br/>services/*"]
@@ -91,21 +91,15 @@ AG --> CORE
 
 ## Detailed component analysis
 
-### System entry and mode selection
-The entrypoint determines whether to run the FastAPI server or the MCP server. It supports CLI flags and interactive selection.
+### System entry
+`python main.py` starts FastAPI. MCP is available at `/mcp` on that process, or as stdio via `agentic-mcp`.
 
 ```mermaid
 flowchart TD
-Start(["Process Start"]) --> ParseArgs["Parse CLI Arguments"]
-ParseArgs --> Mode{"Mode Selected?"}
-Mode --> |API| RunAPI["Run FastAPI Server"]
-Mode --> |MCP| RunMCP["Run MCP Server"]
-Mode --> |None| Interactive{"Interactive?"}
-Interactive --> |Yes| Prompt["Prompt User"]
-Interactive --> |No| DefaultAPI["Default to API"]
-Prompt --> Choice{"Choice"}
-Choice --> |1| RunAPI
-Choice --> |2| RunMCP
+Start(["Process Start"]) --> Choose{"Entrypoint"}
+Choose --> |python main.py / agentic-api-run| RunAPI["Run FastAPI Server"]
+Choose --> |agentic-mcp| RunMCP["Run stdio MCP"]
+RunAPI --> Mount["Mount /mcp"]
 ```
 
 ### FastAPI backend and routing
@@ -191,7 +185,7 @@ Decision --> |No| Fail["Return Error + Problems"]
 ```
 
 ## Dependency analysis
-The system exhibits layered dependencies:
+Dependency direction:
 - Extension depends on background/content scripts and the WebSocket client
 - FastAPI depends on routers, services, and models
 - Services depend on core LLM and prompts
@@ -215,8 +209,6 @@ AG["Agents"] --> LLM
 - Provider selection: LLM abstraction defers initialization and validation to optimize startup
 - Router composition: FastAPI routers keep endpoints focused and maintainable
 
-[No sources needed since this section provides general guidance]
-
 ## Security and transparency
 - Guardrails: Prompt injection validation and sanitizer utilities protect against malformed inputs
 - Transparency: WebSocket client emits progress and status events; MCP returns explicit errors
@@ -229,7 +221,7 @@ The MCP server exposes a standardized tool catalog:
 - GitHub Q&A with context
 - Website content extraction (markdown and HTML conversion)
 
-This modularity enables:
+That split gives you:
 - Extensibility: New tools can be added to the MCP catalog
 - Interoperability: Tools are protocol-driven and decoupled from UI
 - Reusability: Tools encapsulate domain logic and can be invoked from multiple entrypoints
@@ -266,4 +258,5 @@ Common issues and diagnostics:
 - FastAPI validation: Requests are validated by Pydantic models; invalid requests return structured errors
 
 ## Conclusion
-Agentic Browser's architecture cleanly separates the browser extension (frontend) from the backend services (REST and MCP), enabling a model-agnostic, extensible, and transparent system. The React agent orchestrates tools, the service layer encapsulates domain logic, and the MCP server standardizes tool execution. Asynchronous communication and modular design support scalability and maintainability while preserving strong security and transparency controls.
+Frontend and backend split cleanly. The ReAct agent orchestrates tools; services own domain logic; MCP standardizes execution. Async keeps the UI usable.
+

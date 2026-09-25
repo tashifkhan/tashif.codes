@@ -1,7 +1,7 @@
 # Calendar integration API
 
 ## Introduction
-This page describes the Google Calendar integration API endpoints exposed by the application. It covers calendar event management capabilities including listing upcoming events and creating new events. The documentation specifies HTTP methods, URL patterns, request/response schemas, authentication requirements, and practical usage examples for automation and synchronization scenarios. It also explains calendar-specific authentication, timezone handling, and recurring event management considerations.
+Google Calendar endpoints for listing upcoming events and creating new ones. Methods, URLs, schemas, and the access-token requirement.
 
 ## Project structure
 The calendar integration is implemented as a FastAPI application with a dedicated router and service layer. Tools encapsulate direct Google Calendar API interactions. The frontend extension manages OAuth-based authentication and token lifecycle.
@@ -9,7 +9,7 @@ The calendar integration is implemented as a FastAPI application with a dedicate
 ```mermaid
 graph TB
 subgraph "API Layer"
-A["FastAPI App<br/>api/main.py"]
+A["FastAPI App<br/>main.py"]
 R["Calendar Router<br/>routers/calendar.py"]
 S["Calendar Service<br/>services/calendar_service.py"]
 end
@@ -19,7 +19,7 @@ T2["Create Event Tool<br/>tools/calendar/create_calender_events.py"]
 TI["Tools Init<br/>tools/calendar/__init__.py"]
 end
 subgraph "Frontend Extension"
-E["useAuth Hook<br/>extension/.../hooks/useAuth.ts"]
+E["useAuth Hook<br/>clients/browser-extension/entrypoints/sidepanel/hooks/useAuth.ts"]
 end
 A --> R
 R --> S
@@ -32,16 +32,16 @@ E --> A
 
 ## Core components
 - Calendar Router: Exposes two endpoints under /api/calendar:
-  - POST /events: Lists upcoming events for the authenticated user.
-  - POST /create: Creates a new calendar event for the authenticated user.
+ - POST /events: Lists upcoming events for the authenticated user.
+ - POST /create: Creates a new calendar event for the authenticated user.
 - Calendar Service: Orchestrates event listing and creation by delegating to tools.
 - Tools:
-  - Get Events Tool: Calls the Google Calendar API to fetch upcoming events.
-  - Create Event Tool: Calls the Google Calendar API to create a new event.
+ - Get Events Tool: Calls the Google Calendar API to fetch upcoming events.
+ - Create Event Tool: Calls the Google Calendar API to create a new event.
 - Frontend Authentication Hook: Manages OAuth with Google scopes including calendar access and exchanges authorization code for tokens.
 
 ## Architecture overview
-The API follows a layered architecture:
+Split across these pieces:
 - API Router validates requests and delegates to the Calendar Service.
 - Calendar Service invokes tools that call the Google Calendar API.
 - Frontend extension handles OAuth and token storage, providing access tokens to the API.
@@ -78,35 +78,35 @@ Router-->>Client : "JSON { result : \"created\", event : {...} }"
 - Authentication: Access token passed in request body for both endpoints.
 
 Endpoints:
-- POST /events
-  - Purpose: Retrieve upcoming events for the authenticated user.
-  - Request Body Schema:
-    - access_token: string (required)
-    - max_results: integer (optional, default 10)
-  - Response Schema:
-    - events: array of event objects returned by Google Calendar API
-  - Validation:
-    - Returns HTTP 400 if access_token is missing.
-    - Defaults max_results to 10 if not provided or invalid.
-  - Error Handling:
-    - Propagates HTTP exceptions; wraps unexpected errors as HTTP 500.
+  - POST /events
+ - Purpose: Retrieve upcoming events for the authenticated user.
+ - Request Body Schema:
+ - access_token: string (required)
+ - max_results: integer (optional, default 10)
+ - Response Schema:
+ - events: array of event objects returned by Google Calendar API
+ - Validation:
+ - Returns HTTP 400 if access_token is missing.
+ - Defaults max_results to 10 if not provided or invalid.
+ - Error Handling:
+ - Propagates HTTP exceptions; wraps unexpected errors as HTTP 500.
 
-- POST /create
-  - Purpose: Create a new calendar event.
-  - Request Body Schema:
-    - access_token: string (required)
-    - summary: string (required)
-    - start_time: string (required, ISO 8601)
-    - end_time: string (required, ISO 8601)
-    - description: string (optional, default "Created via API")
-  - Response Schema:
-    - result: string "created"
-    - event: event object returned by Google Calendar API
-  - Validation:
-    - Returns HTTP 400 if any required field is missing.
-    - start_time and end_time must be valid ISO 8601 strings.
-  - Error Handling:
-    - Propagates HTTP exceptions; wraps unexpected errors as HTTP 500.
+  - POST /create
+ - Purpose: Create a new calendar event.
+ - Request Body Schema:
+ - access_token: string (required)
+ - summary: string (required)
+ - start_time: string (required, ISO 8601)
+ - end_time: string (required, ISO 8601)
+ - description: string (optional, default "Created via API")
+ - Response Schema:
+ - result: string "created"
+ - event: event object returned by Google Calendar API
+ - Validation:
+ - Returns HTTP 400 if any required field is missing.
+ - start_time and end_time must be valid ISO 8601 strings.
+ - Error Handling:
+ - Propagates HTTP exceptions; wraps unexpected errors as HTTP 500.
 
 Notes:
 - The router does not currently expose endpoints for updating or deleting events.
@@ -114,137 +114,133 @@ Notes:
 
 ### Calendar service
 - list_events(access_token, max_results):
-  - Delegates to get_calendar_events and returns the items array.
+ - Delegates to get_calendar_events and returns the items array.
 - create_event(access_token, summary, start_time, end_time, description):
-  - Delegates to create_calendar_event and returns the created event.
+ - Delegates to create_calendar_event and returns the created event.
 
 ### Tools: Google calendar API interactions
 - get_calendar_events(access_token, max_results):
-  - Calls Google Calendar API to list upcoming events.
-  - Uses Authorization header with Bearer token.
-  - Parameters include maxResults, orderBy, singleEvents, and timeMin.
-  - Returns items array or raises an exception on non-200 responses.
+ - Calls Google Calendar API to list upcoming events.
+ - Uses Authorization header with Bearer token.
+ - Parameters include maxResults, orderBy, singleEvents, and timeMin.
+ - Returns items array or raises an exception on non-200 responses.
 
 - create_calendar_event(access_token, summary, start_time, end_time, description):
-  - Calls Google Calendar API to create a new event.
-  - Uses Authorization header with Bearer token and Content-Type: application/json.
-  - Event payload includes summary, description, and start/end with dateTime and timeZone.
-  - Returns the created event JSON or raises an exception on non-200 responses.
+ - Calls Google Calendar API to create a new event.
+ - Uses Authorization header with Bearer token and Content-Type: application/json.
+ - Event payload includes summary, description, and start/end with dateTime and timeZone.
+ - Returns the created event JSON or raises an exception on non-200 responses.
 
 ### Frontend authentication and token management
 - OAuth Scopes:
-  - Includes calendar scope for calendar access.
-  - Uses browser.identity APIs to launch web auth flow and exchange authorization code for tokens.
+ - Includes calendar scope for calendar access.
+ - Uses browser.identity APIs to launch web auth flow and exchange authorization code for tokens.
 - Token Exchange:
-  - Sends authorization code and redirect URI to backend endpoint /exchange-code.
-  - Receives access_token, refresh_token, and expires_in.
+ - Sends authorization code and redirect URI to backend endpoint /exchange-code.
+ - Receives access_token, refresh_token, and expires_in.
 - Token Lifecycle:
-  - Stores user info and tokens in browser storage.
-  - Provides manual refresh capability when refresh_token is available.
+ - Stores user info and tokens in browser storage.
+ - Provides manual refresh capability when refresh_token is available.
 
 ## Dependency analysis
 ```mermaid
 graph LR
-API["api/main.py"] --> R["routers/calendar.py"]
+API["main.py"] --> R["routers/calendar.py"]
 R --> S["services/calendar_service.py"]
 S --> T1["tools/calendar/get_calender_events.py"]
 S --> T2["tools/calendar/create_calender_events.py"]
-FE["extension/.../useAuth.ts"] --> API
+FE["clients/browser-extension/entrypoints/sidepanel/hooks/useAuth.ts"] --> API
 ```
 
 ## Performance considerations
 - Timeout Settings:
-  - GET events: timeout 8 seconds.
-  - POST create: timeout 10 seconds.
+ - GET events: timeout 8 seconds.
+ - POST create: timeout 10 seconds.
 - Concurrency:
-  - The service layer uses synchronous tool functions. For high-throughput scenarios, consider asynchronous I/O or thread/process pools.
+ - The service layer uses synchronous tool functions. For high-throughput scenarios, consider asynchronous I/O or thread/process pools.
 - Pagination:
-  - The events endpoint supports max_results; tune this value to balance latency and payload size.
+ - The events endpoint supports max_results; tune this value to balance latency and payload size.
 - Network Reliability:
-  - Implement retries with exponential backoff for transient failures when integrating external Google Calendar API calls.
-
-[No sources needed since this section provides general guidance]
+ - Implement retries with exponential backoff for transient failures when integrating external Google Calendar API calls.
 
 ## Troubleshooting guide
 Common Issues and Resolutions:
 - Missing access_token:
-  - Symptom: HTTP 400 on both /events and /create.
-  - Resolution: Ensure access_token is present in request body.
+ - Symptom: HTTP 400 on both /events and /create.
+ - Resolution: Ensure access_token is present in request body.
 - Invalid ISO 8601 timestamps:
-  - Symptom: HTTP 400 on /create with validation error.
-  - Resolution: Provide start_time and end_time in valid ISO 8601 format.
+ - Symptom: HTTP 400 on /create with validation error.
+ - Resolution: Provide start_time and end_time in valid ISO 8601 format.
 - Non-200 responses from Google Calendar API:
-  - Symptom: HTTP 500 from API with error details.
-  - Resolution: Inspect underlying exception messages and verify scopes and token validity.
+ - Symptom: HTTP 500 from API with error details.
+ - Resolution: Inspect underlying exception messages and verify scopes and token validity.
 - Authentication failures:
-  - Symptom: Token exchange fails or user info fetch fails.
-  - Resolution: Verify OAuth flow, scopes, and backend /exchange-code endpoint availability.
+ - Symptom: Token exchange fails or user info fetch fails.
+ - Resolution: Verify OAuth flow, scopes, and backend /exchange-code endpoint availability.
 
 ## Conclusion
-The Calendar Integration API provides a focused interface for listing upcoming events and creating new events using Google Calendar's REST API. It uses a clean separation of concerns across router, service, and tool layers, while the frontend extension manages OAuth and token lifecycle. Future enhancements could include update/delete endpoints, improved timezone handling, and support for recurring events.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Router → service → Google API. The extension owns OAuth and refresh; the API just needs a valid `access_token` on each call.
 
 ## Appendices
 
 ### API reference
 
 - Base URL
-  - /api/calendar
+ - /api/calendar
 
 - Authentication
-  - Access token must be provided in the request body for both endpoints.
-  - Frontend extension obtains tokens via OAuth with calendar scope.
+ - Access token must be provided in the request body for both endpoints.
+ - Frontend extension obtains tokens via OAuth with calendar scope.
 
 - Endpoints
 
-  - POST /events
-    - Description: List upcoming calendar events.
-    - Request Body:
-      - access_token: string (required)
-      - max_results: integer (optional, default 10)
-    - Response:
-      - events: array of event objects
-    - Example Request:
-      - POST /api/calendar/events
-      - Body: {"access_token": "<your-access-token>", "max_results": 10}
-    - Example Response:
-      - {"events": [...]}
-    - Notes:
-      - Validates presence of access_token; defaults max_results to 10 if missing or invalid.
+ - POST /events
+ - Description: List upcoming calendar events.
+ - Request Body:
+ - access_token: string (required)
+ - max_results: integer (optional, default 10)
+ - Response:
+ - events: array of event objects
+ - Example Request:
+ - POST /api/calendar/events
+ - Body: {"access_token": "<your-access-token>", "max_results": 10}
+ - Example Response:
+ - {"events": [.]}
+ - Notes:
+ - Validates presence of access_token; defaults max_results to 10 if missing or invalid.
 
-  - POST /create
-    - Description: Create a new calendar event.
-    - Request Body:
-      - access_token: string (required)
-      - summary: string (required)
-      - start_time: string (required, ISO 8601)
-      - end_time: string (required, ISO 8601)
-      - description: string (optional, default "Created via API")
-    - Response:
-      - result: "created"
-      - event: created event object
-    - Example Request:
-      - POST /api/calendar/create
-      - Body: {"access_token": "<your-access-token>", "summary": "Meeting", "start_time": "2025-06-15T10:00:00Z", "end_time": "2025-06-15T11:00:00Z"}
-    - Example Response:
-      - {"result": "created", "event": {...}}
+ - POST /create
+ - Description: Create a new calendar event.
+ - Request Body:
+ - access_token: string (required)
+ - summary: string (required)
+ - start_time: string (required, ISO 8601)
+ - end_time: string (required, ISO 8601)
+ - description: string (optional, default "Created via API")
+ - Response:
+ - result: "created"
+ - event: created event object
+ - Example Request:
+ - POST /api/calendar/create
+ - Body: {"access_token": "<your-access-token>", "summary": "Meeting", "start_time": "2025-06-15T10:00:00Z", "end_time": "2025-06-15T11:00:00Z"}
+ - Example Response:
+ - {"result": "created", "event": {.}}
 
 - Timezone Handling
-  - The create event tool sets timeZone to UTC in the request payload.
-  - Consider passing a specific timezone if your use case requires local or user-specific timezones.
+ - The create event tool sets timeZone to UTC in the request payload.
+ - Consider passing a specific timezone if your use case requires local or user-specific timezones.
 
 - Recurring Events
-  - The current implementation does not include recurring event fields in the request schema.
-  - To support recurring events, extend the request schema to include recurrence rules and update the tool to include recurrence fields in the payload.
+ - The current implementation does not include recurring event fields in the request schema.
+ - To support recurring events, extend the request schema to include recurrence rules and update the tool to include recurrence fields in the payload.
 
 - Client Implementation Patterns
-  - Frontend Integration:
-    - Use the extension's OAuth flow to obtain and refresh tokens.
-    - Store tokens securely and pass access_token with each API call.
-  - Backend Integration:
-    - Validate access_token presence and enforce rate limits.
-    - Wrap tool calls with structured error handling and logging.
-  - Automation Scenarios:
-    - Event Scheduling Automation: Trigger POST /create with computed start_time and end_time.
-    - Calendar Synchronization: Periodically call POST /events to sync events and reconcile duplicates.
+ - Frontend Integration:
+ - Use the extension's OAuth flow to obtain and refresh tokens.
+ - Store tokens securely and pass access_token with each API call.
+ - Backend Integration:
+ - Validate access_token presence and enforce rate limits.
+ - Wrap tool calls with structured error handling and logging.
+ - Automation Scenarios:
+ - Event Scheduling Automation: Trigger POST /create with computed start_time and end_time.
+ - Calendar Synchronization: Periodically call POST /events to sync events and reconcile duplicates.

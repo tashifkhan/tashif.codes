@@ -1,10 +1,7 @@
 # Architecture overview
 
-## Introduction
-This page presents the architectural overview of the TalentSync-Normies microservices platform. The system integrates a modern frontend built with Next.js, a high-performance backend powered by FastAPI, a LangChain-based AI/ML orchestration service, and a PostgreSQL database. It is containerized with Docker and orchestrated via Docker Compose for development and production deployments. The architecture emphasizes scalability, maintainability, and cloud readiness with AWS as the target platform.
+TalentSync runs as three Compose services: Next.js, FastAPI, and PostgreSQL.
 
-## Project structure
-The repository is organized into three primary areas:
 - Frontend: Next.js application with TypeScript, Prisma ORM, and PWA support
 - Backend: FastAPI microservice implementing route-based APIs and LangChain integrations
 - Infrastructure: Docker Compose configurations for local and production environments
@@ -20,26 +17,26 @@ FE --> |"HTTP API"| BE
 BE --> |"SQL"| DB
 ```
 
-## Core components
+## Building blocks
 - Frontend (Next.js)
-  - Built with React and TypeScript, styled with Tailwind CSS
-  - Authentication via NextAuth.js with multiple providers (OAuth, credentials, email)
-  - ORM via Prisma targeting PostgreSQL
-  - PWA enabled for offline-capable experiences
+ - Built with React and TypeScript, styled with Tailwind CSS
+ - Authentication via Google OAuth on FastAPI (`ts_access_token`). NextAuth is gone.
+ - ORM via Prisma targeting PostgreSQL
+ - PWA enabled for offline-capable experiences
 - Backend (FastAPI)
-  - Microservice exposing REST endpoints under /api/v1 and /api/v2
-  - Centralized middleware for CORS, request ID tracing, and request/response logging
-  - LangChain integration for AI/ML workflows and LLM orchestration
-  - Containerized with Python 3.13 slim image
+ - Microservice exposing REST endpoints under /api/v1 and /api/v2
+ - Centralized middleware for CORS, request ID tracing, and request/response logging
+ - LangChain integration for AI/ML workflows and LLM orchestration
+ - Containerized with Python 3.13 slim image
 - AI/ML Service (LangChain)
-  - Provider-agnostic LLM factory supporting OpenAI, Anthropic, Google Gemini, Ollama, OpenRouter, and DeepSeek
-  - JSON parsing helpers for structured LLM outputs
+ - Provider-agnostic LLM factory supporting OpenAI, Anthropic, Google Gemini, Ollama, OpenRouter, and DeepSeek
+ - JSON parsing helpers for structured LLM outputs
 - Database (PostgreSQL)
-  - Prisma schema defines core entities: User, Role, Resume, Analysis, Interview, and related request/response entities
-  - Migrations managed via Prisma CLI
+ - Prisma schema defines core entities: User, Role, Resume, Analysis, Interview, and related request/response entities
+ - Migrations managed via Prisma CLI
 
-## Architecture overview
-The system follows a classic three-tier pattern with clear separation of concerns:
+## How it fits together
+The system follows a classic three-tier pattern :
 - Presentation Layer: Next.js frontend serving dynamic UI and handling authentication
 - Application Layer: FastAPI backend implementing business logic and integrating AI/ML
 - Data Layer: PostgreSQL storing user profiles, resumes, analyses, and AI-generated artifacts
@@ -51,7 +48,7 @@ Browser["Web Browser"]
 end
 subgraph "Platform Services"
 subgraph "Frontend Tier"
-Next["Next.js App<br/>NextAuth, Prisma"]
+Next["Next.js App<br/>session.ts, Prisma"]
 end
 subgraph "Backend Tier"
 API["FastAPI App<br/>Routes, Middleware, LangChain"]
@@ -65,43 +62,41 @@ Next --> |"HTTP /api/*"| API
 API --> PG
 ```
 
-## Detailed component analysis
-
-### Frontend (Next.js) authentication and routing
+## Frontend (Next.js) authentication and routing
 - Authentication
-  - NextAuth.js configured with Prisma adapter and multiple providers (Google, GitHub, Email, Credentials)
-  - Session strategy uses JWT; callbacks manage user roles, verification status, and profile synchronization
+ - Google OAuth on FastAPI. `getSession()` verifies `ts_access_token` with `BACKEND_JWT_SECRET` and loads Prisma `User`.
+ - Client `useSession()` hits `/api/v1/auth/me`. NextAuth is gone.
 - Routing
-  - App Router with dynamic routes under app/api for backend interface and db endpoints
-  - PWA enabled via next-pwa plugin with service worker registration
+ - App Router. BFF under `app/api`. Rewrite `/api/v1/:path*` to FastAPI.
+ - `proxy.ts` presence-checks the access cookie.
 - Database Integration
-  - Prisma client connects to PostgreSQL using DATABASE_URL from environment
-  - Migrations executed during container startup in development
+ - Prisma client uses `DATABASE_URL` for `public`.
+ - Backend Alembic owns `talentsync_backend`.
 
 ```mermaid
 sequenceDiagram
 participant U as "User"
 participant FE as "Next.js App"
-participant NA as "NextAuth"
+participant SESS as "lib/session.ts"
 participant PR as "Prisma Client"
-participant BE as "FastAPI Backend"
-U->>FE : "Navigate to protected page"
-FE->>NA : "Fetch session (JWT)"
-NA->>PR : "Lookup user by token"
-PR-->>NA : "User record"
-NA-->>FE : "Session with role"
-FE->>BE : "Call /api/v*/ endpoint with auth headers"
-BE-->>FE : "Response data"
+participant BE as "FastAPI auth.py"
+U->>FE : Navigate to protected page
+FE->>SESS : getSession
+SESS->>PR : User by JWT sub
+PR-->>SESS : User record
+SESS-->>FE : Session with role
+FE->>BE : BFF call with minted Bearer
+BE-->>FE : Response
 ```
 
-### Backend (FastAPI) API surface and middleware
+## Backend (FastAPI) API surface and middleware
 - API Versioning
-  - v1 and v2 route sets expose features like resume analysis, ATS evaluation, cover letter generation, hiring assistant, and tailored resume creation
+ - v1 and v2 route sets expose features like resume analysis, ATS evaluation, cover letter generation, hiring assistant, and tailored resume creation
 - Middleware
-  - CORS enabled for configured origins
-  - Request ID propagation and request/response logging with structured logs
+ - CORS enabled for configured origins
+ - Request ID propagation and request/response logging with structured logs
 - Containerization
-  - Python 3.13 slim image, exposed on port 8000, served by uvicorn
+ - Python 3.13 slim image, exposed on port 8000, served by uvicorn
 
 ```mermaid
 flowchart TD
@@ -113,14 +108,14 @@ RouterSel --> Handler["Route Handler"]
 Handler --> Response(["HTTP Response"])
 ```
 
-### AI/ML orchestration with LangChain
+## AI/ML orchestration with LangChain
 - LLM Factory
-  - Provider-agnostic factory supports OpenAI, Anthropic, Google Gemini, Ollama, OpenRouter, and DeepSeek
-  - Temperature handling varies by provider/model
+ - Provider-agnostic factory supports OpenAI, Anthropic, Google Gemini, Ollama, OpenRouter, and DeepSeek
+ - Temperature handling varies by provider/model
 - JSON Parsing Helpers
-  - Reliable extraction and parsing of structured JSON from LLM responses
+ - Reliable extraction and parsing of structured JSON from LLM responses
 - Configuration
-  - Environment-driven provider selection and API keys
+ - Environment-driven provider selection and API keys
 
 ```mermaid
 classDiagram
@@ -137,14 +132,14 @@ class LLMHelpers {
 LLMFactory --> LLMHelpers : "used by"
 ```
 
-### Database schema and ORM
+## Database schema and ORM
 - Entities
-  - Role, User, Resume, Analysis, InterviewRequest/Answer, Recruiter, tokens, and accounts/sessions
+ - Role, User, Resume, Analysis, InterviewRequest/Answer, Recruiter, tokens, and accounts/sessions
 - Relationships
-  - Users have roles and multiple related entities (resumes, interviews, requests)
-  - Analysis is one-to-one with Resume
+ - Users have roles and multiple related entities (resumes, interviews, requests)
+ - Analysis is one-to-one with Resume
 - Migrations
-  - Prisma migrations executed at container startup in development
+ - Prisma migrations executed at container startup in development
 
 ```mermaid
 erDiagram
@@ -161,27 +156,27 @@ USER ||--o{ ACCOUNT : "auth_providers"
 USER ||--o{ SESSION : "sessions"
 ```
 
-## Dependency analysis
+## Dependencies
 - Technology Stack Decisions
-  - Frontend: Next.js for SSR/SSG, Prisma for ORM, NextAuth for auth, Tailwind for styling
-  - Backend: FastAPI for performance and automatic OpenAPI docs, LangChain for AI/ML orchestration
-  - Database: PostgreSQL for relational data persistence
-  - Deployment: Docker with multi-stage builds for frontend and backend
+ - Frontend: Next.js, Prisma, FastAPI cookie session, Tailwind
+ - Backend: FastAPI for performance and automatic OpenAPI docs, LangChain for AI/ML orchestration
+ - Database: PostgreSQL for relational data persistence
+ - Deployment: Docker with multi-stage builds for frontend and backend
 - Third-Party Dependencies (selected)
-  - Frontend: next, react, next-auth, @prisma/client, lucide-react, recharts, mermaid, posthog-js
-  - Backend: fastapi, langchain, langchain-google-genai, langchain-openai, langchain-anthropic, cryptography, sse-starlette, httpx, numpy, langgraph, bs4, gitingest, tavily-python, pymupdf, pymupdf4llm
+ - Frontend: next, react, @prisma/client, jose, lucide-react, recharts, mermaid, posthog-js
+ - Backend: fastapi, langchain, langchain-google-genai, langchain-openai, langchain-anthropic, cryptography, sse-starlette, httpx, numpy, langgraph, bs4, gitingest, tavily-python, pymupdf, pymupdf4llm
 - Version Compatibility Matrix (selected)
-  - Python: 3.13 (backend)
-  - Bun: 1.x (frontend build/runtime)
-  - Next.js: ^16.1.6
-  - Prisma: ^6.19.2
-  - PostgreSQL: 16 (image)
+ - Python: 3.13 (backend)
+ - Bun: 1.x (frontend build/runtime)
+ - Next.js: ^16.1.6
+ - Prisma: ^6.19.2
+ - PostgreSQL: 16 (image)
 
 ```mermaid
 graph LR
 subgraph "Frontend"
 NJS["Next.js"]
-NA["NextAuth.js"]
+NA["session.ts + FastAPI auth"]
 PR["Prisma Client"]
 end
 subgraph "Backend"
@@ -201,48 +196,43 @@ FA --> LG
 FA --> PG
 ```
 
-## Performance considerations
+## Performance
 - Container Images
-  - Multi-stage Docker builds reduce image sizes and attack surface
-  - Frontend uses slim base images for production runtime
+ - Multi-stage Docker builds reduce image sizes and attack surface
+ - Frontend uses slim base images for production runtime
 - API Design
-  - Structured logging and request ID propagation aid observability and debugging
+ - Structured logging and request ID propagation aid observability and debugging
 - Database
-  - Prisma schema includes indexes for common query patterns (e.g., Resume index on userId and isMaster)
+ - Prisma schema includes indexes for common query patterns (e.g., Resume index on userId and isMaster)
 - AI/ML
-  - Separate faster LLM instance allows cost/performance tuning for lightweight tasks
+ - Separate faster LLM instance allows cost/performance tuning for lightweight tasks
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
+## Troubleshooting
 - Authentication Issues
-  - Verify NEXTAUTH_URL and NEXTAUTH_SECRET in environment
-  - Ensure EMAIL_* and OAuth credentials are set for Email and provider-based sign-in
+ - Verify `JWT_SECRET` / `BACKEND_JWT_SECRET` and Google OAuth redirect URI
+ - `NEXTAUTH_*` in `.env.example` is leftover naming
 - Database Connectivity
-  - Confirm DATABASE_URL matches PostgreSQL service and schema
-  - Run Prisma migrations before starting the frontend in development
+ - Confirm DATABASE_URL matches PostgreSQL service and schema
+ - Run Prisma migrations before starting the frontend in development
 - LLM Configuration
-  - Ensure provider-specific API keys are present in environment
-  - Check model availability and rate limits for selected provider
+ - Ensure provider-specific API keys are present in environment
+ - Check model availability and rate limits for selected provider
 - Networking
-  - In development, frontend exposes port 3000; backend listens on 8000
-  - Production compose uses external network for reverse proxy integration
+ - In development, frontend exposes port 3000; backend listens on 8000
+ - Production compose uses external network for reverse proxy integration
 
-## Conclusion
-TalentSync-Normies employs a clean microservices architecture with a Next.js frontend, FastAPI backend, LangChain-powered AI/ML orchestration, and PostgreSQL for persistence. Docker and Docker Compose streamline local development and production deployments. The design balances developer productivity, scalability, and cloud readiness, with clear service boundaries and observable data flows.
-
-[No sources needed since this section summarizes without analyzing specific files]
-
-## Appendices
+## Appendix
 
 ### Deployment topology and infrastructure
 - Local Development
-  - Docker Compose brings up db, backend, and frontend with shared network
-  - Frontend publishes port 3000; backend on 8000
+ - Docker Compose brings up db, backend, and frontend with shared network
+ - Frontend publishes port 3000; backend on 8000
 - Production
-  - Multi-stage frontend build with separate migration stage
-  - Health checks for PostgreSQL
-  - External network integration for reverse proxy
+ - Multi-stage frontend build with separate migration stage
+ - Health checks for PostgreSQL
+ - External network integration for reverse proxy
 
 ```mermaid
 graph TB
@@ -266,9 +256,9 @@ P3 -.-> RP
 
 ### Cross-Cutting concerns
 - Authentication
-  - NextAuth.js with Prisma adapter and multiple providers
+ - Google OAuth on FastAPI. Cookies `ts_access_token` / `ts_refresh_token`.
 - API Gateway and Load Balancing
-  - Reverse proxy network integration in production compose
+ - Reverse proxy network integration in production compose
 - Monitoring and Observability
-  - Structured request/response logging in backend
-  - PostHog instrumentation configured in frontend
+ - Structured request/response logging in backend
+ - PostHog instrumentation configured in frontend

@@ -1,7 +1,7 @@
 # Telegram bot server
 
 ## Introduction
-This page provides detailed documentation for the Telegram Bot Server implementation. It explains the BotServer class architecture with dependency injection, the command handler system for /start, /help, /stop, /status, /stats, /noticestats, /userstats, and /web commands, user registration and management workflows, subscription handling, and admin command processing. It also documents the asynchronous bot lifecycle including initialization, polling mode operation, and graceful shutdown procedures. Additionally, it covers command handler implementations, user interaction patterns, message formatting with HTML and Markdown, integration with DatabaseService and NotificationService, error handling, logging mechanisms, daemon mode configuration, and security considerations for bot token management.
+BotServer: DI wiring, command handlers (`/start`, `/help`, `/stop`, `/status`, `/placement_year`, `/stats`, `/noticestats`, `/web`; admin `/userstats`), registration, subscriptions, admin commands. Polling lifecycle, HTML/Markdown replies, and how tokens stay out of logs.
 
 ## Project structure
 The Telegram Bot Server resides in the servers package and integrates with services and clients for database, notifications, and Telegram API communication. The main entry point orchestrates server startup and daemon mode.
@@ -13,7 +13,7 @@ MAIN["main.py"]
 end
 subgraph "Bot Server"
 BOT["BotServer<br/>app/servers/bot_server.py"]
-HANDLERS["Command Handlers<br/>/start, /help, /stop, /status,<br/>/stats, /noticestats, /userstats, /web"]
+HANDLERS["Command Handlers<br/>/start, /help, /stop, /status, /placement_year,<br/>/stats, /noticestats, /web; admin /userstats"]
 end
 subgraph "Services"
 DB["DatabaseService<br/>app/services/database_service.py"]
@@ -75,6 +75,7 @@ class BotServer {
 +help_command(Update, Context) void
 +stop_command(Update, Context) void
 +status_command(Update, Context) void
++placement_year_command(Update, Context) void
 +stats_command(Update, Context) void
 +notice_stats_command(Update, Context) void
 +user_stats_command(Update, Context) void
@@ -144,12 +145,12 @@ TelegramService --> TelegramClient : "uses"
 ## Detailed component analysis
 
 ### BotServer: dependency injection and lifecycle
-- Dependency Injection: BotServer accepts Settings, DatabaseService, NotificationService, AdminTelegramService, and PlacementStatsCalculatorService instances. It also supports daemon mode configuration.
-- Command Handlers Registration: setup_handlers registers handlers for /start, /help, /stop, /status, /stats, /noticestats, /userstats, and /web. Admin commands are conditionally registered if AdminTelegramService is provided.
+- Dependency Injection: BotServer accepts Settings, DatabaseService, NotificationService, AdminTelegramService, and PlacementStatsCalculatorService instances. Daemon mode is configurable too.
+- Command Handlers Registration: setup_handlers registers `/start`, `/help`, `/stop`, `/status`, `/placement_year`, `/stats`, `/noticestats`, `/web`, and admin `/userstats`. Admin scrape/broadcast/log/kill commands are registered when AdminTelegramService is provided.
 - Asynchronous Lifecycle:
-  - run_async builds the Application, sets up logging, initializes and starts the application, and keeps the loop running while self.running is True.
-  - run blocks and catches KeyboardInterrupt to trigger graceful shutdown.
-  - shutdown stops the updater, application, and performs cleanup.
+ - run_async builds the Application, sets up logging, initializes and starts the application, and keeps the loop running while self.running is True.
+ - run blocks and catches KeyboardInterrupt to trigger graceful shutdown.
+ - shutdown stops the updater, application, and performs cleanup.
 - Factory Function: create_bot_server constructs DBClient, DatabaseService, TelegramService, NotificationService, AdminTelegramService, and PlacementStatsCalculatorService, then returns a BotServer instance.
 
 ```mermaid
@@ -182,7 +183,8 @@ Bot->>Bot : loop while running
 - /start: Registers or reactivates a user via DatabaseService and responds with HTML-formatted welcome message including commands and helpful links.
 - /help: Responds with Markdown-formatted help text listing available commands.
 - /stop: Deactivates a user via DatabaseService and informs the user.
-- /status: Retrieves user data from DatabaseService and formats a status message indicating subscription state.
+- /status: Retrieves user data from DatabaseService and formats a status message indicating subscription state and placement year.
+- /placement_year: Inline keyboard of configured years. Callback writes `set_user_placement_year`.
 - /stats: Calculates placement statistics via PlacementStatsCalculatorService and replies with Markdown-formatted statistics.
 - /noticestats: Retrieves notice statistics from DatabaseService and replies with Markdown-formatted stats.
 - /userstats: Retrieves user statistics from DatabaseService and replies with Markdown-formatted stats (admin-only via AdminTelegramService).
@@ -211,7 +213,8 @@ Bot-->>User : Markdown stats
 ### User registration and management workflows
 - Registration: On /start, BotServer calls DatabaseService.add_user with user identity and chat metadata. Responses vary depending on whether the user is newly registered, reactivated, or already active.
 - Subscription Management: /stop triggers DatabaseService.deactivate_user to mark the user as inactive. /status retrieves user data and indicates active/inactive state.
-- User Statistics: AdminTelegramService provides /userstats to display total and active user counts via DatabaseService.get_users_stats.
+- Placement year: `/placement_year` stores a preference used by `/stats` and `/noticestats`.
+- User Statistics: `/userstats` is admin-only (`ADMIN_TELEGRAM_USER_IDS`) and uses DatabaseService.get_users_stats.
 
 ```mermaid
 flowchart TD
@@ -332,7 +335,7 @@ Tele --> TGCLI
 
 ## Performance considerations
 - Rate Limiting: TelegramService applies small delays between broadcasts to Telegram users to avoid rate limits.
-- Message Chunking: TelegramService.split_long_message ensures messages are within Telegram's character limits.
+- Message chunking: TelegramService.split_long_message keeps messages under Telegram's character limit.
 - Asynchronous Polling: BotServer uses asynchronous polling to keep the event loop responsive.
 - Daemon Mode: Reduces console output overhead in production environments.
 
@@ -345,19 +348,4 @@ Tele --> TGCLI
 - Logs: Use /logs admin command to retrieve recent log entries; logs are written to files configured by Settings.
 
 ## Conclusion
-The Telegram Bot Server implements a reliable, dependency-injected architecture with clear separation of concerns. It supports essential user commands, admin operations, and integrates with database and notification services. The asynchronous lifecycle, message formatting, and daemon mode configuration provide a production-ready foundation for Telegram-based notifications.
-
-[No sources needed since this section summarizes without analyzing specific files]
-
-## Appendices
-
-### Configuration and environment variables
-- TELEGRAM_BOT_TOKEN: Telegram bot token.
-- TELEGRAM_CHAT_ID: Admin chat ID for authentication and default channel.
-- MONGO_CONNECTION_STR: MongoDB connection string.
-- SUPERSET_CREDENTIALS: JSON list of SuperSet credentials.
-- GOOGLE_API_KEY: Google API key for Gemini.
-- VAPID keys and contact email for web push.
-- WEBHOOK_PORT and WEBHOOK_HOST for webhook server.
-- LOG_LEVEL and LOG_FILE paths for logging.
-- DAEMON_MODE for suppressing stdout in background mode.
+BotServer is DI, command handlers, and an async polling loop. It talks to DatabaseService and NotificationService. Daemon mode is how you leave it running without a terminal attached.

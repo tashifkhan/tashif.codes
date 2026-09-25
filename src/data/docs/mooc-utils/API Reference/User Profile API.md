@@ -1,7 +1,7 @@
 # User profile API
 
 ## Introduction
-This page provides detailed API documentation for user profile management within the notice-reminders system. It covers user registration via OTP, profile retrieval and updates, account deletion, and notification channel management. It also documents authentication and session handling, passwordless login via OTP, JWT access/refresh tokens, and cookie-based session persistence. Privacy and security considerations are addressed with respect to the implemented mechanisms, including token lifecycle, cookie attributes, and data protection controls.
+User registration via OTP, profile read/update, account deletion, and notification channel management. Sessions use JWT access and refresh tokens in cookies. Token lifetime, cookie flags, and what the API actually protects are spelled out below.
 
 ## Project structure
 The user profile API is implemented as a FastAPI application with Pydantic schemas, Tortoise ORM models, and service layers. The frontend interacts with the backend through typed API helpers.
@@ -44,20 +44,20 @@ SAuth --> MChan
 
 ## Core components
 - Authentication and Authorization
-  - Access token verification and user resolution
-  - Require-auth decorator for route protection
-  - OTP-based sign-up/sign-in with email delivery
-  - JWT access and refresh token lifecycle with rotation
-  - Cookie-based session management with secure attributes
+ - Access token verification and user resolution
+ - Require-auth decorator for route protection
+ - OTP-based sign-up/sign-in with email delivery
+ - JWT access and refresh token lifecycle with rotation
+ - Cookie-based session management with secure attributes
 - User Management
-  - Retrieve user profile by ID
-  - Update user profile fields (email, name, telegram_id, is_active)
-  - Delete user account
-  - Self-assertion checks to prevent cross-user access
+ - Retrieve user profile by ID
+ - Update user profile fields (email, name, telegram_id, is_active)
+ - Delete user account
+ - Self-assertion checks to prevent cross-user access
 - Notification Channels
-  - Add notification channels (e.g., Telegram) with address validation
-  - List user notification channels
-  - Channel uniqueness per user-channel-address enforced by DB constraints
+ - Add notification channels (e.g., Telegram) with address validation
+ - List user notification channels
+ - Channel uniqueness per user-channel-address enforced by DB constraints
 
 ## Architecture overview
 The system follows a layered architecture:
@@ -90,18 +90,18 @@ AuthAPI-->>Client : {user, is_new_user}
 ## Detailed component analysis
 
 ### Authentication endpoints
-- POST /auth/request-otp
-  - Accepts email and sends OTP via configured email service
-  - Returns whether user is new and OTP expiry timestamp
-- POST /auth/verify-otp
-  - Verifies OTP, creates user if new, issues access and refresh tokens
-  - Sets secure cookies for session management
-- POST /auth/refresh
-  - Rotates refresh token and issues new access token
-- POST /auth/logout
-  - Revokes refresh token and clears cookies
-- GET /auth/me
-  - Returns current authenticated user profile
+  - POST /auth/request-otp
+ - Accepts email and sends OTP via configured email service
+ - Returns whether user is new and OTP expiry timestamp
+  - POST /auth/verify-otp
+ - Verifies OTP, creates user if new, issues access and refresh tokens
+ - Sets secure cookies for session management
+  - POST /auth/refresh
+ - Rotates refresh token and issues new access token
+  - POST /auth/logout
+ - Revokes refresh token and clears cookies
+  - GET /auth/me
+ - Returns current authenticated user profile
 
 Validation and error handling:
 - Missing/invalid access token raises unauthorized errors
@@ -115,18 +115,18 @@ Security features:
 - JWT secret and algorithm configured via settings
 
 ### User profile endpoints
-- GET /users/{user_id}
-  - Returns user profile if requester matches target user
-- PATCH /users/{user_id}
-  - Updates allowed fields: email, name, telegram_id, is_active
-  - Enforces self-access and existence checks
-- DELETE /users/{user_id}
-  - Deletes user account after validation
-- GET /users/{user_id}/channels
-  - Lists notification channels for the user
-- POST /users/{user_id}/channels
-  - Adds a notification channel; requires address for telegram channel
-  - Enforces uniqueness constraint per user-channel-address
+  - GET /users/{user_id}
+ - Returns user profile if requester matches target user
+  - PATCH /users/{user_id}
+ - Updates allowed fields: email, name, telegram_id, is_active
+ - Enforces self-access and existence checks
+  - DELETE /users/{user_id}
+ - Deletes user account after validation
+  - GET /users/{user_id}/channels
+ - Lists notification channels for the user
+  - POST /users/{user_id}/channels
+ - Adds a notification channel; requires address for telegram channel
+ - Enforces uniqueness constraint per user-channel-address
 
 Data validation:
 - Pydantic schemas validate request payloads and serialize responses
@@ -205,82 +205,76 @@ AuthService --> Settings : "uses"
 - Pagination and ordering are not implemented in current endpoints; consider adding limits for large lists
 - Consider caching user profiles for frequently accessed endpoints if traffic warrants
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Unauthorized access
-  - Ensure access token is present and valid; check cookie presence for protected routes
-  - Verify user ID matches the authenticated user for user-specific endpoints
+ - Ensure access token is present and valid; check cookie presence for protected routes
+ - Verify user ID matches the authenticated user for user-specific endpoints
 - Invalid or expired OTP
-  - Confirm OTP delivery mechanism and expiration window
-  - Ensure OTP is not reused
+ - Confirm OTP delivery mechanism and expiration window
+ - Ensure OTP is not reused
 - Refresh token errors
-  - Missing or revoked refresh tokens cause unauthorized responses
-  - Rotate refresh tokens on successful refresh
+ - Missing or revoked refresh tokens cause unauthorized responses
+ - Rotate refresh tokens on successful refresh
 - Channel creation failures
-  - Address required for telegram channel
-  - Unique constraint violations handled by returning existing channel
+ - Address required for telegram channel
+ - Unique constraint violations handled by returning existing channel
 
 ## Conclusion
-The user profile API provides a secure, validated interface for user management and notification channel administration. Authentication relies on OTP, JWT access tokens, and refresh tokens with cookie-based session persistence. The design emphasizes self-assertion, data validation, and integrity constraints to maintain data consistency and user privacy.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Profile and channel routes assume a valid session cookie. Delete is hard delete in the current code, so confirm before calling it from UI.
 
 ## Appendices
 
 ### API reference
 
 - Authentication
-  - POST /auth/request-otp
-    - Request body: email
-    - Response: message, is_new_user, expires_at
-  - POST /auth/verify-otp
-    - Request body: email, code
-    - Response: user, is_new_user; sets access_token and refresh_token cookies
-  - POST /auth/refresh
-    - No body; reads refresh_token cookie
-    - Response: user, is_new_user=false
-  - POST /auth/logout
-    - No body; revokes refresh token and clears cookies
-  - GET /auth/me
-    - Response: user profile
+ - POST /auth/request-otp
+ - Request body: email
+ - Response: message, is_new_user, expires_at
+ - POST /auth/verify-otp
+ - Request body: email, code
+ - Response: user, is_new_user; sets access_token and refresh_token cookies
+ - POST /auth/refresh
+ - No body; reads refresh_token cookie
+ - Response: user, is_new_user=false
+ - POST /auth/logout
+ - No body; revokes refresh token and clears cookies
+ - GET /auth/me
+ - Response: user profile
 
 - User Management
-  - GET /users/{user_id}
-    - Response: user profile
-  - PATCH /users/{user_id}
-    - Request body: partial user fields (email, name, telegram_id, is_active)
-    - Response: updated user profile
-  - DELETE /users/{user_id}
-    - No response body
+ - GET /users/{user_id}
+ - Response: user profile
+ - PATCH /users/{user_id}
+ - Request body: partial user fields (email, name, telegram_id, is_active)
+ - Response: updated user profile
+ - DELETE /users/{user_id}
+ - No response body
 
 - Notification Channels
-  - POST /users/{user_id}/channels
-    - Request body: channel, address; address required for telegram
-    - Response: channel record
-  - GET /users/{user_id}/channels
-    - Response: array of channel records
+ - POST /users/{user_id}/channels
+ - Request body: channel, address; address required for telegram
+ - Response: channel record
+ - GET /users/{user_id}/channels
+ - Response: array of channel records
 
 ### Data validation scenarios
 - User update
-  - Allowed fields: email, name, telegram_id, is_active
-  - Only provided fields are updated
+ - Allowed fields: email, name, telegram_id, is_active
+ - Only provided fields are updated
 - Channel creation
-  - channel must be provided
-  - address required when channel is telegram
-  - Unique constraint prevents duplicate user-channel-address combinations
+ - channel must be provided
+ - address required when channel is telegram
+ - Unique constraint prevents duplicate user-channel-address combinations
 
 ### Security and privacy notes
 - Tokens and cookies
-  - Access tokens are short-lived; refresh tokens are rotated on use
-  - Cookies marked HttpOnly and SameSite lax; secure flag depends on debug setting
+ - Access tokens are short-lived; refresh tokens are rotated on use
+ - Cookies marked HttpOnly and SameSite lax; secure flag depends on debug setting
 - Data protection
-  - Email and telegram identifiers are stored; ensure transport encryption and least-privilege access
-  - Consider data retention policies and right-to-be-forgotten flows
+ - Email and telegram identifiers are stored; ensure transport encryption and least-privilege access
+ - Consider data retention policies and right-to-be-forgotten flows
 - Compliance considerations
-  - Implement consent management for notifications and data processing
-  - Provide user access to personal data and deletion capabilities
-  - Maintain audit trails for profile changes and channel management
-
-[No sources needed since this section provides general guidance]
+ - Implement consent management for notifications and data processing
+ - Provide user access to personal data and deletion capabilities
+ - Maintain audit trails for profile changes and channel management

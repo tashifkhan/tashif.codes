@@ -1,12 +1,7 @@
 # WebSocket communication
 
 ## Introduction
-This page explains the WebSocket communication implementation for real-time agent interactions in the extension. It covers:
-- The useWebSocket hook for connection state tracking and UI feedback
-- The WebSocket client for bidirectional communication, message serialization, and error recovery
-- Integration with AgentExecutor for dynamic response updates and conversation state management
-- Message formats, lifecycle management, reconnection strategies, and HTTP fallback
-- Security considerations and performance optimizations
+WebSocket client, `useWebSocket`, status UI, and HTTP fallback when the socket dies. How `AgentExecutor` streams updates.
 
 ## Project structure
 The WebSocket-related logic spans three primary areas:
@@ -81,10 +76,10 @@ Note over UI,Srv : On failure, UI falls back to HTTP via executeAgent
 ### useWebSocket hook
 - Purpose: Initialize WebSocket subscription, track connection state, and expose auto-connect preferences.
 - Behavior:
-  - Subscribes to connection_status to update wsConnected and UI messages.
-  - Subscribes to generation_progress to stream progress updates.
-  - Loads auto-connect preference from local storage.
-  - Does not disconnect on unmount to allow auto-reconnect.
+ - Subscribes to connection_status to update wsConnected and UI messages.
+ - Subscribes to generation_progress to stream progress updates.
+ - Loads auto-connect preference from local storage.
+ - Does not disconnect on unmount to allow auto-reconnect.
 
 ```mermaid
 flowchart TD
@@ -101,13 +96,13 @@ Progress --> End
 ### WebSocket client
 - Transport: socket.io-client with transports ["websocket","polling"], reconnection enabled.
 - Events:
-  - "connect" -> emits "connection_status" {connected:true}
-  - "disconnect" -> emits "connection_status" {connected:false, reason}
-  - "generation_progress" -> re-emitted to listeners
+ - "connect" -> emits "connection_status" {connected:true}
+ - "disconnect" -> emits "connection_status" {connected:false, reason}
+ - "generation_progress" -> re-emitted to listeners
 - Execution APIs:
-  - executeAgent(command, onProgress?) -> Promise resolving on "agent_result" or rejecting on "agent_error"
-  - stopAgent() -> emits "stop_agent"
-  - getStats() -> emits "get_stats", resolves on "stats_result" or {ok:false} after timeout
+ - executeAgent(command, onProgress?) -> Promise resolving on "agent_result" or rejecting on "agent_error"
+ - stopAgent() -> emits "stop_agent"
+ - getStats() -> emits "get_stats", resolves on "stats_result" or {ok:false} after timeout
 - Utility methods: disconnect/connectSocket/enableAutoConnect/disableAutoConnect/isSocketConnected
 
 ```mermaid
@@ -178,10 +173,10 @@ UI->>UI : Update messages and progress
 ## Dependency analysis
 - UI depends on WebSocket client for real-time updates.
 - AgentExecutor depends on:
-  - parseAgentCommand for command validation
-  - agent-map for endpoint resolution
-  - executeAgent for HTTP fallback
-  - executeActions for runtime browser automation
+ - parseAgentCommand for command validation
+ - agent-map for endpoint resolution
+ - executeAgent for HTTP fallback
+ - executeActions for runtime browser automation
 - background.ts handles cross-tab messaging for action execution.
 
 ```mermaid
@@ -202,24 +197,23 @@ Hook["useWebSocket.ts"] --> Client
 - Batched UI updates: Progress updates are appended incrementally to reduce layout thrashing.
 - Fallback HTTP: When WebSocket is unavailable, HTTP requests are used to maintain functionality without blocking the UI.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and remedies:
 - WebSocket not connecting:
-  - Verify VITE_API_URL and network accessibility.
-  - Use WebSocketStatus to manually reconnect.
-  - Check connection_status events for reasons.
+ - Verify VITE_API_URL and network accessibility.
+ - Use WebSocketStatus to manually reconnect.
+ - Check connection_status events for reasons.
 - Execution failures:
-  - Inspect agent_error events and error messages.
-  - Confirm command parsing via parseAgentCommand.
-  - Validate endpoint mapping in agent-map.
+ - Inspect agent_error events and error messages.
+ - Confirm command parsing via parseAgentCommand.
+ - Validate endpoint mapping in agent-map.
 - HTTP fallback errors:
-  - Review executeAgent error handling and HTTP status codes.
-  - Ensure required credentials and context (e.g., active tab) are present.
+ - Review executeAgent error handling and HTTP status codes.
+ - Ensure required credentials and context (e.g., active tab) are present.
 - Action execution not applied:
-  - Confirm content script injection and messaging to active tab.
-  - Check background.ts handlers for EXECUTE_ACTION.
+ - Confirm content script injection and messaging to active tab.
+ - Check background.ts handlers for EXECUTE_ACTION.
 
 ## Conclusion
-The WebSocket communication layer provides reliable, real-time agent interactions with graceful fallback to HTTP. The useWebSocket hook and WebSocketStatus offer clear connection monitoring, while WebSocketClient encapsulates transport and execution APIs. AgentExecutor integrates these capabilities with conversation state management and dynamic response updates, ensuring a responsive and resilient user experience.
+Prefer the socket for streaming; fall back to HTTP when it drops. Surface connection state in the UI so a silent hang is obvious.
+

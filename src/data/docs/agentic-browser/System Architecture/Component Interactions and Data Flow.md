@@ -1,15 +1,10 @@
 # Component interactions and data flow
 
 ## Introduction
-This page explains how the browser extension, backend API, MCP server, and external services interact to deliver a smooth agentic browsing experience. It focuses on:
-- Communication patterns between the React UI, background/content scripts, WebSocket client, backend API, and external services
-- Real-time data synchronization via WebSocket and HTTP fallback
-- Asynchronous flows for agent execution, tool invocation, and browser automation
-- Error propagation, state management, and consistency across components
-- Performance, caching, and fault tolerance strategies
+Request paths across side panel, background/content scripts, WebSocket, FastAPI, and the LangGraph agent, including HTTP fallback.
 
 ## Project structure
-The system is organized into:
+Pieces:
 - Extension (React UI, background script, content script, WebSocket client, utilities)
 - Backend API (FastAPI app, routers, services, models)
 - Agents and tools (LangGraph-based React agent, tool registry)
@@ -28,7 +23,7 @@ PARSE["parseAgentCommand.ts<br/>Command Parser"]
 end
 subgraph "Backend API"
 API["main.py<br/>FastAPI App"]
-RUN["run.py<br/>Uvicorn Runner"]
+RUN["main.py<br/>Uvicorn Runner"]
 end
 subgraph "Agents & Tools"
 REACT["react_agent.py<br/>LangGraph Agent"]
@@ -190,7 +185,7 @@ BG-->>UI : result
 graph TB
 API["main.py"] --> Routers["Routers: agent, react, website, youtube, upload, skills"]
 API --> App["FastAPI App"]
-App --> Uvicorn["run.py: uvicorn.run()"]
+App --> Uvicorn["main.py: uvicorn.run()"]
 App --> REACT["react_agent.py: run_react_agent()"]
 ```
 
@@ -219,25 +214,24 @@ EXA --> API
 - Action executor introduces small delays between actions to prevent race conditions and improve stability.
 - Caching: React agent graph is cached via LRU to avoid recompilation costs.
 - Recommendations:
-  - Prefer WebSocket for interactive sessions; degrade gracefully to HTTP.
-  - Limit DOM capture size and scope; avoid unnecessary reflows.
-  - Batch browser actions and debounce UI updates.
-
-[No sources needed since this section provides general guidance]
+ - Prefer WebSocket for interactive sessions; degrade to HTTP.
+ - Limit DOM capture size and scope; avoid unnecessary reflows.
+ - Batch browser actions and debounce UI updates.
 
 ## Troubleshooting guide
 - WebSocket connectivity:
-  - Monitor connection_status events and fallback to HTTP when disconnected.
-  - Use getStats with timeout to detect backend responsiveness.
+ - Monitor connection_status events and fallback to HTTP when disconnected.
+ - Use getStats with timeout to detect backend responsiveness.
 - Command parsing:
-  - Ensure slash commands are complete; partial suggestions guide users.
+ - Ensure slash commands are complete; partial suggestions guide users.
 - Browser automation:
-  - Verify content script injection and tab permissions.
-  - Handle unknown action types and timeouts during navigation/reload.
+ - Verify content script injection and tab permissions.
+ - Handle unknown action types and timeouts during navigation/reload.
 - HTTP errors:
-  - Normalize error messages for rate limits, gateway errors, and service unavailability.
+ - Normalize error messages for rate limits, gateway errors, and service unavailability.
 - Storage and sessions:
-  - Persist sessions in browser storage; migrate legacy chat history if needed.
+ - Persist sessions in browser storage; migrate legacy chat history if needed.
 
 ## Conclusion
-The system integrates a React-based UI, background/content scripts, WebSocket streaming, and a FastAPI backend with a LangGraph-powered agent. It balances real-time responsiveness with reliable HTTP fallback, manages state across browser storage and UI components, and provides clear error propagation and recovery paths. By using caching, minimal payload construction, and cautious automation, it maintains performance and reliability across distributed components.
+UI → transport → agent → tools → browser. WebSocket streams when it can; HTTP covers the rest. State lives where the component that needs it can see it.
+

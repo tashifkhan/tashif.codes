@@ -1,7 +1,7 @@
 # SMTP configuration
 
 ## Introduction
-This page provides detailed SMTP configuration guidance for the desktop application. It covers connection parameters, authentication methods, provider-specific settings, security options, and operational behaviors implemented in the codebase. The goal is to help users configure SMTP securely and reliably for bulk email sending.
+SMTP connection settings the main process expects, plus provider-specific defaults and how the UI persists a sanitized config.
 
 ## Project structure
 The SMTP functionality is implemented in the Electron main process and exposed to the renderer via IPC. The key components are:
@@ -21,22 +21,22 @@ Handler --> Store["electron-store<br/>Optional credential storage"]
 
 ## Core components
 - SMTP configuration fields supported by the UI:
-  - Host
-  - Port
-  - Username/Email
-  - Password
-  - Secure connection toggle (SSL/TLS)
+ - Host
+ - Port
+ - Username/Email
+ - Password
+ - Secure connection toggle (SSL/TLS)
 - SMTP handler behavior:
-  - Validates presence of host, port, user, and pass
-  - Optionally saves host, port, secure, and user to encrypted storage
-  - Creates a Nodemailer transporter with host, port, secure, auth, and TLS options
-  - Verifies the connection before sending
-  - Sends emails sequentially with configurable delay between attempts
-  - Emits progress events for each recipient
+ - Validates presence of host, port, user, and pass
+ - Optionally saves host, port, secure, and user to encrypted storage
+ - Creates a Nodemailer transporter with host, port, secure, auth, and TLS options
+ - Verifies the connection before sending
+ - Sends emails sequentially with configurable delay between attempts
+ - Emits progress events for each recipient
 - IPC exposure:
-  - Renderer invokes "smtp-send" via preload bridge
-  - Main process routes to handler
-  - Handler returns results and errors
+ - Renderer invokes "smtp-send" via preload bridge
+ - Main process routes to handler
+ - Handler returns results and errors
 
 ## Architecture overview
 The SMTP workflow spans UI input, IPC routing, and the main process handler.
@@ -160,8 +160,6 @@ Package --> Store
 - Network timeouts: The handler does not set explicit timeouts; rely on underlying network defaults
 - Rate limiting: Use the delay setting to avoid throttling or rate limits
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common SMTP issues and checks derived from the codebase:
 - Incomplete configuration: Ensure host, port, user, and pass are provided
@@ -175,9 +173,8 @@ Operational tips:
 - Use appropriate delays to avoid rate limits
 
 ## Conclusion
-The application provides a straightforward SMTP configuration interface and reliable handler behavior for sending bulk emails. It supports username/password authentication, optional credential persistence, and TLS configuration suitable for self-signed certificates. Use the provider-specific settings from the README to configure hosts, ports, and security modes for popular providers.
 
-[No sources needed since this section summarizes without analyzing specific files]
+Verify the transport before a bulk run. Most provider failures are wrong port/TLS pairing or an app-password requirement you skipped.
 
 ## Appendices
 
@@ -185,16 +182,16 @@ The application provides a straightforward SMTP configuration interface and reli
 Use these templates to quickly set up SMTP for common providers. Fill in the host, port, username/email, and password fields in the SMTP form.
 
 - Gmail SMTP
-  - Host: smtp.gmail.com
-  - Port: 587 (TLS) or 465 (SSL)
-  - Security: Enable secure connection (SSL/TLS)
-  - Authentication: Use App Password (not regular password)
+ - Host: smtp.gmail.com
+ - Port: 587 (TLS) or 465 (SSL)
+ - Security: Enable secure connection (SSL/TLS)
+ - Authentication: Use App Password (not regular password)
 
 - Outlook SMTP
-  - Host: smtp-mail.outlook.com
-  - Port: 587
-  - Security: TLS
-  - Authentication: Username/password
+ - Host: smtp-mail.outlook.com
+ - Port: 587
+ - Security: TLS
+ - Authentication: Username/password
 
 ### Security considerations
 - Credential encryption: The handler can persist host, port, secure, and user to encrypted storage; password is not saved

@@ -1,9 +1,8 @@
 # UI component library
 
-## Introduction
-This page describes the UI component library architecture used in the frontend application. It covers the shared components system, reusable component patterns, and composition strategies. It also details the integration with Radix UI primitives, Tailwind CSS styling approach, and the design system implementation. The guide includes form components, data display components, and interactive elements, along with component props, customization options, accessibility features, state management, event handling, and testing strategies.
+The UI component library architecture used in the frontend application.
 
-## Project structure
+## Repository layout
 The UI component library is organized under the components/ui directory. Each component is self-contained with its own TypeScript/TSX file, styling via Tailwind CSS, and optional animations powered by Framer Motion. Shared utilities and design tokens are centralized in lib/utils.ts and configured in tailwind.config.ts. Global styles are defined in app/globals.css.
 
 ```mermaid
@@ -76,95 +75,95 @@ GCSS --> TW
 UT --> TSTR
 ```
 
-## Core components
+## Building blocks
 This section documents the foundational UI components that form the shared component library.
 
 - Button
-  - Purpose: Base action element with variants and sizes.
-  - Props: Inherits standard button attributes plus variant and size from class-variance-authority; supports asChild for composition.
-  - Variants: default, destructive, outline, secondary, ghost, link.
-  - Sizes: default, sm, lg, icon.
-  - Accessibility: Inherits native button semantics; focus-visible ring via Tailwind utilities.
-  - Composition: Uses Slot from @radix-ui/react-slot to wrap children when asChild is true.
+ - Purpose: Base action element with variants and sizes.
+ - Props: Inherits standard button attributes plus variant and size from class-variance-authority; supports asChild for composition.
+ - Variants: default, destructive, outline, secondary, ghost, link.
+ - Sizes: default, sm, lg, icon.
+ - Accessibility: Inherits native button semantics; focus-visible ring via Tailwind utilities.
+ - Composition: Uses Slot from @radix-ui/react-slot to wrap children when asChild is true.
 
 - Input
-  - Purpose: Text input field with consistent styling and focus states.
-  - Props: Standard input attributes; integrates with Tailwind for focus, disabled, and placeholder states.
-  - Accessibility: Native input semantics; focus-visible ring for keyboard navigation.
+ - Purpose: Text input field with consistent styling and focus states.
+ - Props: Standard input attributes; integrates with Tailwind for focus, disabled, and placeholder states.
+ - Accessibility: Native input semantics; focus-visible ring for keyboard navigation.
 
 - Dialog
-  - Purpose: Modal overlay with content area, header, footer, title, and description.
-  - Components: Root, Trigger, Portal, Close, Overlay, Content, Header, Footer, Title, Description.
-  - Accessibility: Built on @radix-ui/react-dialog; manages focus trapping and escape key handling.
-  - Styling: Dark theme overlay with backdrop blur; slide/fade animations; close button with sr-only label.
+ - Purpose: Modal overlay with content area, header, footer, title, and description.
+ - Components: Root, Trigger, Portal, Close, Overlay, Content, Header, Footer, Title, Description.
+ - Accessibility: Built on @radix-ui/react-dialog; manages focus trapping and escape key handling.
+ - Styling: Dark theme overlay with backdrop blur; slide/fade animations; close button with sr-only label.
 
 - Card
-  - Purpose: Container for grouping related content with header, title, description, content, and footer.
-  - Components: Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter.
-  - Styling: Background and border tokens; spacing and typography tokens.
+ - Purpose: Container for grouping related content with header, title, description, content, and footer.
+ - Components: Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter.
+ - Styling: Background and border tokens; spacing and typography tokens.
 
 - Checkbox
-  - Purpose: Binary selection control with indicator.
-  - Props: Inherits Radix checkbox attributes; styled with brand colors when checked.
-  - Accessibility: Uses @radix-ui/react-checkbox; maintains keyboard and screen reader compatibility.
+ - Purpose: Binary selection control with indicator.
+ - Props: Inherits Radix checkbox attributes; styled with brand colors when checked.
+ - Accessibility: Uses @radix-ui/react-checkbox; maintains keyboard and screen reader compatibility.
 
 - Avatar
-  - Purpose: User avatar with fallback icon and optimized image loading.
-  - Props: src, alt, size (sm/md/lg), className.
-  - Behavior: Optimizes Google and GitHub profile URLs via proxy; retries on failure; loading states with pulse effect.
-  - Styling: Responsive sizing; border and color tokens.
+ - Purpose: User avatar with fallback icon and optimized image loading.
+ - Props: src, alt, size (sm/md/lg), className.
+ - Behavior: Optimizes Google and GitHub profile URLs via proxy; retries on failure; loading states with pulse effect.
+ - Styling: Responsive sizing; border and color tokens.
 
 - Badge
-  - Purpose: Label or indicator with variants.
-  - Props: Inherits standard div attributes plus variant from class-variance-authority.
-  - Variants: default, secondary, destructive, outline.
+ - Purpose: Label or indicator with variants.
+ - Props: Inherits standard div attributes plus variant from class-variance-authority.
+ - Variants: default, secondary, destructive, outline.
 
 - Dropdown Menu
-  - Purpose: Context menu with items, checkboxes, radios, labels, separators, and submenus.
-  - Components: Root, Trigger, Portal, Content, Item, CheckboxItem, RadioItem, Label, Separator, Shortcut, Group, Sub, SubContent, SubTrigger, RadioGroup.
-  - Accessibility: Built on @radix-ui/react-dropdown-menu; supports nested menus and keyboard navigation.
+ - Purpose: Context menu with items, checkboxes, radios, labels, separators, and submenus.
+ - Components: Root, Trigger, Portal, Content, Item, CheckboxItem, RadioItem, Label, Separator, Shortcut, Group, Sub, SubContent, SubTrigger, RadioGroup.
+ - Accessibility: Built on @radix-ui/react-dropdown-menu; supports nested menus and keyboard navigation.
 
 - Label
-  - Purpose: Associated label for form controls.
-  - Props: Inherits Radix label attributes plus variant from class-variance-authority.
-  - Accessibility: Peer-based disabled state handling; integrates with form controls.
+ - Purpose: Associated label for form controls.
+ - Props: Inherits Radix label attributes plus variant from class-variance-authority.
+ - Accessibility: Peer-based disabled state handling; integrates with form controls.
 
 - Progress
-  - Purpose: Visual progress bar.
-  - Props: Inherits Radix progress attributes; value determines indicator width.
-  - Accessibility: Semantic progress indication; integrates with screen readers.
+ - Purpose: Visual progress bar.
+ - Props: Inherits Radix progress attributes; value determines indicator width.
+ - Accessibility: Semantic progress indication; integrates with screen readers.
 
 - Radio Group
-  - Purpose: Group of radio buttons with consistent styling.
-  - Components: RadioGroup, RadioGroupItem.
-  - Accessibility: Built on @radix-ui/react-radio-group; maintains group semantics.
+ - Purpose: Group of radio buttons with consistent styling.
+ - Components: RadioGroup, RadioGroupItem.
+ - Accessibility: Built on @radix-ui/react-radio-group; maintains group semantics.
 
 - Scroll Area
-  - Purpose: Customizable scrollbars with viewport and corner.
-  - Components: ScrollArea, ScrollBar.
-  - Accessibility: Preserves native scrolling semantics; styled scrollbar thumb.
+ - Purpose: Customizable scrollbars with viewport and corner.
+ - Components: ScrollArea, ScrollBar.
+ - Accessibility: Preserves native scrolling semantics; styled scrollbar thumb.
 
 - Loader and Page Loader
-  - Purpose: Loading indicators with multiple variants and full-screen overlay.
-  - Variants: dots, pulse, spinner, default.
-  - Props: size (sm/md/lg/xl), variant, className, text; PageLoader adds motion transitions.
-  - Integration: Reuses Loader in PageLoader for consistent UX.
+ - Purpose: Loading indicators with multiple variants and full-screen overlay.
+ - Variants: dots, pulse, spinner, default.
+ - Props: size (sm/md/lg/xl), variant, className, text; PageLoader adds motion transitions.
+ - Integration: Reuses Loader in PageLoader for consistent UX.
 
 - Markdown Renderer
-  - Purpose: Render markdown content with custom GFM-style callouts and details/summary support.
-  - Props: content (unknown), className.
-  - Styling: Extensive Tailwind utilities for headings, lists, callouts, and interactive elements.
+ - Purpose: Render markdown content with custom GFM-style callouts and details/summary support.
+ - Props: content (unknown), className.
+ - Styling: Extensive Tailwind utilities for headings, lists, callouts, and interactive elements.
 
 - Modern Mobile Menu
-  - Purpose: Interactive bottom navigation with animated underline and dynamic width calculation.
-  - Props: items (array of label/icon), accentColor (CSS variable).
-  - Behavior: Validates items length, calculates active line width, handles click events.
+ - Purpose: Interactive bottom navigation with animated underline and dynamic width calculation.
+ - Props: items (array of label/icon), accentColor (CSS variable).
+ - Behavior: Validates items length, calculates active line width, handles click events.
 
 - Toast and Toaster
-  - Purpose: Non-blocking notifications with queue management.
-  - Integration: use-toast hook provides toast creation; Toaster renders queued toasts.
+ - Purpose: Non-blocking notifications with queue management.
+ - Integration: use-toast hook provides toast creation; Toaster renders queued toasts.
 
-## Architecture overview
+## How it fits together
 The component library follows a modular, composition-first architecture:
 - Each component encapsulates styling, behavior, and accessibility.
 - Radix UI primitives provide accessible base behaviors (focus management, ARIA, keyboard interactions).
@@ -204,9 +203,7 @@ MDR --> TW
 TST --> U
 ```
 
-## Detailed component analysis
-
-### Button component
+## Button component
 The Button component demonstrates variant-driven styling with class-variance-authority and composable rendering via Radix Slot.
 
 ```mermaid
@@ -225,7 +222,7 @@ class buttonVariants {
 Button --> buttonVariants : "uses"
 ```
 
-### Dialog component
+## Dialog component
 The Dialog stack composes multiple Radix UI parts into a cohesive modal experience with animations and accessibility.
 
 ```mermaid
@@ -245,7 +242,7 @@ Close->>Portal : Close dialog
 Portal->>Overlay : Unmount backdrop
 ```
 
-### Avatar component
+## Avatar component
 The Avatar component handles image loading, error fallbacks, and proxy optimization for external images.
 
 ```mermaid
@@ -268,7 +265,7 @@ Retry --> End
 ErrorState --> End
 ```
 
-### Loader component
+## Loader component
 The Loader component provides multiple animation variants and a full-screen overlay.
 
 ```mermaid
@@ -287,7 +284,7 @@ OptionalText --> |No| End(["Done"])
 AddText --> End
 ```
 
-### Toast system
+## Toast system
 The toast system integrates with a hook to manage toasts and a renderer to display them.
 
 ```mermaid
@@ -302,11 +299,11 @@ Toast->>Toaster : dismiss
 Toaster->>Hook : remove from queue
 ```
 
-## Dependency analysis
+## Dependencies
 The component library exhibits low coupling and high cohesion:
 - Components depend on Radix UI primitives for accessibility and behavior.
 - Styling is centralized via Tailwind utilities and design tokens.
-- Utilities in lib/utils.ts provide shared helpers like cn() for class merging.
+- Utilities in lib/utils.ts provide shared helpers like cn for class merging.
 - Animations rely on Framer Motion for consistent motion design.
 
 ```mermaid
@@ -334,7 +331,7 @@ RUP --> MDR
 RUP --> TST
 ```
 
-## Performance considerations
+## Performance
 - Prefer variant props over inline styles to use Tailwind's efficient class generation.
 - Use memoization for derived values (e.g., useMemo in interactive menu) to avoid unnecessary recalculations.
 - Lazy-load heavy assets (images) and use optimized URLs to reduce bandwidth and improve CLS.
@@ -352,7 +349,7 @@ RUP --> TST
 - Composition over inheritance: Use asChild patterns (e.g., Button with Slot) to wrap other components.
 - Slot pattern: Enables flexible DOM structure while preserving component behavior.
 - Compound components: Dialog exposes multiple subcomponents (Content, Header, Footer) for structured markup.
-- Variant systems: class-variance-authority allows consistent, extensible styling across components.
+- Variant systems: class-variance-authority allows consistent, easy to extend styling across components.
 - Theme tokens: Centralized design tokens in Tailwind config enable consistent theming.
 
 ## Testing strategies
@@ -369,12 +366,9 @@ RUP --> TST
 - Accessibility checklist: Include accessibility notes per component.
 - Migration guides: Document breaking changes and upgrade steps for major updates.
 
-## Troubleshooting guide
+## Troubleshooting
 - Dialog not closing: Ensure DialogClose is used and that the portal mounts correctly.
 - Avatar flickering: Confirm image load/error handlers and retry logic are functioning.
 - Loader not animating: Verify Framer Motion is imported and animations are enabled.
 - Toast not appearing: Check use-toast hook and Toaster registration.
 - Styles not applying: Confirm Tailwind utilities and design tokens are present in the build.
-
-## Conclusion
-The UI component library uses Radix UI for accessibility, Tailwind CSS for styling, and Framer Motion for animations to deliver a consistent, themeable, and accessible design system. Components are designed for composition, extensibility, and maintainability, with clear patterns for state management, event handling, and integration across the application.

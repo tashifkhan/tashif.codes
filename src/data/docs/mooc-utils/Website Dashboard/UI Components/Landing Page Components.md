@@ -1,9 +1,7 @@
 # Landing page components
 
 ## Introduction
-This page provides detailed documentation for the marketing landing page components that form the primary user acquisition and conversion funnel for MOOC Utils. The landing page consists of five key components: Hero, Features, ProductShowcase, FAQ, and Footer. These components work together to present a cohesive value proposition, demonstrate functionality, address user concerns, and guide visitors toward conversion actions.
-
-The landing page follows a modern design system built with Next.js, Tailwind CSS, shadcn/ui primitives, and Lucide React icons. It emphasizes responsive design, accessibility, and SEO optimization while maintaining a consistent visual language across all components.
+Marketing page sections: Hero, Features, ProductShowcase, FAQ, and Footer. How they sit together on the home route.
 
 ## Project structure
 The landing page components are organized within the website application under the components/landing directory. They are exported via a centralized index file and consumed by the main page component.
@@ -75,7 +73,7 @@ The Features component shows platform capabilities through:
 - Consistent design language with color-coded accents
 
 ### Product showcase
-The Product Showcase presents the two core tools through:
+ProductShowcase presents the two core tools through:
 - Card-based layout with hover effects and shadow transitions
 - Feature comparison between active and upcoming products
 - Status indicators (Active vs. Coming Soon)
@@ -99,7 +97,7 @@ The Footer provides:
 - Accessible navigation links
 
 ## Architecture overview
-The landing page follows a component-based architecture with clear separation of concerns and reusable design patterns.
+The landing page follows a component-based architecture and reusable design patterns.
 
 ```mermaid
 sequenceDiagram
@@ -129,14 +127,14 @@ Note over Browser,Footer : Complete page rendering with all components
 The architecture uses:
 - **Component Composition**: Each component is self-contained with its own styling and logic
 - **Design System Integration**: Consistent use of shadcn/ui primitives and Tailwind CSS
-- **Responsive Design Patterns**: Mobile-first approach with progressive enhancement
+- **Responsive Design Patterns**: Mobile-first approach with progressive improvement
 - **State Management**: Local component state for interactive elements (FAQ accordion)
 - **Accessibility**: Semantic HTML and proper ARIA attributes
 
 ## Detailed component analysis
 
 ### Hero component analysis
-The Hero component implements a sophisticated full-screen hero section with multiple visual and interactive elements.
+The Hero component implements a detailed full-screen hero section with multiple visual and interactive elements.
 
 ```mermaid
 classDiagram
@@ -217,7 +215,7 @@ Content management approach:
 - Consistent structure allows easy modification and expansion
 
 ### Product showcase analysis
-The Product Showcase component presents the two core tools with clear visual distinction.
+ProductShowcase splits the two tools into distinct cards.
 
 ```mermaid
 classDiagram
@@ -311,7 +309,7 @@ Structure and organization:
 - **Legal Compliance**: Privacy policy and copyright information
 
 ## Dependency analysis
-The landing page components share common dependencies and follow established patterns for consistency and maintainability.
+Landing sections share the same providers and styling primitives, so spacing and CTAs stay consistent.
 
 ```mermaid
 graph LR
@@ -418,13 +416,4 @@ The landing page components are designed with performance optimization in mind:
 - Test SEO using tools like Google Search Console
 
 ## Conclusion
-The landing page components for MOOC Utils demonstrate a well-architected, maintainable, and performant approach to building marketing pages. The components work together to create a cohesive user experience that effectively communicates value, shows functionality, addresses user concerns, and drives conversions.
-
-Key strengths of the implementation include:
-- **Consistent Design System**: Unified design language across all components
-- **Responsive Architecture**: Mobile-first approach with progressive enhancement
-- **Performance Optimization**: Carefully considered rendering and bundle management
-- **Accessibility Compliance**: Detailed accessibility features and semantic markup
-- **SEO Best Practices**: Proper metadata, structured content, and sitemap configuration
-
-The modular component structure allows for easy maintenance, testing, and future enhancements while maintaining visual consistency and user experience quality. The integration of analytics and theme providers ensures the components operate within a complete application ecosystem.
+Hero sells the problem, Features and ProductShowcase show the tools, FAQ handles objections, Footer carries links. Keep analytics hooks on the CTAs.

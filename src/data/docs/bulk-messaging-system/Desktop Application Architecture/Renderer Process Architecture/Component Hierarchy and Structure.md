@@ -1,10 +1,10 @@
 # Component hierarchy and structure
 
 ## Introduction
-This page explains the React component hierarchy and structure for the WhatsApp bulk messaging application. It focuses on the component tree starting from the application entry point and root component, details how BulkMailer orchestrates messaging services, and documents the Sidebar and TopBar integration patterns. It also covers component composition strategies, prop drilling patterns, state management, lifecycle management, rendering optimization, and the overall architectural pattern used in the UI layer.
+React tree from `main.jsx` / `App.jsx` down through BulkMailer, sidebar, top bar, and the three service forms.
 
 ## Project structure
-The application follows a clear separation between the Electron main process and the React renderer process. The UI layer is built with React and TailwindCSS, while the Electron main process handles native integrations (Gmail API, SMTP, and WhatsApp Web automation).
+Electron main process and React renderer stay apart. The UI is React + Tailwind. The main process owns Gmail, SMTP, and WhatsApp Web automation.
 
 ```mermaid
 graph TB
@@ -208,23 +208,19 @@ P --> QCT
 ## Troubleshooting guide
 Common issues and diagnostics:
 - WhatsApp QR not appearing:
-  - Verify Electron environment and window.electronAPI availability.
-  - Check onWhatsAppQR and onWhatsAppStatus listeners in BulkMailer.
-  - Confirm main.js QR code generation and IPC emission.
+ - Verify Electron environment and window.electronAPI availability.
+ - Check onWhatsAppQR and onWhatsAppStatus listeners in BulkMailer.
+ - Confirm main.js QR code generation and IPC emission.
 - Authentication failures:
-  - Ensure preload.js exposes authenticateGmail/getGmailToken and main.js handlers are registered.
-  - Validate Gmail scopes and credentials.
+ - Ensure preload.js exposes authenticateGmail/getGmailToken and main.js handlers are registered.
+ - Validate Gmail scopes and credentials.
 - SMTP errors:
-  - Verify SMTP configuration fields and network connectivity.
-  - Check main.js SMTP handler for errors.
+ - Verify SMTP configuration fields and network connectivity.
+ - Check main.js SMTP handler for errors.
 - File import issues:
-  - Confirm dialog permissions and file parsing logic in main.js.
-  - Ensure preload.js exposes importEmailList/readEmailListFile.
+ - Confirm dialog permissions and file parsing logic in main.js.
+ - Ensure preload.js exposes importEmailList/readEmailListFile.
 
 ## Conclusion
-The application employs a clear, layered architecture:
-- Entry point and root component establish the React tree.
-- BulkMailer acts as the central orchestrator, managing state and coordinating service-specific forms.
-- Sidebar and TopBar integrate smoothly through controlled props and callbacks.
-- Electron APIs are cleanly bridged via preload.js, enabling native capabilities without leaking into the UI layer.
-- The design favors simplicity and explicit data flow, with straightforward prop drilling and event-driven updates.
+
+New feature UI usually means a form under BulkMailer plus an IPC method, not a second top-level app shell.

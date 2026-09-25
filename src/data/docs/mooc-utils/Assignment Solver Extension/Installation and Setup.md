@@ -1,7 +1,7 @@
 # Installation and setup
 
 ## Introduction
-This guide provides detailed installation and setup instructions for the Assignment Solver browser extension. It covers prerequisites, step-by-step installation for Chrome and Firefox, build system details using Vite, dynamic manifest generation for cross-browser compatibility, API key configuration, permissions, and troubleshooting.
+Install and build the Assignment Solver extension for Chrome and Firefox. Prerequisites, Vite builds, dynamic manifests, API key setup, permissions, and common install failures.
 
 ## Prerequisites
 Before installing the extension, ensure you have:
@@ -18,8 +18,8 @@ These requirements are documented in the project's README under the prerequisite
 - Install dependencies using Bun
 
 ```bash
-git clone <repository-url>
-cd assignment-solver
+git clone https://github.com/tashifkhan/MOOC-utils
+cd MOOC-utils/assignment-solver
 bun install
 ```
 
@@ -86,7 +86,7 @@ The build system generates separate manifests for Chrome and Firefox:
 - Host permissions include both NPTEL domains and Gemini API endpoints
 - Content security policy restricts connections to Gemini API
 
-The manifest generator creates browser-specific configurations while maintaining shared base properties.
+The manifest generator creates browser-specific configurations and keeps shared base properties.
 
 ### Cross-Browser compatibility
 The extension achieves compatibility through:
@@ -124,7 +124,7 @@ The extension requests minimal, justified permissions:
 - API key stored locally only (browser.storage.local)
 - All processing occurs client-side or via official Gemini API
 - Content Security Policy restricts connections to Gemini API
-- BYOK (Bring Your Own Key) model ensures no server-side data collection
+- BYOK (Bring Your Own Key) model keeps no server-side data collection
 
 ## Development mode
 
@@ -170,7 +170,7 @@ The build process involves:
 
 ## Architecture overview
 
-The extension follows a modular architecture with clear separation of concerns:
+Extension layers:
 
 ```mermaid
 graph TB
@@ -212,7 +212,7 @@ Handlers --> Gemini
 CS --> NPTEL
 ```
 
-The architecture ensures clean separation between UI, background logic, content interaction, and external services while maintaining cross-browser compatibility through platform adapters.
+UI, background, content, and services stay separate. Platform adapters carry Chrome vs Firefox differences.
 
 ## Conclusion
-This installation and setup guide provides everything needed to develop and deploy the Assignment Solver extension. The build system using Vite with dynamic manifest generation ensures smooth cross-browser compatibility, while the modular architecture promotes maintainability and extensibility. By following these steps and understanding the underlying architecture, developers can effectively contribute to and customize the extension for various educational platforms.
+Build with Vite, load the dist folder, set the Gemini key in the panel. Manifest generation is what keeps Chrome and Firefox packs in sync.

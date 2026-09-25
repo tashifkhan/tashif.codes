@@ -1,16 +1,14 @@
 # API overview
 
 ## Introduction
-This page provides a detailed API overview for the FastAPI server. It explains the overall architecture, endpoint organization, routing structure, and how base URL patterns map to distinct service areas. It also covers application initialization, startup modes, logging configuration, and error handling strategies. Authentication mechanisms are documented in terms of access tokens passed via request bodies, and CORS configuration is noted as not being explicitly configured in the provided code. Health checks and monitoring interfaces are described, along with practical usage patterns and integration scenarios.
+FastAPI layout: routers under service prefixes, startup, logging, and how auth tokens ride on request bodies. CORS middleware allows all origins.
 
 ## Project structure
-The API server is organized around a FastAPI application that aggregates multiple routers under distinct base prefixes. Each router corresponds to a functional area (e.g., GenAI, Google Search, Gmail, Calendar, PyJiit, React Agent, Website, Validator, Upload). The application can be started either as the API server or as an MCP server via a top-level entry point.
+The API server is organized around a FastAPI application in `main.py` that aggregates multiple routers under distinct base prefixes. Each router corresponds to a functional area (e.g., GenAI, Google Search, Gmail, Calendar, PyJiit, React Agent, Website, Validator, Upload). MCP is mounted at `/mcp` on the same process. Stdio MCP is the `agentic-mcp` script.
 
 ```mermaid
 graph TB
-A_main["main.py<br/>Entry point"] --> B_api_run["api/run.py<br/>run(host,port,reload)"]
-B_api_run --> C_api_main["api/main.py<br/>FastAPI app + router mounts"]
-C_api_main --> D_routers["routers/*<br/>Feature-specific routers"]
+A_main["main.py<br/>FastAPI app + uvicorn.run"] --> D_routers["routers/*<br/>Feature-specific routers"]
 D_routers --> E_health["/api/genai/health"]
 D_routers --> F_genai_github["/api/genai/github"]
 D_routers --> G_genai_website["/api/genai/website"]
@@ -27,13 +25,13 @@ D_routers --> P_upload["/api/upload"]
 
 ## Core components
 - Application factory and router mounts: The FastAPI app is created and routers are included under base prefixes to segment functionality by domain.
-- Startup orchestration: A top-level script chooses between running the API server or the MCP server, delegating to the API runner.
+- Startup orchestration: `main.py` starts FastAPI and mounts MCP at `/mcp`. Stdio MCP is `agentic-mcp`.
 - Configuration and logging: Environment variables drive runtime behavior and logging level; a shared logger getter is used across modules.
 - Health endpoint: A dedicated router exposes a simple health check returning a structured response model.
 
 Key implementation references:
-- Application creation and router mounts: `api/main.py`
-- Startup selection and API runner: `main.py`, `api/run.py`
+- Application creation and router mounts: `main.py`
+- API runner: `main.py` (`run()` / `agentic-api-run`)
 - Configuration and logging: `core/config.py`, `core/config.py`
 - Health response model: `models/response/health.py`
 - Health handler: `routers/health.py`
@@ -162,10 +160,10 @@ Note over G : "On error, raise HTTP 400/500"
 
 ### Gmail endpoints
 - Paths:
-  - POST /api/gmail/unread
-  - POST /api/gmail/latest
-  - POST /api/gmail/mark_read
-  - POST /api/gmail/send
+ - POST /api/gmail/unread
+ - POST /api/gmail/latest
+ - POST /api/gmail/mark_read
+ - POST /api/gmail/send
 - Request models: UnreadRequest, LatestRequest, MarkReadRequest, SendEmailRequest (all require access_token)
 - Service: GmailService injected via dependency
 - Behavior: Validates required fields; calls appropriate service methods; returns structured results
@@ -189,8 +187,8 @@ Note over GM : "On error, raise HTTP 400/500"
 
 ### Calendar endpoints
 - Paths:
-  - POST /api/calendar/events
-  - POST /api/calendar/create
+ - POST /api/calendar/events
+ - POST /api/calendar/create
 - Request models: EventsRequest (requires access_token), CreateEventRequest (requires access_token, summary, start_time, end_time)
 - Service: CalendarService injected via dependency
 - Behavior: Validates required fields and ISO 8601 timestamps; calls service methods; returns structured results
@@ -238,26 +236,24 @@ Note over RA : "On error, raise HTTP 400/500"
 - Application creation: FastAPI app is instantiated with title and version.
 - Router mounts: Routers are imported from the routers package and mounted under base prefixes.
 - Root endpoint: Optional GET "/" returns app metadata.
-- No explicit middleware or CORS configuration is present in the provided code.
+- CORS middleware is configured in `main.py` with `allow_origins=["*"]`.
 - Logging: Centralized logger getter is used across modules; environment variables control debug level and backend host/port.
 
 ### Authentication mechanisms
 - Access tokens are passed via request bodies for sensitive operations:
-  - Gmail: access_token required for all endpoints
-  - Calendar: access_token required for all endpoints
-  - Website: no token required in the endpoint shown
-  - Google Search: no token required in the endpoint shown
+ - Gmail: access_token required for all endpoints
+ - Calendar: access_token required for all endpoints
+ - Website: no token required in the endpoint shown
+ - Google Search: no token required in the endpoint shown
 - The code does not implement bearer token middleware or route guards; token validation occurs inside each endpoint's request model and service invocation.
 
 ### CORS configuration
-- No explicit CORS configuration is present in the provided code. If cross-origin requests are needed, configure CORS in the FastAPI app before including routers.
-
-[No sources needed since this section provides general guidance]
+- `main.py` adds `CORSMiddleware` with `allow_origins=["*"]`, `allow_credentials=False`, and all methods/headers.
 
 ### Error handling strategies
 - Centralized try/catch blocks in each endpoint:
-  - Raise HTTP 400 for invalid input (missing fields, malformed data)
-  - Wrap unexpected exceptions as HTTP 500 with sanitized details
+ - Raise HTTP 400 for invalid input (missing fields, malformed data)
+ - Wrap unexpected exceptions as HTTP 500 with sanitized details
 - Services log exceptions internally; endpoints re-raise as HTTP exceptions to maintain consistent error responses.
 
 ### Monitoring interfaces
@@ -266,21 +262,21 @@ Note over RA : "On error, raise HTTP 400/500"
 
 ### Basic API usage patterns and integration scenarios
 - Start the API server:
-  - Run the top-level script and choose API mode, or pass the --api flag.
-  - The API listens on host and port configured via environment variables.
+ - `python main.py` or `agentic-api-run`.
+ - The API listens on host and port configured via environment variables.
 - Example flows:
-  - Website QA: POST to /api/genai/website with a URL and question; receive an answer.
-  - Google Search: POST to /api/google-search with a query and optional max_results; receive results.
-  - Gmail operations: Use access_token in request bodies to list unread messages, fetch latest messages, mark read, or send emails.
-  - Calendar operations: Use access_token to list events or create events with ISO 8601 start/end times.
-  - Health check: GET /api/genai/health to verify service availability.
+ - Website QA: POST to /api/genai/website with a URL and question; receive an answer.
+ - Google Search: POST to /api/google-search with a query and optional max_results; receive results.
+ - Gmail operations: Use access_token in request bodies to list unread messages, fetch latest messages, mark read, or send emails.
+ - Calendar operations: Use access_token to list events or create events with ISO 8601 start/end times.
+ - Health check: GET /api/genai/health to verify service availability.
 
 ## Dependency analysis
-The API module composes routers and services with clear separation of concerns. Routers depend on service classes, which encapsulate tool integrations. The central app depends on the routers package for imports and mounts.
+The API module composes routers and services . Routers depend on service classes, which encapsulate tool integrations. The central app depends on the routers package for imports and mounts.
 
 ```mermaid
 graph LR
-MAIN["api/main.py"] --> RINIT["routers/__init__.py"]
+MAIN["main.py"] --> RINIT["routers/__init__.py"]
 MAIN --> HEALTH["routers/health.py"]
 MAIN --> WEBSITE["routers/website.py"]
 MAIN --> GOOGLE["routers/google_search.py"]
@@ -300,21 +296,19 @@ REACT --> RAS["ReactAgentService"]
 - Reuse injected services per request to minimize initialization costs.
 - Monitor logs and adjust logging level via environment variables for production deployments.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 - Health check failures:
-  - Verify GET /api/genai/health returns the expected status and message.
+ - Verify GET /api/genai/health returns the expected status and message.
 - 400 Bad Request errors:
-  - Ensure required fields are present (e.g., query, access_token, question).
+ - Ensure required fields are present (e.g., query, access_token, question).
 - 500 Internal Server Errors:
-  - Inspect logs for exception traces; services already log exceptions internally.
+ - Inspect logs for exception traces; services already log exceptions internally.
 - Startup issues:
-  - Confirm environment variables for host/port and debug level are set appropriately.
-  - Use the top-level script to select API mode and run the server.
+ - Confirm environment variables for host/port and debug level are set appropriately.
+ - Start the API with `python main.py` or `agentic-api-run`.
 
 ## Conclusion
-The FastAPI server organizes functionality into clearly separated routers under distinct base prefixes, enabling modular development and clear ownership of features. The application initializes cleanly, exposes a health endpoint, and handles errors consistently. Authentication is token-based and validated at the router level. While CORS and middleware are not configured in the provided code, the architecture supports easy addition of such features. The documented endpoints and usage patterns provide a solid foundation for integrating clients and extending functionality.
+Routers own their prefixes. Health is a plain endpoint. Tokens are checked per router where needed. CORS is already on in `main.py`; tighten origins for production.
 
 ## Appendices
-- Startup command and mode selection are handled by the top-level script, which delegates to the API runner.
+- Startup: `python main.py` or `agentic-api-run`. Stdio MCP: `agentic-mcp`.

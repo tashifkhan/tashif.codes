@@ -1,7 +1,7 @@
 # Search functionality
 
 ## Introduction
-This page explains the search functionality for discovering and filtering MOOC courses from SWAYAM and NPTEL. It covers the search API endpoint, query parameters, backend implementation, caching and persistence strategy, and frontend integration. It also outlines current search behavior, relevance scoring, and result ranking, along with practical examples and performance optimization strategies.
+Keyword search over MOOC courses from SWAYAM and NPTEL. Caching, persistence of results, and the limits of the current ranking (there is not much ranking yet).
 
 ## Project structure
 The search feature spans the backend API, service layer, scraper integration, and the frontend UI. The backend is a FastAPI application that exposes a single GET endpoint under /search. The service layer orchestrates scraping and local caching, while the frontend provides a user interface for searching and selecting courses.
@@ -49,10 +49,10 @@ Key behaviors:
 - Local caching: Existing records are updated if fields change; new records are created.
 
 ## Architecture overview
-The search pipeline is request-driven and follows a clear separation of concerns:
+The search pipeline is request-driven. Layers:
 - API layer validates and forwards the query.
 - Service layer fetches and normalizes data.
-- Persistence layer ensures idempotent updates and retrieval.
+- Persistence layer keeps idempotent updates and retrieval.
 - Frontend triggers queries and renders results.
 
 ```mermaid
@@ -82,21 +82,21 @@ API-->>Client : "JSON list<CourseResponse>"
 ### Search API endpoint
 - Path: GET /search
 - Query parameter:
-  - q: string search term passed to the backend.
+ - q: string search term passed to the backend.
 - Response:
-  - List of CourseResponse objects representing normalized course metadata.
+ - List of CourseResponse objects representing normalized course metadata.
 
 Behavior:
 - Calls CourseService.search_and_cache(q).
-- Serializes results via CourseResponse.model_validate(...).
+- Serializes results via CourseResponse.model_validate(..).
 
 ### CourseService.search_and_cache
 Responsibilities:
 - Fetch courses from SwayamService.search_courses.
 - For each course:
-  - Retrieve existing record by code.
-  - If present, update changed fields and save.
-  - If absent, create a new record.
+ - Retrieve existing record by code.
+ - If present, update changed fields and save.
+ - If absent, create a new record.
 - Return the list of persisted Course instances.
 
 Relevance and ranking:
@@ -106,11 +106,11 @@ Relevance and ranking:
 Caching semantics:
 - TTL is enforced by a separate method that filters recent updates based on cache_ttl_minutes.
 
-### SwayamService and SwayamScraper
+### SwayamService and swayamscraper
 - SwayamService.search_courses delegates to SwayamScraper.search_courses.
 - SwayamScraper.search_courses:
-  - Sends an HTTP GET to the SWAYAM search endpoint with searchText=query.
-  - Parses the HTML response to extract course cards and constructs Course domain entities.
+ - Sends an HTTP GET to the SWAYAM search endpoint with searchText=query.
+ - Parses the HTML response to extract course cards and constructs Course domain entities.
 - SwayamScraper.get_announcements supports fetching announcements for a given course code.
 
 Current search algorithm:
@@ -127,13 +127,13 @@ Filtering and faceting:
 - Tortoise ORM handles creation and updates.
 
 Indexing strategy:
-- Unique index on code ensures referential integrity and efficient get_or_none lookups.
+- Unique index on code keeps referential integrity and efficient get_or_none lookups.
 - Additional indexes could be considered for frequent filters (e.g., title, instructor, institute) if server-side filtering is introduced.
 
 ### Frontend integration
 - The frontend surfaces the search via two components:
-  - Signup Flow: Provides a search input and renders results as selectable items.
-  - Add Subscription: Allows selecting a course after search.
+ - Signup Flow: Provides a search input and renders results as selectable items.
+ - Add Subscription: Allows selecting a course after search.
 - The UI enforces a minimum query length before triggering search and displays empty states.
 
 Usage patterns:
@@ -141,7 +141,7 @@ Usage patterns:
 - Selected courses are stored locally until saved.
 
 ## Dependency analysis
-The search feature exhibits low coupling and clear boundaries:
+The search feature has low coupling and clear boundaries:
 - API depends on CourseService via dependency injection.
 - CourseService depends on SwayamService and Course model.
 - SwayamService depends on SwayamScraper.
@@ -191,24 +191,20 @@ Optimization opportunities:
 - Apply stemming or fuzzy matching at the scraper or service layer to improve recall.
 - Use asynchronous batching for database writes to reduce overhead.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and remedies:
 - Empty results:
-  - Verify query length threshold in the frontend (minimum characters before search).
-  - Confirm network connectivity and SWAYAM availability.
+ - Verify query length threshold in the frontend (minimum characters before search).
+ - Confirm network connectivity and SWAYAM availability.
 - Unexpected missing fields:
-  - Check that the scraper selectors still match the target HTML structure.
+ - Check that the scraper selectors still match the target HTML structure.
 - Duplicate or stale entries:
-  - Ensure unique code enforcement and that field comparison logic updates changed fields.
+ - Ensure unique code enforcement and that field comparison logic updates changed fields.
 - CORS errors:
-  - Confirm allowed origins in settings and that the frontend origin is included.
+ - Confirm allowed origins in settings and that the frontend origin is included.
 
 ## Conclusion
-The current search functionality provides a straightforward path from query to normalized results with basic caching and persistence. While server-side filtering and ranking are not implemented, the modular design allows incremental enhancements such as faceted search, pagination, and relevance scoring without disrupting existing integrations.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Query in, normalized courses out, light caching. Facets and ranking can land later without breaking the current client.
 
 ## Appendices
 
@@ -216,9 +212,9 @@ The current search functionality provides a straightforward path from query to n
 - Method: GET
 - Path: /search
 - Query parameters:
-  - q (required): Search string forwarded to the scraper.
+ - q (required): Search string forwarded to the scraper.
 - Response:
-  - Array of CourseResponse objects.
+ - Array of CourseResponse objects.
 
 Example requests:
 - GET /search?q=introduction%20to%20cs
@@ -233,12 +229,10 @@ Notes:
 
 ### Advanced search patterns
 - Client-side filtering:
-  - After receiving results, filter by instructor, institute, or nc_code.
+ - After receiving results, filter by instructor, institute, or nc_code.
 - Multi-term queries:
-  - Split q into tokens and apply AND/OR logic client-side.
+ - Split q into tokens and apply AND/OR logic client-side.
 - Fuzzy matching:
-  - Apply approximate string matching on title/instructor/institute fields.
+ - Apply approximate string matching on title/instructor/institute fields.
 - Pagination:
-  - Limit displayed results and implement "Load More" to reduce payload size.
-
-[No sources needed since this section provides general guidance]
+ - Limit displayed results and implement "Load More" to reduce payload size.

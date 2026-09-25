@@ -1,17 +1,17 @@
 # Content processing services
 
 ## Introduction
-This page provides detailed technical documentation for the content processing services that power intelligent data extraction and transformation across the system. These services are responsible for transforming raw, unstructured data from emails and official university sources into structured, actionable information for notification delivery. The focus areas include:
+Services that turn email and official-page text into structured records. Classification, extraction, validation, and the handoff into storage before anything gets notified.
 
-- PlacementService: Extracting structured placement offer data from unstructured emails using Google Gemini LLM integration, with reliable classification, extraction, validation, privacy sanitization, and retry mechanisms.
+- PlacementService: Extracting structured placement offer data from unstructured emails using Google Gemini LLM integration, with classification, extraction, validation, privacy sanitization, and retries.
 - EmailNoticeService: Classifying and extracting structured notices from general email sources, including placement policy updates and non-placement notices.
 - OfficialPlacementService: Scraping and processing placement data from official university websites.
-- PlacementStatsCalculatorService: Generating analytics and statistics from processed placement data, enabling insights across branches, companies, and package distributions.
+- PlacementStatsCalculatorService: Generating analytics and statistics from processed placement data, for branch, company, and package breakdowns.
 
-The documentation covers LLM integration patterns, data validation processes, content formatting workflows, and how these services collectively transform raw data into structured, actionable information for notification delivery.
+Also: LLM prompt patterns, validation, formatting, and the handoff into notifiers.
 
 ## Project structure
-The content processing services are organized within the services layer, with clear separation of concerns and dependency injection support. The services use reusable clients for external integrations and centralized configuration management.
+These live in the services layer. Clients handle I/O; Settings holds config; constructors take dependencies.
 
 ```mermaid
 graph TB
@@ -51,7 +51,7 @@ This section introduces the four primary content processing services and their r
 - PlacementService: Orchestrates a LangGraph pipeline to classify, extract, validate, sanitize, and display placement offer data from emails using Google Gemini LLM.
 - EmailNoticeService: Processes general notices from email sources, including placement policy updates, with LLM-based classification and extraction.
 - OfficialPlacementService: Scrapes official university placement pages to extract structured data about batches, recruiters, and package distributions.
-- PlacementStatsCalculatorService: Computes detailed statistics from placement offers, including branch-wise, company-wise, and package distribution metrics.
+- PlacementStatsCalculatorService: Computes statistics from placement offers, including branch-wise, company-wise, and package distribution metrics.
 
 Each service implements dependency injection for flexibility and testability, integrates with configuration management, and interacts with the database service for persistence.
 
@@ -82,12 +82,12 @@ PS-->>SRC : "Processed result"
 ## Detailed component analysis
 
 ### PlacementService analysis
-PlacementService implements a sophisticated LangGraph pipeline to process placement offers from emails. The pipeline consists of four stages: classification, extraction, validation, and privacy sanitization, each with reliable error handling and retry logic.
+PlacementService runs a LangGraph pipeline on placement emails. The pipeline consists of four stages: classification, extraction, validation, and privacy sanitization, each with reliable error handling and retry logic.
 
 Key implementation patterns:
 - LangGraph workflow with conditional edges for decision-making
 - Pydantic models for strong data validation
-- LLM prompts designed for strict classification and extraction
+- LLM prompts aimed at strict classification and extraction
 - Privacy sanitization to remove sensitive information
 - Retry mechanisms for reliable extraction
 
@@ -149,10 +149,10 @@ LLM Integration Patterns:
 - Retry logic with exponential backoff for validation failures
 
 Data Validation Processes:
-- Pydantic validation ensures data integrity and type safety
+- Pydantic validation checks types and required fields
 - Confidence scoring prevents false positives
 - Package extraction follows strict conversion rules (LPA, monthly to annual)
-- Role assignment defaults and enhancement logic
+- Role assignment defaults and validate/enhance logic
 
 Content Formatting Workflows:
 - Privacy-first approach strips sensitive information
@@ -240,7 +240,7 @@ Data Extraction Strategies:
 - Pointer list extraction for placement achievements
 
 ### PlacementStatsCalculatorService analysis
-PlacementStatsCalculatorService computes detailed statistics from processed placement data, enabling insights across branches, companies, and package distributions. The service implements sophisticated aggregation logic with configurable enrollment ranges and student counts.
+PlacementStatsCalculatorService computes statistics from processed placement data, for branch, company, and package breakdowns. The service implements aggregation logic with configurable enrollment ranges and student counts.
 
 Key implementation patterns:
 - Branch range resolution using enrollment number patterns
@@ -358,7 +358,7 @@ Dependency Coupling and Cohesion:
 - High cohesion within each service around specific responsibilities
 - Low coupling through dependency injection and interface abstraction
 - Centralized configuration management reducing cross-service coupling
-- Clear separation between data extraction and formatting concerns
+- Extraction and formatting stay in different modules
 
 Integration Points:
 - Google Gemini API for LLM-powered processing
@@ -367,7 +367,7 @@ Integration Points:
 - Web scraping for official placement data
 
 ## Performance considerations
-The content processing services implement several performance optimizations:
+The content processing services implement several performance work:
 
 - LangGraph workflow optimization: Parallel processing of independent nodes, minimal state copying, and efficient conditional routing
 - LLM cost optimization: Temperature control set to zero for deterministic responses, structured prompts to reduce token usage
@@ -384,34 +384,25 @@ Best practices for deployment:
 ## Troubleshooting guide
 Common issues and their resolutions:
 
-**LLM Integration Issues:**
+**LLM Integration Issues.**
 - API key configuration errors: Verify GOOGLE_API_KEY environment variable
 - Model availability problems: Check Gemini model quotas and rate limits
 - Prompt formatting errors: Review structured prompt templates for schema compliance
 
-**Email Processing Issues:**
+**Email Processing Issues.**
 - Authentication failures: Verify PLCAMENT_EMAIL and PLCAMENT_APP_PASSWORD
 - IMAP connectivity problems: Check network connectivity and firewall settings
 - Forwarded email parsing: Use extract_forwarded_date and extract_forwarded_sender utilities
 
-**Data Validation Errors:**
+**Data Validation Errors.**
 - Pydantic validation failures: Review schema requirements and data types
 - Package extraction inconsistencies: Verify LPA conversion rules and monthly to annual conversions
 - Branch resolution mismatches: Check enrollment range configurations
 
-**Database Connectivity:**
+**Database Connectivity.**
 - Connection string issues: Validate MONGO_CONNECTION_STR environment variable
 - Collection initialization failures: Ensure database migrations are complete
 - Write operation errors: Check write permissions and document size limits
 
 ## Conclusion
-The content processing services provide a reliable, scalable foundation for transforming raw data into structured, actionable information. Through careful separation of concerns, LLM-powered intelligence, and detailed validation, these services enable reliable notification delivery across placement offers, general notices, and official placement data. The modular architecture supports easy maintenance, testing, and extension for future requirements.
-
-The services demonstrate best practices in:
-- LLM integration patterns with structured prompts and validation
-- Data validation using Pydantic models and confidence scoring
-- Privacy-preserving content processing and sanitization
-- Detailed analytics and reporting capabilities
-- Dependency injection and configuration management
-
-These components work together to create a detailed content processing pipeline that reliably transforms diverse data sources into consistent, useful information for notification systems.
+Content services classify, extract, validate, and format. Offers, general notices, official pages. Keep the stages separate and you can swap a prompt without touching delivery.

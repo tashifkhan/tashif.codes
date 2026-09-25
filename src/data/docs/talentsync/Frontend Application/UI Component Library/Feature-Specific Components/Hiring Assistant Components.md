@@ -1,9 +1,8 @@
 # Hiring assistant components
 
-## Introduction
-This page explains the Hiring Assistant components that power AI-driven interview preparation. It covers the frontend panels for configuring interview parameters, editing questions, and displaying AI-generated answers, alongside shared loading overlays. It also documents the backend orchestration pipeline, including question generation, answer evaluation, session lifecycle, and integration with FastAPI routes. The goal is to help developers and product teams understand how the system works end-to-end, from user input to AI-powered outputs and backend orchestration.
+The Hiring Assistant components that power AI-driven interview preparation.
 
-## Project structure
+## Repository layout
 The Hiring Assistant spans the frontend Next.js application and the backend FastAPI service. The frontend provides interactive UI panels and state management, while the backend orchestrates interview sessions, generates questions, evaluates answers, and persists state.
 
 ```mermaid
@@ -50,7 +49,7 @@ BR --> SC
 SC --> EN
 ```
 
-## Core components
+## Building blocks
 - InterviewDetailsForm: Collects role, company, word limit, optional company knowledge, and website.
 - QuestionsEditor: Manages a dynamic list of custom interview questions with add/remove and live editing.
 - CommonQuestionsPanel: Provides quick-add buttons for standard interview prompts.
@@ -59,8 +58,8 @@ SC --> EN
 
 These components integrate with frontend state hooks and a mutation to generate answers, then render the results in the answers panel.
 
-## Architecture overview
-The end-to-end flow begins on the frontend page, which validates inputs, composes a multipart/form-data payload, and triggers a mutation to generate answers. On the backend, FastAPI routes delegate to an orchestration graph that manages sessions, generates questions, and evaluates answers. The evaluation can be streamed via Server-Sent Events.
+## How it fits together
+The page validates inputs, builds multipart form data, and fires a mutation. FastAPI hands off to an orchestration graph for sessions, questions, and evaluation. Evaluation can stream over SSE.
 
 ```mermaid
 sequenceDiagram
@@ -94,35 +93,33 @@ G-->>API : {score, feedback, next_question, is_complete}
 API-->>FE : Evaluation result
 ```
 
-## Detailed component analysis
-
-### InterviewDetailsForm
+## InterviewDetailsForm
 - Purpose: Capture essential interview configuration including role, company, word limit, optional company knowledge, and website.
 - Behavior: Two-column layout for role/company; numeric input for word limit with min/max constraints; textarea for optional knowledge; input for optional website.
 - Integration: Props accept a formData object and a handler to update fields.
 
-### QuestionsEditor
+## QuestionsEditor
 - Purpose: Allow users to add, edit, and remove interview questions dynamically.
 - Behavior: Renders a vertical stack of textareas; adds/removes entries; shows a default empty-state with an Add button; enforces minimum one question.
 - Integration: Exposes callbacks to add/remove/update questions; integrates with the page's state.
 
-### CommonQuestionsPanel
+## CommonQuestionsPanel
 - Purpose: Provide quick-add buttons for frequently used interview prompts.
 - Behavior: Displays a scrollable grid of common questions; clicking a button adds it to the editor if not present; limits display to a subset.
 - Integration: Receives a list of common questions and a callback to add a selected question.
 
-### GeneratedAnswersPanel
+## GeneratedAnswersPanel
 - Purpose: Render AI-generated answers with copy and download actions.
 - Behavior: Shows a list of question-answer pairs with animated reveal; displays empty-state with illustration and guidance when no answers are present; supports copying answers to clipboard and downloading as text.
 - Integration: Accepts generatedAnswers map, formData for context, and action handlers.
 
-### Shared loading components
+## Shared loading components
 - PageLoader: Fullscreen loader shown while the page initializes.
 - LoadingOverlay: Overlay shown during generation requests with animated pulse indicators.
 
-### Backend orchestration and workflows
+## Backend orchestration and workflows
 
-#### Interview simulation workflow
+### Interview simulation workflow
 - Session creation: The backend route accepts a profile and config, delegates to the graph, which creates a session, generates questions, and marks it in progress.
 - Answer evaluation: The route submits an answer; the graph evaluates it and updates the session state, advancing to the next question or completing the session.
 - Streaming evaluation: The route supports SSE streaming for real-time feedback tokens.
@@ -146,7 +143,7 @@ Exec --> Review["Stream code review via AnswerEvaluator"]
 Review --> Update
 ```
 
-#### Question generation logic
+### Question generation logic
 - Inputs: Role, number of questions, difficulty distribution, optional template/topic/resume data.
 - Strategy: Builds a spec list from difficulty distribution, pads to requested count, optionally uses a template bank, otherwise generates via LLM with a structured prompt.
 - Output: A list of InterviewQuestion objects with metadata like expected keywords and follow-up questions.
@@ -166,7 +163,7 @@ Append --> ForEach
 ForEach --> |Done| Return["Return questions"]
 ```
 
-#### Answer evaluation criteria
+### Answer evaluation criteria
 - Non-streaming: Returns a structured result with score, feedback, strengths, and improvements.
 - Streaming: Emits partial tokens until completion; parser extracts score and structured sections.
 - Parsing: Attempts JSON extraction; falls back to markdown patterns to extract score and bullet lists.
@@ -182,7 +179,7 @@ Regex --> Result
 Result --> Return["Return EvaluationResult"]
 ```
 
-#### State management for interview sessions
+### State management for interview sessions
 - In-memory session storage keyed by session_id; tracks events and counts.
 - Supports CRUD operations, listing with filters, and status transitions.
 - Integrates with the orchestration graph to persist questions, answers, scores, and timestamps.
@@ -226,8 +223,8 @@ class InterviewSession {
 SessionManager --> InterviewSession : "manages"
 ```
 
-#### Integration with backend interview APIs
-- Frontend service: Provides a simple client for GET/DELETE interviews and POST to generate answers.
+### Integration with backend interview APIs
+- Frontend service: simple client for GET/DELETE interviews and POST to generate answers.
 - Backend routes: Offer session creation, retrieval, deletion, answer submission (streaming and non-streaming), code execution (streaming and non), summary generation (streaming and non), and event recording.
 
 ```mermaid
@@ -241,16 +238,16 @@ API-->>SVC : Generated answers
 SVC-->>FE : Set state and show answers
 ```
 
-## Dependency analysis
+## Dependencies
 - Frontend depends on:
-  - UI components for forms and panels
-  - State hooks for form data and questions
-  - A service client for API calls
+ - UI components for forms and panels
+ - State hooks for form data and questions
+ - A service client for API calls
 - Backend depends on:
-  - LangChain LLM integration for question generation and evaluation
-  - Prompt templates for structured generation
-  - Pydantic models for typed request/response and session state
-  - Graph orchestration to coordinate services
+ - LangChain LLM integration for question generation and evaluation
+ - Prompt templates for structured generation
+ - Pydantic models for typed request/response and session state
+ - Graph orchestration to coordinate services
 
 ```mermaid
 graph LR
@@ -266,17 +263,14 @@ BE_Graph --> BE_Schemas["models/interview/schemas.py"]
 BE_Schemas --> BE_Enums["models/interview/enums.py"]
 ```
 
-## Performance considerations
+## Performance
 - Streaming evaluations reduce perceived latency by rendering feedback incrementally.
 - In-memory session storage is efficient for small-scale usage; consider persistence to a database for production.
 - Prompt templating and structured JSON parsing improve reliability and reduce hallucinations.
 - Avoid excessive concurrent generations; throttle requests and use overlays to prevent redundant submissions.
 
-## Troubleshooting guide
+## Troubleshooting
 - Missing inputs: The frontend validates resume selection, role/company, and at least one question before generating answers.
 - Generation failures: The frontend shows a toast with error details; ensure network connectivity and backend health.
 - Session not found: Backend routes return 404 when sessions or questions are missing; verify IDs and state transitions.
 - Streaming errors: SSE endpoints emit error events; check browser console and network tab for disconnections.
-
-## Conclusion
-The Hiring Assistant combines a user-friendly frontend with a reliable backend orchestration pipeline. The frontend panels streamline configuration and answer viewing, while the backend uses LLMs, structured prompts, and a session manager to deliver personalized interview experiences. The modular design enables future enhancements such as persistence, richer evaluation criteria, and expanded coding capabilities.

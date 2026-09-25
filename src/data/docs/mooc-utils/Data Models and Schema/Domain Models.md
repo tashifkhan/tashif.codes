@@ -1,7 +1,7 @@
 # Domain models
 
 ## Introduction
-This page describes the domain-level models and business logic entities in the Notice Reminders system. It focuses on how domain entities encapsulate business logic, how database models map to API schemas, and how domain services enforce business rules. The domain layer is intentionally minimal and lightweight, centered around dataclasses representing core domain entities and service classes coordinating persistence and cross-cutting concerns.
+Domain entities and services in Notice Reminders. How business rules sit between the ORM models and the API schemas.
 
 ## Project structure
 The domain layer is organized by concerns:
@@ -55,22 +55,22 @@ SVC_User --> M_User
 
 ## Core components
 - Domain entities
-  - Course: Lightweight dataclass representing a MOOC course entity in the domain.
-  - Announcement: Lightweight dataclass representing a course announcement in the domain.
+ - Course: Lightweight dataclass representing a MOOC course entity in the domain.
+ - Announcement: Lightweight dataclass representing a course announcement in the domain.
 - Database models
-  - Course: Persisted course entity with unique and indexed identifiers.
-  - Announcement: Persisted announcement linked to a course.
-  - Notification: Persisted notification linking a user, subscription, and announcement, optionally with a channel.
-  - User: Persisted user entity with unique identifiers and activity flag.
+ - Course: Persisted course entity with unique and indexed identifiers.
+ - Announcement: Persisted announcement linked to a course.
+ - Notification: Persisted notification linking a user, subscription, and announcement, optionally with a channel.
+ - User: Persisted user entity with unique identifiers and activity flag.
 - Schemas
-  - CourseResponse, AnnouncementResponse, NotificationResponse, UserResponse/UserUpdate: Pydantic models enabling serialization/deserialization and controlled updates.
+ - CourseResponse, AnnouncementResponse, NotificationResponse, UserResponse/UserUpdate: Pydantic models enabling serialization/deserialization and controlled updates.
 - Services
-  - AnnouncementService: Fetches announcements from external source, deduplicates, and persists differences.
-  - NotificationService: Creates notifications and manages read-state.
-  - SubscriptionService: Manages user-course subscriptions with idempotent behavior.
-  - UserService: Manages user records and notification channels with integrity handling.
+ - AnnouncementService: Fetches announcements from external source, deduplicates, and persists differences.
+ - NotificationService: Creates notifications and manages read-state.
+ - SubscriptionService: Manages user-course subscriptions with idempotent behavior.
+ - UserService: Manages user records and notification channels with integrity handling.
 
-These components form a cohesive domain layer where domain entities describe core concepts, database models persist state, schemas define API boundaries, and services enforce business rules and coordinate operations.
+These components form a connected domain layer where domain entities describe core concepts, database models persist state, schemas define API boundaries, and services enforce business rules and coordinate operations.
 
 ## Architecture overview
 The domain layer follows a layered pattern:
@@ -170,28 +170,28 @@ SubscriptionService --> Course_DB : "uses"
 
 ### Domain entities
 - Course (domain dataclass)
-  - Purpose: Represents a MOOC course concept in the domain.
-  - Behavior: Provides a string representation summarizing course identity.
+ - Purpose: Represents a MOOC course concept in the domain.
+ - Behavior: Provides a string representation summarizing course identity.
 - Announcement (domain dataclass)
-  - Purpose: Represents a course announcement concept in the domain.
-  - Behavior: Provides a formatted string representation for display.
+ - Purpose: Represents a course announcement concept in the domain.
+ - Behavior: Provides a formatted string representation for display.
 
 These domain entities are intentionally simple and free of persistence logic, enabling reuse across mapping layers.
 
 ### Database models
 - Course (ORM)
-  - Unique and indexed identifiers enable fast lookups and referential integrity.
-  - Timestamps track creation and updates.
+ - Unique and indexed identifiers enable fast lookups and referential integrity.
+ - Timestamps track creation and updates.
 - Announcement (ORM)
-  - Foreign key relationship to Course.
-  - Fetched timestamp supports ordering and deduplication.
+ - Foreign key relationship to Course.
+ - Fetched timestamp supports ordering and deduplication.
 - Notification (ORM)
-  - Many-to-one relationships to User, Subscription, and Announcement.
-  - Optional channel reference supports multiple delivery channels.
-  - Read-state flag enables inbox management.
+ - Many-to-one relationships to User, Subscription, and Announcement.
+ - Optional channel reference supports multiple delivery channels.
+ - Read-state flag enables inbox management.
 - User (ORM)
-  - Unique constraints on email and Telegram ID ensure global uniqueness.
-  - Activity flag supports account lifecycle management.
+ - Unique constraints on email and Telegram ID ensure global uniqueness.
+ - Activity flag supports account lifecycle management.
 
 These models encapsulate persistence concerns and maintain referential integrity.
 
@@ -205,20 +205,20 @@ Schemas enable controlled serialization and validation between application layer
 
 ### Services and business rule enforcement
 - AnnouncementService
-  - Deduplication: Uses composite criteria (course, title, date) to detect existing announcements.
-  - Content synchronization: Updates persisted content if it differs from scraped data.
-  - Idempotency: Returns existing records when duplicates are detected.
-  - Ordering: Lists announcements ordered by fetch time.
+ - Deduplication: Uses composite criteria (course, title, date) to detect existing announcements.
+ - Content synchronization: Updates persisted content if it differs from scraped data.
+ - Idempotency: Returns existing records when duplicates are detected.
+ - Ordering: Lists announcements ordered by fetch time.
 - NotificationService
-  - Creation: Builds a notification linking a subscription's user, the announcement, and optional channel.
-  - Listing: Supports global and user-scoped retrieval with ordering.
-  - Read-state: Marks notifications as read and persists state.
+ - Creation: Builds a notification linking a subscription's user, the announcement, and optional channel.
+ - Listing: Supports global and user-scoped retrieval with ordering.
+ - Read-state: Marks notifications as read and persists state.
 - SubscriptionService
-  - Idempotency: Prevents duplicate subscriptions via database integrity and fallback retrieval.
-  - Filtering: Lists subscriptions globally and per user.
+ - Idempotency: Prevents duplicate subscriptions via database integrity and fallback retrieval.
+ - Filtering: Lists subscriptions globally and per user.
 - UserService
-  - Controlled updates: Applies only provided fields to avoid overwriting defaults.
-  - Channel management: Adds notification channels with integrity handling for duplicates.
+ - Controlled updates: Applies only provided fields to avoid overwriting defaults.
+ - Channel management: Adds notification channels with integrity handling for duplicates.
 
 These services coordinate between domain entities, database models, and schemas while enforcing business invariants.
 
@@ -258,22 +258,20 @@ Persist --> Done(["Notification Ready"])
 
 ### Domain-Driven design patterns in this layer
 - Aggregate Roots
-  - Course aggregates related announcements and is a boundary for business operations.
-  - User aggregates subscriptions and notifications, forming a user-centric boundary.
+ - Course aggregates related announcements and is a boundary for business operations.
+ - User aggregates subscriptions and notifications, forming a user-centric boundary.
 - Entities
-  - Course and Announcement are entities with identity and behavior in the domain.
+ - Course and Announcement are entities with identity and behavior in the domain.
 - Value Objects
-  - Domain dataclasses represent immutable value-like structures for course and announcement metadata.
+ - Domain dataclasses represent immutable value-like structures for course and announcement metadata.
 - Domain Events
-  - Not modeled in code; however, the Notification entity and NotificationService provide hooks for future event emission (e.g., after creation or read-state changes).
+ - Not modeled in code; however, the Notification entity and NotificationService provide hooks for future event emission (e.g., after creation or read-state changes).
 - Mapping Between Layers
-  - Domain dataclasses map to ORM models for persistence.
-  - ORM models map to Pydantic schemas for API exposure.
-
-[No sources needed since this section synthesizes patterns without quoting specific code]
+ - Domain dataclasses map to ORM models for persistence.
+ - ORM models map to Pydantic schemas for API exposure.
 
 ## Dependency analysis
-The domain layer exhibits low coupling and clear separation of responsibilities:
+Domain layer responsibilities:
 - Domain models depend only on Python typing constructs.
 - Database models depend on Tortoise ORM and define foreign keys.
 - Schemas depend on Pydantic for validation and serialization.
@@ -293,18 +291,16 @@ SVC --> EXT["External Integrations"]
 - Ordering: Services order results by timestamps to support efficient pagination and recent-first retrieval.
 - Asynchronous operations: Services use async/await for IO-bound tasks (external scraping and database operations).
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 - Duplicate subscription prevention
-  - Symptom: Attempting to create a duplicate subscription fails.
-  - Resolution: SubscriptionService handles integrity errors by retrieving the existing subscription.
+ - Symptom: Attempting to create a duplicate subscription fails.
+ - Resolution: SubscriptionService handles integrity errors by retrieving the existing subscription.
 - Channel creation conflicts
-  - Symptom: Adding the same channel/address twice raises an integrity error.
-  - Resolution: UserService catches integrity errors and returns the existing channel.
+ - Symptom: Adding the same channel/address twice raises an integrity error.
+ - Resolution: UserService catches integrity errors and returns the existing channel.
 - Notification read-state updates
-  - Symptom: Marking a notification as read does not persist.
-  - Resolution: NotificationService sets the flag and saves the record.
+ - Symptom: Marking a notification as read does not persist.
+ - Resolution: NotificationService sets the flag and saves the record.
 
 ## Conclusion
-The Notice Reminders domain layer cleanly separates concerns across domain entities, database models, schemas, and services. Domain entities capture core concepts with minimal behavior, while services enforce business rules, coordinate persistence, and maintain invariants. The design supports extensibility, such as adding domain events alongside the Notification entity, and maintains performance through indexing, deduplication, and asynchronous operations.
+Domain services own invariants the ORM will not catch alone, like duplicate subscriptions per user and course.

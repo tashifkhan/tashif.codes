@@ -1,16 +1,15 @@
 # Frontend ATS components
 
-## Introduction
-This page explains the frontend ATS (Applicant Tracking System) evaluation components. It covers:
+The frontend ATS (Applicant Tracking System) evaluation components.
 - Job description input supporting text, URL, and file modes
 - Resume selection allowing existing or uploaded resumes
 - Evaluation results display with compatibility score, reasons, and suggestions
 - Loading states, error handling, and user feedback
 - Props, state management, and backend integration
 - Responsive design patterns and accessibility features
-- End-to-end UX flow from job description entry to optimization actions
+- Full UX flow from job description entry to optimization actions
 
-## Project structure
+## Repository layout
 The ATS evaluation feature spans frontend components and pages, backed by frontend services and hooks, and integrated with backend routes and services.
 
 ```mermaid
@@ -46,15 +45,15 @@ RSel --> RSelShared
 RSelShared --> Types
 ```
 
-## Core components
+## Building blocks
 - JobDescriptionForm: Allows entering a job description via URL, text, or file upload. Manages mode switching and drag-and-drop file handling.
 - ResumeSelection: Lets users pick an existing resume from a dropdown or upload a new one. Provides previews and loading states.
 - EvaluationResults: Renders the ATS match score, reasons, suggestions, and optional optimization action.
 - LoadingOverlay and PageLoader: Provide overlay and page-level loaders during evaluation and initial load.
 - ATS Page: Orchestrates state, validation, mutation, and navigation to optimization.
 
-## Architecture overview
-End-to-end flow from input to results and optimization.
+## How it fits together
+Full flow from input to results and optimization.
 
 ```mermaid
 sequenceDiagram
@@ -83,19 +82,17 @@ U->>P : Click Optimize
 P->>P : Navigate to analysis with params
 ```
 
-## Detailed component analysis
-
-### Job description input form
+## Job description input form
 - Modes: URL, Text, File
 - Behavior:
-  - Mode switching clears conflicting fields to ensure only one source is submitted.
-  - File mode supports drag-and-drop and preview.
-  - Optional company metadata is captured alongside the job description.
+ - Mode switching clears conflicting fields to ensure only one source is submitted.
+ - File mode supports drag-and-drop and preview.
+ - Optional company metadata is captured alongside the job description.
 - Props and state:
-  - Receives formData, handleInputChange, jdFile, setJdFile.
-  - Internal state tracks current mode and drag state.
+ - Receives formData, handleInputChange, jdFile, setJdFile.
+ - Internal state tracks current mode and drag state.
 - Validation and submission:
-  - The parent page validates that at least one JD source is present before submitting.
+ - The parent page validates that at least one JD source is present before submitting.
 
 ```mermaid
 flowchart TD
@@ -110,19 +107,19 @@ ValidateJD --> |No| Toast["Show 'Job Description Required'"]
 ValidateJD --> |Yes| Submit["Build FormData and Submit"]
 ```
 
-### Resume selection interface
+## Resume selection interface
 - Modes: Existing or Upload
 - Existing:
-  - Dropdown lists user resumes with metadata and upload date.
-  - Supports controlled selection via parent state.
+ - Dropdown lists user resumes with metadata and upload date.
+ - Supports controlled selection via parent state.
 - Upload:
-  - File picker with drag-and-drop support.
-  - Auto-preview for text/markdown files; binary preview otherwise.
+ - File picker with drag-and-drop support.
+ - Auto-preview for text/markdown files; binary preview otherwise.
 - Props and state:
-  - resumeSelectionMode, selectedResumeId, resumeFile, resumeText.
-  - showResumeDropdown toggles the dropdown visibility.
+ - resumeSelectionMode, selectedResumeId, resumeFile, resumeText.
+ - showResumeDropdown toggles the dropdown visibility.
 - Integration:
-  - Uses shared ResumeSelector component for reuse across features.
+ - Uses shared ResumeSelector component for reuse across features.
 
 ```mermaid
 classDiagram
@@ -154,16 +151,16 @@ class ResumeSelector {
 ResumeSelection --> ResumeSelector : "uses"
 ```
 
-### Evaluation results display
+## Evaluation results display
 - Renders:
-  - ATS match score with color-coded label and animated progress bar.
-  - Reasons for the score as a list with staggered animations.
-  - Suggestions if present.
-  - Optional "Optimize Resume" CTA when evaluation is available and a saved resume is selected.
+ - ATS match score with color-coded label and animated progress bar.
+ - Reasons for the score as a list with staggered animations.
+ - Suggestions if present.
+ - Optional "Optimize Resume" CTA when evaluation is available and a saved resume is selected.
 - Props:
-  - evaluationResult: score, reasons_for_the_score[], suggestions[]
-  - onOptimize: callback invoked when user clicks optimize
-  - canOptimize: flag controlling whether the CTA is shown
+ - evaluationResult: score, reasons_for_the_score[], suggestions[]
+ - onOptimize: callback invoked when user clicks optimize
+ - canOptimize: flag controlling whether the CTA is shown
 
 ```mermaid
 flowchart TD
@@ -180,14 +177,14 @@ OptimizeCheck --> |No| Done["Done"]
 OptCTA --> Done
 ```
 
-### Loading states, error handling, and feedback
+## Loading states, error handling, and feedback
 - PageLoader: Full-page spinner while the page initializes.
 - LoadingOverlay: Modal overlay during evaluation requests.
 - Toast notifications:
-  - Validation failures for missing inputs
-  - Success and error callbacks from the evaluation mutation
+ - Validation failures for missing inputs
+ - Success and error callbacks from the evaluation mutation
 - Disabled states:
-  - Evaluate button is disabled when inputs are invalid or evaluation is pending.
+ - Evaluate button is disabled when inputs are invalid or evaluation is pending.
 
 ```mermaid
 sequenceDiagram
@@ -204,19 +201,19 @@ M-->>P : onError(error)
 P->>T : Show error toast
 ```
 
-### Backend integration and API contract
+## Backend integration and API contract
 - Frontend service:
-  - atsService.evaluateResume(FormData) → ATSEvaluationResponse
-  - atsService.getUserResumes() → { success, data: { resumes: UserResume[] } }
+ - atsService.evaluateResume(FormData) → ATSEvaluationResponse
+ - atsService.getUserResumes → { success, data: { resumes: UserResume[] } }
 - Hooks:
-  - useEvaluateResume(): mutation hook wrapping atsService.evaluateResume
-  - useAtsUserResumes(): query hook for fetching resumes
+ - useEvaluateResume: mutation hook wrapping atsService.evaluateResume
+ - useAtsUserResumes: query hook for fetching resumes
 - Backend routes:
-  - Accepts multipart/form-data or JSON
-  - Supports JD from text, link, or file
-  - Processes files via process_document and enforces allowed extensions
+ - Accepts multipart/form-data or JSON
+ - Supports JD from text, link, or file
+ - Processes files via process_document and enforces allowed extensions
 - Response normalization:
-  - Backend service normalizes evaluator output to JDEvaluatorResponse fields
+ - Backend service normalizes evaluator output to JDEvaluatorResponse fields
 
 ```mermaid
 classDiagram
@@ -243,7 +240,7 @@ useEvaluateResume --> atsService : "calls"
 atsService --> BackendRoutes : "HTTP"
 ```
 
-### User experience flow: from input to optimization
+## User experience flow: from input to optimization
 - Step 1: Choose resume (existing or upload)
 - Step 2: Provide job description (text, URL, or file)
 - Step 3: Click Evaluate; observe LoadingOverlay
@@ -264,17 +261,17 @@ H --> J["Done"]
 I --> J
 ```
 
-## Dependency analysis
+## Dependencies
 - Component coupling:
-  - ATS Page composes JobDescriptionForm, ResumeSelection, EvaluationResults, and loaders.
-  - ResumeSelection reuses ResumeSelector for consistent UX.
+ - ATS Page composes JobDescriptionForm, ResumeSelection, EvaluationResults, and loaders.
+ - ResumeSelection reuses ResumeSelector for consistent UX.
 - External dependencies:
-  - React Query for state management (useEvaluateResume, useAtsUserResumes)
-  - TanStack Motion for animations
-  - Lucide icons for UI affordances
+ - React Query for state management (useEvaluateResume, useAtsUserResumes)
+ - TanStack Motion for animations
+ - Lucide icons for UI affordances
 - Backend contract:
-  - Frontend sends FormData with resumeId or file, plus JD text/link/file and optional company metadata.
-  - Backend validates and normalizes response to JDEvaluatorResponse.
+ - Frontend sends FormData with resumeId or file, plus JD text/link/file and optional company metadata.
+ - Backend validates and normalizes response to JDEvaluatorResponse.
 
 ```mermaid
 graph LR
@@ -289,27 +286,24 @@ Svc --> Route["Backend Routes"]
 Route --> SvcB["Evaluator Service"]
 ```
 
-## Performance considerations
+## Performance
 - Minimize re-renders:
-  - Use memoization for callbacks passed to child components (e.g., handleOptimize).
-  - Keep evaluationResult shallow to avoid unnecessary renders.
+ - Use memoization for callbacks passed to child components (e.g., handleOptimize).
+ - Keep evaluationResult shallow to avoid unnecessary renders.
 - Network efficiency:
-  - Send only required fields in FormData (only one JD source and either resumeId or file).
+ - Send only required fields in FormData (only one JD source and either resumeId or file).
 - Rendering:
-  - Use AnimatePresence and motion primitives judiciously; disable animations for low-power devices if needed.
+ - Use AnimatePresence and motion primitives judiciously; disable animations for low-power devices if needed.
 - Accessibility:
-  - Ensure focus management after dropdowns open/close.
-  - Provide visible labels and keyboard navigation for all interactive elements.
+ - Ensure focus management after dropdowns open/close.
+ - Provide visible labels and keyboard navigation for all interactive elements.
 
-## Troubleshooting guide
+## Troubleshooting
 - Missing inputs:
-  - If no resume is selected or no JD source is provided, the page shows a destructive toast and disables the Evaluate button.
+ - If no resume is selected or no JD source is provided, the page shows a destructive toast and disables the Evaluate button.
 - Evaluation errors:
-  - On error, a toast displays the error message; the overlay remains until mutation completes.
+ - On error, a toast displays the error message; the overlay remains until mutation completes.
 - Backend validation:
-  - Backend requires either jd_text or jd_link; unsupported file types trigger HTTP 400 with a clear message.
+ - Backend requires either jd_text or jd_link; unsupported file types trigger HTTP 400 with a clear message.
 - Optimization not available:
-  - The "Optimize" CTA appears only when a saved resume is selected and evaluation results are present.
-
-## Conclusion
-The ATS evaluation feature integrates a flexible job description input, reliable resume selection, and a clear results presentation with actionable suggestions. The frontend manages loading states and user feedback effectively, while the backend enforces validation and normalization. Together, they deliver a responsive and accessible ATS evaluation experience with a smooth path from input to optimization.
+ - The "Optimize" CTA appears only when a saved resume is selected and evaluation results are present.

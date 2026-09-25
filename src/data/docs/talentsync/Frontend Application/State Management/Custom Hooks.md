@@ -1,14 +1,13 @@
 # Custom hooks
 
-## Update summary
-**Changes Made**
+## Recent changes
 - Added new section for haptics hook implementation
 - Updated project structure diagram to include haptics library
 - Added haptics hook documentation with intensity levels and user preferences
 - Updated dependency analysis to include haptics library integration
 
-## Introduction
-This page explains the design and implementation of custom React hooks used across the application. It focuses on reusable logic patterns, hook composition, dependency management, and state encapsulation. Special attention is given to:
+Custom React hooks used across the app: composition, dependencies, and encapsulated state. Focus areas:
+
 - Responsive design hook use-mobile
 - Notification system hook use-toast
 - Haptic feedback system with use-haptics hook and haptics library
@@ -17,7 +16,7 @@ This page explains the design and implementation of custom React hooks used acro
 - Controlled vs uncontrolled patterns, form handling, and UI state management
 - Testing, performance optimization, and debugging techniques
 
-## Project structure
+## Repository layout
 The custom hooks live under frontend/hooks and are organized by domain:
 - Device responsiveness: use-mobile.ts
 - Notifications: use-toast.ts
@@ -61,7 +60,7 @@ QJD --> T3
 UH --> HL
 ```
 
-## Core components
+## Building blocks
 - useIsMobile: Detects mobile viewport and updates on resize. Encapsulates media query listener lifecycle.
 - useToast: Centralized toast notification manager with reducer-driven state, listener pattern, and auto-dismiss queues.
 - useHaptics: Haptic feedback manager with intensity levels and user preference persistence.
@@ -74,7 +73,7 @@ Key design patterns:
 - State encapsulation: Each wizard maintains a local finite state machine and exposes computed flags and helpers.
 - Haptic feedback: useHaptics provides consistent tactile feedback with semantic intensity levels and user preference management.
 
-## Architecture overview
+## How it fits together
 The hooks integrate with React Query mutations and service layers. Wizard hooks orchestrate state transitions and delegate network tasks to mutations. Notifications and haptic feedback are centralized via useToast and useHaptics respectively.
 
 ```mermaid
@@ -102,9 +101,7 @@ W-->>UI : "error state + flags"
 end
 ```
 
-## Detailed component analysis
-
-### useIsMobile: responsive design hook
+## useIsMobile: responsive design hook
 Purpose:
 - Detect mobile viewport and update on resize.
 - Encapsulate media query listener lifecycle inside useEffect.
@@ -122,7 +119,7 @@ SetState --> Cleanup["On unmount, remove listener"]
 Cleanup --> End(["Unmount"])
 ```
 
-### useToast: notification manager
+## useToast: notification manager
 Purpose:
 - Provide a toast API with immutable state, reducer-driven updates, and listener subscriptions.
 
@@ -147,7 +144,7 @@ List-->>Comp : "setState(state')"
 Note over Hook : "Auto-remove after timeout"
 ```
 
-### useHaptics: haptic feedback manager
+## useHaptics: haptic feedback manager
 Purpose:
 - Provide consistent tactile feedback for user interactions with different intensity levels and user preference management.
 
@@ -170,7 +167,7 @@ NoOp --> End(["Complete"])
 Persist --> End
 ```
 
-### use-markdown: Markdown rendering hook
+## use-markdown: Markdown rendering hook
 Purpose:
 - Parse Markdown to HTML, transform fenced code blocks and Mermaid diagrams into React components, and add GFM-style callouts and heading anchors.
 
@@ -191,7 +188,7 @@ ReplaceCode --> Output["renderedParts"]
 ReplaceMermaid --> Output
 ```
 
-### useEnrichmentWizard: multi-step enrichment workflow
+## useEnrichmentWizard: multi-step enrichment workflow
 Purpose:
 - Manage a complex, multi-step enrichment flow: analyze -> answer questions -> generate enhancements -> preview -> refine rejected -> apply -> complete.
 
@@ -199,7 +196,7 @@ Implementation highlights:
 - Uses useReducer to maintain a deterministic state machine.
 - Composes with React Query mutations: analyze, improve, refine, apply.
 - Exposes derived flags (canSubmitAnswers, canApplyEnhancements, counts) and actions (setAnswer, setPatchStatus, approveAll, refineRejected, applyEnhancements, reset).
-- Handles error extraction and user-friendly messages.
+- Handles error extraction and messages.
 
 ```mermaid
 stateDiagram-v2
@@ -219,7 +216,7 @@ applying --> error : "APPLY_ERROR"
 error --> idle : "reset"
 ```
 
-### useImprovementWizard: resume improvement workflow
+## useImprovementWizard: resume improvement workflow
 Purpose:
 - Manage improvement flow: start -> improve -> preview -> apply -> complete (or error).
 
@@ -227,7 +224,7 @@ Implementation highlights:
 - Simpler reducer with fewer steps compared to enrichment wizard.
 - Composes with useImproveResume mutation and exposes isImproving/isApplying/hasPreview flags.
 
-### useJDEditWizard: JD-based resume editing workflow
+## useJDEditWizard: JD-based resume editing workflow
 Purpose:
 - Manage editing flow: set fields -> start editing -> preview -> mark applying -> complete (or error).
 
@@ -235,7 +232,7 @@ Implementation highlights:
 - Uses a reducer to track field values and step transitions.
 - Exposes prefill and manual applying markers to coordinate with parent component's persistence.
 
-### useRegenerateWizard: item regeneration workflow
+## useRegenerateWizard: item regeneration workflow
 Purpose:
 - Manage regeneration flow: open -> select items -> set instruction -> generate -> preview -> apply -> complete.
 
@@ -243,7 +240,7 @@ Implementation highlights:
 - Tracks selected items, instruction length constraints, and error recovery with step-aware rollback.
 - Uses two mutations: regenerate and apply regenerated items.
 
-## Dependency analysis
+## Dependencies
 - Wizard hooks depend on React Query mutations for network operations and on useToast/useHaptics for user feedback.
 - React Query hooks encapsulate service calls and define onSuccess/onError handlers that trigger toasts and invalidations.
 - useHaptics depends on the haptics library for cross-platform haptic feedback with semantic intensity levels.
@@ -264,7 +261,7 @@ URW["useRegenerateWizard.ts"] -.uses.-> UT
 UH["useHaptics.ts"] -.uses.-> HL["haptics.ts"]
 ```
 
-## Performance considerations
+## Performance
 - Memoization: Wizard hooks memoize action creators with useCallback to prevent unnecessary prop updates and re-renders.
 - Stable references: Mutations returned by React Query hooks are stable; pass them as-is to child components.
 - State granularity: useReducer keeps state normalized and avoids spreading large objects into props.
@@ -273,34 +270,25 @@ UH["useHaptics.ts"] -.uses.-> HL["haptics.ts"]
 - Markdown rendering: Memoized MarkdownIt instance and selective replacement reduce re-computation.
 - Event listeners: useIsMobile attaches and detaches media query listeners in useEffect to avoid leaks.
 
-## Troubleshooting guide
+## Troubleshooting
 Common issues and remedies:
 - Toast not appearing:
-  - Ensure the hook is used client-side and that the provider is mounted.
-  - Verify listeners are registered and not prematurely removed.
+ - Ensure the hook is used client-side and that the provider is mounted.
+ - Verify listeners are registered and not prematurely removed.
 - Haptic feedback not working:
-  - Check browser/device support for WebHaptics/Vibration API.
-  - Verify user hasn't disabled haptics in settings.
-  - Ensure component is rendered client-side (use client directive).
+ - Check browser/device support for WebHaptics/Vibration API.
+ - Verify user hasn't disabled haptics in settings.
+ - Ensure component is rendered client-side (use client directive).
 - Wizard stuck in error:
-  - Use the wizard's reset or goBack helpers to recover to a previous step.
-  - Inspect error messages extracted from service responses.
+ - Use the wizard's reset or goBack helpers to recover to a previous step.
+ - Inspect error messages extracted from service responses.
 - Network failures:
-  - Confirm mutation keys and query invalidation are configured correctly.
-  - Check toast notifications for user-facing error messages.
+ - Confirm mutation keys and query invalidation are configured correctly.
+ - Check toast notifications for user-facing error messages.
 - Responsive detection:
-  - Confirm the media query listener is attached and cleanup occurs on unmount.
+ - Confirm the media query listener is attached and cleanup occurs on unmount.
 
-## Conclusion
-The custom hooks demonstrate reliable patterns for building reusable, composable logic:
-- useIsMobile encapsulates responsive behavior cleanly.
-- useToast centralizes notifications with a reducer and listener model.
-- useHaptics provides consistent tactile feedback with semantic intensity levels and user preference management.
-- use-markdown provides a flexible, extensible Markdown renderer.
-- Wizard hooks orchestrate complex workflows with deterministic state machines, compose with React Query, and expose clear UI flags.
-These patterns promote separation of concerns, testability, and maintainability across the application.
-
-## Appendices
+## Appendix
 
 ### Hook composition patterns
 - Composition over inheritance: Wizard hooks compose with React Query and useToast/useHaptics rather than extending base classes.

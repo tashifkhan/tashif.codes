@@ -1,13 +1,13 @@
 # Deployment and CI/CD
 
 ## Introduction
-This page provides detailed deployment and CI/CD guidance for the MOOC Utils ecosystem, covering:
-- CI/CD pipeline configuration and automated testing
-- Deployment strategies for the FastAPI backend, Chrome/Firefox extension, and Next.js website
-- Docker containerization approaches
-- Environment-specific configurations
-- Production deployment considerations
-- Monitoring, logging, and maintenance procedures
+Deploying MOOC Utils covers:
+- CI pipeline and automated checks
+- Deploy paths for the FastAPI backend, Chrome/Firefox extension, and Next.js site
+- Docker options
+- Env-specific config
+- Production concerns
+- Monitoring, logging, and routine maintenance
 
 ## Project structure
 The repository comprises three primary components:
@@ -247,8 +247,6 @@ Recommended production practices:
 - Integrate analytics and error tracking
 - Use environment-specific API URLs
 
-[No sources needed since this section provides general guidance]
-
 ## Monitoring and logging
 - Backend logging: Configure structured logging with log levels and correlation IDs
 - Metrics: Expose Prometheus-compatible metrics endpoint
@@ -256,15 +254,11 @@ Recommended production practices:
 - Frontend monitoring: Use Posthog for analytics and Sentry for error reporting
 - Health checks: Implement readiness/liveness endpoints
 
-[No sources needed since this section provides general guidance]
-
 ## Maintenance procedures
 - Database migrations: Use Tortoise ORM migrations and Aerich for schema changes
 - Dependency updates: Regularly update Python packages and Node dependencies
 - Security patches: Monitor advisories and apply updates promptly
 - Backup strategy: Back up database and configuration files regularly
-
-[No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 Common issues and resolutions:
@@ -274,4 +268,4 @@ Common issues and resolutions:
 - Website API failures: Confirm NEXT_PUBLIC_API_URL and network connectivity
 
 ## Conclusion
-This guide outlines a complete deployment and CI/CD strategy for the MOOC Utils components. By using the existing build scripts, environment configuration, and the release workflow, teams can reliably deploy the FastAPI backend, distribute the browser extension, and host the Next.js website in production while maintaining observability and operational hygiene.
+Build artifacts with the existing scripts, inject secrets at deploy time, and watch API health plus extension store listings after a release.

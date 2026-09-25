@@ -1,23 +1,24 @@
 # Development guidelines
 
 ## Introduction
-This page provides detailed development guidelines for contributors working on Agentic Browser. It covers code standards for Python backend, TypeScript frontend, and browser extension development, outlines the development workflow, debugging techniques, performance profiling, code review processes, quality assurance practices, environment setup, IDE configuration, and contribution guidelines for new features, tool system extensions, and service integrations.
+Standards for the Python backend, TypeScript clients, and how changes move from branch to review. Use this when you add a tool, a service, or touch shared schemas.
+
+Source: [github.com/tashifkhan/agentic-browser](https://github.com/tashifkhan/agentic-browser)
 
 ## Project structure
-Agentic Browser is organized into distinct layers:
-- Python backend: FastAPI server and MCP server for model-agnostic agent orchestration
-- Agent runtime: LangGraph-based React agent with tool integration
-- Services: Domain-specific services orchestrating tools and external APIs
+Layout:
+- Python backend: FastAPI in `main.py` and MCP in `mcp_server/` for model-agnostic agent orchestration
+- Agent runtime: LangGraph-based React agent with tool integration (`agents/`)
+- Services, routers, tools, skills
+- Memory: sqlmodel/asyncpg, Neo4j, OpenSearch
 - Models: Request/response DTOs for typed API interactions
 - Prompts: Prompt templates and validators
-- Tools: Modular tool implementations for browser actions, RAG, and third-party integrations
-- Extension: React-based browser extension with sidepanel, background scripts, and utilities
+- Clients: pnpm workspace under `clients/` (`browser-extension`, `debug-web`, `shared`)
 
 ```mermaid
 graph TB
 subgraph "Python Backend"
 MAIN["main.py"]
-API_RUN["api/run.py"]
 MCP_SRV["mcp_server/server.py"]
 CFG["core/config.py"]
 end
@@ -31,14 +32,13 @@ subgraph "Routers"
 REACT_ROUTER["routers/react_agent.py"]
 end
 subgraph "Extension"
-EXT_README["extension/README.md"]
-PKG["extension/package.json"]
-WXT["extension/wxt.config.ts"]
-TSCONFIG["extension/tsconfig.json"]
+EXT_README["clients/browser-extension/README.md"]
+PKG["clients/browser-extension/package.json"]
+WXT["clients/browser-extension/wxt.config.ts"]
+TSCONFIG["clients/browser-extension/tsconfig.json"]
 end
-MAIN --> API_RUN
 MAIN --> MCP_SRV
-API_RUN --> REACT_ROUTER
+MAIN --> REACT_ROUTER
 REACT_ROUTER --> REACT_SVC
 REACT_SVC --> REACT_AGENT
 REACT_AGENT --> MCP_SRV
@@ -48,15 +48,15 @@ WXT --> TSCONFIG
 ```
 
 ## Core components
-- Entry point and server selection: The main entry chooses between API and MCP modes, supporting interactive and non-interactive modes.
+- Entry point: `main.py` starts FastAPI (Uvicorn) and mounts MCP at `/mcp`. Stdio MCP is `agentic-mcp`.
 - API server: Uvicorn-based FastAPI app with reload capability for development.
 - MCP server: Model Context Protocol server exposing tools for LLMs and website context conversion.
 - Agent runtime: LangGraph-based React agent with tool binding and caching.
 - Services: Orchestrate agent workflows, integrate external SDKs, and manage context.
-- Extension: React-based sidepanel, background scripts, and utilities for agent execution and WebSocket communication.
+- Extension: React sidepanel, background scripts, and utilities for agent execution and WebSocket communication.
 
 ## Architecture overview
-Agentic Browser follows a model-agnostic architecture with a Python MCP server bridging LLM reasoning and browser automation. The React agent orchestrates multi-step workflows, while the extension provides a secure UI and WebSocket connectivity.
+Agentic Browser follows a model-agnostic architecture with a Python MCP server bridging LLM reasoning and browser automation. The React agent orchestrates multi-step workflows, while the extension provides a UI and WebSocket connectivity.
 
 ```mermaid
 graph TB
@@ -83,23 +83,16 @@ MCP --> AGENT
 ## Detailed component analysis
 
 ### Python backend entry point
-- Supports mutually exclusive modes: API server or MCP server.
-- Non-interactive mode defaults to API server when requested.
+- FastAPI process: `python main.py` or `agentic-api-run`.
+- Stdio MCP: `agentic-mcp` (`mcp_server.server:run`).
 - Environment loading via dotenv for configuration.
 
 ```mermaid
 flowchart TD
-Start(["Start"]) --> ParseArgs["Parse CLI Arguments"]
-ParseArgs --> Mode{"Mode Selected?"}
-Mode --> |API| RunAPI["Run API Server"]
-Mode --> |MCP| RunMCP["Run MCP Server"]
-Mode --> |None| Interactive{"Interactive?"}
-Interactive --> |Yes| Prompt["Prompt User"]
-Interactive --> |No| DefaultAPI["Default to API Server"]
-Prompt --> Choice{"Choice 1 or 2?"}
-Choice --> |1| RunAPI
-Choice --> |2| RunMCP
-DefaultAPI --> RunAPI
+Start(["Start"]) --> Choose{"Entrypoint"}
+Choose --> |API| RunAPI["python main.py / agentic-api-run"]
+Choose --> |MCP stdio| RunMCP["agentic-mcp"]
+RunAPI --> Mount["Mount /mcp on FastAPI"]
 ```
 
 ### API server and router
@@ -168,14 +161,14 @@ ReactAgent --> GraphBuilder : "uses cached graph"
 
 ### Extension configuration and build
 - WXT configuration defines permissions and host permissions.
-- Package scripts for dev, build, and zip targets.
+- Root pnpm scripts for dev, build, and zip targets.
 - TypeScript configuration extends WXT's tsconfig with path aliases.
 
 ```mermaid
 flowchart TD
-Dev["npm run dev"] --> WXTDev["WXT Dev Server"]
-Build["npm run build"] --> WXTBuild["WXT Build"]
-Zip["npm run zip"] --> WXTZip["WXT Zip"]
+Dev["pnpm dev:extension"] --> WXTDev["WXT Dev Server"]
+Build["pnpm build:extension"] --> WXTBuild["WXT Build"]
+Zip["pnpm zip:extension"] --> WXTZip["WXT Zip"]
 WXTDev --> Manifest["Load Manifest"]
 WXTBuild --> Manifest
 WXTZip --> Manifest
@@ -183,15 +176,15 @@ WXTZip --> Manifest
 
 ## Dependency analysis
 - Python dependencies declared in project metadata and scripts for CLI entry points.
-- Extension dependencies include React, Radix UI, Tailwind utilities, and WXT tooling.
+- Extension dependencies include React, Radix UI, and WXT tooling, plus `@agentic-browser/shared`.
 - Core configuration loads environment variables and sets logging levels.
 
 ```mermaid
 graph LR
 PYMETA["pyproject.toml"] --> DEPS["Python Dependencies"]
 DEPS --> RUNTIME["Runtime Modules"]
-PKGJSON["extension/package.json"] --> EXTDEPS["Extension Dependencies"]
-EXTDEPS --> BUILD["Build & Dev Tooling"]
+PKGJSON["clients/browser-extension/package.json"] --> EXTDEPS["Extension Dependencies"]
+EXTDEPS --> BUILD["Build and Dev Tooling"]
 CFG["core/config.py"] --> LOGGING["Logging Setup"]
 ```
 
@@ -205,89 +198,89 @@ CFG["core/config.py"] --> LOGGING["Logging Setup"]
 ## Troubleshooting guide
 Common debugging techniques:
 - Backend debugging
-  - Enable debug logging via environment variables and inspect loggers.
-  - Use Uvicorn reload during development for rapid iteration.
-  - Validate tool inputs and return structured error messages from MCP server.
+ - Enable debug logging via environment variables and inspect loggers.
+ - Use Uvicorn reload during development for rapid iteration.
+ - Validate tool inputs and return structured error messages from MCP server.
 - Agent debugging
-  - Inspect message payloads and tool calls; normalize content for consistent handling.
-  - Verify graph compilation and caching behavior.
+ - Inspect message payloads and tool calls; normalize content for consistent handling.
+ - Verify graph compilation and caching behavior.
 - Extension debugging
-  - Use browser devtools to inspect background scripts, sidepanel, and WebSocket connections.
-  - Validate permissions and host permissions in WXT manifest.
+ - Use browser devtools to inspect background scripts, sidepanel, and WebSocket connections.
+ - Validate permissions and host permissions in WXT manifest.
 - API testing
-  - Test routers with valid and invalid inputs; confirm HTTP status codes and error messages.
-  - Mock external services for deterministic test runs.
+ - Test routers with valid and invalid inputs; confirm HTTP status codes and error messages.
+ - Mock external services for deterministic test runs.
 
 ## Development workflow
 - Branching strategy
-  - Use feature branches per feature or bug fix.
-  - Keep branches up to date with upstream main.
+ - Use feature branches per feature or bug fix.
+ - Keep branches up to date with upstream main.
 - Commit message conventions
-  - Use imperative mood; keep subject concise and add body for context and rationale.
+ - Use imperative mood; keep subject concise and add body for context and rationale.
 - Pull request guidelines
-  - Include clear description, linked issues, and acceptance criteria.
-  - Ensure tests pass and code is reviewed by maintainers.
+ - Include clear description, linked issues, and acceptance criteria.
+ - Ensure tests pass and code is reviewed by maintainers.
 
 ## Code standards and conventions
 
 ### Python backend
 - Naming
-  - Modules: snake_case; classes: PascalCase; functions: snake_case; constants: UPPER_CASE.
+ - Modules: snake_case; classes: PascalCase; functions: snake_case; constants: UPPER_CASE.
 - Imports
-  - Group standard library, third-party, and local imports; separate with blank lines.
+ - Group standard library, third-party, and local imports; separate with blank lines.
 - Typing
-  - Use TypedDict for request/response payloads; annotate async functions and return types.
+ - Use TypedDict for request/response payloads; annotate async functions and return types.
 - Logging
-  - Use module-scoped loggers; configure levels via environment variables.
+ - Use module-scoped loggers; configure levels via environment variables.
 - Error handling
-  - Return structured error responses; catch and log exceptions in routers and services.
+ - Return structured error responses; catch and log exceptions in routers and services.
 
 ### TypeScript frontend
 - Naming
-  - Components: PascalCase; hooks: useXxx; utilities: camelCase.
+ - Components: PascalCase; hooks: useXxx; utilities: camelCase.
 - Imports
-  - Prefer absolute paths via baseUrl and path mapping.
+ - Prefer absolute paths via baseUrl and path mapping.
 - React
-  - Use functional components with hooks; keep state local where appropriate.
+ - Use functional components with hooks; keep state local where appropriate.
 - Build and scripts
-  - Use WXT scripts for development, building, and packaging.
+ - From repo root: `pnpm dev:extension`, `pnpm build:extension`, `pnpm --filter @agentic-browser/browser-extension compile`.
 
 ### Browser extension
 - Permissions
-  - Define minimal required permissions in manifest; host permissions for all URLs.
+ - Define required permissions in `clients/browser-extension/wxt.config.ts`; host permissions for all URLs.
 - Sidepanel and background
-  - Separate concerns: background for lifecycle and messaging; sidepanel for UI and UX.
+ - Separate concerns: background for lifecycle and messaging; sidepanel for UI.
 - WebSocket
-  - Implement connection management and reconnection strategies.
+ - Implement connection management and reconnection strategies.
 
 ## Testing requirements
 - Unit tests
-  - Test individual functions, services, and tool logic with pytest.
-  - Mock external dependencies to isolate units.
+ - Test individual functions, services, and tool logic with pytest.
+ - Mock external dependencies to isolate units.
 - Integration tests
-  - Validate router-service-agent pipeline with realistic inputs.
-  - Test MCP tool invocation with various inputs and error conditions.
+ - Validate router-service-agent pipeline with realistic inputs.
+ - Test MCP tool invocation with various inputs and error conditions.
 - Frontend tests
-  - Use React testing libraries for component and hook tests.
-  - Validate WebSocket client behavior and sidepanel interactions.
+ - Use React testing libraries for component and hook tests.
+ - Validate WebSocket client behavior and sidepanel interactions.
 
 ## Documentation standards
 - Inline documentation
-  - Document public functions, classes, and modules with purpose, parameters, and return values.
+ - Document public functions, classes, and modules with purpose, parameters, and return values.
 - API documentation
-  - Maintain OpenAPI/Swagger-compatible routers and models.
+ - Maintain OpenAPI/Swagger-compatible routers and models.
 - README updates
-  - Update feature descriptions and contribution steps as needed.
+ - Update feature descriptions and contribution steps as needed.
 
 ## Release procedures
 - Versioning
-  - Increment version in project metadata and package manifests.
+ - Increment version in project metadata and package manifests.
 - Packaging
-  - Build Python wheel and distribution artifacts; package extension builds.
+ - Build Python wheel and distribution artifacts; package extension builds with `pnpm zip:extension`.
 - Validation
-  - Smoke-test API and extension in development environments.
+ - Smoke-test API and extension in development environments.
 - Distribution
-  - Publish to package registries and extension stores following their guidelines.
+ - Publish to package registries and extension stores following their guidelines.
 
 ## Conclusion
-These guidelines establish a consistent foundation for developing Agentic Browser across Python, TypeScript, and the browser extension. By adhering to the outlined standards, workflows, and troubleshooting practices, contributors can efficiently extend the tool system, integrate new services, and maintain high-quality, secure, and model-agnostic agent capabilities.
+Match the existing layout, keep types honest, and prove new tools with a small test. Security review matters more than clever abstractions here.

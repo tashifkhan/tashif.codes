@@ -1,14 +1,14 @@
 # API server
 
 ## Introduction
-This page describes the FastAPI server component that exposes REST endpoints for multiple services: GitHub, Gmail, Calendar, YouTube, Website, and Health. It covers endpoint routing, request/response schemas, validation rules, error handling, authentication requirements, and operational guidance. The API follows a modular structure with routers grouped by service and models defined under a shared models namespace.
+REST surface for GitHub, Gmail, Calendar, YouTube, Website, and Health. Routers group by service; Pydantic models live under a shared models package.
 
 ## Project structure
 The API server is initialized in a central module and mounts routers under prefixed paths. Routers define endpoints and request/response models, while services encapsulate business logic.
 
 ```mermaid
 graph TB
-A["FastAPI App<br/>api/main.py"] --> B["Routers Package<br/>routers/__init__.py"]
+A["FastAPI App<br/>main.py"] --> B["Routers Package<br/>routers/__init__.py"]
 B --> C["Health Router<br/>routers/health.py"]
 B --> D["GitHub Router<br/>routers/github.py"]
 B --> E["Gmail Router<br/>routers/gmail.py"]
@@ -40,7 +40,7 @@ Key initialization and mounting points:
 - Routers are exported via the routers package for centralized imports.
 
 ## Architecture overview
-The API follows a layered architecture:
+Split across these pieces:
 - Presentation Layer: FastAPI routes and request validation.
 - Domain Layer: Services orchestrate tool integrations.
 - Data Contracts: Pydantic models enforce schema and validation.
@@ -76,7 +76,7 @@ R6 --> |"asks website service"| R6R["JSON object"]
 - Authentication: Not required
 - Request: No body
 - Response: HealthResponse
-  - Fields: status (string), message (string)
+ - Fields: status (string), message (string)
 - Error Handling: None defined; returns success payload
 
 ```mermaid
@@ -96,20 +96,20 @@ H-->>C : "{status, message}"
 - Path: /api/genai/github
 - Authentication: Not required
 - Request Model: GitHubRequest
-  - Fields:
-    - url: HttpUrl (required)
-    - question: string (required)
-    - chat_history: array of dicts (optional, default [])
-    - attached_file_path: string or null (optional)
+ - Fields:
+ - url: HttpUrl (required)
+ - question: string (required)
+ - chat_history: array of dicts (optional, default [])
+ - attached_file_path: string or null (optional)
 - Response Model: GitHubResponse
-  - Fields:
-    - content: string
+ - Fields:
+ - content: string
 - Validation Rules:
-  - url must be a valid HTTP(S) URL
-  - question must be present
+ - url must be a valid HTTP(S) URL
+ - question must be present
 - Error Handling:
-  - Returns HTTP 400 if required fields are missing
-  - Returns HTTP 500 for internal errors; logs error details
+ - Returns HTTP 400 if required fields are missing
+ - Returns HTTP 500 for internal errors; logs error details
 
 ```mermaid
 sequenceDiagram
@@ -130,26 +130,26 @@ G-->>C : "{content}"
 ### Gmail endpoints
 - Method: POST
 - Paths:
-  - /api/gmail/unread
-  - /api/gmail/latest
-  - /api/gmail/mark_read
-  - /api/gmail/send
+ - /api/gmail/unread
+ - /api/gmail/latest
+ - /api/gmail/mark_read
+ - /api/gmail/send
 - Authentication: Requires access_token in request body for all endpoints
 - Request Models:
-  - UnreadRequest: access_token (required), max_results (optional, default 10)
-  - LatestRequest: access_token (required), max_results (optional, default 5)
-  - MarkReadRequest: access_token (required), message_id (required)
-  - SendEmailRequest: access_token (required), to (required), subject (required), body (optional)
+ - UnreadRequest: access_token (required), max_results (optional, default 10)
+ - LatestRequest: access_token (required), max_results (optional, default 5)
+ - MarkReadRequest: access_token (required), message_id (required)
+ - SendEmailRequest: access_token (required), to (required), subject (required), body (optional)
 - Response Models:
-  - All endpoints return JSON objects with service-specific keys
+ - All endpoints return JSON objects with service-specific keys
 - Validation Rules:
-  - access_token is required for all endpoints
-  - max_results must be positive; defaults applied if omitted or invalid
-  - mark_read requires message_id
-  - send requires to and subject
+ - access_token is required for all endpoints
+ - max_results must be positive; defaults applied if omitted or invalid
+ - mark_read requires message_id
+ - send requires to and subject
 - Error Handling:
-  - Returns HTTP 400 for missing required fields
-  - Returns HTTP 500 for unexpected errors; logs exception details
+ - Returns HTTP 400 for missing required fields
+ - Returns HTTP 500 for unexpected errors; logs exception details
 
 ```mermaid
 sequenceDiagram
@@ -168,19 +168,19 @@ GM-->>C : "{messages : [...]}"
 ### Calendar endpoints
 - Method: POST
 - Paths:
-  - /api/calendar/events
-  - /api/calendar/create
+ - /api/calendar/events
+ - /api/calendar/create
 - Authentication: Requires access_token in request body for both endpoints
 - Request Models:
-  - EventsRequest: access_token (required), max_results (optional, default 10)
-  - CreateEventRequest: access_token (required), summary (required), start_time (required, ISO 8601 string), end_time (required, ISO 8601 string), description (optional, default)
+ - EventsRequest: access_token (required), max_results (optional, default 10)
+ - CreateEventRequest: access_token (required), summary (required), start_time (required, ISO 8601 string), end_time (required, ISO 8601 string), description (optional, default)
 - Validation Rules:
-  - access_token is required
-  - max_results must be positive; defaults applied if omitted or invalid
-  - start_time and end_time must be valid ISO 8601 strings
+ - access_token is required
+ - max_results must be positive; defaults applied if omitted or invalid
+ - start_time and end_time must be valid ISO 8601 strings
 - Error Handling:
-  - Returns HTTP 400 for missing or invalid fields
-  - Returns HTTP 500 for unexpected errors; logs exception details
+ - Returns HTTP 400 for missing or invalid fields
+ - Returns HTTP 500 for unexpected errors; logs exception details
 
 ```mermaid
 sequenceDiagram
@@ -201,17 +201,17 @@ CA-->>C : "{result : \"created\", event : {...}}"
 - Path: /api/genai/youtube
 - Authentication: Not required
 - Request Model: AskRequest
-  - Fields:
-    - url: string (required)
-    - question: string (required)
-    - chat_history: array of dicts (optional, default [])
-    - attached_file_path: string or null (optional)
+ - Fields:
+ - url: string (required)
+ - question: string (required)
+ - chat_history: array of dicts (optional, default [])
+ - attached_file_path: string or null (optional)
 - Response: JSON object containing an answer field
 - Validation Rules:
-  - url and question are required
+ - url and question are required
 - Error Handling:
-  - Returns HTTP 400 for missing required fields
-  - Returns HTTP 500 for internal errors; logs error details
+ - Returns HTTP 400 for missing required fields
+ - Returns HTTP 500 for internal errors; logs error details
 
 ```mermaid
 sequenceDiagram
@@ -232,18 +232,18 @@ Y-->>C : "{answer : \"...\"}"
 - Path: /api/genai/website
 - Authentication: Not required
 - Request Model: WebsiteRequest
-  - Fields:
-    - url: string (required)
-    - question: string (required)
-    - chat_history: array of dicts (optional, default [])
-    - client_html: string or null (optional)
-    - attached_file_path: string or null (optional)
+ - Fields:
+ - url: string (required)
+ - question: string (required)
+ - chat_history: array of dicts (optional, default [])
+ - client_html: string or null (optional)
+ - attached_file_path: string or null (optional)
 - Response: JSON object containing an answer field
 - Validation Rules:
-  - url and question are required
+ - url and question are required
 - Error Handling:
-  - Returns HTTP 400 for missing required fields
-  - Returns HTTP 500 for internal errors; logs error details
+ - Returns HTTP 400 for missing required fields
+ - Returns HTTP 500 for internal errors; logs error details
 
 ```mermaid
 sequenceDiagram
@@ -261,12 +261,12 @@ W-->>C : "{answer : \"...\"}"
 
 ## Dependency analysis
 - Router-to-Service Coupling:
-  - Each router depends on a dedicated service class injected via FastAPI Depends.
-  - Services depend on tool modules for external integrations.
+ - Each router depends on a dedicated service class injected via FastAPI Depends.
+ - Services depend on tool modules for external integrations.
 - Cross-Router Cohesion:
-  - Routers are cohesive by domain and share minimal cross-dependencies.
+ - Routers group by domain and share few cross-dependencies.
 - External Dependencies:
-  - Services rely on external APIs/tools; errors propagate as HTTP 500 with logged details.
+ - Services rely on external APIs/tools; errors propagate as HTTP 500 with logged details.
 
 ```mermaid
 graph LR
@@ -283,75 +283,65 @@ WS["Website Router"] --> WSS["WebsiteService"]
 - Logging: Routers and services log errors; ensure structured logging is configured for production observability.
 - Asynchronous Workflows: GitHub endpoint supports async processing; ensure the underlying tooling is efficient and consider timeouts.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 - Common HTTP 400 Errors:
-  - Missing access_token or message_id in Gmail/Calendar endpoints.
-  - Missing url or question in YouTube/Website/GitHub endpoints.
-  - Invalid ISO 8601 timestamps in Calendar create endpoint.
+ - Missing access_token or message_id in Gmail/Calendar endpoints.
+ - Missing url or question in YouTube/Website/GitHub endpoints.
+ - Invalid ISO 8601 timestamps in Calendar create endpoint.
 - Internal HTTP 500 Errors:
-  - Unexpected exceptions are caught and returned as HTTP 500 with a generic message; check server logs for stack traces.
+ - Unexpected exceptions are caught and returned as HTTP 500 with a generic message; check server logs for stack traces.
 - Authentication Notes:
-  - Access tokens are passed in request bodies for Gmail and Calendar endpoints; ensure clients supply valid tokens.
+ - Access tokens are passed in request bodies for Gmail and Calendar endpoints; ensure clients supply valid tokens.
 - Debugging Tips:
-  - Enable server-side logging to capture request validation failures and service exceptions.
-  - Use curl or Postman to test endpoints with minimal payloads to isolate issues.
+ - Enable server-side logging to capture request validation failures and service exceptions.
+ - Use curl or Postman to test endpoints with minimal payloads to isolate issues.
 
 ## Conclusion
-The API server provides a clear, modular set of endpoints for health checks, GitHub crawling, Gmail operations, Calendar operations, YouTube Q&A, and Website Q&A. Requests are validated using Pydantic models, and services encapsulate external integrations. Authentication is explicit where required (Gmail/Calendar) and implicit otherwise. The design supports straightforward client integration and future enhancements such as rate limiting, versioning, and expanded error schemas.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Call the mounted prefixes, send the fields each request model expects, and treat 4xx bodies as validation truth. Services wrap the external SDKs so routers stay thin.
 
 ## Appendices
 
 ### API versioning and compatibility
 - Current Version: The application declares a version in the FastAPI metadata.
 - Recommendations:
-  - Add a version prefix to router paths (e.g., /api/v1/...) to support multiple versions concurrently.
-  - Introduce deprecation headers and a changelog for breaking changes.
-  - Maintain backward compatibility windows with clear deprecation timelines.
+ - Add a version prefix to router paths (e.g., /api/v1/.) to support multiple versions concurrently.
+ - Introduce deprecation headers and a changelog for breaking changes.
+ - Maintain backward compatibility windows with clear deprecation timelines.
 
 ### Security considerations
 - Token Handling:
-  - Gmail and Calendar endpoints require access_token in request bodies; treat them as sensitive credentials.
-  - Avoid logging raw tokens; sanitize logs and consider token masking.
+ - Gmail and Calendar endpoints require access_token in request bodies; treat them as sensitive credentials.
+ - Avoid logging raw tokens; sanitize logs and consider token masking.
 - Transport Security:
-  - Deploy behind HTTPS termination; enforce TLS in production.
+ - Deploy behind HTTPS termination; enforce TLS in production.
 - Input Sanitization:
-  - Validate and sanitize inputs; consider rate limiting and request size caps.
+ - Validate and sanitize inputs; consider rate limiting and request size caps.
 - Authorization:
-  - For endpoints requiring broader authorization, integrate middleware or API keys at the gateway level.
-
-[No sources needed since this section provides general guidance]
+ - For endpoints requiring broader authorization, integrate middleware or API keys at the gateway level.
 
 ### Rate limiting
 - Recommendation:
-  - Implement rate limiting at the gateway or via middleware to protect downstream tools.
-  - Use sliding window or token bucket algorithms; expose quota headers when possible.
-
-[No sources needed since this section provides general guidance]
+ - Implement rate limiting at the gateway or via middleware to protect downstream tools.
+ - Use sliding window or token bucket algorithms; expose quota headers when possible.
 
 ### Monitoring endpoints
 - Health Endpoint:
-  - Use the existing health endpoint for liveness/readiness probes.
+ - Use the existing health endpoint for liveness/readiness probes.
 - Metrics:
-  - Expose metrics via a separate endpoint or middleware for latency, error rates, and throughput.
+ - Expose metrics via a separate endpoint or middleware for latency, error rates, and throughput.
 
 ### Administrative interfaces
 - Recommendations:
-  - Provide admin endpoints for diagnostics, queue inspection, and configuration updates.
-  - Secure admin endpoints with authentication and authorization controls.
-
-[No sources needed since this section provides general guidance]
+ - Provide admin endpoints for diagnostics, queue inspection, and configuration updates.
+ - Secure admin endpoints with authentication and authorization controls.
 
 ### Client implementation guidelines
 - Base URL:
-  - Use the mounted router prefixes as base paths for each service.
+ - Use the mounted router prefixes as base paths for each service.
 - Request Bodies:
-  - Supply required fields as defined by each endpoint's request model.
+ - Supply required fields as defined by each endpoint's request model.
 - Error Handling:
-  - Clients should parse HTTP 400 responses for validation errors and HTTP 500 for server errors.
+ - Clients should parse HTTP 400 responses for validation errors and HTTP 500 for server errors.
 - Example Patterns:
-  - For YouTube/Website/GitHub: send url and question; optionally include chat_history and attached_file_path.
-  - For Gmail/Calendar: include access_token and any additional required fields.
+ - For YouTube/Website/GitHub: send url and question; optionally include chat_history and attached_file_path.
+ - For Gmail/Calendar: include access_token and any additional required fields.

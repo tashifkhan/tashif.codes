@@ -1,20 +1,16 @@
 # UI primitive components
 
-## Update summary
-**Changes Made**
+## Recent changes
 - Added new Command component for keyboard-driven search and selection
 - Added new Popover component for modal-like interactions
 - Improved Select component with haptic feedback integration
 - Updated project structure diagram to include new components
 - Added haptic feedback documentation and integration patterns
 
-## Introduction
-This page describes the foundational UI primitive components used across the frontend. It explains each component's purpose, props, styling options, accessibility features, and usage patterns. It also details how these primitives integrate with Radix UI and Tailwind CSS, and how they compose to form higher-level components. Where applicable, we include code-level diagrams and flowcharts to illustrate behavior and data flow.
+Radix-based UI primitives used across the frontend: props, variants, accessibility, and how they compose into feature components.
 
-**Updated** Added new Command component for keyboard-driven search and selection, Popover component for modal-like interactions, and improved Select component with haptic feedback integration.
-
-## Project structure
-The primitives live under the UI module and are thin wrappers around Radix UI primitives and Tailwind classes. They expose consistent props, variants, and slots for composition. The new Command and Popover components integrate smoothly with the existing component ecosystem.
+## Repository layout
+Primitives live under the UI module as thin wrappers around Radix plus Tailwind, with shared props, variants, and slots. Command and Popover follow the same patterns as the older controls.
 
 ```mermaid
 graph TB
@@ -60,172 +56,172 @@ Pop --> Btn
 Pop --> DM
 ```
 
-## Core components
+## Building blocks
 Below is a concise overview of each primitive, focusing on props, styling, accessibility, and typical usage patterns.
 
 - Button
-  - Purpose: Presents actionable controls with variants and sizes.
-  - Props: Inherits native button attributes plus variant and size from its variant factory; supports asChild for composing with links or other elements.
-  - Styling: Uses Tailwind classes via a variant factory; integrates with theme tokens.
-  - Accessibility: Inherits focus-visible styles and disabled states from the variant factory.
-  - Usage pattern: Wrap child content; pass onClick; optionally use asChild to render a link.
+ - Purpose: Presents concrete controls with variants and sizes.
+ - Props: Inherits native button attributes plus variant and size from its variant factory; supports asChild for composing with links or other elements.
+ - Styling: Uses Tailwind classes via a variant factory; integrates with theme tokens.
+ - Accessibility: Inherits focus-visible styles and disabled states from the variant factory.
+ - Usage pattern: Wrap child content; pass onClick; optionally use asChild to render a link.
 
 - Input
-  - Purpose: Standard text input with consistent focus and disabled states.
-  - Props: Inherits native input attributes; supports type.
-  - Styling: Tailwind classes define focus rings, borders, and disabled behavior.
-  - Accessibility: Focus-visible ring ensures keyboard operability.
-  - Usage pattern: Controlled via useState; combine with Label for accessibility.
+ - Purpose: Standard text input with consistent focus and disabled states.
+ - Props: Inherits native input attributes; supports type.
+ - Styling: Tailwind classes define focus rings, borders, and disabled behavior.
+ - Accessibility: Focus-visible ring ensures keyboard operability.
+ - Usage pattern: Controlled via useState; combine with Label for accessibility.
 
 - Dialog
-  - Purpose: Overlay modal with portal rendering and animated content.
-  - Props: Root, Trigger, Portal, Overlay, Content, Close, Header, Footer, Title, Description.
-  - Styling: Dark backdrop blur; slide/fade animations; responsive max-width and max-height.
-  - Accessibility: Focus trapping via Radix; close button with aria-label; overlay click-to-close.
-  - Usage pattern: Open/close via Trigger; render children inside Content; place actions in Footer.
+ - Purpose: Overlay modal with portal rendering and animated content.
+ - Props: Root, Trigger, Portal, Overlay, Content, Close, Header, Footer, Title, Description.
+ - Styling: Dark backdrop blur; slide/fade animations; responsive max-width and max-height.
+ - Accessibility: Focus trapping via Radix; close button with aria-label; overlay click-to-close.
+ - Usage pattern: Open/close via Trigger; render children inside Content; place actions in Footer.
 
 - Card
-  - Purpose: Container with header, title, description, content, and footer slots.
-  - Props: Standard div attributes; composed via forwardRef.
-  - Styling: Tailwind-based card background and shadows; spacing helpers for header/footer.
-  - Accessibility: No special ARIA; rely on semantic headings and paragraphs.
-  - Usage pattern: Nest Title/Description/Content/Footer inside Card.
+ - Purpose: Container with header, title, description, content, and footer slots.
+ - Props: Standard div attributes; composed via forwardRef.
+ - Styling: Tailwind-based card background and shadows; spacing helpers for header/footer.
+ - Accessibility: No special ARIA; rely on semantic headings and paragraphs.
+ - Usage pattern: Nest Title/Description/Content/Footer inside Card.
 
 - Avatar
-  - Purpose: User avatar with fallback icon and optimized image loading.
-  - Props: src, alt, size (sm/md/lg), className.
-  - Styling: Size classes per variant; pulse loader overlay; brand accent borders.
-  - Accessibility: Fallback icon; alt text passed to img.
-  - Usage pattern: Provide src; handle optional alt; size affects visual weight.
+ - Purpose: User avatar with fallback icon and optimized image loading.
+ - Props: src, alt, size (sm/md/lg), className.
+ - Styling: Size classes per variant; pulse loader overlay; brand accent borders.
+ - Accessibility: Fallback icon; alt text passed to img.
+ - Usage pattern: Provide src; handle optional alt; size affects visual weight.
 
 - Badge
-  - Purpose: Small status or metadata indicator.
-  - Props: Inherits HTML div attributes plus variant from its variant factory.
-  - Styling: Rounded pill shape; variant tokens for color.
-  - Accessibility: Stateless; ensure sufficient color contrast.
-  - Usage pattern: Render with text content; choose variant for semantic meaning.
+ - Purpose: Small status or metadata indicator.
+ - Props: Inherits HTML div attributes plus variant from its variant factory.
+ - Styling: Rounded pill shape; variant tokens for color.
+ - Accessibility: Stateless; ensure sufficient color contrast.
+ - Usage pattern: Render with text content; choose variant for semantic meaning.
 
 - Checkbox
-  - Purpose: Binary selection with visual indicator.
-  - Props: Inherits Radix checkbox attributes; styled with Tailwind.
-  - Styling: Brand-checked state; focus-visible ring; disabled opacity.
-  - Accessibility: Works with Label; supports keyboard activation.
-  - Usage pattern: Controlled via checked prop; pair with Label.
+ - Purpose: Binary selection with visual indicator.
+ - Props: Inherits Radix checkbox attributes; styled with Tailwind.
+ - Styling: Brand-checked state; focus-visible ring; disabled opacity.
+ - Accessibility: Works with Label; supports keyboard activation.
+ - Usage pattern: Controlled via checked prop; pair with Label.
 
 - DropdownMenu
-  - Purpose: Menu with nested submenus, checkboxes, radios, and shortcuts.
-  - Props: Root, Trigger, Group, Portal, Sub, SubTrigger, SubContent, Content, Item, CheckboxItem, RadioItem, Label, Separator, Shortcut, RadioGroup.
-  - Styling: Popover-like content with transitions; inset support for nested items.
-  - Accessibility: Keyboard navigation; focus management; open/close states handled by Radix.
-  - Usage pattern: Compose Trigger with Content; nest Sub* for hierarchical menus.
+ - Purpose: Menu with nested submenus, checkboxes, radios, and shortcuts.
+ - Props: Root, Trigger, Group, Portal, Sub, SubTrigger, SubContent, Content, Item, CheckboxItem, RadioItem, Label, Separator, Shortcut, RadioGroup.
+ - Styling: Popover-like content with transitions; inset support for nested items.
+ - Accessibility: Keyboard navigation; focus management; open/close states handled by Radix.
+ - Usage pattern: Compose Trigger with Content; nest Sub* for hierarchical menus.
 
 - Label
-  - Purpose: Associates text with form controls.
-  - Props: Inherits Radix label attributes plus variant from its variant factory.
-  - Styling: Peer-disabled cursor and opacity; integrates with form controls.
-  - Accessibility: Essential for screen readers; clicking label toggles associated control.
-  - Usage pattern: Wrap input/control; apply for-labelledby relationships.
+ - Purpose: Associates text with form controls.
+ - Props: Inherits Radix label attributes plus variant from its variant factory.
+ - Styling: Peer-disabled cursor and opacity; integrates with form controls.
+ - Accessibility: Essential for screen readers; clicking label toggles associated control.
+ - Usage pattern: Wrap input/control; apply for-labelledby relationships.
 
 - Loader
-  - Purpose: Animated loading indicators with multiple variants and overlay mode.
-  - Props: size (sm/md/lg/xl), variant (default/dots/pulse/spinner), className, text.
-  - Styling: Motion-based animations; brand color accents; centered layout.
-  - Accessibility: Not inherently interactive; consider aria-live regions when used in pages.
-  - Usage pattern: Render inline or via LoaderOverlay for full-screen blocking.
+ - Purpose: Animated loading indicators with multiple variants and overlay mode.
+ - Props: size (sm/md/lg/xl), variant (default/dots/pulse/spinner), className, text.
+ - Styling: Motion-based animations; brand color accents; centered layout.
+ - Accessibility: Not inherently interactive; consider aria-live regions when used in pages.
+ - Usage pattern: Render inline or via LoaderOverlay for full-screen blocking.
 
 - MarkdownRenderer
-  - Purpose: Renders markdown with custom GFM-style callouts and details/summary support.
-  - Props: content (unknown), className.
-  - Styling: Utility-first Tailwind classes targeting details, callouts, and task lists.
-  - Accessibility: Ensures semantic headings and lists; details/summary supported.
-  - Usage pattern: Pass raw markdown; style via className overrides.
+ - Purpose: Renders markdown with custom GFM-style callouts and details/summary support.
+ - Props: content (unknown), className.
+ - Styling: Utility-first Tailwind classes targeting details, callouts, and task lists.
+ - Accessibility: Ensures semantic headings and lists; details/summary supported.
+ - Usage pattern: Pass raw markdown; style via className overrides.
 
 - Progress
-  - Purpose: Visual progress bar with numeric value.
-  - Props: Inherits Radix progress attributes; value prop drives width.
-  - Styling: Background track and animated indicator; transforms based on percentage.
-  - Accessibility: Announce progress changes via ARIA if needed.
-  - Usage pattern: Bind value to completion percentage.
+ - Purpose: Visual progress bar with numeric value.
+ - Props: Inherits Radix progress attributes; value prop drives width.
+ - Styling: Background track and animated indicator; transforms based on percentage.
+ - Accessibility: Announce progress changes via ARIA if needed.
+ - Usage pattern: Bind value to completion percentage.
 
 - RadioGroup
-  - Purpose: Single-selection group with visual indicators.
-  - Props: Root and Item inherit Radix attributes; styled with Tailwind.
-  - Styling: Circular items with focus ring; indicator uses a small circle.
-  - Accessibility: Keyboard navigation; checked state managed by Radix.
-  - Usage pattern: Use RadioGroup.Root with RadioGroup.Item children.
+ - Purpose: Single-selection group with visual indicators.
+ - Props: Root and Item inherit Radix attributes; styled with Tailwind.
+ - Styling: Circular items with focus ring; indicator uses a small circle.
+ - Accessibility: Keyboard navigation; checked state managed by Radix.
+ - Usage pattern: Use RadioGroup.Root with RadioGroup.Item children.
 
 - ScrollArea
-  - Purpose: Adds custom scrollbar to overflow content.
-  - Props: Root and ScrollBar inherit Radix attributes; orientation defaults vertical.
-  - Styling: Track and thumb with transparency; handles horizontal/vertical modes.
-  - Accessibility: Preserves native scrolling semantics.
-  - Usage pattern: Wrap content in viewport; ScrollBar is auto-added.
+ - Purpose: Adds custom scrollbar to overflow content.
+ - Props: Root and ScrollBar inherit Radix attributes; orientation defaults vertical.
+ - Styling: Track and thumb with transparency; handles horizontal/vertical modes.
+ - Accessibility: Preserves native scrolling semantics.
+ - Usage pattern: Wrap content in viewport; ScrollBar is auto-added.
 
 - Select
-  - Purpose: Customizable single/multi-select with scroll buttons and popper positioning.
-  - Props: Root, Group, Value, Trigger, Content, Label, Item, Separator, ScrollUp/DownButton.
-  - Styling: Trigger mimics input; Content uses popover styles; item indicators.
-  - Accessibility: Keyboard navigation; focus management; viewport sizing.
-  - Usage pattern: Compose Trigger with Content and Item children.
-  - **Improved** Now includes haptic feedback integration for improved tactile experience.
+ - Purpose: Customizable single/multi-select with scroll buttons and popper positioning.
+ - Props: Root, Group, Value, Trigger, Content, Label, Item, Separator, ScrollUp/DownButton.
+ - Styling: Trigger mimics input; Content uses popover styles; item indicators.
+ - Accessibility: Keyboard navigation; focus management; viewport sizing.
+ - Usage pattern: Compose Trigger with Content and Item children.
+ - **Improved** Now includes haptic feedback integration for improved tactile experience.
 
 - Slider
-  - Purpose: Range selector with draggable thumb.
-  - Props: Inherits Radix slider attributes; styled with Tailwind.
-  - Styling: Track and range; thumb with focus ring.
-  - Accessibility: Keyboard and mouse; supports disabled state.
-  - Usage pattern: Controlled via value prop; bind onChangeEnd for final updates.
+ - Purpose: Range selector with draggable thumb.
+ - Props: Inherits Radix slider attributes; styled with Tailwind.
+ - Styling: Track and range; thumb with focus ring.
+ - Accessibility: Keyboard and mouse; supports disabled state.
+ - Usage pattern: Controlled via value prop; bind onChangeEnd for final updates.
 
 - Switch
-  - Purpose: Toggle control with visual knob.
-  - Props: Inherits Radix switch attributes; styled with Tailwind.
-  - Styling: Track and thumb; focus ring; disabled opacity.
-  - Accessibility: Toggle semantics; keyboard activation.
-  - Usage pattern: Controlled via checked prop; pair with Label.
+ - Purpose: Toggle control with visual knob.
+ - Props: Inherits Radix switch attributes; styled with Tailwind.
+ - Styling: Track and thumb; focus ring; disabled opacity.
+ - Accessibility: Toggle semantics; keyboard activation.
+ - Usage pattern: Controlled via checked prop; pair with Label.
 
 - Tabs
-  - Purpose: Organizes content into selectable panels.
-  - Props: Inherits Radix tabs attributes; styled with Tailwind.
-  - Styling: Indicator and panel transitions; focus ring.
-  - Accessibility: Keyboard navigation; selected tab receives focus.
-  - Usage pattern: Compose List, Trigger, Content; ensure unique ids.
+ - Purpose: Organizes content into selectable panels.
+ - Props: Inherits Radix tabs attributes; styled with Tailwind.
+ - Styling: Indicator and panel transitions; focus ring.
+ - Accessibility: Keyboard navigation; selected tab receives focus.
+ - Usage pattern: Compose List, Trigger, Content; ensure unique ids.
 
 - Textarea
-  - Purpose: Multi-line text input with consistent focus/disabled styling.
-  - Props: Inherits native textarea attributes.
-  - Styling: Tailwind classes mirror Input but for multiline.
-  - Accessibility: Focus-visible ring; label association recommended.
-  - Usage pattern: Controlled via useState; resize via CSS if needed.
+ - Purpose: Multi-line text input with consistent focus/disabled styling.
+ - Props: Inherits native textarea attributes.
+ - Styling: Tailwind classes mirror Input but for multiline.
+ - Accessibility: Focus-visible ring; label association recommended.
+ - Usage pattern: Controlled via useState; resize via CSS if needed.
 
 - Toast
-  - Purpose: Non-blocking notifications.
-  - Props: Inherits attributes appropriate for transient messages.
-  - Styling: Tailwind-based; integrates with Toaster.
-  - Accessibility: Consider aria-live and role; avoid auto-dismiss for critical info.
-  - Usage pattern: Trigger via hook; manage queue via Toaster.
+ - Purpose: Non-blocking notifications.
+ - Props: Inherits attributes appropriate for transient messages.
+ - Styling: Tailwind-based; integrates with Toaster.
+ - Accessibility: Consider aria-live and role; avoid auto-dismiss for critical info.
+ - Usage pattern: Trigger via hook; manage queue via Toaster.
 
 - Toaster
-  - Purpose: Container for Toast notifications with queue management.
-  - Props: Inherits attributes for toast container.
-  - Styling: Tailwind-based; manages stacking and transitions.
-  - Accessibility: Ensure sufficient time for reading; allow manual dismissal.
-  - Usage pattern: Render once; trigger toasts via hook.
+ - Purpose: Container for Toast notifications with queue management.
+ - Props: Inherits attributes for toast container.
+ - Styling: Tailwind-based; manages stacking and transitions.
+ - Accessibility: Ensure sufficient time for reading; allow manual dismissal.
+ - Usage pattern: Render once; trigger toasts via hook.
 
 - Command
-  - Purpose: Keyboard-driven search and selection interface with instant results.
-  - Props: Command, CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandSeparator, CommandShortcut.
-  - Styling: Popover-based container with focused styling for selected items.
-  - Accessibility: Keyboard navigation with arrow keys, Enter to select, Escape to close.
-  - Usage pattern: Wrap search interface with CommandDialog; use CommandInput for search; populate CommandList with CommandItem entries.
+ - Purpose: Keyboard-driven search and selection interface with instant results.
+ - Props: Command, CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandSeparator, CommandShortcut.
+ - Styling: Popover-based container with focused styling for selected items.
+ - Accessibility: Keyboard navigation with arrow keys, Enter to select, Escape to close.
+ - Usage pattern: Wrap search interface with CommandDialog; use CommandInput for search; populate CommandList with CommandItem entries.
 
 - Popover
-  - Purpose: Modal-like overlay content positioned relative to a trigger element.
-  - Props: Root, Trigger, Content, Anchor with alignment and offset options.
-  - Styling: Z-index stacking with fade and slide animations; responsive positioning.
-  - Accessibility: Focus management and keyboard interaction; supports align and sideOffset props.
-  - Usage pattern: Compose PopoverTrigger with PopoverContent; use PopoverAnchor for precise positioning.
+ - Purpose: Modal-like overlay content positioned relative to a trigger element.
+ - Props: Root, Trigger, Content, Anchor with alignment and offset options.
+ - Styling: Z-index stacking with fade and slide animations; responsive positioning.
+ - Accessibility: Focus management and keyboard interaction; supports align and sideOffset props.
+ - Usage pattern: Compose PopoverTrigger with PopoverContent; use PopoverAnchor for precise positioning.
 
-## Architecture overview
+## How it fits together
 These primitives are thin wrappers around Radix UI primitives, exposing a consistent API and styling via Tailwind. They promote composition and accessibility by forwarding refs, preserving event handlers, and integrating with theme tokens. The new Command component integrates with the cmdk library for keyboard-driven interactions, while Popover provides modal-like positioning capabilities.
 
 ```mermaid
@@ -283,9 +279,7 @@ Pop --> TW
 Cmd --> TW
 ```
 
-## Detailed component analysis
-
-### Button
+## Button
 - Composition: Uses a variant factory for consistent variants and sizes; supports asChild to render as a slot element.
 - Accessibility: Focus-visible ring and disabled pointer-events.
 - Usage patterns: Use variant for semantic intent (default, destructive, outline, secondary, ghost, link); size for density; asChild for anchor tags.
@@ -301,7 +295,7 @@ class Button {
 }
 ```
 
-### Dialog
+## Dialog
 - Composition: Root, Trigger, Portal, Overlay, Content, Close, Header, Footer, Title, Description.
 - Accessibility: Focus trap via Radix; overlay click-to-close; close button with aria-label.
 - Usage patterns: Open via Trigger; render structured content inside Content; place actions in Footer.
@@ -321,7 +315,7 @@ U->>C : Close via X
 C-->>P : Close
 ```
 
-### Card
+## Card
 - Composition: Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter.
 - Accessibility: Semantic headings and paragraphs; ensure contrast.
 - Usage patterns: Use CardHeader/Title/Description for metadata; CardContent for body; CardFooter for actions.
@@ -343,7 +337,7 @@ Card <|-- CardContent
 Card <|-- CardFooter
 ```
 
-### Avatar
+## Avatar
 - Composition: Image with fallback icon; optimized URL handling for external providers; loading/error states.
 - Accessibility: Alt text; fallback icon when image fails.
 - Usage patterns: Provide src; size affects visual weight; alt text improves accessibility.
@@ -363,7 +357,7 @@ Retry --> End
 Fallback --> End
 ```
 
-### Badge
+## Badge
 - Composition: Variant factory for default, secondary, destructive, outline.
 - Accessibility: Stateless; ensure contrast with background.
 - Usage patterns: Use variant to reflect status or category.
@@ -376,7 +370,7 @@ class Badge {
 }
 ```
 
-### Checkbox
+## Checkbox
 - Composition: Radix Checkbox with styled indicator.
 - Accessibility: Works with Label; keyboard activation.
 - Usage patterns: Controlled via checked; pair with Label.
@@ -389,7 +383,7 @@ class Checkbox {
 }
 ```
 
-### DropdownMenu
+## DropdownMenu
 - Composition: Root, Trigger, Portal, Sub, SubTrigger, SubContent, Content, Item, CheckboxItem, RadioItem, Label, Separator, Shortcut, RadioGroup.
 - Accessibility: Keyboard navigation; focus management.
 - Usage patterns: Compose Trigger with Content; nest Sub* for hierarchical menus.
@@ -414,7 +408,7 @@ class DropdownMenu {
 }
 ```
 
-### Label
+## Label
 - Composition: Radix Label with variant factory.
 - Accessibility: Essential for screen readers; clicking toggles associated control.
 - Usage patterns: Wrap input/control; apply for-labelledby relationships.
@@ -427,7 +421,7 @@ class Label {
 }
 ```
 
-### Loader
+## Loader
 - Composition: Multiple variants (default/dots/pulse/spinner) with optional text; overlay mode.
 - Accessibility: Not inherently interactive; consider aria-live regions.
 - Usage patterns: Render inline or via LoaderOverlay for full-screen blocking.
@@ -448,9 +442,9 @@ Text --> |No| End(["Done"])
 WithText --> End
 ```
 
-### MarkdownRenderer
+## MarkdownRenderer
 - Composition: Uses a hook to produce rendered parts; applies Tailwind utilities for details/summaries, callouts, and task lists.
-- Accessibility: Ensures semantic headings and lists; details/summary supported.
+  - Accessibility: Ensures semantic headings and lists; details/summary supported.
 - Usage patterns: Pass raw markdown; style via className overrides.
 
 ```mermaid
@@ -463,9 +457,9 @@ Container --> End(["Done"])
 Null --> End
 ```
 
-### Progress
+## Progress
 - Composition: Radix Progress with styled indicator.
-- Accessibility: Announce progress changes via ARIA if needed.
+  - Accessibility: Announce progress changes via ARIA if needed.
 - Usage patterns: Bind value to completion percentage.
 
 ```mermaid
@@ -476,9 +470,9 @@ class Progress {
 }
 ```
 
-### RadioGroup
+## RadioGroup
 - Composition: Radix RadioGroup with styled items.
-- Accessibility: Keyboard navigation; checked state managed by Radix.
+  - Accessibility: Keyboard navigation; checked state managed by Radix.
 - Usage patterns: Use RadioGroup.Root with RadioGroup.Item children.
 
 ```mermaid
@@ -489,9 +483,9 @@ class RadioGroup {
 }
 ```
 
-### ScrollArea
+## ScrollArea
 - Composition: Radix ScrollArea with styled scrollbar.
-- Accessibility: Preserves native scrolling semantics.
+  - Accessibility: Preserves native scrolling semantics.
 - Usage patterns: Wrap content in viewport; ScrollBar is auto-added.
 
 ```mermaid
@@ -502,13 +496,13 @@ class ScrollArea {
 }
 ```
 
-### Select
+## Select
 - Composition: Root, Trigger, Content, Item, Label, Separator, ScrollUp/DownButton.
-- Accessibility: Keyboard navigation; focus management; viewport sizing.
+  - Accessibility: Keyboard navigation; focus management; viewport sizing.
 - Usage patterns: Compose Trigger with Content and Item children.
 - **Improved** Integrated haptic feedback for improved tactile experience during interactions.
 
-**Updated** Improved Select component now includes haptic feedback integration through the haptic utility. The SelectTrigger and SelectItem components now trigger haptic pulses on user interactions:
+Improved Select component now includes haptic feedback integration through the haptic utility. The SelectTrigger and SelectItem components now trigger haptic pulses on user interactions:
 - SelectTrigger triggers "medium" haptic feedback when opening the dropdown
 - SelectItem triggers "selection" haptic feedback when selecting an option
 
@@ -525,9 +519,9 @@ Open --> End
 Select --> End
 ```
 
-### Slider
+## Slider
 - Composition: Radix Slider with styled track and thumb.
-- Accessibility: Keyboard and mouse; supports disabled state.
+  - Accessibility: Keyboard and mouse; supports disabled state.
 - Usage patterns: Controlled via value prop; bind onChangeEnd for final updates.
 
 ```mermaid
@@ -537,9 +531,9 @@ class Slider {
 }
 ```
 
-### Switch
+## Switch
 - Composition: Radix Switch with styled thumb.
-- Accessibility: Toggle semantics; keyboard activation.
+  - Accessibility: Toggle semantics; keyboard activation.
 - Usage patterns: Controlled via checked prop; pair with Label.
 
 ```mermaid
@@ -549,9 +543,9 @@ class Switch {
 }
 ```
 
-### Tabs
+## Tabs
 - Composition: Radix Tabs with styled triggers and content.
-- Accessibility: Keyboard navigation; selected tab receives focus.
+  - Accessibility: Keyboard navigation; selected tab receives focus.
 - Usage patterns: Compose List, Trigger, Content; ensure unique ids.
 
 ```mermaid
@@ -564,9 +558,9 @@ class Tabs {
 }
 ```
 
-### Textarea
+## Textarea
 - Composition: Native textarea with consistent focus/disabled styling.
-- Accessibility: Focus-visible ring; label association recommended.
+  - Accessibility: Focus-visible ring; label association recommended.
 - Usage patterns: Controlled via useState; resize via CSS if needed.
 
 ```mermaid
@@ -576,9 +570,9 @@ class Textarea {
 }
 ```
 
-### Toast and toaster
+## Toast and toaster
 - Composition: Toast is a transient message; Toaster manages queue and presentation.
-- Accessibility: Consider aria-live and role; avoid auto-dismiss for critical info.
+  - Accessibility: Consider aria-live and role; avoid auto-dismiss for critical info.
 - Usage patterns: Trigger via hook; manage queue via Toaster.
 
 ```mermaid
@@ -594,12 +588,12 @@ Toast-->>Toaster : Dismiss
 Toaster-->>App : Update queue
 ```
 
-### Command
+## Command
 - Composition: Command, CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandSeparator, CommandShortcut.
-- Accessibility: Keyboard navigation with arrow keys, Enter to select, Escape to close.
+  - Accessibility: Keyboard navigation with arrow keys, Enter to select, Escape to close.
 - Usage patterns: Wrap search interface with CommandDialog; use CommandInput for search; populate CommandList with CommandItem entries.
 
-**New Component** The Command component provides a keyboard-driven search and selection interface inspired by applications like Spotlight and Alfred. It integrates with the cmdk library for instant search results and keyboard navigation.
+**Command.** The Command component is a keyboard-driven search and selection UI inspired by applications like Spotlight and Alfred. It integrates with the cmdk library for instant search results and keyboard navigation.
 
 ```mermaid
 flowchart TD
@@ -616,12 +610,12 @@ Action --> Close
 Close --> End(["Done"])
 ```
 
-### Popover
+## Popover
 - Composition: Root, Trigger, Content, Anchor with alignment and offset options.
-- Accessibility: Focus management and keyboard interaction; supports align and sideOffset props.
+  - Accessibility: Focus management and keyboard interaction; supports align and sideOffset props.
 - Usage patterns: Compose PopoverTrigger with PopoverContent; use PopoverAnchor for precise positioning.
 
-**New Component** The Popover component provides modal-like overlay content positioned relative to a trigger element. It offers flexible positioning with alignment options and smooth animations.
+**Command.** The Popover component provides modal-like overlay content positioned relative to a trigger element. It offers flexible positioning with alignment options and smooth animations.
 
 ```mermaid
 classDiagram
@@ -638,7 +632,7 @@ class PopoverContent {
 Popover <|-- PopoverContent
 ```
 
-## Dependency analysis
+## Dependencies
 - Radix UI integration: All interactive primitives depend on Radix UI for state, focus, and accessibility semantics.
 - Tailwind CSS integration: Primitives apply consistent utility classes for colors, spacing, typography, and motion.
 - Third-party library integration: Command component integrates with cmdk for keyboard-driven interactions; haptic feedback integrates with web-haptics library.
@@ -677,7 +671,7 @@ Pop --> TW
 Cmd --> TW
 ```
 
-## Performance considerations
+## Performance
 - Prefer variant factories for consistent styling to reduce runtime style computations.
 - Use asChild where appropriate to avoid unnecessary DOM nodes.
 - Keep animations minimal; use motion libraries only when necessary.
@@ -686,48 +680,45 @@ Cmd --> TW
 - **New** Consider haptic feedback performance implications - haptic pulses are brief but should be throttled to prevent excessive vibration.
 - **New** Command component performance: Use virtualized lists for large datasets to maintain smooth keyboard navigation.
 
-## Troubleshooting guide
+## Troubleshooting
 - Dialog does not close on overlay click:
-  - Ensure Overlay and Content are both rendered and that Close is reachable.
+ - Ensure Overlay and Content are both rendered and that Close is reachable.
 - Checkbox or RadioGroup not reflecting state:
-  - Verify controlled props (checked/value) are bound correctly.
+ - Verify controlled props (checked/value) are bound correctly.
 - Select menu appears off-screen:
-  - Adjust container prop and ensure parent has overflow visible.
+ - Adjust container prop and ensure parent has overflow visible.
 - Avatar flickers or shows fallback:
-  - Confirm src URL validity; check network errors and retry logic.
+ - Confirm src URL validity; check network errors and retry logic.
 - Loader not visible:
-  - Verify variant and size combinations; ensure className overrides do not hide elements.
+ - Verify variant and size combinations; ensure className overrides do not hide elements.
 - MarkdownRenderer styles not applied:
-  - Confirm className concatenation and that utility classes are not overridden by conflicting styles.
+ - Confirm className concatenation and that utility classes are not overridden by conflicting styles.
 - **New** Command component issues:
-  - Ensure cmdk is properly installed and imported; verify keyboard navigation works with arrow keys and Enter.
-  - Check that CommandDialog wraps CommandInput and CommandList correctly.
+ - Ensure cmdk is properly installed and imported; verify keyboard navigation works with arrow keys and Enter.
+ - Check that CommandDialog wraps CommandInput and CommandList correctly.
 - **New** Popover positioning problems:
-  - Adjust align and sideOffset props; ensure parent has proper positioning context.
-  - Verify PopoverAnchor is positioned correctly relative to trigger.
+ - Adjust align and sideOffset props; ensure parent has proper positioning context.
+ - Verify PopoverAnchor is positioned correctly relative to trigger.
 - **New** Haptic feedback not working:
-  - Check browser support for Vibration API; verify user hasn't disabled haptics in preferences.
-  - Ensure haptic utility is imported and called with valid intensity levels.
+ - Check browser support for Vibration API; verify user hasn't disabled haptics in preferences.
+ - Ensure haptic utility is imported and called with valid intensity levels.
 
-## Conclusion
-These primitives form a cohesive foundation for building accessible, consistent, and maintainable UI surfaces. By using Radix UI for behavior and Tailwind for styling, components remain composable, customizable, and aligned with platform best practices. The addition of the Command component improves keyboard-driven workflows, while the Popover component provides flexible modal-like interactions. The improved Select component with haptic feedback creates a more engaging user experience through tactile responses. Use the provided patterns to construct higher-level components while preserving accessibility and performance.
-
-## Appendices
+## Appendix
 - Customization guidelines:
-  - Use variant factories for semantic variants.
-  - Apply className to augment Tailwind utilities without overriding core styles.
-  - Pair form controls with Label for accessibility.
-  - Test keyboard navigation and focus states across components.
-  - **New** For Command components, ensure proper keyboard accessibility and screen reader support.
-  - **New** For Popover components, test positioning across different screen sizes and orientations.
+ - Use variant factories for semantic variants.
+ - Apply className to augment Tailwind utilities without overriding core styles.
+ - Pair form controls with Label for accessibility.
+ - Test keyboard navigation and focus states across components.
+ - **New** For Command components, ensure proper keyboard accessibility and screen reader support.
+ - **New** For Popover components, test positioning across different screen sizes and orientations.
 - State management:
-  - Control interactive components via React state.
-  - Use hooks for toast queues and markdown rendering.
-  - Avoid excessive re-renders by memoizing derived values.
-  - **New** Implement debouncing for Command search inputs to improve performance.
-  - **New** Manage haptic feedback preferences through localStorage persistence.
+ - Control interactive components via React state.
+ - Use hooks for toast queues and markdown rendering.
+ - Avoid excessive re-renders by memoizing derived values.
+ - **New** Implement debouncing for Command search inputs to improve performance.
+ - **New** Manage haptic feedback preferences through localStorage persistence.
 - **New** Haptic Feedback Integration:
-  - Use semantic intensity levels: "selection", "light", "medium", "heavy", "success", "error", "tick"
-  - Integrate haptic feedback for key interactions: dropdown opens, option selections, form submissions
-  - Respect user preferences and gracefully handle unsupported devices
-  - Test haptic feedback across different devices and browsers
+ - Use semantic intensity levels: "selection", "light", "medium", "heavy", "success", "error", "tick"
+ - Integrate haptic feedback for key interactions: dropdown opens, option selections, form submissions
+ - Respect user preferences and gracefully handle unsupported devices
+ - Test haptic feedback across different devices and browsers

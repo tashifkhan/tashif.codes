@@ -1,7 +1,7 @@
 # Website analysis integration
 
 ## Introduction
-This page explains the website analysis service integration, focusing on how HTML is converted to markdown, how request metadata is processed, and how advanced scraping capabilities are implemented. It also covers website validation mechanisms, content extraction patterns, and data transformation workflows. The super scraper functionality for intelligent web content extraction, DOM manipulation, and structured data processing is documented alongside practical examples of website analysis workflows, content processing patterns, and validation strategies. Finally, it addresses ethical scraping, rate limiting, performance optimization, and troubleshooting for common issues.
+Fetch page Markdown, optional client HTML, prompt chain for Q&A, and the validation endpoint for injection checks.
 
 ## Project structure
 The website analysis pipeline spans several layers:
@@ -54,23 +54,23 @@ S2 --> C1
 ```
 
 ## Core components
-- WebsiteService orchestrates the end-to-end website analysis:
-  - Fetches server-side markdown via a Jina AI proxy.
-  - Converts client-provided HTML to markdown.
-  - Builds a prompt chain with server and client contexts plus optional chat history.
-  - Optionally integrates an attached file via the Google GenAI SDK.
-  - Returns a synthesized answer from the LLM.
+- WebsiteService runs website analysis:
+ - Fetches server-side markdown via a Jina AI proxy.
+ - Converts client-provided HTML to markdown.
+ - Builds a prompt chain with server and client contexts plus optional chat history.
+ - Optionally integrates an attached file via the Google GenAI SDK.
+ - Returns a synthesized answer from the LLM.
 - WebsiteValidatorService validates HTML content by converting it to markdown and checking for prompt injection risks using a dedicated prompt and LLM.
 - Routers expose endpoints for website analysis and validation with request/response models.
 - Tools implement:
-  - HTML-to-markdown conversion.
-  - Server-side markdown fetching via Jina AI.
-  - Super scraper for advanced content extraction with DOM filtering and asynchronous loading.
+ - HTML-to-markdown conversion.
+ - Server-side markdown fetching via Jina AI.
+ - Super scraper for advanced content extraction with DOM filtering and asynchronous loading.
 - Prompts define the instruction templates and chains for answer synthesis and validation.
 - Configuration manages environment variables and logging.
 
 ## Architecture overview
-The system follows a layered architecture:
+Stack from the outside in:
 - HTTP layer: FastAPI routers accept requests and delegate to services.
 - Service layer: WebsiteService and WebsiteValidatorService encapsulate business logic.
 - Tool layer: Utilities for HTML/markdown conversion and content fetching.
@@ -137,7 +137,7 @@ Return --> End(["Exit"])
 
 ### WebsiteValidatorService
 WebsiteValidatorService performs:
-- HTML-to-markdown conversion.
+  - HTML-to-markdown conversion.
 - Prompt injection risk assessment using a dedicated prompt template and LLM.
 - Boolean safety determination based on model output.
 
@@ -240,15 +240,15 @@ MCP-->>Client : markdown content
 
 ## Dependency analysis
 - WebsiteService depends on:
-  - Tools for markdown fetching and HTML conversion.
-  - Prompts for constructing the answer chain.
-  - Configuration for logging.
+ - Tools for markdown fetching and HTML conversion.
+ - Prompts for constructing the answer chain.
+ - Configuration for logging.
 - WebsiteValidatorService depends on:
-  - Tools for HTML-to-markdown conversion.
-  - Validator prompt and LLM for safety assessment.
+ - Tools for HTML-to-markdown conversion.
+ - Validator prompt and LLM for safety assessment.
 - Routers depend on:
-  - Models for request/response validation.
-  - Services for business logic.
+ - Models for request/response validation.
+ - Services for business logic.
 
 ```mermaid
 graph TB
@@ -273,39 +273,35 @@ WVR --> WM
 - Chunking and pagination: For very large pages, consider chunking content before passing to the LLM to manage token limits.
 - Environment tuning: Adjust logging levels and environment variables for production deployments to minimize overhead.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - HTTP 400/500 errors from website router:
-  - Ensure URL and question are provided in the request payload.
-  - Check service logs for detailed error messages.
+ - Ensure URL and question are provided in the request payload.
+ - Check service logs for detailed error messages.
 - Empty or malformed markdown:
-  - Verify the URL resolves correctly and returns HTML.
-  - Confirm client HTML is well-formed when passed for conversion.
+ - Verify the URL resolves correctly and returns HTML.
+ - Confirm client HTML is well-formed when passed for conversion.
 - Prompt injection validation failures:
-  - Review the validator response and sanitize HTML accordingly.
-  - Consider additional sanitization steps before conversion.
+ - Review the validator response and sanitize HTML accordingly.
+ - Consider additional sanitization steps before conversion.
 - Google GenAI file processing errors:
-  - Confirm API keys are configured and accessible.
-  - Validate the file path and permissions.
+ - Confirm API keys are configured and accessible.
+ - Validate the file path and permissions.
 - Network timeouts or rate limits:
-  - Add retry logic with exponential backoff.
-  - Monitor external service availability and adjust timeouts.
+ - Add retry logic with exponential backoff.
+ - Monitor external service availability and adjust timeouts.
 
 ## Conclusion
-The website analysis integration combines reliable content fetching, intelligent HTML-to-markdown conversion, and LLM-driven synthesis to deliver accurate answers from web pages. Validation ensures safety against prompt injection, while advanced scraping tools enable structured content extraction. By following the outlined workflows, patterns, and best practices, teams can deploy reliable, ethical, and high-performance web analysis capabilities.
-
-[No sources needed since this section summarizes without analyzing specific files]
+POST a URL and question for answers; use the validator before trusting page text in a prompt. Client HTML helps when the server fetch is a shell.
 
 ## Appendices
 
 ### Example workflows
 - Basic website analysis:
-  - Client posts WebsiteRequest to the website router.
-  - Service fetches server markdown, optionally converts client HTML, builds the prompt chain, and returns an answer.
+ - Client posts WebsiteRequest to the website router.
+ - Service fetches server markdown, optionally converts client HTML, builds the prompt chain, and returns an answer.
 - Website validation:
-  - Client posts WebsiteValidatorRequest to the validator router.
-  - Service converts HTML to markdown and runs the validator prompt; returns a safety decision.
+ - Client posts WebsiteValidatorRequest to the validator router.
+ - Service converts HTML to markdown and runs the validator prompt; returns a safety decision.
 - Super scraper usage:
-  - Invoke the super scraper to asynchronously load and filter content from a URL, returning a structured document for downstream processing.
+ - Invoke the super scraper to asynchronously load and filter content from a URL, returning a structured document for downstream processing.

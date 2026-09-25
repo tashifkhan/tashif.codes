@@ -1,13 +1,14 @@
 # Credential storage and encryption
 
 ## Introduction
-This page explains how the application securely stores and manages credentials across all authentication methods. It focuses on:
+electron-store for Gmail tokens and sanitized SMTP config. Passwords are not written. WhatsApp session files live under LocalAuth paths.
+
 - Use of electron-store for secure credential persistence
 - Data serialization and access control
 - Encryption strategies for sensitive data, token obfuscation, and secure configuration management
 - Lifecycle management of credentials: creation, validation, rotation, and secure deletion
 - Security patterns for API keys, OAuth tokens, and SMTP credentials
-- Best practices for backup, recovery, and secure sharing between application instances
+- Backup, recovery, and sharing credentials between machines
 
 The project's README explicitly mentions encrypted storage as a security feature, and the Electron main process integrates electron-store to persist tokens and configurations.
 
@@ -173,45 +174,36 @@ MAIN --> ES
 - Rate limiting: Both Gmail and SMTP handlers include configurable delays to avoid throttling and improve reliability.
 - Memory usage: Avoid keeping large credential objects in memory beyond their use window.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common credential-related issues and resolutions:
 - Missing environment variables for Gmail OAuth2:
-  - Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set in the environment.
+ - Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set in the environment.
 - Gmail authentication failures:
-  - Verify OAuth consent screen configuration and that the redirect URI matches expectations.
+ - Verify OAuth consent screen configuration and that the redirect URI matches expectations.
 - SMTP configuration errors:
-  - Confirm host, port, user, and pass are provided; secure flag matches server requirements.
+ - Confirm host, port, user, and pass are provided; secure flag matches server requirements.
 - WhatsApp logout and cache cleanup:
-  - Use the logout IPC to clear session and cached files; errors are handled gracefully.
+ - Use the logout IPC to clear session and cached files; errors are handled gracefully.
 
 ## Conclusion
-The application employs a layered approach to credential security:
-- electron-store persists tokens and non-sensitive configurations.
-- OAuth2 is handled in the main process with environment-controlled client credentials.
-- SMTP credentials are passed directly to the main process without persistent storage of passwords.
-- Cleanup routines ensure cached authentication artifacts are removed on logout and app exit.
 
-These practices align with secure defaults: minimize persistent secrets, keep sensitive data in memory, and centralize credential operations in the main process.
-
-[No sources needed since this section summarizes without analyzing specific files]
+If you add a new secret, decide explicitly whether electron-store encryption is enough or whether it should never hit disk.
 
 ## Appendices
 
-### Best practices for credential lifecycle
+### Credential lifecycle habits
 - Creation
-  - Use environment variables for OAuth2 client credentials.
-  - Persist only non-sensitive configuration; avoid saving passwords.
+ - Use environment variables for OAuth2 client credentials.
+ - Persist only non-sensitive configuration; avoid saving passwords.
 - Validation
-  - Validate configuration fields before establishing connections.
-  - Verify token presence and freshness before sending.
+ - Validate configuration fields before establishing connections.
+ - Verify token presence and freshness before sending.
 - Rotation
-  - Re-authenticate via OAuth2 when tokens expire or scopes change.
-  - Rotate SMTP credentials periodically and update stored non-sensitive config.
+ - Re-authenticate via OAuth2 when tokens expire or scopes change.
+ - Rotate SMTP credentials periodically and update stored non-sensitive config.
 - Secure Deletion
-  - Clear tokens and cached files on logout and app shutdown.
-  - Remove temporary authentication artifacts.
+ - Clear tokens and cached files on logout and app shutdown.
+ - Remove temporary authentication artifacts.
 
 ### Backup and recovery procedures
 - Back up the electron-store database location (platform-dependent) along with any exported non-sensitive configurations.
@@ -222,5 +214,3 @@ These practices align with secure defaults: minimize persistent secrets, keep se
 - Avoid sharing persistent credentials across instances; each instance should authenticate independently.
 - Use environment variables and local store per-user profile.
 - For multi-instance deployments, manage credentials centrally with secure secret management systems outside the app.
-
-[No sources needed since this section provides general guidance]

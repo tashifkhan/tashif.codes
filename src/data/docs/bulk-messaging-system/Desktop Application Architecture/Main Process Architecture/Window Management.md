@@ -1,10 +1,10 @@
 # Window management
 
 ## Introduction
-This page explains the Electron window management system used by the application. It covers BrowserWindow creation, window dimensions and icon configuration, webPreferences security settings, development versus production loading strategies, window lifecycle events and cleanup responsibilities, error handling for failed resource loads, development tools integration, platform-specific considerations, and window state persistence.
+BrowserWindow creation, webPreferences hardening, and how the app loads Vite in dev versus the built `dist-react` in production.
 
 ## Project structure
-The Electron application is organized with a clear separation between the main process (window management and backend tasks), the renderer process (React UI), and preload scripts for secure IPC bridging. Vite builds the React application for production, while a local development server serves the UI during development.
+The Electron application is organized with the main process (window management and backend tasks), the renderer process (React UI), and preload scripts for secure IPC bridging. Vite builds the React application for production, while a local development server serves the UI during development.
 
 ```mermaid
 graph TB
@@ -231,4 +231,5 @@ Main --> DistHTML["dist-react/index.html"]
 - Auxiliary window issues: For Gmail OAuth, verify redirect URI and timeouts; ensure the OAuth window is shown on ready-to-show and closed appropriately.
 
 ## Conclusion
-The Electron window management system establishes a secure, development-friendly, and production-ready architecture. The main process controls the primary BrowserWindow with strong security defaults, loads the React UI from a local dev server during development, and from a built distribution in production. Lifecycle hooks ensure proper cleanup and platform-specific behavior, while error handling provides visibility into resource load issues. The preload bridge safely exposes IPC capabilities to the renderer, enabling reliable integration with backend handlers for Gmail and SMTP operations.
+
+Security prefs on BrowserWindow are load-bearing. Do not flip `nodeIntegration` on to "debug faster."

@@ -1,10 +1,10 @@
 # Custom tool development guide
 
 ## Introduction
-This guide explains how to develop custom tools within the Agentic Browser framework. It covers the tool creation lifecycle: schema definition, function implementation, registration, testing, validation, and debugging. It also documents best practices for naming, error handling, documentation, performance, security, distribution, and maintenance.
+Add a tool: define the schema, implement the function, register it, test bad inputs, document it. Naming, errors, security, and packaging.
 
 ## Project structure
-The framework organizes tools under a dedicated tools/ namespace, integrates them into an agent tool registry, and exposes them through structured LangChain tools. Supporting services, prompts, and sanitization utilities provide reliable runtime behavior.
+The framework organizes tools under a dedicated tools/ namespace, integrates them into an agent tool registry, and exposes them through structured LangChain tools. Services, prompts, and sanitization utilities sit beside the tools at runtime.
 
 ```mermaid
 graph TB
@@ -29,7 +29,7 @@ subgraph "Utilities"
 U1["utils/agent_sanitizer.py"]
 end
 subgraph "Extension"
-E1["extension/.output/chrome-mv3-dev/background.js"]
+E1["clients/browser-extension/.output/chrome-mv3-dev/background.js"]
 end
 T1 --> A1
 T2 --> A1
@@ -53,7 +53,7 @@ A1 --> E1
 - Validation and sanitization: Utilities enforce safe JSON action plans and guardrails for scripts.
 
 ## Architecture overview
-The tool development architecture follows a layered pattern:
+Where a new tool plugs in:
 - Tool layer: Defines inputs and async logic.
 - Agent layer: Composes tools and injects context.
 - Service layer: Encapsulates LLM prompts, sanitization, and domain operations.
@@ -96,7 +96,7 @@ Wrap --> Register["Register in Agent Builder"]
 Register --> End(["Ready"])
 ```
 
-### Schema definition best practices
+### Schema definition
 - Use Pydantic Field constraints (min_length, ge, le, HttpUrl, EmailStr) to enforce input validity early.
 - Provide clear descriptions for each field to aid LLM reasoning.
 - Prefer optional fields with sensible defaults when appropriate.
@@ -110,7 +110,7 @@ Examples of schema patterns:
 ### Function implementation patterns
 - Use asyncio.to_thread for blocking operations to avoid blocking the event loop.
 - Normalize outputs to strings or structured JSON for downstream consumers.
-- Handle missing credentials gracefully and return actionable error messages.
+- Handle missing credentials and return actionable error messages.
 - Apply bounds checking for numeric parameters.
 
 Examples:
@@ -129,7 +129,7 @@ Key references:
 - `build_agent_tools`
 - `AGENT_TOOLS`
 
-### Browser action tool: end-to-end flow
+### Browser action tool flow
 The browser action tool demonstrates the full lifecycle: schema, service invocation, sanitization, and structured output.
 
 ```mermaid
@@ -184,8 +184,6 @@ Agent --> Extension["Extension"]
 - Cache or reuse expensive computations when feasible.
 - Prefer lightweight scrapers and minimize network calls.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Invalid JSON action plans: The sanitizer enforces required fields and safe patterns. Review validation messages and adjust tool outputs accordingly.
@@ -199,13 +197,11 @@ References:
 - `executeAgentTool`
 
 ## Conclusion
-By following the schema-first, service-backed, and sanitized tool creation pattern, you can reliably add new capabilities to the Agentic Browser. Use the agent builder to register tools, use the extension for browser actions, and apply the sanitization utilities to ensure safety and reliability.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Schema first, service behind it, sanitizer if it touches the browser. Register through the agent builder and keep names stable.
 
 ## Appendices
 
-### Step-by-Step: implementing a new tool
+### Implementing a new tool
 1. Define a Pydantic input schema with Field constraints.
 2. Implement an async coroutine that validates inputs, performs work, and normalizes output.
 3. Wrap the coroutine in a StructuredTool with a descriptive name and schema.
@@ -216,20 +212,20 @@ By following the schema-first, service-backed, and sanitized tool creation patte
 ### Testing strategies
 - Unit tests for blocking operations: Mock external APIs and assert normalized outputs.
 - Integration tests: Use the agent builder with mock context to exercise tool composition.
-- Sanitization tests: Provide malformed JSON and invalid action types to verify robustness.
-- End-to-end tests: Execute browser actions through the extension and verify results.
+- Sanitization tests: Provide malformed JSON and invalid action types to verify reliability.
+- Full-path tests: run browser actions through the extension and check results.
 
 ### Validation approaches
 - Pydantic schema validation for inputs.
 - JSON action plan validation and safety checks.
-- Error wrapping and user-friendly messages.
+- Error wrapping and plain messages.
 
 ### Debugging techniques
 - Log inputs and outputs at each stage.
 - Use try/except around external calls and return structured error payloads.
 - Inspect extension logs for tool routing and execution outcomes.
 
-### Best practices
+### Practical notes
 - Naming: Use descriptive, consistent names (e.g., verb_noun).
 - Error handling: Fail fast with clear messages; avoid leaking secrets.
 - Documentation: Include field descriptions and constraints in schemas.

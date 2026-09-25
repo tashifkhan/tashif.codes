@@ -1,7 +1,7 @@
 # Gmail API integration
 
 ## Introduction
-This page provides detailed documentation for Gmail API integration and OAuth2 authentication within the desktop application. It covers the complete OAuth2 flow, including client ID/secret configuration, consent screen setup, and token management. It also explains email composition with HTML support, subject handling, and the current implementation limitations around attachments. The document details the bulk email sending implementation with rate limiting and progress tracking, and addresses token storage, refresh mechanisms, and credential security. Finally, it includes troubleshooting guidance for authentication failures, API quota issues, and permission problems, along with best practices for Gmail API usage and security considerations.
+Gmail in this app: BrowserWindow OAuth2, token storage in electron-store, bulk send with a delay, no attachments yet.
 
 ## Project structure
 The Gmail integration is implemented across several modules:
@@ -49,7 +49,7 @@ Key implementation highlights:
 - HTML email support in both Gmail API and SMTP modes
 
 ## Architecture overview
-The Gmail integration follows a multi-layered architecture with clear separation of concerns:
+Gmail pieces and how they talk:
 
 ```mermaid
 sequenceDiagram
@@ -106,7 +106,7 @@ BM->>UI : Update results and completion status
 
 ## Detailed component analysis
 
-### Gmail OAuth2 handler
+### Gmail oAuth2 handler
 The OAuth2 handler manages the complete authentication flow:
 
 ```mermaid
@@ -131,12 +131,12 @@ Success --> End
 Key implementation details:
 - OAuth2 scopes configured for Gmail send capability
 - Redirect URI set to localhost callback
-- Consent prompt forced to ensure refresh token acquisition
+- Consent prompt forced so Google returns a refresh token
 - 5-minute timeout for authentication flow
 - Token storage using electron-store with automatic encryption
 
 ### Gmail form component
-The Gmail form provides a detailed interface for email composition and bulk sending:
+The Gmail form is the UI for email composition and bulk sending:
 
 ```mermaid
 classDiagram
@@ -270,7 +270,7 @@ The implementation includes several performance and reliability features:
 - Error isolation: Individual recipient error handling without stopping the entire batch
 - Memory management: Proper cleanup of BrowserWindow instances after OAuth flow
 
-Best practices for optimal performance:
+Performance habits:
 - Set appropriate delay values based on target provider limits
 - Monitor API quotas and adjust batch sizes accordingly
 - Use efficient recipient list management
@@ -283,7 +283,7 @@ Common authentication issues and solutions:
 
 **Missing Environment Variables**
 - Symptom: Authentication returns error about missing client credentials
-- Solution: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set in.env file
+- Solution: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set in .env file
 - Verification: Check environment variable loading in OAuth2 handler
 
 **OAuth Consent Screen Issues**
@@ -331,16 +331,15 @@ Security measures implemented in the application:
 - No plaintext password storage
 - Secure IPC bridge with context isolation
 
-**Best Practices**
+**Habits**
 - Regular credential rotation
 - Principle of least privilege for OAuth scopes
 - Network security for local development
 - Secure handling of user data
 
 ## Conclusion
-The Gmail API integration provides a reliable, secure, and user-friendly solution for bulk email sending. The implementation successfully handles OAuth2 authentication, token management, and bulk email operations with detailed error handling and progress tracking. While the current implementation focuses on HTML email support and basic rate limiting, it provides a solid foundation for future enhancements including attachment support and advanced analytics.
 
-The modular architecture ensures maintainability and extensibility, while security considerations are addressed through proper credential handling and secure storage mechanisms. The application demonstrates best practices for desktop application development with Electron, including proper separation of concerns and secure IPC communication.
+Works today for HTML body + subject bulk send. Attachments and smarter refresh are still open follow-ups, not hidden features.
 
 ## Appendices
 
@@ -355,7 +354,7 @@ The modular architecture ensures maintainability and extensibility, while securi
 - OAuth2 authorization and token endpoints
 - Google APIs Node.js client library
 
-### Future enhancements
+### Open follow-ups
 - Attachment support for email sending
 - Advanced analytics and delivery tracking
 - Improved error handling and retry mechanisms

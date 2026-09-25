@@ -1,7 +1,7 @@
 # Authentication API
 
 ## Introduction
-This page provides detailed API documentation for the authentication endpoints, covering OTP-based login, token refresh, logout, and user identity retrieval. It explains JWT token generation and validation, session management via cookies, and security considerations. It also documents request/response schemas, error handling, and practical integration patterns for client applications.
+OTP login, token refresh, logout, and identity endpoints. Auth uses JWT cookies for the session. Request and response shapes, error cases, and how a client should wire the flow are below.
 
 ## Project structure
 The authentication subsystem is implemented in a FastAPI application with a dedicated router for authentication endpoints. Supporting components include:
@@ -104,50 +104,50 @@ end
 
 ### Authentication endpoints
 - POST /auth/request-otp
-  - Purpose: Request an OTP for the given email address.
-  - Request body: OtpRequest { email }
-  - Response: OtpRequestResponse { message, is_new_user, expires_at }
-  - Behavior: Creates an OTP record with expiry and sends it via configured channel.
-  - Security: Rate limiting and input validation are recommended at the application boundary.
+ - Purpose: Request an OTP for the given email address.
+ - Request body: OtpRequest { email }
+ - Response: OtpRequestResponse { message, is_new_user, expires_at }
+ - Behavior: Creates an OTP record with expiry and sends it via configured channel.
+ - Security: Rate limiting and input validation are recommended at the application boundary.
 
 - POST /auth/verify-otp
-  - Purpose: Verify the OTP and log in the user.
-  - Request body: OtpVerify { email, code }
-  - Response: AuthStatus { user, is_new_user }
-  - Cookies set: access_token, refresh_token
-  - Behavior: Validates OTP, marks as used, creates or retrieves user, issues tokens, and sets cookies.
+ - Purpose: Verify the OTP and log in the user.
+ - Request body: OtpVerify { email, code }
+ - Response: AuthStatus { user, is_new_user }
+ - Cookies set: access_token, refresh_token
+ - Behavior: Validates OTP, marks as used, creates or retrieves user, issues tokens, and sets cookies.
 
 - POST /auth/refresh
-  - Purpose: Refresh access and refresh tokens using a valid refresh token.
-  - Request: Cookie refresh_token
-  - Response: AuthStatus { user, is_new_user=false }
-  - Cookies set: access_token, refresh_token
-  - Behavior: Validates refresh token, rotates it, issues new tokens, and sets cookies.
+ - Purpose: Refresh access and refresh tokens using a valid refresh token.
+ - Request: Cookie refresh_token
+ - Response: AuthStatus { user, is_new_user=false }
+ - Cookies set: access_token, refresh_token
+ - Behavior: Validates refresh token, rotates it, issues new tokens, and sets cookies.
 
 - POST /auth/logout
-  - Purpose: Log out the user by revoking the refresh token and clearing cookies.
-  - Request: Cookie refresh_token
-  - Response: 204 No Content
-  - Behavior: Revokes refresh token if present and deletes both auth cookies.
+ - Purpose: Log out the user by revoking the refresh token and clearing cookies.
+ - Request: Cookie refresh_token
+ - Response: 204 No Content
+ - Behavior: Revokes refresh token if present and deletes both auth cookies.
 
 - GET /auth/me
-  - Purpose: Retrieve currently authenticated user.
-  - Response: UserResponse
-  - Behavior: Requires a valid access token cookie; otherwise returns 401.
+ - Purpose: Retrieve currently authenticated user.
+ - Response: UserResponse
+ - Behavior: Requires a valid access token cookie; otherwise returns 401.
 
 ### Request/Response schemas
 - OtpRequest
-  - email: string (validated as email)
+ - email: string (validated as email)
 - OtpVerify
-  - email: string (validated as email)
-  - code: string
+ - email: string (validated as email)
+ - code: string
 - OtpRequestResponse
-  - message: string
-  - is_new_user: boolean
-  - expires_at: datetime
+ - message: string
+ - is_new_user: boolean
+ - expires_at: datetime
 - AuthStatus
-  - user: UserResponse
-  - is_new_user: boolean
+ - user: UserResponse
+ - is_new_user: boolean
 
 Notes:
 - Validation is handled by Pydantic models; invalid payloads will produce structured errors.
@@ -242,13 +242,13 @@ API-->>Client : Set-Cookie access_token, refresh_token
 
 ## Dependency analysis
 - Router depends on:
-  - Settings for cookie lifetimes and security flags
-  - AuthService for OTP, token, and user operations
-  - Pydantic schemas for request/response validation
+ - Settings for cookie lifetimes and security flags
+ - AuthService for OTP, token, and user operations
+ - Pydantic schemas for request/response validation
 - AuthService depends on:
-  - Settings for token/OTP configuration
-  - OtpCode and RefreshToken models for persistence
-  - OtpEmailService for OTP delivery
+ - Settings for token/OTP configuration
+ - OtpCode and RefreshToken models for persistence
+ - OtpEmailService for OTP delivery
 - OtpEmailService depends on Settings for SMTP configuration or console output.
 
 ```mermaid
@@ -269,8 +269,6 @@ EmailSvc --> Settings
 - Cookie security: Secure flags depend on debug mode; in production, cookies should be secure and same-site policies should be enforced.
 - Email delivery: Console delivery is suitable for development; SMTP requires proper credentials and network configuration.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common errors and resolutions:
 - 400 Bad Request on OTP verification: Occurs when OTP is invalid, expired, or already used.
@@ -285,36 +283,34 @@ Operational checks:
 - Ensure database migrations are applied for OTP and refresh token tables.
 
 ## Conclusion
-The authentication subsystem provides a reliable, cookie-based session mechanism using JWT tokens. It supports OTP-based login, smooth token refresh, and secure logout. Clients should manage cookies automatically and handle 401 responses by prompting re-authentication. Administrators should configure secrets and delivery channels appropriately for production.
-
-[No sources needed since this section summarizes without analyzing specific files]
+OTP in, JWT cookies out. Keep access tokens short-lived, rotate refresh tokens, and never log OTPs or raw tokens in client code.
 
 ## Appendices
 
 ### Endpoint reference
 
 - POST /auth/request-otp
-  - Request: OtpRequest { email }
-  - Response: OtpRequestResponse { message, is_new_user, expires_at }
+ - Request: OtpRequest { email }
+ - Response: OtpRequestResponse { message, is_new_user, expires_at }
 
 - POST /auth/verify-otp
-  - Request: OtpVerify { email, code }
-  - Response: AuthStatus { user, is_new_user }
-  - Cookies: access_token, refresh_token
+ - Request: OtpVerify { email, code }
+ - Response: AuthStatus { user, is_new_user }
+ - Cookies: access_token, refresh_token
 
 - POST /auth/refresh
-  - Request: Cookie refresh_token
-  - Response: AuthStatus { user, is_new_user=false }
-  - Cookies: access_token, refresh_token
+ - Request: Cookie refresh_token
+ - Response: AuthStatus { user, is_new_user=false }
+ - Cookies: access_token, refresh_token
 
 - POST /auth/logout
-  - Request: Cookie refresh_token
-  - Response: 204 No Content
-  - Side effect: Deletes access_token and refresh_token cookies
+ - Request: Cookie refresh_token
+ - Response: 204 No Content
+ - Side effect: Deletes access_token and refresh_token cookies
 
 - GET /auth/me
-  - Response: UserResponse
-  - Requires: access_token cookie
+ - Response: UserResponse
+ - Requires: access_token cookie
 
 ### Configuration options
 - jwt_secret: Required for signing tokens
@@ -327,12 +323,12 @@ The authentication subsystem provides a reliable, cookie-based session mechanism
 
 ### Integration patterns
 - Frontend:
-  - Submit email to /auth/request-otp.
-  - Prompt user for OTP; submit to /auth/verify-otp.
-  - Store cookies automatically; send subsequent requests with credentials.
-  - On token expiry, call /auth/refresh using existing refresh_token cookie.
-  - On logout, call /auth/logout and clear local state.
+ - Submit email to /auth/request-otp.
+ - Prompt user for OTP; submit to /auth/verify-otp.
+ - Store cookies automatically; send subsequent requests with credentials.
+ - On token expiry, call /auth/refresh using existing refresh_token cookie.
+ - On logout, call /auth/logout and clear local state.
 - Backend:
-  - Use get_current_user dependency for protected endpoints.
-  - Respect require_auth decorator for route protection.
-  - Configure Settings for secrets and delivery preferences.
+ - Use get_current_user dependency for protected endpoints.
+ - Respect require_auth decorator for route protection.
+ - Configure Settings for secrets and delivery preferences.

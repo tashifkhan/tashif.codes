@@ -1,9 +1,8 @@
 # React query integration
 
-## Introduction
-This page explains how React Query is integrated into the frontend application. It covers the React Query setup and provider configuration, query client defaults, caching strategies, and the custom hook patterns used for data fetching, mutations, and error handling. It also documents the API client configuration, request/response handling, and outlines patterns for query invalidation, background refetching, and future enhancements such as pagination and infinite queries.
+How React Query is integrated into the frontend application.
 
-## Project structure
+## Repository layout
 React Query is initialized at the application boundary and consumed by feature-specific hooks and services:
 - Providers initialize the QueryClient with default caching and retry behavior.
 - Services encapsulate API calls and return typed responses.
@@ -44,22 +43,22 @@ UI1 --> H2
 UI1 --> H3
 ```
 
-## Core components
+## Building blocks
 - QueryClientProvider and default options:
-  - Stale time is configured to treat data as fresh for a short duration.
-  - Automatic retries are enabled for transient failures.
-  - Window focus refetch is disabled to avoid unnecessary network activity.
+ - Stale time is configured to treat data as fresh for a short duration.
+ - Automatic retries are enabled for transient failures.
+ - Window focus refetch is disabled to avoid unnecessary network activity.
 - API client:
-  - Provides typed request helpers (get, post, put, patch, delete).
-  - Handles query parameters, FormData, and JSON bodies.
-  - Parses JSON responses and throws a structured ApiError on non-OK responses.
-  - Distinguishes between network errors and server-side error messages.
+ - Provides typed request helpers (get, post, put, patch, delete).
+ - Handles query parameters, FormData, and JSON bodies.
+ - Parses JSON responses and throws a structured ApiError on non-OK responses.
+ - Distinguishes between network errors and server-side error messages.
 - Custom hooks:
-  - useQuery wrappers for domain resources (e.g., dashboard, resume).
-  - useMutation wrappers for write operations with optimistic updates and invalidation.
-  - Integration with a toast utility for user feedback on success/error.
+ - useQuery wrappers for domain resources (e.g., dashboard, resume).
+ - useMutation wrappers for write operations with optimistic updates and invalidation.
+ - Integration with a toast utility for user feedback on success/error.
 
-## Architecture overview
+## How it fits together
 The integration follows a layered pattern:
 - Application layer: Providers configure React Query globally.
 - Services layer: Typed API clients encapsulate HTTP requests and normalize responses.
@@ -83,13 +82,11 @@ Service-->>Hook : "Return typed result"
 Hook-->>UI : "Loading/error/data state"
 ```
 
-## Detailed component analysis
-
-### Query client setup and provider
+## Query client setup and provider
 - Providers initializes a single QueryClient instance with defaultOptions:
-  - staleTime controls freshness.
-  - retry governs transient failure resilience.
-  - refetchOnWindowFocus disabled to reduce background traffic.
+ - staleTime controls freshness.
+ - retry governs transient failure resilience.
+ - refetchOnWindowFocus disabled to reduce background traffic.
 - Devtools are included for development inspection.
 
 ```mermaid
@@ -100,13 +97,13 @@ Provide --> Render["Render UI with React Query"]
 Render --> Devtools["Attach ReactQueryDevtools"]
 ```
 
-### API client configuration and error handling
+## API client configuration and error handling
 - Request builder supports method, headers, body, and query parameters.
 - Automatically sets Content-Type for JSON payloads and leaves it unset for FormData.
 - Response parsing and error normalization:
-  - On non-OK responses, constructs a human-readable message from common error fields.
-  - Throws a structured ApiError with status and data payload.
-  - Catches unexpected errors and wraps them as ApiError with a generic message.
+ - On non-OK responses, constructs a human-readable message from common error fields.
+ - Throws a structured ApiError with status and data payload.
+ - Catches unexpected errors and wraps them as ApiError with a generic message.
 
 ```mermaid
 flowchart TD
@@ -125,13 +122,13 @@ G --> L{"Network error?"}
 L --> |Yes| M["Throw ApiError('Network error', 500)"]
 ```
 
-### Custom hook patterns: queries
+## Custom hook patterns: queries
 - useDashboard:
-  - Defines a queryKey for dashboard data.
-  - Fetches data via dashboardService and returns normalized data.
+ - Defines a queryKey for dashboard data.
+ - Fetches data via dashboardService and returns normalized data.
 - useResume:
-  - Accepts an id and enables the query only when id is truthy.
-  - Returns loading, error, and data states.
+ - Accepts an id and enables the query only when id is truthy.
+ - Returns loading, error, and data states.
 
 ```mermaid
 sequenceDiagram
@@ -147,17 +144,17 @@ Service-->>Hook : "data"
 Hook-->>Comp : "data"
 ```
 
-### Custom hook patterns: mutations and optimistic updates
+## Custom hook patterns: mutations and optimistic updates
 - useDeleteResume, useRenameResume, useUploadResume:
-  - Use useMutation to perform write operations.
-  - On success:
-    - Invalidate related queries to refresh cached data.
-    - Show a success toast.
-  - On error:
-    - Show a destructive toast with the error message.
+ - Use useMutation to perform write operations.
+ - On success:
+ - Invalidate related queries to refresh cached data.
+ - Show a success toast.
+ - On error:
+ - Show a destructive toast with the error message.
 - useTailorResume, useGenerateLatex, useDownloadPdf:
-  - Provide mutation functions for resume generation tasks.
-  - useDownloadPdf bypasses the typed apiClient wrapper to handle raw Blob responses.
+ - Provide mutation functions for resume generation tasks.
+ - useDownloadPdf bypasses the typed apiClient wrapper to handle raw Blob responses.
 
 ```mermaid
 sequenceDiagram
@@ -177,13 +174,13 @@ Hook->>Toast : "toast({ title, description })"
 Hook-->>Comp : "Success state"
 ```
 
-### Caching strategies
+## Caching strategies
 - Freshness:
-  - staleTime is configured to keep data fresh for a short period, balancing responsiveness with cache validity.
+ - staleTime is configured to keep data fresh for a short period, balancing responsiveness with cache validity.
 - Invalidation:
-  - After mutations, invalidateQueries is used to trigger refetch of affected query keys (e.g., ["dashboard"]).
+ - After mutations, invalidateQueries is used to trigger refetch of affected query keys (e.g., ["dashboard"]).
 - Background refetch:
-  - Enabled by default for most queries; window focus refetch is disabled to prevent unnecessary network activity.
+ - Enabled by default for most queries; window focus refetch is disabled to prevent unnecessary network activity.
 
 ```mermaid
 flowchart TD
@@ -196,25 +193,25 @@ D --> G["Return data"]
 F --> G
 ```
 
-### Pagination and infinite queries
+## Pagination and infinite queries
 - Current implementation does not include pagination or infinite query patterns.
 - Recommendations for future implementation:
-  - Use hasNextPage and pages for infinite queries.
-  - Implement getNextPageParam and getPreviousPageParam for cursor-based pagination.
-  - Combine with queryKey composition to scope caches per page.
+ - Use hasNextPage and pages for infinite queries.
+ - Implement getNextPageParam and getPreviousPageParam for cursor-based pagination.
+ - Combine with queryKey composition to scope caches per page.
 
 [No sources needed since this section provides general guidance]
 
-### Real-time data synchronization
+## Real-time data synchronization
 - No explicit real-time synchronization mechanisms are present in the current codebase.
 - Recommendations:
-  - Use background refetch intervals for periodic updates.
-  - Implement WebSocket or Server-Sent Events alongside React Query invalidations.
-  - Consider selective invalidation of specific query keys to minimize network overhead.
+ - Use background refetch intervals for periodic updates.
+ - Implement WebSocket or Server-Sent Events alongside React Query invalidations.
+ - Consider selective invalidation of specific query keys to minimize network overhead.
 
 [No sources needed since this section provides general guidance]
 
-## Dependency analysis
+## Dependencies
 The following diagram shows how components depend on each other across layers:
 
 ```mermaid
@@ -228,7 +225,7 @@ end
 UI --> Hooks
 ```
 
-## Performance considerations
+## Performance
 - Prefer targeted invalidation over broad cache clearing to minimize refetches.
 - Use enabled flags to defer queries until required (as seen with resume query).
 - Keep staleTime reasonable to balance freshness and bandwidth.
@@ -237,18 +234,16 @@ UI --> Hooks
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
-Common issues and resolutions:
-- Network errors:
-  - The API client wraps unknown errors as ApiError with a generic message. Inspect the thrown error's message and status to diagnose.
-- Server-side errors:
-  - The API client extracts messages from common fields and throws a structured error. Log the status and data payload for debugging.
-- Mutation errors:
-  - Use the onError callback in useMutation to display user-friendly messages via the toast utility.
-- Query not updating after mutation:
-  - Ensure invalidateQueries is called with the correct queryKey to trigger refetch.
-- Excessive refetches:
-  - Adjust staleTime and retry settings in the QueryClient defaults.
+## Troubleshooting
+Common issues:
 
-## Conclusion
-The application integrates React Query through a clean provider setup, typed services, and domain-specific hooks. The default caching and retry policies are tuned for a responsive UX, while mutations use invalidation and toasts for reliable user feedback. Future enhancements can include pagination/infinite queries and optional real-time synchronization to further improve performance and user experience.
+- Network errors:
+ - The API client wraps unknown errors as ApiError with a generic message. Inspect the thrown error's message and status to diagnose.
+- Server-side errors:
+ - The API client extracts messages from common fields and throws a structured error. Log the status and data payload for debugging.
+- Mutation errors:
+ - Use the onError callback in useMutation to display messages via the toast utility.
+- Query not updating after mutation:
+ - Ensure invalidateQueries is called with the correct queryKey to trigger refetch.
+- Excessive refetches:
+ - Adjust staleTime and retry settings in the QueryClient defaults.

@@ -1,7 +1,7 @@
 # Data models and schema
 
 ## Introduction
-This page describes the data models and schema for the Notice Reminders system. It covers all database entities, their fields, data types, primary and foreign keys, indexes, constraints, and Tortoise ORM model definitions. It also explains how the database models relate to API schemas, outlines data validation rules, and provides guidance on data lifecycle and migrations.
+Overview of persistence and API contracts in notice-reminders: Tortoise models, Pydantic schemas, and how they line up.
 
 ## Project structure
 The data layer is implemented using Tortoise ORM within the notice-reminders application. Models are defined under app/models and registered with FastAPI via app/core/database.py. API schemas are defined under app/schemas and are used to validate and serialize requests and responses.
@@ -47,45 +47,45 @@ N --> SN
 This section documents each database entity, including fields, data types, primary keys, foreign keys, indexes, and constraints. It also explains how the models are registered and initialized.
 
 - User
-  - Fields: id (IntField, pk), email (CharField, unique, indexed), name (CharField, nullable), telegram_id (CharField, unique, nullable), is_active (BooleanField), created_at (DatetimeField), updated_at (DatetimeField)
-  - Indexes: email, telegram_id
-  - Constraints: unique(email), unique(telegram_id)
-  - Table: users
+ - Fields: id (IntField, pk), email (CharField, unique, indexed), name (CharField, nullable), telegram_id (CharField, unique, nullable), is_active (BooleanField), created_at (DatetimeField), updated_at (DatetimeField)
+ - Indexes: email, telegram_id
+ - Constraints: unique(email), unique(telegram_id)
+ - Table: users
 
 - Course
-  - Fields: id (IntField, pk), code (CharField, unique, indexed), title (CharField), url (CharField), instructor (CharField), institute (CharField), nc_code (CharField), created_at (DatetimeField), updated_at (DatetimeField)
-  - Indexes: code
-  - Constraints: unique(code)
-  - Table: courses
+ - Fields: id (IntField, pk), code (CharField, unique, indexed), title (CharField), url (CharField), instructor (CharField), institute (CharField), nc_code (CharField), created_at (DatetimeField), updated_at (DatetimeField)
+ - Indexes: code
+ - Constraints: unique(code)
+ - Table: courses
 
 - Announcement
-  - Fields: id (IntField, pk), course (ForeignKey to Course, related_name: announcements), title (CharField), date (CharField), content (TextField), fetched_at (DatetimeField)
-  - Table: announcements
+ - Fields: id (IntField, pk), course (ForeignKey to Course, related_name: announcements), title (CharField), date (CharField), content (TextField), fetched_at (DatetimeField)
+ - Table: announcements
 
 - Subscription
-  - Fields: id (IntField, pk), user (ForeignKey to User, related_name: subscriptions), course (ForeignKey to Course, related_name: subscriptions), created_at (DatetimeField), is_active (BooleanField)
-  - Constraints: unique(user, course)
-  - Table: subscriptions
+ - Fields: id (IntField, pk), user (ForeignKey to User, related_name: subscriptions), course (ForeignKey to Course, related_name: subscriptions), created_at (DatetimeField), is_active (BooleanField)
+ - Constraints: unique(user, course)
+ - Table: subscriptions
 
 - NotificationChannel
-  - Fields: id (IntField, pk), user (ForeignKey to User, related_name: notification_channels), channel (CharField), address (CharField), is_active (BooleanField), created_at (DatetimeField)
-  - Constraints: unique(user, channel, address)
-  - Table: notification_channels
+ - Fields: id (IntField, pk), user (ForeignKey to User, related_name: notification_channels), channel (CharField), address (CharField), is_active (BooleanField), created_at (DatetimeField)
+ - Constraints: unique(user, channel, address)
+ - Table: notification_channels
 
 - Notification
-  - Fields: id (IntField, pk), user (ForeignKey to User, related_name: notifications), subscription (ForeignKey to Subscription, related_name: notifications), announcement (ForeignKey to Announcement, related_name: notifications), channel (ForeignKey to NotificationChannel, nullable, related_name: notifications), sent_at (DatetimeField), is_read (BooleanField)
-  - Table: notifications
+ - Fields: id (IntField, pk), user (ForeignKey to User, related_name: notifications), subscription (ForeignKey to Subscription, related_name: notifications), announcement (ForeignKey to Announcement, related_name: notifications), channel (ForeignKey to NotificationChannel, nullable, related_name: notifications), sent_at (DatetimeField), is_read (BooleanField)
+ - Table: notifications
 
 - OtpCode
-  - Fields: id (IntField, pk), email (CharField, indexed), code (CharField), expires_at (DatetimeField), is_used (BooleanField), created_at (DatetimeField)
-  - Indexes: email
-  - Table: otp_codes
+ - Fields: id (IntField, pk), email (CharField, indexed), code (CharField), expires_at (DatetimeField), is_used (BooleanField), created_at (DatetimeField)
+ - Indexes: email
+ - Table: otp_codes
 
 - RefreshToken
-  - Fields: id (IntField, pk), user (ForeignKey to User, related_name: refresh_tokens, on_delete=CASCADE), token (CharField, unique, indexed), expires_at (DatetimeField), is_revoked (BooleanField), created_at (DatetimeField)
-  - Indexes: token
-  - Constraints: unique(token)
-  - Table: refresh_tokens
+ - Fields: id (IntField, pk), user (ForeignKey to User, related_name: refresh_tokens, on_delete=CASCADE), token (CharField, unique, indexed), expires_at (DatetimeField), is_revoked (BooleanField), created_at (DatetimeField)
+ - Indexes: token
+ - Constraints: unique(token)
+ - Table: refresh_tokens
 
 ## Architecture overview
 The data model architecture follows a relational design with explicit foreign key relationships. Tortoise ORM is configured to auto-generate schemas when the SQLite file does not exist and registers all models with the FastAPI application.
@@ -175,7 +175,7 @@ USERS ||--o{ REFRESH_TOKENS : "has"
 ### User model
 - Purpose: Stores user account information and profile metadata.
 - Key constraints: unique(email), unique(telegram_id)
-- Indexes: email, telegram_id
+  - Indexes: email, telegram_id
 - Related models: Subscriptions, NotificationChannels, Notifications, RefreshTokens
 
 ```mermaid
@@ -202,7 +202,7 @@ User "1" o-- "*" RefreshToken : "has"
 ### Course model
 - Purpose: Represents MOOC courses with metadata.
 - Key constraints: unique(code)
-- Indexes: code
+  - Indexes: code
 - Related models: Announcements, Subscriptions
 
 ```mermaid
@@ -308,7 +308,7 @@ Notification --> NotificationChannel : "optional"
 
 ### OtpCode model
 - Purpose: Stores OTP codes for email-based authentication.
-- Indexes: email
+  - Indexes: email
 - Lifecycle: expires_at determines validity; is_used marks consumption.
 
 ```mermaid
@@ -325,7 +325,7 @@ class OtpCode {
 
 ### RefreshToken model
 - Purpose: Manages refresh tokens for secure sessions.
-- Constraints: unique(token)
+  - Constraints: unique(token)
 - Behavior: CASCADE delete on user removal; is_revoked flag supports revocation.
 
 ```mermaid
@@ -343,7 +343,7 @@ RefreshToken --> User : "belongs to"
 ```
 
 ## Dependency analysis
-The models form a cohesive relational graph. The following diagram highlights foreign key dependencies and uniqueness constraints.
+The models form a connected relational graph. The following diagram highlights foreign key dependencies and uniqueness constraints.
 
 ```mermaid
 graph LR
@@ -362,21 +362,21 @@ U --> OTP["OtpCode"]
 - Unique constraints: reduce duplicate entries and simplify join conditions.
 - Auto timestamps: created_at and updated_at enable efficient sorting and filtering.
 - Recommendations:
-  - Add composite indexes for frequently filtered pairs (e.g., user+is_active on Subscription).
-  - Consider partitioning or soft-deleted views for Notification if volume grows large.
-  - Use pagination and limit clauses in queries to avoid large result sets.
+ - Add composite indexes for frequently filtered pairs (e.g., user+is_active on Subscription).
+ - Consider partitioning or soft-deleted views for Notification if volume grows large.
+ - Use pagination and limit clauses in queries to avoid large result sets.
 
 ## Troubleshooting guide
 - Registration and schema generation:
-  - The database is registered via a configuration that lists all models. If the SQLite file does not exist, schemas are generated automatically.
-  - Ensure the database URL points to a writable path for SQLite.
+ - The database is registered via a configuration that lists all models. If the SQLite file does not exist, schemas are generated automatically.
+ - Ensure the database URL points to a writable path for SQLite.
 - Common issues:
-  - Integrity errors on unique fields (email, telegram_id, code, token): validate inputs before creation.
-  - Expiration handling: ensure background jobs or scheduled tasks invalidate expired OTPs and refresh tokens.
-  - Cascade deletes: removing a user will remove dependent refresh tokens; confirm intended behavior.
+ - Integrity errors on unique fields (email, telegram_id, code, token): validate inputs before creation.
+ - Expiration handling: ensure background jobs or scheduled tasks invalidate expired OTPs and refresh tokens.
+ - Cascade deletes: removing a user will remove dependent refresh tokens; confirm intended behavior.
 
 ## Conclusion
-The Notice Reminders data model is a well-structured relational schema built with Tortoise ORM. It supports user profiles, course catalogs, subscription management, notification delivery, and authentication tokens. The schema enforces referential integrity and uniqueness constraints, while indexes optimize common queries. API schemas align with models to ensure validated and consistent data transfer.
+Models persist, schemas validate, services decide. Keep those roles from collapsing into the routers.
 
 ## Appendices
 

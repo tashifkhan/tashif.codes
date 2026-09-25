@@ -1,7 +1,6 @@
 # ATS evaluation API
 
-## Introduction
-This page describes the Applicant Tracking System (ATS) evaluation functionality exposed by the backend API. It covers:
+The Applicant Tracking System (ATS) evaluation functionality exposed by the backend API.
 - Job description processing endpoints (text-based and file-based)
 - Resume scanning pipeline and supported formats
 - Keyword matching logic and scoring methodology
@@ -9,9 +8,9 @@ This page describes the Applicant Tracking System (ATS) evaluation functionality
 - Bulk evaluation capabilities, filtering, and result aggregation
 - Practical optimization workflows and integration patterns
 
-The system evaluates a candidate's resume against a job description using a structured 100-point rubric, returning a numeric score, reasons, and actionable suggestions.
+The system evaluates a candidate's resume against a job description using a structured 100-point rubric, returning a numeric score, reasons, and concrete suggestions.
 
-## Project structure
+## Repository layout
 The ATS evaluation feature spans routing, service orchestration, prompt-driven evaluation, and document processing utilities.
 
 ```mermaid
@@ -41,20 +40,20 @@ M1 --> S
 M2 --> R
 ```
 
-## Core components
+## Building blocks
 - Endpoints
-  - Text-based evaluation endpoint: POST /ats/evaluate
-  - File-based evaluation endpoint: POST /ats/evaluate (multipart/form-data)
+ - Text-based evaluation endpoint: POST /ats/evaluate
+ - File-based evaluation endpoint: POST /ats/evaluate (multipart/form-data)
 - Input payload fields
-  - resume_text: Candidate resume content
-  - jd_text or jd_link: One of them must be provided
-  - company_name, company_website: Optional enrichment fields
+ - resume_text: Candidate resume content
+ - jd_text or jd_link: One of them must be provided
+ - company_name, company_website: Optional enrichment fields
 - Output schema
-  - success: Boolean flag
-  - message: Short status message
-  - score: Integer score (0–100)
-  - reasons_for_the_score: List of justification bullets
-  - suggestions: List of actionable recommendations
+ - success: Boolean flag
+ - message: Short status message
+ - score: Integer score (0-100)
+ - reasons_for_the_score: List of justification bullets
+ - suggestions: List of concrete recommendations
 
 Key behaviors:
 - Accepts either raw text or uploaded files for both resume and job description
@@ -62,7 +61,7 @@ Key behaviors:
 - Fetches job description from a URL if provided
 - Normalizes evaluator output into a standardized response
 
-## Architecture overview
+## How it fits together
 The evaluation pipeline:
 1. Receive request via FastAPI router
 2. Parse and validate payload
@@ -94,9 +93,7 @@ G-->>S : JSON result (score, reasons, suggestions)
 S-->>C : JDEvaluatorResponse
 ```
 
-## Detailed component analysis
-
-### Endpoint: POST /ats/evaluate (text-based)
+## Endpoint: POST /ats/evaluate (text-based)
 - Accepts JSON body or form-encoded payload
 - Validates presence of either jd_text or jd_link
 - Supports optional company_name and company_website enrichment
@@ -107,13 +104,13 @@ Behavior highlights:
 - Converts uploaded JD files to text when provided
 - Delegates to service layer for evaluation
 
-### Endpoint: POST /ats/evaluate (file-based)
+## Endpoint: POST /ats/evaluate (file-based)
 - Accepts multipart/form-data with resume_file and optional jd_file/jd_text/jd_link
 - Validates allowed JD file extensions
 - Reads and converts resume and optional JD files to text
 - Enforces that a job description source is provided
 
-### Service: ats_evaluate_service
+## Service: ats_evaluate_service
 Responsibilities:
 - Validates inputs using JDEvaluatorRequest schema
 - Retrieves JD text from link if needed
@@ -125,7 +122,7 @@ Key validations and error handling:
 - HTTP 400 for invalid inputs or missing JD source
 - HTTP 500 for retrieval failures or JSON parsing errors
 
-### Evaluation graph: ATSEvaluatorGraph and evaluate_ats
+## Evaluation graph: ATSEvaluatorGraph and evaluate_ats
 - Initializes LLM (prefers shared provider; falls back to Gemini)
 - Optionally binds Tavily search tool if available
 - Formats prompt with resume, JD, company name, and company website content
@@ -149,14 +146,14 @@ class evaluate_ats {
 ATSEvaluatorGraph <.. evaluate_ats : "instantiated and invoked"
 ```
 
-### Prompt template: jd_evaluator
+## Prompt template: jd_evaluator
 - Defines a 100-point rubric across categories:
-  - Technical Skills & Experience Match (30)
-  - Career Progression & Achievements (25)
-  - Education & Credentials (15)
-  - Resume Quality & Customization (15)
-  - Soft Skills & Cultural Fit Indicators (10)
-  - Employment Stability & Red Flags (5)
+ - Technical Skills & Experience Match (30)
+ - Career Progression & Achievements (25)
+ - Education & Credentials (15)
+ - Resume Quality & Customization (15)
+ - Soft Skills & Cultural Fit Indicators (10)
+ - Employment Stability & Red Flags (5)
 - Includes bonuses and penalties
 - Requires valid JSON output with exact schema keys
 
@@ -166,7 +163,7 @@ Scoring methodology:
 - Cap final score at 100 and round to integer
 - Produce reasons and suggestions aligned to the rubric
 
-### Document processing: process_document
+## Document processing: process_document
 Capabilities:
 - Converts PDF, DOC, DOCX to Markdown for parsing
 - Falls back to Google GenAI multimodal conversion when needed
@@ -177,34 +174,34 @@ Supported formats:
 - Resume: TXT, MD, PDF, DOC, DOCX
 - Job Description: TXT, MD, PDF, DOC, DOCX
 
-### Web content retrieval: web_content_agent
+## Web content retrieval: web_content_agent
 - Fetches markdown content from a URL using a third-party service
 - Returns empty string on failure or empty content
 
 Used when jd_link is provided instead of jd_text.
 
-### Response schema: JDEvaluatorResponse
+## Response schema: JDEvaluatorResponse
 Fields:
 - success: Boolean
 - message: String
-- score: Integer (0–100)
+- score: Integer (0-100)
 - reasons_for_the_score: Array of strings
 - suggestions: Array of strings
 
-Normalization ensures robustness when evaluator returns JSON or narrative.
+Normalization ensures reliability when evaluator returns JSON or narrative.
 
-## Dependency analysis
+## Dependencies
 - Routes depend on:
-  - process_document for file parsing
-  - web_content_agent for JD link retrieval
-  - ats_evaluate_service for orchestration
+ - process_document for file parsing
+ - web_content_agent for JD link retrieval
+ - ats_evaluate_service for orchestration
 - Service depends on:
-  - JDEvaluatorRequest/Response models
-  - ATSEvaluatorGraph for evaluation
+ - JDEvaluatorRequest/Response models
+ - ATSEvaluatorGraph for evaluation
 - Graph depends on:
-  - LLM provider (shared or Gemini)
-  - jd_evaluator prompt template
-  - optional Tavily tool binding
+ - LLM provider (shared or Gemini)
+ - jd_evaluator prompt template
+ - optional Tavily tool binding
 
 ```mermaid
 graph LR
@@ -217,77 +214,73 @@ Service --> Models["models/ats_evaluator/schemas.py"]
 Models --> Routes
 ```
 
-## Performance considerations
+## Performance
 - LLM invocation cost and latency dominate evaluation time; consider:
-  - Using a shared LLM provider to reduce cold-starts
-  - Limiting concurrent evaluations during peak loads
-  - Caching repeated JDs and company website content
+ - Using a shared LLM provider to reduce cold-starts
+ - Limiting concurrent evaluations during peak loads
+ - Caching repeated JDs and company website content
 - Document parsing overhead:
-  - Prefer preprocessed text when possible
-  - Batch resume processing where feasible
+ - Prefer preprocessed text when possible
+ - Batch resume processing where feasible
 - Prompt size impacts token usage; keep resume and JD concise
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Missing job description source
-  - Ensure either jd_text or jd_link is provided
+ - Ensure either jd_text or jd_link is provided
 - Unsupported JD file type
-  - Allowed: PDF, DOC, DOCX, TXT, MD
+ - Allowed: PDF, DOC, DOCX, TXT, MD
 - Failed to process JD/resume file
-  - Verify file integrity and encoding
-  - For PDFs, fallback conversion requires Google provider and API key
+ - Verify file integrity and encoding
+ - For PDFs, fallback conversion requires Google provider and API key
 - JSON parsing errors from evaluator
-  - Model output may be malformed; retry or adjust prompt
+ - Model output may be malformed; retry or adjust prompt
 - JD link retrieval failures
-  - Confirm URL accessibility and network connectivity
+ - Confirm URL accessibility and network connectivity
 
 Operational logs capture company_name, presence of JD text/link, and raw outputs to aid debugging.
 
-## Conclusion
-The ATS evaluation API provides a reliable, extensible pipeline to assess resume-JD alignment using a structured 100-point rubric. It supports flexible input formats, optional enrichment, and produces actionable insights. Integrations can use the standardized response schema to power dashboards, bulk scoring, and automated optimization workflows.
-
-[No sources needed since this section summarizes without analyzing specific files]
-
-## Appendices
+## Appendix
 
 ### API reference
 
 - Endpoint: POST /ats/evaluate
-  - Body (JSON or multipart/form-data)
-    - resume_text: string
-    - jd_text: string (optional if jd_link provided)
-    - jd_link: string (optional if jd_text provided)
-    - company_name: string (optional)
-    - company_website: string (optional)
-  - Response: JDEvaluatorResponse
-    - success: boolean
-    - message: string
-    - score: integer (0–100)
-    - reasons_for_the_score: array of strings
-    - suggestions: array of strings
+ - Body (JSON or multipart/form-data)
+ - resume_text: string
+ - jd_text: string (optional if jd_link provided)
+ - jd_link: string (optional if jd_text provided)
+ - company_name: string (optional)
+ - company_website: string (optional)
+ - Response: JDEvaluatorResponse
+ - success: boolean
+ - message: string
+ - score: integer (0-100)
+ - reasons_for_the_score: array of strings
+ - suggestions: array of strings
 
 - Endpoint: POST /ats/evaluate (file-based)
-  - Form fields
-    - resume_file: file (TXT, MD, PDF, DOC, DOCX)
-    - jd_file: file (optional, TXT, MD, PDF, DOC, DOCX)
-    - jd_text: string (optional)
-    - jd_link: string (optional)
-    - company_name: string (optional)
-    - company_website: string (optional)
+ - Form fields
+ - resume_file: file (TXT, MD, PDF, DOC, DOCX)
+ - jd_file: file (optional, TXT, MD, PDF, DOC, DOCX)
+ - jd_text: string (optional)
+ - jd_link: string (optional)
+ - company_name: string (optional)
+ - company_website: string (optional)
 
 ### Scoring methodology and weight assignment
 - Categories and approximate weights:
-  - Technical Skills & Experience Match: 30%
-  - Career Progression & Achievements: 25%
-  - Education & Credentials: 15%
-  - Resume Quality & Customization: 15%
-  - Soft Skills & Cultural Fit Indicators: 10%
-  - Employment Stability & Red Flags: 5%
+ - Technical Skills & Experience Match: 30%
+ - Career Progression & Achievements: 25%
+ - Education & Credentials: 15%
+ - Resume Quality & Customization: 15%
+ - Soft Skills & Cultural Fit Indicators: 10%
+ - Employment Stability & Red Flags: 5%
 - Adjustments:
-  - Bonuses (up to +5): e.g., awards, publications, relevant volunteerism
-  - Penalties (e.g., inconsistencies, unprofessional contact info, obvious misrepresentations)
+ - Bonuses (up to +5): e.g., awards, publications, relevant volunteerism
+ - Penalties (e.g., inconsistencies, unprofessional contact info, obvious misrepresentations)
 - Final score capped at 100 and rounded to integer
 
 ### Keyword matching logic
@@ -304,36 +297,36 @@ The ATS evaluation API provides a reliable, extensible pipeline to assess resume
 
 ### Bulk ATS evaluation and aggregation
 - Recommended pattern:
-  - Iterate over a batch of resumes and a single job description
-  - Store per-resume JDEvaluatorResponse entries
-  - Aggregate by computing average score, top suggestions, and common reasons
+ - Iterate over a batch of resumes and a single job description
+ - Store per-resume JDEvaluatorResponse entries
+ - Aggregate by computing average score, top suggestions, and common reasons
 - Filtering options:
-  - Filter by minimum score threshold
-  - Filter by presence of specific keywords in suggestions
+ - Filter by minimum score threshold
+ - Filter by presence of specific keywords in suggestions
 - Result aggregation:
-  - Group by reasons_for_the_score themes
-  - Rank by score descending
+ - Group by reasons_for_the_score themes
+ - Rank by score descending
 
 [No sources needed since this section provides general guidance]
 
 ### Practical optimization workflows
 - Workflow 1: Tailored Resume Generation
-  - Use suggestions to rewrite resume sections
-  - Re-run evaluation to measure improvements
+ - Use suggestions to rewrite resume sections
+ - Re-run evaluation to measure improvements
 - Workflow 2: Keyword Gap Analysis
-  - Cross-reference missing_keywords with industry benchmarks
-  - Add relevant skills and quantify achievements
+ - Cross-reference missing_keywords with industry benchmarks
+ - Add relevant skills and quantify achievements
 - Workflow 3: Customization Audit
-  - Ensure JD keywords appear naturally in Summary and Experience
-  - Remove generic boilerplate
+ - Ensure JD keywords appear naturally in Summary and Experience
+ - Remove generic boilerplate
 
 [No sources needed since this section provides general guidance]
 
 ### Integration with external ATS systems
-- Use the standardized JDEvaluatorResponse to integrate with:
-  - Internal ATS scoring dashboards
-  - Pre-screening filters (e.g., minimum score thresholds)
-  - Candidate shortlisting and interview scheduling
+- Use the standardized JDEvaluatorResponse to integrate :
+ - Internal ATS scoring dashboards
+ - Pre-screening filters (e.g., minimum score thresholds)
+ - Candidate shortlisting and interview scheduling
 - Align external rubrics with the 100-point framework for comparability
 
 [No sources needed since this section provides general guidance]

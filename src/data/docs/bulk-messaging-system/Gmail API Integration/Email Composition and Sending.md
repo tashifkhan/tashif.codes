@@ -1,7 +1,7 @@
 # Email composition and sending
 
 ## Introduction
-This page explains the email composition and sending functionality for Gmail and SMTP within the desktop application. It covers how users compose HTML emails, how recipients are processed, how bulk sending is implemented with rate limiting and progress tracking, and how the UI integrates with backend logic. It also documents MIME encoding and base64 conversion for Gmail API compatibility, recipient personalization, and common issues such as rate limits and delivery failures.
+Composing HTML mail, MIME encoding for Gmail, SMTP dual HTML/text parts, delays between recipients, and progress events.
 
 ## Project structure
 The email feature spans the React frontend and Electron main/preload processes:
@@ -186,25 +186,24 @@ SH --> ES
 - Network stability: SMTP and Gmail API calls depend on network conditions; implement retries at the application level if needed.
 - Rendering overhead: The activity log updates frequently; ensure efficient state updates to keep UI responsive.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Gmail authentication failures
-  - Verify environment variables for client ID and secret.
-  - Confirm OAuth consent screen and redirect URI configuration.
-  - Ensure the app remains open during the consent flow.
+ - Verify environment variables for client ID and secret.
+ - Confirm OAuth consent screen and redirect URI configuration.
+ - Ensure the app remains open during the consent flow.
 - Missing credentials or token errors
-  - Check that the token is stored and retrievable.
+ - Check that the token is stored and retrievable.
 - SMTP connection issues
-  - Validate host, port, and security settings.
-  - Use correct authentication credentials and port combinations.
+ - Validate host, port, and security settings.
+ - Use correct authentication credentials and port combinations.
 - Rate limits and API quotas
-  - Respect provider limits; adjust delay to stay within quotas.
-  - Monitor per-minute and daily sending caps.
+ - Respect provider limits; adjust delay to stay within quotas.
+ - Monitor per-minute and daily sending caps.
 - Delivery failures
-  - Inspect per-recipient error messages in the activity log.
-  - Validate recipient addresses and content formatting.
+ - Inspect per-recipient error messages in the activity log.
+ - Validate recipient addresses and content formatting.
 
 ## Conclusion
-The application provides reliable, user-friendly email composition and sending for both Gmail API and SMTP. The UI enables HTML-rich content, recipient management, and real-time progress tracking, while the backend enforces rate limiting, handles MIME encoding for Gmail, and supports dual HTML/text content for SMTP. By following the troubleshooting guidance and respecting provider quotas, users can reliably send bulk emails with clear feedback and error handling.
+
+Delay between recipients is intentional. Turning it to zero will look fast until the provider throttles or flags the account.

@@ -2,16 +2,15 @@
 
 ## Introduction
 
-The WhatsApp Event System is a detailed real-time event emission framework built for the Electron-based bulk messaging application. This system enables smooth communication between the main process (where WhatsApp Web integration occurs) and the renderer process (where the React UI displays real-time status updates).
+Events the WhatsApp client pushes from main to renderer: QR, ready, auth failure, disconnect, and per-message send progress.
 
-The system provides three primary event categories:
-- **Client Lifecycle Events**: Covering initialization, authentication, and disconnection states
-- **QR Code Events**: Managing QR code generation and display for authentication
-- **Mass Messaging Events**: Real-time progress tracking during bulk message operations
+- **Client Lifecycle Events.** Covering initialization, authentication, and disconnection states
+- **QR Code Events.** Managing QR code generation and display for authentication
+- **Mass Messaging Events.** Real-time progress tracking during bulk message operations
 
 ## System architecture
 
-The event system follows Electron's IPC (Inter-Process Communication) pattern with a clear separation of concerns:
+Events move main → preload → renderer like this:
 
 ```mermaid
 graph TB
@@ -50,22 +49,22 @@ style Client fill:#FF9800
 The system emits three distinct event types with specific payload characteristics:
 
 #### 1. client lifecycle events (`whatsapp-status`)
-- **Purpose**: Real-time status updates for WhatsApp client lifecycle
-- **Payload Type**: String message describing current state
-- **Frequency**: Variable (as events occur)
-- **Timing**: Immediate notification upon state change
+- **Purpose.** Real-time status updates for WhatsApp client lifecycle
+- **Payload Type.** String message describing current state
+- **Frequency.** Variable (as events occur)
+- **Timing.** Immediate notification upon state change
 
 #### 2. QR code events (`whatsapp-qr`)
-- **Purpose**: QR code data for authentication
-- **Payload Type**: Data URL string (image data) or null
-- **Frequency**: Generated when QR becomes available
-- **Timing**: Generated asynchronously after QR event from client
+- **Purpose.** QR code data for authentication
+- **Payload Type.** Data URL string (image data) or null
+- **Frequency.** Generated when QR becomes available
+- **Timing.** Generated asynchronously after QR event from client
 
 #### 3. mass messaging events (`whatsapp-send-status`)
-- **Purpose**: Progress tracking for bulk message operations
-- **Payload Type**: String progress messages
-- **Frequency**: Multiple updates per operation
-- **Timing**: Real-time during message sending process
+- **Purpose.** Progress tracking for bulk message operations
+- **Payload Type.** String progress messages
+- **Frequency.** Multiple updates per operation
+- **Timing.** Real-time during message sending process
 
 ## Client lifecycle events
 
@@ -253,25 +252,25 @@ The event listeners follow a consistent registration and cleanup pattern:
 ```javascript
 // Event listener setup
 const removeWaStatus = window.electronAPI.onWhatsAppStatus((_, status) =>
-    setWaStatus(status)
+ setWaStatus(status)
 );
 
 const removeWaQR = window.electronAPI.onWhatsAppQR((_, qr) =>
-    setWaQR(qr)
+ setWaQR(qr)
 );
 
 const removeWaSendStatus = window.electronAPI.onWhatsAppSendStatus(
-    (_, msg) => {
-        setWaStatus(msg);
-        setWaResults(prev => [...prev, msg]);
-    }
+ (_, msg) => {
+ setWaStatus(msg);
+ setWaResults(prev => [...prev, msg]);
+ }
 );
 
 // Cleanup on component unmount
 return () => {
-    if (removeWaStatus) removeWaStatus();
-    if (removeWaQR) removeWaQR();
-    if (removeWaSendStatus) removeWaSendStatus();
+ if (removeWaStatus) removeWaStatus();
+ if (removeWaQR) removeWaQR();
+ if (removeWaSendStatus) removeWaSendStatus();
 };
 ```
 
@@ -279,7 +278,7 @@ return () => {
 
 ### React state synchronization
 
-The event system integrates smoothly with React's state management:
+The event system integrates cleanly with React's state management:
 
 ```mermaid
 flowchart LR
@@ -320,9 +319,9 @@ Message --> UI
 
 The system maintains strict event ordering through several mechanisms:
 
-1. **Sequential Event Processing**: Events are processed in the order they are emitted
-2. **State Consistency**: React state updates ensure UI reflects current state
-3. **Cleanup Mechanisms**: Proper listener cleanup prevents stale event handling
+1. **Sequential Event Processing.** Events are processed in the order they are emitted
+2. **State Consistency.** React state updates ensure UI reflects current state
+3. **Cleanup Mechanisms.** Proper listener cleanup prevents stale event handling
 
 ### Concurrency considerations
 
@@ -357,9 +356,9 @@ style Msg3 fill:#2196F3
 
 The system prevents race conditions through:
 
-- **Single Client Instance**: Only one WhatsApp client instance is maintained
-- **Sequential Message Processing**: Messages are sent one at a time with delays
-- **Proper Cleanup**: Event listeners are removed when components unmount
+- **Single Client Instance.** Only one WhatsApp client instance is maintained
+- **Sequential Message Processing.** Messages are sent one at a time with delays
+- **Proper Cleanup.** Event listeners are removed when components unmount
 
 ## Error handling and propagation
 
@@ -400,17 +399,17 @@ QRGenErr --> StatusEvt
 
 The system optimizes event frequency to balance responsiveness with performance:
 
-- **QR Events**: Minimal frequency (only when QR becomes available)
-- **Status Events**: Moderate frequency (state transitions)
-- **Progress Events**: High frequency during bulk operations (every 3-5 seconds)
+- **QR Events.** Minimal frequency (only when QR becomes available)
+- **Status Events.** Moderate frequency (state transitions)
+- **Progress Events.** High frequency during bulk operations (every 3-5 seconds)
 
 ### Memory management
 
 The system implements several memory management strategies:
 
-- **Automatic Cleanup**: Event listeners are removed on component unmount
-- **Client Instance Management**: Single client instance prevents memory leaks
-- **QR Data Handling**: QR images are cleared when no longer needed
+- **Automatic Cleanup.** Event listeners are removed on component unmount
+- **Client Instance Management.** Single client instance prevents memory leaks
+- **QR Data Handling.** QR images are cleared when no longer needed
 
 ### Rate limiting implementation
 
@@ -442,19 +441,19 @@ List->>Comp : Listeners removed
 
 ### Cleanup implementation
 
-The cleanup mechanism ensures no memory leaks:
+Cleanup removes listeners so they do not pile up:
 
 ```javascript
 // Cleanup function returned by listener registration
 const removeWaStatus = window.electronAPI.onWhatsAppStatus((_, status) =>
-    setWaStatus(status)
+ setWaStatus(status)
 );
 
 // Component unmount cleanup
 return () => {
-    if (removeWaStatus) removeWaStatus();
-    if (removeWaQR) removeWaQR();
-    if (removeWaSendStatus) removeWaSendStatus();
+ if (removeWaStatus) removeWaStatus();
+ if (removeWaQR) removeWaQR();
+ if (removeWaSendStatus) removeWaSendStatus();
 };
 ```
 
@@ -473,31 +472,20 @@ return () => {
 
 To debug event flow issues:
 
-1. **Enable Developer Tools**: Use `mainWindow.webContents.openDevTools()`
-2. **Monitor Console Output**: Check for error messages in main process
-3. **Verify Event Registration**: Ensure listeners are properly registered
-4. **Test Individual Events**: Isolate specific event types for testing
+1. **Enable Developer Tools.** Use `mainWindow.webContents.openDevTools()`
+2. **Monitor Console Output.** Check for error messages in main process
+3. **Verify Event Registration.** Ensure listeners are properly registered
+4. **Test Individual Events.** Isolate specific event types for testing
 
 ### Performance monitoring
 
 Monitor system performance through:
 
-- **Event Frequency**: Track event emission rates
-- **Memory Usage**: Monitor renderer process memory consumption
-- **UI Responsiveness**: Measure UI update latency
-- **Error Rates**: Track error occurrence frequency
+- **Event Frequency.** Track event emission rates
+- **Memory Usage.** Monitor renderer process memory consumption
+- **UI Responsiveness.** Measure UI update latency
+- **Error Rates.** Track error occurrence frequency
 
 ## Conclusion
 
-The WhatsApp Event System provides a reliable, real-time communication framework between the Electron main process and renderer process. Through carefully designed event types, proper state management integration, and detailed error handling, the system delivers reliable WhatsApp Web integration with excellent user experience.
-
-Key strengths of the system include:
-
-- **Predictable Event Flow**: Clear lifecycle management with proper ordering guarantees
-- **Real-time Updates**: Immediate UI feedback for all user actions
-- **Error Resilience**: Detailed error handling with graceful degradation
-- **Performance Optimization**: Efficient event processing with rate limiting
-- **Memory Safety**: Automatic cleanup prevents memory leaks
-- **Extensible Design**: Modular architecture supports future enhancements
-
-The system successfully balances functionality with reliability, providing users with a smooth WhatsApp bulk messaging experience while maintaining system stability and performance.
+Subscribe early, unsubscribe on unmount. Leaking QR or progress listeners is an easy way to grow renderer memory during long sessions.

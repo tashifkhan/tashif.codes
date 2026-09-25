@@ -1,16 +1,14 @@
 # Service layer and API integration
 
-## Update summary
-**Changes Made**
+## Recent changes
 - Removed documentation sections describing third-party service integrations and external dependencies that were part of the temporary integration
 - Updated service layer documentation to reflect current architecture without external dependency documentation
 - Removed references to temporary integration components that have been reverted
-- Streamlined documentation to focus on core service layer functionality
+- simple documentation to focus on core service layer functionality
 
-## Introduction
-This page explains the service layer architecture and API integration patterns across the backend and frontend. It covers how the backend FastAPI application exposes versioned APIs, how services encapsulate business logic and integrate with external LLM providers, and how the frontend consumes these APIs with typed responses and reliable error handling. It also documents dependency injection, middleware, authentication headers, service composition, and strategies for caching and offline handling.
+How FastAPI services expose versioned APIs, how the frontend typed client consumes them, plus DI, middleware, auth headers, caching, and offline notes.
 
-## Project structure
+## Repository layout
 The system is split into:
 - Backend (Python/FastAPI): routes, services, models, and core dependencies
 - Frontend (TypeScript/Next.js): typed API clients and service wrappers
@@ -48,14 +46,14 @@ FC --> M
 FS1 --> FT
 ```
 
-## Core components
+## Building blocks
 - Backend API server with versioned routes under /api/v1 and /api/v2
 - Per-request LLM dependency injection supporting custom provider/model per request
 - Typed Pydantic models for requests and responses
 - Feature-specific services implementing domain logic and normalization
 - Frontend typed API client with unified error handling and typed responses
 
-## Architecture overview
+## How it fits together
 The backend follows a layered architecture:
 - HTTP layer: FastAPI routers define endpoints and bind typed request models
 - Service layer: Business logic orchestrators, integrating LLMs and external tools
@@ -81,9 +79,7 @@ BE-->>AC : "JSON response"
 AC-->>FE : "Typed result"
 ```
 
-## Detailed component analysis
-
-### Backend API versioning and routing
+## Backend API versioning and routing
 - v1 routes include LinkedIn, Database, Tips, Cold Mail, Hiring Assistant, Resume Analysis, Improvement, Enrichment, Cover Letter, ATS Evaluation, Tailored Resume, Digital Interviewer, and LLM Configuration
 - v2 routes include Cold Mail, Hiring Assistant, Resume Analysis, Improvement, Enrichment, Cover Letter, ATS Evaluation, Tailored Resume, and JD Resume Editor
 - Interview and LLM Configuration routes are v1-only in this snapshot
@@ -96,7 +92,7 @@ V1 --> R1["Route Modules"]
 V2 --> R2["Route Modules"]
 ```
 
-### Dependency injection and LLM integration
+## Dependency injection and LLM integration
 - Per-request LLM resolution supports custom provider, model, API key, and base URL via request headers
 - Falls back to server-default LLM if headers are absent
 - Raises HTTP 503 if custom configuration fails; HTTP 503 if server default is unavailable
@@ -115,7 +111,7 @@ DefaultOK --> |Yes| ReturnDefault["Return default LLM"]
 DefaultOK --> |No| Raise503b["Raise HTTP 503"]
 ```
 
-### Typed API responses and error handling
+## Typed API responses and error handling
 - Backend routes return Pydantic models validated by FastAPI
 - Frontend defines a generic ApiResponse<T> and ApiErrorResponse for typed responses
 - Frontend API client throws ApiError with status and parsed message fields
@@ -138,8 +134,8 @@ class ApiError {
 }
 ```
 
-### ATS evaluation service integration
-- Route accepts multipart/form-data or JSON; validates payload ensuring either JD text or link is provided
+## ATS evaluation service integration
+- Route accepts multipart/form-data or JSON; validates payload so either JD text or link is provided
 - Service resolves JD content from link if needed, validates inputs, invokes evaluator, normalizes output to JDEvaluatorResponse
 - Returns structured success flag, message, score, reasons, and suggestions
 
@@ -160,7 +156,7 @@ Service-->>Router : "JDEvaluatorResponse"
 Router-->>Client : "JSON response"
 ```
 
-### Cold mail generation and editing
+## Cold mail generation and editing
 - File-based and text-based endpoints support generation and editing of cold emails
 - Service orchestrates resume processing, optional LLM formatting, company research, and LLM-driven content generation
 - Normalizes LLM JSON outputs and returns subject/body in ColdMailResponse
@@ -181,7 +177,7 @@ Svc-->>Router : "Resp(subject, body)"
 Router-->>FE : "JSON response"
 ```
 
-### Frontend service composition patterns
+## Frontend service composition patterns
 - Each feature module exports a service object with typed methods returning promises of typed responses
 - Shared apiClient encapsulates HTTP mechanics, error translation, and JSON parsing
 - Types define ApiResponse<T>, ApiErrorResponse, and paginated variants
@@ -195,7 +191,7 @@ FS --> AC
 FS --> T
 ```
 
-## Dependency analysis
+## Dependencies
 - Routes depend on services and per-request LLM instances
 - Services depend on Pydantic models and external tooling
 - Frontend services depend on the API client and shared types
@@ -215,30 +211,27 @@ FE_SVC["frontend services"] --> FE_AC["frontend api-client.ts"]
 FE_SVC --> FE_TYPES["frontend types/api.ts"]
 ```
 
-## Performance considerations
+## Performance
 - Prefer text-based endpoints for pure text inputs to avoid unnecessary file I/O
 - Use the faster model variant when latency-sensitive operations are acceptable
 - Centralized request/response logging helps identify slow endpoints and payloads
 - Consider caching repeated LLM prompts and company research results at the application layer
 
-## Troubleshooting guide
+## Troubleshooting
 Common issues and remedies:
 - LLM initialization failures: Verify provider headers and credentials; server falls back to default LLM or raises HTTP 503
 - Validation errors on backend: Ensure required fields are present (e.g., JD text or link); route returns HTTP 400
 - Network errors on frontend: ApiError wraps network failures; inspect status and message fields
 - JSON parsing errors from LLM: Services normalize content and return ErrorResponse; check logs for raw LLM output
 
-## Conclusion
-The backend employs a clean separation of concerns with typed models, per-request dependency injection for LLMs, and versioned routes enabling incremental API evolution. The frontend composes typed services around a centralized API client, ensuring consistent error handling and response typing. Together, these patterns support maintainable, testable, and extensible integrations across the platform.
-
-## Appendices
+## Appendix
 
 ### API versioning summary
 - v1: Legacy endpoints for LinkedIn, Database, Tips, Cold Mail, Hiring Assistant, Resume Analysis, Improvement, Enrichment, Cover Letter, ATS Evaluation, Tailored Resume, Digital Interviewer, LLM Configuration
 - v2: Improved endpoints for Cold Mail, Hiring Assistant, Resume Analysis, Improvement, Enrichment, Cover Letter, ATS Evaluation, Tailored Resume, JD Resume Editor
 
 ### Authentication and headers
-- Frontend relies on NextAuth for session management; backend reads custom LLM configuration via X-LLM-* headers for per-request LLM instantiation
+- Frontend session is FastAPI cookies (`getSession` / `useSession`). BFF calls mint a Bearer JWT. Backend reads `X-LLM-*` for per-request LLM instantiation.
 
 ### Service lifecycle management
 - FastAPI lifespan manages startup/shutdown hooks; request/response logging middleware attaches request IDs and logs payloads

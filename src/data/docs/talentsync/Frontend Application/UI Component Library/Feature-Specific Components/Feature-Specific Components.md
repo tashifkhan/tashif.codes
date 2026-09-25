@@ -1,7 +1,6 @@
 # Feature-Specific components
 
-## Update summary
-**Changes Made**
+## Recent changes
 - Updated ATS Evaluation Components section to reflect the new ResumeCombobox integration
 - Updated Cold Mail Components section to reflect the new ResumeCombobox integration
 - Updated Hiring Assistant Components section to reflect the new ResumeCombobox integration
@@ -9,12 +8,11 @@
 - Updated dependency analysis to include ResumeCombobox as a shared component
 - Improved component architecture diagrams to show ResumeCombobox usage
 
-## Introduction
-This page provides feature-specific component documentation for ATS evaluation, cold mail generation, cover letter generation, hiring assistant, and PDF resume generation. It explains component responsibilities, data flows, state management patterns, and interdependencies across features. Each feature's components are grouped by functional area and explained with diagrams where applicable.
+Component docs for ATS evaluation, cold mail generation, cover letter generation, hiring assistant, and PDF resume generation. It explains component responsibilities, data flows, state management patterns, and interdependencies across features. Each feature's components are grouped by functional area and explained with diagrams where applicable.
 
 **Updated** The ATS Evaluation, Cold Mail Generation, and Hiring Assistant components have been significantly refactored to use the new ResumeCombobox component, removing over 100 lines of duplicated dropdown code while improving consistency and maintainability across all resume selection functionality.
 
-## Project structure
+## Repository layout
 The frontend organizes components by feature under a components directory, with shared UI components and feature-specific panels. Each feature includes:
 - Form components for capturing user input
 - Panels for displaying generated content
@@ -84,7 +82,7 @@ JDE_Panel["jd-edit-panel.tsx"]
 end
 ```
 
-## Core components
+## Building blocks
 This section summarizes each feature's primary components and their responsibilities:
 - ATS evaluation: JobDescriptionForm captures JD inputs; EvaluationResults renders score and suggestions; LoadingOverlay and PageLoader manage async feedback; ResumeSelection selects or uploads a resume using the new ResumeCombobox.
 - Cold mail: EmailDetailsForm collects recipient and context; GeneratedEmailPanel displays and edits the generated email; LoadingOverlay and PageLoader provide UX feedback; ResumeSelection supports three modes (existing, upload, custom draft) using ResumeCombobox.
@@ -95,7 +93,7 @@ This section summarizes each feature's primary components and their responsibili
 
 **Updated** All ResumeSelection components across ATS, Cold Mail, and Hiring Assistant now use the centralized ResumeCombobox component, eliminating code duplication and providing consistent dropdown behavior.
 
-## Architecture overview
+## How it fits together
 Each feature follows a similar pattern:
 - Input forms capture user data and maintain local state
 - Panels render generated content and expose actions (copy, download, edit)
@@ -125,9 +123,7 @@ G->>S : "Update edit instructions/state"
 S-->>O : "Clear overlay"
 ```
 
-## Detailed component analysis
-
-### ATS evaluation components
+## ATS evaluation components
 - JobDescriptionForm: Supports URL, text, and file-based JD inputs with mode switching and drag-and-drop file handling.
 - EvaluationResults: Renders match score, reasons, suggestions, and optional optimization action.
 - LoadingOverlay and PageLoader: Provide modal overlays and page-level loaders during evaluation.
@@ -155,7 +151,7 @@ Optimize --> |No| End(["Done"])
 OptBtn --> End
 ```
 
-### Cold mail components
+## Cold mail components
 - EmailDetailsForm: Captures recipient, company, sender, and content context; supports URL/text JD toggles.
 - GeneratedEmailPanel: Displays subject/body, edit mode with instructions, copy/download actions.
 - LoadingOverlay: Dual-purpose overlay for generation and editing flows.
@@ -184,7 +180,7 @@ CMO-->>U : "Overlay : Editing email"
 CMG-->>U : "Updated email"
 ```
 
-### Cover letter components
+## Cover letter components
 - CoverLetterDetailsForm: Collects personal details, JD URL/text toggle, key points, and optional recipient info.
 - GeneratedLetterPanel: Renders the letter body, edit mode, copy, and download.
 
@@ -200,7 +196,7 @@ CL_Edit --> |No| CL_Done["Done"]
 CL_Apply --> CL_Display
 ```
 
-### Hiring assistant components
+## Hiring assistant components
 - InterviewDetailsForm: Role, company, word limit, company knowledge, and website.
 - CommonQuestionsPanel: Quick-add buttons for common interview questions.
 - GeneratedAnswersPanel: Renders question-answer pairs with copy and download.
@@ -225,7 +221,7 @@ IDF-->>GAP : "Generated answers"
 GAP-->>U : "Render Q&A with actions"
 ```
 
-### PDF resume components
+## PDF resume components
 - ConfigurationForm: Template and theme configuration.
 - TailoringForm: Tailors content to a specific role/JD.
 - ResumeSourceSelector: Chooses resume source for generation.
@@ -246,7 +242,7 @@ PDF_Export --> PDF_Latex["LatexOutput"]
 PDF_Latex --> PDF_Done["Done"]
 ```
 
-### Enrichment, improvement, regeneration, and JD editor components
+## Enrichment, improvement, regeneration, and JD editor components
 - Enrichment: Modal wizard with question, preview, and loading steps.
 - Improvement: Index and diff preview modal for reviewing changes.
 - Regeneration: Wizard with instruction, selection, dialog, and preview steps.
@@ -268,9 +264,10 @@ JDE_Panel["jd-edit-panel.tsx"] --> JDE_View["jd-edit-diff-view.tsx"]
 ## Shared components
 
 ### ResumeCombobox component
-The ResumeCombobox component provides a unified dropdown interface for selecting resumes across all features. It encapsulates complex dropdown functionality including search, filtering, and selection handling.
+The ResumeCombobox component is the shared dropdown for selecting resumes across all features. It encapsulates complex dropdown functionality including search, filtering, and selection handling.
 
-**Key Features:**
+**Key Features.**
+
 - Consistent styling and behavior across all resume selection components
 - Searchable dropdown with keyboard navigation support
 - Loading states with spinner animation
@@ -278,7 +275,8 @@ The ResumeCombobox component provides a unified dropdown interface for selecting
 - Accessible ARIA attributes and keyboard shortcuts
 - Haptic feedback integration for better user experience
 
-**Props Interface:**
+**Props Interface.**
+
 - `resumes`: Array of resume options with id, customName, uploadDate, candidateName, predictedField
 - `selectedResumeId`: Currently selected resume ID
 - `onSelect`: Callback function when a resume is selected
@@ -289,19 +287,20 @@ The ResumeCombobox component provides a unified dropdown interface for selecting
 - `className`: Additional CSS classes
 
 ### ResumeSelector component
-The ResumeSelector component provides a flexible resume selection interface that can operate in two modes: dropdown and card styles. It is a wrapper around ResumeCombobox for more complex scenarios.
+The ResumeSelector component selects resumes and can operate in two modes: dropdown and card styles. It is a wrapper around ResumeCombobox for more complex scenarios.
 
-**Key Features:**
+**Key Features.**
+
 - Dual-mode operation (dropdown vs card)
 - Built-in file upload support
 - Controlled and uncontrolled selection modes
 - Automatic resume fetching via hooks
 - Mode switching with haptic feedback
 
-## Dependency analysis
+## Dependencies
 - Shared UI: All features reuse UI primitives (inputs, labels, cards, buttons) and the MarkdownRenderer for rendering content.
 - State management: Each feature maintains its own form state locally; overlays depend on boolean flags to control visibility.
-- Inter-feature reuse: ResumeSelection appears across ATS, Cold Mail, and Hiring Assistant, now using the centralized ResumeCombobox component, reducing duplication and ensuring consistent UX for resume sourcing.
+- Inter-feature reuse: ResumeSelection appears across ATS, Cold Mail, and Hiring Assistant, now using the centralized ResumeCombobox component, reducing duplication and so consistent UX for resume sourcing.
 
 **Updated** The introduction of ResumeCombobox has eliminated over 100 lines of duplicated dropdown code across ATS, Cold Mail, and Hiring Assistant components, while providing a single source of truth for resume selection functionality.
 
@@ -323,19 +322,16 @@ RC["ResumeCombobox.tsx"] --> RS
 RS --> RC
 ```
 
-## Performance considerations
+## Performance
 - Minimize re-renders by keeping form state granular and updating only affected fields.
 - Debounce or throttle expensive operations (e.g., file parsing) in ResumeSelection.
 - Use virtualized lists for long answer sets in GeneratedAnswersPanel.
 - Lazy-load preview components to reduce initial bundle size.
 - **Updated** ResumeCombobox implements efficient rendering with conditional loading states and optimized dropdown content.
 
-## Troubleshooting guide
+## Troubleshooting
 - Overlays not hiding: Verify overlay flags are reset after async completion.
 - Empty selections: Ensure resume lists are loaded before enabling submission.
 - File previews incorrect: Confirm file extension detection and text extraction logic in ResumeSelection.
 - Edit instructions empty: Disable apply buttons when instructions are missing.
 - **Updated** ResumeCombobox issues: Verify that resume data structure matches the expected ResumeOption interface and that the component receives proper props.
-
-## Conclusion
-These feature-specific components provide cohesive, reusable building blocks for ATS evaluation, cold mail, cover letters, hiring assistance, and PDF resume generation. Their shared patterns and state management enable consistent UX while allowing each feature to tailor inputs and outputs to its domain. The introduction of ResumeCombobox has significantly improved code maintainability by eliminating over 100 lines of duplicated dropdown code while ensuring consistent behavior across all resume selection functionality.

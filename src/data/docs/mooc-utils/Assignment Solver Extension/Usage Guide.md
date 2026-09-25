@@ -1,7 +1,7 @@
 # Usage guide
 
 ## Introduction
-This guide explains how to use the Assignment Solver browser extension for MOOC platforms like NPTEL and SWAYAM. It covers both Manual Mode (recommended for learning) and Auto Mode (full automation), including step-by-step workflows, supported question types, configuration options, and best practices.
+Day-to-day use of Assignment Solver on NPTEL and SWAYAM. Manual Mode for learning, Auto Mode for full automation, supported question types, settings, and habits that keep you out of trouble with rate limits.
 
 ## Project structure
 The extension consists of:
@@ -24,9 +24,9 @@ UI --> Progress["Progress Steps<br/>(Extract → Analyze → Fill → Submit)"]
 ## Core components
 - UI entry and initialization: Sets up logging, adapters, services, state, and controllers; waits for background readiness; initializes event listeners and assignment detection.
 - Controllers:
-  - Solve controller: Orchestrates extraction, AI solving, answer filling, and optional submission.
-  - Settings controller: Manages API key and model preferences.
-  - Detection controller: Determines if the current page is an assignment and updates UI accordingly.
+ - Solve controller: Orchestrates extraction, AI solving, answer filling, and optional submission.
+ - Settings controller: Manages API key and model preferences.
+ - Detection controller: Determines if the current page is an assignment and updates UI accordingly.
 - Background worker: Routes messages to appropriate handlers, manages panel behavior, and coordinates with content script.
 - Content script: Extracts page HTML/images, applies answers, and submits forms.
 - Gemini service: Builds prompts, attaches images/screenshots, and calls the Gemini API.
@@ -79,10 +79,10 @@ Basic steps:
 3. Click Extract Questions to scan the page.
 4. Click on a question to view details.
 5. Click Get Study Hints to receive:
-   - Key concepts being tested
-   - Elimination tips for wrong answers
-   - Common traps to avoid
-   - What to verify before answering
+ - Key concepts being tested
+ - Elimination tips for wrong answers
+ - Common traps to avoid
+ - What to verify before answering
 6. Select your answer in the side panel.
 7. Click Apply Answer to Page to fill it on the actual page.
 8. Click Back to List and repeat for other questions.
@@ -117,9 +117,9 @@ Basic steps:
 4. Click Solve All + Submit.
 5. Confirm the action when prompted.
 6. Wait for the process to complete:
-   - AI analyzes each question
-   - Answers are filled on the page
-   - Submit button is clicked automatically
+ - AI analyzes each question
+ - Answers are filled on the page
+ - Submit button is clicked automatically
 7. Review the summary and check the page.
 
 ```mermaid
@@ -157,13 +157,13 @@ Applicator <.. Extractor : "works with DOM"
 
 ### Configuration options
 - API Key Management:
-  - Store your Gemini API key in the Settings modal.
-  - The key is persisted locally and never sent to third-party servers.
+ - Store your Gemini API key in the Settings modal.
+ - The key is persisted locally and never sent to third-party servers.
 - Model Selection:
-  - Choose extraction and solving models from the Settings modal.
-  - Adjust reasoning levels for extraction and solving.
+ - Choose extraction and solving models from the Settings modal.
+ - Adjust reasoning levels for extraction and solving.
 - Auto-Submit:
-  - Toggle Auto-submit answers in the main panel.
+ - Toggle Auto-submit answers in the main panel.
 
 ```mermaid
 flowchart LR
@@ -182,18 +182,18 @@ UI["Main Panel"] --> AutoSubmit["Toggle Auto-Submit"]
 
 ## Dependency analysis
 - UI depends on:
-  - State manager for processing flags and extraction data
-  - Settings controller for API key and model preferences
-  - Progress controller for step tracking
-  - Detection controller for assignment presence
+ - State manager for processing flags and extraction data
+ - Settings controller for API key and model preferences
+ - Progress controller for step tracking
+ - Detection controller for assignment presence
 - Background worker depends on:
-  - Message routing to handlers
-  - Panel adapter for opening the side panel
-  - Gemini service for AI requests
-  - Content script handlers for DOM operations
+ - Message routing to handlers
+ - Panel adapter for opening the side panel
+ - Gemini service for AI requests
+ - Content script handlers for DOM operations
 - Content script depends on:
-  - Extractor for page HTML and images
-  - Applicator for applying answers and submitting
+ - Extractor for page HTML and images
+ - Applicator for applying answers and submitting
 
 ```mermaid
 graph TB
@@ -214,33 +214,33 @@ CS --> Applicator["Applicator"]
 
 ## Performance considerations
 - Rate limiting:
-  - 500 ms delay between answer API calls
-  - 200 ms delay between DOM operations
+ - 500 ms delay between answer API calls
+ - 200 ms delay between DOM operations
 - Recursive splitting:
-  - Extraction and solving are retried with smaller chunks when exceeding token limits.
+ - Extraction and solving are retried with smaller chunks when exceeding token limits.
 - Image and screenshot handling:
-  - Large images are skipped to avoid API size limits.
+ - Large images are skipped to avoid API size limits.
 - Model selection:
-  - Choose models aligned with your needs and quotas.
+ - Choose models aligned with your needs and quotas.
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - Could not get page HTML:
-  - Ensure you are on an actual assignment page and it is fully loaded.
-  - Refresh the page and re-extract.
+ - Ensure you are on an actual assignment page and it is fully loaded.
+ - Refresh the page and re-extract.
 - Question container not found:
-  - Re-extract questions; check console for detailed error info.
+ - Re-extract questions; check console for detailed error info.
 - API Key invalid:
-  - Verify your key at Google AI Studio and ensure it has Gemini API access enabled.
+ - Verify your key at Google AI Studio and ensure it has Gemini API access enabled.
 - Answers not being applied:
-  - Some platforms use custom input components; check browser console for errors.
-  - Apply answers one at a time to identify problematic questions.
+ - Some platforms use custom input components; check browser console for errors.
+ - Apply answers one at a time to identify problematic questions.
 - Rate limit errors:
-  - Wait a few minutes before retrying.
-  - Consider upgrading your API quota or reducing the number of questions per session.
+ - Wait a few minutes before retrying.
+ - Consider upgrading your API quota or reducing the number of questions per session.
 
 ## Conclusion
-The Assignment Solver extension automates MOOC assignment completion while offering Manual Mode for deeper learning. By configuring your API key and models, you can tailor the extension to your workflow, either reviewing AI hints and answers step-by-step or fully automating extraction, solving, and submission.
+Prefer Manual Mode while you learn a course. Auto Mode is fine after you have checked a few answers by hand.
 
 ## Appendices
 
@@ -250,10 +250,10 @@ The Assignment Solver extension automates MOOC assignment completion while offer
 
 ### UI controls reference
 - Main panel:
-  - Solve Assignment: Start the full automation pipeline.
-  - Auto-submit answers: Toggle automatic submission.
+ - Solve Assignment: Start the full automation pipeline.
+ - Auto-submit answers: Toggle automatic submission.
 - Settings modal:
-  - Gemini API Key: Enter your API key.
-  - Extraction Model and Solving Model: Choose models and reasoning levels.
+ - Gemini API Key: Enter your API key.
+ - Extraction Model and Solving Model: Choose models and reasoning levels.
 - Progress steps:
-  - Extract → Analyze → Fill → Submit
+ - Extract → Analyze → Fill → Submit

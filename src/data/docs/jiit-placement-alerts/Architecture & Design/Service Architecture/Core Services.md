@@ -1,11 +1,7 @@
 # Core services
 
 ## Introduction
-This page explains the core foundational services that power the notification bot's infrastructure. It focuses on:
-- DatabaseService: MongoDB connectivity, CRUD operations, and persistence patterns
-- TelegramService: bot initialization, message handling, and user interaction patterns
-- NotificationService: orchestrator routing messages across channels (Telegram, Web Push) and managing delivery workflows
-It also covers service initialization patterns, dependency injection mechanisms, and how these services form the backbone of the application architecture. Practical usage examples, error handling strategies, and integration patterns are included.
+Foundation services: database access, Telegram I/O, notification orchestration, and the shared bits every runner and server leans on.
 
 ## Project structure
 The application is organized into modular layers:
@@ -68,7 +64,7 @@ Responsibilities:
 - Policy management: upsert by year and retrieval
 - Utility helpers: serialization and statistics aggregation
 
-Key capabilities:
+It can:
 - Notice lifecycle: existence checks, insertion with timestamps, retrieval, and marking as sent
 - Job lifecycle: upsert with merge semantics and retrieval
 - Placement offers: merge roles and students, compute newly added students, emit events
@@ -92,7 +88,7 @@ Responsibilities:
 - Long message splitting with chunking and retry logic
 - Connection testing and reliable retries with exponential backoff
 
-Key capabilities:
+It can:
 - Single and chunked message sending with parse modes
 - User-targeted messaging and bulk broadcasts
 - HTML and MarkdownV2 formatting with escaping and fallbacks
@@ -109,7 +105,7 @@ Responsibilities:
 - Sends unsent notices to target channels and marks them as sent upon success
 - Orchestrates delivery workflows across channels
 
-Key capabilities:
+It can:
 - Channel registration and dynamic addition
 - Broadcast to all users per channel
 - Delivery coordination for unsent notices
@@ -126,7 +122,7 @@ Responsibilities:
 - Manages subscriptions via DatabaseService and removes expired ones
 - Broadcasts to all users with push subscriptions
 
-Key capabilities:
+It can:
 - Conditional enablement based on VAPID configuration
 - Per-subscription push delivery with error handling
 - Subscription lifecycle management hooks
@@ -143,7 +139,7 @@ Integration patterns:
 - Interacts with scheduler daemon controls
 
 ## Architecture overview
-The system follows a layered architecture with clear separation of concerns:
+The system follows a layered architecture :
 - Core configuration and logging
 - Clients for external APIs (MongoDB, Telegram Bot API)
 - Business services encapsulating domain logic
@@ -239,7 +235,7 @@ Error handling:
 - Graceful fallbacks when collections are uninitialized
 
 ### TelegramService analysis
-TelegramService provides a high-level interface for Telegram messaging, delegating HTTP interactions to TelegramClient and handling formatting and rate limits.
+TelegramService wraps Telegram messaging, delegating HTTP interactions to TelegramClient and handling formatting and rate limits.
 
 ```mermaid
 classDiagram
@@ -380,47 +376,39 @@ Service initialization patterns:
 
 ## Performance considerations
 - DatabaseService:
-  - Existence checks and retrieval use indexed fields (IDs) to minimize overhead
-  - Batch operations for placement offers with merge logic reduce redundant writes
-  - Hashing for official placement data prevents duplicate inserts
+ - Existence checks and retrieval use indexed fields (IDs) to minimize overhead
+ - Batch operations for placement offers with merge logic reduce redundant writes
+ - Hashing for official placement data prevents duplicate inserts
 - TelegramService:
-  - Long messages are split with newline-aware chunking to respect character limits
-  - Rate-limit handling via Telegram API responses with exponential backoff
-  - Broadcast loops include small delays to avoid rate limits
+ - Long messages are split with newline-aware chunking to respect character limits
+ - Rate-limit handling via Telegram API responses with exponential backoff
+ - Broadcast loops include small delays to avoid rate limits
 - NotificationService:
-  - Iterates through unsent notices and broadcasts per channel, marking as sent upon success
-  - Results aggregated per channel for visibility
+ - Iterates through unsent notices and broadcasts per channel, marking as sent upon success
+ - Results aggregated per channel for visibility
 - WebPushService:
-  - Conditional enablement avoids unnecessary overhead when VAPID keys are missing
-  - Error handling for expired subscriptions to keep subscription lists healthy
+ - Conditional enablement avoids unnecessary overhead when VAPID keys are missing
+ - Error handling for expired subscriptions to keep subscription lists healthy
 
 [No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - MongoDB connection failures:
-  - Verify MONGO_CONNECTION_STR environment variable and network connectivity
-  - Check DBClient connection and ping response
+ - Verify MONGO_CONNECTION_STR environment variable and network connectivity
+ - Check DBClient connection and ping response
 - Telegram bot configuration:
-  - Ensure TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are set
-  - Use test_connection to validate bot token
+ - Ensure TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are set
+ - Use test_connection to validate bot token
 - Rate limiting:
-  - Telegram API returns 429 with Retry-After header; service waits and retries
-  - Adjust broadcast delays if still encountering limits
+ - Telegram API returns 429 with Retry-After header; service waits and retries
+ - Adjust broadcast delays if still encountering limits
 - Web Push:
-  - Confirm VAPID keys are configured; service disables itself if missing
-  - Expired subscriptions are removed automatically on WebPushException with 404/410
+ - Confirm VAPID keys are configured; service disables itself if missing
+ - Expired subscriptions are removed automatically on WebPushException with 404/410
 - Logging:
-  - Use setup_logging to configure file and stream handlers
-  - Enable verbose mode (-v) for debug-level logs
+ - Use setup_logging to configure file and stream handlers
+ - Enable verbose mode (-v) for debug-level logs
 
 ## Conclusion
-The core services provide a reliable, modular foundation for the notification bot:
-- DatabaseService ensures reliable persistence and efficient data operations
-- TelegramService delivers messages with formatting and resilience
-- NotificationService orchestrates cross-channel delivery and integrates with DatabaseService
-- WebPushService adds modern browser notifications with VAPID support
-- AdminTelegramService enables operational control via Telegram
-- Dependency injection and factory patterns promote testability and maintainability
-
-These components work together to deliver timely, formatted notifications across multiple channels while maintaining clear separation of concerns and strong error handling.
+Database, Telegram, notification orchestration, and the shared helpers runners and servers call. Keep I/O in clients and business rules in services.

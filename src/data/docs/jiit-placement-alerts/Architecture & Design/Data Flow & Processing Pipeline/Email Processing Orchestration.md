@@ -1,7 +1,7 @@
 # Email processing orchestration
 
 ## Introduction
-This page describes the email processing orchestration workflow that prioritizes placement offers over general notices, classifies incoming emails, extracts structured content using LLMs, and integrates with official placement data sources. It explains the decision trees for categorization and processing priorities, the LLM-powered extraction pipeline for placement services, and the official placement service integration. It also covers concurrent processing strategies and how the system maintains processing order during email volume spikes.
+Mail triage: placement offers first, then everything else. Classification trees, the LLM extraction path for offers, hooks into official placement data, and how concurrency stays ordered when the inbox spikes.
 
 ## Project structure
 The email processing orchestration spans several modules:
@@ -60,9 +60,9 @@ OFFICIAL --> RUN_UPDATE
 The orchestration follows a deterministic priority flow:
 1. Fetch unread email IDs from Google Groups.
 2. For each email:
-   - Attempt placement offer detection using placement_service.
-   - If not a placement offer, attempt general notice classification using email_notice_service.
-   - Persist results and mark email as read.
+ - Attempt placement offer detection using placement_service.
+ - If not a placement offer, attempt general notice classification using email_notice_service.
+ - Persist results and mark email as read.
 3. Periodically scrape official placement data and integrate into the system.
 4. Broadcast unsent notices via Telegram and/or Web Push.
 
@@ -96,7 +96,7 @@ CLI->>NS : send_unsent_notices(telegram, web)
 ## Detailed component analysis
 
 ### Priority-Based email handling
-- Placement offers are processed first using a hybrid approach: keyword-based initial scoring followed by LLM validation to ensure only final placement offers are accepted.
+- Placement offers are processed first using a hybrid approach: keyword-based initial scoring followed by LLM validation so only final placement offers pass.
 - Non-placement emails are routed to the general notice pipeline, which relies purely on LLM classification to distinguish valid notices from spam or irrelevant content.
 - Policy updates are detected and processed separately to maintain clean separation of concerns.
 
@@ -164,7 +164,7 @@ I2 --> J2["Broadcast"]
 - Structured extraction prompts enforce strict schema compliance for company, roles, packages, students, and supporting details.
 - Reliable retry logic with validation error accumulation and maximum retry limits.
 - Privacy sanitization removes headers, forwarded markers, and sensitive metadata.
-- Package conversion and normalization ensure consistent units (e.g., LPA) and handling of ranges and stipends.
+- Package conversion normalizes units (e.g. LPA) and handles ranges and stipends.
 
 ```mermaid
 classDiagram
@@ -220,17 +220,17 @@ OPS-->>SCH : OfficialPlacementData
 
 ### Decision trees and fallback mechanisms
 - Placement classification decision tree:
-  - Keyword-based confidence score threshold determines initial relevance.
-  - LLM final validation ensures only final placement offers are accepted.
-  - On rejection, the system proceeds to general notice classification.
+ - Keyword-based confidence score threshold determines initial relevance.
+ - LLM final validation accepts only final placement offers.
+ - On rejection, the system proceeds to general notice classification.
 - General notice classification decision tree:
-  - LLM-based classification excludes placement offers and spam.
-  - Policy updates are detected and processed via a separate extraction pass.
-  - On validation failure, retry up to configured limit; otherwise reject.
+ - LLM-based classification excludes placement offers and spam.
+ - Policy updates are detected and processed via a separate extraction pass.
+ - On validation failure, retry up to configured limit; otherwise reject.
 - Fallback mechanisms:
-  - Policy updates are handled independently and saved as policy documents.
-  - Non-relevant emails are marked as read to prevent reprocessing.
-  - Unsolicited notices are saved and broadcast via notification service.
+ - Policy updates are handled independently and saved as policy documents.
+ - Non-relevant emails are marked as read to prevent reprocessing.
+ - Unsolicited notices are saved and broadcast via notification service.
 
 ```mermaid
 flowchart TD
@@ -299,18 +299,18 @@ RUN_NOTIFY --> NOTIF_CORE
 - LLM calls are rate-limited by sequential processing; consider batching and caching for high-volume scenarios.
 - Retry logic prevents unnecessary reprocessing of unread emails; ensure exponential backoff if extending retries.
 - Database writes are optimized by upsert operations and pre-filtering of existing IDs.
-- Official placement scraping is scheduled at off-peak hours to minimize impact on primary processing.
+- Official placement scraping runs at 12:00 PM IST, overlapping the hourly SuperSet/email job. Those jobs coalesce and skip if an update is already running.
 
 ## Troubleshooting guide
 - Placement offers not detected:
-  - Verify keyword indicators and LLM prompts are aligned with actual email content.
-  - Check validation errors and retry counts in the placement pipeline.
+ - Verify keyword indicators and LLM prompts are aligned with actual email content.
+ - Check validation errors and retry counts in the placement pipeline.
 - General notices not appearing:
-  - Confirm LLM classification prompt excludes placement offers and spam.
-  - Review policy update detection and fallback handling.
+ - Confirm LLM classification prompt excludes placement offers and spam.
+ - Review policy update detection and fallback handling.
 - Notification delivery issues:
-  - Inspect NotificationService results and channel-specific errors.
-  - Ensure database contains unsent notices and proper channel configuration.
+ - Inspect NotificationService results and channel-specific errors.
+ - Ensure database contains unsent notices and proper channel configuration.
 
 ## Conclusion
-The email processing orchestration implements a reliable, priority-driven workflow that separates placement offers from general notices, uses LLMs for accurate classification and extraction, and integrates official placement data for detailed coverage. The system's decision trees, retry mechanisms, and concurrent processing strategies ensure reliability and scalability, while dependency injection and centralized configuration support maintain modularity and testability.
+Placement offers first, then general notices. LLM classify/extract, official placement hooks, retries, and ordered concurrency when the inbox spikes. DI keeps the stages testable.

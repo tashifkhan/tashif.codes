@@ -1,7 +1,7 @@
 # UI service integration and IPC communication
 
 ## Introduction
-This page explains how the React-based UI integrates with Electron's main process through Inter-Process Communication (IPC), how the preload script exposes secure Node.js APIs to the renderer, and how Pyodide enables browser-based Python execution. It covers message passing patterns, error handling across process boundaries, UI update coordination, and security considerations such as context isolation.
+Preload-exposed APIs, how forms call them, and where Pyodide fits for offline contact parsing.
 
 ## Project structure
 The Electron application is organized into:
@@ -77,15 +77,15 @@ Preload-->>UI : callback invoked with progress
 
 ### IPC handlers and UI coordination
 - Gmail authentication and sending:
-  - Preload exposes authenticateGmail, getGmailToken, and sendEmail
-  - Main registers ipcMain.handle for gmail-auth, gmail-token, and send-email
-  - Gmail handler opens an OAuth window, exchanges tokens, stores credentials, and streams progress via email-progress events
+ - Preload exposes authenticateGmail, getGmailToken, and sendEmail
+ - Main registers ipcMain.handle for gmail-auth, gmail-token, and send-email
+ - Gmail handler opens an OAuth window, exchanges tokens, stores credentials, and streams progress via email-progress events
 - SMTP sending:
-  - Preload exposes sendSMTPEmail
-  - Main registers smtp-send handler that verifies transport, sends emails, and streams progress
+ - Preload exposes sendSMTPEmail
+ - Main registers smtp-send handler that verifies transport, sends emails, and streams progress
 - WhatsApp integration:
-  - Preload exposes startWhatsAppClient, logoutWhatsApp, sendWhatsAppMessages, importWhatsAppContacts, and status listeners
-  - Main creates a WhatsApp client with QR generation, emits status and QR events, and handles mass messaging with per-contact delays
+ - Preload exposes startWhatsAppClient, logoutWhatsApp, sendWhatsAppMessages, importWhatsAppContacts, and status listeners
+ - Main creates a WhatsApp client with QR generation, emits status and QR events, and handles mass messaging with per-contact delays
 
 ```mermaid
 sequenceDiagram
@@ -109,17 +109,17 @@ Preload-->>UI : onWhatsAppSendStatus updates UI logs
 ### Preload script and security context
 - The preload script uses contextBridge.exposeInMainWorld to publish a single API object electronAPI
 - It wraps:
-  - Gmail: authenticateGmail, getGmailToken, sendEmail
-  - SMTP: sendSMTPEmail
-  - File operations: importEmailList, readEmailListFile
-  - Progress: onProgress
-  - WhatsApp: startWhatsAppClient, logoutWhatsApp, sendWhatsAppMessages, importWhatsAppContacts, and three status listeners
+ - Gmail: authenticateGmail, getGmailToken, sendEmail
+ - SMTP: sendSMTPEmail
+ - File operations: importEmailList, readEmailListFile
+ - Progress: onProgress
+ - WhatsApp: startWhatsAppClient, logoutWhatsApp, sendWhatsAppMessages, importWhatsAppContacts, and three status listeners
 - Security settings in BrowserWindow webPreferences:
-  - nodeIntegration: false
-  - contextIsolation: true
-  - enableRemoteModule: false
-  - webSecurity: true
-  - preload path set to preload.js
+ - nodeIntegration: false
+ - contextIsolation: true
+ - enableRemoteModule: false
+ - webSecurity: true
+ - preload path set to preload.js
 
 ```mermaid
 classDiagram
@@ -168,12 +168,12 @@ Util-->>UI : JSON.parse(resultJson)
 
 ### UI update coordination and status streams
 - WhatsApp status and QR updates:
-  - Main process emits "whatsapp-status", "whatsapp-qr", and "whatsapp-send-status"
-  - Preload forwards these via ipcRenderer.on listeners
-  - BulkMailer subscribes in useEffect and updates local state for display
+ - Main process emits "whatsapp-status", "whatsapp-qr", and "whatsapp-send-status"
+ - Preload forwards these via ipcRenderer.on listeners
+ - BulkMailer subscribes in useEffect and updates local state for display
 - Email progress:
-  - Gmail and SMTP handlers send "email-progress" events during batch operations
-  - Preload exposes onProgress; BulkMailer uses it to render live progress and results
+ - Gmail and SMTP handlers send "email-progress" events during batch operations
+ - Preload exposes onProgress; BulkMailer uses it to render live progress and results
 
 ```mermaid
 flowchart TD
@@ -208,20 +208,19 @@ PyUtil --> PyScript["parse_manual_numbers.py"]
 - Resource cleanup: Main process deletes cached WhatsApp files on logout and app close to free disk space and avoid stale sessions
 - UI responsiveness: Event-driven updates keep the UI responsive while long-running tasks execute in the main process
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Electron API not available in renderer:
-  - Ensure preload is correctly injected via webPreferences.preload and that the app is running in Electron (not a static HTML page)
+ - Ensure preload is correctly injected via webPreferences.preload and that the app is running in Electron (not a static HTML page)
 - Gmail authentication failures:
-  - Verify environment variables for client ID and secret; check OAuth redirect URI and timeouts
+ - Verify environment variables for client ID and secret; check OAuth redirect URI and timeouts
 - SMTP connection errors:
-  - Confirm host/port/credentials; note that TLS verification is disabled for self-signed certs
+ - Confirm host/port/credentials; note that TLS verification is disabled for self-signed certs
 - WhatsApp QR loading failures:
-  - Retry initialization; check console for QR generation errors; ensure headless mode Puppeteer arguments are valid
+ - Retry initialization; check console for QR generation errors; ensure headless mode Puppeteer arguments are valid
 - Pyodide load failures:
-  - Confirm the Python script is bundled and reachable at the expected path; check network connectivity for CDN load
+ - Confirm the Python script is bundled and reachable at the expected path; check network connectivity for CDN load
 
 ## Conclusion
-The application achieves secure UI-service integration by isolating the renderer, exposing a minimal IPC API via preload, and delegating sensitive operations to the main process. Real-time status and progress are delivered through event channels, while Pyodide enables reliable contact parsing directly in the browser. Adhering to the documented patterns ensures reliable, maintainable, and secure inter-process communication.
+
+If `window.api` is undefined, fix preload first. Everything else in the forms depends on that bridge.

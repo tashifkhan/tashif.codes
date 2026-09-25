@@ -1,9 +1,7 @@
 # Users collection
 
 ## Introduction
-This page provides detailed documentation for the Users collection schema that stores user subscription data and preferences for the SuperSet Telegram Notification Bot. The Users collection is the central repository for managing user subscriptions, notification preferences, and associated metadata. It enables the system to deliver notifications via Telegram and Web Push channels while maintaining user preferences and activity tracking.
-
-The Users collection schema is designed to handle multiple notification channels, track user engagement, and support flexible subscription management. It integrates smoothly with the broader notification ecosystem, providing a reliable foundation for user-centric communication workflows.
+Users holds subscriptions, prefs, and delivery metadata for Telegram and Web Push. Engagement timestamps and channel flags live here so NotificationService can decide who gets what.
 
 ## Project structure
 The Users collection is part of the MongoDB database schema and interacts with several key components:
@@ -37,12 +35,12 @@ C --> H
 ## Core components
 
 ### Users collection schema
-The Users collection implements a detailed schema designed for flexible user subscription management:
+Users schema, built around subscriptions and prefs:
 
 **Primary Identifier**: `user_id` (String)
 - Telegram user ID serving as the unique identifier
 - Separate from MongoDB's ObjectId for external system integration
-- Unique index ensures data integrity
+- Unique index blocks duplicate user ids
 
 **Personal Information Fields**:
 - `first_name`: String - User's first name
@@ -63,8 +61,8 @@ Array of embedded subscription objects:
 - `subscription_id`: String - Unique subscription identifier
 - `endpoint`: String - Web Push endpoint URL
 - `keys`: Embedded object containing cryptographic keys
-  - `p256dh`: String - ECDH key
-  - `auth`: String - Authentication key
+ - `p256dh`: String - ECDH key
+ - `auth`: String - Authentication key
 - `created_at`: Date - Timestamp of subscription creation
 
 **Activity Tracking**:
@@ -79,7 +77,7 @@ Embedded document with optional fields:
 - `device_type`: String - Device classification ('mobile', 'desktop', 'web')
 
 ### Database integration
-The Users collection is accessed through the DatabaseService, which provides a clean abstraction layer for MongoDB operations:
+The Users collection is accessed through the DatabaseService, which wraps MongoDB operations:
 
 ```mermaid
 classDiagram
@@ -289,6 +287,4 @@ The Users collection benefits from strategic indexing:
 - Monitor for expired/invalid subscriptions
 
 ## Conclusion
-The Users collection schema provides a reliable foundation for managing user subscriptions and preferences in the SuperSet Telegram Notification Bot. Its detailed design supports multiple notification channels, detailed activity tracking, and flexible subscription management. The integration with the broader notification ecosystem ensures smooth user experience while maintaining data integrity and system performance.
-
-The schema's flexibility accommodates various user scenarios, from simple Telegram-only subscribers to complex multi-channel users with Web Push subscriptions. The embedded document structure optimizes query performance while maintaining data normalization principles. With proper indexing and monitoring, the Users collection scales effectively to support the application's growing user base and evolving feature requirements.
+Users is subscriptions and prefs for Telegram and Web Push. Embedded channel docs, activity timestamps, indexes on the lookup paths NotificationService actually uses.

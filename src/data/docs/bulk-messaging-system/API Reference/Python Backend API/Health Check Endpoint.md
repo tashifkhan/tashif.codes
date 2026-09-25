@@ -1,7 +1,7 @@
 # Health check endpoint
 
 ## Introduction
-This page provides detailed documentation for the `/health` endpoint implemented in the Python backend service. The endpoint exposes a simple GET method that returns the application's health status, enabling system monitoring, load balancer health checks, and container orchestration readiness probes. The documentation covers the endpoint's implementation, response schema, practical examples, operational roles, and integration patterns with modern infrastructure.
+`GET /health` returns a tiny JSON status payload. Useful for smoke checks while the Flask process is running locally.
 
 ## Project structure
 The health check endpoint is implemented within the Python backend module of the project. The relevant files and their roles are:
@@ -68,21 +68,21 @@ The `/health` endpoint is defined as a Flask route with the following characteri
 
 Response Schema
 - status: string
-  - Purpose: Indicates the health state of the application.
-  - Example Values: "healthy"
+ - Purpose: Indicates the health state of the application.
+ - Example Values: "healthy"
 - message: string
-  - Purpose: Provides a human-readable description of the application's state.
-  - Example Values: "WhatsApp Contact Processor API is running"
+ - Purpose: Provides a human-readable description of the application's state.
+ - Example Values: "WhatsApp Contact Processor API is running"
 
 Practical Examples
 
 Successful Health Check Response
 - Request: GET /health
 - Response Body:
-  {
-    "status": "healthy",
-    "message": "WhatsApp Contact Processor API is running"
-  }
+ {
+ "status": "healthy",
+ "message": "WhatsApp Contact Processor API is running"
+ }
 - Response Status: 200 OK
 
 Common Scenarios
@@ -144,47 +144,48 @@ Common Failure Scenarios and Resolutions
 Endpoint Not Reachable
 - Symptoms: Network errors, timeouts, or connection refused.
 - Causes:
-  - Application not running or crashed.
-  - Incorrect host/port configuration.
-  - Firewall blocking the port.
+ - Application not running or crashed.
+ - Incorrect host/port configuration.
+ - Firewall blocking the port.
 - Resolution:
-  - Verify the Flask application is running and listening on the configured host and port.
-  - Confirm the port is open and not blocked by a firewall.
-  - Test connectivity using curl or a similar tool.
+ - Verify the Flask application is running and listening on the configured host and port.
+ - Confirm the port is open and not blocked by a firewall.
+ - Test connectivity using curl or a similar tool.
 
 Incorrect Route Registration
 - Symptoms: 404 Not Found responses.
 - Causes:
-  - Route not registered or incorrectly defined.
-  - Application context not initialized.
+ - Route not registered or incorrectly defined.
+ - Application context not initialized.
 - Resolution:
-  - Ensure the route decorator is present and correctly mapped to GET /health.
-  - Verify the Flask application context is active during initialization.
+ - Ensure the route decorator is present and correctly mapped to GET /health.
+ - Verify the Flask application context is active during initialization.
 
 CORS Issues (if applicable)
 - Symptoms: Browser-side CORS errors when accessing the endpoint from a different origin.
 - Causes:
-  - CORS not configured for the health endpoint.
+ - CORS not configured for the health endpoint.
 - Resolution:
-  - Confirm Flask-CORS is enabled and properly configured for the application.
+ - Confirm Flask-CORS is enabled and properly configured for the application.
 
 Application Crashes or Exceptions
 - Symptoms: 5xx responses or service unavailability.
 - Causes:
-  - Unhandled exceptions in the Flask application.
-  - Resource exhaustion (memory, CPU).
+ - Unhandled exceptions in the Flask application.
+ - Resource exhaustion (memory, CPU).
 - Resolution:
-  - Check application logs for error traces.
-  - Monitor resource usage and adjust deployment configuration as needed.
+ - Check application logs for error traces.
+ - Monitor resource usage and adjust deployment configuration as needed.
 
 Load Balancer or Proxy Misconfiguration
 - Symptoms: Health checks failing despite the application being healthy.
 - Causes:
-  - Incorrect path or HTTP method in health check configuration.
-  - Timeout or interval settings too aggressive.
+ - Incorrect path or HTTP method in health check configuration.
+ - Timeout or interval settings too aggressive.
 - Resolution:
-  - Verify the health check configuration targets GET /health with appropriate timeout and interval values.
-  - Ensure the load balancer or proxy can reach the application's host and port.
+ - Verify the health check configuration targets GET /health with appropriate timeout and interval values.
+ - Ensure the load balancer or proxy can reach the application's host and port.
 
 ## Conclusion
-The `/health` endpoint provides a simple, reliable mechanism for monitoring the Python backend service. Its minimal implementation ensures low overhead while offering essential readiness and liveness capabilities for modern deployment environments. By following the integration patterns and troubleshooting guidance outlined in this page, operators can effectively monitor service availability and maintain high system reliability.
+
+If `/health` does not answer, nothing else in this Flask app will either. Use it as the first check when the desktop app cannot reach the backend.

@@ -1,20 +1,10 @@
 # Data processing & content extraction
 
 ## Introduction
-This page explains the data processing and content extraction pipeline of the SuperSet Telegram Notification Bot. It focuses on:
-- LLM-powered placement offer extraction using Google Gemini
-- Content formatting and enhancement for notices
-- Notice classification algorithms
-- Transformation of raw portal data and emails into structured notifications
-- Placement statistics computation
-- Content validation and sanitization
-- Duplicate detection mechanisms
-- LangChain integration and prompt engineering
-- Quality assurance measures
-- Consistency of processed data across notification channels
+From raw SuperSet/email/official content to stored, notifiable records. Classification, LLM extraction, formatting, and the stats side that feeds dashboards.
 
 ## Project structure
-The system is organized as a modular, service-oriented architecture with clear separation of concerns:
+The system is organized as a modular, service-oriented architecture :
 - CLI entry point orchestrates data ingestion, processing, and distribution
 - Services encapsulate domain logic (extraction, formatting, persistence, statistics)
 - Clients abstract external integrations (SuperSet, Google Groups, Telegram)
@@ -40,7 +30,7 @@ Notifier --> WebPush["WebPushService"]
 ## Core components
 - PlacementService: LLM-based classification and extraction of placement offers from emails; privacy sanitization; emits events for notifications
 - EmailNoticeService: LLM-based classification and extraction of general notices; supports policy updates
-- NoticeFormatterService: Formats notices for Telegram consumption; enriches matched jobs and applies content enhancements
+- NoticeFormatterService: Formats notices for Telegram consumption; enriches matched jobs and applies content enrichment
 - PlacementNotificationFormatter: Transforms placement events into notification-ready notices
 - DatabaseService: Upserts notices/jobs/placement offers; generates events; deduplicates; tracks sent status
 - UpdateRunner: Coordinates portal data fetching and processing; optimizes by pre-checking existing IDs
@@ -123,15 +113,15 @@ Save --> End(["Done"])
 
 ### Data transformation pipeline (raw → structured → notifications)
 - SuperSet:
-  - Fetch notices and basic job listings
-  - Filter by existing IDs
-  - Enrich only new jobs
-  - Format notices with optional job enrichment
-  - Persist notices and jobs
+ - Fetch notices and basic job listings
+ - Filter by existing IDs
+ - Enrich only new jobs
+ - Format notices with optional job enrichment
+ - Persist notices and jobs
 - Emails:
-  - Sequential orchestration: fetch unread IDs, process one by one, mark read after success
-  - PlacementService first; if not placement, EmailNoticeService
-  - Upsert notices/placement offers; emit events for notifications
+ - Sequential orchestration: fetch unread IDs, process one by one, mark read after success
+ - PlacementService first; if not placement, EmailNoticeService
+ - Upsert notices/placement offers; emit events for notifications
 
 ```mermaid
 sequenceDiagram
@@ -171,14 +161,14 @@ Metrics --> Output(["PlacementStats"])
 
 ### Content validation and sanitization
 - PlacementService:
-  - Validation: Company length, presence of students, role consistency, number_of_offers alignment
-  - Enhancement: Assign default role/package when single role exists
-  - Privacy: Strip headers, forwarded markers, inline sender mentions
+ - Validation: Company length, presence of students, role consistency, number_of_offers alignment
+ - Enhancement: Assign default role/package when single role exists
+ - Privacy: Strip headers, forwarded markers, inline sender mentions
 - EmailNoticeService:
-  - Validation: Title/content/type presence
-  - Privacy: Restrict to notice content; avoid forwarding headers
+ - Validation: Title/content/type presence
+ - Privacy: Restrict to notice content; avoid forwarding headers
 - NoticeFormatterService:
-  - Pretty-printing, package formatting, date/time localization, HTML breakdown parsing
+ - Pretty-printing, package formatting, date/time localization, HTML breakdown parsing
 
 ### Duplicate detection mechanisms
 - Notices: Upsert by ID; existence check prevents duplicates
@@ -190,10 +180,10 @@ Metrics --> Output(["PlacementStats"])
 - LangGraph workflows for PlacementService, EmailNoticeService, and NoticeFormatterService
 - ChatGoogleGenerativeAI integration with Gemini models
 - Carefully crafted prompts:
-  - Placement extraction: strict criteria for "final placement offer," package requirements, privacy rules
-  - Notice classification: single-label taxonomy with tie-break rules
-  - Notice extraction: category-specific JSON schemas
-  - Notice formatting: style and structure rules for Telegram readability
+ - Placement extraction: strict criteria for "final placement offer," package requirements, privacy rules
+ - Notice classification: single-label taxonomy with tie-break rules
+ - Notice extraction: category-specific JSON schemas
+ - Notice formatting: style and structure rules for Telegram readability
 
 ### Quality assurance measures
 - Retry logic for LLM extraction failures
@@ -232,16 +222,16 @@ CLI --> EmailOrchestrator
 
 ## Troubleshooting guide
 - LLM extraction failures:
-  - PlacementService: retry up to threshold; logs validation errors; returns rejection reason
-  - EmailNoticeService: retry twice; falls back to basic extraction if advanced policy extraction fails
+ - PlacementService: retry up to threshold; logs validation errors; returns rejection reason
+ - EmailNoticeService: retry twice; falls back to basic extraction if advanced policy extraction fails
 - Email processing:
-  - Sequential orchestration marks read only after successful save or irrelevant classification
-  - Errors are logged; email remains unread to allow retry
+ - Sequential orchestration marks read only after successful save or irrelevant classification
+ - Errors are logged; email remains unread to allow retry
 - Database errors:
-  - Existence checks and upserts prevent duplicates; errors logged with context
+ - Existence checks and upserts prevent duplicates; errors logged with context
 - CLI commands:
-  - Use verbose mode for detailed logs
-  - Use stop/status to manage daemons
+ - Use verbose mode for detailed logs
+ - Use stop/status to manage daemons
 
 ## Conclusion
-The SuperSet Telegram Notification Bot implements a reliable, modular pipeline that transforms raw data from SuperSet and emails into structured, formatted notifications. Through LLM-powered classification and extraction, strict validation and sanitization, and event-driven notification formatting, it ensures high-quality, consistent delivery across Telegram and Web Push channels. The design emphasizes reliability, maintainability, and scalability via dependency injection, LangGraph workflows, and careful duplicate detection.
+Raw SuperSet and email in, structured notifications out. LLM classification and extraction, validation and sanitization, then formatters. DI, LangGraph, and dedupe are the boring parts that keep duplicates and bad payloads down.

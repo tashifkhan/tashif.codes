@@ -1,33 +1,32 @@
 # Backend server design
 
 ## Introduction
-This page describes the backend server design built with FastAPI and a complementary MCP server. It explains the application structure, routing organization, service layer architecture, and the LLM provider abstraction supporting multiple AI models. It documents configuration management across environments, the modular router system for API endpoints, request/response handling patterns, middleware implementation, and error handling strategies. It also covers the separation between API endpoints and business logic, dependency injection patterns, concurrency handling, external service integrations, caching strategies, performance optimization, scalability, load balancing, and monitoring approaches.
+FastAPI app structure, routers, services, LLM abstraction, config, errors, and concurrency. How the MCP server sits beside the REST API.
 
 ## Project structure
 The backend consists of:
-- Application entrypoint that selects between API and MCP modes
-- FastAPI application with modular routers and a central run script
+- FastAPI application in `main.py` with modular routers
+- MCP server in `mcp_server/` (stdio via `agentic-mcp`, HTTP at `/mcp`)
 - Core configuration and LLM abstraction
 - Routers for each domain endpoint
 - Services implementing business logic
 - Agents orchestrating multi-step reasoning with tools
-- MCP server exposing tools for external clients
+- Memory stores (sqlmodel/asyncpg, Neo4j, OpenSearch)
 
 ```mermaid
 graph TB
-Entry["Entry Point<br/>main.py"] --> ModeSel{"Mode Selection"}
-ModeSel --> |API| APIApp["FastAPI App<br/>api/main.py"]
-ModeSel --> |MCP| MCP["MCP Server<br/>mcp_server/server.py"]
+Entry["Entry Point<br/>main.py"] --> APIApp["FastAPI App<br/>main.py"]
+Entry --> MCP["MCP mount /mcp<br/>mcp_server/server.py"]
 APIApp --> Routers["Routers<br/>routers/*"]
 APIApp --> Config["Config<br/>core/config.py"]
-APIApp --> Run["Uvicorn Runner<br/>api/run.py"]
+APIApp --> Run["Uvicorn Runner<br/>main.py run()"]
 Routers --> Services["Services<br/>services/*"]
 Services --> Agents["Agents<br/>agents/react_agent.py"]
 Services --> LLM["LLM Abstraction<br/>core/llm.py"]
 ```
 
 ## Core components
-- Entry point and mode selection: supports running as API server or MCP server with optional interactive or non-interactive mode.
+- Entry point: `main.py` starts FastAPI with Uvicorn and mounts MCP at `/mcp`. Stdio MCP is `agentic-mcp`.
 - FastAPI application: defines routes under multiple prefixes and includes health, GitHub, website, YouTube, Google Search, Gmail, Calendar, PyJIIT, React agent, website validator, agent, and file upload endpoints.
 - Configuration: environment-driven settings for host, port, debug level, and Google API key; centralized logger factory.
 - LLM abstraction: provider-agnostic initialization and generation interface supporting Google, OpenAI, Anthropic, Ollama, DeepSeek, and OpenRouter.
@@ -80,7 +79,7 @@ RHealth --> CFG
 
 ```mermaid
 graph LR
-App["FastAPI App<br/>api/main.py"] --> Prefixes["Route Prefixes"]
+App["FastAPI App<br/>main.py"] --> Prefixes["Route Prefixes"]
 Prefixes --> H["/api/genai/health"]
 Prefixes --> G["/api/genai/github"]
 Prefixes --> W["/api/genai/website"]
@@ -221,7 +220,7 @@ Logger --> Use["Used by routers and services"]
 
 ### Concurrency and request handling
 - FastAPI uses async route handlers; services implement async methods for I/O-bound operations (external APIs, LLM calls).
-- LangGraph invocation is awaited, ensuring cooperative concurrency.
+- LangGraph invocation is awaited so the event loop stays cooperative.
 
 ### External service integrations
 - Website service integrates markdown fetching and HTML-to-Markdown conversion.
@@ -232,7 +231,7 @@ Logger --> Use["Used by routers and services"]
 - LangGraph graph is compiled once and cached via a cached graph factory, reducing startup overhead for repeated invocations.
 
 ## Dependency analysis
-The system exhibits clear layering:
+Layering:
 - Presentation depends on business logic
 - Business logic depends on agents and LLM abstraction
 - Configuration is consumed across layers
@@ -240,7 +239,7 @@ The system exhibits clear layering:
 
 ```mermaid
 graph TB
-API["api/main.py"] --> Routers["routers/*"]
+API["main.py"] --> Routers["routers/*"]
 Routers --> Services["services/*"]
 Services --> Agents["agents/react_agent.py"]
 Services --> LLM["core/llm.py"]
@@ -255,16 +254,14 @@ MCP --> Tools["Website Tools"]
 - Minimal synchronous work in hot paths; offloads heavy operations to external services.
 - Environment-driven tuning: adjust debug level and provider/model settings via environment variables.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 - Missing environment variables: ensure required keys (e.g., provider API keys and base URLs) are set; the LLM initializer raises explicit errors when missing.
 - Router-level validation: routers check required fields and return 400 for invalid requests.
-- Service-level errors: services catch exceptions and return user-friendly messages; routers map unexpected errors to 500.
+- Service-level errors: services catch exceptions and return plain messages; routers map unexpected errors to 500.
 - Logging: configure logging level via environment; use module loggers to trace execution paths.
 
 ## Conclusion
-The backend employs a layered architecture with clear separation between presentation, business logic, orchestration, and infrastructure. FastAPI's modular routers expose domain-specific endpoints under prefixed namespaces, while dependency injection keeps endpoints thin. The LLM abstraction enables multi-provider support and environment-driven configuration. Asynchronous services and cached graph compilation optimize concurrency and performance. The MCP server extends functionality externally, and reliable error handling ensures predictable responses.
+Thin routers, fat services, awaited LangGraph calls. Start the API with `python main.py` or `agentic-api-run`. Stdio MCP is `agentic-mcp`. Config comes from the environment.
 
 ## Appendices
 
@@ -283,8 +280,9 @@ The backend employs a layered architecture with clear separation between present
 - File Upload: POST /api/upload
 
 ### Startup and runtime
-- Entry point accepts mode flags and runs either API or MCP server.
-- API server uses Uvicorn with host/port from configuration.
+- Entry point `main.py` runs FastAPI via Uvicorn and mounts MCP at `/mcp`.
+- Stdio MCP is `agentic-mcp`.
+- API host/port come from configuration.
 
 ### Scripts and entrypoints
 - Project scripts expose CLI commands for running API and MCP servers.

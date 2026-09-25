@@ -1,15 +1,15 @@
 # Communication tools
 
-## Introduction
-This page describes the Communication Tools suite that powers AI-driven content generation for three primary use cases:
-- Cold email generation for outbound prospecting
-- Cover letter creation tailored to job descriptions
-- LinkedIn post generation with optional research and GitHub insights
+Cold email, cover letter, and LinkedIn post tools: prompts, templates, JD integration, preview/edit UI, and the stored content models.
 
-It explains the AI workflows, customization and personalization options, template systems, integration with job descriptions, editing interfaces, preview capabilities, export functionality, frontend components, and the data models for generated content, templates, and user preferences. It also covers quality assurance, plagiarism prevention, and brand consistency features.
+- Cold email for outbound prospecting
+- Cover letters tied to a job description
+- LinkedIn posts with optional research and GitHub context
 
-## Project structure
-The suite spans frontend Next.js pages and components, a TypeScript API route layer, and a FastAPI backend with LangChain prompts and services. The frontend integrates with backend endpoints via a typed API client and React Query hooks. Backend routes delegate to services that orchestrate LLM chains and optional external research.
+Also QA notes, plagiarism checks, and brand consistency.
+
+## Repository layout
+Frontend Next.js pages, a typed API client with React Query, and FastAPI routes that call LangChain services (plus optional research agents).
 
 ```mermaid
 graph TB
@@ -39,18 +39,18 @@ BE_Routes --> BE_Models
 BE_Services --> BE_Models
 ```
 
-## Core components
+## Building blocks
 - Cold Email Generator
-  - Frontend: Details form, generated panel, copy/download actions, edit workflow
-  - Backend: File/text-based endpoints, prompt templates, LLM orchestration, optional company research
+ - Frontend: Details form, generated panel, copy/download actions, edit workflow
+ - Backend: File/text-based endpoints, prompt templates, LLM orchestration, optional company research
 - Cover Letter Generator
-  - Frontend: JD URL or text input, personal details, key points, preview panel, copy/download actions
-  - Backend: Job description resolution, prompt composition, LLM invocation, edit support
+ - Frontend: JD URL or text input, personal details, key points, preview panel, copy/download actions
+ - Backend: Job description resolution, prompt composition, LLM invocation, edit support
 - LinkedIn Post Generator
-  - Frontend: Topic, tone, audience, length, hashtags option, CTA, emoji level, GitHub project URL, research toggle, post cards with actions
-  - Backend: Post generation, optional research, hashtag suggestion, GitHub insights, content calendar suggestions
+ - Frontend: Topic, tone, audience, length, hashtags option, CTA, emoji level, GitHub project URL, research toggle, post cards with actions
+ - Backend: Post generation, optional research, hashtag suggestion, GitHub insights, content calendar suggestions
 
-## Architecture overview
+## How it fits together
 The system follows a layered architecture:
 - Frontend Next.js pages and components collect user inputs and render previews
 - API routes validate, transform, and forward requests to backend endpoints
@@ -80,25 +80,23 @@ API-->>FE : "Sanitized content"
 FE-->>U : "Preview, copy, download, edit"
 ```
 
-## Detailed component analysis
-
-### Cold email generator
+## Cold email generator
 - Workflow
-  - User selects a resume (file or stored text) and fills recipient/company/personal details and key points
-  - Frontend sends a multipart/form-data request to the Next.js API route
-  - API route validates inputs, resolves resume source, forwards to backend v1 or v2 endpoint
-  - Backend invokes the cold email generator service, which builds a prompt chain and returns subject/body
-  - API route sanitizes output, optionally stores request/response, and returns JSON
-  - Frontend renders preview, supports copy to clipboard and download as text, and enables editing
+ - User selects a resume (file or stored text) and fills recipient/company/personal details and key points
+ - Frontend sends a multipart/form-data request to the Next.js API route
+ - API route validates inputs, resolves resume source, forwards to backend v1 or v2 endpoint
+ - Backend invokes the cold email generator service, which builds a prompt chain and returns subject/body
+ - API route sanitizes output, optionally stores request/response, and returns JSON
+ - Frontend renders preview, supports copy to clipboard and download as text, and enables editing
 - Editing
-  - Frontend captures edit instructions and sends them to the backend editor endpoint
-  - Backend uses a dedicated edit prompt template to refine the previous email per user instructions
+ - Frontend captures edit instructions and sends them to the backend editor endpoint
+ - Backend uses a dedicated edit prompt template to refine the previous email per user instructions
 - Templates and Personalization
-  - Prompt template defines structure, word limits, and style guidance
-  - Inputs include resume text, recipient/company details, sender role/goal, key points, and optional company URL/research
+ - Prompt template defines structure, word limits, and style guidance
+ - Inputs include resume text, recipient/company details, sender role/goal, key points, and optional company URL/research
 - Export and Sharing
-  - Copy to clipboard and download as text file
-  - Optional database persistence of request/response for history
+ - Copy to clipboard and download as text file
+ - Optional database persistence of request/response for history
 
 ```mermaid
 sequenceDiagram
@@ -123,19 +121,19 @@ API-->>FE : "subject, body"
 FE-->>U : "Preview + actions"
 ```
 
-### Cover letter creator
+## Cover letter creator
 - Workflow
-  - User provides personal details, job description (URL or text), optional recipient/company, key points, and additional context
-  - Frontend sends a request to the Next.js API route for generation
-  - API route validates inputs, calls backend route, and returns sanitized content
-  - Backend resolves job description (URL or raw text), composes prompt, invokes LLM, and returns body
-  - Frontend renders preview, supports copy and download
+ - User provides personal details, job description (URL or text), optional recipient/company, key points, and additional context
+ - Frontend sends a request to the Next.js API route for generation
+ - API route validates inputs, calls backend route, and returns sanitized content
+ - Backend resolves job description (URL or raw text), composes prompt, invokes LLM, and returns body
+ - Frontend renders preview, supports copy and download
 - Editing
-  - Frontend captures edit instructions and sends them to the backend edit endpoint
-  - Backend composes an edit prompt using the previous cover letter and user instructions
+ - Frontend captures edit instructions and sends them to the backend edit endpoint
+ - Backend composes an edit prompt using the previous cover letter and user instructions
 - Integration with Job Descriptions
-  - Supports URL-based or text-based job descriptions
-  - Resolves and weaves keywords and requirements into the generated content
+ - Supports URL-based or text-based job descriptions
+ - Resolves and weaves keywords and requirements into the generated content
 
 ```mermaid
 sequenceDiagram
@@ -157,18 +155,18 @@ API-->>FE : "body"
 FE-->>U : "Preview + actions"
 ```
 
-### LinkedIn post generator
+## LinkedIn post generator
 - Workflow
-  - User sets topic, tone, audience, length, hashtags option, CTA, emoji level, GitHub project URL, and toggles research
-  - Frontend calls the linkedin service hook, which posts to the backend route
-  - Backend generates posts with optional research insights and GitHub analysis, suggests hashtags, and returns structured content
-  - Frontend renders posts with copy/download actions and optional edit instructions
+ - User sets topic, tone, audience, length, hashtags option, CTA, emoji level, GitHub project URL, and toggles research
+ - Frontend calls the linkedin service hook, which posts to the backend route
+ - Backend generates posts with optional research insights and GitHub analysis, suggests hashtags, and returns structured content
+ - Frontend renders posts with copy/download actions and optional edit instructions
 - Research and Insights
-  - Optional web research for topic insights
-  - GitHub project analysis for technical highlights and LinkedIn hooks
+ - Optional web research for topic insights
+ - GitHub project analysis for technical highlights and LinkedIn hooks
 - Template System
-  - Prompt enforces content length guidance, tone, audience, and emoji level
-  - Outputs clean post text and optional metadata
+ - Prompt enforces content length guidance, tone, audience, and emoji level
+ - Outputs clean post text and optional metadata
 
 ```mermaid
 sequenceDiagram
@@ -190,17 +188,17 @@ SVC-->>FE : "posts"
 FE-->>U : "Render + actions"
 ```
 
-## Dependency analysis
+## Dependencies
 - Frontend depends on:
-  - Next.js API routes for cold mail and cover letter
-  - Services for LinkedIn post generation
-  - React Query hooks for mutations
-  - UI components for forms and panels
+ - Next.js API routes for cold mail and cover letter
+ - Services for LinkedIn post generation
+ - React Query hooks for mutations
+ - UI components for forms and panels
 - Backend depends on:
-  - LangChain prompt templates and chains
-  - Pydantic models for request/response validation
-  - LLM dependencies injected via DI
-  - Optional external research and GitHub analysis
+ - LangChain prompt templates and chains
+ - Pydantic models for request/response validation
+ - LLM dependencies injected via DI
+ - Optional external research and GitHub analysis
 
 ```mermaid
 graph LR
@@ -212,33 +210,30 @@ BE_SERVICES --> BE_PROMPTS["Prompt Templates"]
 BE_SERVICES --> LLM["LLM"]
 ```
 
-## Performance considerations
+## Performance
 - Timeouts and retries
-  - Frontend API routes enforce long timeouts for LLM-heavy operations
-  - Backend routes depend on LLM availability and may surface connection errors
+ - Frontend API routes enforce long timeouts for LLM-heavy operations
+ - Backend routes depend on LLM availability and may surface connection errors
 - Streaming and latency
-  - Current implementation returns complete responses; streaming could improve perceived performance
+ - Current implementation returns complete responses; streaming could improve perceived performance
 - Prompt size and token limits
-  - Resume and job description inputs are included; consider truncation or summarization for very long inputs
+ - Resume and job description inputs are included; consider truncation or summarization for very long inputs
 - Caching and reuse
-  - Reusing previously generated content (e.g., cover letters) can reduce repeated LLM calls
+ - Reusing previously generated content (e.g., cover letters) can reduce repeated LLM calls
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
+## Troubleshooting
 - Authentication failures
-  - API routes require a valid session; ensure user is logged in
+ - API routes require a valid session; require a logged-in user
 - Validation errors
-  - Missing required fields trigger validation failures; ensure recipient/company/sender details are provided
+ - Missing required fields trigger validation failures; require recipient, company, and sender details
 - Resume source issues
-  - Either upload a file or select an existing resume; avoid both or neither
-  - Existing resume must belong to the user or be accessible by role
+ - Either upload a file or select an existing resume; avoid both or neither
+ - Existing resume must belong to the user or be accessible by role
 - Backend connectivity
-  - Network errors, timeouts, or service unavailability are surfaced with user-friendly messages
+ - Network errors, timeouts, or service unavailability are surfaced with messages
 - Non-JSON responses
-  - If backend returns non-JSON, the API route returns a standardized error response
+ - If backend returns non-JSON, the API route returns a standardized error response
 - Database persistence
-  - Request/response persistence is best-effort; failures are logged but do not block response delivery
-
-## Conclusion
-The Communication Tools suite provides reliable, AI-powered workflows for cold email generation, cover letter creation, and LinkedIn post generation. It balances flexibility with strong defaults, integrates smoothly with job descriptions and optional research, and offers editing, preview, and export capabilities. The layered architecture ensures maintainability, while prompt templates and Pydantic models enforce quality and consistency across generated content.
+ - Request/response persistence is best-effort; failures are logged but do not block response delivery

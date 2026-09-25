@@ -1,9 +1,8 @@
 # Question generation engine
 
-## Introduction
 The Question Generation Engine is an AI-powered system that generates interview questions tailored to a candidate's profile, the target role, and the interview format. It combines a configurable difficulty distribution, optional role-based templates, and LLM prompts to produce diverse, non-repeating questions. The engine supports both technical and behavioral assessments, integrates with coding challenges, and adapts question selection dynamically across interview stages. Anti-cheating safeguards include integrity tracking (e.g., tab switching) and code sandboxing for coding rounds.
 
-## Project structure
+## Repository layout
 The Question Generation Engine spans several modules:
 - Prompt definition for question generation
 - Data models for questions, templates, and interview configuration
@@ -45,16 +44,16 @@ GRAPH --> EVAL
 GRAPH --> CODE
 ```
 
-## Core components
-- QuestionGenerator: Central class that builds question lists from difficulty distributions, optionally pulls from templates, and falls back to LLM-generated questions. It ensures non-repetition by tracking previously asked questions and selects question types cyclically.
+## Building blocks
+- QuestionGenerator: Central class that builds question lists from difficulty distributions, optionally pulls from templates, and falls back to LLM-generated questions. It avoids repeats by tracking previously asked questions and selects question types cyclically.
 - Prompt Template: Defines the system and human messages guiding the LLM to produce structured, role-appropriate questions with expected keywords and follow-ups.
 - Templates: Predefined question banks per role with difficulty, topic, and optional code challenges. These are used to fill gaps when templates are selected.
 - InterviewGraph: Integrates generation into the interview lifecycle, passing candidate profile and configuration to the generator.
 - SessionManager: Tracks interview state, integrity events (e.g., tab switches), and persists sessions.
 - AnswerEvaluator and CodeExecutor: Support evaluation and secure execution for coding questions, complementing question generation.
 
-## Architecture overview
-The engine orchestrates question generation within the broader interview flow. The route handlers create sessions, which trigger the graph to generate questions. The generator uses templates and/or LLM prompts to produce questions, ensuring variety and avoiding repetition. Integrity events are recorded to detect potential cheating, and coding questions are executed in a sandboxed environment.
+## How it fits together
+The engine orchestrates question generation within the broader interview flow. The route handlers create sessions, which trigger the graph to generate questions. The generator uses templates and/or LLM prompts to produce questions, which keeps variety and avoids repetition. Integrity events are recorded to detect potential cheating, and coding questions are executed in a sandboxed environment.
 
 ```mermaid
 sequenceDiagram
@@ -81,9 +80,7 @@ Graph->>SM : save(session with questions)
 Routes-->>Client : InterviewSessionResponse(current_question)
 ```
 
-## Detailed component analysis
-
-### QuestionGenerator class
+## QuestionGenerator class
 The QuestionGenerator builds a list of InterviewQuestion objects from:
 - Difficulty distribution: Ensures requested counts per difficulty, padding with fallbacks if needed.
 - Template selection: Uses predefined templates when provided to fill questions first.
@@ -141,7 +138,7 @@ QuestionGenerator --> DifficultyLevel : "uses"
 QuestionGenerator --> QuestionSource : "assigns"
 ```
 
-### Prompt engineering approach
+## Prompt engineering approach
 The prompt template establishes:
 - Role and difficulty framing
 - Topic focus and question type
@@ -161,7 +158,7 @@ Seen --> Output["Define JSON Output Schema"]
 Output --> End(["Invoke LLM"])
 ```
 
-### Parameter configuration and question categorization
+## Parameter configuration and question categorization
 - InterviewConfig controls role, number of questions, difficulty distribution, optional template/topic, and coding flags.
 - QuestionSource categorizes questions as resume-based, role-based, behavioral, technical, or coding.
 - DifficultyLevel drives question selection and pacing.
@@ -191,7 +188,7 @@ CODING
 InterviewConfig --> QuestionSource : "used by generated questions"
 ```
 
-### Template-Based question selection
+## Template-Based question selection
 Templates define:
 - Roles and topics
 - Question banks with difficulty and expected keywords
@@ -212,7 +209,7 @@ E --> G["_generate_llm_question()"]
 G --> F
 ```
 
-### Dynamic question selection based on candidate responses
+## Dynamic question selection based on candidate responses
 While the generator itself does not alter future questions based on a single response, the broader interview graph advances to the next question after evaluation. Integrity events (e.g., tab switches) are tracked and surfaced for review, indirectly influencing the final summary and recommendations.
 
 ```mermaid
@@ -230,12 +227,12 @@ Graph->>SM : update question + move index
 Graph-->>Routes : next_question or complete
 ```
 
-### Question diversity and anti-cheating mechanisms
+## Question diversity and anti-cheating mechanisms
 - Diversity: The generator cycles question types (technical, behavioral, role-based) and avoids repeats by tracking existing questions.
 - Anti-cheating:
-  - Integrity events recording (e.g., tab switches) are stored and counted.
-  - Coding questions execute in a sandbox with language-specific timeouts, output limits, and dangerous-pattern checks.
-  - Tab switch thresholds flag sessions for review.
+ - Integrity events recording (e.g., tab switches) are stored and counted.
+ - Coding questions execute in a sandbox with language-specific timeouts, output limits, and dangerous-pattern checks.
+ - Tab switch thresholds flag sessions for review.
 
 ```mermaid
 flowchart TD
@@ -253,14 +250,14 @@ end
 C1 --> C2 --> C3 --> C4
 ```
 
-### Examples of generated question patterns
+## Examples of generated question patterns
 - Technical coding rounds (e.g., Software Engineer): Algorithmic challenges with code challenges embedded in questions.
 - Behavioral assessments: STAR-focused questions aligned with role expectations.
 - Panel interviews: Mixed difficulty and type progression to maintain engagement and depth.
 
 These patterns derive from built-in templates and the LLM prompt's structured output schema.
 
-## Dependency analysis
+## Dependencies
 The QuestionGenerator depends on:
 - Prompt template for LLM invocation
 - Enums for difficulty and question source
@@ -278,17 +275,14 @@ QGEN --> GRAPH["InterviewGraph"]
 QGEN --> SM["SessionManager"]
 ```
 
-## Performance considerations
-- Prompt construction and LLM invocation are asynchronous; ensure efficient prompt formatting and minimal payload sizes.
+## Performance
+- Prompt construction and LLM invocation are asynchronous; keep prompts small and minimal payload sizes.
 - Template-first strategy reduces LLM calls when templates are available.
 - Non-repetition tracking uses a list of strings; for very large interviews, consider hashing or indexing for O(1) lookups.
 - Streaming evaluation and code execution improve perceived latency; keep prompt sizes reasonable to avoid timeouts.
 
-## Troubleshooting guide
+## Troubleshooting
 - LLM generation failures: The generator falls back to curated fallback questions and sets a default behavioral source.
 - JSON parsing errors: The parser extracts content as-is when JSON is invalid.
 - Session not found or mismatched question: Route handlers raise explicit HTTP errors for invalid states.
 - Integrity concerns: Excessive tab switches are flagged for manual review.
-
-## Conclusion
-The Question Generation Engine blends structured templates with LLM-driven creativity to produce tailored, non-repeating interview questions. Its integration with integrity tracking and secure code execution ensures reliable assessments across technical and behavioral domains. The modular design allows easy extension to new roles, topics, and evaluation modes.

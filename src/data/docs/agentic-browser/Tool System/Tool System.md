@@ -1,14 +1,7 @@
 # Tool system
 
 ## Introduction
-This page explains the Tool System architecture that powers modular agent capabilities. The system is built around a standardized tool interface, structured argument schemas, and a registration mechanism that dynamically composes tools based on runtime context. Tools encapsulate domain-specific functionality (e.g., browser automation, GitHub crawling, Gmail operations, calendar management, YouTube processing, website context extraction) and integrate smoothly with the agent runtime via LangChain's StructuredTool abstraction.
-
-The Tool System emphasizes:
-- Clear separation of concerns between tool definition, execution, and integration
-- Strong input validation using Pydantic models
-- Async-first execution patterns with thread pooling for blocking operations
-- Extensibility through a simple interface and consistent registration workflow
-- Reliable error handling and user-friendly messaging
+Tool framework: `StructuredTool` interface, argument schemas, dynamic registration from runtime context, and the domains tools cover.
 
 ## Project structure
 The Tool System spans several layers:
@@ -76,7 +69,7 @@ Key implementation anchors:
 - YouTube router: `routers/youtube.py`
 
 ## Architecture overview
-The Tool System follows a layered architecture:
+Tool stack:
 - Agent layer defines tools and builds the toolset from context
 - Tool layer implements domain-specific logic and integrates with services/utilities
 - Service layer orchestrates external integrations and validations
@@ -121,10 +114,10 @@ Implementation anchors:
 ### Execution patterns
 - Async-first design: Tools are coroutines. Long-running or blocking operations are executed in threads using asyncio.to_thread to avoid blocking the event loop.
 - Example patterns:
-  - Web search tool: bounded results and thread-offloaded pipeline invocation
-  - Gmail tools: token validation and thread-offloaded operations
-  - Calendar tools: ISO 8601 validation and thread-offloaded creation
-  - Browser automation: service-based generation of JSON action plans with sanitization
+ - Web search tool: bounded results and thread-offloaded pipeline invocation
+ - Gmail tools: token validation and thread-offloaded operations
+ - Calendar tools: ISO 8601 validation and thread-offloaded creation
+ - Browser automation: service-based generation of JSON action plans with sanitization
 
 Implementation anchors:
 - Tool coroutines and thread offloading: `react_tools.py`
@@ -133,9 +126,9 @@ Implementation anchors:
 ### Browser automation tools
 - Purpose: Generate a JSON action plan for browser tasks given a goal, target URL, DOM structure, and constraints.
 - Implementation:
-  - Tool schema defines goal, target_url, dom_structure, and constraints
-  - Coroutine invokes AgentService.generate_script
-  - Service composes a prompt, invokes an LLM, sanitizes the result, and returns structured action plan
+ - Tool schema defines goal, target_url, dom_structure, and constraints
+ - Coroutine invokes AgentService.generate_script
+ - Service composes a prompt, invokes an LLM, sanitizes the result, and returns structured action plan
 
 ```mermaid
 sequenceDiagram
@@ -155,9 +148,9 @@ Tool-->>Agent : "Normalized result"
 ### GitHub crawler tools
 - Purpose: Convert a GitHub repository to markdown (tree, summary, content), then answer questions using a retrieval-augmented chain.
 - Implementation:
-  - URL normalization and ingestion (async/sync fallback)
-  - Optional file attachment processing via Google AI SDK
-  - LLM-based answer generation with chat history support
+ - URL normalization and ingestion (async/sync fallback)
+ - Optional file attachment processing via Google AI SDK
+ - LLM-based answer generation with chat history support
 
 ```mermaid
 flowchart TD
@@ -178,8 +171,8 @@ ReturnText --> End
 ### Gmail integration tools
 - Purpose: Fetch latest emails, list unread messages, mark messages as read, and send emails using OAuth access tokens.
 - Implementation:
-  - Service methods wrap tool functions and centralize error logging
-  - Routers validate presence of access_token and enforce max result bounds
+ - Service methods wrap tool functions and centralize error logging
+ - Routers validate presence of access_token and enforce max result bounds
 
 ```mermaid
 sequenceDiagram
@@ -199,8 +192,8 @@ Router-->>Client : "{messages : ...}"
 ### Calendar management tools
 - Purpose: Retrieve upcoming events and create new events using OAuth access tokens.
 - Implementation:
-  - Routers validate ISO 8601 timestamps and enforce max result bounds
-  - Tools delegate to service-layer logic for event operations
+ - Routers validate ISO 8601 timestamps and enforce max result bounds
+ - Tools delegate to service-layer logic for event operations
 
 ```mermaid
 sequenceDiagram
@@ -217,8 +210,8 @@ Router-->>Client : "{result : created, event : ...}"
 ### YouTube processing utilities
 - Purpose: Extract video IDs, fetch subtitles, and retrieve video info for downstream tooling.
 - Implementation:
-  - Utility functions exposed via __init__.py
-  - Router answers questions about videos using YouTube service
+ - Utility functions exposed via __init__.py
+ - Router answers questions about videos using YouTube service
 
 ```mermaid
 flowchart TD
@@ -234,36 +227,36 @@ Answer --> QEnd(["Response"])
 ### Website context extraction tools
 - Purpose: Convert HTML to markdown and fetch markdown for a given URL to enable question answering.
 - Implementation:
-  - Exposed via website_context/__init__.py
-  - Used by website_agent tool to answer questions about a page
+ - Exposed via website_context/__init__.py
+ - Used by website_agent tool to answer questions about a page
 
 ### Google search tool
 - Purpose: Perform web search using Tavily and return summarized results.
 - Implementation:
-  - Pipeline sets max_results and maps Tavily response to expected format
-  - Tool caps results and summarizes snippets for downstream use
+ - Pipeline sets max_results and maps Tavily response to expected format
+ - Tool caps results and summarizes snippets for downstream use
 
 ### PyJIIT attendance tool
 - Purpose: Fetch attendance data from the JIIT web portal using a session payload.
 - Implementation:
-  - Validates session payload and adapts to nested structures
-  - Hardcoded semester mapping and regex parsing for subject codes
-  - Runs blocking IO in a thread
+ - Validates session payload and adapts to nested structures
+ - Hardcoded semester mapping and regex parsing for subject codes
+ - Runs blocking IO in a thread
 
 ## Dependency analysis
 - Tool-to-service coupling:
-  - Browser tool depends on AgentService for action plan generation
-  - GitHub tool depends on GitHubService and ingestion utilities
-  - Gmail tool depends on GmailService and tool functions
+ - Browser tool depends on AgentService for action plan generation
+ - GitHub tool depends on GitHubService and ingestion utilities
+ - Gmail tool depends on GmailService and tool functions
 - Router-to-service coupling:
-  - GitHub router depends on GitHubService
-  - Gmail router depends on GmailService
-  - Calendar router validates inputs and delegates to service logic
-  - YouTube router depends on YouTube service
+ - GitHub router depends on GitHubService
+ - Gmail router depends on GmailService
+ - Calendar router validates inputs and delegates to service logic
+ - YouTube router depends on YouTube service
 - External dependencies:
-  - LangChain StructuredTool and TavilySearch
-  - Pydantic for input validation
-  - Optional Google AI SDK for file attachments
+ - LangChain StructuredTool and TavilySearch
+ - Pydantic for input validation
+ - Optional Google AI SDK for file attachments
 
 ```mermaid
 graph TB
@@ -290,47 +283,39 @@ YT["routers/youtube.py"] --> YT
 - Prompt composition: Browser automation service limits interactive element listings to reduce token usage.
 - External API throttling: Respect rate limits for external services (e.g., Tavily, Gmail, Calendar).
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Missing credentials:
-  - Gmail/Calendar tools require access tokens; errors instruct providing tokens or include them in the tool call.
+ - Gmail/Calendar tools require access tokens; errors instruct providing tokens or include them in the tool call.
 - Invalid input formats:
-  - Calendar tools enforce ISO 8601 timestamps; GitHub router validates URL and question presence.
-  - Web search tool bounds max_results; website tool trims summaries.
+ - Calendar tools enforce ISO 8601 timestamps; GitHub router validates URL and question presence.
+ - Web search tool bounds max_results; website tool trims summaries.
 - External service failures:
-  - GitHub ingestion handles invalid URLs and inaccessible repositories with user-friendly messages.
-  - Gmail service logs exceptions and re-raises for router handling.
+ - GitHub ingestion handles invalid URLs and inaccessible repositories with plain messages.
+ - Gmail service logs exceptions and re-raises for router handling.
 - Action plan validation:
-  - Browser automation service returns validation problems and raw response for debugging.
+ - Browser automation service returns validation problems and raw response for debugging.
 
 ## Conclusion
-The Tool System provides a reliable, extensible framework for agent capabilities. By adhering to a consistent tool interface, strong input validation, and asynchronous execution patterns, it enables modular addition of new tools. The dynamic registration mechanism allows tools to adapt to runtime context, while routers and services ensure reliable integration with external systems.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Same interface for every tool, validate inputs, run async. Registration can depend on context so you do not expose Gmail tools without a token.
 
 ## Appendices
 
 ### Guidelines for creating custom tools
 - Define a Pydantic args_schema with clear field descriptions and constraints
 - Implement a coroutine executor that:
-  - Validates inputs
-  - Handles errors gracefully and returns user-friendly messages
-  - Offloads blocking operations to threads when needed
+ - Validates inputs
+ - Handles errors and returns plain messages
+ - Offloads blocking operations to threads when needed
 - Wrap tool logic in a service if it interacts with external APIs
 - Register the tool in the agent toolset and conditionally include it via build_agent_tools when appropriate
 - Add a router endpoint if exposing the tool via API
 
-[No sources needed since this section provides general guidance]
-
-### Tool validation and error handling best practices
+### Tool validation and error handling
 - Use Pydantic validators to enforce input constraints
 - Normalize outputs consistently (strings or JSON)
 - Log errors early and propagate meaningful messages
 - For external APIs, handle common failure modes (invalid tokens, rate limits, timeouts)
-
-[No sources needed since this section provides general guidance]
 
 ### Security considerations
 - Never embed secrets in tool code; pass tokens via context or request parameters
@@ -338,11 +323,8 @@ The Tool System provides a reliable, extensible framework for agent capabilities
 - Limit tool capabilities to least privilege scopes
 - Avoid printing sensitive data in logs
 
-[No sources needed since this section provides general guidance]
-
 ### Resource management and debugging
 - Use bounded max_results and content truncation to manage memory and compute
 - Enable structured logging and return minimal diagnostic details in responses
 - For browser automation, sanitize and validate generated JSON plans before returning
 
-[No sources needed since this section provides general guidance]

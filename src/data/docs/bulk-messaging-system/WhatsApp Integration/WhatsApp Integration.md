@@ -1,7 +1,7 @@
 # WhatsApp integration
 
 ## Introduction
-This page explains the WhatsApp Web integration for bulk messaging, focusing on QR code authentication, session and connection lifecycle, contact import from CSV, Excel, and text files, message composition with personalization, bulk sending with configurable delays, and real-time status monitoring. It also covers troubleshooting and security best practices.
+WhatsApp Web via whatsapp-web.js: QR auth, contact import, templated messages, delayed bulk send, live status in the UI.
 
 ## Project structure
 The integration spans three layers:
@@ -46,7 +46,7 @@ PYAPP --> VALID
 - Python Backend: Provides REST endpoints for contact import and parsing, including CSV/Excel/Text support and number validation.
 
 ## Architecture overview
-End-to-end flow for authentication and sending:
+Auth and send flow:
 
 ```mermaid
 sequenceDiagram
@@ -117,8 +117,8 @@ Cleanup --> End(["Idle/Reconnect"])
 
 ### Contact import and parsing
 - CSV/Excel/Text import is supported via two paths:
-  - Python backend REST endpoints for reliable parsing and validation
-  - Manual text parsing in the renderer using Pyodide for quick local processing
+ - Python backend REST endpoints for reliable parsing and validation
+ - Manual text parsing in the renderer using Pyodide for quick local processing
 - The renderer supports CSV/Text locally; Excel is noted as not yet supported in this UI path.
 
 ```mermaid
@@ -182,9 +182,9 @@ IPC-->>BM : resolve promise
 
 ### Real-time status monitoring
 - The renderer subscribes to three event channels:
-  - Connection status updates
-  - QR code data URL updates
-  - Per-message send status updates
+ - Connection status updates
+ - QR code data URL updates
+ - Per-message send status updates
 - These are displayed in the activity log with color-coded indicators.
 
 ```mermaid
@@ -222,17 +222,17 @@ PY --> PANDAS["pandas/openpyxl/xlrd"]
 ## Troubleshooting guide
 Common issues and resolutions:
 - QR code not loading
-  - Refresh the client and retry; the UI provides a retry button when QR fails to load.
-  - Ensure network connectivity and try again.
+ - Refresh the client and retry; the UI provides a retry button when QR fails to load.
+ - Ensure network connectivity and try again.
 - Authentication failures
-  - Reinitialize the client and re-scan the QR.
-  - Confirm the device is linked and not logged out elsewhere.
+ - Reinitialize the client and re-scan the QR.
+ - Confirm the device is linked and not logged out elsewhere.
 - Rate limiting and spam detection
-  - Increase delays between messages; the current implementation uses fixed delays.
-  - Pause periodically and resume to avoid continuous bursts.
+ - Increase delays between messages; the current implementation uses fixed delays.
+ - Pause periodically and resume to avoid continuous bursts.
 - Contact import errors
-  - Verify file format and encoding; supported formats include CSV, Excel (.xlsx/.xls), and Text.
-  - Ensure phone numbers are valid and standardized before sending.
+ - Verify file format and encoding; supported formats include CSV, Excel (.xlsx/.xls), and Text.
+ - Ensure phone numbers are valid and standardized before sending.
 
 ## Security considerations
 - Context isolation and secure IPC prevent direct Node.js access in the renderer.
@@ -241,4 +241,5 @@ Common issues and resolutions:
 - Use strong authentication for external services (Gmail/SMTP) and rotate credentials regularly.
 
 ## Conclusion
-The integration provides a reliable, user-friendly pathway to authenticate via QR, manage contacts, compose personalized messages, and send them reliably with real-time feedback. The architecture cleanly separates concerns across renderer, main process, and Python utilities, enabling maintainability and scalability.
+
+QR, import, template, delayed send, watch the log. That is the whole happy path; everything else is recovery from the edges.

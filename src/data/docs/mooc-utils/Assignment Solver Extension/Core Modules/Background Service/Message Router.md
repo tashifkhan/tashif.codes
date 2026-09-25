@@ -1,7 +1,7 @@
 # Message router
 
 ## Introduction
-This page explains the message routing system that enables cross-extension communication in the NPTEL Assignment Solver extension. It covers how the router handles incoming messages, registers handlers, dispatches messages to appropriate handlers, and manages errors. It also documents the router factory function, handler mapping patterns, and the dependency injection pattern used in handler creation. Finally, it demonstrates message flow from content scripts to handlers and shows how the system ensures reliable communication across browsers.
+Routes messages between the side panel, content scripts, and background handlers. Factory setup, dependency injection, platform adapters, and retries.
 
 ## Project structure
 The message routing system spans several modules:
@@ -48,7 +48,7 @@ BG_TABS --> PLATFORM_BROWSER
 ```
 
 ## Core components
-- Message router factory: Creates a listener function that routes messages to registered handlers, handles unknown types, and ensures responses are sent for asynchronous operations.
+- Message router factory: Creates a listener function that routes messages to registered handlers, handles unknown types, and still sends a response for asynchronous operations.
 - Message types and utilities: Defines standardized message types and a retry mechanism for transient connection failures.
 - Background initialization: Sets up adapters, services, and handlers, then registers the router with the runtime adapter.
 - Content script listener: Responds to messages from the background and performs DOM operations.
@@ -94,7 +94,7 @@ The router factory function accepts a handler map and an optional logger, return
 - Logs incoming messages.
 - Looks up the handler by message type.
 - Returns an error response if no handler is found.
-- Invokes the handler synchronously and ensures responses are sent for asynchronous operations.
+- Invokes the handler synchronously and still sends a response for asynchronous operations.
 - Keeps the message channel open for Firefox by returning true when appropriate.
 
 ```mermaid
@@ -155,10 +155,10 @@ Handlers are created with a dependency injection pattern:
 Benefits:
 - Testability: Dependencies can be mocked for unit tests.
 - Reusability: Same handler logic can be reused with different environments.
-- Separation of concerns: Handlers focus on orchestration while adapters/services encapsulate platform-specific behavior.
+- Handlers orchestrate; adapters and services hide platform-specific behavior.
 
 ### Cross-Browser communication flow
-The system uses webextension-polyfill to ensure compatibility across Chrome and Firefox. The runtime adapter wraps browser.runtime APIs, and the tabs adapter wraps browser.tabs APIs. The content script listens for messages and performs DOM operations.
+The system uses webextension-polyfill so compatibility across Chrome and Firefox. The runtime adapter wraps browser.runtime APIs, and the tabs adapter wraps browser.tabs APIs. The content script listens for messages and performs DOM operations.
 
 ```mermaid
 sequenceDiagram
@@ -178,7 +178,7 @@ RT_BG-->>BG : "Handler response"
 
 ### Error handling strategies
 The router and handlers implement layered error handling:
-- Router: Logs unknown message types and ensures sendResponse is called. For asynchronous handlers, it catches rejections and sends an error response if sendResponse was not already called.
+- Router: logs unknown message types and still calls sendResponse For asynchronous handlers, it catches rejections and sends an error response if sendResponse was not already called.
 - Handlers: Wrap operations in try/catch blocks, log errors, and send structured error responses. Some handlers include retry-like logic (e.g., content script injection verification).
 - Content script: Returns error responses for unknown message types and logs exceptions.
 
@@ -230,4 +230,4 @@ Common issues and resolutions:
 - CORS and image extraction: The extractor skips images that cannot be converted due to CORS restrictions.
 
 ## Conclusion
-The message routing system provides a clean, extensible foundation for cross-extension communication. The router factory centralizes dispatch logic, the dependency injection pattern improves modularity and testability, and platform adapters ensure cross-browser compatibility. The combination of standardized message types, reliable error handling, and retry mechanisms yields a reliable and maintainable architecture.
+The router is the single dispatch table. Keep retries for transient disconnects, especially on Firefox.

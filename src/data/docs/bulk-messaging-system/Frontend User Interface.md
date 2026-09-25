@@ -1,7 +1,7 @@
 # Frontend user interface
 
 ## Introduction
-This page describes the React-based user interface architecture for the WhatsApp and email bulk messaging application. It focuses on the component hierarchy starting with App.jsx as the main container and BulkMailer.jsx as the primary application component. The documentation covers the sidebar navigation system, top bar functionality, responsive design using Tailwind CSS, state management patterns with React hooks, modular component architecture, styling guidelines, theme implementation, dark mode support, accessibility features, cross-platform UI consistency, and performance optimization techniques.
+React UI layout: App shell, BulkMailer tabs, Tailwind styling, and the form components for WhatsApp, Gmail, and SMTP.
 
 ## Project structure
 The frontend is organized into two main areas:
@@ -234,8 +234,6 @@ VITE --> REACT
 - Memoization of derived values (e.g., recipient counts) can reduce recomputation.
 - Debounced input handling for large text areas if needed.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Electron API not available: Ensure the app runs in the Electron environment; alerts guide users accordingly.
@@ -245,4 +243,5 @@ Common issues and resolutions:
 - Build issues: Confirm Tailwind and Vite plugin configurations; verify dependencies in package.json.
 
 ## Conclusion
-The React-based UI is structured around a central container (BulkMailer.jsx) that manages state, integrates with Electron APIs, and renders modular forms for different messaging transports. The design uses Tailwind CSS for a cohesive dark theme, responsive layouts, and accessible focus styles. The component architecture supports easy extension and customization, enabling incremental feature additions and UI refinements. With careful attention to state management, error handling, and performance, the application maintains a consistent cross-platform UI experience.
+
+Tailwind utility classes and the existing form layout are the style guide. Prefer extending those over inventing a second design system.

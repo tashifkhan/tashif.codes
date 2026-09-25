@@ -1,7 +1,7 @@
 # Data models and database schema
 
 ## Introduction
-This page describes the data models and database schema used by the notice-reminders application. It focuses on the persistent entities (User, Course, Announcement, Subscription, Notification, and NotificationChannel), their relationships, constraints, indexes, and validation rules. It also explains the Tortoise ORM configuration, how migrations and schema generation work, and typical data access patterns via services. Business rules such as uniqueness constraints, referential integrity, and cascading behavior are documented alongside entity relationship diagrams and sample data structures.
+Persistent entities in notice-reminders (User, Course, Announcement, Subscription, Notification, NotificationChannel), their relations, and the schema choices behind them.
 
 ## Project structure
 The data models are defined under the models package and integrated into the FastAPI application via Tortoise ORM registration. The application supports both API and CLI modes, with the database initialized during application startup.
@@ -27,38 +27,38 @@ Models --> DB
 This section documents each persistent model, including fields, constraints, indexes, and relationships.
 
 - User
-  - Fields: id (primary key), email (unique, indexed), name, telegram_id (unique), is_active, created_at, updated_at
-  - Indexes: email, telegram_id
-  - Unique constraints: email, telegram_id
-  - Notes: Uses auto timestamps for created_at and updated_at
+ - Fields: id (primary key), email (unique, indexed), name, telegram_id (unique), is_active, created_at, updated_at
+ - Indexes: email, telegram_id
+ - Unique constraints: email, telegram_id
+ - Notes: Uses auto timestamps for created_at and updated_at
 
 - Course
-  - Fields: id (primary key), code (unique, indexed), title, url, instructor, institute, nc_code, created_at, updated_at
-  - Indexes: code
-  - Unique constraints: code
-  - Notes: Uses auto timestamps
+ - Fields: id (primary key), code (unique, indexed), title, url, instructor, institute, nc_code, created_at, updated_at
+ - Indexes: code
+ - Unique constraints: code
+ - Notes: Uses auto timestamps
 
 - Announcement
-  - Fields: id (primary key), course (foreign key to Course), title, date, content, fetched_at
-  - Relationships: belongs to Course via ForeignKeyField
-  - Notes: fetched_at records when the announcement was pulled from a source; uses auto timestamp
+ - Fields: id (primary key), course (foreign key to Course), title, date, content, fetched_at
+ - Relationships: belongs to Course via ForeignKeyField
+ - Notes: fetched_at records when the announcement was pulled from a source; uses auto timestamp
 
 - Subscription
-  - Fields: id (primary key), user (foreign key), course (foreign key), created_at, is_active
-  - Relationships: belongs to User and Course via ForeignKeyField
-  - Unique constraints: (user, course)
-  - Notes: Uses auto timestamp
+ - Fields: id (primary key), user (foreign key), course (foreign key), created_at, is_active
+ - Relationships: belongs to User and Course via ForeignKeyField
+ - Unique constraints: (user, course)
+ - Notes: Uses auto timestamp
 
 - NotificationChannel
-  - Fields: id (primary key), user (foreign key), channel, address, is_active, created_at
-  - Relationships: belongs to User via ForeignKeyField
-  - Unique constraints: (user, channel, address)
-  - Notes: Uses auto timestamp
+ - Fields: id (primary key), user (foreign key), channel, address, is_active, created_at
+ - Relationships: belongs to User via ForeignKeyField
+ - Unique constraints: (user, channel, address)
+ - Notes: Uses auto timestamp
 
 - Notification
-  - Fields: id (primary key), user (foreign key), subscription (foreign key), announcement (foreign key), channel (nullable foreign key), sent_at, is_read
-  - Relationships: belongs to User, Subscription, Announcement; optionally belongs to NotificationChannel
-  - Notes: Uses auto timestamp; is_read defaults to False
+ - Fields: id (primary key), user (foreign key), subscription (foreign key), announcement (foreign key), channel (nullable foreign key), sent_at, is_read
+ - Relationships: belongs to User, Subscription, Announcement; optionally belongs to NotificationChannel
+ - Notes: Uses auto timestamp; is_read defaults to False
 
 Validation rules and constraints observed in the models:
 - String length limits enforced by CharField(max_length=N)
@@ -151,9 +151,9 @@ NOTIFICATION_CHANNEL ||--o{ NOTIFICATION : "may send via"
 The repository defines both domain dataclasses and ORM models. The domain models are lightweight data containers for parsing and transporting data outside the persistence layer.
 
 - Domain Course and Announcement
-  - Purpose: represent parsed course and announcement data
-  - Fields: title, url, code, instructor, institute, nc_code; title, date, content respectively
-  - Notes: These are not mapped to the database and are separate from the ORM Course model
+ - Purpose: represent parsed course and announcement data
+ - Fields: title, url, code, instructor, institute, nc_code; title, date, content respectively
+ - Notes: These are not mapped to the database and are separate from the ORM Course model
 
 ### User model
 - Primary key: id
@@ -202,15 +202,15 @@ The repository defines both domain dataclasses and ORM models. The domain models
 
 ### Data access patterns and business rules
 - User management
-  - Listing, retrieving by id or email, updating attributes, deleting
-  - Adding notification channels with deduplication on composite unique key
+ - Listing, retrieving by id or email, updating attributes, deleting
+ - Adding notification channels with deduplication on composite unique key
 - Subscriptions
-  - Creating subscriptions with upsert-like behavior on unique constraint
-  - Listing all subscriptions and per-user subscriptions
+ - Creating subscriptions with upsert-like behavior on unique constraint
+ - Listing all subscriptions and per-user subscriptions
 - Notifications
-  - Creating notifications linking a subscription and announcement, optionally a channel
-  - Listing notifications globally and per user
-  - Marking notifications as read
+ - Creating notifications linking a subscription and announcement, optionally a channel
+ - Listing notifications globally and per user
+ - Marking notifications as read
 
 ```mermaid
 sequenceDiagram
@@ -225,17 +225,17 @@ Note over Svc,DB : "On IntegrityError,<br/>return existing (user, course)"
 Representative rows for each table based on model definitions:
 
 - User
-  - id, email, name, telegram_id, is_active, created_at, updated_at
+ - id, email, name, telegram_id, is_active, created_at, updated_at
 - Course
-  - id, code, title, url, instructor, institute, nc_code, created_at, updated_at
+ - id, code, title, url, instructor, institute, nc_code, created_at, updated_at
 - Announcement
-  - id, course_id, title, date, content, fetched_at
+ - id, course_id, title, date, content, fetched_at
 - Subscription
-  - id, user_id, course_id, is_active, created_at
+ - id, user_id, course_id, is_active, created_at
 - NotificationChannel
-  - id, user_id, channel, address, is_active, created_at
+ - id, user_id, channel, address, is_active, created_at
 - Notification
-  - id, user_id, subscription_id, announcement_id, channel_id?, sent_at, is_read
+ - id, user_id, subscription_id, announcement_id, channel_id?, sent_at, is_read
 
 ## Dependency analysis
 External dependencies relevant to data modeling and migrations:
@@ -261,17 +261,17 @@ A --> E["pydantic-settings"]
 ## Troubleshooting guide
 Common issues and resolutions:
 - Integrity errors on creation
-  - Symptom: Duplicate entries when creating Subscription or NotificationChannel
-  - Resolution: Use upsert logic that catches IntegrityError and retrieves the existing record
+ - Symptom: Duplicate entries when creating Subscription or NotificationChannel
+ - Resolution: Use upsert logic that catches IntegrityError and retrieves the existing record
 - Database initialization
-  - Symptom: Empty database or missing tables
-  - Resolution: Enable schema generation in debug mode or run migrations via Aerich
+ - Symptom: Empty database or missing tables
+ - Resolution: Enable schema generation in debug mode or run migrations via Aerich
 - SQLite file path
-  - Symptom: Database file not found
-  - Resolution: Ensure the configured SQLite path exists; the application creates parent directories if needed
+ - Symptom: Database file not found
+ - Resolution: Ensure the configured SQLite path exists; the application creates parent directories if needed
 
 ## Conclusion
-The notice-reminders application employs a clear set of ORM models with explicit constraints and indexes to enforce data integrity and optimize common queries. The Tortoise ORM configuration integrates smoothly with FastAPI, and migrations are managed via Aerich. Services encapsulate business logic for creating, querying, and managing entities while handling uniqueness and referential integrity constraints.
+Foreign keys define the product. Delete order and cascade choices show up as integrity errors under load, so test those paths.
 
 ## Appendices
 

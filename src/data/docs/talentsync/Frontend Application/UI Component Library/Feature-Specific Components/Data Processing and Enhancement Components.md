@@ -1,7 +1,6 @@
 # Data processing and enhancement components
 
-## Introduction
-This page explains the data processing and enhancement components that power AI-driven resume transformations. It covers:
+The data processing and enhancement components that power AI-driven resume transformations.
 - Enrichment workflow: modal dialogs, step-by-step wizards, loading states, and preview functionality
 - Improvement components: text difference display and modification previews
 - Regeneration components: iterative content refinement with instruction-based workflows
@@ -9,7 +8,7 @@ This page explains the data processing and enhancement components that power AI-
 - Backend integration with FastAPI endpoints and LLM orchestration
 - Error handling, progress tracking, and user feedback mechanisms
 
-## Project structure
+## Repository layout
 The feature set spans frontend UI components, hooks for state management, typed interfaces, and backend services:
 - Frontend components implement modals and wizards for user interaction
 - Hooks manage multi-step state machines and coordinate with backend services
@@ -52,8 +51,8 @@ RE --> ESRV
 RI --> ISRV
 ```
 
-## Core components
-- Enrichment Modal: Orchestrates the end-to-end enrichment flow from analysis to applying enhancements, with animated transitions and error handling.
+## Building blocks
+- Enrichment Modal: Runs enrichment from analysis through applying edits, with transitions and error states.
 - Question Step: Presents targeted questions derived from the analysis and collects user answers.
 - Preview Step: Displays before/after diffs, allows approvals/rejections, and supports bulk actions and comments.
 - Loading Step: Provides consistent loading visuals during backend processing.
@@ -65,7 +64,7 @@ RI --> ISRV
 - Services: Typed API clients wrapping backend endpoints for analysis, enhancement, refinement, regeneration, and improvement.
 - Backend Routes and Services: Orchestrate LLM prompts, transform resume data, and persist updates.
 
-## Architecture overview
+## How it fits together
 The system follows a layered architecture:
 - UI Layer: Modal dialogs and wizard steps render state and collect user input
 - State Layer: Hooks implement finite state machines for multi-step flows
@@ -109,10 +108,8 @@ ES-->>UEW : Dispatch APPLY_SUCCESS
 UEW-->>EM : Update step to complete
 ```
 
-## Detailed component analysis
-
-### Enrichment workflow
-The enrichment flow transforms raw resume data into actionable insights and enhancements:
+## Enrichment workflow
+The enrichment flow transforms raw resume data into concrete feedback and enhancements:
 - Analysis: Extracts weak areas and generates clarifying questions
 - Question Collection: Groups questions by item and validates completeness
 - Enhancement Generation: Builds contextual prompts and requests LLM to produce improved bullet points
@@ -143,7 +140,7 @@ Key UI components:
 - PreviewStep renders diffs, manages patch reviews, and enables bulk actions
 - LoadingStep provides consistent progress feedback
 
-### Improvement and diff preview
+## Improvement and diff preview
 The improvement workflow optimizes resumes for job descriptions and presents detailed diffs:
 - Keyword extraction and resume improvement
 - Diff calculation between original and improved versions
@@ -165,7 +162,7 @@ RI-->>IMS : ResumeImproveResponse
 IMS-->>DPM : Render diff summary, suggestions, warnings
 ```
 
-### Regeneration workflow
+## Regeneration workflow
 The regeneration workflow lets users rewrite specific resume items with custom instructions:
 - Item selection with metadata
 - Instruction capture with character limits and quick suggestions
@@ -202,7 +199,7 @@ ES-->>URW : Dispatch APPLYING_SUCCESS
 URW-->>RD : Update step to complete
 ```
 
-### State management and data models
+## State management and data models
 Both wizards implement deterministic state machines:
 - Enrichment Wizard: idle → analyzing → questions → generating → preview → refining → applying → complete/error
 - Regenerate Wizard: idle → selecting → instructing → generating → previewing → applying → complete/error
@@ -230,7 +227,7 @@ Typed interfaces define the shape of data exchanged:
 - Enrichment types: AnalysisResponse, EnhancementPreview, RegenerateResponse, PatchReviewState
 - Improvement types: ResumeDiffSummary, ResumeFieldDiff, RefinementStats, ImprovementSuggestion
 
-## Dependency analysis
+## Dependencies
 Frontend-to-backend dependencies:
 - Enrichment endpoints: analyze, improve, refine, apply, regenerate, apply-regenerated
 - Improvement endpoints: improve, refine
@@ -247,7 +244,7 @@ UEW["use-enrichment-wizard.ts"] --> ES
 URW["use-regenerate-wizard.ts"] --> ES
 ```
 
-## Performance considerations
+## Performance
 - Parallelization: Regeneration tasks are executed concurrently per item to reduce latency.
 - Payload construction: Resume data is normalized and compacted before LLM calls to minimize token usage.
 - Diff computation: Efficient sequence matching minimizes overhead when computing differences.
@@ -255,9 +252,10 @@ URW["use-regenerate-wizard.ts"] --> ES
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
-Common issues and resolutions:
-- Analysis failures: Validate resume ID and network connectivity; display user-friendly messages and allow retry.
+## Troubleshooting
+Common issues:
+
+- Analysis failures: Validate resume ID and network connectivity; display messages and allow retry.
 - Enhancement generation errors: Ensure all questions are answered; check backend logs for LLM errors.
 - Refinement failures: Confirm rejected items have comments; verify backend prompt correctness.
 - Apply failures: Inspect backend validation errors and mismatched content identifiers.
@@ -267,6 +265,3 @@ User-facing error surfaces:
 - Enrichment Modal error state with Try Again and Close actions
 - Regenerate Dialog error state with Go Back and Close actions
 - Diff Preview Modal displays warnings and refinement outcomes
-
-## Conclusion
-The data processing and enhancement components provide a reliable, user-friendly pipeline for AI-driven resume transformations. Through modal-based wizards, typed state machines, and backend orchestration, users can iteratively refine their content with clear previews, actionable diffs, and reliable application of changes. The architecture balances UX polish with scalable backend processing, ensuring smooth progress tracking and effective error handling.

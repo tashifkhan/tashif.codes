@@ -1,7 +1,8 @@
 # Contact management system
 
 ## Introduction
-This page describes the contact management and processing system for importing, validating, normalizing, and managing contacts for bulk messaging. It covers:
+How contacts get into the app: file import, manual paste, phone cleaning, and the Pyodide path that runs the same Python logic in the renderer.
+
 - Multi-format contact import (CSV, Excel, and text files) with automatic format detection
 - Phone number validation and normalization including country code handling
 - Manual contact entry interface with real-time validation feedback
@@ -49,17 +50,17 @@ APP --> VN
 
 ## Core components
 - Contact extraction utilities:
-  - CSV, Excel, and text file parsers with automatic column detection and phone number cleaning
+ - CSV, Excel, and text file parsers with automatic column detection and phone number cleaning
 - Manual number parser:
-  - Parses user-entered text with optional names and cleans phone numbers
+ - Parses user-entered text with optional names and cleans phone numbers
 - Phone number validator:
-  - Validates and returns normalized numbers
+ - Validates and returns normalized numbers
 - Pyodide integration:
-  - Loads Python runtime and executes number parsing in the browser
+ - Loads Python runtime and executes number parsing in the browser
 - Electron IPC:
-  - Exposes APIs for contact import, validation, and WhatsApp messaging
+ - Exposes APIs for contact import, validation, and WhatsApp messaging
 - React UI:
-  - Provides manual entry interface, import controls, and real-time feedback
+ - Provides manual entry interface, import controls, and real-time feedback
 
 ## Architecture overview
 The system supports two primary flows:
@@ -107,7 +108,7 @@ UI-->>User : Display contacts preview
 ```
 
 ### Phone number validation and normalization
-Phone numbers are normalized by removing separators, ensuring a leading plus for international numbers, and enforcing digit-only length constraints. The same logic is applied in both Python utilities and the browser via Pyodide.
+Phone numbers are normalized by removing separators, adding a leading plus for international numbers, and enforcing digit-only length constraints. The same logic is applied in both Python utilities and the browser via Pyodide.
 
 ```mermaid
 flowchart TD
@@ -153,8 +154,6 @@ The system does not implement explicit duplicate detection in the provided code.
 - Optional name-aware deduplication if names are present
 - Preprocessing before adding to the contact list
 
-[No sources needed since this section provides general guidance]
-
 ### Pyodide runtime integration
 Pyodide is dynamically loaded and used to execute Python scripts in the renderer process. The loader fetches the script and runs it asynchronously.
 
@@ -179,8 +178,6 @@ The system currently focuses on ingestion and validation. Export functionality f
 - Provide CSV/JSON download options for the current contact list
 - Include validation status and normalized numbers in exports
 
-[No sources needed since this section provides general guidance]
-
 ## Dependency analysis
 The contact processing pipeline depends on:
 - Electron main process for file I/O and IPC
@@ -201,32 +198,31 @@ APP --> VN["validate_number.py"]
 
 ## Performance considerations
 - Large CSV/Excel parsing:
-  - Prefer streaming parsers for very large files to reduce memory usage
-  - Validate and normalize incrementally
+ - Prefer streaming parsers for very large files to reduce memory usage
+ - Validate and normalize incrementally
 - Browser-based parsing:
-  - Pyodide adds overhead; batch processing and progress indicators improve UX
-  - Limit concurrent parsing operations
+ - Pyodide adds overhead; batch processing and progress indicators improve UX
+ - Limit concurrent parsing operations
 - Memory optimization:
-  - Deduplicate contacts early using normalized keys
-  - Avoid storing intermediate unprocessed rows
+ - Deduplicate contacts early using normalized keys
+ - Avoid storing intermediate unprocessed rows
 - I/O and network:
-  - Use buffered reads and writes
-  - Implement timeouts for external services
-
-[No sources needed since this section provides general guidance]
+ - Use buffered reads and writes
+ - Implement timeouts for external services
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - Unsupported file types:
-  - Ensure CSV, TXT, XLSX, or XLS formats
+ - Ensure CSV, TXT, XLSX, or XLS formats
 - Encoding problems:
-  - Use UTF-8 encoded files
+ - Use UTF-8 encoded files
 - Malformed phone numbers:
-  - Validate numbers before import; rely on normalization rules
+ - Validate numbers before import; rely on normalization rules
 - Pyodide loading failures:
-  - Confirm CDN availability and correct index URL
+ - Confirm CDN availability and correct index URL
 - Electron IPC errors:
-  - Verify preload exposure and handler registration
+ - Verify preload exposure and handler registration
 
 ## Conclusion
-The contact management system provides reliable ingestion and validation of phone numbers across multiple formats, with flexible manual entry and browser-based Python execution via Pyodide. While explicit duplicate detection is not implemented, the normalized phone number approach supports efficient deduplication strategies. Extending the system with export capabilities and improving duplicate handling would further improve usability and data quality.
+
+Bad contact data is the usual reason campaigns look broken. Fix normalization first, then chase send errors.

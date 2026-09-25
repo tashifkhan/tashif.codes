@@ -1,13 +1,14 @@
 # Build and deployment
 
 ## Introduction
-This page explains the complete build system and deployment processes for the desktop application. It covers development environment setup for Node.js and Python, the Vite-based frontend build pipeline, electron-builder configuration for cross-platform distribution, and the GitHub Actions CI/CD pipeline for automated testing and releases. It also documents platform-specific build targets, packaging formats, release management procedures, and troubleshooting guidance.
+
+How the Electron app is built and shipped: Vite 8 for the React UI, electron-builder 26 for installers, and the GitHub Actions release workflow.
 
 ## Project structure
-The project is organized into:
-- Electron application with React frontend and Electron main/preload processes
-- Python backend utilities for contact processing and validation
-- GitHub Actions workflows for CI/CD
+
+- Electron app with React UI and main/preload processes in `electron/`
+- Python contact utilities in `python-backend/`
+- GitHub Actions under `.github/workflows/`
 
 ```mermaid
 graph TB
@@ -15,7 +16,7 @@ subgraph "Electron App"
 E_pkg["electron/package.json"]
 E_vite["electron/vite.config.js"]
 E_main["electron/src/electron/main.js"]
-E_preload["electron/src/electron/preload.js"]
+E_preload["electron/src/electron/preload.cjs"]
 E_ui_app["electron/src/ui/App.jsx"]
 E_ui_main["electron/src/ui/main.jsx"]
 E_builder["electron/electron-builder.json"]
@@ -40,20 +41,18 @@ P_api --> P_parse
 ```
 
 ## Core components
-- Electron app entry and window lifecycle
-- Vite build configuration for React frontend
-- electron-builder configuration for cross-platform packaging
-- GitHub Actions release workflow
-- Python backend services for contact processing
 
-Key responsibilities:
-- Electron main process initializes the app, sets up IPC, and manages the renderer window
-- Vite builds the React UI into dist-react
-- electron-builder packages the app for Windows, macOS, and Linux with specified targets
-- GitHub Actions automates builds and releases on version tags
+- Electron app entry and window lifecycle
+- Vite build for the React UI
+- electron-builder for packaging
+- GitHub Actions release workflow
+- Python backend for contact processing
+
+Main process opens the window, registers IPC, and owns provider clients. Vite writes `dist-react`. electron-builder packages that plus `src/electron/**` and `src/shared/**`. Tags drive the release workflow.
 
 ## Architecture overview
-The build and deployment pipeline integrates frontend build, packaging, and release automation:
+
+Frontend build, packaging, and release:
 
 ```mermaid
 sequenceDiagram
@@ -66,138 +65,151 @@ participant Rel as "GitHub Releases"
 Dev->>GH : Push tag (e.g., v1.x.x)
 GH->>Node : Install dependencies (npm ci)
 GH->>Vite : Build React app (npm run build)
-GH->>EB : Build distributables (npm run dist : <platform>)
-EB-->>GH : Platform artifacts (*.dmg, *.exe, *.AppImage, *.deb, *.rpm, *.snap)
+GH->>EB : Build distributables (npm run dist:<platform>)
+EB-->>GH : Platform artifacts (*.dmg, *.exe, *.msi, *.AppImage)
 GH->>Rel : Upload artifacts and create release
 Rel-->>Dev : Downloadable releases
 ```
 
+Run packaging from `electron/`. Output is `electron/dist/`.
+
 ## Detailed component analysis
 
 ### Development environment setup
-- Node.js and npm: Required for Electron and Vite
-- Python 3.8+: Required for backend utilities
-- Google Cloud credentials (for Gmail API)
-- Environment variables: Place credentials in a.env file in the electron directory
 
-Recommended commands:
-- Install Electron dependencies
-- Install Python backend dependencies
-- Start development server
+- Node.js 20.19+ (Vite 8) and npm. Electron 43 ships Node 24 inside the app.
+- Python 3.10+ for `python-backend/`
+- Google Cloud credentials for Gmail API
+- `.env` in `electron/` with `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
 
-### Vite-Based frontend build process
-- Plugins: React and Tailwind CSS
-- Base path configured for relative asset resolution
-- Output directory: dist-react
-- Development server port: 5173
+Commands:
 
-Optimization strategies:
-- Use production build for distribution
-- Use React plugin for fast refresh in development
-- Tailwind CSS for efficient styling
+```bash
+cd electron
+npm install
+npm run dev
+```
+
+```bash
+cd python-backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+### Vite frontend build
+
+- Plugins: `@vitejs/plugin-react` and `@tailwindcss/vite`
+- `base: "./"` so assets resolve inside Electron
+- `outDir: dist-react`
+- Dev server port 5173 with `strictPort: true`
+
+Ship a production Vite build. Fast refresh is for `npm run dev` only.
 
 ### Electron main process and window lifecycle
-- Creates a BrowserWindow with context isolation and preload script
-- Loads development URL during dev mode or production HTML from dist-react
-- Handles errors for failed resource loads
-- Manages WhatsApp client lifecycle and cleanup
+
+- BrowserWindow with context isolation and `preload.cjs`
+- Dev: `http://localhost:5173`. Prod: `dist-react/index.html`
+- Logs `did-fail-load` when the HTML is missing
+- WhatsApp client cleanup on quit
 
 ### Preload script and IPC bridge
-- Exposes a typed API to the renderer via contextBridge
-- Provides methods for Gmail, SMTP, file operations, and WhatsApp integration
-- Registers listeners for progress and status events
+
+`preload.cjs` exposes Gmail, SMTP, file, WhatsApp, and template methods plus progress listeners.
 
 ### Electron builder configuration
-- App ID and included files
-- Extra resources for preload and assets
-- Platform-specific targets:
-  - macOS: dmg
-  - Linux: AppImage with category Utility
-  - Windows: portable and msi
+
+`electron/electron-builder.json`:
+
+- `appId`: `codes.tashif.whatsapp-bulk-messenger`
+- `files`: `dist-react/**`, `src/electron/**`, `src/shared/**`, `package.json`
+- `icon`: `./desktopIcon.icns`
+- macOS: dmg (`npm run dist:mac` uses `--arm64`)
+- Linux: AppImage, category Utility (`--x64`)
+- Windows: portable and msi (`--x64`)
+
+There is no `dist-electron` output folder and no extraResources block. Preload ships as `src/electron/preload.cjs` inside `files`. Linux deb, rpm, and snap are not configured.
 
 ### CI/CD pipeline with GitHub Actions
-- Triggers on version tags and manual dispatch
-- Matrix builds for macOS, Ubuntu, and Windows
-- Steps:
-  - Checkout code
-  - Setup Node.js 18 with npm caching
-  - Install Electron dependencies
-  - Build React app
-  - Build distributables per platform
-  - Upload artifacts
-  - Create GitHub Releases with generated release notes
 
-Artifacts uploaded per platform:
-- macOS:.dmg
-- Windows:.exe,.zip,.tar.gz
-- Linux:.AppImage,.deb,.rpm,.snap
+Typical release workflow:
+
+- Triggers on version tags and manual dispatch
+- Matrix for macOS, Ubuntu, and Windows
+- Checkout, install Node (20+ to match Vite 8), `npm ci` in `electron/`
+- `npm run build` then `dist:mac` / `dist:win` / `dist:linux`
+- Upload artifacts and create a GitHub Release
+
+Artifacts from current targets:
+
+- macOS: `.dmg`
+- Windows: portable `.exe`, `.msi`
+- Linux: `.AppImage`
 
 ### Python backend utilities
-- Flask API for contact extraction and validation
-- CLI utilities for parsing manual numbers and extracting contacts
-- Dependencies managed via requirements.txt
 
-Endpoints and capabilities:
-- Health check endpoint
-- File upload and contact extraction
-- Manual number parsing
-- Single number validation
+Flask for extraction and validation. CLI scripts for the same jobs. Deps in `requirements.txt`: flask, flask-cors, pandas, openpyxl, xlrd, werkzeug.
+
+Endpoints: `/health`, `/upload`, `/parse-manual-numbers`, `/validate-number`. Server: `http://localhost:5000`.
 
 ## Dependency analysis
-The build system relies on:
-- Electron and Vite for the desktop app
-- electron-builder for packaging
-- GitHub Actions for automation
-- Python libraries for backend utilities
+
+Electron + Vite for the desktop app, electron-builder for packaging, GitHub Actions for tags, Python for parsers.
 
 ```mermaid
 graph LR
 Vite["Vite (React build)"] --> Dist["dist-react"]
 Dist --> EB["electron-builder"]
-Main["Electron Main"] --> Preload["Preload Script"]
+Main["Electron Main"] --> Preload["preload.cjs"]
 EB --> Mac["macOS dmg"]
 EB --> Win["Windows portable/msi"]
-EB --> Lin["Linux AppImage/deb/rpm/snap"]
+EB --> Lin["Linux AppImage"]
 GH["GitHub Actions"] --> EB
-GH --> Rel["GitHub Releases"]
+GH["GitHub Actions"] --> Rel["GitHub Releases"]
 ```
 
-## Performance considerations
-- Use production builds for distribution to minimize bundle size
-- Keep preload and main process code minimal and focused
-- Optimize asset loading and avoid blocking the UI thread
-- Consider lazy-loading heavy components in the future
+Pinned ranges in `electron/package.json`: Electron ^43, Vite ^8, React ^19.2, Tailwind ^4.3, electron-builder ^26, googleapis ^173, nodemailer ^9, whatsapp-web.js ^1.34.
 
-[No sources needed since this section provides general guidance]
+## Performance considerations
+
+- Production Vite build for smaller bundles
+- Keep main and preload small
+- Do not block the UI thread with send loops
+- CI should cache `electron/package-lock.json`
 
 ## Troubleshooting guide
-Common build and deployment issues:
-- Electron dev server not starting: verify Vite config and port availability
-- Packaging failures: confirm electron-builder targets and extra resources paths
-- CI failures on tags: ensure semantic version tags and permissions
-- Missing icons or assets: verify paths in electron-builder.json
-- Python backend errors: check Flask routes and file uploads
+
+- Electron dev window blank: Vite must be on 5173; `strictPort` is on
+- Packaging failures: confirm `dist-react` exists and `files` globs match
+- CI on tags: semantic tags, write permissions for releases
+- Missing icon: `desktopIcon.icns` next to `electron-builder.json`
+- Python errors: Flask routes and the `uploads/` folder under `python-backend/`
 
 ## Conclusion
-The project employs a reliable build and deployment pipeline combining Vite for the React frontend, Electron for the desktop runtime, electron-builder for cross-platform packaging, and GitHub Actions for automated releases. Following the documented setup and procedures ensures reliable development, optimized builds, and consistent distribution across Windows, macOS, and Linux.
 
-[No sources needed since this section summarizes without analyzing specific files]
+Ship from a clean CI run. Local electron-builder output is fine for smoke tests. Release artifacts should come from the workflow.
 
 ## Appendices
 
 ### Development commands
-- Start development: run dev (React dev server + Electron)
-- Build React app: run build
-- Production start: run prod
-- Platform builds: dist:mac, dist:win, dist:linux
-- Lint code: run lint
+
+From `electron/`:
+
+- `npm run dev` React + Electron
+- `npm run build` Vite to `dist-react`
+- `npm run prod` / `npm run start` production-like launch
+- `npm run dist:mac` / `dist:win` / `dist:linux`
+- `npm run lint`
 
 ### Release management procedures
-- Version tagging: use npm version patch/minor/major in electron directory
-- Push tags to trigger CI/CD
-- Releases are created automatically with artifacts and release notes
 
-### Platform-Specific targets and packaging formats
+- `cd electron && npm version patch` (or minor/major)
+- Push the tag
+- Workflow builds and attaches artifacts
+
+### Platform-specific targets
+
 - macOS: dmg
 - Windows: portable, msi
-- Linux: AppImage, deb, rpm, snap
+- Linux: AppImage

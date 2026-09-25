@@ -1,7 +1,7 @@
 # Platform abstraction
 
 ## Introduction
-This page describes the platform abstraction layer that ensures cross-browser compatibility for the extension. It documents the browser API adapters for Chrome and Firefox, the storage abstraction using webextension-polyfill, tab management utilities, and runtime communication. The layer hides browser-specific differences behind a unified interface, enabling consistent functionality across Chrome and Firefox while allowing future extensions to additional browsers.
+Browser API adapters so the same code runs on Chrome and Firefox. Storage via webextension-polyfill, tabs, scripting, and feature detection.
 
 ## Project structure
 The platform abstraction resides under the platform directory and integrates with core messaging, background workers, content scripts, and services. The manifest defines permissions and entry points, while the package file includes the webextension-polyfill dependency.
@@ -202,7 +202,7 @@ Common issues and resolutions:
 - Initialization timing: Firefox background may require extra time; rely on retry logic and ensure proper message routing registration
 
 ## Conclusion
-The platform abstraction layer successfully isolates browser-specific concerns behind stable adapters. By using webextension-polyfill and feature detection, it maintains consistent functionality across Chrome and Firefox. The design supports dependency injection, reliable messaging, and graceful handling of optional features, laying a solid foundation for extending support to additional browsers.
+Talk to adapters, not raw browser globals. Feature-detect optional APIs and degrade instead of branching forever.
 
 ## Appendices
 

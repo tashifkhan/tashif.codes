@@ -1,10 +1,10 @@
 # Extension overview
 
 ## Introduction
-The Assignment Solver is a browser extension designed to assist with online assignments on MOOC platforms such as NPTEL and Coursera. It integrates with Google's Gemini AI to extract, analyze, and solve assessment questions. The extension supports dual modes, Study Hints and Auto-Solve, and handles multiple question types (single-choice, multi-choice, fill-in-the-blank, and image-based). It emphasizes privacy by keeping processing client-side and allowing users to bring their own API key (BYOK). Additional capabilities include full-page screenshot capture, export functionality, and cross-browser compatibility for Chrome and Firefox.
+Assignment Solver helps with online assignments on platforms like NPTEL and Coursera. It uses Gemini to extract and work through questions, offers Study Hints and Auto-Solve, and keeps processing on the client with a bring-your-own API key. Screenshots, export, and Chrome/Firefox support are part of the package.
 
 ## Project structure
-The extension follows a modular architecture organized by responsibility:
+The extension follows a modular design organized by responsibility:
 - src/background: Service worker and message routing
 - src/content: Content script for DOM extraction and answer application
 - src/ui: Side panel UI and controllers
@@ -42,22 +42,22 @@ CS --> GS
 
 ## Core components
 - Dual-mode operation:
-  - Study Hints: Retrieve explanations and reasoning without revealing direct answers.
-  - Auto-Solve: Automatically extract, analyze, fill, and submit assignments.
+ - Study Hints: Retrieve explanations and reasoning without revealing direct answers.
+ - Auto-Solve: Automatically extract, analyze, fill, and submit assignments.
 - Supported question types:
-  - Single-choice (radio)
-  - Multi-choice (checkbox)
-  - Fill-in-the-blank (text/number input)
-  - Image-based (full-page screenshots and embedded images are included in prompts)
+ - Single-choice (radio)
+ - Multi-choice (checkbox)
+ - Fill-in-the-blank (text/number input)
+ - Image-based (full-page screenshots and embedded images are included in prompts)
 - Privacy-first client-side processing:
-  - API key stored locally and never sent to third-party servers.
-  - All AI requests are made directly to Google's Gemini endpoints.
+ - API key stored locally and never sent to third-party servers.
+ - All AI requests are made directly to Google's Gemini endpoints.
 - BYOK and export:
-  - Users configure their own Gemini API key in the side panel.
-  - Export options include full extraction and answer-only exports.
+ - Users configure their own Gemini API key in the side panel.
+ - Export options include full extraction and answer-only exports.
 - Cross-browser compatibility:
-  - Unified browser API via webextension-polyfill.
-  - Separate manifests for Chrome (side panel) and Firefox (sidebar action).
+ - Unified browser API via webextension-polyfill.
+ - Separate manifests for Chrome (side panel) and Firefox (sidebar action).
 
 ## Architecture overview
 The extension communicates through a well-defined message bus between the side panel, background service worker, and content script. The background worker coordinates tasks, captures screenshots, and orchestrates Gemini API calls. The content script interacts with the assignment page to extract HTML and apply answers. The side panel provides user controls and displays progress/results.
@@ -205,7 +205,7 @@ ExportAnswers["Export Answer Only"] --> JSONAnswers["Return QID + Answer Fields"
 
 ## Dependency analysis
 - Cross-browser compatibility is achieved via webextension-polyfill and platform adapters.
-- Message routing centralizes background handlers and ensures async responses are handled safely.
+- Message routing centralizes background handlers and keeps the message channel open until async responses finish.
 - UI state management tracks processing state and current extraction for rendering.
 
 ```mermaid
@@ -226,16 +226,14 @@ SP --> GS
 
 ## Performance considerations
 - Rate limiting and delays:
-  - 500ms delay between answer API calls
-  - 200ms delay between DOM operations
+ - 500ms delay between answer API calls
+ - 200ms delay between DOM operations
 - Recursive splitting:
-  - Automatic splitting of HTML and question sets to avoid MAX_TOKENS errors
+ - Automatic splitting of HTML and question sets to avoid MAX_TOKENS errors
 - Thinking budgets:
-  - Configurable reasoning levels mapped to token budgets per model family
+ - Configurable reasoning levels mapped to token budgets per model family
 - Screenshot capture:
-  - Full-page screenshots are captured and sent to Gemini to improve accuracy for image-based questions
-
-[No sources needed since this section provides general guidance]
+ - Full-page screenshots are captured and sent to Gemini to improve accuracy for image-based questions
 
 ## Troubleshooting guide
 Common issues and resolutions:
@@ -246,4 +244,4 @@ Common issues and resolutions:
 - Rate limit errors: Wait before retrying, consider upgrading quota, or reduce concurrent questions.
 
 ## Conclusion
-The Assignment Solver extension provides a reliable, privacy-focused solution for automated assignment assistance on MOOC platforms. Its dual-mode operation, multi-format question support, and client-side processing with BYOK make it suitable for both learning and automation. The modular architecture, cross-browser compatibility, and thoughtful error handling contribute to a reliable user experience.
+BYOK, two modes, client-side only. That privacy stance is the product constraint, not a slogan.

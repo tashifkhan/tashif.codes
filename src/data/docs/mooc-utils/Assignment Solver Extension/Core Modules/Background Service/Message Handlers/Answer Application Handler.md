@@ -1,7 +1,7 @@
 # Answer application handler
 
 ## Introduction
-This page provides detailed technical documentation for the Answer Application Handler, which applies AI-generated answers to form elements on assignment pages. It covers supported question types, answer format validation, DOM manipulation techniques, user interaction simulation, error handling, and cross-browser compatibility across different assignment interfaces.
+Applies AI-generated answers to form controls on assignment pages. Covers question types, answer shape checks, DOM writes, synthetic user events, errors, and Chrome vs Firefox differences.
 
 ## Project structure
 The Answer Application Handler resides in the content script layer of the assignment-solver extension. It communicates with the background script via message passing and interacts directly with the page DOM to apply answers and submit assignments.
@@ -42,7 +42,7 @@ BG_Answers --> Platform_Browser
 ## Architecture overview
 The handler follows a message-driven architecture:
 - UI controllers trigger actions (solve, apply answers, submit).
-- Background answer handler ensures the content script is loaded and forwards messages.
+- Background answer handler checks that the content script is loaded, then forwards messages.
 - Content script applies answers to the DOM and triggers submission.
 
 ```mermaid
@@ -70,30 +70,30 @@ BG-->>UI : {success : true}
 ## Detailed component analysis
 
 ### Answer applicator
-The applicator encapsulates three primary operations: single-choice selection, multi-choice selection, and fill-in-the-blank text input. It validates inputs, performs reliable DOM queries, and simulates realistic user interactions.
+The applicator encapsulates three primary operations. single-choice selection, multi-choice selection, and fill-in-the-blank text input. It validates inputs, performs reliable DOM queries, and simulates realistic user interactions.
 
 - Supported question types:
-  - Single choice (radio button)
-  - Multi choice (checkbox)
-  - Fill in the blank (input/textarea)
+ - Single choice (radio button)
+ - Multi choice (checkbox)
+ - Fill in the blank (input/textarea)
 
 - Answer format validation:
-  - Single choice requires answer_option_id.
-  - Multi choice accepts a single ID or an array of IDs.
-  - Fill in the blank requires answer_text and optionally answer_option_id for targeting.
+ - Single choice requires answer_option_id.
+ - Multi choice accepts a single ID or an array of IDs.
+ - Fill in the blank requires answer_text and optionally answer_option_id for targeting.
 
 - DOM manipulation techniques:
-  - Radio buttons: click() followed by change event dispatch.
-  - Checkboxes: toggle click() and change event dispatch per option.
-  - Text inputs: set value, dispatch input, change, and keyup events.
+ - Radio buttons: click() followed by change event dispatch.
+ - Checkboxes: toggle click() and change event dispatch per option.
+ - Text inputs: set value, dispatch input, change, and keyup events.
 
 - Dynamic element detection:
-  - Attempts lookup by ID, value attribute, name containing question ID, and partial ID matches.
-  - For fill blanks, searches across input and textarea elements within question containers.
+ - Attempts lookup by ID, value attribute, name containing question ID, and partial ID matches.
+ - For fill blanks, searches across input and textarea elements within question containers.
 
 - User interaction simulation:
-  - Dispatches synthetic events to trigger change handlers and validation logic.
-  - Ensures UI reflects selections immediately.
+ - Dispatches synthetic events to trigger change handlers and validation logic.
+ - Ensures UI reflects selections immediately.
 
 ```mermaid
 flowchart TD
@@ -127,15 +127,15 @@ LogUnknown --> End
 The content script initializes logging, creates extractor and applicator instances, and listens for messages from the background script. It supports health checks, page extraction, scrolling, and answer application/submission.
 
 - Message handling:
-  - PING: responds to health checks.
-  - GET_PAGE_HTML: extracts page HTML and images.
-  - GET_PAGE_INFO: quick assignment detection metadata.
-  - APPLY_ANSWERS: delegates to applicator.
-  - SUBMIT_ASSIGNMENT: triggers submission with fallback selectors.
+ - PING: responds to health checks.
+ - GET_PAGE_HTML: extracts page HTML and images.
+ - GET_PAGE_INFO: quick assignment detection metadata.
+ - APPLY_ANSWERS: delegates to applicator.
+ - SUBMIT_ASSIGNMENT: triggers submission with fallback selectors.
 
 - Cross-browser compatibility:
-  - Uses webextension-polyfill for unified browser APIs.
-  - Includes Firefox-specific initialization delay in the answer handler.
+ - Uses webextension-polyfill for unified browser APIs.
+ - Includes Firefox-specific initialization delay in the answer handler.
 
 ```mermaid
 sequenceDiagram
@@ -155,16 +155,16 @@ CS-->>BG : {success : true}
 ```
 
 ### Answer handler (background)
-The background answer handler manages content script lifecycle and message routing. It ensures the content script is loaded, handles injection if missing, and forwards messages with error handling.
+The background answer handler manages content script lifecycle and message routing. It checks that the content script is loaded, injects if missing, and forwards messages with error handling.
 
 - Content script injection:
-  - Sends PING to verify readiness.
-  - Executes content script if missing.
-  - Applies extended delay for Firefox initialization.
+ - Sends PING to verify readiness.
+ - Executes content script if missing.
+ - Applies extended delay for Firefox initialization.
 
 - Error handling:
-  - Catches injection failures and instructs users to refresh the page.
-  - Forwards errors from content script responses.
+ - Catches injection failures and instructs users to refresh the page.
+ - Forwards errors from content script responses.
 
 ```mermaid
 flowchart TD
@@ -186,21 +186,21 @@ InjectFail --> |No| Forward
 Standardized message types define the contract between UI, background, and content scripts. The applicator validates answer arrays and individual answer objects before applying.
 
 - Message types:
-  - PING, GET_PAGE_HTML, GET_PAGE_INFO, APPLY_ANSWERS, SUBMIT_ASSIGNMENT.
+ - PING, GET_PAGE_HTML, GET_PAGE_INFO, APPLY_ANSWERS, SUBMIT_ASSIGNMENT.
 
 - Answer validation:
-  - applyAnswers checks for array presence and iterates with per-answer error handling.
-  - Single/multi/fill handlers validate required fields and log missing data.
+ - applyAnswers checks for array presence and iterates with per-answer error handling.
+ - Single/multi/fill handlers validate required fields and log missing data.
 
 ### Cross-Browser compatibility
-The extension targets both Chrome and Firefox using webextension-polyfill. The answer handler includes a deliberate delay for Firefox to ensure the content script initializes before sending messages.
+The extension targets both Chrome and Firefox using webextension-polyfill. The answer handler includes a deliberate delay for Firefox so the content script initializes before sending messages.
 
 - Browser detection:
-  - detectBrowser() identifies Firefox vs Chrome.
-  - isFirefox()/isChrome() helpers for conditional logic.
+ - detectBrowser() identifies Firefox vs Chrome.
+ - isFirefox()/isChrome() helpers for conditional logic.
 
 - Initialization differences:
-  - Firefox receives a longer wait after content script injection.
+ - Firefox receives a longer wait after content script injection.
 
 ## Dependency analysis
 The applicator depends on the content script environment and browser APIs. The content script depends on the applicator and logger. The background answer handler depends on tabs and scripting adapters and coordinates with the content script.
@@ -225,13 +225,13 @@ UI_Solve --> BG_Handler
 ## Troubleshooting guide
 Common issues and resolutions:
 - Content script not loaded:
-  - The answer handler attempts injection and verifies with PING. If still failing, instruct users to refresh the page.
+ - The answer handler attempts injection and verifies with PING. If still failing, instruct users to refresh the page.
 - Answers not applied:
-  - Verify answer arrays are present and properly formatted. Check logs for unknown question types or missing IDs.
+ - Verify answer arrays are present and properly formatted. Check logs for unknown question types or missing IDs.
 - Submission fails:
-  - Confirm submit button selectors are matched. The applicator tries multiple fallbacks if the explicit ID is unavailable.
+ - Confirm submit button selectors are matched. The applicator tries multiple fallbacks if the explicit ID is unavailable.
 - Cross-browser delays:
-  - Firefox may require additional initialization time. The handler includes a delay to mitigate timing issues.
+ - Firefox may require additional initialization time. The handler includes a delay to mitigate timing issues.
 
 ## Conclusion
-The Answer Application Handler provides a reliable, cross-browser compatible mechanism to apply AI-generated answers to assignment forms. It supports multiple question types, validates answer formats, simulates realistic user interactions, and includes detailed error handling and logging. The modular architecture ensures maintainability and extensibility across diverse assignment interfaces.
+Validate the answer payload, find the control, simulate input, and surface failures per question instead of failing the whole batch silently.

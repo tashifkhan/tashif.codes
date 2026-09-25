@@ -1,7 +1,7 @@
 # Update flow processing
 
 ## Introduction
-This page provides detailed technical documentation for the update flow processing system that powers data ingestion from the SuperSet portal. The system orchestrates multi-user authentication, credential management, and efficient data processing with deduplication and LLM-powered notice matching. It implements a callback-based enricher pattern to optimize API calls by enriching only new jobs while reusing existing enriched data.
+Ingestion from SuperSet: multi-user auth, credential rotation, dedupe, and LLM notice matching. A callback enricher fills details only for new jobs so we do not re-hit the portal for records we already know.
 
 ## Project structure
 The update flow spans several key modules within the application architecture:
@@ -38,7 +38,7 @@ CONFIG --> UPDATE_RUNNER
 The update flow processing system consists of four primary components working in concert:
 
 ### UpdateRunner
-The central orchestrator responsible for the complete update lifecycle, implementing dependency injection for testability and resource management.
+The central orchestrator for the update lifecycle, with DI for tests and resource cleanup.
 
 ### SupersetClientService
 Handles SuperSet portal authentication, data fetching, and job enrichment operations with detailed error handling and retry logic.
@@ -105,7 +105,7 @@ LogError --> End([End])
 ReturnUsers --> End
 ```
 
-The authentication process validates credentials from the configuration, attempts login for each user, and collects successful sessions for subsequent operations. Error handling ensures partial failures don't halt the entire authentication process.
+Auth tries each configured user, keeps the sessions that work, and continues when one login fails.
 
 ### Deduplication strategy
 The system implements efficient deduplication using database-backed ID lookups:
@@ -200,7 +200,7 @@ Error handling follows a consistent pattern:
 - All operations use structured logging with context information
 
 ## Dependency analysis
-The update flow demonstrates excellent separation of concerns through dependency injection:
+Update flow keeps concerns separate via DI:
 
 ```mermaid
 classDiagram
@@ -276,6 +276,4 @@ The update flow implements several optimization strategies:
 - **Database Performance**: Ensure proper indexing on frequently queried fields
 
 ## Conclusion
-The update flow processing system demonstrates reliable architecture design with detailed error handling, efficient resource utilization, and scalable processing capabilities. The multi-user authentication, deduplication strategy, and callback-based enrichment pattern work together to provide reliable data ingestion from SuperSet portal while maintaining optimal performance and reliability.
-
-The system's modular design enables easy maintenance, testing, and extension for future enhancements. The documented patterns and strategies provide a solid foundation for understanding and extending the update flow processing capabilities.
+Update flow is multi-user auth, dedupe, and enrich-only-when-new. Failures stay local, credentials rotate, and SuperSet does not get hammered for jobs we already stored.

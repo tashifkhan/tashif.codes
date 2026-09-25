@@ -1,10 +1,10 @@
 # Main process architecture
 
 ## Introduction
-This page explains the Electron main process architecture for a desktop application that integrates WhatsApp Web messaging alongside email sending capabilities. It covers window management, application lifecycle, IPC handler registration, the WhatsApp client initialization pattern, authentication strategies, Puppeteer browser setup, event-driven architecture for WhatsApp client events, file system operations for contact import and email list processing, cleanup procedures for WhatsApp cache and authentication files, security configurations, error handling strategies, and graceful shutdown procedures.
+Electron main process layout: window creation, IPC registration, WhatsApp client ownership, and cleanup on exit.
 
 ## Project structure
-The Electron application is organized with a clear separation between the main process, preload bridge, renderer React components, and supporting utilities. The main process initializes the BrowserWindow, registers IPC handlers, manages the WhatsApp client lifecycle, and performs cleanup. The renderer communicates via a secure contextBridge exposed API.
+The Electron application is organized with the main process, preload bridge, and renderer React components, and supporting utilities. The main process initializes the BrowserWindow, registers IPC handlers, manages the WhatsApp client lifecycle, and performs cleanup. The renderer communicates via a secure contextBridge exposed API.
 
 ```mermaid
 graph TB
@@ -79,10 +79,10 @@ P-->>R : "progress and results"
 - IPC handler registration: Registers handlers for Gmail, SMTP, WhatsApp client, contact import, email list import, and file reading.
 
 Security configurations enforced in the BrowserWindow:
-- nodeIntegration: false
-- contextIsolation: true
-- enableRemoteModule: false
-- webSecurity: true
+  - nodeIntegration: false
+  - contextIsolation: true
+  - enableRemoteModule: false
+  - webSecurity: true
 - preload script path configured
 
 ### WhatsApp client initialization pattern
@@ -159,17 +159,17 @@ Error --> Return
 ```
 
 ### Cleanup procedures for WhatsApp cache and authentication files
-- On startup: Deletes.wwebjs_cache and.wwebjs_auth directories.
-- On logout: Calls client.logout() and deletes cache/auth directories; ensures cleanup even if logout fails.
+- On startup: Deletes .wwebjs_cache and .wwebjs_auth directories.
+- On logout: Calls client.logout() and deletes cache/auth directories, including a forced path if logout throws.
 - On app quit/window-all-closed: Attempts logout and deletes cache/auth directories.
 
 ### Security configurations
 - BrowserWindow webPreferences:
-  - nodeIntegration: false
-  - contextIsolation: true
-  - enableRemoteModule: false
-  - webSecurity: true
-  - preload: path to preload script
+ - nodeIntegration: false
+ - contextIsolation: true
+ - enableRemoteModule: false
+ - webSecurity: true
+ - preload: path to preload script
 - Preload bridge: Exposes a minimal API surface via contextBridge to the renderer.
 - Gmail OAuth2: Uses offline access and a redirect URI; stores tokens securely using electron-store.
 - SMTP: Supports TLS with rejectUnauthorized disabled for self-signed certs; credentials saved encrypted.
@@ -227,8 +227,6 @@ PY["pyodide.js"] --> PP["parse_manual_numbers.py"]
 - File parsing uses streaming for CSV to handle large files efficiently.
 - QR code generation is asynchronous and guarded against errors.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - WhatsApp QR code not loading: Retry connection, check console logs, ensure network connectivity.
@@ -239,4 +237,5 @@ Common issues and resolutions:
 - SMTP connection issues: Verify host/port/security settings; test with a simple connection before bulk sending.
 
 ## Conclusion
-The main process architecture cleanly separates concerns between window management, IPC orchestration, and service-specific integrations. The WhatsApp client is initialized with a secure LocalAuth strategy and a hardened Puppeteer configuration, emitting a clear event-driven lifecycle. The renderer interacts through a secure preload bridge, enabling reliable contact and email list processing with detailed error handling and graceful shutdown procedures. Security is enforced via context isolation and restricted web preferences, while cleanup routines ensure a clean state across sessions.
+
+If the main process owns a resource, it also owns teardown. That rule keeps WhatsApp browsers and temp files from leaking across restarts.

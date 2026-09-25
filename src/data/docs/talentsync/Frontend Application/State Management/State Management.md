@@ -1,16 +1,15 @@
 # State management
 
-## Introduction
-This page explains the state management architecture of the frontend, focusing on:
+Frontend state: auth session, UI stores, and server data.
 - Server state management with React Query
 - Local UI state with useState/useReducer
-- Authentication state via NextAuth.js
+- Authentication state via FastAPI cookies and `SessionProvider`
 - Custom hooks for API integration and UI state synchronization
 - Data fetching patterns, caching, and optimistic updates
 - Context providers, state persistence, and cross-component synchronization
 - Error handling, loading states, and debugging techniques
 
-## Project structure
+## Repository layout
 The state management stack is organized around three pillars:
 - Providers: React Query client, session context, and developer tools
 - Services: Typed API clients and service abstractions
@@ -48,22 +47,22 @@ H4 --> Q2
 H1 --> P1
 ```
 
-## Core components
+## Building blocks
 - Providers
-  - React Query client configured with default caching and retry policies
-  - NextAuth.js session provider for authentication state
+ - React Query client configured with default caching and retry policies
+ - `SessionProvider` in `session-provider.tsx` for `/api/v1/auth/me`
 - Services
-  - Centralized typed API client with reliable error handling
-  - Feature-specific service modules encapsulate endpoint logic
+ - Centralized typed API client with clear error handling
+ - Feature-specific service modules encapsulate endpoint logic
 - React Query Hooks
-  - Queries for server state with explicit query keys
-  - Mutations for writes with invalidation and notifications
+ - Queries for server state with explicit query keys
+ - Mutations for writes with invalidation and notifications
 - Custom Hooks
-  - Local state machines for complex UI flows
-  - Utility hooks for UI state and notifications
+ - Local state machines for complex UI flows
+ - Utility hooks for UI state and notifications
 
-## Architecture overview
-The system integrates React Query for server state, NextAuth.js for authentication, and custom hooks for local UI state. Services abstract API calls and are consumed by React Query hooks.
+## How it fits together
+React Query holds server data. Auth is the FastAPI cookie session. Custom hooks hold wizard UI. Services wrap `api-client.ts`.
 
 ```mermaid
 sequenceDiagram
@@ -83,13 +82,11 @@ Hook->>Hook : "invalidateQueries() and toast()"
 Hook-->>UI : "updated state"
 ```
 
-## Detailed component analysis
-
-### React query provider and defaults
-- Creates a singleton QueryClient with:
-  - Stale time: 1 minute
-  - Retry attempts: 2
-  - Window focus refetch disabled
+## React query provider and defaults
+- Creates a singleton QueryClient :
+ - Stale time: 1 minute
+ - Retry attempts: 2
+ - Window focus refetch disabled
 - Wraps the app with SessionProvider for authentication state
 
 ```mermaid
@@ -101,29 +98,26 @@ WrapSP --> Devtools["Attach ReactQueryDevtools"]
 Devtools --> End(["Ready"])
 ```
 
-### Authentication state management
-- NextAuth.js configuration supports:
-  - Credentials, Google, GitHub, and Email providers
-  - JWT session strategy
-  - Callbacks for sign-in, session, and JWT token updates
-  - Verification and image propagation
-- Exposed via SessionProvider in providers
+## Authentication state management
+
+Google OAuth on FastAPI. `SessionProvider` seeds from `getSession()` and re-fetches `/api/v1/auth/me`. NextAuth is gone.
 
 ```mermaid
 sequenceDiagram
 participant Client as "Browser"
-participant NextAuth as "NextAuth Options"
-participant Adapter as "PrismaAdapter"
-participant DB as "Database"
-Client->>NextAuth : "Sign in with provider"
-NextAuth->>Adapter : "createUser / find user"
-Adapter->>DB : "CRUD operations"
-DB-->>Adapter : "user record"
-Adapter-->>NextAuth : "user object"
-NextAuth-->>Client : "session (JWT)"
+participant SP as "session-provider.tsx"
+participant Auth as "/api/v1/auth"
+participant DB as "Postgres"
+Client->>SP : signIn google
+SP->>Auth : GET /oauth/google
+Auth->>DB : User + Session
+Auth-->>Client : ts_access_token
+Client->>SP : mount
+SP->>Auth : GET /me
+Auth-->>SP : user
 ```
 
-### API client and error handling
+## API client and error handling
 - Provides typed GET/POST/PUT/PATCH/DELETE helpers
 - Builds query strings and FormData support
 - Throws ApiError with status and structured messages
@@ -144,7 +138,7 @@ H --> J["Throw ApiError"]
 I --> K["Return data"]
 ```
 
-### Server state: dashboard and resumes
+## Server state: dashboard and resumes
 - useDashboard: fetches dashboard data with a fixed query key
 - useResume: fetches a single resume by id with lazy execution (enabled only when id exists)
 - useDeleteResume/useRenameResume/useUploadResume: mutations that invalidate dashboard queries and notify via toast
@@ -163,14 +157,14 @@ Service-->>Hook : "data"
 Hook-->>UI : "data, isLoading, isError"
 ```
 
-### Local state: wizard flows
+## Local state: wizard flows
 - Enrichment Wizard
-  - Uses useReducer to manage multi-step state machine
-  - Integrates with React Query mutations for analysis, enhancement, refinement, and application
-  - Computes derived UI flags (canSubmitAnswers, canApplyEnhancements, counts)
+ - Uses useReducer to manage multi-step state machine
+ - Integrates with React Query mutations for analysis, enhancement, refinement, and application
+ - Computes derived UI flags (canSubmitAnswers, canApplyEnhancements, counts)
 - Improvement Wizard
-  - Similar reducer-driven flow for improving resumes
-  - Emphasizes preview and applying changes
+ - Similar reducer-driven flow for improving resumes
+ - Emphasizes preview and applying changes
 
 ```mermaid
 flowchart TD
@@ -189,7 +183,7 @@ Error --> Reset["dispatch RESET"]
 Complete --> Reset
 ```
 
-### UI state utilities
+## UI state utilities
 - use-toast: centralized toast notifications with queue limits and dismissal
 - use-mobile: responsive breakpoint detection for UI adaptation
 
@@ -206,36 +200,37 @@ class UseMobile {
 }
 ```
 
-### Data fetching patterns, caching, and invalidation
+## Data fetching patterns, caching, and invalidation
 - Caching
-  - Global staleTime of 1 minute; adjust per feature as needed
-  - Automatic retries on failure
+ - Global staleTime of 1 minute; adjust per feature as needed
+ - Automatic retries on failure
 - Fetching
-  - Queries keyed by domain identifiers (e.g., ["dashboard"], ["resume", id])
-  - Lazy execution for id-dependent queries
+ - Queries keyed by domain identifiers (e.g., ["dashboard"], ["resume", id])
+ - Lazy execution for id-dependent queries
 - Invalidation
-  - Mutations invalidate related query keys to synchronize UI state
-  - Notifications surfaced via toast
+ - Mutations invalidate related query keys to synchronize UI state
+ - Notifications surfaced via toast
 
-### Optimistic updates
+## Optimistic updates
 - Current hooks primarily reflect server state after mutations
 - To implement optimistic updates:
-  - Pre-update cache in mutation.onMutate
-  - Rollback on error via context returned by onMutate
-  - Invalidate or update cache in onSuccess/onError
+ - Pre-update cache in mutation.onMutate
+ - Rollback on error via context returned by onMutate
+ - Invalidate or update cache in onSuccess/onError
 - Recommended for actions like renaming or toggling visibility to reduce perceived latency
 
 [No sources needed since this section provides general guidance]
 
-### Context providers and cross-component synchronization
+## Context providers and cross-component synchronization
 - SessionProvider ensures authentication state is available across the app
 - QueryClientProvider enables cache sharing and synchronization across components
 - Custom hooks coordinate UI state and react to server-side changes via invalidation
 
-### Types and contracts
+## Types and contracts
 - Centralized exports of feature types enable consistent typing across services and hooks
 
-## Dependency analysis
+## Dependencies
+
 ```mermaid
 graph LR
 A["providers.tsx"] --> B["QueryClientProvider"]
@@ -251,7 +246,7 @@ J --> G
 K["use-toast.ts"] --> B
 ```
 
-## Performance considerations
+## Performance
 - Prefer granular query keys to minimize unnecessary refetches
 - Use enabled flags for id-dependent queries to avoid redundant requests
 - Tune staleTime per feature based on data volatility
@@ -260,21 +255,13 @@ K["use-toast.ts"] --> B
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
+## Troubleshooting
 - Network and API errors
-  - Inspect ApiError instances thrown by api-client
-  - Surface user-friendly messages via toast
+ - Inspect ApiError instances thrown by api-client
+ - Surface messages via toast
 - React Query debugging
-  - Enable devtools to inspect cache and query states
-  - Verify query keys and invalidation triggers
+ - Enable devtools to inspect cache and query states
+ - Verify query keys and invalidation triggers
 - Authentication issues
-  - Confirm provider configurations and callbacks
-  - Check session and JWT token updates in development logs
-
-## Conclusion
-The frontend employs a clean separation of concerns:
-- React Query manages server state with predictable caching and invalidation
-- NextAuth.js centralizes authentication state
-- Services provide typed, reusable API access
-- Custom hooks encapsulate UI logic and local state machines
-This foundation supports scalable UI flows, reliable error handling, and maintainable state synchronization across components.
+ - Confirm `ts_access_token` and matching `JWT_SECRET` / `BACKEND_JWT_SECRET`
+ - Check `/api/v1/auth/me` and `/refresh` in the network tab

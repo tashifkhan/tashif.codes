@@ -1,7 +1,6 @@
 # Frontend integration and display
 
-## Introduction
-This page explains the frontend integration with the resume analysis engine, focusing on the PDF resume generator and editor. It covers:
+How the frontend calls resume analysis and renders the results.
 - PDF resume components: ConfigurationForm, ResumePreview, ExportTab, TailoringForm, LatexOutput, LoadingOverlay, and PageLoader
 - Hook-based integration via use-resume-editor.ts for real-time updates and state management
 - Resume service layer for API communication, error handling, and data transformation
@@ -10,7 +9,7 @@ This page explains the frontend integration with the resume analysis engine, foc
 - Integration patterns for displaying analysis data, handling loading states, and managing user interactions
 - Accessibility and cross-browser considerations for PDF rendering
 
-## Project structure
+## Repository layout
 The frontend integrates two major flows:
 - PDF resume generation and export (ExportTab orchestrating TailoringForm, ConfigurationForm, ResumePreview, LatexOutput, and LoadingOverlay)
 - Resume editor and live preview (ResumeEditorTab, ResumeForm, EditorLayout, ResumePreviewPanel, SectionHeader)
@@ -59,7 +58,7 @@ RET --> RT
 ET --> RT
 ```
 
-## Core components
+## Building blocks
 - ExportTab orchestrates resume tailoring, configuration, preview, and export (PDF or LaTeX). It manages state for tailoring parameters, template and style options, and parsed resume data.
 - TailoringForm toggles and collects job-specific parameters to tailor the resume.
 - ConfigurationForm controls template, color scheme, and font size for PDF/LaTeX output.
@@ -71,7 +70,7 @@ ET --> RT
 - ResumeForm and EditorLayout implement drag-and-drop reordering, expand/collapse, and visibility toggles.
 - ResumePreviewPanel renders a printable A4-style preview with responsive scaling.
 
-## Architecture overview
+## How it fits together
 The system follows a layered architecture:
 - UI Layer: Components for PDF export and resume editing
 - Service Layer: resume.service.ts encapsulates API calls via api-client.ts
@@ -99,9 +98,7 @@ RS-->>ET : Result (resume_data/latex/pdf)
 ET-->>User : Render preview/LaTeX/PDF download
 ```
 
-## Detailed component analysis
-
-### PDF resume export tab
+## PDF resume export tab
 ExportTab coordinates tailoring, configuration, preview, and export. It:
 - Builds FormData for tailoring parameters and calls tailorResume mutation
 - Generates LaTeX or downloads PDF using resume service
@@ -128,19 +125,19 @@ Save --> End
 Error --> End
 ```
 
-### Tailoring form
+## Tailoring form
 TailoringForm toggles job-specific customization and validates required fields. It:
 - Uses a Switch to enable/disable tailoring
 - Requires job role when tailoring is enabled
 - Collects company info and job description for improved tailoring
 
-### Configuration form
+## Configuration form
 ConfigurationForm controls:
 - Template selection (Professional/Modern)
 - Color scheme (Default/Blue/Green/Red)
-- Font size slider (8–12pt)
+- Font size slider (8-12pt)
 
-### Resume preview panel
+## Resume preview panel
 ResumePreview renders formatted sections:
 - Personal info with links
 - Education, Skills, Languages
@@ -150,19 +147,19 @@ ResumePreview renders formatted sections:
 - Positions of responsibility
 - Recommended roles
 
-It also provides a miniature A4-style preview with responsive scaling and live updates.
+There is also a miniature A4-style preview with responsive scaling and live updates.
 
-### LaTeX output
-LatexOutput displays generated LaTeX code with:
+## LaTeX output
+LatexOutput displays generated LaTeX code :
 - Copy to clipboard
 - Open in Overleaf
 - Step-by-step manual compilation instructions
 
-### Loading and page load states
+## Loading and page load states
 - LoadingOverlay animates during PDF/LaTeX generation
 - PageLoader shows a page-level spinner while initializing
 
-### Resume editor integration
+## Resume editor integration
 ResumeEditorTab manages:
 - Local drafts persisted to localStorage with auto-save debounce
 - Real-time sync with server data and change detection
@@ -191,7 +188,7 @@ URE-->>RET : Toast + invalidate queries
 RET-->>User : Saved/Draft cleared
 ```
 
-### Service layer and API communication
+## Service layer and API communication
 The service layer abstracts API calls:
 - resume.service.ts defines endpoints for resume CRUD and analysis updates
 - api-client.ts centralizes HTTP requests, error normalization, and FormData handling
@@ -216,7 +213,7 @@ class ResumeService {
 ResumeService --> ApiClient : "uses"
 ```
 
-### Data models and interfaces
+## Data models and interfaces
 ResumeData and related types define the shape of analysis results and export options.
 
 ```mermaid
@@ -298,7 +295,7 @@ RESUME_DATA ||--o{ CERTIFICATION : "has"
 RESUME_DATA ||--o{ ACHIEVEMENT : "has"
 ```
 
-## Dependency analysis
+## Dependencies
 - ExportTab depends on TailoringForm, ConfigurationForm, ResumePreview, LatexOutput, and TanStack Query mutations for PDF/LaTeX generation and download
 - ResumeEditorTab depends on useUpdateResumeAnalysis and TanStack Query for saving changes
 - Both flows depend on resume.service.ts and api-client.ts for backend communication
@@ -322,7 +319,7 @@ RET --> RT["resume.ts"]
 ET --> RT
 ```
 
-## Performance considerations
+## Performance
 - Debounced localStorage writes in ResumeEditorTab reduce storage churn and improve responsiveness
 - ResumePreviewPanel scales content to fit available width using ResizeObserver and CSS transforms
 - TanStack Query invalidations keep cached data fresh after edits
@@ -330,27 +327,18 @@ ET --> RT
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
+## Troubleshooting
 Common issues and remedies:
 - PDF generation fails with fallback LaTeX: ExportTab checks for fallback and shows LaTeX output; copy and compile manually
 - Network errors: api-client.ts throws ApiError with normalized messages; surface via toasts
 - Tailoring validation: ExportTab enforces required job role when tailoring is enabled
 - Save conflicts: ResumeEditorTab detects changes and clears drafts upon successful save
 
-## Conclusion
-The frontend integrates smoothly with the resume analysis engine through:
-- A cohesive PDF export pipeline with tailoring, configuration, preview, and export options
-- A reliable editor with live preview, drag-and-drop reordering, and offline drafts
-- A service layer with strong typing and resilient error handling
-- Clear separation of concerns enabling maintainability and scalability
-
-[No sources needed since this section summarizes without analyzing specific files]
-
-## Appendices
+## Appendix
 
 ### Accessibility considerations
 - Use semantic labels and ARIA-friendly components (e.g., Switch, Button, Select)
-- Ensure keyboard navigation support for drag-and-drop and form controls
+- Keep keyboard navigation working for drag-and-drop and form controls
 - Provide visible focus states and sufficient color contrast for print-like previews
 - Offer alternative actions (copy LaTeX, open in Overleaf) for users who cannot download PDF
 
@@ -360,6 +348,6 @@ The frontend integrates smoothly with the resume analysis engine through:
 - Prefer server-side PDF generation for consistent rendering across browsers
 - Use LaTeX as a fallback for environments where PDF generation is unavailable
 - Validate blob handling and download triggers across browsers
-- Test link behavior for external services (Overleaf) and ensure pop-up allowances
+- Test link behavior for external services (Overleaf) and allow pop-ups where needed
 
 [No sources needed since this section provides general guidance]

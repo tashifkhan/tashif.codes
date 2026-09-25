@@ -1,9 +1,8 @@
 # Interview preparation system
 
-## Introduction
-The Interview Preparation System provides a complete end-to-end solution for AI-driven interview preparation and evaluation. It generates role- and resume-based questions, evaluates candidate answers (including coding challenges), tracks session events for integrity, and produces detailed summaries with hiring recommendations. The backend is built with Python and integrates LangChain prompts with an LLM for intelligent evaluation. The frontend offers intuitive dashboards for session management and answer generation.
+AI interview practice: role- and resume-based questions, answer evaluation (including coding), integrity events, and a hiring-oriented summary. Python/LangChain on the backend, dashboards on the frontend.
 
-## Project structure
+## Repository layout
 The system is organized into backend and frontend layers:
 - Backend: FastAPI routes, interview graph orchestration, services for question generation, evaluation, code execution, and session management, plus Pydantic models and enums.
 - Frontend: Next.js app with TypeScript/React components for interview setup, answer display, and dashboard views.
@@ -42,7 +41,7 @@ SG --> PM
 G --> MD
 ```
 
-## Core components
+## Building blocks
 - Interview Graph orchestrates session lifecycle, question generation, evaluation, code execution, and summary creation.
 - Question Generator builds question lists from difficulty distributions and avoids repetition using existing questions context.
 - Answer Evaluator scores textual answers and streams feedback; also supports code review streaming.
@@ -51,7 +50,7 @@ G --> MD
 - Summary Generator aggregates scores and events to produce a structured interview summary.
 - Routes expose REST endpoints for CRUD operations, event recording, and health checks.
 
-## Architecture overview
+## How it fits together
 The system follows a layered architecture:
 - Presentation Layer: Next.js frontend components and API clients.
 - Application Layer: FastAPI routes delegate to the Interview Graph.
@@ -81,9 +80,7 @@ AE --> LLM
 SG --> LLM
 ```
 
-## Detailed component analysis
-
-### Question generation logic
+## Question generation logic
 The generator creates questions tailored to role, difficulty distribution, topic, and candidate background while avoiding duplicates. It constructs a prompt with existing questions and optional resume data, invokes the LLM, and parses the response into structured question objects.
 
 ```mermaid
@@ -105,8 +102,8 @@ Graph-->>API : "InterviewSession"
 API-->>Client : "Session + Current Question"
 ```
 
-### Answer evaluation criteria
-The evaluator assesses answers using a standardized rubric (1–5) and provides structured feedback, strengths, and improvement areas. It supports streaming evaluation and can also review code submissions with execution results.
+## Answer evaluation criteria
+The evaluator assesses answers using a standardized rubric (1-5) and provides structured feedback, strengths, and improvement areas. It supports streaming evaluation and can also review code submissions with execution results.
 
 ```mermaid
 flowchart TD
@@ -123,7 +120,7 @@ NextOrEnd --> |No| Summarize["Generate Summary"]
 Summarize --> Complete(["Mark Session Completed"])
 ```
 
-### Session management and progress tracking
+## Session management and progress tracking
 Sessions are created with status transitions and tracked with events (e.g., tab switches). The manager stores sessions and events in memory and exposes save/get/delete operations.
 
 ```mermaid
@@ -136,7 +133,7 @@ Completed --> [*]
 Cancelled --> [*]
 ```
 
-### Interview analytics and feedback generation
+## Interview analytics and feedback generation
 The summary generator computes a final score percentage, formats questions and events, and asks the LLM to produce a narrative summary with strengths, weaknesses, recommendations, and hiring recommendation.
 
 ```mermaid
@@ -155,10 +152,10 @@ SumGen-->>Graph : "summary_data"
 Graph-->>API : "updated session with summary"
 ```
 
-### Frontend components for interview workflow
+## Frontend components for interview workflow
 - InterviewDetailsForm: Collects role, company, word limit, and optional company knowledge/URL for personalized preparation.
 - GeneratedAnswersPanel: Renders generated answers with copy/download actions.
-- Seeker Dashboard: Provides navigation and quick links to interview preparation tools.
+- Seeker Dashboard: Links out to interview preparation tools.
 - interview.service: API client for fetching and deleting interviews.
 
 ```mermaid
@@ -174,7 +171,7 @@ SD --> IS
 IS --> API
 ```
 
-### Data models
+## Data models
 Core models define the interview data structures and enumerations used across the system.
 
 ```mermaid
@@ -317,7 +314,7 @@ CodeExecutionRequest --> InterviewQuestion : "targets"
 InterviewEventRequest --> InterviewEvent : "creates"
 ```
 
-## Dependency analysis
+## Dependencies
 The backend components depend on LangChain prompts and an LLM provider for evaluation and question generation. The Interview Graph composes services and manages session state. Routes expose REST endpoints for frontend consumption.
 
 ```mermaid
@@ -335,7 +332,7 @@ Graph --> Schemas["models/interview/schemas.py"]
 Graph --> Enums["models/interview/enums.py"]
 ```
 
-## Performance considerations
+## Performance
 - Streaming Responses: Use streaming evaluation and summary generation to reduce latency and improve perceived responsiveness.
 - Prompt Efficiency: Keep prompts concise and avoid excessive context to minimize token usage and latency.
 - Sandboxed Execution: Enforce timeouts and output limits for code execution to prevent resource exhaustion.
@@ -344,20 +341,16 @@ Graph --> Enums["models/interview/enums.py"]
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Evaluation Service Unavailable: The evaluator returns a default score and feedback when the LLM is not configured.
 - Parsing Errors: The evaluator extracts structured data from JSON or Markdown fallbacks; verify prompt outputs conform to expected formats.
 - Code Execution Failures: Security checks and timeouts guard against malicious or long-running code; inspect stderr for failure reasons.
-- Session Not Found: Routes raise 404 when sessions do not exist; ensure correct IDs are used.
+- Session Not Found: Routes raise 404 when sessions do not exist; use the correct IDs.
 - Event Recording: Tab switches and other events are counted; monitor counts to flag potential integrity issues.
 
-## Conclusion
-The Interview Preparation System integrates AI-driven question generation, reliable answer evaluation, secure code execution, and detailed analytics to deliver a smooth interview preparation experience. Its modular architecture enables extensibility, while the frontend provides intuitive controls for session management and result visualization.
-
-[No sources needed since this section summarizes without analyzing specific files]
-
-## Appendices
+## Appendix
 
 ### Implementation example: full interview workflow
 - Setup: The frontend collects role, company, and preferences; the backend creates a session and generates the first question.

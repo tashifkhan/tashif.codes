@@ -1,7 +1,7 @@
 # Jobs collection
 
 ## Introduction
-This page defines the Jobs collection schema used to store structured job profile data extracted from the SuperSet portal. It explains the job_id unique identifier field and its relationship to MongoDB's ObjectId, details the company and job_profile fields, job_description content storage, and the qualification_criteria embedded structure containing min_cgpa threshold, branches array, and batch_years array. It also covers the position_details structure with total_positions, job_location, and job_type enumeration, the compensation embedded document with base_salary, bonus, and currency fields, and timestamps for application_deadline, posted_at, and metadata timestamps. Validation rules, array field requirements, and example documents are provided to illustrate different job types and qualification criteria combinations.
+Jobs holds structured profiles scraped from SuperSet. job_id is the business key (ObjectId is still there underneath). Company, role, package, eligibility, deadlines, enrichment blobs, and the indexes that keep upserts cheap.
 
 ## Project structure
 The Jobs collection is part of the MongoDB database managed by the application. The schema is defined in the client layer and persisted through the database service.
@@ -27,18 +27,18 @@ The Jobs collection schema is defined by the Job model and stored in MongoDB. Th
 - job_id: String (unique identifier for the job)
 - company: String
 - job_profile: String
-- qualification_criteria: Embedded document with:
-  - min_cgpa: Number (float)
-  - branches: Array of strings
-  - batch_years: Array of numbers
-- position_details: Embedded document with:
-  - total_positions: Number
-  - job_location: String
-  - job_type: Enumerated string
-- compensation: Embedded document with:
-  - base_salary: Number
-  - bonus: Number
-  - currency: String
+- qualification_criteria: Embedded document :
+ - min_cgpa: Number (float)
+ - branches: Array of strings
+ - batch_years: Array of numbers
+- position_details: Embedded document :
+ - total_positions: Number
+ - job_location: String
+ - job_type: Enumerated string
+- compensation: Embedded document :
+ - base_salary: Number
+ - bonus: Number
+ - currency: String
 - application_deadline: Number (epoch milliseconds)
 - posted_at: Number (epoch milliseconds)
 - metadata timestamps: saved_at, updated_at
@@ -116,22 +116,22 @@ The Jobs collection schema is derived from the Job model and validated against s
 - company (String): Name of the company
 - job_profile (String): Title of the job
 - qualification_criteria (Embedded Document):
-  - min_cgpa (Number): Minimum cumulative grade point average
-  - branches (Array of Strings): Eligible academic branches
-  - batch_years (Array of Numbers): Eligible batch years
+ - min_cgpa (Number): Minimum cumulative grade point average
+ - branches (Array of Strings): Eligible academic branches
+ - batch_years (Array of Numbers): Eligible batch years
 - position_details (Embedded Document):
-  - total_positions (Number): Total number of positions
-  - job_location (String): Location of the job
-  - job_type (Enumerated String): Type of job (e.g., full-time, internship)
+ - total_positions (Number): Total number of positions
+ - job_location (String): Location of the job
+ - job_type (Enumerated String): Type of job (e.g., full-time, internship)
 - compensation (Embedded Document):
-  - base_salary (Number): Base salary amount
-  - bonus (Number): Bonus amount
-  - currency (String): Currency code
+ - base_salary (Number): Base salary amount
+ - bonus (Number): Bonus amount
+ - currency (String): Currency code
 - application_deadline (Number): Application deadline in epoch milliseconds
 - posted_at (Number): Posted timestamp in epoch milliseconds
 - metadata timestamps:
-  - saved_at (Number): Timestamp when the document was saved
-  - updated_at (Number): Timestamp when the document was last updated
+ - saved_at (Number): Timestamp when the document was saved
+ - updated_at (Number): Timestamp when the document was last updated
 
 Validation rules:
 - Arrays branches and batch_years must not be empty
@@ -144,86 +144,86 @@ Below are example documents illustrating different job types and qualification c
 
 Example 1: Full-time job with CGPA threshold and branch eligibility
 {
-  "job_id": "7d7dd5e9-51e6-46b6-a0e2-c8cabf06acdc",
-  "company": "Axeno",
-  "job_profile": "Software Intern",
-  "qualification_criteria": {
-    "min_cgpa": 7.0,
-    "branches": ["B.Tech - CSE", "M.Tech. - CSE"],
-    "batch_years": [2026]
-  },
-  "position_details": {
-    "total_positions": 5,
-    "job_location": "Noida",
-    "job_type": "full-time"
-  },
-  "compensation": {
-    "base_salary": 600000,
-    "bonus": 0,
-    "currency": "INR"
-  },
-  "application_deadline": 1755751008000,
-  "posted_at": 1755688649000,
-  "metadata": {
-    "saved_at": 1755688649000,
-    "updated_at": 1755688649000
-  }
+ "job_id": "7d7dd5e9-51e6-46b6-a0e2-c8cabf06acdc",
+ "company": "Axeno",
+ "job_profile": "Software Intern",
+ "qualification_criteria": {
+ "min_cgpa": 7.0,
+ "branches": ["B.Tech - CSE", "M.Tech. - CSE"],
+ "batch_years": [2026]
+ },
+ "position_details": {
+ "total_positions": 5,
+ "job_location": "Noida",
+ "job_type": "full-time"
+ },
+ "compensation": {
+ "base_salary": 600000,
+ "bonus": 0,
+ "currency": "INR"
+ },
+ "application_deadline": 1755751008000,
+ "posted_at": 1755688649000,
+ "metadata": {
+ "saved_at": 1755688649000,
+ "updated_at": 1755688649000
+ }
 }
 
 Example 2: Internship with multiple branch eligibility and CGPA thresholds
 {
-  "job_id": "8c8530ea-07d6-4da1-81a7-595412905513",
-  "company": "Oracle Financial Services Software Limited (OFSS)",
-  "job_profile": "Associate Consultant",
-  "qualification_criteria": {
-    "min_cgpa": 7.0,
-    "branches": ["M.Tech. - CSE", "B.Tech - IT"],
-    "batch_years": [2026]
-  },
-  "position_details": {
-    "total_positions": 10,
-    "job_location": "Bengaluru, Mumbai, Pune or Chennai",
-    "job_type": "internship"
-  },
-  "compensation": {
-    "base_salary": 982054,
-    "bonus": 85100,
-    "currency": "INR"
-  },
-  "application_deadline": null,
-  "posted_at": 1755676866000,
-  "metadata": {
-    "saved_at": 1755676866000,
-    "updated_at": 1755676866000
-  }
+ "job_id": "8c8530ea-07d6-4da1-81a7-595412905513",
+ "company": "Oracle Financial Services Software Limited (OFSS)",
+ "job_profile": "Associate Consultant",
+ "qualification_criteria": {
+ "min_cgpa": 7.0,
+ "branches": ["M.Tech. - CSE", "B.Tech - IT"],
+ "batch_years": [2026]
+ },
+ "position_details": {
+ "total_positions": 10,
+ "job_location": "Bengaluru, Mumbai, Pune or Chennai",
+ "job_type": "internship"
+ },
+ "compensation": {
+ "base_salary": 982054,
+ "bonus": 85100,
+ "currency": "INR"
+ },
+ "application_deadline": null,
+ "posted_at": 1755676866000,
+ "metadata": {
+ "saved_at": 1755676866000,
+ "updated_at": 1755676866000
+ }
 }
 
 Example 3: Remote job with branch and batch eligibility
 {
-  "job_id": "9b2d06d3-37d7-49ee-92cb-c161f8f6c8c1",
-  "company": "Recruit CRM",
-  "job_profile": "Customer Success, Associate",
-  "qualification_criteria": {
-    "min_cgpa": 5.0,
-    "branches": ["M.Tech (Integrated) - CSE", "B.Tech - CSE"],
-    "batch_years": [2026]
-  },
-  "position_details": {
-    "total_positions": 8,
-    "job_location": "Remote",
-    "job_type": "full-time"
-  },
-  "compensation": {
-    "base_salary": 800000,
-    "bonus": 0,
-    "currency": "INR"
-  },
-  "application_deadline": 1755765057000,
-  "posted_at": 1755674049000,
-  "metadata": {
-    "saved_at": 1755674049000,
-    "updated_at": 1755674049000
-  }
+ "job_id": "9b2d06d3-37d7-49ee-92cb-c161f8f6c8c1",
+ "company": "Recruit CRM",
+ "job_profile": "Customer Success, Associate",
+ "qualification_criteria": {
+ "min_cgpa": 5.0,
+ "branches": ["M.Tech (Integrated) - CSE", "B.Tech - CSE"],
+ "batch_years": [2026]
+ },
+ "position_details": {
+ "total_positions": 8,
+ "job_location": "Remote",
+ "job_type": "full-time"
+ },
+ "compensation": {
+ "base_salary": 800000,
+ "bonus": 0,
+ "currency": "INR"
+ },
+ "application_deadline": 1755765057000,
+ "posted_at": 1755674049000,
+ "metadata": {
+ "saved_at": 1755674049000,
+ "updated_at": 1755674049000
+ }
 }
 
 ### Data persistence flow
@@ -268,4 +268,4 @@ Common issues and resolutions:
 - Database connectivity: Confirm MongoDB connection and collection initialization.
 
 ## Conclusion
-The Jobs collection schema provides a structured representation of job profiles extracted from SuperSet, enabling efficient storage, querying, and notification workflows. By adhering to the defined schema and validation rules, the system ensures data consistency and supports reliable job posting and filtering capabilities.
+Jobs is the SuperSet profile store. Stick to the schema and validation rules and upserts stay predictable.

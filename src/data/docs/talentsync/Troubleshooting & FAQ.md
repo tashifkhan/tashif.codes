@@ -1,17 +1,14 @@
 # Troubleshooting & FAQ
 
-## Update summary
-**Changes Made**
-- Updated logging section to reflect the removal of verbose debug logging mode and improved logging levels
-- Removed references to temporary logging enhancements that are no longer part of the codebase
-- Updated troubleshooting guidance to match current logging capabilities
-- Revised performance considerations to reflect simplified logging approach
+Install, Docker, runtime, AI/ML, and frontend failures, plus short answers to common setup questions.
 
-## Introduction
-This page provides detailed troubleshooting and Frequently Asked Questions for the TalentSync-Normies platform. It covers installation and environment setup issues, Docker configuration pitfalls, runtime errors and debugging techniques, performance tuning, AI/ML and NLP pipeline failures, and frontend-specific problems such as build errors, routing, and authentication. It also includes practical debugging tools and techniques for different environments, along with actionable answers to common questions about system requirements, feature limitations, and usage scenarios.
+## Recent changes
+- Logging docs match the simpler levels in code (verbose debug mode is gone)
+- Removed notes about temporary logging hooks that no longer exist
+- Performance notes updated for the quieter logging path
 
-## Project structure
-The platform consists of:
+## Repository layout
+Pieces:
 - Backend: Python FastAPI application with AI/ML integrations, logging, and middleware.
 - Frontend: Next.js application with PWA, PostHog instrumentation, and strict browser bundling rules.
 - Database: PostgreSQL managed via Docker Compose.
@@ -53,21 +50,22 @@ BD --> PY
 FD --> PKG
 ```
 
-## Core components
+## Building blocks
 - Logging and request tracing: Structured logs with request IDs, access logs, and configurable log levels.
 - Exception hierarchy: Centralized HTTP exception types for consistent error responses.
 - Settings and configuration: Environment-driven configuration with caching and optional external keys.
 - Middleware: CORS, request/response logging, and request ID propagation.
-- Frontend error extraction: Utility to normalize thrown errors into user-friendly messages.
+- Frontend error extraction: Utility to normalize thrown errors into messages.
 
-Key implementation references:
+Code to read:
+
 - Logging configuration and request ID propagation: `backend/app/core/logging.py`
 - Exception types: `backend/app/core/exceptions.py`
 - Settings and environment loading: `backend/app/core/settings.py`
 - Request/response logging middleware: `backend/app/main.py`
 - Frontend error normalization: `frontend/lib/error-utils.ts`
 
-## Architecture overview
+## How it fits together
 High-level runtime flow:
 - Frontend communicates with backend via internal Docker network.
 - Backend exposes API routes grouped by feature areas.
@@ -88,9 +86,7 @@ BE-->>FE : "JSON response"
 FE-->>Client : "Render UI"
 ```
 
-## Detailed component analysis
-
-### Backend logging and tracing
+## Backend logging and tracing
 - Request ID propagation via context variable ensures correlation across logs.
 - Access logs capture client address, method, path, and status code.
 - Log level respects settings and defaults to INFO for access logs.
@@ -108,7 +104,7 @@ LogResp --> ResetCtx["Reset context"]
 ResetCtx --> End(["Return response"])
 ```
 
-### Exception handling
+## Exception handling
 - Centralized exception types for consistent HTTP responses.
 - Useful for surfacing meaningful errors to clients and simplifying error handling logic.
 
@@ -133,7 +129,7 @@ BaseAppException <|-- ServerErrorException
 BaseAppException <|-- ServiceUnavailableException
 ```
 
-### Frontend error extraction utility
+## Frontend error extraction utility
 - Extracts a readable message from thrown values reliably handling Error instances, strings, and object-like structures.
 
 ```mermaid
@@ -147,7 +143,7 @@ HasMessage --> |Yes| ReturnObjMsg["Return message field"]
 HasMessage --> |No| DefaultMsg["Return generic message"]
 ```
 
-### AI/ML and NLP pipeline
+## AI/ML and NLP pipeline
 - LLM configuration supports multiple providers and models via settings.
 - NLTK data and pickled artifacts are bundled in the backend image.
 - Interview-related timeouts and session limits are configurable.
@@ -164,7 +160,7 @@ ModelSel --> RunProc["Run inference"]
 RunProc --> End(["Return structured result"])
 ```
 
-## Dependency analysis
+## Dependencies
 - Backend Python dependencies are declared in pyproject.toml with pinned versions and optional sources.
 - Frontend dependencies include Next.js, PostHog, Prisma client, and UI libraries.
 - Analysis tools (Jupyter, scikit-learn, NLTK) are present in the analysis directory.
@@ -184,7 +180,7 @@ AN --> NL["nltk"]
 AN --> MV["motor"]
 ```
 
-## Performance considerations
+## Performance
 - Logging overhead: Enable DEBUG selectively in development; production defaults reduce noise.
 - Middleware latency: Request/response logging reads bodies; avoid enabling in high-throughput production without capacity planning.
 - Interview code execution timeout: Tune based on compute resources and safety requirements.
@@ -196,7 +192,7 @@ Practical tips:
 - Adjust interview timeouts and session max age per workload.
 - Verify PostHog rewrites and static asset proxying in next.config.js.
 
-## Troubleshooting guide
+## Troubleshooting
 
 ### Installation and environment setup
 
@@ -220,7 +216,7 @@ Symptoms:
 
 Checks:
 - Confirm service dependencies and order: db then backend, then frontend.
-- Ensure NEXTAUTH_URL and BACKEND_URL are correctly set for internal Docker networking.
+- Ensure `FRONTEND_URL`, `BACKEND_URL`, `JWT_SECRET`, and `BACKEND_JWT_SECRET` match. `NEXTAUTH_URL` in compose is leftover naming.
 - Verify volume mounts for uploads and NLTK data paths.
 - Confirm port exposure for frontend (3000) and backend (8000).
 
@@ -277,27 +273,28 @@ Routing issues:
 - Ensure skipTrailingSlashRedirect is enabled for PostHog compatibility.
 
 Authentication failures:
-- Confirm NEXTAUTH_URL matches the external URL used by users.
-- Validate NEXTAUTH_SECRET and provider credentials in.env.
+- Confirm Google redirect URI and `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
+- `JWT_SECRET` must equal `BACKEND_JWT_SECRET`. NextAuth is gone.
 
 ### Debugging tools and techniques
 
 **Updated** Removed references to verbose debug logging mode and improved logging levels.
 
 - Backend:
-  - Enable DEBUG via settings for targeted investigations.
-  - Use request ID propagation to trace end-to-end flows.
-  - Inspect access logs for anomalies.
+ - Enable DEBUG via settings for targeted investigations.
+ - Use request ID propagation to trace a request across services.
+ - Inspect access logs for anomalies.
 
 - Frontend:
-  - Use error-utils to normalize thrown errors in UI.
-  - Validate PostHog proxy rules and static asset delivery.
-  - Confirm NEXT_PUBLIC variables are correctly injected.
+ - Use error-utils to normalize thrown errors in UI.
+ - Validate PostHog proxy rules and static asset delivery.
+ - Confirm NEXT_PUBLIC variables are correctly injected.
 
-## Conclusion
-By using the built-in logging, exception handling, and environment-driven configuration, most issues in TalentSync-Normies can be diagnosed quickly. Use Docker Compose as the single source of truth for environment setup, and rely on request IDs and access logs for correlation. For AI/ML and NLP concerns, validate provider credentials and model artifacts. For frontend issues, focus on build stages, PostHog configuration, and authentication settings.
+## Wrap-up
 
-## Appendices
+Most issues show up in request IDs and access logs. Compose is the local source of truth. For auth, check Google redirect URI and the two JWT secrets, not NextAuth. For AI, check provider keys and Kafka workers.
+
+## Appendix
 
 ### Frequently asked questions
 
@@ -308,12 +305,12 @@ Q: What are the system requirements?
 
 Q: Why does the frontend fail to start with migration errors?
 - Migrations run via a one-shot container stage; ensure db is healthy and credentials are correct.
-- Check that DATABASE_URL and NEXTAUTH_URL are set appropriately for the environment.
+- Check that DATABASE_URL is set. `NEXTAUTH_URL` in env files is leftover naming for the public origin.
 
 Q: How do I fix authentication issues?
-- Ensure NEXTAUTH_URL matches the external URL.
-- Verify NEXTAUTH_SECRET and provider credentials in.env.
-- Confirm cookies and redirects are allowed by CORS settings.
+- Match Google redirect URI to `/api/v1/auth/oauth/google/callback` (or the `/google/callback` alias).
+- Set `JWT_SECRET` and `BACKEND_JWT_SECRET` to the same value. NextAuth is gone.
+- Confirm `ts_access_token` is first-party via the `/api/v1` rewrite.
 
 Q: How can I improve slow API responses?
 - Reduce DEBUG logging in production.

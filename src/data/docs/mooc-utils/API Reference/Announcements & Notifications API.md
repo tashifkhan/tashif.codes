@@ -1,18 +1,15 @@
 # Announcements & notifications API
 
 ## Introduction
-This page describes the Announcements and Notifications API, focusing on:
-- Retrieving course announcements
-- Listing and managing notification history
-- Real-time notification delivery via channels
-- Managing subscriptions to courses
-- Notification preferences and channel management
-- Announcement parsing and caching
-- Notification scheduling and delivery mechanisms
-- Webhook endpoints and status tracking
-- Error handling for failed deliveries
+Endpoints for course announcements and notification history:
+- List notices for a course
+- Notification inbox and history
+- Channel-based delivery records
+- Subscriptions that drive what you get notified about
+- Preferences and channel management
+- Parsing and caching of announcement content
 
-The backend is a FastAPI application that exposes REST endpoints grouped by feature. Authentication is enforced globally, and data persistence is handled via Tortoise ORM against a relational database.
+Real-time push is modeled; what is actually wired today is called out per endpoint.
 
 ## Project structure
 The API is organized into routers, models, schemas, services, and core configuration. Routers define endpoint groups, schemas define request/response shapes, models define database entities, and services encapsulate business logic.
@@ -102,10 +99,10 @@ Router-->>Client : 200 OK JSON
 - Path: GET /courses/{course_code}/announcements
 - Authentication: Required
 - Behavior:
-  - Validates course existence by code.
-  - Fetches announcements from upstream via service and caches locally.
-  - Deduplicates by course, title, and date; updates content if changed.
-  - Returns paginated-like list ordered by fetch time.
+ - Validates course existence by code.
+ - Fetches announcements from upstream via service and caches locally.
+ - Deduplicates by course, title, and date; updates content if changed.
+ - Returns paginated-like list ordered by fetch time.
 
 ```mermaid
 flowchart TD
@@ -127,13 +124,13 @@ Next --> |No| Return["Return list of announcements"]
 
 ### Notifications endpoint
 - Paths:
-  - GET /notifications (lists current user's notifications)
-  - GET /notifications/users/{user_id} (admin/self-only access)
-  - PATCH /notifications/{notification_id}/read (mark as read)
+ - GET /notifications (lists current user's notifications)
+ - GET /notifications/users/{user_id} (admin/self-only access)
+ - PATCH /notifications/{notification_id}/read (mark as read)
 - Authentication: Required
 - Behavior:
-  - Listing filters by user and orders by send time descending.
-  - Mark-as-read validates ownership and toggles read flag.
+ - Listing filters by user and orders by send time descending.
+ - Mark-as-read validates ownership and toggles read flag.
 
 ```mermaid
 sequenceDiagram
@@ -143,7 +140,7 @@ participant Service as "NotificationService"
 participant DB as "Tortoise ORM"
 Client->>Router : GET /notifications
 Router->>Service : list_for_user(current_user.id)
-Service->>DB : SELECT ... ORDER BY sent_at DESC
+Service->>DB : SELECT... ORDER BY sent_at DESC
 DB-->>Service : List[Notification]
 Service-->>Router : List[Notification]
 Router-->>Client : 200 OK
@@ -159,13 +156,13 @@ Router-->>Client : 200 OK
 
 ### Subscriptions endpoint
 - Paths:
-  - POST /subscriptions (create subscription)
-  - GET /subscriptions (list user subscriptions)
-  - DELETE /subscriptions/{subscription_id} (delete subscription)
+ - POST /subscriptions (create subscription)
+ - GET /subscriptions (list user subscriptions)
+ - DELETE /subscriptions/{subscription_id} (delete subscription)
 - Authentication: Required
 - Behavior:
-  - Create validates course existence by code and creates a subscription.
-  - Delete enforces ownership and removes the subscription.
+ - Create validates course existence by code and creates a subscription.
+ - Delete enforces ownership and removes the subscription.
 
 ```mermaid
 flowchart TD
@@ -184,11 +181,11 @@ Remove --> Done["Return 204"]
 ### Notification channels
 - Purpose: Define where notifications are delivered (e.g., email, push).
 - Entities:
-  - NotificationChannel: stores channel type, address, activation flag, and timestamps.
-  - Notification: links a user, subscription, announcement, and optional channel.
+ - NotificationChannel: stores channel type, address, activation flag, and timestamps.
+ - Notification: links a user, subscription, announcement, and optional channel.
 - Relationships:
-  - One-to-many from User to NotificationChannel.
-  - Many-to-one from Notification to NotificationChannel.
+ - One-to-many from User to NotificationChannel.
+ - Many-to-one from Notification to NotificationChannel.
 
 ```mermaid
 classDiagram
@@ -295,22 +292,20 @@ SubRouter --> SubModel["subscription.py"]
 - Database constraints: Unique constraints on user-course and channel-address combinations prevent duplicates and support fast lookups.
 - Asynchronous operations: Services use async/await; ensure database connection pooling and indexing align with query patterns.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common errors and resolutions:
 - Course not found when fetching announcements:
-  - Cause: Invalid course code.
-  - Resolution: Verify course code; ensure course exists.
+ - Cause: Invalid course code.
+ - Resolution: Verify course code; ensure course exists.
 - Access denied for notifications:
-  - Cause: Attempting to access another user's notifications.
-  - Resolution: Only access your own notifications or have appropriate admin privileges.
+ - Cause: Attempting to access another user's notifications.
+ - Resolution: Only access your own notifications or have appropriate admin privileges.
 - Notification not found:
-  - Cause: Invalid notification ID.
-  - Resolution: Confirm the notification exists and belongs to the current user.
+ - Cause: Invalid notification ID.
+ - Resolution: Confirm the notification exists and belongs to the current user.
 - Subscription not found or access denied:
-  - Cause: Non-existent subscription or unauthorized deletion.
-  - Resolution: Check subscription ownership and existence.
+ - Cause: Non-existent subscription or unauthorized deletion.
+ - Resolution: Check subscription ownership and existence.
 
 Operational checks:
 - Ensure authentication is active and tokens are valid.
@@ -318,4 +313,4 @@ Operational checks:
 - Validate upstream service availability for announcement retrieval.
 
 ## Conclusion
-The Announcements and Notifications API provides a reliable foundation for retrieving course notices, managing subscriptions, and tracking notification history. It supports channel-based delivery and includes strong data models for deduplication and integrity. Extending the system to include webhooks, scheduled delivery, and delivery status tracking would complete the real-time notification lifecycle.
+List announcements for a course, manage the notification inbox, and keep channel records in sync with subscriptions. Delivery beyond the API store is still thin, so treat channels as data until workers exist.

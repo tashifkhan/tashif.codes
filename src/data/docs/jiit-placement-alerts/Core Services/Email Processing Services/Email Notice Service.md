@@ -1,9 +1,7 @@
 # Email notice service
 
 ## Introduction
-This page provides detailed documentation for the Email Notice Service, a LangGraph-based workflow pipeline that processes non-placement notices from Google Groups emails. The service classifies incoming emails, extracts structured notice data using Google Gemini, validates the results, and stores them for downstream notification routing. It also includes advanced handling for placement policy updates, integrating with the broader notification system for distribution to Telegram and other channels.
-
-The service focuses on general notices such as announcements, hackathons, job postings, shortlistings, updates, webinars, reminders, and internship NOCs. It uses reliable prompt engineering, retry mechanisms, and careful error handling to ensure reliable processing and integration with the rest of the notification infrastructure.
+LangGraph pipeline for non-placement Google Groups mail. Classify, extract with Gemini, validate, store, then let notification routing take over. Placement policy updates get a special path.
 
 ## Project structure
 The Email Notice Service resides within the application's services layer and integrates with clients for email retrieval, database persistence, and notification dispatch. The key modules involved are:
@@ -44,8 +42,8 @@ NF --> CFG
 This section outlines the primary building blocks of the Email Notice Service and related components.
 
 - Pydantic Models
-  - ExtractedNotice: Represents the structured notice data extracted from emails, including fields for title, content, type, source, deadlines, links, and type-specific attributes (e.g., students, company_name, package, venue).
-  - NoticeDocument: The normalized document ready for database storage, including metadata such as author, formatted_message, timestamps, and optional student lists.
+ - ExtractedNotice: Represents the structured notice data extracted from emails, including fields for title, content, type, source, deadlines, links, and type-specific attributes (e.g., students, company_name, package, venue).
+ - NoticeDocument: The normalized document ready for database storage, including metadata such as author, formatted_message, timestamps, and optional student lists.
 
 - NoticeGraphState: The LangGraph state container that tracks email content, classification results, extraction outcomes, validation status, retry count, and policy update detection.
 
@@ -53,7 +51,7 @@ This section outlines the primary building blocks of the Email Notice Service an
 
 - EmailNoticeService: The main orchestrator that builds the LangGraph workflow, connects to Google Gemini, and executes the pipeline for each email.
 
-- GoogleGroupsClient: IMAP client responsible for fetching unread emails, parsing content, extracting forwarded sender/date, and marking emails as read.
+- GoogleGroupsClient: IMAP client that fetches unread emails, parsing content, extracting forwarded sender/date, and marking emails as read.
 
 - PlacementPolicyService: Handles detection and extraction of placement policy updates, converting raw email content into structured policy documents.
 
@@ -103,7 +101,7 @@ EmailSvc-->>Scheduler : List[NoticeDocument]
 ### EmailNoticeService
 The EmailNoticeService is the central orchestrator for email-based notice processing. It initializes dependencies, constructs the LangGraph pipeline, and executes the workflow for each email.
 
-Key responsibilities:
+It owns:
 - Initialize Google Gemini LLM, formatter service, and policy service.
 - Build a StateGraph with nodes for classification, extraction, validation, and display.
 - Manage state transitions and conditional edges based on classification and validation outcomes.
@@ -139,7 +137,7 @@ Loop --> |No| End(["End"])
 ### GoogleGroupsClient
 The GoogleGroupsClient encapsulates IMAP connectivity and email retrieval for Google Groups. It supports fetching unread emails, parsing multipart messages, extracting forwarded sender and date, and marking emails as read or unread.
 
-Key capabilities:
+It can:
 - Connect/disconnect to Gmail IMAP securely.
 - Retrieve unread message IDs and fetch email content.
 - Parse email bodies (prefer plain text), extract forwarded metadata, and normalize dates to ISO format in IST.
@@ -188,7 +186,7 @@ PolicySvc-->>Graph : PolicyDocument
 ```
 
 ### NoticeFormatterService
-The NoticeFormatterService provides formatting logic for notices, including classification, fuzzy matching with job listings, enrichment callbacks, and message formatting. While primarily used by the broader system, it demonstrates complementary formatting patterns and LLM integration.
+The NoticeFormatterService provides formatting logic for notices, including classification, fuzzy matching with job listings, enrichment callbacks, and message formatting. Used elsewhere in the stack for the same classify/match/format pattern.
 
 Highlights:
 - PostState: TypedDict defining the workflow state.
@@ -243,24 +241,24 @@ CFG --> NS
 Common issues and resolutions:
 
 - LLM JSON Parsing Failures
-  - Symptom: Validation errors indicating malformed JSON.
-  - Resolution: The service retries extraction up to twice. If persistent, review the NOTICE_EXTRACTION_PROMPT and ensure the LLM returns strict JSON without markdown fences.
+ - Symptom: Validation errors indicating malformed JSON.
+ - Resolution: The service retries extraction up to twice. If persistent, review the NOTICE_EXTRACTION_PROMPT and ensure the LLM returns strict JSON without markdown fences.
 
 - Email Retrieval Errors
-  - Symptom: Exceptions when fetching unread IDs or parsing emails.
-  - Resolution: Verify Google email credentials and app password. Ensure IMAP is enabled and firewall rules allow outbound connections to Gmail IMAP.
+ - Symptom: Exceptions when fetching unread IDs or parsing emails.
+ - Resolution: Verify Google email credentials and app password. Ensure IMAP is enabled and firewall rules allow outbound connections to Gmail IMAP.
 
 - Policy Update Extraction Failures
-  - Symptom: Advanced policy extraction returns unexpected results.
-  - Resolution: The service falls back to basic extraction if the advanced path fails. Confirm the POLICY_EXTRACTION_PROMPT is correctly configured and the email contains expected metadata.
+ - Symptom: Advanced policy extraction returns unexpected results.
+ - Resolution: The service falls back to basic extraction if the advanced path fails. Confirm the POLICY_EXTRACTION_PROMPT is correctly configured and the email contains expected metadata.
 
 - Database Save Failures
-  - Symptom: Notices are extracted but not persisted.
-  - Resolution: Check database connectivity and permissions. Ensure the NoticeDocument schema matches the database collection structure.
+ - Symptom: Notices are extracted but not persisted.
+ - Resolution: Check database connectivity and permissions. Ensure the NoticeDocument schema matches the database collection structure.
 
 - Notification Delivery Issues
-  - Symptom: Notices are saved but not delivered to Telegram/web.
-  - Resolution: Verify Telegram bot token and chat ID. Use NotificationService broadcast methods to resend unsent notices and inspect channel-specific errors.
+ - Symptom: Notices are saved but not delivered to Telegram/web.
+ - Resolution: Verify Telegram bot token and chat ID. Use NotificationService broadcast methods to resend unsent notices and inspect channel-specific errors.
 
 ## Conclusion
-The Email Notice Service provides a reliable, LLM-powered pipeline for processing general notices from Google Groups emails. Through careful state management, structured prompts, validation, and integration with the broader notification ecosystem, it ensures reliable classification, extraction, and distribution of notices. The modular design allows for easy extension to new notice types and improved error handling, while the placement policy handling demonstrates advanced use cases for specialized extraction workflows.
+Email Notice Service: classify, extract, validate, store, notify. Graph state, structured prompts, then NotificationService. Policy updates are the special case that already proved the pipeline can grow.

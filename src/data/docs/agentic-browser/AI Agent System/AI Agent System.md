@@ -1,7 +1,7 @@
 # AI agent system
 
 ## Introduction
-This page describes the AI Agent System that powers a reactive, tool-augmented reasoning loop for natural language instructions. Built on the LangGraph framework, the system orchestrates an agent that decides whether to answer directly or delegate to tools, iteratively refining its plan until completion. It integrates a broad toolset spanning web search, website analysis, YouTube Q&A, Gmail and Calendar operations, JIIT web portal attendance retrieval, and browser automation. The LLM provider abstraction supports multiple backends (OpenAI, Anthropic, Google, Ollama, DeepSeek, OpenRouter) while maintaining a model-agnostic design. A reliable prompt engineering system supplies domain-specific instructions, and a sanitizer validates generated browser action plans. The system preserves conversation context, manages agent state, and coordinates multi-step workflows.
+LangGraph ReAct loop: answer directly or call tools until done. Tools cover search, websites, YouTube, Gmail, Calendar, JIIT attendance, and browser actions. Providers plug in through one LLM layer; a sanitizer checks browser plans.
 
 ## Project structure
 The repository organizes functionality by concerns:
@@ -58,14 +58,14 @@ INJ --> SVC
 
 ## Core components
 - Reactive Agent Graph: Defines a LangGraph workflow with an agent node and a tool execution node, enabling conditional routing between reasoning and tool use.
-- Tool Integration: Provides structured tools with typed schemas, dynamic composition based on context (tokens, session payloads), and reliable async execution.
+- Tool Integration: Structured tools with typed schemas, composition based on context (tokens, session payloads), and async execution.
 - LLM Provider Abstraction: Centralizes provider selection, model mapping, environment-driven configuration, and runtime client instantiation.
 - Prompt Engineering: Supplies domain-specific prompts for browser automation and injection validation for safety.
 - State Management: Maintains conversation context and message sequences for multi-turn interactions.
 - Orchestration: Bridges the extension UI to backend APIs and services, capturing page context and assembling tool-ready payloads.
 
 ## Architecture overview
-The system follows a layered architecture:
+Stack from the outside in:
 - Extension layer captures user intent, active tab context, and constructs payloads for backend endpoints.
 - API layer exposes endpoints for agent orchestration and tool-specific operations.
 - Service layer translates requests into agent state, injects context, and invokes the compiled LangGraph.
@@ -179,7 +179,7 @@ Tool selection and execution patterns:
 The LLM abstraction centralizes provider configuration and client instantiation:
 - Provider configs map provider names to LangChain chat model classes, default models, and environment variables.
 - LargeLanguageModel initializes clients with environment-driven parameters and validates presence of required keys/base URLs.
-- The agent uses a cached client instance, ensuring consistent model selection across the system.
+- The agent uses a cached client instance so model selection stays consistent.
 
 ```mermaid
 classDiagram
@@ -206,7 +206,7 @@ Provider configuration and environment handling:
 
 ### Prompt engineering system and injection validation
 Domain-specific prompts:
-- Browser automation prompt defines actions, constraints, and JSON output expectations for generating reliable action plans.
+- Browser automation prompt defines actions, constraints, and JSON output expectations for generating action plans the sanitizer can check.
 - Other prompts support specialized tasks (e.g., website, YouTube, GitHub).
 
 Injection validation:
@@ -315,7 +315,7 @@ RA --> LLM["core/llm.py"]
 SVC["services/react_agent_service.py"] --> RA
 SVC --> RT
 RTR["routers/react_agent.py"] --> SVC
-EXT["extension/executeAgent.ts"] --> RTR
+EXT["clients/browser-extension/entrypoints/utils/executeAgent.ts"] --> RTR
 EXT --> MAP["agent-map.ts"]
 EXT --> WS["websocket-client.ts"]
 ```
@@ -327,8 +327,6 @@ EXT --> WS["websocket-client.ts"]
 - Payload sizing: Limit DOM structures and chat histories to reasonable sizes to keep prompt costs and latency manageable.
 - Rate limits: Respect provider rate limits and implement retries with backoff.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and remedies:
 - Missing API keys or base URLs: Ensure environment variables are set for the chosen provider.
@@ -338,9 +336,7 @@ Common issues and remedies:
 - Injection risks: Apply the injection validator to incoming markdown content before processing.
 
 ## Conclusion
-The AI Agent System combines a reactive, tool-integrated reasoning loop with a flexible LLM provider abstraction and reliable safety mechanisms. By structuring tools with typed schemas, preserving conversation context, and validating outputs, it enables reliable multi-step workflows across diverse domains, from web search and content analysis to browser automation and authenticated service integrations.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Typed tools, conversation state, and plan validation are what make multi-step runs trustworthy. Log service and router traffic when a tool call looks wrong.
 
 ## Appendices
 

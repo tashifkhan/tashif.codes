@@ -1,7 +1,8 @@
 # Local development server
 
 ## Introduction
-This page explains the local development server implementation and command-line interface functions for the project. It covers:
+Running the Flask backend locally and the CLI helpers for extracting or validating contacts without the Electron shell.
+
 - Flask development server configuration with debug mode, host binding, and port settings
 - CLI functions for local testing and development workflows
 - Development environment setup, including dependency installation and server startup procedures
@@ -83,12 +84,12 @@ Local-->>Electron : HTML/JSON responses
 ### Local flask development server (localhost/app.py)
 - Purpose: Legacy UI and file upload workflows with user management and dynamic table creation
 - Flask configuration:
-  - Debug mode enabled
-  - SQLite database configured
-  - CORS enabled for all routes
+ - Debug mode enabled
+ - SQLite database configured
+ - CORS enabled for all routes
 - Routes:
-  - HTML forms for login/signup and file upload
-  - JSON APIs for login/signup, table loading, file upload, and table selection
+ - HTML forms for login/signup and file upload
+ - JSON APIs for login/signup, table loading, file upload, and table selection
 - Data model: User table with JSON field for dynamic tables
 - File upload handling: Validates allowed extensions and saves uploads
 
@@ -107,19 +108,19 @@ RenderError --> End
 ### Python backend flask service (python-backend/app.py)
 - Purpose: REST API for contact processing and validation
 - Flask configuration:
-  - Debug mode enabled
-  - Host bound to 0.0.0.0
-  - Port set to 5034
-  - Upload folder configured with allowed file types and size limit
+ - Debug mode enabled
+ - Host bound to 0.0.0.0
+ - Port set to 5034
+ - Upload folder configured with allowed file types and size limit
 - Endpoints:
-  - GET /health: Health check
-  - POST /upload: Upload and process CSV/Excel/TXT files
-  - POST /parse-manual-numbers: Parse manual number entries
-  - POST /validate-number: Validate a single phone number
+ - GET /health: Health check
+ - POST /upload: Upload and process CSV/Excel/TXT files
+ - POST /parse-manual-numbers: Parse manual number entries
+ - POST /validate-number: Validate a single phone number
 - Utilities:
-  - Phone number cleaning and normalization
-  - Contact extraction from multiple file formats
-  - Error handling and cleanup
+ - Phone number cleaning and normalization
+ - Contact extraction from multiple file formats
+ - Error handling and cleanup
 
 ```mermaid
 sequenceDiagram
@@ -153,9 +154,9 @@ Vite-->>Electron : Ready
 ### Python utilities (CLI functions)
 - Purpose: Standalone CLI utilities for contact processing and validation
 - Functions:
-  - Contact extraction from CSV/Excel/TXT
-  - Manual number parsing with name/number detection
-  - Phone number validation and normalization
+ - Contact extraction from CSV/Excel/TXT
+ - Manual number parsing with name/number detection
+ - Phone number validation and normalization
 - Usage: Run as Python scripts with file arguments or stdin/stdout
 
 ```mermaid
@@ -177,11 +178,11 @@ PrintError --> Exit
 
 ## Dependency analysis
 - Local Flask server depends on:
-  - Flask, SQLAlchemy, Flask-CORS, Werkzeug
+ - Flask, SQLAlchemy, Flask-CORS, Werkzeug
 - Python backend depends on:
-  - Flask, Flask-CORS, pandas, openpyxl, xlrd, werkzeug
+ - Flask, Flask-CORS, pandas, openpyxl, xlrd, werkzeug
 - Electron dev server depends on:
-  - Vite, concurrently, wait-on, electron, react, react-dom
+ - Vite, concurrently, wait-on, electron, react, react-dom
 
 ```mermaid
 graph LR
@@ -200,74 +201,71 @@ EMain --> React["React"]
 
 ## Performance considerations
 - Local Flask server:
-  - Uses SQLite in-memory-like persistence; suitable for development
-  - File uploads saved to filesystem; ensure adequate disk space
-  - Debug mode enabled; avoid enabling in production
+ - Uses SQLite in-memory-like persistence; suitable for development
+ - File uploads saved to filesystem; ensure adequate disk space
+ - Debug mode enabled; avoid enabling in production
 - Python backend:
-  - Max upload size limited to 16 MB
-  - File processing performed synchronously; consider async for heavy loads
-  - Phone number cleaning and validation are CPU-bound; batch processing recommended
+ - Max upload size limited to 16 MB
+ - File processing performed synchronously; consider async for heavy loads
+ - Phone number cleaning and validation are CPU-bound; batch processing recommended
 - Electron dev server:
-  - Vite hot reload improves iteration speed
-  - Puppeteer headless mode reduces overhead for WhatsApp integration
-
-[No sources needed since this section provides general guidance]
+ - Vite hot reload improves iteration speed
+ - Puppeteer headless mode reduces overhead for WhatsApp integration
 
 ## Troubleshooting guide
 Common development issues and resolutions:
 - Local Flask server not starting:
-  - Ensure Python dependencies are installed
-  - Confirm debug mode is enabled and host/port defaults are acceptable
+ - Ensure Python dependencies are installed
+ - Confirm debug mode is enabled and host/port defaults are acceptable
 - Python backend not reachable:
-  - Verify host binding to 0.0.0.0 and port 5034
-  - Check firewall and network configuration
+ - Verify host binding to 0.0.0.0 and port 5034
+ - Check firewall and network configuration
 - Electron dev server failing to load:
-  - Confirm Vite dev server is running at http://localhost:5173
-  - Ensure NODE_ENV is set to development
+ - Confirm Vite dev server is running at http://localhost:5173
+ - Ensure NODE_ENV is set to development
 - File upload errors:
-  - Validate allowed file types and sizes
-  - Check upload directory permissions
+ - Validate allowed file types and sizes
+ - Check upload directory permissions
 - Phone number validation failures:
-  - Ensure numbers meet length and format requirements
-  - Use the validation endpoint to diagnose issues
+ - Ensure numbers meet length and format requirements
+ - Use the validation endpoint to diagnose issues
 
 ## Conclusion
-The local development environment combines an Electron-based UI with two Flask services: a legacy local server for user and file operations, and a Python backend for contact processing and validation. Development workflows use Vite for rapid UI iteration, while the Python backend provides reliable APIs for data preparation. Proper environment configuration and dependency management are essential for smooth local development and testing.
 
-[No sources needed since this section summarizes without analyzing specific files]
+Run Flask alone when debugging parsers. It is faster than relaunching Electron for every fixture file.
 
 ## Appendices
 
 ### Development environment setup
 - Install Electron dependencies:
-  - Navigate to electron directory and run npm install
+ - Navigate to electron directory and run npm install
 - Install Python backend dependencies:
-  - Navigate to python-backend directory and run pip install -r requirements.txt
+ - Navigate to python-backend directory and run pip install -r requirements.txt
 - Start development server:
-  - From electron directory, run npm run dev to launch both React/Vite and Electron
+ - From electron directory, run npm run dev to launch both React/Vite and Electron
 
 ### Local API testing examples
 - Health check:
-  - GET http://localhost:5034/health
+ - GET http://localhost:5034/health
 - Upload and process contacts:
-  - POST http://localhost:5034/upload with multipart/form-data
+ - POST http://localhost:5034/upload with multipart/form-data
 - Parse manual numbers:
-  - POST http://localhost:5034/parse-manual-numbers with JSON payload
+ - POST http://localhost:5034/parse-manual-numbers with JSON payload
 - Validate phone number:
-  - POST http://localhost:5034/validate-number with JSON payload
+ - POST http://localhost:5034/validate-number with JSON payload
 
 ### Relationship between local development and production deployment
 - Local development:
-  - Electron dev server loads Vite dev server at http://localhost:5173
-  - Local Flask server runs with debug mode enabled
-  - Python backend runs with debug mode and binds to 0.0.0.0:5034
+ - Electron dev server loads Vite dev server at http://localhost:5173
+ - Local Flask server runs with debug mode enabled
+ - Python backend runs with debug mode and binds to 0.0.0.0:5034
 - Production deployment:
-  - Electron builds static assets and runs packaged app
-  - Python backend can be deployed behind a reverse proxy or containerized
-  - Local Flask server is intended for development and should not be used in production
+ - Electron builds static assets and runs packaged app
+ - Python backend can be deployed behind a reverse proxy or containerized
+ - Local Flask server is intended for development and should not be used in production
 
 ### Environment variable configuration
 - Electron development:
-  - NODE_ENV=development enables dev server loading
+ - NODE_ENV=development enables dev server loading
 - Python backend:
-  - No explicit environment variables required; configure host/port in app.run()
+ - No explicit environment variables required; configure host/port in app.run()

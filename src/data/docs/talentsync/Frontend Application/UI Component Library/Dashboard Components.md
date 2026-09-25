@@ -1,9 +1,8 @@
 # Dashboard components
 
-## Introduction
-This page provides detailed documentation for dashboard-specific components and layouts in the TalentSync application. It focuses on the Header component for navigation and greeting, ActivityCenter for user activity tracking, FeatureCard for feature presentation, QuickActions for rapid feature access, QuickTips for contextual help, ResumesSection for resume management, and StatsCard for analytics display. It also explains the ModalManager component for modal handling and state management, component composition patterns, data binding, and integration with the dashboard layout system. Examples of component usage, customization options, and responsive design considerations are included to guide both developers and designers.
+Dashboard-specific components and layouts in the TalentSync application.
 
-## Project structure
+## Repository layout
 The dashboard components reside under the frontend/components/dashboard directory and are integrated into the main dashboard page located at frontend/app/dashboard/page.tsx. They rely on shared UI components from frontend/components/ui, service abstractions in frontend/services, and typed data models in frontend/types. The layout system is provided by the Next.js app router with a root layout and a content wrapper that manages navigation and sidebar behavior.
 
 ```mermaid
@@ -45,7 +44,7 @@ USE_DASHBOARD --> DASHBOARD_TYPES
 DASHBOARD_PAGE --> NAVIGATION
 ```
 
-## Core components
+## Building blocks
 This section introduces each dashboard component, its purpose, props, and typical usage patterns.
 
 - Header: Displays a personalized greeting and current time with animated entrance effects.
@@ -57,7 +56,7 @@ This section introduces each dashboard component, its purpose, props, and typica
 - StatsCard: Visualizes metrics with progress indicators and optional click handlers.
 - ModalManager: Centralized modal manager for managing resumes, interviews, and cold mails with editing and deletion workflows.
 
-## Architecture overview
+## How it fits together
 The dashboard integrates UI components with data fetching and state management. The main dashboard page orchestrates:
 - Data fetching via a TanStack Query hook that calls a service abstraction.
 - State management for modals and editing/deletion flows.
@@ -94,9 +93,7 @@ Page->>Actions : Render quick actions
 Page->>Modals : Manage modals and edits
 ```
 
-## Detailed component analysis
-
-### Header component
+## Header component
 Purpose:
 - Display a personalized greeting based on the time of day and show the current time.
 - Provide animated entrance effects using Framer Motion.
@@ -116,7 +113,7 @@ Customization options:
 Responsive considerations:
 - Text centering and spacing adapt to screen sizes.
 
-### ActivityCenter component
+## ActivityCenter component
 Purpose:
 - Present recent user activities with live indicators and empty-state actions.
 
@@ -138,9 +135,9 @@ Customization options:
 Responsive considerations:
 - Grid and flex layouts adjust for smaller screens.
 
-### FeatureCard component
+## FeatureCard component
 Purpose:
-- Showcase a feature with an icon, title, description, feature list, and a prominent call-to-action button.
+- show a feature with an icon, title, description, feature list, and a prominent call-to-action button.
 
 Props:
 - icon: LucideIcon for the feature.
@@ -166,7 +163,7 @@ Customization options:
 Responsive considerations:
 - Grid layouts and spacing adapt to breakpoints.
 
-### QuickActions component
+## QuickActions component
 Purpose:
 - Provide quick-access buttons to frequently used features with animated entrance.
 
@@ -183,7 +180,7 @@ Customization options:
 Responsive considerations:
 - Flex wrap ensures proper stacking on small screens.
 
-### QuickTips component
+## QuickTips component
 Purpose:
 - Deliver contextual tips with gradient backgrounds and color-coded categories.
 
@@ -200,13 +197,13 @@ Customization options:
 Responsive considerations:
 - Responsive grid adjusts columns for tablet and desktop.
 
-### ResumesSection component
+## ResumesSection component
 Purpose:
 - List recent resumes with metadata and navigation to analysis pages.
 
 Props:
 - resumes: Resume[] array.
-- onViewAll: () => void callback for viewing all resumes.
+- onViewAll: => void callback for viewing all resumes.
 
 Composition pattern:
 - Uses Card, Badge, and motion wrappers.
@@ -221,7 +218,7 @@ Customization options:
 Responsive considerations:
 - Responsive grid with 1 column on mobile, 2 on tablet, 3 on desktop.
 
-### StatsCard component
+## StatsCard component
 Purpose:
 - Visualize metrics with progress indicators and optional click handlers.
 
@@ -234,7 +231,7 @@ Props:
 - badgeIcon: LucideIcon for the badge.
 - iconColor: string for the icon container.
 - badgeColor: string for the badge.
-- onClick?: () => void for card interaction.
+- onClick?: => void for card interaction.
 - delay: number for animation delay.
 
 Composition pattern:
@@ -248,7 +245,7 @@ Customization options:
 Responsive considerations:
 - Consistent padding and typography scaling.
 
-### ModalManager component
+## ModalManager component
 Purpose:
 - Centralized modal manager for managing resumes, interviews, and cold mails with editing and deletion workflows.
 
@@ -283,7 +280,7 @@ Customization options:
 Responsive considerations:
 - Scrollable modals with max-height constraints.
 
-## Dependency analysis
+## Dependencies
 The dashboard components depend on shared UI primitives, typed data models, and service abstractions. The main dashboard page coordinates data fetching and state management, while components focus on presentation and user interactions.
 
 ```mermaid
@@ -315,20 +312,18 @@ QUERY --> TYPES
 PAGE --> NAV
 ```
 
-## Performance considerations
+## Performance
 - Lazy loading and virtualization: Consider virtualizing long lists in ActivityCenter and ResumesSection for large datasets.
 - Animation costs: Keep motion configurations minimal; avoid heavy transforms on many elements simultaneously.
 - Data fetching: Use efficient caching and pagination for activity feeds and resume lists.
 - Modal rendering: Unmount modals when closed to reduce DOM overhead.
 - Image optimization: Ensure any images used in cards are optimized and lazy-loaded.
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Missing session or redirect loop: Verify authentication state and redirects in the dashboard page.
 - Empty activity or resume lists: Confirm data fetching hooks and service calls are successful.
 - Modal not closing: Ensure event.stopPropagation is used on modal content and close handlers are bound correctly.
 - Editing conflicts: Validate that editing state is cleared after successful mutations.
 - Clipboard errors: Handle navigator.clipboard rejections gracefully with user feedback.
-
-## Conclusion
-The dashboard components form a cohesive system that combines data-driven presentation with interactive modals and responsive layouts. By using shared UI primitives, typed data models, and service abstractions, the components maintain consistency and scalability. The main dashboard page orchestrates data fetching, state management, and component composition, enabling a smooth user experience across devices.

@@ -1,7 +1,7 @@
 # State management
 
 ## Introduction
-This page explains the state management system used in the assignment-solver UI. It covers the global state architecture, reactive updates, and persistence mechanisms. It documents the state manager factory, initialization patterns, and update triggers. It also describes how state changes propagate to UI components to drive re-renders, and how the system integrates with external data sources such as browser storage and the extension runtime. Finally, it provides guidance on mutation patterns, observer-style updates, synchronization with external systems, persistence strategies, memory management, and performance considerations for state-heavy applications.
+Side panel state: the state manager factory, how state is initialized, and what triggers updates.
 
 ## Project structure
 The state management lives in the assignment-solver UI module. The primary state container is created in a dedicated module and consumed by controllers that orchestrate user interactions, progress updates, settings, and detection. Persistence is handled by a storage service backed by a browser storage adapter. Communication with the extension runtime is abstracted behind a runtime adapter.
@@ -186,12 +186,12 @@ These mutations are performed by controllers in response to user actions or exte
 
 ### State synchronization with external data sources
 - Storage synchronization:
-  - Save API key and preferences via storage service
-  - Cache extractions with timestamps and URL metadata
-  - Retrieve and clear cached data as needed
+ - Save API key and preferences via storage service
+ - Cache extractions with timestamps and URL metadata
+ - Retrieve and clear cached data as needed
 - Runtime synchronization:
-  - Send messages to background scripts for page extraction, screenshots, answer application, and submission
-  - Listen for tab updates to refresh detection UI
+ - Send messages to background scripts for page extraction, screenshots, answer application, and submission
+ - Listen for tab updates to refresh detection UI
 
 ```mermaid
 sequenceDiagram
@@ -253,14 +253,12 @@ DC --> RT
 - Cache and reuse DOM nodes: Elements registry centralizes DOM access to avoid repeated queries.
 - Favor immutable-like updates: State manager replaces the state object reference on change, simplifying change detection and avoiding accidental shared mutable state.
 - Memory management:
-  - Clear caches (e.g., extraction) when no longer needed
-  - Remove event listeners when components unmount (implicit via controller lifecycle)
-  - Avoid retaining large payloads in state beyond their lifetime
+ - Clear caches (e.g., extraction) when no longer needed
+ - Remove event listeners when components unmount (implicit via controller lifecycle)
+ - Avoid retaining large payloads in state beyond their lifetime
 - External calls:
-  - Use retry helpers for runtime messages
-  - Limit concurrent heavy operations (e.g., screenshot capture)
-
-[No sources needed since this section provides general guidance]
+ - Use retry helpers for runtime messages
+ - Limit concurrent heavy operations (e.g., screenshot capture)
 
 ## Troubleshooting guide
 Common issues and remedies:
@@ -271,11 +269,4 @@ Common issues and remedies:
 - Progress stuck: Ensure progress controller steps are marked done and progress is reset appropriately.
 
 ## Conclusion
-The assignment-solver UI employs a minimal, explicit state management approach:
-- A factory-created state manager encapsulates UI state with typed setters/getters
-- Controllers orchestrate flows, mutate state, and update the DOM directly
-- Persistence is handled by a storage service backed by a browser storage adapter
-- Runtime communication is abstracted via a runtime adapter
-- There is no framework-level re-render; UI updates are imperative and efficient
-
-This design keeps state changes predictable, reduces boilerplate, and enables straightforward testing and debugging. For state-heavy applications, adopt the patterns here: centralized state via factories, imperative DOM updates, reliable persistence, and adapter-based external integrations.
+One state manager, explicit updates. Persist only settings the user expects to survive a reload.

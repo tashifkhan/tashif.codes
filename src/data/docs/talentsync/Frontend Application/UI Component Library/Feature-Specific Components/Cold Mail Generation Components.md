@@ -1,9 +1,8 @@
 # Cold mail generation components
 
-## Introduction
-This page provides detailed documentation for the cold mail generation system, focusing on the frontend components responsible for capturing user input, generating personalized emails, and managing user feedback during asynchronous operations. It explains the email generation workflow, template system, personalization logic, and integration with backend cold mail APIs. Additionally, it covers form validation, email preview functionality, and export/download capabilities.
+React pieces for drafting cold emails from a resume and job post.
 
-## Project structure
+## Repository layout
 The cold mail generation feature spans both frontend and backend components:
 - Frontend: React components for capturing user input, displaying generated emails, and managing loading states
 - Backend: FastAPI routes and services orchestrating LLM-based email generation and editing
@@ -42,7 +41,7 @@ K --> J
 L --> J
 ```
 
-## Core components
+## Building blocks
 This section outlines the primary components involved in the cold mail generation workflow:
 
 - EmailDetailsForm: Captures recipient and context information including name, designation, company, sender details, goals, website, key points to highlight, and additional context.
@@ -54,7 +53,7 @@ This section outlines the primary components involved in the cold mail generatio
 - Types: Defines request/response shapes for cold mail operations.
 - Backend Routes: FastAPI endpoints for cold mail generation and editing, supporting both file-based and text-based inputs.
 
-## Architecture overview
+## How it fits together
 The system follows a React-based frontend with a modular component architecture and integrates with backend FastAPI endpoints. The workflow supports three input modes: existing resume, uploaded resume, and custom draft editing. The backend applies structured prompts to generate or refine cold emails using an LLM pipeline.
 
 ```mermaid
@@ -76,9 +75,7 @@ P->>P : Update generatedEmail state
 P->>U : Display email in GeneratedEmailPanel
 ```
 
-## Detailed component analysis
-
-### EmailDetailsForm
+## EmailDetailsForm
 Purpose:
 - Collects recipient information (name, designation), company details, sender identity, goals, optional website, and contextual content for personalization.
 
@@ -95,7 +92,7 @@ Accessibility and styling:
 - Consistent use of shared UI primitives for labels and inputs.
 - Focus states and transitions for improved interaction feedback.
 
-### GeneratedEmailPanel
+## GeneratedEmailPanel
 Purpose:
 - Displays the generated email with subject and body, supports editing mode, copy-to-clipboard, and text download.
 
@@ -110,9 +107,9 @@ User feedback:
 
 Export/download:
 - Copies a formatted subject/body string to clipboard.
-- Downloads a.txt file containing subject and body.
+- Downloads a .txt file containing subject and body.
 
-### LoadingOverlay
+## LoadingOverlay
 Purpose:
 - Modal overlay indicating ongoing generation or editing operations with animated loader and customizable messages.
 
@@ -123,19 +120,19 @@ Behavior:
 Styling:
 - Uses motion animations for entrance/exit and a pulsing dot indicator.
 
-### PageLoader
+## PageLoader
 Purpose:
 - Page-level loader shown during initial component mount.
 
 Behavior:
 - Simple overlay with spinner and text until initial load completes.
 
-### ResumeSelection
+## ResumeSelection
 Purpose:
 - Manages three input modes:
-  - Existing resume: Select from user's saved resumes with auto-fill of candidate name and predicted field.
-  - Upload new resume: File picker with preview and accepted formats.
-  - Custom draft: Paste draft and edit instructions, optionally improve with resume context.
+ - Existing resume: Select from user's saved resumes with auto-fill of candidate name and predicted field.
+ - Upload new resume: File picker with preview and accepted formats.
+ - Custom draft: Paste draft and edit instructions, optionally improve with resume context.
 
 Key behaviors:
 - Dynamic mode switching with visual toggle.
@@ -146,11 +143,11 @@ Key behaviors:
 Validation:
 - Enforces required selections per mode in the parent page component.
 
-### Service layer and types
+## Service layer and types
 Purpose:
 - Encapsulate API interactions and define request/response contracts.
 
-cold-mail.service.ts:
+Cold-mail.service.ts:
 - Exposes methods for retrieving user resumes, generating cold mails, and editing existing emails.
 - Uses FormData for multipart requests supporting files and form fields.
 
@@ -158,11 +155,11 @@ Types:
 - ColdMailRequest defines required and optional fields for generation/editing.
 - ColdMailResponseData standardizes returned subject/body plus optional identifiers.
 
-### Backend integration
+## Backend integration
 Purpose:
 - Orchestrate LLM-based cold mail generation and editing via FastAPI endpoints.
 
-cold_mail.py:
+Cold_mail.py:
 - File-based endpoints for generation and editing accept resume files and form fields.
 - Text-based endpoints accept resume text and form fields for alternate workflows.
 
@@ -174,7 +171,7 @@ Models:
 - request.py: Pydantic model validating required fields and optional company URL.
 - response.py: Standardized response model with success flag, message, subject, and body.
 
-## Architecture overview
+## How it fits together
 
 ```mermaid
 graph TB
@@ -209,9 +206,7 @@ B4 --> B1
 B5 --> B1
 ```
 
-## Detailed component analysis
-
-### Email generation workflow
+## Email generation workflow
 The workflow begins with user input capture, followed by validation and preparation of FormData. Depending on the selected mode, either the generation or editing endpoint is invoked. The backend applies a structured prompt to produce a personalized email, returning subject and body.
 
 ```mermaid
@@ -240,7 +235,7 @@ UpdateUI --> End(["Display in GeneratedEmailPanel"])
 ErrorToast --> End
 ```
 
-### Template system and personalization logic
+## Template system and personalization logic
 The backend employs structured prompt templates to guide LLM behavior:
 - cold_mail_gen.py: Includes an example email, candidate resume, recipient details, key points, additional context, and company insights. Enforces word limits, paragraph structure, tone, and formatting.
 - cold_mail_editor.py: Builds upon an existing email and strict edit instructions to refine content while preserving personalization.
@@ -250,7 +245,7 @@ Personalization factors:
 - Key points to highlight and additional context.
 - Optional company URL for research insights.
 
-### Integration with backend cold mail APIs
+## Integration with backend cold mail APIs
 Frontend service methods:
 - getColdMails: Retrieve user cold mail sessions.
 - getUserResumes: Fetch user resumes for selection.
@@ -265,7 +260,7 @@ Type safety:
 - ColdMailRequest enforces required fields and optional company URL.
 - ColdMailResponseData standardizes returned subject/body.
 
-### Form validation and user feedback
+## Form validation and user feedback
 Validation logic:
 - Generates appropriate toasts for missing required fields in each mode.
 - Disables the generate button when inputs are invalid.
@@ -276,7 +271,7 @@ User feedback:
 - Loading overlays during generation/editing.
 - Page-level loader on initial mount.
 
-### Email preview and export/download
+## Email preview and export/download
 Preview:
 - MarkdownRenderer renders email body content with appropriate styling.
 - Sticky panel layout ensures visibility during scrolling.
@@ -285,7 +280,7 @@ Export/Download:
 - Copy to clipboard: Formats subject and body into a single string.
 - Download as text: Creates a Blob and triggers a download link.
 
-## Dependency analysis
+## Dependencies
 
 ```mermaid
 graph TB
@@ -304,19 +299,17 @@ A --> M["cold-mail.ts"]
 A --> N["use-cold-mails.ts"]
 ```
 
-## Performance considerations
+## Performance
 - Asynchronous operations: Use of mutations and loaders prevents blocking the UI during generation/editing.
 - Conditional rendering: Overlays and panels only render when needed, minimizing unnecessary DOM updates.
 - File handling: Preview logic reads small portions of text files to avoid heavy computations.
 - Toast notifications: Centralized error/success messaging avoids repeated error handling logic.
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Missing required fields: Ensure recipient name, company name, and sender name are filled before generation.
 - Resume selection problems: Select an existing resume or upload a valid file; pre-loaded files require re-upload if needed.
 - Edit failures: Provide clear edit instructions and ensure an email exists to edit.
 - Clipboard errors: Some browsers restrict clipboard access; fall back to manual copy or download.
 - Network errors: Inspect service method responses and ensure backend endpoints are reachable.
-
-## Conclusion
-The cold mail generation system combines a user-friendly frontend with reliable backend orchestration to deliver personalized cold emails. The modular component design, clear validation, and detailed user feedback mechanisms ensure a smooth user experience. The structured prompt templates and typed request/response models provide reliability and maintainability across the entire workflow.

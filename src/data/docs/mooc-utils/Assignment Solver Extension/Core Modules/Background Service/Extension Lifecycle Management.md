@@ -1,10 +1,10 @@
 # Extension lifecycle management
 
 ## Introduction
-This page explains the extension lifecycle management for the NPTEL Assignment Solver extension. It covers how the browser action icon click opens the side panel, how the background service worker manages runtime event listeners, how the UI initializes and interacts with the background, and how content scripts bridge page DOM interactions with the extension's background. It also documents cross-browser compatibility strategies, panel behavior configuration, and reliable error handling for UI interactions.
+How icon clicks open the side panel, how the service worker registers runtime listeners, how the UI boots against the background, and how content scripts bridge the page DOM. Cross-browser quirks and panel config are included.
 
 ## Project structure
-The extension follows a modular structure with clear separation of concerns:
+Extension layers:
 - Background service worker orchestrates messaging, panel behavior, and runtime listeners
 - Platform adapters abstract browser APIs for cross-browser compatibility
 - UI handles initialization, event binding, and user feedback
@@ -188,7 +188,7 @@ participant BG as "Background"
 participant CT as "Content Script"
 UI->>BG : GET_PAGE_HTML
 BG->>CT : GET_PAGE_HTML
-CT-->>BG : { html, images, url, title, ... }
+CT-->>BG : { html, images, url, title,... }
 UI->>BG : APPLY_ANSWERS
 BG->>CT : APPLY_ANSWERS
 CT-->>BG : { success : true }
@@ -233,7 +233,7 @@ DET->>UI : Re-check page and update UI
 ```
 
 ## Dependency analysis
-The extension exhibits strong modularity with clear dependency boundaries:
+The extension has strong modularity with clear dependency boundaries:
 - Background depends on platform adapters and message router
 - UI depends on runtime adapter and controllers
 - Content script depends on extractor and applicator
@@ -265,23 +265,13 @@ H2 --> SVC["Screenshot Service"]
 - Token limit handling: The solve controller splits large inputs recursively to avoid MAX_TOKENS errors, merging results afterward.
 - Progress reporting: UI shows determinate progress where possible and indeterminate progress for long-running steps.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and their handling:
 - Background not ready: The UI performs health checks with retries; if unsuccessful, it warns and continues.
 - Content script injection failures: The background attempts injection and verifies responsiveness; errors suggest refreshing the page.
 - Panel open/close failures: Panel adapter logs errors and throws exceptions; Firefox lacks a direct close API.
-- Message port closures: Router ensures sendResponse is called and keeps channels open for Firefox-compatible async responses.
+- Message port closures: Router still calls sendResponse and keeps channels open for Firefox-compatible async responses.
 - Gemini debug relay: UI relays debug payloads to the background and content script; failures are logged and ignored to prevent blocking.
 
 ## Conclusion
-The extension implements a reliable lifecycle management system:
-- Icon clicks reliably open the panel via unified adapters
-- Runtime listeners route messages efficiently with Firefox-compliant async handling
-- UI initializes safely with health checks and retry logic
-- Content scripts bridge page DOM interactions with background orchestration
-- Cross-browser compatibility is achieved through API detection and abstraction
-- Error handling is detailed, with logging and graceful degradation
-
-[No sources needed since this section summarizes without analyzing specific files]
+Icon click opens the panel; listeners and content-script injection keep the page side alive. Failures usually mean the panel never got a ready ping.

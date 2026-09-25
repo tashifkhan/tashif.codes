@@ -1,10 +1,9 @@
 # PDF resume generation components
 
-## Introduction
-This page explains the PDF resume generation system, focusing on the frontend components that enable users to customize, preview, and export professional resumes. It covers the configuration options, export formats, LaTeX generation process, template system, styling options, and integration with backend APIs. The goal is to help developers and technical users understand how the resume generation pipeline works from UI interactions to backend processing and final output delivery.
+React pieces for building and exporting a tailored resume PDF.
 
-## Project structure
-The resume generation feature is organized into reusable React components and supporting utilities, with clear separation between UI, data orchestration, and LaTeX generation logic. The frontend components communicate with Next.js API routes, which act as bridges to the backend services responsible for resume tailoring and PDF generation.
+## Repository layout
+The resume generation feature is organized into reusable React components and supporting utilities, with separation between UI, data orchestration, and LaTeX generation logic. The frontend components communicate with Next.js API routes, which act as bridges to the backend services responsible for resume tailoring and PDF generation.
 
 ```mermaid
 graph TB
@@ -38,7 +37,7 @@ LTX --> GEN
 GEN --> ESC
 ```
 
-## Core components
+## Building blocks
 This section introduces the primary components involved in the resume generation workflow:
 
 - ConfigurationForm: Allows users to choose a resume template, color scheme, and font size.
@@ -53,8 +52,8 @@ This section introduces the primary components involved in the resume generation
 - tailored-resume/route.ts: Next.js API route that bridges frontend requests to backend services.
 - graph.py: Backend service orchestrating resume tailoring with LLMs and tools.
 
-## Architecture overview
-The resume generation architecture follows a clear separation of concerns:
+## How it fits together
+The resume generation architecture keeps layers apart:
 - Frontend components collect user preferences and trigger actions.
 - ExportTab coordinates state and orchestrates API calls.
 - Next.js API routes validate requests, enforce authentication, and forward to backend services.
@@ -85,9 +84,7 @@ Utils-->>Export : "Formatted LaTeX"
 Export-->>User : "Preview and download options"
 ```
 
-## Detailed component analysis
-
-### ConfigurationForm
+## ConfigurationForm
 ConfigurationForm provides three customization controls:
 - Template selection: Professional or Modern.
 - Color scheme: Gray, Blue, Green, Red.
@@ -104,7 +101,7 @@ AdjustFont --> Apply["Apply Changes"]
 Apply --> End(["Options Ready"])
 ```
 
-### TailoringForm
+## TailoringForm
 TailoringForm enables job-specific resume tailoring:
 - Toggle for enabling tailoring.
 - Required job role.
@@ -120,7 +117,7 @@ OptionalFields --> Submit["Submit Tailoring Request"]
 Submit --> End(["Tailored Data Returned"])
 ```
 
-### ExportTab
+## ExportTab
 ExportTab is the central orchestrator:
 - Manages state for configuration, tailoring, preview, and LaTeX output.
 - Handles preview generation, LaTeX generation, and PDF download.
@@ -160,7 +157,7 @@ Tab->>Output : "Display LaTeX"
 end
 ```
 
-### ResumePreview
+## ResumePreview
 ResumePreview renders a readable preview of the resume data:
 - Header with name and contact information.
 - Sections for Education, Skills, Languages, Experience, Projects, Publications, Positions of Responsibility, Certifications, and Achievements.
@@ -182,7 +179,7 @@ Education --> End
 Other --> End
 ```
 
-### LatexOutput
+## LatexOutput
 LatexOutput presents the generated LaTeX code:
 - Provides buttons to copy LaTeX to clipboard and open in Overleaf.
 - Includes a textarea with the full LaTeX code.
@@ -199,7 +196,7 @@ Open --> End
 Manual --> End
 ```
 
-### ResumeSourceSelector
+## ResumeSourceSelector
 ResumeSourceSelector allows users to choose a resume source:
 - Toggle between "Use Existing Resume" and "Upload New Resume".
 - Dropdown to select from user's resumes with metadata.
@@ -217,7 +214,7 @@ Select --> End(["Resume Selected"])
 Choose --> End
 ```
 
-### LaTeX generation process and template system
+## LaTeX generation process and template system
 The LaTeX generation pipeline transforms structured resume data into compilable LaTeX:
 - Templates: Professional and Modern, each with distinct styling and packages.
 - Options: Font size, margins, and color scheme.
@@ -248,7 +245,7 @@ ProfessionalTemplate --> EscapeUtils : "uses"
 ModernTemplate --> EscapeUtils : "uses"
 ```
 
-### Backend integration and resume tailoring
+## Backend integration and resume tailoring
 The frontend communicates with backend services through Next.js API routes:
 - Authentication: Session-based checks ensure authorized access.
 - Tailoring: Two pathways, file upload (v1) or existing resume text (v2).
@@ -271,7 +268,7 @@ BE-->>API : "Return data"
 API-->>FE : "Success response"
 ```
 
-## Dependency analysis
+## Dependencies
 The components and utilities depend on each other as follows:
 - ExportTab depends on TailoringForm, ConfigurationForm, ResumePreview, LatexOutput, and resume-gen.service.
 - LatexOutput depends on latexGenerator and latexEscape.
@@ -291,19 +288,17 @@ Export --> API["tailored-resume/route.ts"]
 API --> Pipeline["graph.py"]
 ```
 
-## Performance considerations
+## Performance
 - Timeout handling: Backend requests use extended timeouts suitable for long-running LLM operations.
-- Error resilience: Non-JSON responses and HTML error pages are handled gracefully with user-friendly messages.
+- Error resilience: Non-JSON responses and HTML error pages are handled gracefully with messages.
 - Large payloads: Ensure resume text length is sufficient before tailoring to avoid unnecessary processing.
 - UI responsiveness: Loading overlays and disabled states prevent concurrent operations and improve UX.
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Authentication failures: Verify session validity; ensure proper sign-in.
 - Missing job role: Tailoring requires a non-empty job role; provide it before enabling tailoring.
 - Access denied to resume: Confirm ownership or administrative privileges for selected resume.
 - Backend connectivity: Timeouts or service unavailability trigger fallback behavior; retry later or use LaTeX output.
 - PDF download failures: When PDF service is unavailable, the system returns LaTeX code for manual compilation.
-
-## Conclusion
-The PDF resume generation system combines intuitive UI components with reliable backend processing to deliver customizable, ATS-friendly resumes. Users can tailor resumes to specific jobs, preview the results, generate LaTeX code, and download PDFs. The modular design ensures maintainability, while the backend pipeline uses LLMs and tools to produce high-quality, structured resume data ready for LaTeX compilation.

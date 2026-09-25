@@ -1,9 +1,8 @@
 # Cold email generation
 
-## Introduction
-This page explains the Cold Email Generation system that creates AI-powered, personalized cold emails. It covers the end-to-end workflow from resume ingestion and optional company research to prompt-driven generation and iterative editing. The system supports dual input modes: file-based resume processing and text-based resume inputs. It integrates with company research data and recipient information to produce tailored content. The frontend provides a modern composition, preview, and editing interface with copy/download capabilities and guided editing instructions.
+The Cold Email Generation system that creates AI-powered, personalized cold emails.
 
-## Project structure
+## Repository layout
 The system spans backend and frontend layers:
 - Backend: FastAPI routes, service orchestration, prompt templates, and integrations for document processing and company research.
 - Frontend: React components for composing inputs, selecting resumes, previewing generated emails, and editing with instructions.
@@ -39,14 +38,14 @@ BE_Service --> BE_Research
 BE_Service --> BE_Schemas
 ```
 
-## Core components
+## Building blocks
 - Prompt Templates: Structured prompts define the cold email structure, tone, formatting, and personalization guidelines. Two templates are used: one for generation and another for editing.
 - Route Layer: Exposes two dual-mode endpoints: file-based and text-based for both generation and editing.
-- Service Layer: Orchestrates document processing, optional resume formatting, company research retrieval, and LLM invocation with reliable JSON extraction.
-- Model Schemas: Strong typing for request/response contracts ensuring consistent data flow.
+- Service Layer: Orchestrates document processing, optional resume formatting, company research retrieval, and LLM invocation with JSON extraction.
+- Model Schemas: Strong typing for request/response contracts that keep request and response shapes aligned.
 - Frontend Components: Modular UI for resume selection, recipient/company details, generated preview, and editing with instruction prompts.
 
-## Architecture overview
+## How it fits together
 The system follows a layered architecture:
 - Frontend: Collects inputs, manages state, and invokes backend APIs.
 - Backend Routes: Parse multipart/form-data and delegate to services.
@@ -77,9 +76,7 @@ API-->>FE : Response
 FE-->>User : Preview and actions
 ```
 
-## Detailed component analysis
-
-### Prompt engineering and content structuring
+## Prompt engineering and content structuring
 - Generation Prompt: Defines a four-paragraph structure, subject constraints, tone, and formatting expectations. It injects resume, recipient, company, and optional research insights.
 - Editing Prompt: Uses the previous email as a base and strictly follows user instructions to refine content while preserving personalization and relevance.
 
@@ -91,13 +88,13 @@ Structure --> Tone["Mirror example tone and clarity"]
 Tone --> Output["Output JSON {subject, body}"]
 ```
 
-### Dual-Mode operation: file-based vs text-based
+## Dual-Mode operation: file-based vs text-based
 - File-Based Mode:
-  - Accepts multipart/form-data with a resume file and form fields.
-  - Processes uploaded file into text, optionally formats with LLM for non-MD/Text files, validates resume content, and proceeds to generation/editing.
+ - Accepts multipart/form-data with a resume file and form fields.
+ - Processes uploaded file into text, optionally formats with LLM for non-MD/Text files, validates resume content, and proceeds to generation/editing.
 - Text-Based Mode:
-  - Accepts resume_text directly via form fields.
-  - Skips file processing and directly uses the provided text for generation/editing.
+ - Accepts resume_text directly via form fields.
+ - Skips file processing and directly uses the provided text for generation/editing.
 
 ```mermaid
 flowchart TD
@@ -111,7 +108,7 @@ Mode --> |Text-Based| TextIn["resume_text"]
 TextIn --> Proceed
 ```
 
-### Company research integration
+## Company research integration
 - Optional company_url triggers retrieval of publicly accessible website content via an external service.
 - The returned research text is injected into the prompt to personalize the email with company-specific insights.
 
@@ -126,7 +123,7 @@ EXT-->>RESEARCH : HTML/Text content
 RESEARCH-->>SVC : "Research about {company} : {content}"
 ```
 
-### Editing functionality and instruction handling
+## Editing functionality and instruction handling
 - Users can refine generated emails by providing explicit edit instructions.
 - The editing prompt uses the previous subject/body as a base and enforces strict adherence to user instructions while maintaining personalization.
 
@@ -147,7 +144,7 @@ API-->>FE : Updated email
 FE-->>User : Preview refined email
 ```
 
-### Frontend interfaces
+## Frontend interfaces
 - Resume Selection: Supports three modes, existing resume, upload new file, or custom draft editing, plus auto-fill from analysis data.
 - Email Details Form: Captures recipient, company, sender, and optional company URL along with key points and additional context.
 - Generated Email Panel: Displays subject and body, supports edit mode with instruction input, copy to clipboard, and download as text.
@@ -180,14 +177,14 @@ ColdMailPage --> EmailDetailsForm : "renders"
 ColdMailPage --> GeneratedEmailPanel : "renders"
 ```
 
-## Dependency analysis
+## Dependencies
 - Backend dependencies:
-  - Routes depend on services for orchestration.
-  - Services depend on prompt templates, document processing, and optional company research.
-  - Schemas enforce request/response contracts.
+ - Routes depend on services for orchestration.
+ - Services depend on prompt templates, document processing, and optional company research.
+ - Schemas enforce request/response contracts.
 - Frontend dependencies:
-  - Page composes components and uses typed interfaces.
-  - Service layer abstracts API calls.
+ - Page composes components and uses typed interfaces.
+ - Service layer abstracts API calls.
 
 ```mermaid
 graph LR
@@ -201,34 +198,32 @@ BE_Service --> BE_Research["hiring_assiatnat.py"]
 BE_Service --> BE_Schemas["models/cold_mail/schemas.py"]
 ```
 
-## Performance considerations
+## Performance
 - Document processing overhead: PDF/DOC parsing and optional fallback conversion can be expensive; caching and limiting concurrent conversions helps.
 - LLM invocation latency: Batch edits and reuse of formatted resume text reduce repeated processing.
 - Frontend responsiveness: Debounce form inputs, lazy-load previews, and avoid unnecessary re-renders.
 - External research: Rate-limit external API calls and cache results per company URL to minimize latency and cost.
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Unsupported file type or processing error:
-  - Symptom: HTTP 400 with invalid file type.
-  - Resolution: Ensure file extension is supported (.txt,.md,.pdf,.doc,.docx).
+ - Symptom: HTTP 400 with invalid file type.
+ - Resolution: Ensure file extension is supported (.txt, .md, .pdf, .doc, .docx).
 - Invalid resume format:
-  - Symptom: HTTP 400 indicating invalid resume content.
-  - Resolution: Verify resume contains expected sections or provide text-based input.
+ - Symptom: HTTP 400 indicating invalid resume content.
+ - Resolution: Verify resume contains expected sections or provide text-based input.
 - LLM response parsing failures:
-  - Symptom: JSON decode errors or missing JSON in response.
-  - Resolution: Adjust prompt to enforce JSON output and validate response extraction logic.
+ - Symptom: JSON decode errors or missing JSON in response.
+ - Resolution: Adjust prompt to enforce JSON output and validate response extraction logic.
 - Company URL errors:
-  - Symptom: Research fetch errors or empty content.
-  - Resolution: Confirm URL validity and accessibility; consider rate limits and timeouts.
+ - Symptom: Research fetch errors or empty content.
+ - Resolution: Confirm URL validity and accessibility; consider rate limits and timeouts.
 
-## Conclusion
-The Cold Email Generation system combines structured prompts, reliable document processing, optional company research, and a flexible dual-mode input pipeline to produce highly personalized cold emails. The frontend offers an intuitive composition and editing experience, enabling users to refine content with precise instructions. By enforcing strong schemas, resilient LLM parsing, and modular components, the system balances power and usability for effective outreach.
-
-## Appendices
+## Appendix
 
 ### Successful cold email template structure
-- Subject: 8–12 words, clear and engaging.
+- Subject: 8-12 words, clear and engaging.
 - Paragraph 1: Introduction, current status, goal, and rationale for the company.
 - Paragraph 2: Relevant experience and skills with specific technologies or projects.
 - Paragraph 3: Fit and value alignment with company work or values.
@@ -243,11 +238,11 @@ The Cold Email Generation system combines structured prompts, reliable document 
 
 ### Optimization techniques
 - Content Quality Assurance:
-  - Enforce JSON output and extract valid JSON blocks.
-  - Validate resume content and reject malformed inputs.
+ - Enforce JSON output and extract valid JSON blocks.
+ - Validate resume content and reject malformed inputs.
 - Anti-Detection Measures:
-  - Vary sentence structures and avoid repetitive phrasing.
-  - Keep tone professional and avoid overly promotional language.
+ - Vary sentence structures and avoid repetitive phrasing.
+ - Keep tone professional and avoid overly promotional language.
 - Deliverability Optimization:
-  - Keep subject concise and relevant.
-  - Include a brief, professional signature and optional attachment note.
+ - Keep subject concise and relevant.
+ - Include a brief, professional signature and optional attachment note.

@@ -1,7 +1,6 @@
 # Feature implementation
 
-## Introduction
-This page provides feature implementation details for the core capabilities of TalentSync-Normies:
+The core capabilities of TalentSync:
 - Resume analysis engine: text processing pipeline, NLP integration, and result structuring
 - ATS optimization system: keyword analysis, formatting recommendations, and compatibility scoring
 - Interview preparation system: question generation logic, answer evaluation criteria, and interview analytics
@@ -11,12 +10,12 @@ This page provides feature implementation details for the core capabilities of T
 
 The platform combines a Next.js frontend with a FastAPI backend, integrating LangChain-based NLP prompts and Pydantic models for structured outputs. The backend exposes REST APIs organized by feature domains, while the frontend consumes these APIs and renders domain-specific UI components.
 
-## Project structure
-The repository follows a clear separation of concerns:
+## Repository layout
+The repository keeps layers apart:
 - Backend (FastAPI): routes, services, models, prompts, and core infrastructure
 - Frontend (Next.js): pages, components, services, and UI state management
 - Shared data models and prompts under backend for consistent schema enforcement
-- Authentication via NextAuth integration in the frontend
+- Authentication via Google OAuth on FastAPI (`ts_access_token`)
 
 ```mermaid
 graph TB
@@ -24,7 +23,7 @@ subgraph "Frontend (Next.js)"
 FE_Dashboard["Dashboard Pages"]
 FE_Components["Feature Components"]
 FE_Services["API Services"]
-FE_Auth["Auth Options"]
+FE_Auth["session.ts"]
 end
 subgraph "Backend (FastAPI)"
 BE_Routers["Routers (/api/v1, /api/v2)"]
@@ -41,36 +40,36 @@ BE_Services --> BE_Prompts
 FE_Auth --> FE_Services
 ```
 
-## Core components
+## Building blocks
 This section outlines the primary building blocks powering each feature area.
 
 - Resume Analysis Engine
-  - Routes: file-based and text-based endpoints for resume analysis and formatting
-  - Service: orchestrates document processing, LLM-driven extraction, validation, and cleanup
-  - Models: detailed analysis data structures and typed responses
-  - Prompts: structured prompt template for extracting rich, UI-ready data
+ - Routes: file-based and text-based endpoints for resume analysis and formatting
+ - Service: orchestrates document processing, LLM-driven extraction, validation, and cleanup
+ - Models: detailed analysis data structures and typed responses
+ - Prompts: structured prompt template for extracting rich, UI-ready data
 
 - ATS Optimization System
-  - Routes: evaluation endpoints supporting both file-based and text-based inputs
-  - Service: validates inputs, retrieves JD content (link or file), and normalizes evaluator output
-  - Models: request/response schemas for structured evaluation results
-  - Prompts: ATS analysis prompt defining keyword coverage, compatibility, and recommendations
+ - Routes: evaluation endpoints supporting both file-based and text-based inputs
+ - Service: validates inputs, retrieves JD content (link or file), and normalizes evaluator output
+ - Models: request/response schemas for structured evaluation results
+ - Prompts: ATS analysis prompt defining keyword coverage, compatibility, and recommendations
 
 - Interview Preparation System
-  - Routes: session lifecycle, answer submission (streaming and non-streaming), code execution, summary generation, and event recording
-  - Services: graph orchestration, session management, question generation, answer evaluation, and summary generation
-  - Models: interview configuration, templates, and event enums
+ - Routes: session lifecycle, answer submission (streaming and non-streaming), code execution, summary generation, and event recording
+ - Services: graph orchestration, session management, question generation, answer evaluation, and summary generation
+ - Models: interview configuration, templates, and event enums
 
 - Communication Tools
-  - Cold email: form and panel components with selection and generation flows
-  - Cover letter: form and panel components with selection and generation flows
-  - LinkedIn post: generator UI components
+ - Cold email: form and panel components with selection and generation flows
+ - Cover letter: form and panel components with selection and generation flows
+ - LinkedIn post: generator UI components
 
 - User Management and Authentication
-  - NextAuth integration in frontend with Prisma adapter
-  - Role-based access control via database schema and frontend guards
+ - FastAPI Google OAuth. Prisma still hydrates `getSession()` from `User`
+ - Role-based access control via database schema and frontend guards
 
-## Architecture overview
+## How it fits together
 The system architecture integrates frontend UI components with backend APIs, which delegate to services and prompts orchestrated by LangChain. The backend centralizes routing, middleware, and logging, while the frontend manages user interactions, state, and API consumption.
 
 ```mermaid
@@ -90,23 +89,21 @@ BE_Svc --> BE_Prompts
 BE_Svc --> LLM
 ```
 
-## Detailed component analysis
-
-### Resume analysis engine
+## Resume analysis engine
 The resume analysis engine processes uploaded or formatted resume content, cleans and structures it, and produces a detailed profile suitable for UI rendering and downstream ATS scoring.
 
 - Text Processing Pipeline
-  - File-based analysis reads the uploaded file, writes a temporary file, extracts text, removes the temp file, validates content, and optionally formats text via LLM before JSON extraction.
-  - Text-based analysis accepts pre-formatted text, validates it, and performs detailed analysis.
-  - Formatting and analysis endpoint returns cleaned text plus structured analysis.
+ - File-based analysis reads the uploaded file, writes a temporary file, extracts text, removes the temp file, validates content, and optionally formats text via LLM before JSON extraction.
+ - Text-based analysis accepts pre-formatted text, validates it, and performs detailed analysis.
+ - Formatting and analysis endpoint returns cleaned text plus structured analysis.
 
 - NLP Integration
-  - Detailed analysis prompt instructs the LLM to produce a JSON object conforming to the ComprehensiveAnalysisData model, covering skills, languages, education, work experience, projects, publications, positions of responsibility, certifications, achievements, and personal links.
-  - Structured extraction ensures consistent schema compliance and UI rendering.
+ - Detailed analysis prompt instructs the LLM to produce a JSON object conforming to the ComprehensiveAnalysisData model, covering skills, languages, education, work experience, projects, publications, positions of responsibility, certifications, achievements, and personal links.
+ - Structured extraction ensures consistent schema compliance and UI rendering.
 
 - Result Structuring
-  - Responses include typed models for resume analysis, detailed analysis, and formatted-and-analyzed results.
-  - Portfolio links are normalized across multiple potential field aliases.
+ - Responses include typed models for resume analysis, detailed analysis, and formatted-and-analyzed results.
+ - Portfolio links are normalized across multiple potential field aliases.
 
 ```mermaid
 sequenceDiagram
@@ -128,20 +125,20 @@ Service-->>API : "ComprehensiveAnalysisData"
 API-->>Client : "200 OK with analysis"
 ```
 
-### ATS optimization system
-The ATS optimization system evaluates a resume against a job description, computes keyword coverage, compatibility scores, and actionable recommendations.
+## ATS optimization system
+The ATS optimization system evaluates a resume against a job description, computes keyword coverage, compatibility scores, and concrete recommendations.
 
 - Input Handling
-  - Accepts either raw JD text or a JD link; supports optional company context.
-  - Validates payload to ensure at least one source of the job description is provided.
+ - Accepts either raw JD text or a JD link; supports optional company context.
+ - Validates payload to ensure at least one source of the job description is provided.
 
 - Evaluation Workflow
-  - Retrieves JD content from a link if needed.
-  - Normalizes evaluator output to a structured response with success flag, message, score, reasons, and suggestions.
+ - Retrieves JD content from a link if needed.
+ - Normalizes evaluator output to a structured response with success flag, message, score, reasons, and suggestions.
 
 - Scoring and Recommendations
-  - The prompt defines metrics such as semantic similarity, contact completeness, content quality, formatting, keyword coverage, and density.
-  - Outputs composite score, strengths, areas for improvement, recommended keywords, and structured recommendations.
+ - The prompt defines metrics such as semantic similarity, contact completeness, content quality, formatting, keyword coverage, and density.
+ - Outputs composite score, strengths, areas for improvement, recommended keywords, and structured recommendations.
 
 ```mermaid
 sequenceDiagram
@@ -165,23 +162,23 @@ Service-->>API : "JDEvaluatorResponse"
 API-->>Client : "200 OK with score and suggestions"
 ```
 
-### Interview preparation system
-The interview preparation system provides a full lifecycle: session creation, question delivery, answer evaluation (with streaming), code execution, and summary generation.
+## Interview preparation system
+Interview prep covers the full lifecycle: session creation, question delivery, answer evaluation (with streaming), code execution, and summary generation.
 
 - Session Lifecycle
-  - Create session with profile and configuration; returns current question.
-  - Retrieve, list, and delete sessions; filter by status.
-  - Record interview events (e.g., tab switches) for integrity tracking.
+ - Create session with profile and configuration; returns current question.
+ - Retrieve, list, and delete sessions; filter by status.
+ - Record interview events (e.g., tab switches) for integrity tracking.
 
 - Answer Evaluation
-  - Non-streaming and streaming endpoints for answer submission.
-  - Streaming uses Server-Sent Events to simulate typing and deliver final evaluation.
+ - Non-streaming and streaming endpoints for answer submission.
+ - Streaming uses Server-Sent Events to simulate typing and deliver final evaluation.
 
 - Code Execution
-  - Execute candidate code for coding questions and stream execution results followed by review.
+ - Execute candidate code for coding questions and stream execution results followed by review.
 
 - Summary Generation
-  - Generate final interview summary (non-streaming and streaming).
+ - Generate final interview summary (non-streaming and streaming).
 
 ```mermaid
 sequenceDiagram
@@ -206,18 +203,18 @@ Graph-->>API : "final_score, strengths, weaknesses, recommendations"
 API-->>Client : "Summary response"
 ```
 
-### Communication tools
+## Communication tools
 Communication tools enable generating cold emails, cover letters, and LinkedIn posts. The frontend provides dedicated forms and panels, while backend routes handle generation and persistence.
 
 - Cold Email Generation
-  - UI components: EmailDetailsForm and GeneratedEmailPanel
-  - Selection and generation flows handled by frontend services
+ - UI components: EmailDetailsForm and GeneratedEmailPanel
+ - Selection and generation flows handled by frontend services
 
 - Cover Letter Creation
-  - UI components: CoverLetterDetailsForm and GeneratedLetterPanel
+ - UI components: CoverLetterDetailsForm and GeneratedLetterPanel
 
 - LinkedIn Post Generator
-  - UI components for post generation
+ - UI components for post generation
 
 ```mermaid
 flowchart TD
@@ -229,29 +226,30 @@ Process --> Render["Render generated content in panel"]
 Render --> End(["User reviews and exports"])
 ```
 
-### User management, role-based access control, and authentication
-The platform integrates NextAuth with a Prisma adapter for secure user authentication and session management. Role-based access control is enforced via database schema and frontend guards.
+## User management, role-based access control, and authentication
+Auth is Google OAuth on FastAPI. NextAuth is gone. Roles live on `User.role`. `/dashboard/seeker` is the resume workspace. `/dashboard/recruiter` is leftover chrome, not TalentSync-HR.
 
-- Authentication Integration
-  - NextAuth configuration with Prisma adapter
-  - Auth routes for registration, verification, password reset, and role updates
+- Authentication
+ - `backend/app/routes/auth.py` plus `frontend/lib/session.ts`
+ - Live routes: OAuth, `/me`, `/refresh`, `/logout`, `/update-role`, `/delete-account`
+ - Password routes return 410 unless `CREDENTIALS_AUTH_ENABLED`
 
-- Role-Based Access Control
-  - Database schema defines roles and relationships
-  - Frontend guards restrict access to admin and seeker dashboards
+- Role-based access
+ - `USER | RECRUITER | ADMIN` on the user row
+ - `proxy.ts` plus page-level `useSession()` guards
 
 ```mermaid
 graph TB
-FE_Auth["Auth Options<br/>NextAuth"]
-FE_Routes["Auth Routes<br/>/api/auth/*"]
-DB["Prisma Schema<br/>User, Role, Session"]
-FE_Guards["Frontend Guards<br/>Admin/Seeker Pages"]
+FE_Auth["lib/session.ts"]
+FE_Routes["/api/v1/auth"]
+DB["User Account Session"]
+FE_Guards["proxy.ts + select-role"]
 FE_Auth --> FE_Routes
 FE_Routes --> DB
-FE_Guards --> FE_Routes
+FE_Guards --> FE_Auth
 ```
 
-## Dependency analysis
+## Dependencies
 The backend organizes features into routers, services, models, and prompts. The frontend composes UI components and consumes services that call backend endpoints.
 
 ```mermaid
@@ -281,7 +279,7 @@ INT_Router --> INT_Graph
 INT_Graph --> INT_SM
 ```
 
-## Performance considerations
+## Performance
 - Asynchronous processing: All major services operate asynchronously to avoid blocking I/O and LLM calls.
 - Temporary file handling: Writes to disk are minimized and removed immediately after processing to reduce I/O overhead.
 - Payload normalization: Reliable input validation and normalization prevent repeated parsing and reduce error handling costs.
@@ -290,27 +288,22 @@ INT_Graph --> INT_SM
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
+## Troubleshooting
 - Resume Analysis
-  - Unsupported file type or processing errors: Ensure the file format is supported and readable; verify LLM availability.
-  - Validation errors: Confirm extracted data conforms to expected schema; check alias normalization for portfolio links.
-  - Empty or invalid resume text: Validate content presence and structure before analysis.
+ - Unsupported file type or processing errors: Ensure the file format is supported and readable; verify LLM availability.
+ - Validation errors: Confirm extracted data conforms to expected schema; check alias normalization for portfolio links.
+ - Empty or invalid resume text: Validate content presence and structure before analysis.
 
 - ATS Evaluation
-  - Missing job description: Provide either JD text or a valid JD link; ensure link accessibility.
-  - JSON decoding failures: Validate evaluator output format; handle non-dictionary outputs gracefully.
-  - Web retrieval errors: Confirm external link availability and network connectivity.
+ - Missing job description: Provide either JD text or a valid JD link; ensure link accessibility.
+ - JSON decoding failures: Validate evaluator output format; handle non-dictionary outputs gracefully.
+ - Web retrieval errors: Confirm external link availability and network connectivity.
 
 - Interview System
-  - Session not found: Verify session identifiers and lifecycle states.
-  - Streaming errors: Ensure client supports SSE and network stability.
-  - Code execution failures: Validate language support and test inputs.
+ - Session not found: Verify session identifiers and lifecycle states.
+ - Streaming errors: Ensure client supports SSE and network stability.
+ - Code execution failures: Validate language support and test inputs.
 
 - Authentication and Authorization
-  - NextAuth configuration: Verify provider settings and Prisma adapter configuration.
-  - Role mismatches: Confirm user roles in the database and frontend guards.
-
-## Conclusion
-TalentSync-Normies delivers a cohesive set of AI-powered features spanning resume analysis, ATS optimization, interview preparation, and communication tools. The backend's modular design with clear separation of concerns, combined with the frontend's domain-specific UI components and reliable API integrations, enables a scalable and maintainable solution. By using structured prompts, typed models, and streaming capabilities, the platform provides both accuracy and responsiveness for users across job-seeking and hiring scenarios.
-
-[No sources needed since this section summarizes without analyzing specific files]
+ - Auth: Google redirect URI and matching `JWT_SECRET` / `BACKEND_JWT_SECRET`. NextAuth is gone.
+ - Role mismatches: Confirm user roles in the database and frontend guards.

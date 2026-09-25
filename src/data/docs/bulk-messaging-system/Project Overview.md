@@ -2,21 +2,22 @@
 
 ## Introduction
 
-WhatsappBulkMessaging is a cross-platform desktop application designed to streamline bulk messaging operations across multiple channels. The application is a unified platform for businesses, marketers, and organizations requiring automated mass communication capabilities through WhatsApp, Gmail, and SMTP email services.
+bulk-messaging-system is an Electron desktop app for bulk WhatsApp, Gmail, and SMTP sends. React 19 for the UI, Python for contact parsing, main-process handlers for the integrations.
 
-The application addresses the growing need for efficient customer outreach and marketing campaigns by providing a centralized solution that eliminates the complexity of managing multiple messaging platforms. Its hybrid architecture combines the power of desktop application deployment with modern web technologies, delivering both native performance and cross-platform compatibility.
+In short:
 
-Key value propositions include:
-- Unified messaging platform reducing operational overhead
-- Automated bulk messaging workflows for scalable communication
-- Cross-platform availability supporting Windows, macOS, and Linux
-- Advanced contact management and validation capabilities
-- Real-time progress tracking and monitoring
-- Secure credential storage and authentication mechanisms
+- One UI for WhatsApp, Gmail, and SMTP
+- Bulk send loops with delays and progress
+- Windows, macOS, and Linux builds
+- Contact import and phone cleaning
+- Live progress in the UI
+- Local credential and session storage
+
+Repo: [https://github.com/tashifkhan/bulk-messaging-system](https://github.com/tashifkhan/bulk-messaging-system). Desktop code is `electron/`. Parsers are `python-backend/`.
 
 ## Project structure
 
-The project follows a modular hybrid architecture with clear separation between frontend, backend, and utility components:
+Layout by layer:
 
 ```mermaid
 graph TB
@@ -55,29 +56,35 @@ SMTPHandler --> SMTPServers
 WhatsAppClient --> WhatsAppWeb
 ```
 
-The structure enables clear component separation while maintaining efficient communication pathways between layers. The hybrid approach uses Electron's native capabilities for desktop deployment while using React for modern UI development and Python for specialized contact processing tasks.
+On disk:
+
+- `electron/` Electron 43 app. Main process in `src/electron/` (`main.js`, `preload.cjs`, handlers). React UI in `src/ui/` and `src/components/`. Shared parsers in `src/shared/`.
+- `python-backend/` Flask on port 5000 (`app.py`, `extract_contacts.py`, `parse_manual_numbers.py`, `validate_number.py`).
+- `localhost/` older local helpers. Not the packaged app.
+
+Layers stay separate. Electron ships the desktop shell, React draws the UI, Python parses contacts, IPC ties them together.
 
 ## Core components
 
 ### Desktop application foundation
 
-The application is built on Electron, providing cross-platform desktop deployment capabilities. The main process orchestrates application lifecycle, window management, and security policies. The React frontend delivers a modern, responsive user interface with real-time status updates and interactive controls.
+Electron hosts the shell. The main process owns lifecycle, windows, and security prefs. React renders the UI and status updates.
 
 ### Communication infrastructure
 
-The IPC (Inter-Process Communication) system is the backbone for cross-layer communication. It exposes secure methods for Gmail authentication, SMTP email sending, and WhatsApp client management while maintaining context isolation for security.
+IPC is how the renderer asks the main process to talk to Gmail, SMTP, and WhatsApp without Node APIs in the page.
 
 ### Utility processing engine
 
-The Python backend provides specialized contact processing capabilities including phone number validation, formatting, and extraction from various file formats. This separation ensures reliable data processing while keeping the main application lightweight and responsive.
+The Python backend validates phones and pulls contacts out of CSV, TXT, and Excel. Parsing stays in Python so the UI process does not grow a spreadsheet library.
 
 ### External service integration
 
-Native integrations with WhatsApp Web, Gmail API, and SMTP servers enable smooth communication with external messaging platforms. Each integration maintains its own authentication and configuration requirements while providing unified interfaces through the application's API.
+WhatsApp Web, Gmail API, and SMTP each keep their own auth. The UI talks to them through the same IPC-shaped handlers.
 
 ## Architecture overview
 
-The hybrid architecture combines desktop application capabilities with modern web technologies and specialized backend processing:
+Layers in play:
 
 ```mermaid
 sequenceDiagram
@@ -111,13 +118,13 @@ IPC-->>React : Progress Updates
 React-->>User : Status Display
 ```
 
-The architecture emphasizes security through context isolation, efficient resource utilization through IPC communication, and scalability through modular component design. Each service maintains its own authentication and processing pipeline while contributing to the unified user experience.
+Context isolation keeps the renderer away from Node. IPC carries auth and send calls. Each channel keeps its own credentials and pipeline.
 
 ## Detailed component analysis
 
 ### WhatsApp messaging system
 
-The WhatsApp integration provides detailed bulk messaging capabilities through WhatsApp Web API integration:
+WhatsApp sends go through `whatsapp-web.js` ^1.34:
 
 ```mermaid
 flowchart TD
@@ -140,11 +147,11 @@ Complete --> Logout["Optional Logout"]
 Logout --> End([End])
 ```
 
-The system implements sophisticated error handling, rate limiting, and status monitoring to ensure reliable bulk messaging operations. The QR code authentication flow provides secure user authentication while maintaining session persistence for subsequent operations.
+Sends are delayed on purpose, errors are logged per recipient, and LocalAuth keeps the QR session until you logout.
 
 ### Gmail API integration
 
-The Gmail integration uses OAuth2 authentication for secure email sending:
+Gmail uses OAuth2 so the app never sees the account password (`googleapis` ^173):
 
 ```mermaid
 sequenceDiagram
@@ -168,11 +175,11 @@ Handler-->>UI : Progress Updates
 UI->>User : Display Results
 ```
 
-The integration supports HTML email composition, attachment handling, and detailed error reporting. The OAuth2 flow ensures secure authentication without exposing user credentials.
+HTML bodies work today. Attachments are not wired up yet. Errors and progress come back over IPC. Tokens stay in the main process store.
 
 ### SMTP email processing
 
-The SMTP handler provides flexible email delivery through various email providers:
+SMTP is the generic provider path when you have host, port, and a password (`nodemailer` ^9):
 
 ```mermaid
 flowchart TD
@@ -191,11 +198,11 @@ Complete --> Cleanup[Cleanup Resources]
 Cleanup --> End[End]
 ```
 
-The SMTP implementation supports SSL/TLS encryption, custom authentication methods, and detailed error handling for various email server configurations.
+SSL/TLS, username/password auth, verify-before-send, and per-recipient errors are all in the handler.
 
 ### Contact processing pipeline
 
-The Python backend provides advanced contact processing capabilities:
+Python turns files and pasted text into cleaned contact rows:
 
 ```mermaid
 flowchart TD
@@ -220,37 +227,39 @@ Invalid --> Filter[Filter Invalid]
 Filter --> Output
 ```
 
-The contact processing system handles multiple file formats, performs phone number validation and formatting, removes duplicates, and extracts meaningful contact information from various input sources.
+CSV, TXT, Excel, or paste. Numbers get cleaned, invalid rows drop out, and names come along when the file has them.
 
 ## Dependency analysis
 
-The application maintains a well-structured dependency hierarchy that balances functionality with security and performance considerations:
+Dependencies, grouped by layer:
 
 ```mermaid
 graph TB
 subgraph "Frontend Dependencies"
 React[React 19]
-TailwindCSS[Tailwind CSS]
-Vite[Vite Build Tool]
+TailwindCSS[Tailwind CSS 4]
+Vite[Vite 8]
 end
 subgraph "Electron Dependencies"
-Electron[Electron Framework]
-Nodemailer[Nodemailer]
+Electron[Electron 43]
+Nodemailer[Nodemailer 9]
 QRCode[QR Code Generation]
-GoogleAPIs[Google APIs]
-WWebJS[WhatsApp Web.js]
+GoogleAPIs[Google APIs 173]
+WWebJS[WhatsApp Web.js 1.34]
+Store[electron-store 11]
 end
 subgraph "Python Dependencies"
-Flask[Flask Framework]
+Flask[Flask]
+FlaskCors[flask-cors]
 Pandas[Pandas]
 OpenPyXL[OpenPyXL]
 XLRD[XLRD]
 Werkzeug[Werkzeug]
 end
 subgraph "Development Tools"
-ESLint[ESLint]
+ESLint[ESLint 10]
 Concurrently[Concurrently]
-Builder[Electron Builder]
+Builder[electron-builder 26]
 end
 React --> Electron
 Electron --> Nodemailer
@@ -263,41 +272,38 @@ Flask --> XLRD
 Flask --> Werkzeug
 ```
 
-The dependency structure ensures that each component has access to necessary resources while maintaining clear boundaries between concerns. The separation between frontend and backend dependencies enables independent development and deployment cycles.
+Frontend and Python deps install separately. That keeps Electron packages smaller and lets you hack parsers without rebuilding the UI.
 
 ## Performance considerations
 
-The application implements several performance optimization strategies:
-
-- **Asynchronous Processing**: All major operations use asynchronous patterns to prevent UI blocking
-- **Rate Limiting**: Built-in delays prevent overwhelming external services and reduce the risk of account restrictions
-- **Resource Management**: Proper cleanup of temporary files and authentication tokens prevents memory leaks
-- **Modular Architecture**: Component-based design enables selective loading and improved responsiveness
-- **Error Recovery**: Detailed error handling with retry mechanisms ensures operation resilience
+- Long operations stay async so the UI does not freeze.
+- Fixed delays between sends to avoid provider bans.
+- Temp files and auth artifacts are removed when sessions end.
+- Forms load per channel instead of one giant screen.
+- Structured errors and retries on transient failures.
 
 ## Troubleshooting guide
 
-Common issues and their solutions:
+Stuff that usually breaks first:
 
 ### Authentication problems
-- **WhatsApp QR Code Issues**: Verify network connectivity and restart the application
-- **Gmail OAuth Failures**: Check Google Cloud Console configuration and API enablement
-- **SMTP Connection Errors**: Validate server settings and firewall configurations
+
+- **WhatsApp QR issues.** Check network, restart the app, rescan. Install Chrome or Brave if Puppeteer cannot find a browser.
+- **Gmail OAuth failures.** Confirm Cloud Console credentials and that Gmail API is enabled.
+- **SMTP connection errors.** Recheck host, port, TLS, and firewall rules.
 
 ### Performance issues
-- **Slow Contact Processing**: Ensure adequate system resources and optimize file formats
-- **Memory Usage**: Monitor for proper cleanup of temporary files and authentication sessions
-- **Network Latency**: Implement appropriate rate limiting and retry mechanisms
 
-### Platform-Specific issues
-- **Windows Compatibility**: Verify.NET Framework requirements and antivirus exclusions
-- **macOS Permissions**: Check accessibility permissions for screen recording
-- **Linux Dependencies**: Ensure libgconf-2-4 and other GTK dependencies are installed
+- **Slow contact processing.** Use smaller files or simpler formats; watch CPU while pandas runs.
+- **Memory usage.** Confirm temp files and auth folders are cleaned after sessions.
+- **Network latency.** Keep the send delay; retries help more than slamming the API.
+
+### Platform-specific issues
+
+- **Windows.** Watch antivirus quarantining the binary.
+- **macOS permissions.** Grant whatever the OS asks for if Chromium/WhatsApp automation is blocked.
+- **Linux deps.** Install the usual GTK packages if the window will not start.
 
 ## Conclusion
 
-WhatsappBulkMessaging represents a detailed solution for modern bulk messaging needs, combining desktop application reliability with web-based user interfaces and specialized backend processing. The hybrid architecture successfully addresses the challenges of cross-platform deployment while maintaining security, performance, and scalability.
-
-The application's unified approach to WhatsApp, Gmail, and SMTP messaging provides significant value for businesses and organizations requiring automated communication capabilities. Its modular design enables future enhancements while maintaining backward compatibility and operational stability.
-
-Through careful attention to security, performance, and user experience, the application establishes itself as a reliable foundation for enterprise-grade bulk messaging operations across multiple communication channels.
+Three channels, one desktop shell. The rest of these docs zoom into the IPC handlers, Python parsers, and auth paths that make that possible.

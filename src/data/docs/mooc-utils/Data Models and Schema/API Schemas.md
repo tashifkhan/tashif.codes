@@ -1,15 +1,13 @@
 # API schemas
 
 ## Introduction
-This page provides detailed API schema documentation for the Notice Reminders API built with FastAPI and Pydantic. It covers request and response schemas for:
+Pydantic request and response schemas for the Notice Reminders API:
 - User operations
 - Course search and management
 - Announcement retrieval and filtering
-- Subscription CRUD operations
-- Notification delivery and status tracking
+- Subscription CRUD
+- Notification delivery and status
 - Authentication flows
-
-It also documents field validation rules, serialization/deserialization behavior, optional versus required fields, schema inheritance patterns, example payloads, validation error responses, schema evolution considerations, the relationship between database models and API schemas, data transformation patterns, and API versioning strategies.
 
 ## Project structure
 The API is organized around routers and schemas. The application factory registers routers and sets up CORS and database initialization. Schemas define request/response contracts, while Tortoise ORM models define persistence.
@@ -69,31 +67,31 @@ S_chan --> M_chan
 This section summarizes the primary Pydantic models grouped by functional area. Each model's role, validation rules, and serialization behavior are described.
 
 - User schemas
-  - UserUpdate: Partial updates for user profile fields with optional fields for email, name, telegram_id, and is_active.
-  - UserResponse: Complete user representation including identifiers, contact info, activity flag, and timestamps. Uses attribute-based serialization.
+ - UserUpdate: Partial updates for user profile fields with optional fields for email, name, telegram_id, and is_active.
+ - UserResponse: Complete user representation including identifiers, contact info, activity flag, and timestamps. Uses attribute-based serialization.
 
 - Course schemas
-  - CourseResponse: Course metadata including code, title, URL, instructor, institute, and NC code, plus creation/update timestamps. Uses attribute-based serialization.
+ - CourseResponse: Course metadata including code, title, URL, instructor, institute, and NC code, plus creation/update timestamps. Uses attribute-based serialization.
 
 - Announcement schemas
-  - AnnouncementResponse: Announcement details linked to a course, including title, ISO date string, content, and fetch timestamp. Uses attribute-based serialization.
+ - AnnouncementResponse: Announcement details linked to a course, including title, ISO date string, content, and fetch timestamp. Uses attribute-based serialization.
 
 - Subscription schemas
-  - SubscriptionCreate: Minimal input to subscribe to a course by course code.
-  - SubscriptionResponse: Subscription record with foreign keys, activation flag, and timestamps. Uses attribute-based serialization.
+ - SubscriptionCreate: Minimal input to subscribe to a course by course code.
+ - SubscriptionResponse: Subscription record with foreign keys, activation flag, and timestamps. Uses attribute-based serialization.
 
 - Notification schemas
-  - NotificationResponse: Notification record with foreign keys to user, subscription, and announcement, optional channel reference, sent timestamp, and read flag. Uses attribute-based serialization.
+ - NotificationResponse: Notification record with foreign keys to user, subscription, and announcement, optional channel reference, sent timestamp, and read flag. Uses attribute-based serialization.
 
 - Notification Channel schemas
-  - NotificationChannelCreate: Input to create a channel with channel type, address, and optional activation flag.
-  - NotificationChannelResponse: Full channel record with foreign key, channel type, address, activation flag, and timestamps. Uses attribute-based serialization.
+ - NotificationChannelCreate: Input to create a channel with channel type, address, and optional activation flag.
+ - NotificationChannelResponse: Full channel record with foreign key, channel type, address, activation flag, and timestamps. Uses attribute-based serialization.
 
 - Authentication schemas
-  - OtpRequest: Request to initiate OTP for an email.
-  - OtpVerify: Request to verify OTP with email and code.
-  - AuthStatus: Response indicating authenticated user and whether the user was newly registered.
-  - OtpRequestResponse: Confirmation of OTP initiation with message, new user flag, and expiration timestamp.
+ - OtpRequest: Request to initiate OTP for an email.
+ - OtpVerify: Request to verify OTP with email and code.
+ - AuthStatus: Response indicating authenticated user and whether the user was newly registered.
+ - OtpRequestResponse: Confirmation of OTP initiation with message, new user flag, and expiration timestamp.
 
 Validation rules and behaviors:
 - Email fields use validated email types.
@@ -130,13 +128,13 @@ Schemas --> Services
 ### User operations
 - Schema: UserUpdate and UserResponse
 - Validation rules
-  - Optional fields allow partial updates.
-  - Email is validated; other fields are string-based.
+ - Optional fields allow partial updates.
+ - Email is validated; other fields are string-based.
 - Serialization/deserialization
-  - Attribute-based serialization enabled; schema fields mirror ORM attributes.
+ - Attribute-based serialization enabled; schema fields mirror ORM attributes.
 - Example payloads
-  - Request (partial update): {"email": "updated@example.com", "name": "Updated Name"}
-  - Response: {"id": 1, "email": "user@example.com", "name": "John Doe", "telegram_id": "tg123", "is_active": true, "created_at": "...", "updated_at": "..."}
+ - Request (partial update): {"email": "updated@example.com", "name": "Updated Name"}
+ - Response: {"id": 1, "email": "user@example.com", "name": "John Doe", "telegram_id": "tg123", "is_active": true, "created_at": "..", "updated_at": ".."}
 
 ```mermaid
 classDiagram
@@ -170,11 +168,11 @@ UserResponse <|.. User : "from_attributes"
 ### Course management
 - Schema: CourseResponse
 - Validation rules
-  - String fields with length constraints reflected in ORM.
+ - String fields with length constraints reflected in ORM.
 - Serialization/deserialization
-  - Attribute-based serialization enabled; schema fields mirror ORM attributes.
+ - Attribute-based serialization enabled; schema fields mirror ORM attributes.
 - Example payload
-  - Response: {"id": 1, "code": "CS101", "title": "Intro to CS", "url": "https://example.com/cs101", "instructor": "Dr. Smith", "institute": "Example U", "nc_code": "NC123", "created_at": "...", "updated_at": "..."}
+ - Response: {"id": 1, "code": "CS101", "title": "Intro to CS", "url": "https://example.com/cs101", "instructor": "Dr. Smith", "institute": "Example U", "nc_code": "NC123", "created_at": "..", "updated_at": ".."}
 
 ```mermaid
 classDiagram
@@ -206,11 +204,11 @@ CourseResponse <|.. Course : "from_attributes"
 ### Announcement retrieval and filtering
 - Schema: AnnouncementResponse
 - Validation rules
-  - Date stored as string; content as text; fetch timestamp auto-generated.
+ - Date stored as string; content as text; fetch timestamp auto-generated.
 - Serialization/deserialization
-  - Attribute-based serialization enabled; schema fields mirror ORM attributes.
+ - Attribute-based serialization enabled; schema fields mirror ORM attributes.
 - Example payload
-  - Response: {"id": 1, "course_id": 1, "title": "Quiz Announced", "date": "2025-04-01", "content": "Details...", "fetched_at": "..."}
+ - Response: {"id": 1, "course_id": 1, "title": "Quiz Announced", "date": "2025-04-01", "content": "Details..", "fetched_at": ".."}
 
 ```mermaid
 classDiagram
@@ -236,12 +234,12 @@ AnnouncementResponse <|.. Announcement : "from_attributes"
 ### Subscription CRUD operations
 - Schemas: SubscriptionCreate and SubscriptionResponse
 - Validation rules
-  - SubscriptionCreate requires course code; SubscriptionResponse includes activation flag and timestamps.
+ - SubscriptionCreate requires course code; SubscriptionResponse includes activation flag and timestamps.
 - Serialization/deserialization
-  - Attribute-based serialization enabled; schema fields mirror ORM attributes.
+ - Attribute-based serialization enabled; schema fields mirror ORM attributes.
 - Example payloads
-  - Request: {"course_code": "CS101"}
-  - Response: {"id": 1, "user_id": 1, "course_id": 1, "is_active": true, "created_at": "..."}
+ - Request: {"course_code": "CS101"}
+ - Response: {"id": 1, "user_id": 1, "course_id": 1, "is_active": true, "created_at": ".."}
 
 ```mermaid
 classDiagram
@@ -268,13 +266,13 @@ SubscriptionResponse <|.. Subscription : "from_attributes"
 ### Notification delivery and status tracking
 - Schemas: NotificationResponse and NotificationChannel schemas
 - Validation rules
-  - NotificationResponse includes optional channel reference; channel address and channel type constrained by model.
+ - NotificationResponse includes optional channel reference; channel address and channel type constrained by model.
 - Serialization/deserialization
-  - Attribute-based serialization enabled; schema fields mirror ORM attributes.
+ - Attribute-based serialization enabled; schema fields mirror ORM attributes.
 - Example payloads
-  - Notification response: {"id": 1, "user_id": 1, "subscription_id": 1, "announcement_id": 1, "channel_id": 1, "sent_at": "...", "is_read": false}
-  - Channel create: {"channel": "email", "address": "user@example.com", "is_active": true}
-  - Channel response: {"id": 1, "user_id": 1, "channel": "email", "address": "user@example.com", "is_active": true, "created_at": "..."}
+ - Notification response: {"id": 1, "user_id": 1, "subscription_id": 1, "announcement_id": 1, "channel_id": 1, "sent_at": "..", "is_read": false}
+ - Channel create: {"channel": "email", "address": "user@example.com", "is_active": true}
+ - Channel response: {"id": 1, "user_id": 1, "channel": "email", "address": "user@example.com", "is_active": true, "created_at": ".."}
 
 ```mermaid
 classDiagram
@@ -324,12 +322,12 @@ NotificationChannelResponse <|.. NotificationChannel : "from_attributes"
 ### Authentication flows
 - Schemas: OtpRequest, OtpVerify, AuthStatus, OtpRequestResponse
 - Validation rules
-  - Email fields are validated; OTP code is a string.
+ - Email fields are validated; OTP code is a string.
 - Example payloads
-  - OTP request: {"email": "user@example.com"}
-  - OTP verify: {"email": "user@example.com", "code": "123456"}
-  - OTP request response: {"message": "OTP sent", "is_new_user": false, "expires_at": "..."}
-  - Auth status: {"user": {...UserResponse...}, "is_new_user": false}
+ - OTP request: {"email": "user@example.com"}
+ - OTP verify: {"email": "user@example.com", "code": "123456"}
+ - OTP request response: {"message": "OTP sent", "is_new_user": false, "expires_at": ".."}
+ - Auth status: {"user": {..UserResponse..}, "is_new_user": false}
 
 ```mermaid
 sequenceDiagram
@@ -398,7 +396,7 @@ Operational checks:
 - Confirm unique constraints are respected to avoid duplicate entries.
 
 ## Conclusion
-The Notice Reminders API employs a clean separation of concerns with Pydantic schemas defining strict request/response contracts and Tortoise ORM models encapsulating persistence. Attribute-based serialization simplifies mapping between schemas and models. The schemas support reliable validation, optional fields for partial updates, and clear inheritance patterns via shared base models. Together with unique constraints and indexes, these designs provide a solid foundation for reliable user, course, announcement, subscription, and notification workflows.
+Pydantic at the edge, Tortoise inside. Optional fields on update schemas are intentional; do not require them on PATCH-like flows.
 
 ## Appendices
 

@@ -1,7 +1,7 @@
 # Content processing and extraction tools
 
 ## Introduction
-This page describes the content processing and extraction tools that power YouTube video processing, website context extraction, and content transformation workflows. It explains video information extraction, subtitle processing, HTML-to-Markdown conversion, and web scraping capabilities. It also documents content parsing algorithms, data transformation pipelines, quality assurance processes, and operational guidance for performance, memory management, and error handling.
+YouTube and website extraction tools: metadata, subtitles, HTML→Markdown, cleaning pipelines, and memory/perf notes.
 
 ## Project structure
 The content processing stack is organized around focused tools and services:
@@ -50,19 +50,19 @@ BRROUTER --> BTASK
 
 ## Core components
 - YouTube video processing:
-  - Extract video ID from URLs.
-  - Retrieve video metadata and optional transcripts/subtitles.
-  - Clean and normalize transcripts using a multi-stage pipeline.
+ - Extract video ID from URLs.
+ - Retrieve video metadata and optional transcripts/subtitles.
+ - Clean and normalize transcripts using a multi-stage pipeline.
 - Website context extraction:
-  - Convert HTML to Markdown locally.
-  - Fetch Markdown from a remote service for server-side extraction.
+ - Convert HTML to Markdown locally.
+ - Fetch Markdown from a remote service for server-side extraction.
 - Content transformation:
-  - Transcript cleaning: timestamp removal, cue tag stripping, duplicate sentence collapsing.
-  - HTML-to-Markdown conversion with reliable body handling.
+ - Transcript cleaning: timestamp removal, cue tag stripping, duplicate sentence collapsing.
+ - HTML-to-Markdown conversion with body extraction.
 - LLM integration:
-  - YouTube and website services orchestrate prompts and optional attached files.
+ - YouTube and website services orchestrate prompts and optional attached files.
 - Browser automation tool:
-  - Generates structured action plans for browser tasks.
+ - Generates structured action plans for browser tasks.
 
 ## Architecture overview
 The system exposes FastAPI endpoints that delegate to services. These services coordinate tooling for content extraction and transformation, then pass the results to LLM prompts for answers.
@@ -149,10 +149,10 @@ ReturnAlt --> Done
 
 #### Transcript cleaning pipeline
 - Stages:
-  1. Normalize SRT/VTT artifacts and inline timestamps.
-  2. Remove cue tags and speaker markers.
-  3. Deduplicate consecutive lines and timestamps.
-  4. Collapse repeated sentences across the transcript.
+ 1. Normalize SRT/VTT artifacts and inline timestamps.
+ 2. Remove cue tags and speaker markers.
+ 3. Deduplicate consecutive lines and timestamps.
+ 4. Collapse repeated sentences across the transcript.
 - Output: Clean, readable text suitable for LLM consumption.
 
 ```mermaid
@@ -195,12 +195,12 @@ Router-->>Client : "JSON response"
 
 ## Dependency analysis
 - YouTube pipeline depends on:
-  - Metadata retrieval and subtitle fetching.
-  - Transcript cleaning utilities.
-  - LLM prompt chains via services.
+ - Metadata retrieval and subtitle fetching.
+ - Transcript cleaning utilities.
+ - LLM prompt chains via services.
 - Website pipeline depends on:
-  - Remote Markdown fetching and local HTML-to-Markdown conversion.
-  - LLM prompt chains via services.
+ - Remote Markdown fetching and local HTML-to-Markdown conversion.
+ - LLM prompt chains via services.
 - Routers depend on services and enforce minimal validation and error handling.
 
 ```mermaid
@@ -217,52 +217,48 @@ WSERV --> WHTML["html_md.py"]
 
 ## Performance considerations
 - Subtitle retrieval:
-  - Single-pass approach minimizes network requests and avoids rate limits.
-  - Fallback to transcription is resource-intensive; consider batching and caching.
+ - Single-pass approach minimizes network requests and avoids rate limits.
+ - Fallback to transcription is resource-intensive; consider batching and caching.
 - Temporary storage:
-  - Subtitle and audio temporary directories are created and cleaned up; ensure adequate disk space and permissions.
+ - Subtitle and audio temporary directories are created and cleaned up; ensure adequate disk space and permissions.
 - Speech recognition:
-  - CPU-based transcription is slower; consider GPU acceleration if available.
+ - CPU-based transcription is slower; consider GPU acceleration if available.
 - Network calls:
-  - Remote Markdown fetching adds latency; implement retries and timeouts.
+ - Remote Markdown fetching adds latency; implement retries and timeouts.
 - Memory:
-  - Large transcripts and HTML bodies should be processed incrementally where possible; avoid loading entire content into memory unnecessarily.
-
-[No sources needed since this section provides general guidance]
+ - Large transcripts and HTML bodies should be processed incrementally where possible; avoid loading entire content into memory unnecessarily.
 
 ## Troubleshooting guide
 - Video ID extraction fails:
-  - Verify URL hostnames and query parameters; check logs for parsing errors.
+ - Verify URL hostnames and query parameters; check logs for parsing errors.
 - Subtitles unavailable:
-  - Preferred language may not be available; confirm alternative language detection and fallback behavior.
-  - Rate limiting may trigger fallback; monitor error messages indicating 429 or "too many requests."
+ - Preferred language may not be available; confirm alternative language detection and fallback behavior.
+ - Rate limiting may trigger fallback; monitor error messages indicating 429 or "too many requests."
 - Transcript cleaning anomalies:
-  - Ensure input text is properly formatted; review cleaning stages for expected artifacts.
+ - Ensure input text is properly formatted; review cleaning stages for expected artifacts.
 - Website Markdown issues:
-  - Remote service may fail; validate URL and retry.
-  - Local conversion relies on HTML body; ensure client HTML is provided when needed.
+ - Remote service may fail; validate URL and retry.
+ - Local conversion relies on HTML body; ensure client HTML is provided when needed.
 - Service-level errors:
-  - LLM invocation failures are handled gracefully; check logs for detailed error messages.
+ - LLM invocation failures are handled ; check logs for detailed error messages.
 
 ## Conclusion
-The content processing stack provides reliable, layered extraction and transformation for YouTube videos and websites. It balances reliability with performance by minimizing network requests, implementing fallbacks, and applying a multi-stage cleaning pipeline. The modular design enables easy maintenance and extension for additional formats and services.
-
-[No sources needed since this section summarizes without analyzing specific files]
+YouTube Q&A and website Q&A both fetch, clean, then prompt. Fallbacks matter more than perfect parsers.
 
 ## Appendices
 
 ### Supported formats and outputs
 - YouTube:
-  - Inputs: Video URL.
-  - Outputs: Structured metadata and cleaned transcript text.
+ - Inputs: Video URL.
+ - Outputs: Structured metadata and cleaned transcript text.
 - Website:
-  - Inputs: URL and optional client HTML.
-  - Outputs: Combined Markdown content for LLM processing.
+ - Inputs: URL and optional client HTML.
+ - Outputs: Combined Markdown content for LLM processing.
 
 ### Example workflows
 - YouTube Q&A:
-  - Endpoint receives URL and question, retrieves metadata and transcript, cleans text, and returns an answer via LLM.
+ - Endpoint receives URL and question, retrieves metadata and transcript, cleans text, and returns an answer via LLM.
 - Website Q&A:
-  - Endpoint fetches remote Markdown and optionally converts client HTML to Markdown, merges with chat history, and returns an answer via LLM.
+ - Endpoint fetches remote Markdown and optionally converts client HTML to Markdown, merges with chat history, and returns an answer via LLM.
 - Browser Automation:
-  - Endpoint generates a structured action plan for browser tasks based on goals and constraints.
+ - Endpoint generates a structured action plan for browser tasks based on goals and constraints.

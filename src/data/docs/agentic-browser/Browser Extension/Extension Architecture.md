@@ -1,15 +1,10 @@
 # Extension architecture
 
 ## Introduction
-This page explains the Browser Extension Architecture built with the WXT framework. It focuses on the three main entry points:
-- Background script for extension-wide operations and cross-tab coordination
-- Content script for page-level automation and DOM interaction
-- Side panel UI for user interaction and agent orchestration
-
-It documents extension configuration, manifest setup, messaging architecture, component relationships, lifecycle management, and integration patterns with browser APIs. Security, permissions, and performance optimization strategies are also covered.
+WXT entrypoints, React side panel tree, background messaging hub, content-script automation, and backend links over HTTP/WebSocket.
 
 ## Project structure
-The extension is organized under the extension directory with WXT entrypoints and React-based UI components. Key areas:
+The extension lives in `clients/browser-extension/` with WXT entrypoints and React UI. Key areas:
 - Configuration: wxt.config.ts defines module usage, permissions, and host permissions
 - Background: background.ts handles messaging, tab management, and agent tool execution
 - Content: content.ts manages page-level automation and DOM interactions
@@ -61,7 +56,7 @@ Key responsibilities:
 - Cross-origin: host_permissions for <all_urls>
 
 ## Architecture overview
-The extension follows a layered architecture:
+Extension pieces:
 - UI Layer: Side panel React app with hooks for auth and tab management
 - Control Layer: Background script managing messaging and cross-tab operations
 - Automation Layer: Content script performing DOM-level actions
@@ -271,9 +266,9 @@ AE --> EXE["executeActions.ts"]
 - WebSocket reconnection: configure retry policies and backoff strategies
 
 ## Security considerations
-- Permissions: carefully review and limit permissions to those required for functionality
+- Permissions: review and limit to what the feature needs
 - Host permissions: <all_urls> grants broad access; ensure CSP and content security are enforced
-- OAuth: validate redirect URIs and handle errors gracefully; store tokens securely in browser storage
+- OAuth: validate redirect URIs and handle errors ; store tokens securely in browser storage
 - Content script isolation: avoid exposing sensitive data; sanitize inputs before DOM manipulation
 - Cross-origin requests: validate and sanitize external API responses; handle rate limits and errors
 
@@ -292,4 +287,5 @@ Common issues and resolutions:
 - Authentication errors: validate OAuth flow and token refresh logic
 
 ## Conclusion
-The extension architecture uses WXT's entry points and React to deliver a cohesive browser automation experience. The background script centralizes messaging and coordination, the content script handles page-level automation, and the side panel UI provides user interaction and agent orchestration. Proper configuration, security hardening, and performance optimization are essential for reliable cross-browser deployment.
+Background centralizes messages. Content scripts handle the page. The side panel is the operator UI. Keep those roles from leaking into each other.
+

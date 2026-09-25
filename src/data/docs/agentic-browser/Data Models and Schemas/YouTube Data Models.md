@@ -1,13 +1,7 @@
 # YouTube data models
 
 ## Introduction
-This page describes the YouTube-related data models and processing pipeline used to extract, transform, and consume YouTube video metadata and transcripts. It covers:
-- Data structures for video metadata and transcript data
-- Subtitle retrieval and transcript cleaning schemas
-- Validation and normalization patterns for YouTube URLs and video IDs
-- Transformation patterns for timestamps and content deduplication
-- Error handling and fallback strategies during content extraction
-- Integration points with the YouTube service and prompt chain
+YouTube metadata and transcript models, URL parsing, transcript cleaning, and error shapes for missing captions.
 
 ## Project structure
 The YouTube processing stack spans models, tools, prompts, services, and routers:
@@ -70,12 +64,12 @@ YTAPI --> YTSvc
 - youtube_chain: Prompt chain assembling context and invoking the LLM
 
 ## Architecture overview
-End-to-end YouTube processing flow:
+YouTube processing flow:
 - Router validates inputs and delegates to YouTubeService
 - Service either uses a direct file-based path (with Google GenAI) or invokes the prompt chain
 - Prompt chain fetches transcript via get_subtitle_content and processed_transcript
 - get_video_info enriches metadata and optionally attaches cleaned transcript
-- Tools handle URL parsing, subtitle retrieval, and reliable fallbacks
+- Tools handle URL parsing, subtitle retrieval, and fallbacks when captions are missing
 
 ```mermaid
 sequenceDiagram
@@ -285,42 +279,37 @@ Operational checks:
 - Validate URL formats supported by extract_video_id
 
 ## Conclusion
-The YouTube data model and processing pipeline provide a reliable, layered approach to extracting and transforming YouTube content. The design emphasizes:
-- Strongly typed data models for predictable consumption
-- Detailed subtitle retrieval with intelligent fallbacks
-- A modular transcript cleaning pipeline for normalized content
-- Clear separation of concerns between routing, service orchestration, and tooling
-- Practical error handling and cleanup to maintain reliability
+Accept `youtube.com/watch?v=` and `youtu.be/` forms. Clean timestamps and cue tags before prompting. Treat empty transcripts as a first-class error.
 
 ## Appendices
 
 ### Data model reference
 
 - YTVideoInfo
-  - title: string, default "Unknown"
-  - description: string, default empty
-  - duration: integer, default 0
-  - uploader: string, default "Unknown"
-  - upload_date: string, default empty
-  - view_count: integer, default 0
-  - like_count: integer, default 0
-  - tags: array of strings, default empty
-  - categories: array of strings, default empty
-  - captions: string or null, default null
-  - transcript: string or null, default null
+ - title: string, default "Unknown"
+ - description: string, default empty
+ - duration: integer, default 0
+ - uploader: string, default "Unknown"
+ - upload_date: string, default empty
+ - view_count: integer, default 0
+ - like_count: integer, default 0
+ - tags: array of strings, default empty
+ - categories: array of strings, default empty
+ - captions: string or null, default null
+ - transcript: string or null, default null
 
 - VideoInfoRequest
-  - url: string
+ - url: string
 
 - SubtitlesRequest
-  - url: string
-  - lang: string, default "en"
+ - url: string
+ - lang: string, default "en"
 
 - SubtitlesResponse
-  - subtitles: string
+ - subtitles: string
 
 Validation and normalization rules:
 - URL parsing supports youtube.com/watch?v=VIDEO_ID and youtu.be/VIDEO_ID
 - Transcript cleaning removes timestamps, cue tags, speaker tags, and duplicate lines
 - Error detection treats specific messages and prefixes as non-transcript errors
-- Fallback to whisper transcription ensures minimal failure impact
+- Fallback to Whisper when captions are missing

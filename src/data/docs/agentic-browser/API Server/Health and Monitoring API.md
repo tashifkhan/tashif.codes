@@ -1,16 +1,14 @@
 # Health and monitoring API
 
 ## Introduction
-This page provides detailed API documentation for the health check and monitoring endpoints of the Agentic Browser API. It covers the single health endpoint, its response format, operational usage, and integration patterns for system monitoring and observability. The document also outlines recommended monitoring thresholds, alerting strategies, and client implementation approaches for reliable service health verification.
+Single health endpoint and how to use it for liveness in containers or simple uptime checks.
 
 ## Project structure
 The health endpoint is implemented as part of the FastAPI application and registered under a dedicated router. The API server is configured via the main application module and can be started using the provided runner script.
 
 ```mermaid
 graph TB
-A["main.py<br/>Entry point"] --> B["api/run.py<br/>Uvicorn runner"]
-B --> C["api/main.py<br/>FastAPI app"]
-C --> D["routers/health.py<br/>Health router"]
+A["main.py<br/>FastAPI app + Uvicorn"] --> D["routers/health.py<br/>Health router"]
 D --> E["models/response/health.py<br/>HealthResponse model"]
 ```
 
@@ -65,7 +63,7 @@ Operational notes:
 
 Usage examples:
 - cURL: curl -s http://localhost:5454/api/genai/health
-- Python requests: requests.get("http://localhost:5454/api/genai/health").json()
+- Python requests: requests.get("http://localhost:5454/api/genai/health") .json()
 
 Integration patterns:
 - Probes: Configure Kubernetes readiness and liveness probes against this endpoint.
@@ -89,7 +87,7 @@ The health router is included in the main FastAPI application with a specific UR
 Key points:
 - Router registration: app.include_router(health_router, prefix="/api/genai/health")
 - Default host/port: configurable via environment variables
-- Entry point: main.py supports switching between API and MCP modes
+- Entry point: `python main.py` or `agentic-api-run` starts FastAPI; MCP is mounted at `/mcp`
 
 ## Dependency analysis
 The health endpoint has minimal dependencies and relies on the FastAPI framework and Pydantic model validation.
@@ -98,7 +96,7 @@ The health endpoint has minimal dependencies and relies on the FastAPI framework
 graph LR
 A["routers/health.py"] --> B["FastAPI Router"]
 A --> C["models/response/health.py"]
-D["api/main.py"] --> A
+D["main.py"] --> A
 D --> E["FastAPI App"]
 ```
 
@@ -120,4 +118,5 @@ Operational checks:
 - Use a simple HTTP client to test the endpoint and inspect response headers.
 
 ## Conclusion
-The Agentic Browser API exposes a straightforward health endpoint suitable for basic service monitoring and containerized deployments. While the current implementation provides a static "healthy" response, it is a reliable foundation for readiness and liveness checks. For advanced monitoring needs, consider extending the endpoint with dynamic checks and metrics collection in future iterations.
+It returns a static healthy payload today. Fine for basic probes. Add dependency checks when you need real readiness.
+

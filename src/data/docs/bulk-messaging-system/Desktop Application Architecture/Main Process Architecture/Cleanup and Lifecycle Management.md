@@ -1,7 +1,7 @@
 # Cleanup and lifecycle management
 
 ## Introduction
-This page provides detailed coverage of application lifecycle management and cleanup procedures for the WhatsApp bulk messaging application. It focuses on the WhatsApp cache and authentication file cleanup process, the application shutdown sequence, event handlers for graceful termination, forced cleanup mechanisms for corrupted or stuck sessions, error handling strategies, and platform-specific considerations for resource deallocation.
+App quit and WhatsApp session cleanup: when cache/auth folders are removed, what happens on forced logout, and how shutdown hooks run.
 
 ## Project structure
 The application follows an Electron-based architecture with React frontend components and Node.js backend handlers. The lifecycle management spans the main process (application lifecycle), preload bridge (IPC communication), and renderer components (UI and user interactions).
@@ -44,7 +44,7 @@ Key responsibilities:
 - Platform-specific handling: Different behavior on macOS versus Windows/Linux for app termination.
 
 ## Architecture overview
-The lifecycle management architecture integrates the main process, preload bridge, and renderer components to ensure reliable cleanup and graceful shutdown.
+The lifecycle management architecture integrates the main process, preload bridge, and renderer components so quit tears down WhatsApp resources instead of leaving browsers behind.
 
 ```mermaid
 sequenceDiagram
@@ -68,7 +68,7 @@ Renderer->>Renderer : Clear UI state (contacts, QR, status)
 ## Detailed component analysis
 
 ### WhatsApp cache and authentication cleanup
-The application implements a dedicated helper function to remove WhatsApp cache and authentication directories. This ensures a fresh session on startup and after logout or forced cleanup.
+The application implements a dedicated helper function to remove WhatsApp cache and authentication directories. That gives you a fresh session on startup and after logout or forced cleanup.
 
 ```mermaid
 flowchart TD
@@ -151,7 +151,7 @@ The application employs layered error handling across lifecycle events and clean
 - Try/catch around logout attempts to prevent crashes.
 - Catch-all around file deletion to avoid blocking shutdown.
 - Renderer-side error handling for IPC invocations and UI updates.
-- Graceful degradation: UI continues to function even if cleanup fails.
+- Cleanup failures do not take down the UI.
 
 Recovery procedures:
 - Retry logout after cleanup.
@@ -162,7 +162,7 @@ Recovery procedures:
 The application accounts for platform differences in lifecycle behavior.
 
 - macOS: The `window-all-closed` handler avoids calling `app.quit()` to allow the app to remain in the dock and reopen windows when activated.
-- Windows/Linux: Explicitly quits the application after cleanup to ensure resources are released.
+- Windows/Linux: Explicitly quits the application after cleanup so OS resources are released.
 
 These behaviors ensure consistent user experience across platforms while maintaining proper resource deallocation.
 
@@ -204,4 +204,5 @@ Diagnostic steps:
 - Validate that UI state is cleared (QR code, status messages).
 
 ## Conclusion
-The application implements a reliable lifecycle management system with detailed cleanup procedures for WhatsApp cache and authentication files. It provides graceful shutdown through `before-quit` and `window-all-closed` handlers, forced cleanup mechanisms for corrupted sessions, and platform-aware termination behavior. Error handling strategies ensure resilience, while the IPC bridge enables smooth coordination between the main process and renderer components.
+
+Forced cleanup exists because WhatsApp sessions get stuck. Prefer graceful logout, then fall back to deleting auth/cache.

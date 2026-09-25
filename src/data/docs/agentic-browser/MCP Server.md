@@ -1,7 +1,7 @@
 # MCP server
 
 ## Introduction
-This page explains the Model Context Protocol (MCP) Server implementation in the Agentic Browser project. It covers how the MCP server exposes tools to AI models via stdio, how tools are defined and registered, and how requests and responses are handled. It also documents the communication patterns between the MCP server, the browser extension, and AI agents, along with prompt engineering aspects, configuration management, tool lifecycle, error handling, and security/performance considerations.
+The Model Context Protocol server that exposes tools and LLM generation to clients. Registration patterns, prompt templates tied to repo context, and how the extension talks to it.
 
 ## Project structure
 The MCP server lives under a dedicated module and integrates with core LLM capabilities, prompt chains, and website context extraction tools. The broader system includes an agent framework and a browser extension that communicates with a backend via WebSocket.
@@ -27,9 +27,9 @@ RA["agents/react_agent.py"]
 RT["agents/react_tools.py"]
 end
 subgraph "Extension"
-BG["extension/entrypoints/background.ts"]
-CT["extension/entrypoints/content.ts"]
-WS["extension/entrypoints/utils/websocket-client.ts"]
+BG["clients/browser-extension/entrypoints/background.ts"]
+CT["clients/browser-extension/entrypoints/content.ts"]
+WS["clients/browser-extension/entrypoints/utils/websocket-client.ts"]
 end
 MCP --> LLM
 MCP --> GH
@@ -119,7 +119,7 @@ class LargeLanguageModel {
 ```
 
 ### Prompt engineering for GitHub tools
-- Prompt Template: System and user prompt template designed to constrain responses to repository context.
+- Prompt Template: System and user prompt template written to constrain responses to repository context.
 - Runnable Chain: Composes inputs (tree, summary, content, question, chat history) with a formatter and an LLM client to produce a final answer.
 
 ```mermaid
@@ -184,15 +184,15 @@ BG-->>Ext : "Result"
 
 ## Dependency analysis
 - MCP Server depends on:
-  - LLM provider abstraction for text generation
-  - Prompt chains for contextual QA
-  - Website context tools for content retrieval/conversion
+ - LLM provider abstraction for text generation
+ - Prompt chains for contextual QA
+ - Website context tools for content retrieval/conversion
 - Agent framework depends on:
-  - Structured tools and prompt chains
-  - LLM provider for reasoning
+ - Structured tools and prompt chains
+ - LLM provider for reasoning
 - Extension depends on:
-  - Background and content scripts for browser automation
-  - WebSocket client for backend coordination
+ - Background and content scripts for browser automation
+ - WebSocket client for backend coordination
 
 ```mermaid
 graph LR
@@ -214,8 +214,6 @@ CT["Content Script"] --> BG
 - Caching: Agent graph compilation is cached to reduce startup overhead.
 - Provider Selection: LLM initialization validates environment variables early to fail fast and avoid runtime retries.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 - MCP Tool Not Found: Ensure the requested tool name matches the registered tool names and schemas.
 - LLM Initialization Failures: Verify provider configuration, API keys, and base URLs. The LLM provider raises explicit errors when required environment variables are missing.
@@ -224,9 +222,7 @@ CT["Content Script"] --> BG
 - Extension WebSocket Issues: Validate backend URL and network connectivity; the WebSocket client logs connection events and errors.
 
 ## Conclusion
-The MCP Server provides a focused, extensible interface for exposing tools to AI models. By centralizing LLM providers, prompt engineering, and content extraction utilities, it enables secure, structured interactions between AI agents and browser automation. The agent framework and extension components complement the MCP server to deliver a cohesive agentic browser experience.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Add tools next to the existing handlers, keep schemas strict, and wire the extension WebSocket client for progress. Provider selection still goes through the shared LLM layer.
 
 ## Appendices
 

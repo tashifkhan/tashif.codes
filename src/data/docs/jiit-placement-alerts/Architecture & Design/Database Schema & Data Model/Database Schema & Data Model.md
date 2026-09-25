@@ -1,7 +1,7 @@
 # Database schema & data model
 
 ## Introduction
-This page provides detailed data model documentation for the MongoDB-based storage system used by the SuperSet Telegram Notification Bot. It defines the five primary collections (Notices, Jobs, PlacementOffers, Users, OfficialPlacementData), their field definitions, data types, validation rules, and relationships. It also explains how the schema supports real-time notifications and historical analytics, outlines index strategies for performance, describes upsert logic to prevent duplicates, and documents the event generation system for tracking changes.
+MongoDB model for the bot: Notices, Jobs, PlacementOffers, Users, OfficialPlacementData. Fields, types, relationships, indexes for the hot paths, upsert rules, and the event trail used for change tracking.
 
 ## Project structure
 The database layer is implemented as a thin client-service abstraction:
@@ -43,7 +43,7 @@ DC --> OPD
 - NotificationService: Orchestrates sending unsent notices to Telegram and Web Push channels.
 - Runners: Encapsulate orchestration for update fetching and notification dispatch.
 
-Key responsibilities:
+It owns:
 - Notices: Store formatted notifications with delivery flags and timestamps.
 - Jobs: Structured job listings with qualification criteria and deadlines.
 - PlacementOffers: Offers with merged student profiles and role packages.
@@ -252,7 +252,7 @@ NS-->>DB : "mark_as_sent(_id)"
 ### Notices upsert and duplicate prevention
 - Existence check by id before insertion prevents duplicates.
 - Delivery flags track Telegram and Web Push delivery with timestamps.
-- Chronological sorting by createdAt ensures FIFO processing.
+- Sort by createdAt for FIFO processing.
 
 ```mermaid
 flowchart TD
@@ -349,7 +349,7 @@ Operational checks:
 - Monitor unsent notices and adjust batching limits.
 
 ## Conclusion
-The MongoDB schema is designed to support both real-time notifications and historical analytics. Unique identifiers and targeted indexes optimize duplicate prevention and query performance. Upsert logic and event generation ensure reliable data ingestion and change tracking. The layered architecture cleanly separates concerns, enabling maintainable and testable operations.
+Unique ids and indexes keep upserts and lookups cheap. Upsert + event generation keep ingestion and change tracking honest. Layers stay separate so you can test them alone.
 
 ## Appendices
 

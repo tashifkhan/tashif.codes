@@ -1,14 +1,15 @@
 # Input validation and sanitization
 
 ## Introduction
-This page details the input validation and sanitization strategies implemented across the application. It focuses on:
+Validation at IPC boundaries and in Python parsers: emails, phones, file types, and rejecting garbage before send.
+
 - Phone number normalization and validation
 - Email address extraction and filtering
 - User-provided content sanitization for messages
 - Security measures against malicious file uploads, CSV parsing risks, and command injection attempts
 - Input encoding strategies, escape sequence handling, and data integrity verification
 
-The analysis covers both Electron main process handlers and Python backend utilities, ensuring a detailed understanding of how user inputs are processed, validated, sanitized, and transmitted securely.
+Covers Electron main-process handlers and Python utilities: how inputs are checked, cleaned, and passed across the IPC boundary.
 
 ## Project structure
 The application comprises:
@@ -55,33 +56,33 @@ L --> M
 This section outlines the primary validation and sanitization mechanisms implemented in the codebase.
 
 - Phone number cleaning and normalization
-  - Removes separators and non-digit characters except plus sign
-  - Enforces length constraints and optional international prefix
-  - Standardizes local numbers to international format when applicable
+ - Removes separators and non-digit characters except plus sign
+ - Enforces length constraints and optional international prefix
+ - Standardizes local numbers to international format when applicable
 
 - Manual phone number parsing
-  - Accepts multiple formats: standalone numbers, name:number pairs, and delimiter-separated entries
-  - Uses regex heuristics to detect phone-like substrings
-  - Produces normalized contacts with optional names
+ - Accepts multiple formats: standalone numbers, name:number pairs, and delimiter-separated entries
+ - Uses regex heuristics to detect phone-like substrings
+ - Produces normalized contacts with optional names
 
 - Contact extraction from files
-  - Supports CSV, TXT, and Excel formats
-  - Heuristic detection of phone and name columns
-  - Reliable fallbacks and error handling for malformed inputs
+ - Supports CSV, TXT, and Excel formats
+ - Heuristic detection of phone and name columns
+ - Reliable fallbacks and error handling for malformed inputs
 
 - Email list parsing
-  - Reads CSV with flexible column names or plain text newline-separated entries
-  - Filters entries containing "@" to approximate valid email addresses
+ - Reads CSV with flexible column names or plain text newline-separated entries
+ - Filters entries containing "@" to approximate valid email addresses
 
 - Message sanitization
-  - Limits message lengths for safety and performance
-  - Encodes HTML content appropriately for transport
-  - Avoids unsafe inline styles or scripts in HTML messages
+ - Limits message lengths for safety and performance
+ - Encodes HTML content appropriately for transport
+ - Avoids unsafe inline styles or scripts in HTML messages
 
 - File upload restrictions
-  - Whitelists allowed file extensions
-  - Uses secure filename generation
-  - Stores uploads under controlled paths
+ - Whitelists allowed file extensions
+ - Uses secure filename generation
+ - Stores uploads under controlled paths
 
 ## Architecture overview
 The validation pipeline spans frontend, Electron main process, and Python utilities:
@@ -277,27 +278,21 @@ L["app.py"] --> M
 ## Troubleshooting guide
 Common validation and sanitization issues:
 - Invalid phone numbers
-  - Cause: Non-digit characters outside "+", incorrect length
-  - Resolution: Ensure numeric input with optional "+" prefix and correct digit count
+ - Cause: Non-digit characters outside "+", incorrect length
+ - Resolution: Ensure numeric input with optional "+" prefix and correct digit count
 
 - Malformed CSV/Excel files
-  - Cause: Missing headers, unexpected delimiters, mixed encodings
-  - Resolution: Validate schema and encoding; provide clear error messages
+ - Cause: Missing headers, unexpected delimiters, mixed encodings
+ - Resolution: Validate schema and encoding; provide clear error messages
 
 - Email parsing failures
-  - Cause: Missing "@" or unsupported column names
-  - Resolution: Use supported column names or rely on first-column fallback
+ - Cause: Missing "@" or unsupported column names
+ - Resolution: Use supported column names or rely on first-column fallback
 
 - File upload errors
-  - Cause: Unsupported extension or missing file part
-  - Resolution: Confirm allowed extensions and proper multipart form submission
+ - Cause: Unsupported extension or missing file part
+ - Resolution: Confirm allowed extensions and proper multipart form submission
 
 ## Conclusion
-The application implements layered input validation and sanitization:
-- Phone numbers are rigorously normalized and validated
-- Manual and file-based contact extraction use reliable heuristics and error handling
-- Email lists are filtered and encoded for secure transport
-- File uploads are restricted and saved securely
-- Message content is length-limited and encoded appropriately
 
-These measures collectively mitigate injection risks, maintain data integrity, and ensure reliable operation across diverse input formats.
+Validate in main and in Python even if the UI already checked. The renderer is not a trust boundary.

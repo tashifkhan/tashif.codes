@@ -1,7 +1,7 @@
 # Dynamic script generation
 
 ## Introduction
-This page explains the dynamic script generation system that transforms natural language goals into safe, executable browser actions. It covers the end-to-end pipeline from goal interpretation to validated action plans, the templating and prompting system, parameter injection, safety validation, sandboxing considerations, error handling, and execution monitoring. It also documents how agent decisions map to generated code, including fallback strategies and error recovery mechanisms.
+Natural-language goal → prompt template → JSON action plan → sanitizer → extension execution. Fallbacks and what we do when validation fails.
 
 ## Project structure
 The dynamic script generation spans backend services, routing, prompts, sanitization utilities, and the browser extension runtime:
@@ -53,7 +53,7 @@ Key responsibilities:
 - Execution coordination between backend and extension
 
 ## Architecture overview
-The system follows a clear separation of concerns:
+The system keeps layers apart:
 - Frontend sends a goal with optional DOM context and constraints.
 - Backend composes a prompt with DOM information and constraints, invokes the LLM, validates the JSON action plan, and returns a structured response.
 - The extension executes actions against the active tab, delegating DOM-specific actions to the content script.
@@ -84,7 +84,7 @@ Ext->>Ext : sendMessage(EXECUTE_ACTION) to active tab
 ## Detailed component analysis
 
 ### Prompt template and script generation
-- The prompt defines available actions (DOM manipulation and tab/window control), selector best practices, and critical rules for safe and effective automation.
+- The prompt defines available actions (DOM manipulation and tab/window control), selector guidance, and rules that keep automation safe.
 - The service composes a user prompt including goal, target URL, constraints, and a limited DOM snapshot of interactive elements.
 - The LLM produces a JSON action plan; the service extracts the content and passes it to the sanitizer.
 
@@ -117,7 +117,7 @@ ReturnPlan --> End
 - The prompt template is a ChatPromptTemplate with a system message enumerating actions and rules, plus user content constructed from the goal, target URL, constraints, and DOM snapshot.
 - Parameter injection occurs by formatting the user prompt string with the provided inputs and limiting the number of interactive elements to control token usage.
 
-Best practices reflected in the template:
+What the template pushes:
 - Prefer explicit selectors and avoid chrome:// pages for DOM actions.
 - Prefer constructing full search URLs directly in OPEN_TAB.
 - Encourage atomic, clearly described steps.
@@ -166,27 +166,27 @@ Fallback and recovery:
 Below are representative action plan structures produced by the system. These are conceptual examples derived from the prompt template and sanitizer rules.
 
 - Click an element:
-  - type: "CLICK"
-  - selector: "<specific CSS selector>"
-  - description: "<clear description>"
+ - type: "CLICK"
+ - selector: "<specific CSS selector>"
+ - description: "<clear description>"
 
 - Type into an input:
-  - type: "TYPE"
-  - selector: "<specific CSS selector>"
-  - value: "<text to type>"
-  - description: "<clear description>"
+ - type: "TYPE"
+ - selector: "<specific CSS selector>"
+ - value: "<text to type>"
+ - description: "<clear description>"
 
 - Navigate to a search result page:
-  - type: "OPEN_TAB"
-  - url: "<full search URL>"
-  - active: true
-  - description: "<clear description>"
+ - type: "OPEN_TAB"
+ - url: "<full search URL>"
+ - active: true
+ - description: "<clear description>"
 
 - Combined workflow (open tab, wait, type, click):
-  - OPEN_TAB with url and active
-  - WAIT with time
-  - TYPE with selector and value
-  - CLICK with selector
+ - OPEN_TAB with url and active
+ - WAIT with time
+ - TYPE with selector and value
+ - CLICK with selector
 
 These examples reflect the prompt's preference for direct navigation URLs and atomic steps with clear descriptions.
 
@@ -223,7 +223,7 @@ Service --> Prompt["prompts/browser_use.py"]
 Service --> Sanitizer["utils/agent_sanitizer.py"]
 Service --> Models["models/response/agent.py"]
 Router --> ModelsReq["models/requests/agent.py"]
-ExtExec["extension/.../executeActions.ts"] --> ExtContent["extension/.../content.ts"]
+ExtExec["clients/browser-extension/entrypoints/utils/executeActions.ts"] --> ExtContent["clients/browser-extension/entrypoints/content.ts"]
 AgentSvc["services/react_agent_service.py"] --> AgentGraph["agents/react_agent.py"]
 AgentGraph --> Tools["tools/browser_use/tool.py"]
 ```
@@ -234,20 +234,19 @@ AgentGraph --> Tools["tools/browser_use/tool.py"]
 - Validation overhead: JSON parsing and safety checks occur synchronously; keep action plans concise and atomic.
 - Prompt caching: Consider caching repeated prompts or using a smaller subset of DOM data when feasible.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Invalid JSON or missing fields:
-  - The sanitizer reports problems; refine the goal or provide a richer DOM context.
+ - The sanitizer reports problems; refine the goal or provide a richer DOM context.
 - Missing required fields for actions:
-  - Ensure selector for DOM actions and url for tab actions.
+ - Ensure selector for DOM actions and url for tab actions.
 - Dangerous EXECUTE_SCRIPT patterns:
-  - Simplify or avoid custom scripts; rely on supported DOM actions.
+ - Simplify or avoid custom scripts; rely on supported DOM actions.
 - Extension execution failures:
-  - Check console logs for action errors; ensure the active tab is reachable and the selector is correct.
+ - Check console logs for action errors; ensure the active tab is reachable and the selector is correct.
 - API validation errors:
-  - The endpoint returns ok=false with problems; address reported issues and retry.
+ - The endpoint returns ok=false with problems; address reported issues and retry.
 
 ## Conclusion
-The dynamic script generation system combines a structured prompt template, reliable validation, and extension-based execution to safely transform natural language goals into executable browser actions. By enforcing strict validation rules, limiting DOM context, and using message-passing for DOM operations, the system balances flexibility with safety. The agent runtime complements this by enabling broader conversational planning, while the API and extension layers provide clear integration points for execution monitoring and error recovery.
+Strict JSON plans plus script checks beat free-form code gen. If validation fails, fix the prompt or constraints; do not bypass the sanitizer.
+

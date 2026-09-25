@@ -1,7 +1,7 @@
 # Manual contact entry interface
 
 ## Introduction
-This page describes the manual contact entry system used to add phone numbers directly into the application. It covers multi-format input parsing that supports various separators (newlines, commas, semicolons, pipes), intelligent detection of name-number pairs, real-time validation feedback, error handling for malformed entries, supported input formats with examples, optimal formatting guidance, and performance considerations for large batches.
+Paste numbers (with optional names) using newlines, commas, semicolons, or pipes. The parser splits, cleans, and drops junk.
 
 ## Project structure
 The manual contact entry spans the Electron frontend and Python backend:
@@ -78,11 +78,11 @@ Responsibilities:
 Parsing algorithm:
 - Split input by newline and comma/semicolon separators to get raw entries.
 - For each entry:
-  - Strip whitespace.
-  - Split by delimiter once (colon, dash, pipe) to detect name-number pairs.
-  - If a pair is detected, validate whichever part looks like a number.
-  - If no pair, treat the whole entry as a number candidate.
-  - Clean and validate the number; if valid, append to contacts with optional name or auto-generated label.
+ - Strip whitespace.
+ - Split by delimiter once (colon, dash, pipe) to detect name-number pairs.
+ - If a pair is detected, validate whichever part looks like a number.
+ - If no pair, treat the whole entry as a number candidate.
+ - Clean and validate the number; if valid, append to contacts with optional name or auto-generated label.
 
 Intelligent detection:
 - Uses regex to identify numeric candidates within entries.
@@ -115,20 +115,20 @@ Mixed format inputs:
 
 Examples (conceptual):
 - Single number per line:
-  ```
-  +1234567890
-  +0987654321
-  ```
+ ```
+ +1234567890
+ +0987654321
+ ```
 - Mixed separators:
-  ```
-  +1234567890,+0987654321
-  +1111222333;+2222333444
-  ```
+ ```
+ +1234567890,+0987654321
+ +1111222333;+2222333444
+ ```
 - With names:
-  ```
-  John Doe: +1234567890
-  +0987654321 - Jane Smith
-  ```
+ ```
+ John Doe: +1234567890
+ +0987654321 - Jane Smith
+ ```
 
 Optimal formatting guidance:
 - Prefer one contact per line for readability.
@@ -192,23 +192,22 @@ PARSER --> VALIDATOR["validate_number.py"]
 - Memory usage: Stores validated contacts in memory; consider clearing old lists to manage growth.
 - Large batches: The UI processes all entries in one call; performance scales with input size.
 - Recommendations:
-  - Keep entries on separate lines for clarity and easier validation.
-  - Avoid extremely long single lines with many entries.
-  - Periodically clear the contact list to prevent memory bloat.
-  - Use consistent separators to reduce parsing ambiguity.
-
-[No sources needed since this section provides general guidance]
+ - Keep entries on separate lines for clarity and easier validation.
+ - Avoid extremely long single lines with many entries.
+ - Periodically clear the contact list to prevent memory bloat.
+ - Use consistent separators to reduce parsing ambiguity.
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - Empty input submission:
-  - The UI prevents submission when input is blank; ensure entries are present.
+ - The UI prevents submission when input is blank; ensure entries are present.
 - Malformed numbers:
-  - Numbers outside the accepted digit length range are ignored; verify formatting.
+ - Numbers outside the accepted digit length range are ignored; verify formatting.
 - Mixed separators causing ambiguity:
-  - Prefer one primary separator per batch; avoid mixing multiple separators excessively.
+ - Prefer one primary separator per batch; avoid mixing multiple separators excessively.
 - Real-time feedback:
-  - Check the activity log for success or error messages; use them to refine input.
+ - Check the activity log for success or error messages; use them to refine input.
 
 ## Conclusion
-The manual contact entry system provides a flexible, real-time way to add contacts using multiple separators and intelligent name-number pair detection. The UI offers immediate feedback, while the Python backend ensures reliable number cleaning and validation. Following the recommended formatting practices helps achieve reliable parsing and optimal performance, especially for larger batches.
+
+Large pastes are fine if separators are consistent. Mixed junk lines just get skipped after cleaning fails.

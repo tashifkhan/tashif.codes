@@ -1,9 +1,8 @@
 # AI/ML integration
 
-## Introduction
-This page describes the AI/ML integration for the TalentSync-Normies platform. It covers the microservice architecture, LangChain orchestration for AI pipelines, NLP processing for resume text extraction and structured analysis, machine learning models for resume classification, and the prompt engineering system supporting ATS scoring, detailed analysis, interview assistance, and communication tools. It also documents LLM provider configuration, dynamic provider switching, cost optimization strategies, model training data and validation metrics, performance monitoring, testing strategies, model versioning, and deployment considerations.
+The AI/ML integration for the TalentSync-Normies platform.
 
-## Project structure
+## Repository layout
 The AI/ML capabilities are primarily implemented in the backend Python service, with complementary frontend components for configuration and testing. The backend organizes AI/ML logic into:
 - Core LLM configuration and provider switching
 - Document processing and NLP preprocessing
@@ -39,15 +38,15 @@ Core --> Models
 Models --> Experiments
 ```
 
-## Core components
+## Building blocks
 - LLM Provider Configuration and Dynamic Switching: Centralized provider selection and instantiation supporting multiple vendors with unified API.
 - NLP Pipeline: Document ingestion, text extraction, cleaning, and preprocessing using spaCy and NLTK.
 - LangChain Prompt Engineering: Structured prompts for detailed resume analysis, ATS scoring, interview question generation, and cold email editing.
 - ML Models: Scikit-learn-based resume classification trained on a synthetic dataset; persisted models and vectorizers for inference.
 - Service Orchestration: FastAPI routes delegating to specialized services for resume analysis, ATS evaluation, and interview assistance.
 
-## Architecture overview
-The AI/ML microservice architecture integrates document processing, LLM orchestration, and ML inference. The system supports dynamic LLM provider switching and includes reliable error handling and fallback mechanisms.
+## How it fits together
+The AI/ML microservice architecture integrates document processing, LLM orchestration, and ML inference. The system supports dynamic LLM provider switching and includes clear error handling and fallback mechanisms.
 
 ```mermaid
 sequenceDiagram
@@ -72,9 +71,7 @@ ML-->>API : Category Prediction
 API-->>Client : Analysis Results
 ```
 
-## Detailed component analysis
-
-### LLM provider configuration and dynamic switching
+## LLM provider configuration and dynamic switching
 The system supports multiple LLM providers (Google, OpenAI, Anthropic, Ollama, OpenRouter, DeepSeek) with a unified factory that selects the appropriate client based on configuration. It includes:
 - Environment-based settings for provider, model, API key, and base URL
 - Singleton instances for default and faster models
@@ -105,10 +102,10 @@ Settings --> LLMFactory : "provides config"
 RequestLLM --> LLMFactory : "creates per-request"
 ```
 
-### NLP processing pipeline
+## NLP processing pipeline
 The pipeline extracts and cleans text from documents, applies preprocessing, and prepares data for LLM analysis and ML classification:
 - Document ingestion: Supports TXT, MD, PDF, DOC/DOCX with fallback to multimodal conversion when needed.
-- Text extraction: Uses PyMuPDF for reliable Markdown rendering.
+- Text extraction: Uses PyMuPDF for Markdown rendering.
 - Cleaning and preprocessing: Removes URLs, mentions, punctuation, lemmatization, and stopword filtering.
 - spaCy integration: Tokenization and lemmatization for structured NLP tasks.
 - ML preprocessing: TF-IDF vectorization for classification.
@@ -127,7 +124,7 @@ Lemmatize --> TFIDF["TF-IDF Vectorization"]
 TFIDF --> Ready([Ready for LLM/ML])
 ```
 
-### LangChain prompt engineering system
+## LangChain prompt engineering system
 Structured prompts guide the LLM to produce standardized JSON outputs for downstream processing:
 - Detailed Analysis: Extracts skills, experience, projects, education, and predicted field.
 - ATS Analysis: Scores resumes against job descriptions and provides keyword coverage and recommendations.
@@ -158,7 +155,7 @@ InterviewQuestionPrompt --> LLM : "invokes"
 ColdMailEditorPrompt --> LLM : "invokes"
 ```
 
-### Resume analysis services and routes
+## Resume analysis services and routes
 The backend exposes endpoints for resume analysis, formatting, and detailed analysis. Services integrate LLM chains and validation schemas:
 - File-based analysis: Processes uploaded files and returns structured data.
 - Text-based analysis: Accepts formatted text and returns detailed analysis.
@@ -184,7 +181,7 @@ Processor-->>Service : Parsed data
 Service-->>Client : ResumeUploadResponse
 ```
 
-### Machine learning models for resume classification
+## Machine learning models for resume classification
 A scikit-learn pipeline classifies resumes into predefined categories:
 - Training Data: Synthetic dataset with resume texts and categories.
 - Preprocessing: NLTK-based cleaning and TF-IDF vectorization.
@@ -202,7 +199,7 @@ Evaluate --> Save["Persist Model + Vectorizer"]
 Save --> Inference["Inference Pipeline"]
 ```
 
-### ATS evaluation and interview assistance
+## ATS evaluation and interview assistance
 - ATS Evaluation: LangChain graph orchestrates keyword matching, scoring, and recommendations against job descriptions.
 - Interview Assistance: Templates and question generation with difficulty and topic alignment; streaming code execution for technical interviews.
 
@@ -217,12 +214,12 @@ LLM-->>ATS : JSON + Narrative
 ATS-->>Client : Structured Evaluation
 ```
 
-### Communication tools and tailored resume generation
+## Communication tools and tailored resume generation
 - Cold Email Editing: Personalized email generation and iterative editing guided by candidate data and company insights.
 - Tailored Resume Generation: Uses ATS evaluation summaries and company website content to refine and align resumes.
 
-## Dependency analysis
-The AI/ML subsystem exhibits clear separation of concerns:
+## Dependencies
+AI pieces stay in their own modules:
 - Core LLM layer depends on environment settings and provider libraries.
 - Services depend on LangChain prompts and LLM instances.
 - NLP preprocessing depends on spaCy and NLTK resources.
@@ -239,30 +236,28 @@ Services --> ML["ML Models"]
 NLP --> ML
 ```
 
-## Performance considerations
+## Performance
 - LLM Provider Selection: Choose models aligned with latency and cost targets; use faster models for preliminary formatting and heavier models for complex reasoning.
 - Cost Optimization:
-  - Use provider-specific pricing calculators and monitor token usage.
-  - Prefer smaller, cheaper models for formatting and fallbacks.
-  - Batch requests where feasible and avoid unnecessary retries.
+ - Use provider-specific pricing calculators and monitor token usage.
+ - Prefer smaller, cheaper models for formatting and fallbacks.
+ - Batch requests where feasible and avoid unnecessary retries.
 - Caching and Persistence:
-  - Persist TF-IDF vectorizer and ML models to avoid retraining.
-  - Cache LLM responses for identical inputs where appropriate.
+ - Persist TF-IDF vectorizer and ML models to avoid retraining.
+ - Cache LLM responses for identical inputs where appropriate.
 - Resource Management:
-  - Monitor memory usage during PDF processing and vectorization.
-  - Limit concurrent LLM invocations to prevent rate-limit errors.
+ - Monitor memory usage during PDF processing and vectorization.
+ - Limit concurrent LLM invocations to prevent rate-limit errors.
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Authentication Failures: Verify API keys and provider configuration; use the LLM test endpoint to validate connectivity.
 - Rate Limits: Implement retry with exponential backoff and switch to lighter models temporarily.
 - Empty or Malformed JSON: Ensure prompts return JSON blocks; use fallback parsing logic to extract JSON substrings.
 - Provider Switching Errors: Confirm environment variables and model availability; fallback to default provider if unknown.
 
-## Conclusion
-The TalentSync-Normies AI/ML integration uses a modular backend architecture with LangChain orchestration, reliable LLM provider configuration, and a hybrid NLP/ML pipeline. The system supports dynamic provider switching, structured prompt engineering, and scalable inference through persisted models. With clear error handling, testing endpoints, and performance-conscious design, it provides a solid foundation for AI-driven talent acquisition workflows.
-
-## Appendices
+## Appendix
 
 ### Model training data and validation metrics
 - Dataset: Synthetic resume corpus with labeled categories.
@@ -272,7 +267,7 @@ The TalentSync-Normies AI/ML integration uses a modular backend architecture wit
 
 ### Testing strategies and model versioning
 - Unit-level tests: Validate prompt parsing, JSON extraction, and service error handling.
-- Integration tests: End-to-end resume analysis and ATS evaluation flows.
+- Integration tests: full resume analysis and ATS evaluation flows.
 - Model versioning: Persist model and vectorizer artifacts; maintain backward-compatible schemas.
 
 ### Deployment considerations

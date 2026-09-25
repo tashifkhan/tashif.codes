@@ -1,7 +1,7 @@
 # Service-Specific prompts
 
 ## Introduction
-This page explains the domain-specific prompt systems powering integrated services for GitHub repository analysis, website content understanding, and YouTube video processing. It covers prompt templates, parameter handling, response formatting, service integration, error handling, and optimization strategies. It also describes how prompts are chained across services and how context is preserved for reliable, scalable agent workflows.
+Prompt chains for GitHub, YouTube, website Q&A, and similar services: context packing, output format, and failure behavior.
 
 ## Project structure
 The repository organizes prompts, services, and FastAPI routers per domain. Prompts define the instruction templates and chains; services orchestrate ingestion, context assembly, and LLM invocation; routers expose HTTP endpoints for each service.
@@ -86,7 +86,7 @@ Build --> Inputs["Assemble {tree, summary, content, question, chat_history}"]
 Inputs --> Run["Run PromptTemplate + LLM"]
 Run --> Parse["Parse to String"]
 Parse --> Return["Return Answer"]
-Inputs --> |Error| Handle["Handle Exceptions<br/>Return User-Friendly Message"]
+Inputs --> |Error| Handle["Handle Exceptions<br/>Return Plain Message"]
 ```
 
 ### Website analysis prompts
@@ -120,7 +120,7 @@ Service-->>Router : "answer"
 - Chain composition: RunnableParallel with a get_context function that fetches and cleans subtitles/transcripts; PromptTemplate + LLM client; StrOutputParser.
 - Parameter handling: Router validates url and question; service optionally uploads attached file via GenAI SDK; chat_history passed as string.
 - Response formatting: Plain markdown with bullet points, tables, and LaTeX.
-- Error handling: Known error detection for transcript retrieval; returns empty context when errors occur; service wraps exceptions and returns user-friendly messages.
+- Error handling: Known error detection for transcript retrieval; returns empty context when errors occur; service wraps exceptions and returns plain messages.
 
 ```mermaid
 flowchart TD
@@ -136,7 +136,7 @@ Parse --> Return["Return Answer"]
 
 ### React agent prompt
 - Template: Instructional prompt for agents that use tools, framing the question, listing available tools, and instructing to use tools to gather information.
-- Purpose: Complements the broader React agent orchestration (outside the scope of this page) by providing a consistent tool-use instruction.
+- Purpose: Pairs with the broader React agent orchestration (covered elsewhere) as the tool-use instruction.
 
 ### Browser automation prompt
 - Template: Detailed instruction for generating JSON action plans for Chrome extension automation. Includes DOM manipulation and tab/window control actions, selector guidance, search URL construction, and strict output rules.
@@ -178,34 +178,33 @@ S_BROWSER --> P_BROWSER["prompts/browser_use.py"]
 
 ## Performance considerations
 - Context size management:
-  - GitHub service truncates repository content when using GenAI SDK to avoid payload limits.
-  - Website service assembles concise server and client contexts; client context is preferred but fallback is supported.
-  - YouTube service cleans transcripts and falls back to empty context on known errors.
+ - GitHub service truncates repository content when using GenAI SDK to avoid payload limits.
+ - Website service assembles concise server and client contexts; client context is preferred but fallback is supported.
+ - YouTube service cleans transcripts and falls back to empty context on known errors.
 - Token limits and retries:
-  - GitHub service detects token limit exceeded and suggests narrowing the scope.
-  - Browser automation limits DOM preview entries to reduce token usage.
+ - GitHub service detects token limit exceeded and suggests narrowing the scope.
+ - Browser automation limits DOM preview entries to reduce token usage.
 - Streaming and latency:
-  - Chains are synchronous in current implementation; consider streaming responses at routers/services for long-running prompts.
+ - Chains are synchronous in current implementation; consider streaming responses at routers/services for long-running prompts.
 - Model selection:
-  - Services support passing llm_options to prompt builders for model tuning.
-
-[No sources needed since this section provides general guidance]
+ - Services support passing llm_options to prompt builders for model tuning.
 
 ## Troubleshooting guide
 - GitHub
-  - Invalid repository URL: Returns guidance to use the repository root.
-  - Access issues (404/clone): Requests public repository verification.
-  - Token limit exceeded: Advises focusing on specific files/directories.
+ - Invalid repository URL: Returns guidance to use the repository root.
+ - Access issues (404/clone): Requests public repository verification.
+ - Token limit exceeded: Advises focusing on specific files/directories.
 - Website
-  - General processing error: Returns a friendly message to retry.
-  - Client HTML missing: Falls back to server context; client context is optional.
+ - General processing error: Returns a friendly message to retry.
+ - Client HTML missing: Falls back to server context; client context is optional.
 - YouTube
-  - Transcript retrieval errors: Known error messages detected and handled gracefully; returns empty context.
-  - LLM invocation errors: Wrapped with a user-friendly message.
+ - Transcript retrieval errors: Known error messages detected and handled ; returns empty context.
+ - LLM invocation errors: Wrapped with a plain message.
 - Browser automation
-  - JSON validation failures: Validation returns problems; endpoint returns structured error response.
+ - JSON validation failures: Validation returns problems; endpoint returns structured error response.
 - React agent
-  - Attached file upload failures: Logs and returns a user-friendly message; otherwise normal operation.
+ - Attached file upload failures: Logs and returns a plain message; otherwise normal operation.
 
 ## Conclusion
-The prompt systems are modular, domain-focused, and integrated with reliable services and routers. They emphasize context grounding, strict formatting, and resilient error handling. By preserving and combining context across services, especially client-side rendering for websites and transcripts for YouTube, the system supports advanced, cross-domain reasoning and automation.
+Ground every answer in fetched context, demand the format you parse, and fail loudly when context is empty. Shared patterns beat one-off prompt files that drift.
+

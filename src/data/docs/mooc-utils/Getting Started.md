@@ -1,13 +1,21 @@
 # Getting started
 
-## Introduction
-This guide helps you quickly set up and use the MOOC Utils suite: the Assignment Solver browser extension, the Notice Reminders CLI tool and API backend, and the Website dashboard. You will find prerequisites, environment setup, installation steps, initial configuration, and a basic workflow for new users. Quick start examples show how to install the extension, configure your Gemini API key, and access the website dashboard.
+Install the Assignment Solver extension, run Notice Reminders as a CLI or FastAPI server, and point the Next.js site at that API. Each directory is its own project.
+
+Clone:
+
+```bash
+git clone https://github.com/tashifkhan/MOOC-utils
+cd MOOC-utils
+```
 
 ## Project structure
-MOOC Utils is organized as a multi-project repository with three independent components:
-- Assignment Solver: a browser extension for AI-powered assignment assistance.
-- Notice Reminders: a Python CLI tool and FastAPI backend for course announcements and subscriptions.
-- Website: a Next.js web app providing a landing page and dashboard for Notice Reminders and Assignment Solver.
+
+Three independent packages:
+
+- `assignment-solver/`: Chrome/Firefox extension. Gemini runs in the browser with your own API key.
+- `notice-reminders/`: Python 3.12+ CLI plus FastAPI. SQLite by default.
+- `website/`: Next.js App Router landing page and Notice Reminders dashboard.
 
 ```mermaid
 graph TB
@@ -49,12 +57,14 @@ WEB_README --> WEB_API
 ```
 
 ## Core components
-- Assignment Solver extension: AI-powered question extraction and solving using Gemini, with manual and automated modes. Requires a Gemini API key and a modern browser.
-- Notice Reminders CLI tool and API: Python-based tool to search courses, fetch announcements, and manage subscriptions via a FastAPI backend. Provides OTP-based login and httpOnly cookie authentication.
-- Website dashboard: Next.js app with a landing page and a dashboard for Notice Reminders. Requires the backend to be running for login and data.
+
+- Assignment Solver: Vite 5 extension (`nptel-assignment-solver` 1.1.0). Chrome 116+ or Firefox 121+. The Gemini key lives in `browser.storage.local` and is sent only to Google.
+- Notice Reminders: `uv sync`, then `uv run python main.py cli` or `uv run python main.py api`. Default DB is `sqlite://./data/db/db.sqlite3`.
+- Website: Next.js 16.1.6, React 19.2.3, TanStack Query, Tailwind 4. Needs `NEXT_PUBLIC_API_URL` and a running API for login and the dashboard.
 
 ## Architecture overview
-The three components operate independently but integrate through the Website dashboard and Notice Reminders backend.
+
+The extension never talks to Notice Reminders. The website does.
 
 ```mermaid
 graph TB
@@ -70,14 +80,14 @@ end
 subgraph "Notice Reminders"
 CLI["CLI Mode"]
 API["FastAPI Backend"]
-DB["SQLite / DB"]
+DB["SQLite"]
 AUTH["OTP Auth"]
 end
 subgraph "Website"
 LANDING["Landing Page"]
 DASH["Dashboard"]
 NEXT["Next.js App"]
-AXIOS["API Client"]
+CLIENT["API Client"]
 end
 U --> EXT
 EXT --> BG
@@ -91,72 +101,66 @@ API --> AUTH
 U --> NEXT
 NEXT --> DASH
 NEXT --> LANDING
-DASH --> AXIOS
-AXIOS --> API
+DASH --> CLIENT
+CLIENT --> API
 ```
 
-## Detailed component analysis
+## Assignment solver extension
 
-### Assignment solver extension
-Installation and setup:
-- Prerequisites: Bun package manager, a Gemini API key, and a supported browser (Chrome or Firefox).
-- Build: Use the provided scripts to build for Chrome or Firefox, or build both.
-- Load in browser: Developer mode required; load the appropriate distribution folder.
-- Configure API key: Open the side panel, go to Settings, enter your Gemini API key, and save.
+Prerequisites: [Bun](https://bun.sh/), a Gemini key from [Google AI Studio](https://aistudio.google.com/apikey), Chrome 116+ or Firefox 121+.
 
-Basic workflow:
-- Navigate to an assignment page.
-- Open the extension side panel and extract questions.
-- Choose Manual or Auto mode; review and confirm actions.
+```bash
+cd assignment-solver
+bun install
+bun run build            # dist/chrome and dist/firefox
+# bun run build:chrome
+# bun run build:firefox
+```
 
-Verification steps:
-- Ensure the extension icon appears in the toolbar.
-- Confirm the side panel opens and displays settings.
-- Test extraction and solving with a known assignment page.
+Watch mode: `bun run dev:chrome` or `bun run dev:firefox`.
 
-Common issues and fixes:
-- "Could not get page HTML": Refresh the page and re-extract.
-- "Question container not found": Re-extract and check console logs.
-- "API Key invalid": Verify the key at the AI Studio and ensure no extra spaces.
-- Answers not applied: Platform-specific input components may require manual application.
+Load it:
 
-#### Build and load flow
+- Chrome: `chrome://extensions/` → Developer mode → Load unpacked → `dist/chrome/`
+- Firefox: `about:debugging` → This Firefox → Load Temporary Add-on → a file in `dist/firefox/` (usually `manifest.json`)
+
+Open the side panel, Settings, paste the Gemini key, Save Key. The key never hits MOOC Utils servers.
+
+Then open an assignment page, extract questions, use Study Hints or Auto-Solve, and confirm before submit.
+
 ```mermaid
 flowchart TD
 Start(["Start"]) --> Clone["Clone repository"]
 Clone --> InstallDeps["Install dependencies with Bun"]
-InstallDeps --> Build["Build extension (Chrome/Firefox)"]
+InstallDeps --> Build["Build extension Chrome/Firefox"]
 Build --> LoadDev["Load unpacked in browser developer mode"]
 LoadDev --> Configure["Enter Gemini API key in settings"]
 Configure --> Done(["Ready"])
 ```
 
-### Notice reminders CLI tool and API
-Installation and setup:
-- Prerequisites: Python 3.12+.
-- Install dependencies using the project's dependency management tool.
-- Run in CLI mode for interactive scraping without a database.
-- Run in API mode to start the backend server; optionally enable auto-reload for development.
+Common failures:
 
-Environment and configuration:
-- The backend reads settings from environment variables and supports configurable CORS origins, JWT secrets, and OTP delivery.
+- "Could not get page HTML": refresh, wait for the page to finish loading, extract again.
+- "Question container not found": extract again and read the content-script console.
+- "API Key invalid": check the key in AI Studio and strip spaces.
+- Answers not applied: some platforms use custom inputs. Apply one answer at a time.
 
-Basic workflow:
-- Register or log in via OTP on the Website dashboard.
-- Use the dashboard to search courses, view announcements, and manage subscriptions.
-- Optionally run the CLI to search and view announcements directly from the terminal.
+## Notice reminders CLI and API
 
-Verification steps:
-- Confirm the API server is reachable at the configured host/port.
-- Verify OTP login succeeds and persists a session cookie.
-- Ensure course search and announcement retrieval work.
+Python 3.12+. Layout is `app/` (API, CLI, models, services), not `package/cli` or `package/api`.
 
-Common issues and fixes:
-- Port conflicts: Change host/port when starting the API server.
-- Database initialization: Ensure the database path exists and is writable.
-- OTP delivery: Configure SMTP or adjust OTP delivery settings for production.
+```bash
+cd notice-reminders
+uv sync
+uv run python main.py cli
+uv run python main.py api --reload
+uv run python main.py api --host 0.0.0.0 --port 8000
+```
 
-#### API startup sequence
+CLI searches Swayam and prints announcements. No database. API mode uses Tortoise/Aerich, JWT cookies, and email OTP (`otp_delivery` defaults to `console` so codes print in the server log until you set SMTP).
+
+Set `jwt_secret` in `.env`. Optional: `database_url`, `cors_origins` (default `http://localhost:3000`), SMTP, Telegram.
+
 ```mermaid
 sequenceDiagram
 participant User as "User"
@@ -169,27 +173,36 @@ API->>DB : "Ensure migrations and tables"
 API-->>User : "Server ready on host : port"
 ```
 
-### Website dashboard
-Installation and setup:
-- Prerequisites: Node.js and Bun.
-- Install dependencies and configure environment variables for the API URL.
-- Build the Next.js app and run lint checks.
+Check:
 
-Basic workflow:
-- Visit the website and use the OTP login to access the dashboard.
-- Browse courses, manage subscriptions, and view notifications.
+- API answers on the host/port you passed (default `127.0.0.1:8000`).
+- OTP login from the website sets cookies.
+- Search and announcements return data.
 
-Verification steps:
-- Confirm the dashboard loads and shows navigation links.
-- Log in using OTP and verify session persistence.
-- Check that course search and subscription management are functional.
+Port in use: pass `--port`. SQLite path missing: create `data/db/` and confirm it is writable. No email: leave `otp_delivery=console`.
 
-Common issues and fixes:
-- Backend not running: The dashboard requires the Notice Reminders API to be available.
-- Environment misconfiguration: Ensure NEXT_PUBLIC_API_URL points to the running backend.
-- Development server: Follow the repository's guidance on using the correct dev command.
+## Website dashboard
 
-#### Website API client flow
+Bun. Repo guidelines forbid `npm run dev` and `bun dev`. Install, set the env, build.
+
+```bash
+cd website
+bun install
+```
+
+`.env.local`:
+
+```bash
+NEXT_PUBLIC_API_URL="http://localhost:8000"
+```
+
+```bash
+bun run build
+bun run lint
+```
+
+Start the Notice Reminders API before you expect login, subscriptions, or the inbox to work. Public course search still hits that API.
+
 ```mermaid
 sequenceDiagram
 participant UI as "Next.js UI"
@@ -202,9 +215,10 @@ API-->>UI : "Parsed data"
 ```
 
 ## Dependency analysis
-- Assignment Solver depends on Bun, Vite, and webextension-polyfill for building and cross-browser compatibility. It integrates with the Gemini API for AI-powered extraction and solving.
-- Notice Reminders depends on Python 3.12+, FastAPI, Tortoise ORM, Aerich, and HTTPX for scraping and database operations. It exposes a REST API for the frontend.
-- Website depends on Next.js, React, TanStack Query, and Tailwind for the UI and API client integration.
+
+- Assignment Solver: Bun, Vite 5.4, webextension-polyfill 0.12, fetch to Gemini.
+- Notice Reminders: Python 3.12+, FastAPI, Tortoise ORM, Aerich, HTTPX, BeautifulSoup, PyJWT.
+- Website: Next.js 16, React 19, TanStack Query 5, Tailwind 4. No Axios.
 
 ```mermaid
 graph LR
@@ -217,49 +231,28 @@ WEB_PKG["website/package.json"] --> WEB_DEPS["Next.js/TanStack Query"]
 WEB_ENV[".env.local"] --> WEB_API["API Client"]
 ```
 
-## Performance considerations
-- Assignment Solver: Rate limiting is handled client-side to prevent API throttling and ensure reliable DOM updates. Consider reducing concurrent operations if encountering rate limit errors.
-- Notice Reminders: Configure cache TTL and database connection pooling appropriately. Use production-grade ASGI servers for higher concurrency.
-- Website: Minimize unnecessary re-fetches using TanStack Query caching and invalidate queries after mutations.
+## Performance
 
-[No sources needed since this section provides general guidance]
+- Assignment Solver: 500ms between Gemini answer calls, 200ms between DOM writes. Shrink the batch if you hit quota.
+- Notice Reminders: `cache_ttl_minutes` defaults to 60. SQLite is the local default.
+- Website: TanStack Query caches dashboard reads. Invalidate after subscription or inbox mutations.
 
-## Troubleshooting guide
-- Assignment Solver
-  - "Could not get page HTML": Ensure you are on a real assignment page and refresh the page.
-  - "Question container not found": Re-extract questions and check the browser console.
-  - "API Key invalid": Verify the key at the AI Studio and remove extra spaces.
-  - Answers not applied: Some platforms use custom components; apply answers manually to identify issues.
-  - Rate limit errors: Wait before retrying, upgrade quotas, or reduce batch size.
+## Troubleshooting
 
-- Notice Reminders
-  - Port conflicts: Change host/port when starting the API server.
-  - Database path: Ensure the database path exists and is writable.
-  - OTP delivery: Configure SMTP or adjust OTP delivery settings.
+Assignment Solver: page HTML, missing containers, bad keys, custom widgets, Gemini rate limits.
 
-- Website
-  - Backend not running: Start the Notice Reminders API before launching the website.
-  - Environment misconfiguration: Set NEXT_PUBLIC_API_URL to the backend address.
-  - Dev server: Follow the repository's guidance on using the correct dev command.
+Notice Reminders: `--port`, writable `data/db/db.sqlite3`, SMTP vs console OTP.
+
+Website: API not running, `NEXT_PUBLIC_API_URL` wrong, `bun dev` used against repo rules.
 
 ## Conclusion
-You now have the essentials to install and use MOOC Utils components. Start with the Assignment Solver to practice with a Gemini API key, then set up the Notice Reminders backend and Website dashboard for a complete workflow. Use the troubleshooting tips to resolve common issues and verify each component's configuration.
 
-[No sources needed since this section summarizes without analyzing specific files]
+Key in the side panel, API on 8000, website pointed at that origin. CLI if you only want search.
 
 ## Appendices
 
 ### Quick start examples
-- Setting up course subscriptions
-  - Log in to the Website dashboard using OTP.
-  - Search for courses and add subscriptions to receive updates.
-  - Manage channels and notifications from the dashboard.
 
-- Installing the Assignment Solver extension
-  - Build the extension for your browser and load it in developer mode.
-  - Enter your Gemini API key in the extension settings.
-  - Practice extraction and solving on a test assignment page.
-
-- Accessing the Website
-  - Install dependencies and configure NEXT_PUBLIC_API_URL.
-  - Build and run the Next.js app; log in via OTP to access the dashboard.
+- Course subscriptions: OTP login on the website, search, add a subscription, use the inbox.
+- Extension: `bun run build`, load `dist/chrome` or `dist/firefox`, save a Gemini key, try a real assignment page.
+- Website: `bun install`, `.env.local`, `bun run build`, API already up.

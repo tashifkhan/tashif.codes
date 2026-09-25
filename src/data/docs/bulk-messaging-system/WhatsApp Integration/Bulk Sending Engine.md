@@ -1,10 +1,10 @@
 # Bulk sending engine
 
 ## Introduction
-This page explains the bulk message sending engine implemented in the desktop application. It covers the end-to-end workflow for sending WhatsApp messages and emails in bulk, including contact iteration, message personalization, rate limiting, delivery confirmation, progress monitoring, and error handling. It also provides performance optimization techniques and best practices for large-scale campaigns.
+Bulk send loop for WhatsApp (and the email cousins): iterate contacts, personalize, delay, report progress, keep going on single failures.
 
 ## Project structure
-The application is organized as a cross-platform desktop app with:
+The application is organized as a cross-platform desktop app :
 - Electron main process orchestrating IPC handlers and integrations
 - React frontend for user controls and progress display
 - Python backend utilities for contact processing and validation
@@ -97,10 +97,10 @@ Workflow:
 - Initialize WhatsApp client with local authentication strategy.
 - Display QR code for user authentication.
 - After authentication, iterate over contacts:
-  - Construct chat ID from phone number.
-  - Check if the number is registered on WhatsApp.
-  - Personalize message using {{name}} placeholder.
-  - Send message with a fixed delay between attempts.
+ - Construct chat ID from phone number.
+ - Check if the number is registered on WhatsApp.
+ - Personalize message using {{name}} placeholder.
+ - Send message with a fixed delay between attempts.
 - Report completion metrics (sent vs failed).
 
 ```mermaid
@@ -138,10 +138,10 @@ Key implementation details:
 Workflow:
 - Authenticate via OAuth2 and persist tokens.
 - For each recipient:
-  - Prepare email payload.
-  - Send via Gmail API.
-  - Emit progress updates.
-  - Apply configurable delay between sends.
+ - Prepare email payload.
+ - Send via Gmail API.
+ - Emit progress updates.
+ - Apply configurable delay between sends.
 
 ```mermaid
 sequenceDiagram
@@ -170,10 +170,10 @@ Workflow:
 - Validate SMTP configuration.
 - Create transport and verify connectivity.
 - For each recipient:
-  - Build email options (HTML and plain text).
-  - Send via SMTP.
-  - Emit progress updates.
-  - Apply configurable delay between sends.
+ - Build email options (HTML and plain text).
+ - Send via SMTP.
+ - Emit progress updates.
+ - Apply configurable delay between sends.
 
 ```mermaid
 sequenceDiagram
@@ -192,7 +192,7 @@ Main-->>UI : "email-progress : failed"
 ```
 
 Key implementation details:
-- Transport verification: Ensures SMTP server readiness before sending.
+- Transport verification: Checks SMTP readiness before sending.
 - Credential handling: Optional saving of non-secret config (host/port/secure/user).
 - Progress tracking: Same event-driven pattern as Gmail API.
 - Delay-based rate limiting: Consistent throttling across providers.
@@ -223,24 +223,24 @@ Key implementation details:
 
 ### Rate limiting and spam prevention
 - WhatsApp:
-  - Fixed delays between sending attempts to registered users and between failures.
-  - Registration checks prevent sending to unregistered numbers, reducing bounce-related errors.
+ - Fixed delays between sending attempts to registered users and between failures.
+ - Registration checks prevent sending to unregistered numbers, reducing bounce-related errors.
 - Gmail/SMTP:
-  - Configurable delay between emails to avoid throttling and rate limits.
-  - Progress events allow users to adjust delay dynamically.
+ - Configurable delay between emails to avoid throttling and rate limits.
+ - Progress events allow users to adjust delay dynamically.
 
-Best practices:
+Habits that help:
 - Start with conservative delays and increase gradually based on provider feedback.
 - Monitor delivery failures and reduce batch sizes for problematic domains/providers.
 - Respect provider-specific rate limits and quotas.
 
 ### Delivery confirmation and status tracking
 - WhatsApp:
-  - Real-time status updates for QR generation, authentication, and per-contact send results.
-  - Completion summary with sent and failed counts.
+ - Real-time status updates for QR generation, authentication, and per-contact send results.
+ - Completion summary with sent and failed counts.
 - Gmail/SMTP:
-  - Per-email progress events with current/total counters and per-recipient status.
-  - Structured failure details for diagnostics.
+ - Per-email progress events with current/total counters and per-recipient status.
+ - Structured failure details for diagnostics.
 
 ```mermaid
 sequenceDiagram
@@ -263,11 +263,11 @@ Main-->>UI : "whatsapp-send-status : summary"
 
 ### Retry mechanisms and error recovery
 - WhatsApp:
-  - Attempts to send to registered users only; failures are recorded and retried on subsequent runs.
-  - Disconnection handler resets client state and clears cached files.
+ - Attempts to send to registered users only; failures are recorded and retried on subsequent runs.
+ - Disconnection handler resets client state and clears cached files.
 - Gmail/SMTP:
-  - Per-email failure events include error messages; UI can trigger reattempts selectively.
-  - Transport verification helps detect misconfiguration early.
+ - Per-email failure events include error messages; UI can trigger reattempts selectively.
+ - Transport verification helps detect misconfiguration early.
 
 Recommendations:
 - Implement explicit retry loops for transient failures.
@@ -301,19 +301,18 @@ Py --> PyScript["parse_manual_numbers.py"]
 - Network resilience: Use exponential backoff for retries and circuit breaker patterns.
 - UI responsiveness: Offload heavy tasks to background threads and emit frequent progress updates.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - WhatsApp QR code not loading:
-  - Ensure network connectivity and restart the app.
-  - Clear cached files and retry initialization.
+ - Ensure network connectivity and restart the app.
+ - Clear cached files and retry initialization.
 - Gmail authentication failures:
-  - Verify OAuth2 client credentials and ensure Gmail API is enabled.
+ - Verify OAuth2 client credentials and ensure Gmail API is enabled.
 - SMTP connection issues:
-  - Confirm server settings, ports, and TLS configuration.
+ - Confirm server settings, ports, and TLS configuration.
 - Contact import errors:
-  - Validate file format and encoding; ensure proper column headers.
+ - Validate file format and encoding; ensure proper column headers.
 
 ## Conclusion
-The bulk sending engine integrates WhatsApp Web, Gmail API, and SMTP with reliable contact processing, personalization, rate limiting, and progress monitoring. By using IPC handlers, structured progress events, and provider-specific safeguards, it supports reliable large-scale campaigns while maintaining user control and transparency.
+
+Respect the delay. WhatsApp bans are worse than a slow progress bar.

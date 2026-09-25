@@ -1,7 +1,7 @@
-# Indexing strategy & performance optimization
+# Indexing strategy & performance work
 
 ## Introduction
-This page details the MongoDB indexing strategy and performance optimization techniques used in the notification system. It covers collection indexes, rationale for each index, query patterns for notification delivery, user management, and data aggregation. It also explains index creation syntax, how to analyze query plans using explain(), and provides guidance on index maintenance, monitoring index usage statistics, and identifying missing indexes. Best practices for index design are included, balancing write performance implications, storage overhead, and read optimization trade-offs.
+Indexes that actually get hit: notification delivery lookups, upserts, user preference filters. Why each one exists, what queries they serve, and where compound indexes beat single-field ones.
 
 ## Project structure
 The notification system is organized around five main MongoDB collections and supporting services:
@@ -136,7 +136,7 @@ Indexes:
 - created_at for reverse-chronological listing
 
 Rationale:
-- offer_id ensures idempotent processing of offers
+- offer_id makes offer processing idempotent
 - company index supports company-specific alerts
 - processing_status optimizes workflow queries
 - created_at sorts newest offers first
@@ -181,7 +181,7 @@ Indexes:
 - timestamp descending for latest snapshot queries
 
 Rationale:
-- data_id ensures idempotent snapshot writes
+- data_id makes snapshot writes idempotent
 - timestamp descending supports latest-first retrieval
 
 Index creation syntax:
@@ -222,7 +222,7 @@ Done --> End
 ```
 
 ## Dependency analysis
-The notification system's data access layer is decoupled via DBClient and DatabaseService, enabling testability and clean separation of concerns.
+The notification system's data access layer is decoupled via DBClient and DatabaseService, so tests stay small and DB access stays in one place.
 
 ```mermaid
 classDiagram
@@ -321,7 +321,7 @@ Identifying missing indexes:
 - Correlate with query patterns from notification delivery and user management
 
 ## Conclusion
-The indexing strategy aligns closely with the notification system's core workloads: delivering unsent notices, managing users, and aggregating placement data. Unique indexes on identifiers prevent duplication, while targeted single-field and compound indexes accelerate common queries. Proper use of explain(), projections, and batch operations ensures optimal performance. Regular monitoring and iterative index refinement will maintain efficiency as data volumes grow.
+Indexes follow the hot paths: unsent notices, user lookups, placement aggregations. Unique ids stop dupes; explain() and projections keep scans honest as the collections grow.
 
 ## Appendices
 

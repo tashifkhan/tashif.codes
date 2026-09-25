@@ -1,223 +1,291 @@
 # Architecture overview
 
-## Purpose and scope
+How JPortal is put together: stack, routing, portal instances, and the patterns that show up everywhere.
 
-This page describes the high-level architecture of JPortal, including the technology stack, application structure, component organization, routing system, and key design patterns. For detailed information about specific subsystems, refer to:
+Subsystem docs:
 
-* Authentication flow and routing: [Application Structure & Authentication](3.1-application-structure-and-authentication)
-* State management patterns: [State Management Strategy](3.2-state-management-strategy)
-* Data access layer: [Data Layer & API Integration](3.3-data-layer-and-api-integration)
-* Theme infrastructure: [Theme System](3.4-theme-system)
-* Individual feature modules: [Feature Modules](4-feature-modules)
+* Authentication and routing: [Application Structure & Authentication](3.1-application-structure-and-authentication)
+* State: [State Management Strategy](3.2-state-management-strategy)
+* Data: [Data Layer & API Integration](3.3-data-layer-and-api-integration)
+* Theme: [Theme System](3.4-theme-system)
+* Features: [Feature Modules](4-feature-modules)
 
 ## Technology stack
 
-JPortal is built as a single-page application (SPA) using modern web technologies:
+SPA in `jportal/`. Versions from `package.json`.
 
 | Category | Technologies | Purpose |
 | --- | --- | --- |
-| **Frontend Framework** | React 18.3.1 | UI component library and rendering |
-| **Build Tool** | Vite 5.4.10 | Development server and production bundler |
-| **Routing** | React Router DOM 6.27.0 | Client-side navigation with `HashRouter` |
-| **UI Components** | Radix UI primitives | Accessible, unstyled component primitives |
-| **Styling** | Tailwind CSS 4.1.12, Class Variance Authority | Utility-first CSS framework with component variants |
-| **State Management** | React hooks (useState, useEffect), Zustand 5.0.8 | Local state + global theme store |
-| **Forms** | React Hook Form 7.53.1, Zod 3.23.8 | Form handling and validation |
-| **Data Visualization** | Recharts 2.15.4 | Charts for grades and analytics |
-| **Server State** | TanStack Query 5.90.2 | Available but minimally used |
-| **PWA** | VitePWA Plugin 0.20.5, Workbox | Offline capabilities and installability |
-| **External APIs** | jsjiit 0.0.20 (CDN), Pyodide 0.23.4 | JIIT portal integration, Python in browser |
+| UI | React 18.3.1 | Components |
+| Build | Vite 7.3.1 | Dev server and bundle |
+| Routing | React Router DOM 6.27.0 | `HashRouter` |
+| Primitives | Radix UI | Dialog, Select, Tabs, Sheet |
+| CSS | Tailwind CSS 4.1.12, CVA | Utilities and variants |
+| Feature state | `useState` / `useEffect` | Lifted onto `AuthenticatedApp` |
+| Theme state | Zustand 5.0.8 | `src/stores/theme-store.ts` |
+| Forms | React Hook Form 7.53.1, Zod 3.23.8 | Login |
+| Charts | Recharts 2.15.4 | GPA, attendance, stats |
+| Server state | TanStack Query 5.90.2 | Cloudflare hooks in `src/hooks/cloudflare.ts` |
+| PWA | `vite-plugin-pwa` 1.2.0, Workbox | SW and manifest |
+| Portal | jsjiit 0.0.27 CDN | `WebPortal`, `LoginError` |
+| Python in browser | Pyodide 0.23.4 | Marks PDF parse |
+
+TanStack Query is used on `/stats`. Attendance and Grades still fetch with `useEffect` and parent state.
 
 ## Application entry point and bootstrap
 
 ### HTML and script loading
 
-The application bootstraps from `index.html`, which defines critical resources:
-
-![Diagram 1](images/3-architecture-overview_diagram_1.png)
+```mermaid
+flowchart TD
+  indexHtml["index.html"] --> fonts["Google Fonts preconnect + stylesheet"]
+  indexHtml --> beacon["Cloudflare beacon.min.js"]
+  indexHtml --> pyodide["cdn.jsdelivr.net/pyodide/v0.23.4"]
+  indexHtml --> main["script type=module src=/src/main.jsx"]
+```
 
 ### Main entry point
 
-The `main.jsx` file renders the root `App` component into the DOM:
+```mermaid
+flowchart TD
+  main["src/main.jsx"] --> css["index.css"]
+  main --> root["createRoot(#root)"]
+  root --> App["App.jsx"]
+```
 
-![Diagram 2](images/3-architecture-overview_diagram_2.png)
+`main.jsx` only mounts `App`. Theme and Query providers live in `App`.
 
 ## Application architecture
 
-### Top-Level component structure
+### Top-level component structure
 
-The `App` component is the authentication gatekeeper and application shell:
+```mermaid
+flowchart TD
+  App["App"] --> TS["ThemeScript"]
+  App --> TP["ThemeProvider"]
+  TP --> Font["DynamicFontLoader"]
+  TP --> QC["QueryClientProvider"]
+  QC --> Toast["Toaster sonner"]
+  QC --> Router["HashRouter"]
+  Router --> Stats["/stats Cloudflare"]
+  Router --> Gate{"isAuthenticated"}
+  Gate -->|no| Login["LoginWrapper"]
+  Gate -->|yes| Auth["AuthenticatedApp"]
+```
 
-![Diagram 3](images/3-architecture-overview_diagram_3.png)
+State on `App`:
 
-**Key State Variables in App:**
-
-* `isAuthenticated`: Boolean indicating user authentication status
-* `isDemoMode`: Boolean determining whether to use `mockPortal` or `realPortal`
-* `isLoading`: Boolean for auto-login attempt on mount
-* `error`: String for displaying login errors
+* `isAuthenticated`
+* `isDemoMode`
+* `isLoading` (auto-login)
+* `error`
 
 ### Portal instance management
 
-Two portal instances are created at the module level and conditionally passed to child components:
-
-![Diagram 4](images/3-architecture-overview_diagram_4.png)
+```mermaid
+flowchart LR
+  Mod["App.jsx module scope"] --> Real["realPortal WebPortal useProxy proxyUrl onrender"]
+  Mod --> Mock["mockPortal MockWebPortal"]
+  App["App"] --> Flag{"isDemoMode"}
+  Flag -->|false| Real
+  Flag -->|true| Mock
+  Real --> W["w prop"]
+  Mock --> W
+```
 
 ## Routing architecture
 
 ### Route structure
 
-JPortal uses `HashRouter` for client-side routing with route guards based on authentication:
-
-![Diagram 5](images/3-architecture-overview_diagram_5.png)
+```mermaid
+flowchart TD
+  HR["HashRouter"] --> Stats["path /stats public"]
+  HR --> Star{"isAuthenticated"}
+  Star -->|false| Catch["path * LoginWrapper"]
+  Star -->|true| Rest["path /* AuthenticatedApp"]
+```
 
 ### AuthenticatedApp internal routing
 
-The `AuthenticatedApp` component defines protected routes and provides global UI chrome:
-
-![Diagram 6](images/3-architecture-overview_diagram_6.png)
+```mermaid
+flowchart TD
+  AA["AuthenticatedApp"] --> Header["sticky Header"]
+  AA --> R["Routes"]
+  AA --> Nav["Navbar"]
+  R --> Redir["/ and /login -> /attendance"]
+  R --> Att["/attendance"]
+  R --> Gr["/grades"]
+  R --> Ex["/exams"]
+  R --> Sub["/subjects"]
+  R --> Pr["/profile"]
+```
 
 ## State management architecture
 
 ### State hierarchy
 
-JPortal implements a hierarchical state management pattern with extensive props drilling:
+```mermaid
+flowchart TD
+  App["App auth + demo flag"] --> AA["AuthenticatedApp feature caches"]
+  AA --> Feat["Attendance Grades Exams Subjects Profile"]
+  Theme["useThemeStore"] --> Header
+  Theme --> Cards["feature cards"]
+  LS["localStorage"] --> App
+  LS --> AA
+```
 
-![Diagram 7](images/3-architecture-overview_diagram_7.png)
+Persisted:
 
-**State Persistence:**
-
-* `attendanceGoal`: Saved to `localStorage` with default value of 75
-* Login credentials: Stored in `localStorage` for auto-login
+* `attendanceGoal` (default 75)
+* `username` / `password` for auto-login
 
 ### State flow to feature components
 
-All feature states are passed as props to their respective components:
-
-![Diagram 8](images/3-architecture-overview_diagram_8.png)
+```mermaid
+flowchart LR
+  AA["AuthenticatedApp"] -->|"attendance* props"| Att["Attendance"]
+  AA -->|"grades* marks* gradeCard*"| Gr["Grades"]
+  AA -->|"exam*"| Ex["Exams"]
+  AA -->|"subject* choices*"| Sub["Subjects"]
+  AA -->|"profileData"| Pr["Profile"]
+```
 
 ## Data access layer: portal abstraction
 
-### Portal strategy pattern
+### Portal `w` switch
 
-The application uses a strategy pattern through the `w` prop to abstract data access:
+```mermaid
+flowchart TD
+  Comp["feature component"] --> Call["await w.method(...)"]
+  Call --> Impl{"w constructor"}
+  Impl -->|WebPortal| CDN["jsjiit 0.0.27"]
+  Impl -->|MockWebPortal| JSON["fakedata.json"]
+```
 
-![Diagram 9](images/3-architecture-overview_diagram_9.png)
-
-**Common Portal Methods:**
+Portal methods in this app:
 
 * `student_login(username, password)`
-* `get_attendance(stud_id, sem_id)`
-* `get_grades()`
-* `get_subject_faculty(stud_id, sem_id)`
-* `get_exam_schedule()`
-* `get_header()`
-* `get_exam_events()`
-* Additional methods for marks and grade cards
+* `get_attendance_meta()`, `get_attendance(header, semester)`, `get_subject_daily_attendance(...)`
+* `get_registered_semesters()`, `get_registered_subjects_and_faculties(semester)`, `get_subject_choices(semester)`
+* `get_semesters_for_exam_events()`, `get_exam_events(semester)`, `get_exam_schedule(event)`
+* `get_sgpa_cgpa()`, `get_semesters_for_grade_card()`, `get_grade_card(semester)`
+* `get_semesters_for_marks()`, `download_marks(semester)`
+* `get_personal_info()`
+
+Do not invent `get_grades()` or `get_header()` as feature APIs. Attendance uses `meta.latest_header()`.
 
 ### Login flow
 
-![Diagram 10](images/3-architecture-overview_diagram_10.png)
+```mermaid
+sequenceDiagram
+  participant User
+  participant Login
+  participant W as w.student_login
+  participant LS as localStorage
+  participant App
 
-**Auto-Login on Mount:**
-The `App` component attempts auto-login using stored credentials in `localStorage`:
+  User->>Login: submit enrollment + password
+  Login->>W: student_login
+  W-->>Login: session or LoginError
+  Login->>LS: set username password
+  Login->>App: onLoginSuccess
+  App->>App: setIsAuthenticated true
+```
+
+Auto-login on mount uses stored credentials against `realPortal` only.
 
 ## Theme infrastructure
 
 ### Theme state management with zustand
 
-The theme system uses Zustand for global state, separate from React component state:
-
-![Diagram 11](images/3-architecture-overview_diagram_11.png)
+```mermaid
+flowchart LR
+  Presets["theme-presets.ts defaultPresets"] --> Store["useThemeStore persist"]
+  Store --> Provider["ThemeProvider"]
+  Provider --> Root["documentElement CSS vars"]
+  Selector["ThemeSelectorDialog"] --> Store
+```
 
 ### Dynamic font loading
 
-The `DynamicFontLoader` component monitors theme changes and loads Google Fonts dynamically:
+```mermaid
+flowchart TD
+  Preset["theme styles font-sans"] --> Extract["extractFontFamily"]
+  Extract --> Skip{"system font?"}
+  Skip -->|yes| Stop["skip"]
+  Skip -->|no| URL["buildFontCssUrl family 400 500 600 700"]
+  URL --> Link["loadGoogleFont append link"]
+```
 
-![Diagram 12](images/3-architecture-overview_diagram_12.png)
-
-**Key Functions:**
-
-* `extractFontFamily(fontFamilyValue)`: Parses CSS font-family string, filters out system fonts
-* `buildFontCssUrl(family, weights)`: Constructs Google Fonts API URL
-* `loadGoogleFont(family, weights)`: Injects `<link>` element into document head
-
-**Default Font Weights:** `["400", "500", "600", "700"]`
+`src/utils/fonts.ts` owns `extractFontFamily`, `buildFontCssUrl`, `loadGoogleFont`. Default weights: `["400", "500", "600", "700"]`.
 
 ## Component architecture patterns
 
 ### Feature module pattern
 
-All feature modules follow a consistent pattern:
-
 | Aspect | Implementation |
 | --- | --- |
-| **Props Interface** | Receive `w` (portal), state variables, and setters from `AuthenticatedApp` |
-| **Data Fetching** | Call `w.method()` in `useEffect` hooks |
-| **State Updates** | Use setter props to update parent state |
-| **Caching** | Store fetched data in parent state to avoid re-fetching |
-| **Loading States** | Manage via boolean state variables (e.g., `gradesLoading`) |
-| **Error Handling** | Try/catch blocks with error state variables |
+| Props | `w`, caches, setters from `AuthenticatedApp` |
+| Fetch | `useEffect` calling `w.method()` |
+| Cache | Objects keyed by `registration_id` or event id |
+| Loading | Booleans such as `gradesLoading`, `isAttendanceMetaLoading` |
+| Errors | try/catch plus `gradesError` or cached `{ error }` |
 
-**Example: Attendance Component Props**
-
-```
-w, attendanceData, setAttendanceData, semestersData, setSemestersData,
-selectedSem, setSelectedSem, attendanceGoal, setAttendanceGoal,
-subjectAttendanceData, setSubjectAttendanceData, selectedSubject,
-setSelectedSubject, isAttendanceMetaLoading, setIsAttendanceMetaLoading,
-isAttendanceDataLoading, setIsAttendanceDataLoading, activeTab,
-setActiveTab, dailyDate, setDailyDate, calendarOpen, setCalendarOpen,
-isTrackerOpen, setIsTrackerOpen, subjectCacheStatus, setSubjectCacheStatus
-```
+Attendance is the heaviest prop list: `w`, `attendanceData`, semesters, goal, subject daily cache, tabs, calendar, tracker, cache status.
 
 ### Global UI components
 
-![Diagram 13](images/3-architecture-overview_diagram_13.png)
-
-The `Header` component handles theme switching and logout. The `Navbar` provides bottom navigation to feature routes.
+```mermaid
+flowchart TD
+  AA["AuthenticatedApp"] --> Header["Header"]
+  Header --> StatsLink["Link /stats"]
+  Header --> ThemeBtn["ThemeSelectorDialog"]
+  Header --> Logout["handleLogout"]
+  AA --> Navbar["Navbar NavLink"]
+  Navbar --> Five["attendance grades exams subjects profile"]
+```
 
 ## External service integration
 
-### Service dependencies
+```mermaid
+flowchart TD
+  App --> jsjiit["jsjiit@0.0.27 ESM CDN"]
+  jsjiit --> Proxy["jportal-cors-proxy.onrender.com"]
+  Proxy --> Portal["webportal.jiit.ac.in"]
+  Grades --> Pyodide["Pyodide + PyMuPDF + jiit_marks"]
+  Stats["Cloudflare.jsx"] --> Hooks["useFetchWebAnalytics*"]
+  Hooks --> API["POST /api/analytics"]
+  API --> CF["Cloudflare GraphQL"]
+  indexHtml --> Beacon["beacon.min.js"]
+```
 
-![Diagram 14](images/3-architecture-overview_diagram_14.png)
+jsjiit import:
 
-**jsjiit Library Usage:**
+```
+import { WebPortal, LoginError } from
+  "https://cdn.jsdelivr.net/npm/jsjiit@0.0.27/dist/jsjiit.esm.js";
+```
 
-* Imported via CDN: `https://cdn.jsdelivr.net/npm/jsjiit@0.0.20/dist/jsjiit.esm.js`
-* Provides `WebPortal` class and `LoginError` exception
-* Handles authentication and data retrieval from JIIT portal
-
-**Pyodide Usage:**
-
-* Loaded from CDN in `index.html`
-* Used in Grades module for parsing marks PDFs with PyMuPDF
-* Enables client-side Python execution
+Pyodide is loaded from CDN in `index.html`. Grades uses it to parse marks PDFs.
 
 ## Error handling and loading states
 
-### Authentication error handling
+```mermaid
+flowchart TD
+  Auto["App performLogin"] --> Err{"LoginError?"}
+  Err -->|unavailable| Msg1["JIIT Web Portal server is temporarily unavailable"]
+  Err -->|Failed to fetch| Msg2["check internet / portal down"]
+  Err -->|other| Msg3["Auto-login failed"]
+  Err --> Clear["remove username password"]
+```
 
-![Diagram 15](images/3-architecture-overview_diagram_15.png)
-
-**Error States:**
-
-* App-level `error` state for auto-login failures
-* Feature-level error states (e.g., `gradesError`)
-* Toast notifications via `sonner` library
+Feature-level errors (example `gradesError`) stay on `AuthenticatedApp`. Toasts use sonner.
 
 ## Summary
 
-JPortal's architecture is characterized by:
-
-1. **Authentication-first design**: The `App` component acts as a gatekeeper, controlling access to all features
-2. **Portal abstraction**: The `w` prop provides a clean interface to switch between real and demo data sources
-3. **Props drilling pattern**: All state is lifted to `AuthenticatedApp`, then passed down to feature modules
-4. **Hybrid state management**: React hooks for feature state, Zustand for theme, TanStack Query available but underutilized
-5. **Component composition**: Radix UI primitives composed into custom feature components
-6. **Hash-based routing**: Client-side routing without server configuration requirements
-7. **Progressive enhancement**: PWA features, offline caching, installability
-8. **External service integration**: Smooth integration with jsjiit, Pyodide, and Cloudflare services
-
-This architecture supports rapid feature development through consistent patterns while maintaining separation of concerns between authentication, data access, and presentation layers.
+1. `App` gates auth. `/stats` is public.
+2. `w` is `realPortal` or `mockPortal`.
+3. Feature state lives on `AuthenticatedApp` and is drilled down.
+4. React hooks for academic data, Zustand for theme, TanStack Query for Cloudflare stats.
+5. Hash routing for GitHub Pages.
+6. PWA from `vite-plugin-pwa`, not a custom `public/sw.js`.

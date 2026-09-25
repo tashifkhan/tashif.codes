@@ -1,16 +1,7 @@
 # Security and safety mechanisms
 
 ## Introduction
-This page explains the security and safety mechanisms implemented in the browser automation system. It focuses on:
-- User approval workflow for potentially dangerous actions
-- Activity logging and audit trails
-- Intelligent content filtering
-- Agent sanitizer role in preventing malicious inputs and prompt injection validation
-- Action approval processes
-- Security boundaries between content scripts and page context
-- Permission management and safe execution environments
-- Examples of security policies, threat mitigation strategies, and incident response procedures
-- Compliance considerations and best practices for secure browser automation
+Automation safety: input validation, permission limits, DOM isolation in content scripts, approval UI, filtering, and logging.
 
 ## Project structure
 The security-relevant parts of the system span three layers:
@@ -172,7 +163,7 @@ Events --> Done
 ```
 
 ### Action executor: minimal bridge between UI and browser APIs
-The executor translates high-level actions into browser APIs with:
+The executor translates high-level actions into browser APIs :
 - Targeting the active tab for DOM actions
 - Sending messages to the content script for DOM operations
 - Introducing small delays between actions to avoid overwhelming the page
@@ -260,8 +251,6 @@ CFG --> CS
 - Minimal content script injection reduces overhead.
 - Event dispatching simulates realistic user interactions to minimize detection.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and mitigations:
 - Element not found during CLICK/TYPE: Verify selector specificity and timing; ensure content script runs after page load.
@@ -270,13 +259,11 @@ Common issues and mitigations:
 - Authentication errors: Re-run OAuth flow and confirm backend connectivity.
 
 ## Conclusion
-The system enforces strong security boundaries by validating inputs, limiting permissions, and isolating DOM operations to content scripts. The background script orchestrates safe actions, while the UI manages credentials securely. Together, these components provide a reliable foundation for secure browser automation with logging, filtering, and approval processes.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Validate inputs, isolate DOM work, require approval, and log what ran. That boundary is the difference between a demo and something you can leave installed.
 
 ## Appendices
 
-### Security policies and best practices
+### Security policies
 - Enforce user approval for all potentially destructive actions (OPEN_TAB, NAVIGATE, TYPE, CLICK).
 - Maintain detailed activity logs for every action with timestamps and outcomes.
 - Apply intelligent content filtering using prompt injection validators and sanitizer rules.
@@ -284,8 +271,6 @@ The system enforces strong security boundaries by validating inputs, limiting pe
 - Use secure storage for credentials and tokens; avoid exposing secrets in logs or UI.
 - Implement timeouts and retries for navigation and reload operations.
 - Regularly audit action plans and runtime logs for anomalies.
-
-[No sources needed since this section provides general guidance]
 
 ### Threat mitigation strategies
 - Reject unknown action types and missing fields.
@@ -300,4 +285,3 @@ The system enforces strong security boundaries by validating inputs, limiting pe
 - Rotate API keys and re-authenticate users.
 - Notify administrators and document the incident timeline.
 
-[No sources needed since this section provides general guidance]

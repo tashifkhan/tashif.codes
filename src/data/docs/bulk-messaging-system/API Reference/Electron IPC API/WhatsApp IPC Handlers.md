@@ -1,7 +1,7 @@
 # WhatsApp IPC handlers
 
 ## Introduction
-This page provides detailed technical documentation for the WhatsApp-related Inter-Process Communication (IPC) handlers in the desktop application. It covers the implementation of four key handlers: `whatsapp-start-client`, `whatsapp-send-messages`, `whatsapp-import-contacts`, and `whatsapp-logout`. The documentation includes client initialization parameters, authentication strategy configuration, Puppeteer browser settings, contact array schema, message personalization patterns, rate limiting implementation, file dialog configuration, supported formats, contact data structure, session cleanup procedures, cache deletion, parameter validation, error handling patterns, return value schemas, and WhatsApp Web API integration specifics including QR code generation and authentication flow.
+Four WhatsApp IPC handlers: start client, send messages, import contacts, logout. This is the contract the React forms call.
 
 ## Project structure
 The WhatsApp IPC handlers are implemented in the Electron main process and exposed to the renderer process through a secure context bridge. The relevant components are organized as follows:
@@ -39,15 +39,15 @@ Purpose: Initialize and connect to WhatsApp Web via a local authentication strat
 
 Key Implementation Details:
 - Client Initialization Parameters:
-  - Authentication Strategy: LocalAuth for persistent session management
-  - Puppeteer Configuration:
-    - Headless mode enabled for background operation
-    - Chromium arguments optimized for Electron environments (sandboxing, GPU disabling, single-process mode)
+ - Authentication Strategy: LocalAuth for persistent session management
+ - Puppeteer Configuration:
+ - Headless mode enabled for background operation
+ - Chromium arguments optimized for Electron environments (sandboxing, GPU disabling, single-process mode)
 - Authentication Flow:
-  - Emits status events: Initializing WhatsApp client, Starting WhatsApp client, Scan QR code to authenticate, Client is ready, Authenticated, Authentication failed, Client disconnected
-  - Generates QR code data URLs and emits them to the renderer process for display
+ - Emits status events: Initializing WhatsApp client, Starting WhatsApp client, Scan QR code to authenticate, Client is ready, Authenticated, Authentication failed, Client disconnected
+ - Generates QR code data URLs and emits them to the renderer process for display
 - Error Handling:
-  - Catches initialization failures and reports them via status events
+ - Catches initialization failures and reports them via status events
 
 Return Value Schema:
 - No explicit return value; status updates are sent via events
@@ -57,28 +57,28 @@ Purpose: Send personalized bulk messages to a list of contacts.
 
 Key Implementation Details:
 - Input Parameters:
-  - contacts: Array of contact objects with number and optional name
-  - messageText: String containing the template message with {{name}} placeholder
+ - contacts: Array of contact objects with number and optional name
+ - messageText: String containing the template message with {{name}} placeholder
 - Contact Array Schema:
-  - Each contact object requires:
-    - number: String representing the phone number
-    - name: Optional string for personalization
+ - Each contact object requires:
+ - number: String representing the phone number
+ - name: Optional string for personalization
 - Message Personalization:
-  - Replaces {{name}} with contact.name or defaults to "Friend" if not provided
+ - Replaces {{name}} with contact.name or defaults to "Friend" if not provided
 - Rate Limiting:
-  - Implements delays between sends:
-    - 3 seconds after successful send
-    - 5 seconds after failure
+ - Implements delays between sends:
+ - 3 seconds after successful send
+ - 5 seconds after failure
 - Chat ID Construction:
-  - Converts phone numbers to WhatsApp chat IDs:
-    - If number starts with "+", removes "+" and appends "@c.us"
-    - Otherwise appends "@c.us"
+ - Converts phone numbers to WhatsApp chat IDs:
+ - If number starts with "+", removes "+" and appends "@c.us"
+ - Otherwise appends "@c.us"
 - Delivery Validation:
-  - Checks user registration status before sending
-  - Emits detailed status updates for each operation
+ - Checks user registration status before sending
+ - Emits detailed status updates for each operation
 - Error Handling:
-  - Catches errors per contact and continues with remaining contacts
-  - Emits failure status with error details
+ - Catches errors per contact and continues with remaining contacts
+ - Emits failure status with error details
 
 Return Value Schema:
 - Object with success flag, sent count, and failed count
@@ -88,18 +88,18 @@ Purpose: Import contacts from file dialogs supporting CSV and TXT formats.
 
 Key Implementation Details:
 - File Dialog Configuration:
-  - Opens file selection dialog with filters for text files and CSV files
-  - Supports all file types as a fallback
+ - Opens file selection dialog with filters for text files and CSV files
+ - Supports all file types as a fallback
 - Supported Formats:
-  - CSV: Uses streaming parser to process rows
-  - TXT: Splits by newline and comma to extract number and optional name
+ - CSV: Uses streaming parser to process rows
+ - TXT: Splits by newline and comma to extract number and optional name
 - Contact Data Structure:
-  - Each contact object includes:
-    - number: Trimmed phone number
-    - name: Optional trimmed name (null if not provided)
+ - Each contact object includes:
+ - number: Trimmed phone number
+ - name: Optional trimmed name (null if not provided)
 - Error Handling:
-  - Returns empty array on parsing errors
-  - Returns null when no file is selected
+ - Returns empty array on parsing errors
+ - Returns null when no file is selected
 
 Return Value Schema:
 - Array of contact objects or null
@@ -109,17 +109,17 @@ Purpose: Terminate the WhatsApp session and clean up cached authentication data.
 
 Key Implementation Details:
 - Session Cleanup Procedures:
-  - Calls client.logout() to disconnect from WhatsApp
-  - Sets the client reference to null
+ - Calls client.logout() to disconnect from WhatsApp
+ - Sets the client reference to null
 - Cache Deletion:
-  - Removes.wwebjs_cache directory
-  - Removes.wwebjs_auth directory
+ - Removes .wwebjs_cache directory
+ - Removes .wwebjs_auth directory
 - Status Updates:
-  - Emits Disconnected status
-  - Clears QR code data
+ - Emits Disconnected status
+ - Clears QR code data
 - Error Handling:
-  - Attempts cleanup even if logout fails
-  - Forces client cleanup and returns appropriate success/failure status
+ - Attempts cleanup even if logout fails
+ - Forces client cleanup and returns appropriate success/failure status
 
 Return Value Schema:
 - Object with success flag and message
@@ -335,7 +335,8 @@ Common issues and their resolutions:
 - TXT Format Issues: Verify that TXT files use comma separation for number/name pairs.
 
 ### Session management
-- Logout Issues: The system attempts cleanup even if logout fails. Forced cleanup ensures no stale authentication data remains.
+- Logout Issues: The system attempts cleanup even if logout fails. Forced cleanup removes leftover auth data.
 
 ## Conclusion
-The WhatsApp IPC handlers provide a reliable foundation for bulk messaging through WhatsApp Web. The implementation includes detailed authentication flow management, flexible contact import capabilities, intelligent message personalization, and resilient error handling. The architecture balances performance with reliability through careful rate limiting, proper resource cleanup, and efficient file processing. The modular design allows for easy extension and maintenance while maintaining security through the Electron context isolation model.
+
+Start the client and wait for ready before send. Import contacts into the shape `{ number, name }` or personalization will be blank.

@@ -1,7 +1,7 @@
 # Message handling and communication
 
 ## Introduction
-This page explains the content script message handling system that enables bidirectional communication between the content script and the background service worker. It covers supported message types, parameter and response structures, asynchronous processing, error handling, retry mechanisms, logging integration, debugging capabilities, and health checks. It also provides practical message flow examples and troubleshooting guidance.
+Bidirectional messaging between content scripts and the background service worker. Message types, retries, and what each side expects.
 
 ## Project structure
 The messaging system spans three layers:
@@ -43,7 +43,7 @@ BG_Index --> BR_Adapter
 ## Core components
 - Message types: Centralized in a constants module and used across content and background layers.
 - Content script message listener: Handles incoming messages, delegates to extractor/applicator, and returns structured responses.
-- Background message router: Dispatches messages to appropriate handlers and ensures response semantics.
+- Background message router: Dispatches messages to appropriate handlers and keeps response semantics.
 - Handlers: Implement specific workflows (HTML extraction, page info, assignment detection).
 - Retry and error handling: Reliable retry logic for transient connection failures.
 - Logging: Unified logger factories for both content and background contexts.
@@ -164,7 +164,7 @@ Usage context:
 ### Health checks and content script lifecycle
 - PING: Used by background to verify content script readiness
 - Injection: Background injects content script when absent and verifies with PING
-- Firefox-specific delays: Additional waits to ensure initialization completes
+- Firefox-specific delays: Additional waits so initialization completes
 
 ### Data extraction and application
 - Extractor: Finds assignment containers, extracts HTML, collects images, identifies submit and confirmation button IDs
@@ -196,29 +196,27 @@ BG_PageInfo --> CS_Index
 - Image extraction: Canvas-based conversion can be expensive; filtering small or external images avoids unnecessary work.
 - Retry strategy: Configurable exponential backoff prevents busy-waiting and reduces failure cascades.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Content script not responding:
-  - Symptom: Error indicating content script not responding
-  - Action: Refresh the page; background attempts injection and verification
+ - Symptom: Error indicating content script not responding
+ - Action: Refresh the page; background attempts injection and verification
 - Unknown message type:
-  - Symptom: Error response with unknown type
-  - Action: Verify message type constants and ensure both sides use the same definitions
+ - Symptom: Error response with unknown type
+ - Action: Verify message type constants and ensure both sides use the same definitions
 - Connection errors during messaging:
-  - Symptom: "Receiving end does not exist" or similar
-  - Action: Use sendMessageWithRetry; if persistent, reload extension or refresh page
+ - Symptom: "Receiving end does not exist" or similar
+ - Action: Use sendMessageWithRetry; if persistent, reload extension or refresh page
 - No active tab found:
-  - Symptom: Handler reports no active tab
-  - Action: Ensure a valid tab is focused; handlers support explicit tabId
+ - Symptom: Handler reports no active tab
+ - Action: Ensure a valid tab is focused; handlers support explicit tabId
 - CORS or canvas conversion errors:
-  - Symptom: Images skipped due to CORS
-  - Action: Review image sources; only same-origin images are converted
+ - Symptom: Images skipped due to CORS
+ - Action: Review image sources; only same-origin images are converted
 
 Health check:
 - Use PING from background/UI to verify content script readiness
 - Background also supports PING for UI-side health checks
 
 ## Conclusion
-The message handling system provides a reliable, cross-browser compatible communication layer between the content script and background service worker. It supports essential workflows for assignment detection, content extraction, answer application, and submission, with strong error handling, logging, and health checks. Following the documented patterns ensures reliable operation across Chrome and Firefox environments.
+Typed messages both ways, with pings before heavy work. Treat a missing response as a reconnect problem, not a logic bug.

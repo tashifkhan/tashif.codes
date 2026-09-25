@@ -1,7 +1,7 @@
 # UI components
 
 ## Introduction
-This page describes the user interface components of the assignment solver extension. It covers the state management system, UI controllers for detection, progress tracking, settings, and solving operations, the UI element library and styling approach, and the integration with the extension's message system. The goal is to help developers understand how the side panel UI initializes, updates reactively, persists settings, and coordinates with background and content scripts.
+Side panel UI: boot sequence, reactive updates, settings persistence, and coordination with background and content scripts.
 
 ## Project structure
 The UI layer is organized under the assignment-solver extension's src/ui directory. It includes:
@@ -62,7 +62,7 @@ HTML --> CSS
 
 Key responsibilities:
 - State management: centralizes reactive updates and resets.
-- Element binding: ensures controllers operate on consistent DOM references.
+- Element binding: so controllers operate on consistent DOM references.
 - Controllers: encapsulate UI logic and coordinate with services and messaging.
 - Styling: CSS custom properties and semantic classes drive theme and animations.
 
@@ -183,7 +183,7 @@ Behavior:
 
 ### Solve controller
 Responsibilities:
-- Orchestrate the end-to-end solve flow
+- Orchestrate the full solve flow
 - Manage state (isProcessing), UI progress, and results
 - Integrate with content/background scripts via messaging
 - Handle recursive splitting for token limits
@@ -275,4 +275,4 @@ Common issues and remedies:
 - Message communication failures: sendMessageWithRetry handles transient errors; check logs for "Receiving end does not exist" or similar and reload the extension.
 
 ## Conclusion
-The UI layer is structured around a clear separation of concerns: a minimal state manager, centralized element bindings, modular controllers, and a reliable messaging system with retry logic. The styling system emphasizes clarity and feedback, with reactive updates driving user confidence. Together, these components deliver a responsive, cross-browser compatible side panel for assignment solving.
+Panel UI mirrors the pipeline steps. Progress and errors should reflect handler outcomes, not optimistic guesses.

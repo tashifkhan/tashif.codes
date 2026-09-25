@@ -1,13 +1,11 @@
 # Job description editor components
 
-## Introduction
-This page provides detailed technical documentation for the job description editor components in the TalentSync project. It focuses on two primary UI components:
+Job description editor UI: edit workflow, validation, preview, and the backend JD APIs behind it.
 - JDEditPanel: A rich editing panel for job description-driven resume optimization with validation, preview, and apply workflows.
 - JDEditDiffView: A detailed comparison view that displays ATS score changes, keyword analysis, warnings, and field-level diffs.
 
-The documentation explains the editing workflow, content validation, preview functionality, and integration with backend job description management APIs. It also covers collaborative editing features, version control, and export capabilities for job descriptions.
-
-## Project structure
+Edit workflow, validation, preview, and backend JD APIs. Also collaboration notes, versioning, and export.
+## Repository layout
 The job description editor feature spans both frontend and backend layers:
 - Frontend components and hooks manage user interactions, state transitions, and API communication.
 - Backend services orchestrate LLM-based processing, keyword extraction, scoring, and diff computation.
@@ -44,58 +42,58 @@ Types --> Route
 Types --> ServiceB
 ```
 
-## Core components
+## Building blocks
 This section documents the core components and their responsibilities.
 
 - JDEditPanel
-  - Purpose: Provides a form for job description input, optional JD URL and company name, and triggers the optimization workflow. Displays loading states and the preview with apply controls.
-  - Key behaviors:
-    - Prefills fields from URL query parameters.
-    - Validates that job description is present before enabling the optimize action.
-    - Delegates optimization to the wizard hook and displays the diff preview upon success.
-    - Handles apply actions via a callback to persist changes to the database.
-  - Integration points:
-    - Uses useJDEditWizard for state management.
-    - Renders JDEditDiffView for preview.
-    - Calls onApply to finalize changes.
+ - Purpose: form for JD text, optional JD URL and company name, then triggers the optimization workflow. Displays loading states and the preview with apply controls.
+ - Key behaviors:
+ - Prefills fields from URL query parameters.
+ - Validates that job description is present before enabling the optimize action.
+ - Delegates optimization to the wizard hook and displays the diff preview upon success.
+ - Handles apply actions via a callback to persist changes to the database.
+ - Integration points:
+ - Uses useJDEditWizard for state management.
+ - Renders JDEditDiffView for preview.
+ - Calls onApply to finalize changes.
 
 - JDEditDiffView
-  - Purpose: Visualizes the optimization results with ATS score change, addressed/missing keywords, warnings, and field-level before/after diffs.
-  - Key behaviors:
-    - Computes score delta and color-codes ATS scores.
-    - Lists keywords addressed and missing.
-    - Displays warnings surfaced by the backend.
-    - Renders per-field changes with original and edited values and reasons.
+ - Purpose: Visualizes the optimization results with ATS score change, addressed/missing keywords, warnings, and field-level before/after diffs.
+ - Key behaviors:
+ - Computes score delta and color-codes ATS scores.
+ - Lists keywords addressed and missing.
+ - Displays warnings surfaced by the backend.
+ - Renders per-field changes with original and edited values and reasons.
 
 - useJDEditWizard
-  - Purpose: Implements a finite state machine for the editing workflow and orchestrates API calls.
-  - States: idle → editing → preview → applying → complete/error.
-  - Responsibilities:
-    - Manages form fields (job description, JD URL, company name).
-    - Starts editing by invoking the mutation hook.
-    - Handles errors and transitions to error state.
-    - Exposes helpers to mark applying, success, and error for the apply phase.
-    - Provides computed flags for UI rendering (canEdit, isEditing, hasPreview).
+ - Purpose: Implements a finite state machine for the editing workflow and orchestrates API calls.
+ - States: idle → editing → preview → applying → complete/error.
+ - Responsibilities:
+ - Manages form fields (job description, JD URL, company name).
+ - Starts editing by invoking the mutation hook.
+ - Handles errors and transitions to error state.
+ - Exposes helpers to mark applying, success, and error for the apply phase.
+ - Provides computed flags for UI rendering (canEdit, isEditing, hasPreview).
 
 - useJDEditResume
-  - Purpose: TanStack Query mutation wrapper around the JD editor service.
-  - Responsibilities:
-    - Executes the edit operation.
-    - Displays user feedback via toast on error.
+ - Purpose: TanStack Query mutation wrapper around the JD editor service.
+ - Responsibilities:
+ - Executes the edit operation.
+ - Displays user feedback via toast on error.
 
 - jdEditorService
-  - Purpose: HTTP client for the JD editor endpoint.
-  - Responsibilities:
-    - Sends edit requests with resumeId, jobDescription, optional jdUrl, and companyName.
-    - Returns JDEditResponse typed data.
+ - Purpose: HTTP client for the JD editor endpoint.
+ - Responsibilities:
+ - Sends edit requests with resumeId, jobDescription, optional jdUrl, and companyName.
+ - Returns JDEditResponse typed data.
 
 - Types
-  - JDEditRequest/JDEditResponse: Define the contract between frontend and backend.
-  - JDEditChange: Describes individual field-level changes with reason.
-  - JDEditState/JDEditStep: Define the UI state machine.
+ - JDEditRequest/JDEditResponse: Define the contract between frontend and backend.
+ - JDEditChange: Describes individual field-level changes with reason.
+ - JDEditState/JDEditStep: Define the UI state machine.
 
-## Architecture overview
-The system follows a clear separation of concerns:
+## How it fits together
+The system keeps layers apart:
 - Frontend UI components render forms and previews.
 - Hooks manage state and orchestrate asynchronous operations.
 - Services encapsulate HTTP communication.
@@ -127,9 +125,7 @@ Panel->>Panel : "onApply(response)"
 Panel-->>User : "Show completion/reset option"
 ```
 
-## Detailed component analysis
-
-### JDEditPanel analysis
+## JDEditPanel analysis
 JDEditPanel is the primary UI surface for job description editing. It manages:
 - Form inputs for job description, optional JD URL, and company name.
 - Validation to ensure job description is present before enabling optimization.
@@ -157,7 +153,7 @@ Error --> Reset["Reset to idle"]
 Complete --> Restart["Edit Again"]
 ```
 
-### JDEditDiffView analysis
+## JDEditDiffView analysis
 JDEditDiffView renders the optimization results:
 - ATS Score Change: Before/After scores with delta indicator.
 - Keywords: Addressed and missing keywords with counts.
@@ -189,7 +185,7 @@ JDEditDiffView --> JDEditResponse : "renders"
 JDEditResponse --> JDEditChange : "contains"
 ```
 
-### useJDEditWizard analysis
+## useJDEditWizard analysis
 The wizard hook implements a state machine with explicit transitions:
 - SET_FIELD: Updates form fields.
 - START_EDITING: Enters editing state and clears previous response/error.
@@ -211,7 +207,7 @@ error --> idle : "RESET"
 complete --> idle : "RESET"
 ```
 
-### Backend service and API integration
+## Backend service and API integration
 The backend service performs the following steps:
 - Validates inputs and resolves job description from URL if text is not provided.
 - Extracts keywords from the job description.
@@ -244,7 +240,7 @@ Service-->>Route : "JDEditResponse"
 Route-->>Client : "JDEditResponse"
 ```
 
-## Dependency analysis
+## Dependencies
 The components and their dependencies form a cohesive pipeline:
 
 ```mermaid
@@ -272,18 +268,16 @@ Route --> BackendSvc
 BackendSvc --> Schemas
 ```
 
-## Performance considerations
+## Performance
 - LLM latency: The optimization process involves multiple LLM calls (keyword extraction, scoring, editing, change computation). Network latency and model response times impact perceived performance.
 - Debouncing and caching: Consider debouncing repeated edits and caching recent results to reduce redundant API calls.
 - Progressive rendering: Render the preview progressively as the backend returns results to improve perceived responsiveness.
 - Token limits: The editing prompt specifies a high token limit; ensure inputs are trimmed or summarized when necessary to avoid exceeding limits.
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Empty job description: The wizard prevents optimization until a job description is provided. Ensure users enter either text or a valid URL.
 - JD URL resolution failures: If a URL is provided but cannot be fetched, the backend adds a warning and returns partial results. Verify the URL accessibility and network connectivity.
 - LLM errors: Errors during LLM operations are caught and surfaced as warnings or errors. Retry the operation or adjust inputs.
 - Apply failures: The apply phase is controlled by the parent component via onApply. Ensure the callback properly persists changes and calls markApplySuccess or markApplyError accordingly.
-
-## Conclusion
-The job description editor components provide a reliable, user-friendly workflow for optimizing resumes against specific job descriptions. The frontend components offer clear validation, rich previews, and smooth integration with backend services that use LLMs for keyword extraction, scoring, editing, and diff computation. The architecture supports extensibility for collaborative editing, version control, and export capabilities, enabling teams to refine and track changes effectively.

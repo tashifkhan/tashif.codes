@@ -1,9 +1,8 @@
 # Live code execution
 
-## Introduction
-This page describes the Live Code Execution component used in technical interview challenges. It explains how code submissions are securely executed, validated, and evaluated within a sandboxed environment. The system supports Python, JavaScript, and TypeScript with strict timeouts, output limits, and security checks. It integrates with language-specific interpreters and compilers, captures stdout/stderr, and provides both single-run and multi-test execution modes. The component is exposed via FastAPI routes with optional streaming responses for real-time feedback.
+The Live Code Execution component used in technical interview challenges.
 
-## Project structure
+## Repository layout
 The Live Code Execution feature spans several modules:
 - Execution engine: CodeExecutor service
 - Orchestration: InterviewGraph that coordinates sessions, questions, and evaluations
@@ -40,7 +39,7 @@ G --> S
 D -.-> CE
 ```
 
-## Core components
+## Building blocks
 - CodeExecutor: Implements sandboxed execution with language-specific commands, timeouts, output limits, and security checks.
 - InterviewGraph: Orchestrates execution within interview sessions, persists submissions, and integrates evaluation.
 - AnswerEvaluator: Provides code review via LLM prompts and streaming responses.
@@ -54,7 +53,7 @@ Key capabilities:
 - Test execution: Single-run and multi-case execution with aggregated results
 - Streaming: SSE-based streaming for execution results and code review
 
-## Architecture overview
+## How it fits together
 The system executes code in a subprocess per language configuration, captures outputs, enforces timeouts, and optionally streams evaluation results.
 
 ```mermaid
@@ -80,9 +79,7 @@ Graph-->>API : "SSE events"
 API-->>Client : "SSE stream"
 ```
 
-## Detailed component analysis
-
-### CodeExecutor
+## CodeExecutor
 Responsibilities:
 - Validate language support and code length
 - Perform security checks against dangerous patterns
@@ -93,7 +90,7 @@ Responsibilities:
 
 Security model:
 - Pattern-based detection for each language
-- Optional allowance for input() in Python when test_input is provided
+- Optional allowance for input in Python when test_input is provided
 - Temporary file cleanup
 
 Resource controls:
@@ -128,7 +125,7 @@ Trunc --> Cleanup["Remove temp file"]
 Cleanup --> Done(["Return CodeExecutionResult"])
 ```
 
-### InterviewGraph integration
+## InterviewGraph integration
 - Validates session and question context
 - Persists code submissions and language metadata
 - Coordinates execution and evaluation
@@ -150,7 +147,7 @@ Graph-->>API : "chunk SSE events"
 Graph-->>API : "complete SSE event"
 ```
 
-### API endpoints and streaming
+## API endpoints and streaming
 Endpoints:
 - Synchronous execution: POST /interview/sessions/{session_id}/code
 - Streaming execution: POST /interview/sessions/{session_id}/code/stream
@@ -160,19 +157,19 @@ Streaming protocol:
 - Events: execution, chunk, complete, error
 - Headers: Cache-Control, Connection, X-Accel-Buffering for NGINX compatibility
 
-### Data models and evaluation
+## Data models and evaluation
 - CodeExecutionResult: success flag, stdout, stderr, execution_time_ms, optional memory_usage_mb, optional test_results
 - CodeExecutionRequest: question_id, code, language, test_input
 - Code review prompt includes question, language, code, execution results, and timing
 
-## Dependency analysis
+## Dependencies
 - CodeExecutor depends on:
-  - Schemas for result modeling
-  - Language-specific commands and timeouts
+ - Schemas for result modeling
+ - Language-specific commands and timeouts
 - InterviewGraph depends on:
-  - SessionManager for persistence
-  - CodeExecutor for execution
-  - AnswerEvaluator for review
+ - SessionManager for persistence
+ - CodeExecutor for execution
+ - AnswerEvaluator for review
 - Routes depend on InterviewGraph for orchestration
 - AnswerEvaluator depends on LLM provider and prompt templates
 
@@ -185,7 +182,7 @@ R["Routes"] --> G
 AE --> CR["Code Review Prompt"]
 ```
 
-## Performance considerations
+## Performance
 - Timeouts: Configured per language to prevent runaway processes
 - Output limits: Prevent excessive memory usage and response sizes
 - Code length caps: Control parsing and execution overhead
@@ -198,8 +195,9 @@ Recommendations:
 - Consider adding memory enforcement at the container level for stronger isolation
 - Cache frequently used dependencies to reduce cold-start costs
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Unsupported language: Ensure language is one of the supported set
 - Code too long: Reduce code length below the configured cap
 - Security violation: Remove or refactor dangerous patterns flagged by the security checker
@@ -211,6 +209,3 @@ Operational checks:
 - Confirm language availability via GET /interview/code/languages
 - Validate session and question context before execution
 - Review execution_time_ms and compare with timeout settings
-
-## Conclusion
-The Live Code Execution component provides a secure, configurable, and integrated solution for technical interview coding challenges. It uses subprocess-based sandboxing, strict resource controls, and reliable security checks while offering flexible execution modes and real-time streaming feedback. The design cleanly separates concerns across execution, orchestration, evaluation, and API layers, enabling maintainability and extensibility.

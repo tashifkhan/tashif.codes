@@ -1,7 +1,7 @@
 # Data models and schemas
 
 ## Introduction
-This page describes the data model layer of the Agentic Browser system. It focuses on Pydantic-based request and response schemas used across the backend APIs, including agent messaging payloads, browser action requests, service integration models, and YouTube-related data structures. For each model, we document fields, types, validation rules, aliases, defaults, and relationships. We also explain serialization/deserialization behavior, validation patterns, error handling approaches, and security considerations.
+Pydantic request/response models across agents, browser actions, service integrations, and YouTube. Fields, validation, aliases, and how errors surface.
 
 ## Project structure
 The data models are organized under a dedicated models package with two subpackages:
@@ -57,56 +57,56 @@ PJ --> CR
 This section summarizes the primary data models and their roles.
 
 - YouTube metadata model
-  - Purpose: Encapsulates YouTube video metadata and optional captions/transcript.
-  - Fields: title, description, duration, uploader, upload_date, view_count, like_count, tags, categories, captions, transcript.
-  - Types: str, int, List[str], Optional[str].
-  - Defaults: sensible defaults for strings and integers; empty lists for collections; None for optional text fields.
+ - Purpose: Encapsulates YouTube video metadata and optional captions/transcript.
+ - Fields: title, description, duration, uploader, upload_date, view_count, like_count, tags, categories, captions, transcript.
+ - Types: str, int, List[str], Optional[str].
+ - Defaults: sensible defaults for strings and integers; empty lists for collections; None for optional text fields.
 
 - Agent messaging model
-  - Purpose: Represents a single message in an agent conversation with support for tool calls.
-  - Fields: role (enum-like literal), content (validated non-empty), name, tool_call_id, tool_calls.
-  - Validation: minimum length for content; alias handling for toolCalls/toolCallId; whitespace stripping configured.
+ - Purpose: Represents a single message in an agent conversation with support for tool calls.
+ - Fields: role (enum-like literal), content (validated non-empty), name, tool_call_id, tool_calls.
+ - Validation: minimum length for content; alias handling for toolCalls/toolCallId; whitespace stripping configured.
 
 - React agent request
-  - Purpose: Top-level request carrying conversation history and optional authentication context.
-  - Fields: messages (non-empty list), google_access_token (alias handling), pyjiit_login_response (optional nested model).
-  - Aliases: flexible validation and serialization aliases for token and login response fields.
+ - Purpose: Top-level request carrying conversation history and optional authentication context.
+ - Fields: messages (non-empty list), google_access_token (alias handling), pyjiit_login_response (optional nested model).
+ - Aliases: validation and serialization aliases for token and login response fields.
 
 - Crawler request
-  - Purpose: Request for content crawling with optional chat history, OAuth token, PyJIIT login context, client HTML snapshot, and attached file path.
-  - Validation: chat_history defaults to empty list; aliases for token; populated by name behavior.
+ - Purpose: Request for content crawling with optional chat history, OAuth token, PyJIIT login context, client HTML snapshot, and attached file path.
+ - Validation: chat_history defaults to empty list; aliases for token; populated by name behavior.
 
 - Website request
-  - Purpose: Query for website QA with optional client HTML and attached file.
-  - Fields: url, question, chat_history (default empty), client_html (optional), attached_file_path (optional).
+ - Purpose: Query for website QA with optional client HTML and attached file.
+ - Fields: url, question, chat_history (default empty), client_html (optional), attached_file_path (optional).
 
 - Subtitles request
-  - Purpose: Fetch subtitles for a given URL with optional language.
-  - Fields: url, lang (defaults to English).
+ - Purpose: Fetch subtitles for a given URL with optional language.
+ - Fields: url, lang (defaults to English).
 
 - Video info request
-  - Purpose: Retrieve basic video metadata by URL.
-  - Fields: url.
+ - Purpose: Retrieve basic video metadata by URL.
+ - Fields: url.
 
 - GitHub request
-  - Purpose: Query GitHub resources with validated URL type.
-  - Fields: url (HttpUrl), question, chat_history (default empty), attached_file_path (optional).
+ - Purpose: Query GitHub resources with validated URL type.
+ - Fields: url (HttpUrl), question, chat_history (default empty), attached_file_path (optional).
 
 - Ask request
-  - Purpose: General-purpose question-answering request with optional attachments.
-  - Fields: url, question, chat_history (default empty), attached_file_path (optional).
+ - Purpose: General-purpose question-answering request with optional attachments.
+ - Fields: url, question, chat_history (default empty), attached_file_path (optional).
 
 - PyJIIT nested models
-  - Purpose: Represent authentication and session metadata from the PyJIIT portal.
-  - Includes: PyjiitInstituteEntry, PyjiitRegData, PyjiitRawResponse, PyjiitLoginResponse.
-  - Notable validations: typed fields with descriptions; optional fields for DOB, member type, enrollment, tokens, timestamps; institute list as a collection.
+ - Purpose: Represent authentication and session metadata from the PyJIIT portal.
+ - Includes: PyjiitInstituteEntry, PyjiitRegData, PyjiitRawResponse, PyjiitLoginResponse.
+ - Notable validations: typed fields with descriptions; optional fields for DOB, member type, enrollment, tokens, timestamps; institute list as a collection.
 
 - Response models
-  - GenerateScriptResponse: ok flag, optional structured action plan, error message, problem list, raw response.
-  - ReactAgentResponse: final messages list and output content string.
-  - SubtitlesResponse: subtitles text.
-  - HealthResponse: status and message.
-  - WebsiteResponse: answer text.
+ - GenerateScriptResponse: ok flag, optional structured action plan, error message, problem list, raw response.
+ - ReactAgentResponse: final messages list and output content string.
+ - SubtitlesResponse: subtitles text.
+ - HealthResponse: status and message.
+ - WebsiteResponse: answer text.
 
 ## Architecture overview
 The data model layer is consumed by routers and services to validate incoming requests and produce standardized responses. Authentication contexts (Google OAuth and PyJIIT login) are embedded as optional fields in several requests to enable downstream service integrations.
@@ -126,28 +126,26 @@ Service --> Router
 Router --> Client
 ```
 
-[No sources needed since this diagram shows conceptual workflow, not actual code structure]
-
 ## Detailed component analysis
 
 ### YouTube metadata model (YTVideoInfo)
 - Purpose: Standardized representation of YouTube video metadata and optional captions/transcript.
 - Fields and types:
-  - title: str (default "Unknown")
-  - description: str (default "")
-  - duration: int (default 0)
-  - uploader: str (default "Unknown")
-  - upload_date: str (default "")
-  - view_count: int (default 0)
-  - like_count: int (default 0)
-  - tags: List[str] (default [])
-  - categories: List[str] (default [])
-  - captions: Optional[str] (default None)
-  - transcript: Optional[str] (default None)
+ - title: str (default "Unknown")
+ - description: str (default "")
+ - duration: int (default 0)
+ - uploader: str (default "Unknown")
+ - upload_date: str (default "")
+ - view_count: int (default 0)
+ - like_count: int (default 0)
+ - tags: List[str] (default [])
+ - categories: List[str] (default [])
+ - captions: Optional[str] (default None)
+ - transcript: Optional[str] (default None)
 - Validation and behavior:
-  - No explicit validators; relies on Pydantic type coercion and defaults.
+ - No explicit validators; relies on Pydantic type coercion and defaults.
 - Usage:
-  - Imported via models/__init__.py and used by YouTube-related services and routers.
+ - Imported via models/__init__.py and used by YouTube-related services and routers.
 
 ```mermaid
 classDiagram
@@ -169,16 +167,16 @@ class YTVideoInfo {
 ### Agent messaging payload (AgentMessage)
 - Purpose: Represents a single message in an agent conversation, including optional tool call metadata.
 - Fields and types:
-  - role: Literal["system","user","assistant","tool"]
-  - content: str (required, minimum length enforced)
-  - name: Optional[str]
-  - tool_call_id: Optional[str] (alias "toolCallId")
-  - tool_calls: Optional[List[Dict[str, Any]]] (alias "toolCalls"; description indicates optional tool call payloads)
+ - role: Literal["system","user","assistant","tool"]
+ - content: str (required, minimum length enforced)
+ - name: Optional[str]
+ - tool_call_id: Optional[str] (alias "toolCallId")
+ - tool_calls: Optional[List[Dict[str, Any]]] (alias "toolCalls"; description indicates optional tool call payloads)
 - Validation and behavior:
-  - populate_by_name enabled for consistent alias handling.
-  - Strips whitespace from string fields globally.
+ - populate_by_name enabled for consistent alias handling.
+ - Strips whitespace from string fields globally.
 - Usage:
-  - Used within ReactAgentRequest and ReactAgentResponse.
+ - Used within ReactAgentRequest and ReactAgentResponse.
 
 ```mermaid
 classDiagram
@@ -194,12 +192,12 @@ class AgentMessage {
 ### React agent request (ReactAgentRequest)
 - Purpose: Top-level request for the React agent containing conversation history and optional authentication context.
 - Fields and types:
-  - messages: List[AgentMessage] (required, minimum length 1)
-  - google_access_token: Optional[str] (alias "google_access_token" and a misspelled variant; serialized as "google_access_token")
-  - pyjiit_login_response: Optional[PyjiitLoginResponse]
+ - messages: List[AgentMessage] (required, minimum length 1)
+ - google_access_token: Optional[str] (alias "google_access_token" and a misspelled variant; serialized as "google_access_token")
+ - pyjiit_login_response: Optional[PyjiitLoginResponse]
 - Validation and behavior:
-  - populate_by_name enabled.
-  - Flexible aliasing supports tolerant parsing and consistent serialization.
+ - populate_by_name enabled.
+ - Aliasing supports tolerant parsing and stable serialization.
 
 ```mermaid
 classDiagram
@@ -217,15 +215,15 @@ ReactAgentRequest --> PyjiitLoginResponse : "optional"
 ### Crawler request (CrawlerRequest)
 - Purpose: Request for content crawling with optional context and authentication.
 - Fields and types:
-  - question: str
-  - chat_history: Optional[list[dict[str, Any]]] (default empty list)
-  - google_access_token: Optional[str] (alias "google_access_token" and a misspelled variant; serialized consistently)
-  - pyjiit_login_response: Optional[PyjiitLoginResponse]
-  - client_html: Optional[str]
-  - attached_file_path: Optional[str]
+ - question: str
+ - chat_history: Optional[list[dict[str, Any]]] (default empty list)
+ - google_access_token: Optional[str] (alias "google_access_token" and a misspelled variant; serialized consistently)
+ - pyjiit_login_response: Optional[PyjiitLoginResponse]
+ - client_html: Optional[str]
+ - attached_file_path: Optional[str]
 - Validation and behavior:
-  - populate_by_name enabled.
-  - Defaults ensure reliable handling when optional fields are absent.
+ - populate_by_name enabled.
+ - Defaults cover optional fields when they are absent.
 
 ```mermaid
 classDiagram
@@ -242,15 +240,15 @@ CrawlerRequest --> PyjiitLoginResponse : "optional"
 ```
 
 ### Website request (WebsiteRequest)
-- Purpose: Query for website QA with optional client HTML and attached file.
+  - Purpose: Query for website QA with optional client HTML and attached file.
 - Fields and types:
-  - url: str
-  - question: str
-  - chat_history: Optional[list[dict]] (default empty)
-  - client_html: Optional[str]
-  - attached_file_path: Optional[str]
+ - url: str
+ - question: str
+ - chat_history: Optional[list[dict]] (default empty)
+ - client_html: Optional[str]
+ - attached_file_path: Optional[str]
 - Validation and behavior:
-  - Minimal validation; defaults ensure safe handling.
+ - Minimal validation; defaults fill gaps.
 
 ```mermaid
 classDiagram
@@ -264,12 +262,12 @@ class WebsiteRequest {
 ```
 
 ### Subtitles request (SubtitlesRequest)
-- Purpose: Fetch subtitles for a given URL with optional language.
+  - Purpose: Fetch subtitles for a given URL with optional language.
 - Fields and types:
-  - url: str
-  - lang: Optional[str] (default "en")
+ - url: str
+ - lang: Optional[str] (default "en")
 - Validation and behavior:
-  - No explicit validators; relies on type coercion.
+ - No explicit validators; relies on type coercion.
 
 ```mermaid
 classDiagram
@@ -280,11 +278,11 @@ class SubtitlesRequest {
 ```
 
 ### Video info request (VideoInfoRequest)
-- Purpose: Retrieve basic video metadata by URL.
+  - Purpose: Retrieve basic video metadata by URL.
 - Fields and types:
-  - url: str
+ - url: str
 - Validation and behavior:
-  - No explicit validators; relies on type coercion.
+ - No explicit validators; relies on type coercion.
 
 ```mermaid
 classDiagram
@@ -294,14 +292,14 @@ class VideoInfoRequest {
 ```
 
 ### GitHub request (GitHubRequest)
-- Purpose: Query GitHub resources with validated URL type.
+  - Purpose: Query GitHub resources with validated URL type.
 - Fields and types:
-  - url: HttpUrl
-  - question: str
-  - chat_history: list[dict] (default empty)
-  - attached_file_path: str | None
+ - url: HttpUrl
+ - question: str
+ - chat_history: list[dict] (default empty)
+ - attached_file_path: str | None
 - Validation and behavior:
-  - HttpUrl ensures strict URL validation.
+ - HttpUrl ensures strict URL validation.
 
 ```mermaid
 classDiagram
@@ -314,14 +312,14 @@ class GitHubRequest {
 ```
 
 ### Ask request (AskRequest)
-- Purpose: General-purpose question-answering request with optional attachments.
+  - Purpose: General-purpose question-answering request with optional attachments.
 - Fields and types:
-  - url: str
-  - question: str
-  - chat_history: Optional[List[Dict]] (default empty)
-  - attached_file_path: Optional[str]
+ - url: str
+ - question: str
+ - chat_history: Optional[List[Dict]] (default empty)
+ - attached_file_path: Optional[str]
 - Validation and behavior:
-  - Minimal validation; defaults ensure safe handling.
+ - Minimal validation; defaults fill gaps.
 
 ```mermaid
 classDiagram
@@ -334,15 +332,15 @@ class AskRequest {
 ```
 
 ### PyJIIT nested models (PyjiitInstituteEntry, PyjiitRegData, PyjiitRawResponse, PyjiitLoginResponse)
-- Purpose: Represent authentication and session metadata from the PyJIIT portal.
+  - Purpose: Represent authentication and session metadata from the PyJIIT portal.
 - Fields and types:
-  - PyjiitInstituteEntry: label (str), value (str)
-  - PyjiitRegData: bypass (str), clientid (str), userDOB (Optional[str]), name (Optional[str]), lastvisitdate (Optional[str]), membertype (Optional[str]), enrollmentno (Optional[str]), userid (Optional[str]), expiredpassword (Optional[str]), institutelist (List[PyjiitInstituteEntry]), memberid (Optional[str]), token (Optional[str])
-  - PyjiitRawResponse: regdata (PyjiitRegData), clientidforlink (Optional[str])
-  - PyjiitLoginResponse: raw_response (PyjiitRawResponse), regdata (PyjiitRegData), institute (Optional[str]), instituteid (Optional[str]), memberid (Optional[str]), userid (Optional[str]), token (Optional[str]), expiry (Optional[datetime]), clientid (Optional[str]), membertype (Optional[str]), name (Optional[str])
+ - PyjiitInstituteEntry: label (str), value (str)
+ - PyjiitRegData: bypass (str), clientid (str), userDOB (Optional[str]), name (Optional[str]), lastvisitdate (Optional[str]), membertype (Optional[str]), enrollmentno (Optional[str]), userid (Optional[str]), expiredpassword (Optional[str]), institutelist (List[PyjiitInstituteEntry]), memberid (Optional[str]), token (Optional[str])
+ - PyjiitRawResponse: regdata (PyjiitRegData), clientidforlink (Optional[str])
+ - PyjiitLoginResponse: raw_response (PyjiitRawResponse), regdata (PyjiitRegData), institute (Optional[str]), instituteid (Optional[str]), memberid (Optional[str]), userid (Optional[str]), token (Optional[str]), expiry (Optional[datetime]), clientid (Optional[str]), membertype (Optional[str]), name (Optional[str])
 - Validation and behavior:
-  - populate_by_name enabled for PyjiitLoginResponse.
-  - Descriptions annotate intent and semantics of fields.
+ - populate_by_name enabled for PyjiitLoginResponse.
+ - Descriptions annotate intent and semantics of fields.
 
 ```mermaid
 classDiagram
@@ -443,23 +441,19 @@ PRD --> PIE["PyjiitInstituteEntry"]
 - For large payloads (e.g., tool_calls), keep payloads compact and avoid redundant copies.
 - Use alias normalization to reduce parsing ambiguity and improve throughput.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 - Validation errors:
-  - Non-empty content in AgentMessage triggers validation failures if missing or blank after trimming.
-  - Missing required fields in requests cause validation errors; ensure presence of required fields or provide defaults.
+ - Non-empty content in AgentMessage triggers validation failures if missing or blank after trimming.
+ - Missing required fields in requests cause validation errors; ensure presence of required fields or provide defaults.
 - Alias mismatches:
-  - Google access token and PyJIIT login response accept alternative spellings during validation but serialize consistently under specified aliases.
+ - Google access token and PyJIIT login response accept alternative spellings during validation but serialize consistently under specified aliases.
 - Type coercion:
-  - HttpUrl in GitHubRequest enforces strict URL validation; invalid URLs will fail early.
+ - HttpUrl in GitHubRequest enforces strict URL validation; invalid URLs will fail early.
 - Serialization differences:
-  - ToolCalls/toolCallId and similar fields use aliases; ensure clients send the appropriate keys to pass validation.
+ - ToolCalls/toolCallId and similar fields use aliases; ensure clients send the appropriate keys to pass validation.
 
 ## Conclusion
-The Agentic Browser data model layer uses Pydantic to define clear, validated request and response schemas. Authentication contexts are integrated via optional nested models, while YouTube metadata is encapsulated in a reusable model. Aliases and defaults improve resilience against client-side inconsistencies. Responses standardize outcomes across services, enabling predictable integration.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Schemas are the contract. Change them deliberately, keep aliases for compatibility, and let validation failures return clear 4xx bodies.
 
 ## Appendices
 
@@ -469,22 +463,17 @@ The Agentic Browser data model layer uses Pydantic to define clear, validated re
 - Processing: Services operate on validated models; nested models propagate context (e.g., PyJIIT login).
 - Serialization: Responses are serialized back to JSON; aliases ensure consistent field names for clients.
 
-[No sources needed since this section provides general guidance]
-
 ### Security and privacy considerations
 - Token handling:
-  - Google access tokens and PyJIIT tokens are optional fields; ensure they are transmitted securely and handled with least privilege.
+ - Google access tokens and PyJIIT tokens are optional fields; ensure they are transmitted securely and handled with least privilege.
 - Sensitive data:
-  - Avoid logging raw tokens or personal data; sanitize logs and audit access.
+ - Avoid logging raw tokens or personal data; sanitize logs and audit access.
 - URL validation:
-  - Use HttpUrl for external resource access to prevent malformed inputs.
-
-[No sources needed since this section provides general guidance]
+ - Use HttpUrl for external resource access to prevent malformed inputs.
 
 ### Schema evolution and backwards compatibility
 - Add new optional fields with defaults to preserve backward compatibility.
 - Introduce aliases for renamed fields to accept legacy clients while serializing under new names.
 - Avoid removing required fields; deprecate with migration paths.
-- Keep nested models cohesive and version-aware to minimize breaking changes.
+- Keep nested models versioned so changes do not surprise clients.
 
-[No sources needed since this section provides general guidance]

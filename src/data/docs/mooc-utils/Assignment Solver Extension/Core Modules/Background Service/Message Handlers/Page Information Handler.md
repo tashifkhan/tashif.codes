@@ -1,12 +1,10 @@
 # Page information handler
 
 ## Introduction
-The Page Information Handler is a critical component of the NPTEL Assignment Solver extension responsible for detecting assignment pages, extracting metadata, and identifying assignment context. This handler is the bridge between the background service worker and content script, enabling context-aware processing of educational assignments from platforms like NPTEL and SWAYAM.
-
-The handler performs sophisticated page analysis to determine course types, assignment formats, and available question structures, providing essential metadata for downstream AI-powered processing and automated assignment completion capabilities.
+Detects assignment pages and pulls metadata so the rest of the pipeline knows what it is looking at. Bridges the background worker and content script for NPTEL, SWAYAM, and similar layouts.
 
 ## Project structure
-The Page Information Handler is part of a modular extension architecture with clear separation of concerns:
+Page Information Handler sits in the background layer. Nearby pieces:
 
 ```mermaid
 graph TB
@@ -51,7 +49,7 @@ The Page Information Handler consists of several interconnected components worki
 - **Platform Adapters**: Handles browser-specific implementations for tabs, scripting, and runtime APIs
 
 ## Architecture overview
-The Page Information Handler operates within a sophisticated message-driven architecture that enables smooth communication between extension components:
+The Page Information Handler operates within a detailed message-driven architecture that enables smooth communication between extension components:
 
 ```mermaid
 sequenceDiagram
@@ -80,15 +78,15 @@ PIH-->>BG : formatted metadata
 BG-->>UI : assignment detection result
 ```
 
-The architecture demonstrates a clear separation of concerns with the handler focusing on assignment detection while delegating content extraction to specialized services.
+The handler detects assignment context and leaves HTML extraction to the content-script services.
 
 ## Detailed component analysis
 
 ### Page information handler implementation
-The core handler implements a reliable assignment detection mechanism with detailed error handling and fallback strategies:
+The core handler implements a assignment detection mechanism with detailed error handling and fallback strategies:
 
 #### Assignment detection logic
-The handler employs a multi-layered approach to identify assignment pages:
+The handler uses a multi-layered approach to identify assignment pages:
 
 ```mermaid
 flowchart TD
@@ -120,7 +118,7 @@ The handler coordinates with the content script to extract detailed page metadat
 The content script provides essential page analysis capabilities through the extractor service:
 
 #### Page structure analysis
-The extractor service implements sophisticated DOM traversal to identify assignment containers and question structures:
+The extractor service implements detailed DOM traversal to identify assignment containers and question structures:
 
 ```mermaid
 classDiagram
@@ -162,7 +160,7 @@ Extractor --> PageInfo : "analyzes"
 The extractor implements intelligent question format identification through CSS selector targeting:
 
 ### Message communication protocol
-The handler participates in a well-defined message protocol that ensures reliable communication:
+The handler uses a fixed message protocol for communication:
 
 ```mermaid
 sequenceDiagram
@@ -185,7 +183,7 @@ BG-->>BG : format response
 ```
 
 ## Dependency analysis
-The Page Information Handler maintains loose coupling with its dependencies while providing essential orchestration:
+The Page Information Handler stays loosely coupled to its dependencies while providing essential orchestration:
 
 ```mermaid
 graph LR
@@ -215,7 +213,7 @@ APP --> LOGGER
 ```
 
 ### Platform compatibility
-The handler demonstrates excellent cross-browser compatibility through platform abstraction:
+Cross-browser behavior goes through the platform adapters:
 
 ## Performance considerations
 The Page Information Handler implements several optimization strategies for efficient operation:
@@ -276,8 +274,4 @@ The Page Information Handler implements several optimization strategies for effi
 - Add timeout mechanisms for message operations
 
 ## Conclusion
-The Page Information Handler represents a sophisticated solution for assignment detection and metadata extraction in educational platforms. Its modular architecture, detailed error handling, and cross-browser compatibility make it a reliable foundation for AI-powered educational assistance tools.
-
-The handler's strength lies in its ability to intelligently analyze page structure, extract meaningful metadata, and coordinate with content services to provide context-aware processing. The implementation demonstrates best practices in extension development, including proper separation of concerns, graceful error handling, and performance optimization.
-
-Future enhancements could include expanded platform support, improved machine learning-based detection, and improved integration with external educational APIs for richer context awareness.
+Page info is the cheap gate before expensive Gemini calls. Wrong platform detection wastes quota and confuses applicators.

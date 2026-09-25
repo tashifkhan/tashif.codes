@@ -1,7 +1,7 @@
 # Gmail OAuth2 configuration
 
 ## Introduction
-This page provides detailed configuration guidance for Gmail OAuth2 authentication in the application. It covers environment variables, OAuth2 flow, scopes, redirect URIs, token exchange, authentication window configuration, and step-by-step setup instructions for Google Cloud Console. It also includes troubleshooting guidance for common OAuth2 errors and best practices for credential storage.
+How Gmail OAuth2 is wired: client ID/secret, scopes, redirect URI, the auth window, and where tokens land after exchange.
 
 ## Project structure
 The Gmail OAuth2 integration spans the Electron main process, preload bridge, and React UI components. The main process handles OAuth2 flow and token persistence, while the renderer communicates via IPC.
@@ -17,18 +17,18 @@ Handler --> Store["electron-store<br/>Token persistence"]
 
 ## Core components
 - Environment variables:
-  - GOOGLE_CLIENT_ID
-  - GOOGLE_CLIENT_SECRET
+ - GOOGLE_CLIENT_ID
+ - GOOGLE_CLIENT_SECRET
 - OAuth2 configuration:
-  - Scopes: Gmail send only
-  - Redirect URI: localhost callback
-  - Access type: offline (refresh token)
+ - Scopes: Gmail send only
+ - Redirect URI: localhost callback
+ - Access type: offline (refresh token)
 - Token storage:
-  - electron-store persists tokens locally
+ - electron-store persists tokens locally
 - Authentication window:
-  - Size: 800x800 pixels
-  - Security: context isolation, no node integration
-  - Timeout: 5 minutes
+ - Size: 800x800 pixels
+ - Security: context isolation, no node integration
+ - Timeout: 5 minutes
 
 ## Architecture overview
 The OAuth2 flow is handled in the Electron main process. The renderer triggers authentication via IPC, the main process opens an embedded BrowserWindow, generates the authorization URL, captures the redirect, exchanges the authorization code for tokens, and stores them securely.
@@ -61,13 +61,13 @@ Preload-->>UI : "{success : true}"
 
 ### Environment variables and security
 - Required variables:
-  - GOOGLE_CLIENT_ID
-  - GOOGLE_CLIENT_SECRET
+ - GOOGLE_CLIENT_ID
+ - GOOGLE_CLIENT_SECRET
 - Storage recommendations:
-  - Use a.env file in the electron directory
-  - Do not commit secrets to version control
-  - Restrict file permissions to owner-only
-  - Consider platform keychain integration for production builds
+ - Use a .env file in the electron directory
+ - Do not commit secrets to version control
+ - Restrict file permissions to owner-only
+ - Consider platform keychain integration for production builds
 
 Security implications:
 - Exposing client credentials allows unauthorized API access
@@ -76,13 +76,13 @@ Security implications:
 
 ### OAuth2 flow and authorization URL generation
 - Scope configuration:
-  - Single scope: Gmail send
+ - Single scope: Gmail send
 - Access type:
-  - offline to receive refresh tokens
+ - offline to receive refresh tokens
 - Consent prompt:
-  - prompt set to force consent screen for refresh token
+ - prompt set to force consent screen for refresh token
 - Redirect URI:
-  - http://localhost:3000/oauth/callback
+ - http://localhost:3000/oauth/callback
 
 ```mermaid
 flowchart TD
@@ -131,16 +131,16 @@ Handler-->>Caller : "{success : true}"
 - If broader access is needed, adjust the scope accordingly
 
 ### Offline access type and refresh tokens
-- access_type set to offline ensures a refresh token is issued
+- access_type set to offline so Google issues a refresh token
 - The consent prompt forces explicit user consent for offline access
 - The application stores the token for future use without re-prompting
 
 ### Authentication window configuration
-- Size: 800x800 pixels
+  - Size: 800x800 pixels
 - Security:
-  - contextIsolation enabled
-  - nodeIntegration disabled
-  - show initially hidden, shown on ready-to-show
+ - contextIsolation enabled
+ - nodeIntegration disabled
+ - show initially hidden, shown on ready-to-show
 - Timeout: 5 minutes; closes window if not redirected within this period
 
 ### Step-by-Step setup instructions
@@ -160,9 +160,9 @@ Handler-->>Caller : "{success : true}"
 
 #### Credential configuration
 - Place the downloaded credentials in the electron directory
-- Create a.env file with:
-  - GOOGLE_CLIENT_ID=your_client_id_here
-  - GOOGLE_CLIENT_SECRET=your_client_secret_here
+- Create a .env file :
+ - GOOGLE_CLIENT_ID=your_client_id_here
+ - GOOGLE_CLIENT_SECRET=your_client_secret_here
 
 #### Running the application
 - Install dependencies in the electron directory
@@ -173,7 +173,7 @@ Handler-->>Caller : "{success : true}"
 External dependencies involved in Gmail OAuth2:
 - googleapis: Provides OAuth2 client and Gmail API access
 - electron-store: Persists tokens locally
-- dotenv: Loads environment variables from.env
+- dotenv: Loads environment variables from .env
 
 ```mermaid
 graph TB
@@ -190,32 +190,29 @@ Package --> Dotenv
 - Rate limiting: The UI allows configuring delay between emails to avoid throttling
 - Window lifecycle: Authentication window is closed after successful token exchange or timeout
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common OAuth2 errors and resolutions:
 - Missing environment variables:
-  - Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are present in.env
+ - Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are present in .env
 - Redirect URI mismatch:
-  - Confirm the redirect URI in Google Console matches http://localhost:3000/oauth/callback
+ - Confirm the redirect URI in Google Console matches http://localhost:3000/oauth/callback
 - Token exchange failures:
-  - Verify client credentials and network connectivity
-  - Check for invalid_grant or expired token scenarios
+ - Verify client credentials and network connectivity
+ - Check for invalid_grant or expired token scenarios
 - Authentication timeout:
-  - Increase timeout if needed or ensure the redirect occurs promptly
+ - Increase timeout if needed or ensure the redirect occurs promptly
 - Window closed prematurely:
-  - Ensure the BrowserWindow remains open until redirect completes
+ - Ensure the BrowserWindow remains open until redirect completes
 
-Credential storage best practices:
+Credential storage habits:
 - Store tokens securely using electron-store
 - Avoid exposing tokens in logs or UI
 - Rotate client credentials periodically
 - Use separate OAuth2 clients for development and production
 
 ## Conclusion
-The application implements a secure, offline-capable Gmail OAuth2 flow with a dedicated authentication window and reliable token persistence. By following the setup instructions and best practices outlined here, you can configure Gmail API access safely and reliably.
 
-[No sources needed since this section summarizes without analyzing specific files]
+If consent works but send fails, check scopes and that the stored token still has a refresh token from the original offline grant.
 
 ## Appendices
 
@@ -224,7 +221,7 @@ The application implements a secure, offline-capable Gmail OAuth2 flow with a de
 - GOOGLE_CLIENT_SECRET: OAuth2 client secret
 
 Storage recommendations:
-- Use.env file in electron directory
+- Use .env file in electron directory
 - Restrict file permissions
 - Do not commit to version control
 

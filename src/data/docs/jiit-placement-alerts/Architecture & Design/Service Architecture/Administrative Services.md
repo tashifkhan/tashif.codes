@@ -1,12 +1,7 @@
 # Administrative services
 
 ## Introduction
-This page describes the administrative services that manage system operations, user communications, and external integrations. It focuses on:
-- AdminTelegramService for administrative bot commands, permission enforcement, and system control
-- WebPushService for VAPID-secured browser push notifications, subscription management, and delivery
-- EmailNoticeService for processing general notices via Google Groups, LLM-based classification/extraction, and distribution
-
-It also covers configuration, security considerations, subscription workflows, and how these services integrate with the broader notification ecosystem.
+Ops-facing services: user messaging, admin commands, and the external hooks operators use when something needs a nudge outside the normal schedule.
 
 ## Project structure
 The administrative services live under app/services and are integrated with app/servers, app/clients, and app/core. The primary entry points are:
@@ -196,18 +191,18 @@ Mark --> End
 
 ## Dependency analysis
 - AdminTelegramService depends on:
-  - Settings for admin chat ID
-  - DatabaseService for user and log operations
-  - TelegramService for broadcast and targeted messaging
-  - Daemon utilities for scheduler control
+ - Settings for admin chat ID
+ - DatabaseService for user and log operations
+ - TelegramService for broadcast and targeted messaging
+ - Daemon utilities for scheduler control
 - WebPushService depends on:
-  - pywebpush (optional) for push delivery
-  - VAPID keys from environment/settings
-  - DatabaseService for subscription management
+ - pywebpush (optional) for push delivery
+ - VAPID keys from environment/settings
+ - DatabaseService for subscription management
 - EmailNoticeService depends on:
-  - GoogleGroupsClient for email fetching
-  - LangChain/LangGraph for classification/extraction
-  - DatabaseService for persistence
+ - GoogleGroupsClient for email fetching
+ - LangChain/LangGraph for classification/extraction
+ - DatabaseService for persistence
 
 ```mermaid
 graph LR
@@ -228,36 +223,31 @@ Bot --> Tele
 
 ## Performance considerations
 - AdminTelegramService:
-  - Uses run_in_executor for legacy update workflows to avoid blocking the event loop
-  - Splits long messages for Telegram replies
+ - Uses run_in_executor for legacy update workflows to avoid blocking the event loop
+ - Splits long messages for Telegram replies
 - WebPushService:
-  - Gracefully degrades when pywebpush is unavailable
-  - Removes invalid/expired subscriptions on 404/410 responses
-  - Broadcast loops over users and subscriptions; consider batching or rate limiting if scaling
+ - Gracefully degrades when pywebpush is unavailable
+ - Removes invalid/expired subscriptions on 404/410 responses
+ - Broadcast loops over users and subscriptions; consider batching or rate limiting if scaling
 - EmailNoticeService:
-  - Sequential processing of unread emails to avoid race conditions
-  - LLM calls introduce latency; consider caching or parallelism with caution
+ - Sequential processing of unread emails to avoid race conditions
+ - LLM calls introduce latency; consider caching or parallelism with caution
 
 [No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - Admin commands failing:
-  - Verify admin chat ID configuration and that the sender matches
-  - Check logs for unauthorized access attempts
+ - Verify admin chat ID configuration and that the sender matches
+ - Check logs for unauthorized access attempts
 - Web push failures:
-  - Confirm VAPID keys and email are configured
-  - Inspect pywebpush installation and network connectivity
-  - Review subscription removal on 404/410 responses
+ - Confirm VAPID keys and email are configured
+ - Inspect pywebpush installation and network connectivity
+ - Review subscription removal on 404/410 responses
 - Email processing errors:
-  - Ensure Google Groups credentials are set
-  - Validate LLM API key and model availability
-  - Check for malformed emails or missing required fields triggering retries
+ - Ensure Google Groups credentials are set
+ - Validate LLM API key and model availability
+ - Check for malformed emails or missing required fields triggering retries
 
 ## Conclusion
-The administrative services provide a cohesive administrative and communication backbone:
-- AdminTelegramService secures and automates system control and user operations
-- WebPushService delivers secure, scalable browser notifications with reliable error handling
-- EmailNoticeService transforms unstructured emails into structured notices with LLM-powered intelligence
-
-They integrate cleanly with the configuration and daemon utilities, enabling reliable operation across Telegram, web push, and email channels.
+AdminTelegramService for operator commands, WebPushService for browser push, plus the hooks that poke the system outside the normal schedule.

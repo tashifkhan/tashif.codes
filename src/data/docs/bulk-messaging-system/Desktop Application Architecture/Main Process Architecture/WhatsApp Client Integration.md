@@ -1,7 +1,7 @@
 # WhatsApp client integration
 
 ## Introduction
-This page explains the WhatsApp Web client integration architecture for the bulk messaging system. It covers the Client initialization pattern using LocalAuth strategy, Puppeteer browser configuration, event-driven architecture (qr, ready, authenticated, auth_failure, disconnected), QR code generation and display via the QRCode library, message sending workflow with personalization and rate limiting, contact import functionality for CSV and TXT formats, authentication lifecycle management, session persistence and cleanup procedures, and common integration issues with troubleshooting strategies.
+whatsapp-web.js Client in the main process with LocalAuth, headless Puppeteer, QR events, send loop, and logout cleanup.
 
 ## Project structure
 The integration spans three primary areas:
@@ -44,7 +44,7 @@ APP --> EXC
 - Preload script exposes a secure IPC API to the renderer for WhatsApp operations.
 - React component handles UI rendering, QR display, status updates, and user actions.
 - Pyodide runtime enables Python-powered manual number parsing directly in the browser.
-- Python backend provides reliable contact extraction and validation utilities.
+- Python backend extracts and validates contacts.
 
 ## Architecture overview
 The integration follows an event-driven model:
@@ -145,7 +145,7 @@ RenderQR --> OnError["onError -> show retry"]
 
 ### Message sending workflow: personalization, rate limiting, error handling
 - Personalization: Replaces {{name}} with the contact's name or defaults to "Friend".
-- Chat ID construction: Ensures proper format (@c.us) for both numbered and international formats.
+- Chat ID construction: Builds `@c.us` IDs for local and international numbers.
 - Rate limiting: Delays between messages using timeouts to reduce spam risk.
 - Error handling: Per-contact try/catch captures registration checks and send failures; updates status and continues.
 
@@ -192,8 +192,8 @@ CollectTXT --> Return
 ```
 
 ### Authentication lifecycle management, session persistence, and cleanup
-- Session persistence: LocalAuth stores session data locally, enabling smooth reconnects.
-- Startup cleanup: Removes cached.wwebjs_cache and.wwebjs_auth directories to ensure a fresh start.
+- Session persistence: LocalAuth stores session data locally, enabling clean reconnects.
+- Startup cleanup: Removes cached .wwebjs_cache and .wwebjs_auth directories so the client starts clean.
 - Logout procedure: Calls client.logout(), clears client reference, deletes auth/cache files, and resets UI state.
 - Forced cleanup: Even if logout fails, auth/cache files are removed and UI state is reset.
 
@@ -237,15 +237,14 @@ APP --> EXC["extract_contacts.py"]
 - Streaming parsers: CSV parsing uses streaming to handle large files efficiently.
 - Cleanup: Removing auth/cache directories prevents accumulation of stale session data.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - QR code not loading: Verify network connectivity, restart the app, and clear browser cache. The renderer includes retry logic on QR load failure.
 - Authentication failures: Check device link instructions, ensure phone has active internet, and retry. The client emits auth_failure with a reason.
 - Disconnections: The client emits disconnected with a reason; restart the client to reconnect.
 - Contact import errors: Confirm file format compatibility (CSV/TXT), UTF-8 encoding, and proper column headers. The backend includes fallback parsing strategies.
-- Logout issues: The logout handler attempts logout and forces cleanup if it fails, ensuring auth/cache files are removed.
+- Logout issues: The logout handler attempts logout and forces cleanup if it fails, so auth/cache files are removed.
 
 ## Conclusion
-The integration uses a reliable event-driven architecture with LocalAuth for session persistence, a headless Puppeteer configuration for reliability, and detailed error handling and cleanup procedures. The message sending workflow incorporates personalization and rate limiting, while contact import supports flexible formats with fallback parsing. Together, these components deliver a resilient and user-friendly WhatsApp Web integration suitable for bulk messaging scenarios.
+
+One client instance at a time. Re-init after logout or auth failure rather than trying to revive a half-dead Client object.

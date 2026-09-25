@@ -2,9 +2,7 @@
 
 ## Introduction
 
-The Contact Extraction Utilities provide a detailed solution for importing and processing contact information from multiple file formats. This system supports CSV, Excel (.xlsx and.xls), and plain text files, with sophisticated phone number cleaning and validation capabilities. The utilities are designed to handle various edge cases, malformed data, and provide reliable error recovery mechanisms.
-
-The system integrates smoothly with both standalone command-line usage and web-based API services, making it suitable for desktop applications, web services, and batch processing scenarios.
+Shared extractors for CSV, Excel, and TXT. They clean phones the same way and skip rows that fail length checks.
 
 ## Project structure
 
@@ -43,7 +41,7 @@ The contact extraction system consists of four primary components, each serving 
 
 ### Main contact extraction module (`extract_contacts.py`)
 
-This module provides the core functionality for extracting contacts from various file formats. It implements intelligent column detection, fallback parsing mechanisms, and detailed error handling.
+This module provides the core functionality for extracting contacts from various file formats. It implements intelligent column detection, fallback parsing mechanisms, and clear error handling.
 
 ### Web API service (`app.py`)
 
@@ -59,7 +57,7 @@ A specialized utility for validating and cleaning individual phone numbers with 
 
 ## Architecture overview
 
-The contact extraction system follows a modular architecture with clear separation of concerns:
+Pieces and how they connect:
 
 ```mermaid
 sequenceDiagram
@@ -88,7 +86,7 @@ The architecture implements a fallback mechanism where each file format handler 
 
 ### CSV file processing
 
-The CSV extraction function implements sophisticated automatic column detection and fallback parsing mechanisms:
+The CSV extraction function implements careful automatic column detection and fallback parsing mechanisms:
 
 #### Column detection algorithm
 
@@ -309,7 +307,7 @@ PANDAS --> XLDRD
 
 ## Performance considerations
 
-The contact extraction utilities implement several performance optimization techniques:
+Performance notes:
 
 ### Memory management
 - Streaming file processing for large CSV files
@@ -322,11 +320,11 @@ The contact extraction utilities implement several performance optimization tech
 - Minimal memory allocation during processing
 
 ### Error recovery
-- Graceful degradation from pandas to manual parsing
+- Falls back from pandas to manual parsing
 - Detailed exception handling with logging
 - Resource cleanup on failure
 
-### Scalability features
+### Limits
 - Configurable file size limits (16MB default)
 - Efficient column detection algorithms
 - Optimized phone number validation
@@ -336,28 +334,28 @@ The contact extraction utilities implement several performance optimization tech
 ### Common issues and solutions
 
 #### File format compatibility
-- **Issue**: Excel files not opening
-  - **Solution**: Ensure `openpyxl` and `xlrd` are installed for `.xlsx` and `.xls` respectively
-  - **Reference**: `requirements.txt`
+- **Issue.** Excel files not opening
+ - **Solution.** Ensure `openpyxl` and `xlrd` are installed for `.xlsx` and `.xls` respectively
+ - **Reference.** `requirements.txt`
 
 #### Phone number validation failures
-- **Issue**: Valid phone numbers rejected
-  - **Solution**: Check number length (7-15 digits) and international format requirements
-  - **Reference**: `validate_number.py`
+- **Issue.** Valid phone numbers rejected
+ - **Solution.** Check number length (7-15 digits) and international format requirements
+ - **Reference.** `validate_number.py`
 
 #### Memory issues with large files
-- **Issue**: Out of memory errors
-  - **Solution**: Process files in smaller chunks or use streaming approaches
-  - **Reference**: `app.py`
+- **Issue.** Out of memory errors
+ - **Solution.** Process files in smaller chunks or use streaming approaches
+ - **Reference.** `app.py`
 
 #### Encoding problems
-- **Issue**: Special characters not displaying correctly
-  - **Solution**: Ensure UTF-8 encoding for text files
-  - **Reference**: `extract_contacts.py`
+- **Issue.** Special characters not displaying correctly
+ - **Solution.** Ensure UTF-8 encoding for text files
+ - **Reference.** `extract_contacts.py`
 
 ### Error handling strategies
 
-The system implements detailed error handling across all components:
+The system implements clear error handling across all components:
 
 ```mermaid
 flowchart TD
@@ -381,13 +379,4 @@ Cleanup --> End[End Process]
 
 ## Conclusion
 
-The Contact Extraction Utilities provide a reliable, scalable solution for processing contact information from multiple file formats. The system's architecture emphasizes reliability through fallback mechanisms, detailed error handling, and flexible parsing strategies.
-
-Key strengths include:
-- **Multi-format Support**: Smooth processing of CSV, Excel, and text files
-- **Intelligent Parsing**: Automatic column detection with fallback mechanisms
-- **Reliable Validation**: Detailed phone number cleaning and validation
-- **Error Resilience**: Graceful degradation and detailed error handling
-- **Performance Optimization**: Memory-efficient processing and resource management
-
-The utilities are a foundation for larger applications requiring contact management capabilities, with clear extension points for additional file formats and processing features.
+Format-specific extractors should all exit through the same cleaner. That is what keeps WhatsApp JIDs consistent later.

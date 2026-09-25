@@ -1,7 +1,7 @@
 # Browser automation tools
 
 ## Introduction
-This page explains the browser automation tools and the AgentService implementation that powers intelligent web interaction. It covers the browser action generation system, DOM structure analysis, and intelligent script creation. It documents the BrowserActionInput schema, constraint handling, and target URL navigation capabilities. It also details the integration with the agent system, action planning algorithms, and execution patterns. Practical examples, common use cases, security considerations, performance optimization, and debugging approaches are included to help both technical and non-technical users understand and operate the system effectively.
+Browser automation tool and `AgentService`: goal in, DOM-aware JSON plan out, sanitizer, and execution through the extension.
 
 ## Project structure
 The browser automation system spans backend services, FastAPI routes, LangChain prompts, a browser extension, and React-based UI. The key layers are:
@@ -52,7 +52,7 @@ RT --> SVC
 - FastAPI Router: Exposes a POST endpoint to generate scripts, validating inputs and returning structured responses.
 - BrowserActionInput Schema: Defines the input contract for the browser action tool, including goal, target_url, dom_structure, and constraints.
 - Prompt Template: Provides a system prompt and examples for DOM manipulation and tab/window control actions, with strict JSON output requirements and critical rules.
-- Sanitizer: Validates the generated JSON plan, ensuring required fields, valid action types, and safe custom script patterns.
+- Sanitizer: Validates the generated JSON plan: required fields, valid action types, and safe custom script patterns.
 - Extension Integration: The side panel executor triggers generation, captures DOM context, and executes actions via background and content scripts.
 
 ## Architecture overview
@@ -176,7 +176,7 @@ ReturnDOM --> End(["Done"])
 ### Action planning and execution patterns
 The extension supports two execution modes:
 - Side panel executor: Parses slash commands, resolves agent endpoints, captures DOM context, and executes the returned action plan.
-- Background runner: Receives action plans and executes them with reliable tab/window control and DOM injection.
+- Background runner: Receives action plans and executes them with tab/window control and DOM injection.
 
 ```mermaid
 sequenceDiagram
@@ -237,8 +237,6 @@ BA --> SVC
 - Tab operations: Navigation and reload operations wait for completion to avoid race conditions.
 - Sanitization overhead: JSON validation and safety checks occur synchronously; batching or caching could reduce repeated work.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Missing goal: The router returns a 400 error when goal is empty.
@@ -250,16 +248,14 @@ Common issues and resolutions:
 - Execution timeouts: Tab operations include timeout fallbacks; adjust expectations for slow-loading pages.
 
 ## Conclusion
-The browser automation system combines a reliable backend service with a powerful extension runtime to deliver intelligent, safe, and efficient web interactions. By structuring goals into precise JSON action plans, validating them rigorously, and executing them through tab/window control or DOM injection, the system supports a wide range of scenarios, from targeted form filling to complex multi-tab workflows. The React agent further improves capability by integrating browser actions with other tools, enabling multimodal automation.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Sanitize every plan. Reject dangerous `EXECUTE_SCRIPT` patterns. DOM writes stay in content scripts with trusted selectors.
 
 ## Appendices
 
 ### Browser action types and constraints
 - DOM Manipulation Actions: CLICK, TYPE, SCROLL, WAIT, SELECT, EXECUTE_SCRIPT
 - Tab/Window Control Actions: OPEN_TAB, CLOSE_TAB, SWITCH_TAB, NAVIGATE, RELOAD_TAB, DUPLICATE_TAB
-- Constraints: Provide target_url for navigation, ensure selectors are specific and reliable, and avoid DOM actions on chrome:// pages.
+- Constraints: Provide target_url for navigation, prefer specific selectors, and avoid DOM actions on chrome:// pages.
 
 ### Example scenarios
 - Open a new tab and search: Use OPEN_TAB with a constructed search URL; avoid typing into chrome:// pages.

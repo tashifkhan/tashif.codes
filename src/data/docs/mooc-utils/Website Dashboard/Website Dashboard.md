@@ -1,7 +1,7 @@
 # Website dashboard
 
 ## Introduction
-This page describes the Website Dashboard built with Next.js. It covers the marketing site functionality, OTP-based user authentication, the user dashboard for managing subscriptions and notifications, and course browsing capabilities. It documents the React component architecture, API integration patterns, authentication context providers, UI component library usage, routing structure, state management, and styling approach using Tailwind CSS and shadcn/ui components.
+The Next.js website: landing, auth, and dashboard for Notice Reminders, plus extension download for Assignment Solver. Routing, providers, API client, and UI structure.
 
 ## Project structure
 The website is a Next.js application organized into:
@@ -247,8 +247,6 @@ P --> TH["next-themes"]
 - Conditional query enabling to avoid unnecessary requests.
 - Efficient invalidation patterns to keep views synchronized after mutations.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Authentication failures: Verify OTP endpoint responses and error messages surfaced to the UI.
@@ -257,4 +255,4 @@ Common issues and resolutions:
 - UI state sync: Ensure React Query invalidations occur after mutations (e.g., subscriptions, notifications).
 
 ## Conclusion
-The Website Dashboard combines a modern Next.js frontend with a reliable OTP authentication system, a detailed dashboard for managing subscriptions and notifications, and a smooth course browsing experience. The architecture emphasizes clear separation of concerns, reusable UI components, and efficient data fetching with React Query. The styling system using Tailwind CSS and shadcn/ui ensures a consistent, accessible, and responsive user experience.
+Landing for strangers, dashboard for signed-in users, extension download as the bridge to Assignment Solver.

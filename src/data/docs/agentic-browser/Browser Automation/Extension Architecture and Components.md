@@ -1,17 +1,10 @@
 # Extension architecture and components
 
 ## Introduction
-This page explains the browser extension architecture and component interactions for the Open DIA project. It focuses on:
-- The content script's role in executing browser actions
-- The background script's coordination for cross-tab communication
-- The side panel UI integration and agent orchestration
-- Message passing protocols between extension components and the main application
-- The AgentExecutor component's role in coordinating agent actions and the content script's execution environment
-- Examples of lifecycle management, permission handling, and security boundaries
-- Cross-browser compatibility considerations and extension manifest configuration
+Extension pieces that back automation: background worker, content script, messaging, permissions, and how they connect to the agent.
 
 ## Project structure
-The extension is organized into entrypoints for background, content, and side panel UI, plus shared utilities for agent orchestration and messaging.
+Entrypoints cover background, content, and side panel UI, plus shared utilities for agent orchestration and messaging.
 
 ```mermaid
 graph TB
@@ -224,7 +217,7 @@ WS->>Server : "emit stop_agent"
 
 ## Dependency analysis
 External dependencies and their roles:
-- React ecosystem: UI rendering and state management
+- React: UI rendering and state management
 - Socket.IO client: Real-time communication with agent server
 - Google Generative AI SDK: Local LLM inference
 - Tailwind/KaTeX: UI styling and math rendering
@@ -254,47 +247,47 @@ AE --> MD["react-markdown/katex"]
 ## Troubleshooting guide
 Common issues and resolutions:
 - Action not executing in content script:
-  - Ensure the content script is injected and the tab is active
-  - Verify message routing from background to content script
+ - Ensure the content script is injected and the tab is active
+ - Verify message routing from background to content script
 - Tab operations failing:
-  - Confirm tab IDs and window context
-  - Check for navigation completion before performing actions
+ - Confirm tab IDs and window context
+ - Check for navigation completion before performing actions
 - WebSocket connectivity:
-  - Validate server availability and CORS
-  - Use fallback HTTP stats when WebSocket is disconnected
+ - Validate server availability and CORS
+ - Use fallback HTTP stats when WebSocket is disconnected
 - Permission errors:
-  - Review manifest permissions and host permissions
-  - Reinstall the extension after permission changes
+ - Review manifest permissions and host permissions
+ - Reinstall the extension after permission changes
 
 ## Conclusion
-The extension employs a clear separation of concerns: the background script coordinates cross-tab operations, the content script handles DOM-level actions, and the side panel orchestrates agent execution with real-time feedback. Utilities provide reliable command parsing and context-aware agent execution. Permissions and manifest configuration enable broad site access and side panel integration. With careful attention to performance and error handling, the architecture supports scalable agent-driven browser automation.
+Manifest permissions should match real needs. Background owns coordination; content scripts own DOM. Keep message types explicit.
 
 ## Appendices
 
 ### Message passing protocols
 - Side panel to background:
-  - Types: ACTIVATE_AI_FRAME, DEACTIVATE_AI_FRAME, GET_ACTIVE_TAB, GET_ALL_TABS, EXECUTE_ACTION, GEMINI_REQUEST, RUN_GENERATED_AGENT, EXECUTE_AGENT_TOOL
+ - Types: ACTIVATE_AI_FRAME, DEACTIVATE_AI_FRAME, GET_ACTIVE_TAB, GET_ALL_TABS, EXECUTE_ACTION, GEMINI_REQUEST, RUN_GENERATED_AGENT, EXECUTE_AGENT_TOOL
 - Background to content:
-  - Types: PERFORM_ACTION (via tabs.sendMessage)
+ - Types: PERFORM_ACTION (via tabs.sendMessage)
 - Background to side panel:
-  - Responses to all requests with success/error payloads
+ - Responses to all requests with success/error payloads
 
 ### Lifecycle management and security boundaries
 - Lifecycle:
-  - Background script initializes listeners and tab tracking
-  - Side panel activates/deactivates AI frames and manages sessions
-  - Content script loads per-page and responds to actions
+ - Background script initializes listeners and tab tracking
+ - Side panel activates/deactivates AI frames and manages sessions
+ - Content script loads per-page and responds to actions
 - Security:
-  - Content scripts run in page context with limited permissions
-  - Background script bridges privileged APIs with page contexts
-  - Manifest permissions define scope; host permissions grant broad access
+ - Content scripts run in page context with limited permissions
+ - Background script bridges privileged APIs with page contexts
+ - Manifest permissions define scope; host permissions grant broad access
 
 ### Cross-Browser compatibility
 - Build targets:
-  - Chrome MV3 and Firefox via WXT build flags
+ - Chrome MV3 and Firefox via WXT build flags
 - Differences:
-  - Some APIs differ between browsers; use feature detection
-  - Manifest keys and permissions may vary slightly
+ - Some APIs differ between browsers; use feature detection
+ - Manifest keys and permissions may vary slightly
 
 ### Extension manifest configuration
 - Name, description, permissions, host permissions

@@ -1,9 +1,8 @@
 # Contact import and management
 
 ## Introduction
-This page explains the contact import and management functionality for the bulk messaging application. It covers how contacts are imported from CSV, TXT, and Excel files, how phone numbers are normalized and validated, and how contacts are prepared for mass messaging. It also documents the contact data model, error handling strategies, and best practices for preparing contact files.
+Import contacts from CSV/TXT/Excel or paste, normalize phones, and shape the contact objects the send handlers expect.
 
-Supported capabilities:
 - Automatic detection and parsing of CSV, TXT, and Excel files
 - Phone number normalization and validation
 - Manual number entry with name parsing
@@ -75,15 +74,15 @@ UI->>UI : "Merge into waContacts"
 
 ### File import system (CSV, TXT, excel)
 - CSV parsing:
-  - Uses pandas to read headers and infer phone/name columns by keyword matching.
-  - Falls back to CSV reader if pandas fails.
-  - Produces contacts with number and optional name; unknown names are auto-assigned.
+ - Uses pandas to read headers and infer phone/name columns by keyword matching.
+ - Falls back to CSV reader if pandas fails.
+ - Produces contacts with number and optional name; unknown names are auto-assigned.
 - TXT parsing:
-  - Splits lines by separators and attempts to detect phone numbers via regex.
-  - Supports comma, semicolon, tab, and pipe delimiters.
+ - Splits lines by separators and attempts to detect phone numbers via regex.
+ - Supports comma, semicolon, tab, and pipe delimiters.
 - Excel parsing:
-  - Similar to CSV but uses pandas to read Excel sheets.
-  - Keyword-based column detection and fallback to first/second columns.
+ - Similar to CSV but uses pandas to read Excel sheets.
+ - Keyword-based column detection and fallback to first/second columns.
 
 ```mermaid
 flowchart TD
@@ -181,9 +180,9 @@ UI->>UI : "Merge into waContacts"
 ```
 
 ### Contact data model and mass messaging preparation
-- Each contact is represented as an object with:
-  - number: normalized phone number string
-  - name: optional display name or auto-generated label
+- Each contact is represented as an object :
+ - number: normalized phone number string
+ - name: optional display name or auto-generated label
 - During mass messaging, the message template is personalized by replacing placeholders with the contact's name (or a default label if missing).
 - The application constructs chat identifiers for WhatsApp using the normalized number.
 
@@ -207,12 +206,12 @@ MainJS --> Contact : "iterates for sending"
 
 ## Dependency analysis
 - Electron UI depends on:
-  - IPC handlers for file import and manual parsing
-  - Pyodide for running Python scripts in the renderer
+ - IPC handlers for file import and manual parsing
+ - Pyodide for running Python scripts in the renderer
 - Python backend depends on:
-  - Pandas for CSV/Excel parsing
-  - CSV module for fallback parsing
-  - Regex for phone number detection and cleaning
+ - Pandas for CSV/Excel parsing
+ - CSV module for fallback parsing
+ - Regex for phone number detection and cleaning
 - The Flask API exposes endpoints for file uploads and manual number parsing.
 
 ```mermaid
@@ -232,45 +231,42 @@ API --> PARSER
 - Manual number parsing supports batch input and avoids repeated UI refreshes until parsing completes.
 - Consider limiting file sizes and providing progress feedback for large imports.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Unsupported file type:
-  - Ensure the file extension is CSV, TXT, XLS, or XLSX.
+ - Ensure the file extension is CSV, TXT, XLS, or XLSX.
 - Malformed CSV/Excel:
-  - Verify headers and presence of phone number columns.
-  - Confirm UTF-8 encoding and absence of extra blank rows.
+ - Verify headers and presence of phone number columns.
+ - Confirm UTF-8 encoding and absence of extra blank rows.
 - Invalid phone numbers:
-  - Numbers must contain 7–15 digits after normalization.
-  - Avoid including letters or special characters not recognized as separators.
+ - Numbers must contain 7-15 digits after normalization.
+ - Avoid including letters or special characters not recognized as separators.
 - Manual number parsing errors:
-  - Use one of the supported formats: "+1234567890", "Name: +1234567890", or "+1234567890 - Name".
+ - Use one of the supported formats: "+1234567890", "Name: +1234567890", or "+1234567890 - Name".
 
-Best practices:
+Habits that help:
 - Prepare files with clear column names (e.g., "Phone", "Mobile", "Name") to improve automatic detection.
 - Use consistent separators within a file (comma, semicolon, or tab).
 - Keep phone numbers in international format with a leading plus sign when possible.
 
 ## Conclusion
-The contact import and management system provides reliable support for CSV, TXT, and Excel files, along with manual number entry. Phone numbers are normalized and validated to ensure reliable mass messaging. The Electron UI offers intuitive controls for importing, previewing, and managing contacts, while the Python backend delivers resilient parsing and validation logic.
 
-[No sources needed since this section summarizes without analyzing specific files]
+Normalize and dedupe before send. The engine will not magically fix country codes for you.
 
 ## Appendices
 
 ### Supported file formats and data layouts
 - CSV:
-  - Columns: phone-like and name-like fields detected by keywords.
-  - Example layout:
-    - Phone column: "Phone", "Mobile", "Cell", "Tel"
-    - Name column: "Name", "Contact", "Person"
+ - Columns: phone-like and name-like fields detected by keywords.
+ - Example layout:
+ - Phone column: "Phone", "Mobile", "Cell", "Tel"
+ - Name column: "Name", "Contact", "Person"
 - TXT:
-  - One contact per line; supports comma, semicolon, tab, or pipe separators.
-  - Example: "+1234567890,John Doe"
+ - One contact per line; supports comma, semicolon, tab, or pipe separators.
+ - Example: "+1234567890,John Doe"
 - Excel:
-  - Sheet-based; similar to CSV with automatic column detection.
+ - Sheet-based; similar to CSV with automatic column detection.
 
 ### Contact data structure
-- number: normalized phone number string
-- name: optional display name or auto-generated label
+  - number: normalized phone number string
+  - name: optional display name or auto-generated label

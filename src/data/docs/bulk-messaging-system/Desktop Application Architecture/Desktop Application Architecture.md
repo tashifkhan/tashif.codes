@@ -1,15 +1,16 @@
 # Desktop application architecture
 
 ## Introduction
-This page describes the desktop application architecture built with Electron, React, and integrated Python utilities. It explains the separation between the main process and renderer process, secure IPC patterns, React component architecture, state management, security model, build system, and performance considerations.
+
+Electron main process, React renderer, preload bridge, and Python helpers. Where each concern lives and how they talk.
 
 ## Project structure
-The project is organized into:
-- Electron main process and preload scripts under electron/src/electron
-- React UI under electron/src/ui and components under electron/src/components
-- Shared utilities under electron/src/utils
-- Bundled frontend assets under electron/dist-react
-- Build configuration for Vite and electron-builder under electron/
+
+- Electron main process and preload under `electron/src/electron` (`main.js`, `preload.cjs`, handlers)
+- React UI under `electron/src/ui` and components under `electron/src/components`
+- Shared contact parsers under `electron/src/shared`
+- Bundled frontend assets under `electron/dist-react`
+- Vite and electron-builder config at the `electron/` root
 
 ```mermaid
 graph TB
@@ -20,7 +21,7 @@ SM["smtp-handler.js"]
 U["utils.js"]
 end
 subgraph "Preload Bridge"
-P["preload.js"]
+P["preload.cjs"]
 end
 subgraph "Renderer Process (React)"
 RUI["main.jsx"]
@@ -47,18 +48,23 @@ M --> SM
 M --> D
 ```
 
+`package.json` `"main"` is `src/electron/main.js`. The BrowserWindow preload path is `preload.cjs`.
+
 ## Core components
-- Main process: Creates the BrowserWindow, configures webPreferences, registers IPC handlers, manages lifecycle events, and orchestrates external integrations (Gmail, SMTP, WhatsApp).
-- Preload bridge: Exposes a controlled API surface to the renderer via contextBridge, enabling secure IPC invocations and event listeners.
-- Renderer (React): Stateless functional components manage UI state locally, delegate long-running tasks to the main process via IPC, and render real-time updates.
-- Handlers: Encapsulate business logic for Gmail OAuth, token storage, email sending, and SMTP transport verification and sending.
-- Utilities: Pyodide integration for parsing manual numbers using Python scripts bundled in dist-react.
+
+- Main process: Creates the BrowserWindow, sets webPreferences, registers IPC, manages lifecycle, and owns Gmail, SMTP, and WhatsApp clients.
+- Preload bridge: Exposes `window.electronAPI` through contextBridge. Invoke for requests, `on` helpers for events.
+- Renderer (React 19): Functional components keep UI state, send work to main over IPC, and render progress.
+- Handlers: Gmail OAuth and send, SMTP verify and send.
+- Utilities: Pyodide can run `parse_manual_numbers.py` in the renderer; Flask in `python-backend/` is the full parser.
 
 ## Architecture overview
-The system follows a strict main/renderer separation:
-- Main process runs privileged operations (filesystem, network APIs, external service integrations).
-- Renderer process renders UI and delegates heavy work to main via typed IPC channels.
-- Preload script defines the Electron API surface exposed to renderer code.
+
+Strict main/renderer split:
+
+- Main process runs filesystem, network, and provider clients.
+- Renderer draws UI and delegates through typed IPC.
+- Preload defines the only API the page may call.
 
 ```mermaid
 graph TB
@@ -93,10 +99,11 @@ EVT --> UI
 ## Detailed component analysis
 
 ### Main process responsibilities
-- Window creation with context isolation and secure defaults.
-- Registration of IPC handlers for Gmail, SMTP, and WhatsApp operations.
-- Lifecycle management: startup cleanup, window-all-closed, before-quit.
-- Real-time status updates via event emitters to renderer.
+
+- Window creation with context isolation and `nodeIntegration: false`.
+- IPC for Gmail, SMTP, WhatsApp, templates, and file dialogs.
+- Lifecycle: startup cleanup, window-all-closed, before-quit.
+- Status events to the renderer.
 
 ```mermaid
 sequenceDiagram
@@ -112,9 +119,8 @@ M-->>R : webContents.send("whatsapp-qr", null)
 ```
 
 ### Preload bridge and secure IPC
-- Exposes a single electronAPI object with typed methods for Gmail, SMTP, file dialogs, and WhatsApp operations.
-- Uses ipcRenderer.invoke for request/response semantics and ipcRenderer.on for event streams.
-- Returns removal functions to detach listeners in components.
+
+`preload.cjs` exposes one `electronAPI` object. `ipcRenderer.invoke` for request/response, `ipcRenderer.on` for streams. Listener helpers return an unsubscribe function.
 
 ```mermaid
 classDiagram
@@ -133,13 +139,17 @@ class PreloadBridge {
 +onWhatsAppStatus(cb) on/remove
 +onWhatsAppQR(cb) on/remove
 +onWhatsAppSendStatus(cb) on/remove
++saveTemplate(data) invoke
++listTemplates() invoke
++deleteTemplate(name) invoke
 }
 ```
 
 ### Gmail handler
-- Implements OAuth2 flow with a dedicated BrowserWindow for consent.
-- Stores tokens securely using electron-store.
-- Sends emails via Gmail API with progress events.
+
+- OAuth2 in a dedicated BrowserWindow.
+- Tokens in `electron-store`.
+- Gmail API send with progress events.
 
 ```mermaid
 sequenceDiagram
@@ -163,8 +173,8 @@ M-->>R : {success, results}
 ```
 
 ### SMTP handler
-- Validates configuration, verifies transport, and sends emails with progress events.
-- Optionally persists partial SMTP config using electron-store.
+
+Validates config, verifies transport, sends with progress. Partial config can persist in `electron-store`.
 
 ```mermaid
 flowchart TD
@@ -181,9 +191,8 @@ Next --> |No| Done["Return {success:true, results}"]
 ```
 
 ### WhatsApp integration
-- Initializes a WhatsApp client with local authentication and headless puppeteer.
-- Emits QR code as a data URL and status updates to the renderer.
-- Supports importing contacts from CSV/Text and sending mass messages with rate limiting.
+
+LocalAuth plus Puppeteer. QR as a data URL. CSV/text import and mass send with delays.
 
 ```mermaid
 sequenceDiagram
@@ -209,9 +218,8 @@ M-->>R : {success, sent, failed}
 ```
 
 ### React + electron integration
-- App initializes React DOM and renders BulkMailer.
-- BulkMailer coordinates state for Gmail, SMTP, and WhatsApp tabs.
-- Components subscribe to preload-provided event streams and call invoke methods for actions.
+
+`main.jsx` mounts `App.jsx`, which renders `BulkMailer.jsx`. BulkMailer owns tab state and wires forms to `window.electronAPI`.
 
 ```mermaid
 graph LR
@@ -221,12 +229,12 @@ BM --> WAF["WhatsAppForm.jsx"]
 BM --> GIF["GmailForm.jsx"]
 BM --> SIF["SMTPForm.jsx"]
 BM --> PY["pyodide.js"]
-BM --> PRE["preload.js (electronAPI)"]
+BM --> PRE["preload.cjs (electronAPI)"]
 ```
 
 ### Python backend utilities via pyodide
-- Loads Pyodide runtime and Python script dynamically.
-- Parses manual numbers using a Python utility and returns structured contacts.
+
+Loads Pyodide and `parse_manual_numbers.py` when needed, then returns JSON contacts.
 
 ```mermaid
 flowchart TD
@@ -241,10 +249,11 @@ H --> I["Return {success, contacts, count}"]
 ```
 
 ## Dependency analysis
-- Electron main depends on handlers and filesystem/dialogs.
-- Preload depends on Electron's contextBridge and ipcRenderer.
-- Renderer depends on React and the preload bridge.
-- Build system produces dist-react assets consumed by main process.
+
+- Electron main depends on handlers, dialogs, `whatsapp-web.js`, `googleapis`, `nodemailer`, `electron-store`.
+- Preload depends on contextBridge and ipcRenderer.
+- Renderer depends on React 19, Tailwind 4, and the preload API.
+- Vite writes `dist-react`, which production `loadFile` uses.
 
 ```mermaid
 graph TB
@@ -256,40 +265,40 @@ PJSON --> EBCFG
 PJSON --> MAIN["main.js"]
 MAIN --> GH["gmail-handler.js"]
 MAIN --> SH["smtp-handler.js"]
-MAIN --> PRE["preload.js"]
+MAIN --> PRE["preload.cjs"]
 MAIN --> DIST["dist-react/"]
 ```
 
 ## Performance considerations
-- Headless browser for WhatsApp with sandbox and GPU disabled to reduce overhead.
-- Rate limiting delays between messages to avoid throttling.
-- Event-driven progress updates to keep UI responsive.
-- Cleanup of cache and auth directories on logout/close to prevent resource leaks.
-- Tailwind-based rendering avoids heavy CSS frameworks; optimize images and minimize DOM thrashing.
 
-[No sources needed since this section provides general guidance]
+- Headless browser for WhatsApp with sandbox and GPU disabled.
+- Rate limiting delays between messages.
+- Event-driven progress so the UI stays live.
+- Cache and auth cleanup on logout and close.
+- Tailwind utilities instead of a heavy CSS framework.
 
 ## Security model
-- Context Isolation enabled in BrowserWindow webPreferences.
-- Node.js integration disabled; remote module disabled.
-- Preload script exposes only explicitly whitelisted methods via contextBridge.
-- IPC uses typed channels with invoke for requests and on/removeListener for events.
-- Environment variables for OAuth secrets; token storage via electron-store.
-- Strict webSecurity enabled.
+
+- Context isolation on.
+- Node integration off. Remote module off.
+- Preload exposes only listed methods.
+- Typed IPC channels.
+- OAuth secrets in env. Tokens in `electron-store`.
+- `webSecurity` on.
 
 ## Build system
-- Vite builds the React frontend into dist-react with base "./" and outDir "dist-react".
-- Electron main entry configured in package.json; scripts orchestrate dev and prod flows.
-- electron-builder targets macOS DMG, Linux AppImage, and Windows portable/msi with appId and extra resources.
+
+Vite builds the React UI into `dist-react` with `base: "./"`. Scripts in `electron/package.json` run dev (`npm run dev`), production (`npm run prod` / `npm run start`), and packaging (`dist:mac`, `dist:win`, `dist:linux`). electron-builder 26 ships macOS dmg (arm64), Linux AppImage (x64), Windows portable and msi. Packaged files: `dist-react/**`, `src/electron/**`, `src/shared/**`, `package.json`.
 
 ## Component interaction diagrams
 
 ### Gmail workflow
+
 ```mermaid
 sequenceDiagram
 participant UI as "GmailForm.jsx"
 participant BM as "BulkMailer.jsx"
-participant P as "preload.js"
+participant P as "preload.cjs"
 participant M as "main.js"
 participant GH as "gmail-handler.js"
 UI->>BM : onClick("Authenticate Gmail")
@@ -311,11 +320,12 @@ BM-->>UI : update results
 ```
 
 ### WhatsApp workflow
+
 ```mermaid
 sequenceDiagram
 participant UI as "WhatsAppForm.jsx"
 participant BM as "BulkMailer.jsx"
-participant P as "preload.js"
+participant P as "preload.cjs"
 participant M as "main.js"
 UI->>BM : onClick("Connect to WhatsApp")
 BM->>P : invoke("whatsapp-start-client")
@@ -336,11 +346,12 @@ P-->>BM : result
 ```
 
 ### SMTP workflow
+
 ```mermaid
 sequenceDiagram
 participant UI as "SMTPForm.jsx"
 participant BM as "BulkMailer.jsx"
-participant P as "preload.js"
+participant P as "preload.cjs"
 participant M as "main.js"
 participant SH as "smtp-handler.js"
 UI->>BM : onClick("Send SMTP Email")
@@ -354,11 +365,13 @@ BM-->>UI : update results
 ```
 
 ## Troubleshooting guide
-- WhatsApp QR not loading: Check status events and retry connection; inspect console for QR generation errors.
-- Gmail authentication timeout: Ensure environment variables are set and redirect URI matches; window closes after timeout.
-- SMTP verification failure: Confirm host/port/credentials; TLS settings; verify with transporter.verify().
-- File import issues: Validate CSV/Text formats; ensure proper column names for CSV parsing.
-- Dev vs Production: Development loads from Vite server; production loads from dist-react; confirm paths and existence.
+
+- WhatsApp QR not loading: retry, check status events, install Chrome/Brave or set `PUPPETEER_EXECUTABLE_PATH`.
+- Gmail authentication timeout: `.env` in `electron/`, redirect URI matches the desktop client.
+- SMTP verification failure: host, port, TLS, then `transporter.verify()`.
+- File import issues: CSV/text headers and UTF-8.
+- Dev vs production: dev loads `http://localhost:5173`; production loads `dist-react/index.html`.
 
 ## Conclusion
-This architecture cleanly separates concerns between main and renderer processes, enforces a secure IPC boundary via preload, and integrates React for UI with reliable handlers for Gmail, SMTP, and WhatsApp. The build system uses Vite and electron-builder for efficient development and cross-platform distribution. Following the outlined security and performance recommendations ensures a reliable, maintainable desktop application.
+
+Main owns secrets and clients. Renderer owns UI state. Cross that line only through preload-defined IPC.

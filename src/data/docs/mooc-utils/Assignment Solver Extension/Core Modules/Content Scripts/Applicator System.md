@@ -1,13 +1,13 @@
 # Applicator system
 
 ## Introduction
-This page explains the applicator system responsible for applying AI-generated answers to form elements on assignment pages. It covers how the system identifies and manipulates different input types (radio buttons, checkboxes, text inputs, and fill-in-the-blank areas), how it submits assignments, and how it integrates with the broader assignment-solving pipeline. The documentation includes DOM manipulation techniques, validation and error handling, submission workflows, and user interaction simulation.
+Writes AI answers into page form elements. DOM techniques, validation, submit flows, and what happens when a control does not match the expected shape.
 
 ## Project structure
 The applicator system spans three layers:
 - Content script: Applies answers and submits forms on the target page
 - Background service worker: Routes messages and manages content script lifecycle
-- UI controllers: Drive the end-to-end flow, including progress reporting and user controls
+- UI controllers: Drive the full flow, including progress reporting and user controls
 
 ```mermaid
 graph TB
@@ -133,7 +133,7 @@ CS-->>BG : {success : true}
 ```
 
 ### Answer handler and message routing
-The background answer handler ensures the content script is loaded and injects it if needed, then forwards messages:
+The background answer handler checks that the content script is loaded, injects it if needed, then forwards messages:
 - Verifies content script availability via PING
 - Injects content script if missing (with delays for Firefox)
 - Relays APPLY_ANSWERS and SUBMIT_ASSIGNMENT to content script
@@ -228,7 +228,7 @@ The applicator uses flexible selectors to accommodate different assignment platf
 These strategies ensure compatibility across NPTEL and similar platforms with varying markup patterns.
 
 ### Integration with assignment submission process
-The UI orchestrates the end-to-end flow:
+The UI orchestrates the full flow:
 - Extracts page data and captures screenshots
 - Sends answers to content script for application
 - Optionally submits automatically based on user preference
@@ -279,17 +279,15 @@ UI --> STATE["State Manager<br/>state.js"]
 ## Performance considerations
 - Batched application: Answers are sent one at a time with small delays to avoid overwhelming the page
 - Flexible selectors: Reduce re-querying by trying multiple strategies efficiently
-- Event simulation: Minimal synthetic events reduce overhead while ensuring validation triggers
+- Event simulation: Minimal synthetic events reduce overhead while so validation triggers
 - Retry logic: UI uses retry mechanisms for background communication to minimize stalls
-
-[No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - Content script not loaded: Background handler injects content script and verifies with PING
 - Submit button not found: Applicator tries multiple selectors; UI falls back to defaults
 - Missing answer elements: Applicator logs and continues; UI shows progress and results
-- Cross-browser compatibility: Unified browser API abstraction ensures consistent behavior
+- Cross-browser compatibility: Unified browser API abstraction keeps consistent behavior
 
 ## Conclusion
-The applicator system provides reliable, cross-browser answer application and submission capabilities. Its flexible element selection, event simulation, and integration with the UI's progress and state management deliver a reliable user experience across diverse assignment platforms. The modular design enables easy maintenance and extension for future input types or workflows.
+Match question type to the right control, fire the events the page listens for, and skip unknowns instead of guessing.

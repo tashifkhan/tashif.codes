@@ -1,7 +1,7 @@
 # SMTP email integration
 
 ## Introduction
-This page provides detailed documentation for SMTP email integration and configuration within the Bulk Messaging System. It covers SMTP server setup, authentication, connection verification, email composition with HTML support, bulk sending with configurable delays and progress monitoring, provider-specific configurations, and security considerations. The system integrates SMTP email sending alongside other messaging channels (WhatsApp and Gmail API) in a cross-platform Electron application.
+SMTP channel alongside WhatsApp and Gmail: configure host/port/TLS, verify, compose HTML, send with delays, watch progress.
 
 ## Project structure
 The SMTP integration spans the frontend React components and the Electron main process. The frontend provides a user interface for configuring SMTP settings, composing emails, and monitoring progress. The Electron main process handles secure IPC communication, credential storage, and the actual SMTP transport creation and email sending.
@@ -87,10 +87,10 @@ The form displays configuration status and provides import functionality for ema
 ### SMTP transport creation and connection verification
 The SMTP handler creates a Nodemailer transport with the provided configuration and performs a connection verification step before sending emails. It supports both SSL (port 465) and TLS (port 587) modes based on the secure flag.
 
-Connection verification ensures the transport is ready before proceeding with bulk sending, preventing unnecessary failures later in the process.
+Verify the transport before a bulk run so you fail once on connect instead of mid-campaign.
 
 ### Email composition and content handling
-Email composition supports HTML content with automatic text/plain conversion. The handler strips HTML tags to create a plain text version for the text part of the email, ensuring compatibility with email clients that do not support HTML.
+Email composition supports HTML content with automatic text/plain conversion. The handler strips HTML tags to create a plain text version for the text part of the email, so it works with email clients that do not support HTML.
 
 Features:
 - HTML message body
@@ -109,7 +109,7 @@ Progress monitoring includes:
 Rate limiting is achieved through configurable delays between emails, helping to avoid spam detection and respecting provider rate limits.
 
 ### Credential storage and security
-The SMTP handler provides an option to save SMTP configuration to encrypted storage. It stores host, port, secure flag, and username while intentionally omitting the password for security reasons. This enables users to quickly reconfigure subsequent sessions without re-entering sensitive credentials.
+The SMTP handler provides an option to save SMTP configuration to encrypted storage. It stores host, port, secure flag, and username while intentionally omitting the password for security reasons. This lets you quickly reconfigure subsequent sessions without re-entering sensitive credentials.
 
 Storage behavior:
 - Encrypted local storage via electron-store
@@ -221,4 +221,5 @@ Diagnostic steps:
 - Review form validation logic for required fields
 
 ## Conclusion
-The SMTP email integration provides a reliable, secure, and user-friendly solution for bulk email sending within the Bulk Messaging System. It offers detailed configuration options, real-time progress monitoring, and strong security practices including encrypted credential storage. The integration supports major email providers and includes extensive troubleshooting guidance to ensure reliable email delivery. The modular architecture enables easy maintenance and future enhancements while maintaining cross-platform compatibility.
+
+SMTP is the escape hatch when Gmail OAuth is unavailable. Same bulk UX, different trust and deliverability tradeoffs.

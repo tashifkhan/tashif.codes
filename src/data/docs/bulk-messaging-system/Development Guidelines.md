@@ -1,7 +1,7 @@
 # Development guidelines
 
 ## Introduction
-This page provides detailed development guidelines for contributors and maintainers working on the Bulk Messaging System. It covers code style standards, component architecture, testing strategies, performance optimization, contribution workflow, environment setup, debugging, CI/CD processes, and quality assurance practices. The project combines an Electron desktop application with React for the UI, Python backend services for contact processing, and integrates with external APIs for WhatsApp and email services.
+Working on this repo: Electron + React UI, Python contact services, style expectations, tests, and the release workflow.
 
 ## Project structure
 The repository is organized into distinct areas:
@@ -16,7 +16,7 @@ subgraph "Electron App"
 EUI["React UI<br/>App.jsx, main.jsx"]
 EC["Components<br/>BulkMailer.jsx, Forms.jsx"]
 EM["Electron Main<br/>main.js"]
-EP["Preload Bridge<br/>preload.js"]
+EP["Preload Bridge<br/>preload.cjs"]
 EB["Builder Config<br/>electron-builder.json"]
 end
 subgraph "Python Backend"
@@ -37,19 +37,19 @@ GH --> EB
 
 ## Core components
 - React UI and Application Shell
-  - App.jsx renders the main application container and mounts BulkMailer.
-  - main.jsx initializes the React root and renders App.
+ - App.jsx renders the main application container and mounts BulkMailer.
+ - main.jsx initializes the React root and renders App.
 - Electron Main Process
-  - main.js sets up the BrowserWindow, configures web preferences, handles IPC channels for Gmail, SMTP, and WhatsApp, and manages lifecycle events.
-  - preload.js exposes a secure API surface to the renderer via contextBridge.
+ - main.js sets up the BrowserWindow, configures web preferences, handles IPC channels for Gmail, SMTP, and WhatsApp, and manages lifecycle events.
+ - preload.cjs exposes a secure API surface to the renderer via contextBridge.
 - Component Architecture
-  - BulkMailer.jsx orchestrates tabs (WhatsApp, Gmail, SMTP), manages state, and coordinates IPC calls.
-  - WhatsAppForm.jsx, GmailForm.jsx, and SMTPForm.jsx encapsulate UI and user interactions for each channel.
+ - BulkMailer.jsx orchestrates tabs (WhatsApp, Gmail, SMTP), manages state, and coordinates IPC calls.
+ - WhatsAppForm.jsx, GmailForm.jsx, and SMTPForm.jsx encapsulate UI and user interactions for each channel.
 - Python Backend
-  - app.py provides endpoints for contact upload, manual number parsing, and single number validation using Flask and pandas.
+ - app.py provides endpoints for contact upload, manual number parsing, and single number validation using Flask and pandas.
 
 ## Architecture overview
-The system follows a clear separation of concerns:
+Who owns what:
 - Renderer (React) handles UI and user interactions
 - Preload bridges secure IPC calls to the main process
 - Main process executes Electron APIs, manages external integrations, and emits status updates
@@ -170,41 +170,37 @@ ElectronPkg["Electron Package<br/>package.json"] --> ReactDeps["react, react-dom
 ElectronPkg --> UIUtils["qrcode, qrcode-terminal, electron-store"]
 ElectronPkg --> Integrations["whatsapp-web.js, nodemailer, googleapis"]
 ElectronPkg --> Tooling["@vitejs/plugin-react, tailwindcss, vite, eslint, electron-builder"]
-Builder["electron-builder.json"] --> Files["files: dist-electron, dist-react"]
+Builder["electron-builder.json"] --> Files["files: dist-react, src/electron, src/shared"]
 Builder --> Targets["mac dmg, linux AppImage, win portable/msi"]
 ```
 
 ## Performance considerations
 - Electron
-  - Headless browser mode for WhatsApp client reduces overhead; ensure sandbox and GPU flags are configured appropriately
-  - Minimize heavy DOM rendering; use virtualized lists for large contact/email previews
-  - Debounce user input for large text areas to reduce re-renders
+ - Headless browser mode for WhatsApp client reduces overhead; ensure sandbox and GPU flags are configured appropriately
+ - Minimize heavy DOM rendering; use virtualized lists for large contact/email previews
+ - Debounce user input for large text areas to reduce re-renders
 - React
-  - Use React.memo for components that render large lists (e.g., contact previews)
-  - Split heavy computations into Web Workers or preload-bound tasks
-  - Avoid unnecessary re-renders by memoizing derived values and callbacks
+ - Use React.memo for components that render large lists (e.g., contact previews)
+ - Split heavy computations into Web Workers or preload-bound tasks
+ - Avoid unnecessary re-renders by memoizing derived values and callbacks
 - Python Backend
-  - Use pandas vectorized operations for CSV/Excel parsing
-  - Stream file reads/writes to avoid loading entire files into memory
-  - Cache validated numbers where appropriate to reduce repeated validations
+ - Use pandas vectorized operations for CSV/Excel parsing
+ - Stream file reads/writes to avoid loading entire files into memory
+ - Cache validated numbers where appropriate to reduce repeated validations
 - IPC
-  - Batch status updates to reduce IPC overhead
-  - Use throttled progress events for long-running operations
-
-[No sources needed since this section provides general guidance]
+ - Batch status updates to reduce IPC overhead
+ - Use throttled progress events for long-running operations
 
 ## Testing strategies
 - Unit Testing
-  - React: Use a testing library to test pure functions and component logic (e.g., form validation, state transitions)
-  - Python: Write pytest tests for app.py endpoints, ensuring coverage of parsing, validation, and error paths
+ - React: Use a testing library to test pure functions and component logic (e.g., form validation, state transitions)
+ - Python: Write pytest tests for app.py endpoints, covering parsing, validation, and error paths
 - Integration Testing
-  - Electron: Mock IPC handlers to simulate WhatsApp/Gmail/SMTP flows without external dependencies
-  - End-to-end: Use a testing framework to automate UI interactions and verify IPC events
+ - Electron: Mock IPC handlers to simulate WhatsApp/Gmail/SMTP flows without external dependencies
+ - End-to-end: Use a testing framework to automate UI interactions and verify IPC events
 - End-to-End Testing
-  - Electron: Automate user flows (connect to WhatsApp, import contacts, send messages) and assert status updates
-  - Python: Validate backend endpoints with realistic payloads and edge cases
-
-[No sources needed since this section provides general guidance]
+ - Electron: Automate user flows (connect to WhatsApp, import contacts, send messages) and assert status updates
+ - Python: Validate backend endpoints with realistic payloads and edge cases
 
 ## Contribution workflow
 - Fork the repository and create feature branches with descriptive names
@@ -214,39 +210,39 @@ Builder --> Targets["mac dmg, linux AppImage, win portable/msi"]
 
 ## Development environment setup
 - Prerequisites
-  - Node.js 16+ and npm for the Electron app
-  - Python 3.8+ for backend utilities
-  - Google Cloud Console credentials for Gmail API
-  - WhatsApp account and SMTP server credentials
+ - Node.js 20.19+ and npm for the Electron app (Vite 8)
+ - Python 3.10+ for backend utilities
+ - Google Cloud Console credentials for Gmail API
+ - WhatsApp account and SMTP server credentials
 - Installation
-  - Install Electron dependencies in the electron directory
-  - Install Python backend dependencies in python-backend
-  - Start the development server from the electron directory
+ - Install Electron dependencies in the electron directory
+ - Install Python backend dependencies in python-backend
+ - Start the development server from the electron directory
 - Configuration
-  - Create a.env file in the electron directory with GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
-  - Configure SMTP settings for email sending
+ - Create a .env file in the electron directory with GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
+ - Configure SMTP settings for email sending
 
 ## Debugging techniques
 - Electron
-  - Use DevTools in development mode; main process logs are visible in terminal
-  - Inspect network requests and IPC traffic in DevTools
-  - Validate preload exposure and IPC handler registration
+ - Use DevTools in development mode; main process logs are visible in terminal
+ - Inspect network requests and IPC traffic in DevTools
+ - Validate preload exposure and IPC handler registration
 - React
-  - Use React DevTools to inspect component props/state
-  - Add console logs for IPC callbacks and status updates
+ - Use React DevTools to inspect component props/state
+ - Add console logs for IPC callbacks and status updates
 - Python Backend
-  - Enable Flask debug mode for development
-  - Validate file uploads and endpoint responses with curl or Postman
+ - Enable Flask debug mode for development
+ - Validate file uploads and endpoint responses with curl or Postman
 
 ## Continuous integration and deployment
 - GitHub Actions workflows
-  - Release workflow builds Electron apps for macOS, Linux, and Windows
-  - Distributables include platform-specific packages (DMG, AppImage, EXE, MSI, ZIP, TAR.GZ)
-  - Release notes are generated automatically
+ - Release workflow builds Electron apps for macOS, Linux, and Windows
+ - Distributables include platform-specific packages (DMG, AppImage, EXE, MSI, ZIP, TAR.GZ)
+ - Release notes are generated automatically
 - Release Process
-  - Update version in electron/package.json
-  - Push git tags to trigger the workflow
-  - Review artifacts and finalize releases
+ - Update version in electron/package.json
+ - Push git tags to trigger the workflow
+ - Review artifacts and finalize releases
 
 ```mermaid
 sequenceDiagram
@@ -264,17 +260,17 @@ GH->>GH : Create GitHub release with release notes
 
 ## Code review standards
 - Code Style
-  - Adhere to ESLint configuration for JavaScript/React
-  - Use functional components with hooks and avoid class components
+ - Adhere to ESLint configuration for JavaScript/React
+ - Use functional components with hooks and avoid class components
 - Security
-  - Never expose sensitive data in the renderer process
-  - Validate and sanitize all user inputs
+ - Never expose sensitive data in the renderer process
+ - Validate and sanitize all user inputs
 - Reliability
-  - Implement proper error boundaries and graceful degradation
-  - Ensure cleanup of external resources (WhatsApp sessions, file handles)
+ - Add error boundaries and keep the rest of the UI usable when one panel fails
+ - Ensure cleanup of external resources (WhatsApp sessions, file handles)
 - Documentation
-  - Update README for new features and configuration changes
-  - Comment complex logic and trade-offs
+ - Update README for new features and configuration changes
+ - Comment complex logic and trade-offs
 
 ## Documentation requirements
 - Keep README updated with installation, configuration, and usage instructions
@@ -283,24 +279,25 @@ GH->>GH : Create GitHub release with release notes
 
 ## Quality assurance procedures
 - Automated Checks
-  - Linting with ESLint
-  - Building and packaging verification
+ - Linting with ESLint
+ - Building and packaging verification
 - Manual QA
-  - Cross-platform testing (Windows, macOS, Linux)
-  - End-to-end user flows for WhatsApp, Gmail, and SMTP
+ - Cross-platform testing (Windows, macOS, Linux)
+ - End-to-end user flows for WhatsApp, Gmail, and SMTP
 - Security Review
-  - Audit context isolation and IPC exposure
-  - Validate OAuth2 and SMTP credential handling
+ - Audit context isolation and IPC exposure
+ - Validate OAuth2 and SMTP credential handling
 
 ## Troubleshooting guide
 - Common Issues
-  - WhatsApp QR code not loading: check internet connection and restart the app
-  - Gmail authentication failure: verify OAuth2 credentials and API enablement
-  - SMTP connection issues: confirm server settings, firewall, and port/security
-  - Contact import errors: verify file format, encoding, and column headers
+ - WhatsApp QR code not loading: check internet connection and restart the app
+ - Gmail authentication failure: verify OAuth2 credentials and API enablement
+ - SMTP connection issues: confirm server settings, firewall, and port/security
+ - Contact import errors: verify file format, encoding, and column headers
 - Support
-  - Check README troubleshooting section
-  - Review existing issues and create new ones with system information and error logs
+ - Check README troubleshooting section
+ - Review existing issues and create new ones with system information and error logs
 
 ## Conclusion
-This page consolidates development practices for the Bulk Messaging System. By following the outlined guidelines, code style, component architecture, testing, performance, contribution workflow, environment setup, debugging, CI/CD, code review, documentation, and QA, you can contribute effectively and maintain a high-quality, secure, and reliable application across Electron, React, and Python backend components.
+
+Match the patterns already in `main.js` and the form components. Small, reviewable PRs beat drive-by refactors in this hybrid tree.

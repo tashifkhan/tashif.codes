@@ -1,12 +1,10 @@
 # Web push service
 
 ## Introduction
-The Web Push Service is a core component of the SuperSet Telegram Notification Bot that enables real-time browser notifications through the Web Push protocol with VAPID (Voluntary Application Server Identification) authentication. This service integrates smoothly with the multi-channel notification ecosystem alongside Telegram notifications, providing users with instant updates delivered directly to their web browsers.
-
-The service implements a detailed notification delivery mechanism that includes subscription management, payload formatting, VAPID encryption, and reliable error handling for delivery failures. It operates as part of a larger system that monitors multiple data sources (SuperSet portal, email notifications, official websites) and distributes notifications through various channels to registered users.
+Web Push via VAPID: subscribe, unsubscribe, send, and clean up dead endpoints. How payloads differ from Telegram and where subscriptions live in MongoDB.
 
 ## Project structure
-The Web Push Service is organized within the application's modular architecture, following service-oriented design principles with clear separation of concerns:
+The Web Push Service is organized within the application's modular architecture, following service-oriented design principles :
 
 ```mermaid
 graph TB
@@ -254,30 +252,30 @@ FASTAPI --> STARLETTE
 UVICORN --> FASTAPI
 ```
 
-The dependency graph reveals a sophisticated stack designed for production reliability:
-- **pywebpush**: Core library for Web Push protocol implementation
-- **py-vapid**: VAPID signature generation and validation
-- **cryptography**: Underlying cryptographic operations
-- **http-ece**: HTTP Encrypted Content Encoding for payload encryption
-- **FastAPI/uvicorn**: Modern asynchronous web framework for API endpoints
+Dependency graph for the production path:
+- **pywebpush**: Web Push protocol
+- **py-vapid**: VAPID signatures
+- **cryptography**: crypto primitives
+- **http-ece**: payload encryption
+- **FastAPI/uvicorn**: HTTP API
 
 ## Performance considerations
-The Web Push Service is designed with several performance optimizations:
+Performance notes:
 
 ### Asynchronous processing
-- **Non-blocking Operations**: Webhook server uses FastAPI with async capabilities
-- **Connection Pooling**: Efficient database connections through PyMongo
-- **Batch Processing**: Multiple subscriptions processed in parallel where safe
+- Non-blocking: webhook server uses FastAPI async handlers
+- Connection pooling via PyMongo
+- Batch sends where parallel is safe
 
 ### Resource management
-- **Lazy Loading**: Optional dependency loading prevents runtime errors
-- **Memory Efficiency**: Payload truncation and streaming where applicable
-- **Connection Reuse**: Database connections maintained throughout service lifetime
+- Lazy-load optional deps so missing VAPID libs do not crash import
+- Truncate payloads; stream when it helps
+- Reuse DB connections for the process lifetime
 
 ### Scalability features
-- **Graceful Degradation**: Service continues operating even without VAPID keys
-- **Error Isolation**: Individual subscription failures don't impact others
-- **Automatic Cleanup**: Invalid subscriptions removed to prevent performance degradation
+- Keep running without VAPID keys (push just no-ops)
+- One bad subscription does not fail the batch
+- Drop 404/410 subscriptions so the list stays short
 
 ## Troubleshooting guide
 
@@ -306,42 +304,4 @@ The Web Push Service is designed with several performance optimizations:
 **Solution**: Implement proper resource cleanup and connection pooling
 
 ## Conclusion
-The Web Push Service represents a reliable implementation of browser notification delivery within the SuperSet Telegram Notification Bot ecosystem. Its architecture demonstrates best practices in service-oriented design, security implementation, and scalability considerations.
-
-The service successfully bridges the gap between traditional Telegram notifications and modern web browser capabilities, providing users with flexible notification delivery options. The VAPID implementation ensures secure communication with push providers, while the subscription management system maintains clean, valid subscription lists.
-
-Key strengths of the implementation include:
-- **Security**: Detailed VAPID encryption and authentication
-- **Reliability**: Graceful degradation and automatic error recovery
-- **Scalability**: Efficient batch processing and resource management
-- **Integration**: Smooth coordination with the broader notification ecosystem
-
-Future enhancements could include WebSocket support for real-time bidirectional communication, expanded browser compatibility testing, and advanced analytics for delivery performance monitoring.
-
-## Appendices
-
-### Configuration requirements
-The Web Push Service requires specific environment variables for proper operation:
-
-| Variable | Description | Required | Example |
-|----------|-------------|----------|---------|
-| VAPID_PRIVATE_KEY | Private key for VAPID authentication | Yes | `-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----` |
-| VAPID_PUBLIC_KEY | Public key distributed to clients | Yes | `BO4...` |
-| VAPID_EMAIL | Contact email for VAPID | Yes | `admin@example.com` |
-
-### API endpoints
-The webhook server exposes several endpoints for web push functionality:
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/push/subscribe` | POST | Register new push subscription |
-| `/api/push/unsubscribe` | POST | Remove existing subscription |
-| `/api/push/vapid-key` | GET | Retrieve VAPID public key |
-| `/api/notify/web-push` | POST | Send notification via web push only |
-
-### Browser compatibility
-The service supports major modern browsers with Web Push API support:
-- **Chrome**: Version 50+
-- **Firefox**: Version 44+
-- **Safari**: Version 11.3+
-- **Edge**: Version 79+
+Web Push Service: VAPID, subscribe/unsubscribe, send, prune dead endpoints. Same SOA shape as the Telegram path, different transport.

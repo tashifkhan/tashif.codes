@@ -1,18 +1,7 @@
 # REST API endpoints
 
 ## Introduction
-This page provides detailed documentation for the REST API endpoints exposed by the webhook server, along with related internal endpoints and integration patterns. It covers:
-- GET / (root health)
-- GET /health (detailed health)
-- POST /api/push/subscribe (web push subscription)
-- POST /api/push/unsubscribe (web push unsubscription)
-- GET /api/stats (statistics aggregation)
-- POST /api/notify (broadcast notifications)
-- POST /api/notify/telegram (Telegram-only notifications)
-- POST /api/notify/web-push (Web Push-only notifications)
-- GET /api/push/vapid-key (VAPID public key for web push)
-
-It explains request/response schemas, query parameters, authentication requirements, FastAPI-based implementation, request validation, response formatting, webhook endpoint for Telegram integration, web push subscription management, statistics retrieval with filtering options, error response formats, status codes, and rate limiting strategies. Curl examples and integration patterns with external systems are included.
+HTTP routes on the webhook server: health, web push subscribe/unsubscribe, stats, notification dispatch, and the external webhook trigger. Request bodies, responses, and where each route plugs into the services.
 
 ## Project structure
 The webhook server is implemented using FastAPI and exposes multiple endpoints under the /api path. It integrates with dependency-injected services for database operations, notification dispatch, and web push delivery. The CLI entry point supports running the webhook server independently.
@@ -176,7 +165,7 @@ API-->>Client : "StatsResponse JSON"
 ```
 
 ### Additional internal endpoints
-- POST /webhook/update: Trigger unsent notice dispatch via notification service. Returns {"success": true, "result":...}. Raises HTTP 501 if services not configured; HTTP 500 on exceptions.
+- POST /webhook/update: Trigger unsent notice dispatch via notification service. Returns {"success": true, "result":..}. Raises HTTP 501 if services not configured; HTTP 500 on exceptions.
 
 ## Dependency analysis
 - FastAPI app lifecycle manages service initialization and cleanup.
@@ -202,56 +191,16 @@ Notif --> DB
 ## Troubleshooting guide
 Common issues and resolutions:
 - Web push not configured:
-  - Symptom: 501 Not Implemented on /api/push/* and /api/push/vapid-key.
-  - Resolution: Set VAPID_PRIVATE_KEY, VAPID_PUBLIC_KEY, VAPID_EMAIL and ensure pywebpush is installed.
+ - Symptom: 501 Not Implemented on /api/push/* and /api/push/vapid-key.
+ - Resolution: Set VAPID_PRIVATE_KEY, VAPID_PUBLIC_KEY, VAPID_EMAIL and ensure pywebpush is installed.
 - Missing database:
-  - Symptom: 501 Not Implemented on /api/stats.
-  - Resolution: Ensure MONGO_CONNECTION_STR is configured and reachable.
+ - Symptom: 501 Not Implemented on /api/stats.
+ - Resolution: Ensure MONGO_CONNECTION_STR is configured and reachable.
 - Notification service not configured:
-  - Symptom: 501 Not Implemented on /api/notify*.
-  - Resolution: Verify Telegram credentials and ensure NotificationService is constructed with required channels.
+ - Symptom: 501 Not Implemented on /api/notify*.
+ - Resolution: Verify Telegram credentials and ensure NotificationService is constructed with required channels.
 - Rate limiting:
-  - The project documentation mentions rate limits for bot commands and REST API. For FastAPI, implement rate limiting middleware or use a gateway/proxy to enforce limits.
+ - The project documentation mentions rate limits for bot commands and REST API. For FastAPI, implement rate limiting middleware or use a gateway/proxy to enforce limits.
 
 ## Conclusion
-The webhook server provides a reliable REST API surface for health checks, web push subscription management, statistics retrieval, and notification dispatch. It uses FastAPI for request validation and dependency injection for maintainable service composition. Proper configuration of VAPID keys and database connectivity is essential for full functionality.
-
-## Appendices
-
-### Request/Response schemas and validation
-- HealthResponse: status (string), version (string).
-- PushSubscription: endpoint (string), keys (object with p256dh and auth), user_id (integer, optional).
-- NotifyRequest: message (string), title (string, optional), channels (array of strings, optional).
-- NotifyResponse: success (boolean), results (object).
-- StatsResponse: placement_stats (object), notice_stats (object), user_stats (object).
-
-### Authentication and security
-- Public endpoints: No authentication required.
-- Web push endpoints guard against misconfiguration by returning 501 when web push is disabled.
-- Production deployment should enforce authentication and rate limiting at the network or gateway level.
-
-### Integration patterns
-- Telegram webhook integration:
-  - The bot server handles Telegram commands and user management. While the webhook server does not expose a Telegram webhook endpoint, administrators can trigger updates via /webhook/update to dispatch unsent notices.
-- Web push integration:
-  - Clients obtain VAPID public key via /api/push/vapid-key, create a subscription, then POST to /api/push/subscribe. Subscriptions are stored and used for broadcasts.
-
-### Curl examples
-- Health checks:
-  - curl -s http://localhost:8000/
-  - curl -s http://localhost:8000/health
-- Web push:
-  - curl -s -X POST http://localhost:8000/api/push/subscribe -H "Content-Type: application/json" -d '{"endpoint":"<your-endpoint>","keys":{"p256dh":"<key>","auth":"<key>"}}'
-  - curl -s -X POST http://localhost:8000/api/push/unsubscribe -H "Content-Type: application/json" -d '{"endpoint":"<your-endpoint>","keys":{"p256dh":"<key>","auth":"<key>"}}'
-  - curl -s http://localhost:8000/api/push/vapid-key
-- Notifications:
-  - curl -s -X POST http://localhost:8000/api/notify -H "Content-Type: application/json" -d '{"message":"<your message>","title":"<optional>","channels":["telegram","web_push"]}'
-  - curl -s -X POST http://localhost:8000/api/notify/telegram -H "Content-Type: application/json" -d '{"message":"<your message>","title":"<optional>"}'
-  - curl -s -X POST http://localhost:8000/api/notify/web-push -H "Content-Type: application/json" -d '{"message":"<your message>","title":"<optional>"}'
-- Statistics:
-  - curl -s http://localhost:8000/api/stats
-
-### Environment configuration
-- Required for web push: VAPID_PRIVATE_KEY, VAPID_PUBLIC_KEY, VAPID_EMAIL.
-- Required for database: MONGO_CONNECTION_STR.
-- Required for notifications: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID.
+Webhook server is a thin FastAPI front for health, push, stats, and send. FastAPI validates requests; DI wires services. VAPID keys and a working MongoDB URI are required or push and stats routes will no-op.

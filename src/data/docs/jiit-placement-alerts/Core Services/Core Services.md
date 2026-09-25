@@ -1,7 +1,7 @@
 # Core services
 
 ## Introduction
-This page describes the core service layer of the SuperSet Telegram Notification Bot. It explains the responsibilities, interfaces, and implementation patterns of the primary services: DatabaseService, NotificationService, TelegramService, EmailNoticeService, PlacementService, and WebPushService. It also covers how services depend on each other, initialization patterns, lifecycle management, error handling strategies, performance considerations, public APIs, configuration requirements, and integration points with external systems.
+Primary service layer: DatabaseService, NotificationService, TelegramService, EmailNoticeService, PlacementService, WebPushService. Who depends on whom, how they start and stop, and the public methods other layers call.
 
 ## Project structure
 The services are organized under app/services and expose a cohesive API surface for ingestion, processing, formatting, and delivery of notifications and placement data. The module exports a curated set of services for consumption by higher-level components.
@@ -43,7 +43,7 @@ TS --> DS
 - PlacementStatsCalculatorService: Computes placement statistics from stored offers with filtering and branch/company breakdowns.
 
 ## Architecture overview
-The service layer follows a dependency-injection style with clear separation of concerns:
+The service layer follows a dependency-injection style :
 - Data access is encapsulated in DatabaseService.
 - Delivery orchestration is handled by NotificationService, which delegates to channel-specific services.
 - Channel services (TelegramService, WebPushService) implement a common interface conceptually and are wired into NotificationService.
@@ -309,9 +309,9 @@ Implementation highlights:
 - Supports filtering and extraction of available filter options.
 
 Public APIs:
-- calculate_all_stats(placements=None): Computes overall and detailed statistics.
+- calculate_all_stats(placements=None): Computes overall and statistics.
 - _flatten_students(placements): Flattens offers into student records.
-- _filter_students(students,...): Applies filters for branches, companies, roles, locations, package ranges, and search queries.
+- _filter_students(students, ...): Applies filters for branches, companies, roles, locations, package ranges, and search queries.
 - _calculate_package_stats(students): Computes package metrics.
 - _calculate_branch_stats(students): Computes branch-wise stats.
 - _calculate_company_stats(students): Computes company-wise stats.
@@ -354,44 +354,44 @@ NS --> WPS
 
 ## Performance considerations
 - DatabaseService:
-  - Uses aggregation pipelines for statistics to minimize client-side computation.
-  - Applies sorting and limits for pagination to control memory usage.
-  - Merge logic for placement offers reduces duplicate writes.
+ - Uses aggregation pipelines for statistics to minimize client-side computation.
+ - Applies sorting and limits for pagination to control memory usage.
+ - Merge logic for placement offers reduces duplicate writes.
 - NotificationService:
-  - Iterates through channels and users; consider batching and rate limiting at the channel level.
-  - Broadcasting to users applies small delays to respect rate limits.
+ - Iterates through channels and users; consider batching and rate limiting at the channel level.
+ - Broadcasting to users applies small delays to respect rate limits.
 - TelegramService:
-  - Long messages are split and sent sequentially with short delays to avoid rate limits.
-  - Fallback to plain text on formatting failures.
+ - Long messages are split and sent sequentially with short delays to avoid rate limits.
+ - Fallback to plain text on formatting failures.
 - WebPushService:
-  - Graceful degradation when pywebpush is unavailable.
-  - Removes invalid/expired subscriptions on receiving 404/410 responses.
+ - Graceful degradation when pywebpush is unavailable.
+ - Removes invalid/expired subscriptions on receiving 404/410 responses.
 - EmailNoticeService and PlacementService:
-  - Retry logic for LLM extraction prevents transient failures from blocking processing.
-  - Structured prompts reduce ambiguity and improve extraction quality.
+ - Retry logic for LLM extraction prevents transient failures from blocking processing.
+ - Structured prompts reduce ambiguity and improve extraction quality.
 - PlacementStatsCalculatorService:
-  - Precomputes branch ranges for efficient enrollment-to-branch resolution.
-  - Calculates package statistics in a single pass per metric.
+ - Precomputes branch ranges for efficient enrollment-to-branch resolution.
+ - Calculates package statistics in a single pass per metric.
 
 [No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - Telegram bot configuration errors:
-  - Symptoms: Messages fail to send or connection tests fail.
-  - Resolution: Verify bot token and chat ID environment variables; use test_connection to validate.
+ - Symptoms: Messages fail to send or connection tests fail.
+ - Resolution: Verify bot token and chat ID environment variables; use test_connection to validate.
 - Web push failures:
-  - Symptoms: pywebpush import errors or 404/410 responses.
-  - Resolution: Install pywebpush; configure VAPID keys; expired subscriptions are removed automatically.
+ - Symptoms: pywebpush import errors or 404/410 responses.
+ - Resolution: Install pywebpush; configure VAPID keys; expired subscriptions are removed automatically.
 - LLM extraction failures:
-  - Symptoms: Empty responses or validation errors.
-  - Resolution: Review prompts and retry logic; ensure Google API key is configured.
+ - Symptoms: Empty responses or validation errors.
+ - Resolution: Review prompts and retry logic; ensure Google API key is configured.
 - Database connectivity:
-  - Symptoms: Collection not initialized or operations failing.
-  - Resolution: Confirm DBClient initialization and connection lifecycle; check logs for safe_print messages.
+ - Symptoms: Collection not initialized or operations failing.
+ - Resolution: Confirm DBClient initialization and connection lifecycle; check logs for safe_print messages.
 - Rate limiting:
-  - Symptoms: Telegram API throttling.
-  - Resolution: Respect built-in delays between sends; consider external rate limiting if needed.
+ - Symptoms: Telegram API throttling.
+ - Resolution: Respect built-in delays between sends; consider external rate limiting if needed.
 
 ## Conclusion
-The core service layer provides a reliable, modular foundation for ingesting, processing, formatting, and delivering notifications and placement data. It uses dependency injection, clear separation of concerns, and resilient error handling to maintain reliability. The integration of LLM pipelines ensures high-quality extraction and formatting, while database-centric design supports scalability and observability.
+Ingest, process, format, deliver. DI keeps failures local. LLM pipelines do extraction and formatting; MongoDB is the shared memory.

@@ -1,15 +1,10 @@
 # Deployment architecture
 
 ## Introduction
-This page describes the deployment and operational architecture of the SuperSet Telegram Notification Bot. The system is organized around a unified CLI that coordinates three distinct operational modes:
-- Telegram bot server for user interactions and administrative commands
-- FastAPI webhook server for REST APIs and health checks
-- Scheduler server for automated update cycles
-
-The architecture emphasizes daemon mode operation, reliable process management, configurable scheduling with APScheduler, and detailed logging strategies suitable for both development and production environments.
+How the bot runs in the wild. One CLI, three modes: bot, scheduler, webhook. Local/VPS, Docker, and the usual PaaS options, plus how daemon mode changes logging and process shape.
 
 ## Project structure
-The application follows a modular structure with clear separation of concerns:
+The application follows a modular structure :
 - CLI entry point orchestrating all operations
 - Core utilities for configuration and daemon management
 - Server implementations for Telegram, webhook, and scheduler
@@ -35,14 +30,14 @@ Webhook --> NotificationRunner["Notification Runner<br/>app/runners/notification
 The deployment architecture centers on four primary components:
 
 ### CLI orchestration layer
-The main entry point provides a unified interface for all operational modes:
+The main entry point is the CLI for all operational modes:
 - Command parsing with subcommands for bot, scheduler, webhook, and data operations
 - Global daemon mode flag propagation
 - Centralized logging initialization with verbose mode support
 - Graceful error handling and user interruption management
 
 ### Daemon management system
-Unix-style daemonization with:
+Unix-style daemonization :
 - Double-fork process isolation
 - PID file management for process tracking
 - Signal-based graceful shutdown
@@ -50,7 +45,7 @@ Unix-style daemonization with:
 - Separate logging redirection for daemon processes
 
 ### Scheduling infrastructure
-APScheduler-based automation with:
+APScheduler-based automation :
 - Configurable update cycles across multiple IST time slots
 - Independent scheduler server decoupled from the Telegram bot
 - Job persistence and restart resilience
@@ -63,7 +58,7 @@ Three specialized servers with distinct responsibilities:
 - Scheduler server orchestrating automated update workflows
 
 ## Architecture overview
-The system operates as a distributed set of cooperating processes, each designed for specific operational tasks:
+Separate processes, each with a job:
 
 ```mermaid
 graph TB
@@ -132,7 +127,7 @@ Note over CLI,Server : Graceful shutdown on SIGTERM
 ```
 
 ### Daemon process lifecycle
-The daemonization process ensures reliable background operation:
+Daemonization steps:
 
 ```mermaid
 flowchart TD
@@ -157,7 +152,7 @@ The scheduler implements a detailed update automation system:
 flowchart TD
 Init(["Scheduler Initialization"]) --> SetupTZ["Setup Asia/Kolkata Timezone"]
 SetupTZ --> CreateScheduler["Create AsyncIOScheduler"]
-CreateScheduler --> DefineJobs["Define Update Jobs<br/>Multiple IST Times"]
+CreateScheduler --> DefineJobs["Define Update Jobs<br/>hour=0,8-23 IST"]
 DefineJobs --> ScheduleOfficial["Schedule Official Data<br/>Daily at 12:00 PM IST"]
 ScheduleOfficial --> StartScheduler["Start Scheduler"]
 StartScheduler --> Monitor["Monitor Running Jobs"]
@@ -206,12 +201,12 @@ The FastAPI-based webhook server exposes:
 #### Scheduler server
 The scheduler server orchestrates automated operations:
 - Independent from Telegram bot for reliability
-- Configurable update cycles across multiple IST time slots
-- Official data scraping at designated intervals
+- Update jobs at midnight and 8 AM through 11 PM IST
+- Official data scrape at 12:00 PM IST
 - Job persistence and restart handling
 
 ## Dependency analysis
-The system exhibits clear dependency relationships:
+Dependencies:
 
 ```mermaid
 graph TB
@@ -245,7 +240,7 @@ NotifyRunner --> Config
 ```
 
 ## Performance considerations
-The architecture incorporates several performance optimization strategies:
+The architecture incorporates several performance work strategies:
 
 ### Asynchronous operations
 - APScheduler integrated with AsyncIO for non-blocking job execution
@@ -281,11 +276,4 @@ Common daemon-related problems and solutions:
 - **Scheduler jobs**: Confirm timezone settings and network connectivity for external APIs
 
 ## Conclusion
-The deployment architecture provides a reliable foundation for operational excellence through:
-- Clear separation of concerns across dedicated server processes
-- Reliable daemon management with proper process isolation
-- Configurable scheduling with detailed monitoring capabilities
-- Flexible logging strategies suitable for diverse operational environments
-- Modular design enabling independent scaling and maintenance
-
-The architecture successfully balances operational simplicity with production-grade reliability, supporting both development iteration and enterprise deployment scenarios.
+Three processes, shared config, daemon mode when you leave. Split the servers so a bot restart does not kill the scheduler.

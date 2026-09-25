@@ -1,7 +1,7 @@
 # Troubleshooting and FAQ
 
 ## Introduction
-This page provides a detailed troubleshooting guide and FAQ for all MOOC Utils components: the Assignment Solver browser extension, the Notice Reminders API and CLI, and the Website dashboard. It covers installation issues, API connectivity, authentication failures, performance optimization, debugging workflows, browser-specific problems, CORS, and integration challenges. Step-by-step resolutions, diagnostic commands, and error interpretation are included to help both users and developers resolve issues quickly.
+Fixes and FAQ for the extension, Notice Reminders API/CLI, and the website. Install problems, auth failures, CORS, performance, and browser-specific weirdness, with commands you can actually run.
 
 ## Project structure
 The repository is organized as a monorepo with three primary areas:
@@ -37,14 +37,14 @@ NR_CLI --> NR_API
 
 ## Core components
 - Assignment Solver (browser extension)
-  - Uses Vite for builds, webextension-polyfill for cross-browser compatibility, and dynamic manifests for Chrome and Firefox.
-  - Integrates with Gemini via HTTPS calls to googleapis.com.
-  - Stores API keys locally in browser storage.
+ - Uses Vite for builds, webextension-polyfill for cross-browser compatibility, and dynamic manifests for Chrome and Firefox.
+ - Integrates with Gemini via HTTPS calls to googleapis.com.
+ - Stores API keys locally in browser storage.
 - Notice Reminders (FastAPI + Tortoise ORM)
-  - Provides REST endpoints for users, courses, subscriptions, notifications, and auth.
-  - Configurable CORS origins and SQLite database via environment variables.
+ - Provides REST endpoints for users, courses, subscriptions, notifications, and auth.
+ - Configurable CORS origins and SQLite database via environment variables.
 - Website (Next.js)
-  - Frontend dashboard and marketing pages, communicating with the Notice Reminders API via fetch with credentials.
+ - Frontend dashboard and marketing pages, communicating with the Notice Reminders API via fetch with credentials.
 
 Key configuration touchpoints:
 - Assignment Solver build and permissions are defined in its package and Vite configs.
@@ -81,15 +81,15 @@ API-->>Site : "JSON responses"
 ### Assignment solver extension
 Common issues and resolutions:
 - Could not get page HTML
-  - Ensure you are on a real assignment page and it is fully loaded. Refresh and re-extract.
+ - Ensure you are on a real assignment page and it is fully loaded. Refresh and re-extract.
 - Question container not found
-  - Re-extract questions; check console for detailed errors.
+ - Re-extract questions; check console for detailed errors.
 - API Key invalid
-  - Verify the key at the provider's portal, ensure it has Gemini API access enabled, and remove extra spaces.
+ - Verify the key at the provider's portal, ensure it has Gemini API access enabled, and remove extra spaces.
 - Answers not being applied
-  - Some platforms use custom components; check browser console; apply answers one at a time to isolate issues.
+ - Some platforms use custom components; check browser console; apply answers one at a time to isolate issues.
 - Rate limit errors
-  - Wait before retrying; consider upgrading quota or reducing questions per session.
+ - Wait before retrying; consider upgrading quota or reducing questions per session.
 
 Debugging steps:
 - Open DevTools in the extension context and review console logs.
@@ -99,8 +99,8 @@ Debugging steps:
 Build and load troubleshooting:
 - Build for Chrome or Firefox using the provided scripts.
 - Load the extension in developer mode:
-  - Chrome: chrome://extensions → Developer mode → Load unpacked → select dist/chrome
-  - Firefox: about:debugging → This Firefox → Load Temporary Add-on → select any file under dist/firefox
+ - Chrome: chrome://extensions → Developer mode → Load unpacked → select dist/chrome
+ - Firefox: about:debugging → This Firefox → Load Temporary Add-on → select any file under dist/firefox
 
 Permissions and host permissions:
 - activeTab, scripting, storage, sidePanel/sidebarAction, and host permissions for googleapis.com.
@@ -108,13 +108,13 @@ Permissions and host permissions:
 ### Notice reminders API and CLI
 Common issues and resolutions:
 - Database initialization and migrations
-  - SQLite path is created automatically if missing; ensure the directory exists and is writable.
+ - SQLite path is created automatically if missing; ensure the directory exists and is writable.
 - CORS errors in the website
-  - Adjust cors_origins in settings to include the website origin.
+ - Adjust cors_origins in settings to include the website origin.
 - Authentication failures
-  - Ensure cookies are accepted and tokens are present; verify token expiration and payload.
+ - Ensure cookies are accepted and tokens are present; verify token expiration and payload.
 - Rate limiting and quotas
-  - The API relies on external services; monitor usage and consider rate-limit-aware clients.
+ - The API relies on external services; monitor usage and consider rate-limit-aware clients.
 
 Development and deployment:
 - Install dependencies using the documented commands.
@@ -124,11 +124,11 @@ Development and deployment:
 ### Website dashboard
 Common issues and resolutions:
 - Backend not running
-  - The website requires the Notice Reminders API to be up for login and dashboard features.
+ - The website requires the Notice Reminders API to be up for login and dashboard features.
 - Environment configuration
-  - Set NEXT_PUBLIC_API_URL to the backend address; ensure trailing slashes and protocol are correct.
+ - Set NEXT_PUBLIC_API_URL to the backend address; ensure trailing slashes and protocol are correct.
 - CORS and cookies
-  - The API client sends credentials; ensure the API allows the frontend origin and sets appropriate CORS.
+ - The API client sends credentials; ensure the API allows the frontend origin and sets appropriate CORS.
 
 ## Dependency analysis
 Relationships between components:
@@ -154,14 +154,14 @@ WEB_PKG --> WEB_API
 
 ## Performance considerations
 - Assignment Solver
-  - Rate limiting: There is a deliberate delay between API calls and DOM operations to prevent throttling and ensure reliable page updates.
-  - Recommendations: Reduce concurrent questions per session, avoid rapid retries, and consider upgrading the Gemini quota if needed.
+ - Rate limiting: There is a deliberate delay between API calls and DOM operations to prevent throttling and ensure reliable page updates.
+ - Recommendations: Reduce concurrent questions per session, avoid rapid retries, and consider upgrading the Gemini quota if needed.
 - Notice Reminders API
-  - Use caching TTL settings appropriately; tune cache duration based on content volatility.
-  - Monitor database writes and consider batching operations where feasible.
+ - Use caching TTL settings appropriately; tune cache duration based on content volatility.
+ - Monitor database writes and consider batching operations where feasible.
 - Website
-  - Minimize unnecessary requests; use caching and pagination for large datasets.
-  - Ensure CORS is configured to reduce preflight overhead.
+ - Minimize unnecessary requests; use caching and pagination for large datasets.
+ - Ensure CORS is configured to reduce preflight overhead.
 
 ## Troubleshooting guide
 
@@ -174,8 +174,8 @@ Resolution steps:
 - Verify prerequisites: supported browser versions and Bun installed.
 - Build the extension for the target browser using the provided scripts.
 - Load the extension in developer mode:
-  - Chrome: chrome://extensions → Developer mode → Load unpacked → select dist/chrome
-  - Firefox: about:debugging → This Firefox → Load Temporary Add-on → select any file under dist/firefox
+ - Chrome: chrome://extensions → Developer mode → Load unpacked → select dist/chrome
+ - Firefox: about:debugging → This Firefox → Load Temporary Add-on → select any file under dist/firefox
 - Confirm permissions and host permissions for the target site and googleapis.com.
 
 Diagnostics:
@@ -305,21 +305,21 @@ Diagnostics:
 - Validate token signing and expiration settings.
 
 ## Conclusion
-By following the step-by-step procedures and diagnostics outlined above, most issues across the MOOC Utils components can be resolved efficiently. Keep an eye on rate limits, ensure proper configuration of CORS and database paths, and use the built-in logging and DevTools to isolate problems quickly.
+Reproduce with the diagnostic commands first. Most "mystery" failures are wrong base URLs, missing cookies, or stale extension builds.
 
 ## Appendices
 
 ### Quick diagnostic commands
 - Assignment Solver
-  - Build for Chrome: bun run build:chrome
-  - Build for Firefox: bun run build:firefox
-  - Watch mode: bun run dev:chrome or bun run dev:firefox
+ - Build for Chrome: bun run build:chrome
+ - Build for Firefox: bun run build:firefox
+ - Watch mode: bun run dev:chrome or bun run dev:firefox
 - Notice Reminders
-  - Install dependencies: uv sync
-  - Run API (dev): uv run python main.py api --reload
-  - Run API (bind): uv run python main.py api --host 0.0.0.0 --port 8000
-  - CLI mode: uv run python main.py cli
+ - Install dependencies: uv sync
+ - Run API (dev): uv run python main.py api --reload
+ - Run API (bind): uv run python main.py api --host 0.0.0.0 --port 8000
+ - CLI mode: uv run python main.py cli
 - Website
-  - Install dependencies: bun install
-  - Build: bun run build
-  - Lint: bun run lint
+ - Install dependencies: bun install
+ - Build: bun run build
+ - Lint: bun run lint

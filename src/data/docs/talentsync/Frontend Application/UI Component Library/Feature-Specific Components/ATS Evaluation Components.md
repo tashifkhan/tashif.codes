@@ -1,9 +1,8 @@
 # ATS evaluation components
 
-## Introduction
-This page provides detailed technical documentation for the ATS evaluation components in the TalentSync project. It covers five key frontend components used to evaluate resumes against job descriptions: EvaluationResults for displaying ATS scores and recommendations, JobDescriptionForm for job description input and processing, LoadingOverlay for async operation feedback, PageLoader for page-level loading states, and ResumeSelection for resume file upload and selection. The guide explains component props, state management, data flow from resume analysis to ATS scoring, and integration with backend APIs. It also includes usage examples, error handling patterns, and styling approaches.
+The ATS evaluation components in the TalentSync project.
 
-## Project structure
+## Repository layout
 The ATS evaluation feature spans frontend components and backend services:
 - Frontend components are located under frontend/components/ats and are orchestrated by the ATS evaluation page.
 - Backend routes and services are under backend/app/routes and backend/app/services, with models defined in backend/app/models/ats_evaluator.
@@ -38,7 +37,7 @@ Services --> Models
 Results --> Types
 ```
 
-## Core components
+## Building blocks
 This section summarizes the primary components and their responsibilities:
 - EvaluationResults: Renders ATS match score, reasons for the score, improvement suggestions, and optional optimization action.
 - JobDescriptionForm: Provides three input modes for job descriptions (URL, text, file) with validation and preview.
@@ -50,7 +49,7 @@ Key props and behaviors:
 - Props are passed down from the parent page to each component, enabling centralized state management and controlled updates.
 - State transitions are handled locally within components where appropriate, and coordinated via the parent page for cross-component actions.
 
-## Architecture overview
+## How it fits together
 The ATS evaluation workflow integrates frontend components with backend services:
 - The frontend page orchestrates user input collection, validates selections, and triggers evaluation.
 - The ATS service sends multipart/form-data to the backend, including resume and job description sources.
@@ -77,9 +76,7 @@ Page->>Page : "set evaluationResult state"
 Page-->>User : "render EvaluationResults"
 ```
 
-## Detailed component analysis
-
-### EvaluationResults component
+## EvaluationResults component
 Purpose:
 - Displays ATS match score, contextual reasons, improvement suggestions, and an optional optimization call-to-action.
 
@@ -101,7 +98,7 @@ Styling and UX:
 Usage example:
 - Rendered by the parent page after receiving evaluation results from the service.
 
-### JobDescriptionForm component
+## JobDescriptionForm component
 Purpose:
 - Accepts job description via URL, raw text, or file upload with validation and preview.
 
@@ -124,9 +121,9 @@ Rendering:
 Usage example:
 - Integrated into the parent page's input form and validated before submission.
 
-### LoadingOverlay component
+## LoadingOverlay component
 Purpose:
-- Provides a modal overlay indicating ongoing evaluation.
+- modal overlay indicating ongoing evaluation.
 
 Props:
 - isEvaluating: Boolean flag controlling visibility.
@@ -139,7 +136,7 @@ Behavior:
 Usage example:
 - Controlled by the parent page's mutation state and displayed during evaluation requests.
 
-### PageLoader component
+## PageLoader component
 Purpose:
 - Shows a page-level loading indicator on initial render.
 
@@ -153,7 +150,7 @@ Behavior:
 Usage example:
 - Used by the parent page to mask initial load until ready.
 
-### ResumeSelection component
+## ResumeSelection component
 Purpose:
 - Allows users to choose a resume from existing uploads or upload a new file.
 
@@ -179,10 +176,10 @@ Behavior:
 Usage example:
 - Integrated into the parent page's input form and validated alongside job description inputs.
 
-## Architecture overview
+## How it fits together
 
 ### Data flow from input to results
-The end-to-end flow from user input to evaluation results:
+From input to ATS results:
 
 ```mermaid
 flowchart TD
@@ -209,7 +206,7 @@ Backend expects either:
 
 Validation ensures exactly one job description source is provided. Responses conform to JDEvaluatorResponse.
 
-## Dependency analysis
+## Dependencies
 Component and module dependencies:
 - Parent page depends on all ATS components and the ATS service.
 - ATS service depends on the API client and defines the evaluation response shape.
@@ -229,23 +226,21 @@ Svc --> Models["models/ats_evaluator/schemas.py"]
 Results --> Types["types/resume.ts"]
 ```
 
-## Performance considerations
+## Performance
 - Minimize re-renders by consolidating state in the parent page and passing only necessary props to child components.
 - Use controlled components for inputs to avoid unnecessary updates.
 - Debounce or throttle file previews for large documents to reduce UI jank.
 - Prefer lazy-loading heavy animations and only mount overlays when needed.
 - Cache processed resume and JD text when possible to avoid repeated parsing.
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Missing inputs: Validation prevents evaluation without a resume and a valid job description source. Ensure at least one of resumeId or resume file is selected and one of jd_text, jd_link, or jd_file is provided.
 - Unsupported file types: Backend rejects JD files with unsupported extensions. Ensure JD files are PDF, DOC, DOCX, TXT, or MD.
 - Network errors: The service handles generic failures and returns descriptive messages. Inspect toast notifications and backend logs for details.
 - Empty or invalid evaluator output: The backend normalizes evaluator output and defaults missing fields; ensure the evaluator returns a valid JSON structure.
 
 Error handling patterns:
-- Frontend: Uses toasts for user-friendly error messages and disables the evaluate button during requests.
+- Frontend: Uses toasts for error messages and disables the evaluate button during requests.
 - Backend: Validates inputs, raises HTTP exceptions with clear messages, and logs detailed context for debugging.
-
-## Conclusion
-The ATS evaluation components provide a cohesive, user-friendly workflow for analyzing resume-job description alignment. The frontend components encapsulate input collection, feedback, and result presentation, while the backend enforces validation, processes documents, and returns standardized results. By following the documented props, state management patterns, and integration points, developers can extend or customize the feature with confidence.

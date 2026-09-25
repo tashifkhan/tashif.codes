@@ -1,198 +1,166 @@
 # Technical architecture overview
 
-## Introduction
-This page presents the technical architecture overview for TalentSync-Normies, a microservices-based platform integrating a Next.js frontend, a FastAPI backend, an AI/ML orchestration layer powered by LangChain, a PostgreSQL database, and containerized deployment via Docker. The system emphasizes modular, independently scalable components with clear separation of concerns across frontend UI, backend APIs, AI/ML processing, and persistent storage. It also documents cross-cutting concerns such as security, observability, and performance optimization, along with deployment topologies suitable for development and production environments.
+Next.js BFF, FastAPI API role, FastStream workers, Kafka, PostgreSQL. Python >=3.13. Bun on the frontend.
 
-## Project structure
-The repository is organized into four primary areas:
-- Frontend: Next.js application with TypeScript, React components, client-side services, and Prisma ORM integration.
-- Backend: FastAPI application written in Python, exposing REST endpoints and orchestrating AI/ML workflows.
-- AI/ML Orchestration: LangChain-based LLM factory and helpers enabling multi-provider LLM support and JSON parsing utilities.
-- Infrastructure: Docker Compose configurations for local development and production-grade deployments.
+## Repository layout
+
+- Frontend: Next.js, TypeScript, Prisma client, BFF under `frontend/app/api`
+- Backend: FastAPI, LangChain/LangGraph, FastStream (`backend/app/stream/`)
+- Infra: `docker-compose.yaml`, `docker-compose.prod.yaml`, `frontend/docker-compose.yaml`, `infra/`
 
 ```mermaid
 graph TB
-subgraph "Frontend (Next.js)"
-FE_APP["Next.js App<br/>layout.tsx"]
-FE_PRISMA["Prisma Client<br/>lib/prisma.ts"]
-FE_API["API Client<br/>services/api-client.ts"]
+subgraph "Frontend Next.js"
+FE_APP["layout.tsx"]
+FE_PRISMA["lib/prisma.ts"]
+FE_API["services/* + app/api"]
 end
-subgraph "Backend (FastAPI)"
-BE_MAIN["FastAPI App<br/>app/main.py"]
-BE_LLM["LLM Factory & Helpers<br/>core/llm.py<br/>services/llm_helpers.py"]
-BE_DEPS["LLM Dependency Resolver<br/>core/deps.py"]
-BE_ROUTES["Routes<br/>routes/*"]
+subgraph "Backend FastAPI"
+BE_MAIN["app.main:app"]
+BE_STREAM["app.stream.asgi:asgi_app"]
+BE_LLM["core/llm.py"]
+BE_DEPS["core/deps.py"]
 end
 subgraph "Infrastructure"
-DOCKER_DEV["Docker Compose Dev<br/>docker-compose.yaml"]
-DOCKER_PROD["Docker Compose Prod<br/>docker-compose.prod.yaml"]
+DOCKER_DEV["docker-compose.yaml"]
+DOCKER_HOST["frontend/docker-compose.yaml"]
+DOCKER_PROD["docker-compose.prod.yaml"]
 DB["PostgreSQL"]
+K["Kafka"]
 end
 FE_APP --> FE_API
 FE_API --> BE_MAIN
-BE_MAIN --> BE_ROUTES
 BE_MAIN --> BE_DEPS
 BE_DEPS --> BE_LLM
-BE_LLM --> DB
+BE_MAIN --> K
+K --> BE_STREAM
 FE_PRISMA --> DB
 BE_MAIN --> DB
+BE_STREAM --> DB
 DOCKER_DEV --> FE_APP
 DOCKER_DEV --> BE_MAIN
+DOCKER_DEV --> BE_STREAM
 DOCKER_DEV --> DB
+DOCKER_DEV --> K
+DOCKER_HOST --> DB
+DOCKER_HOST --> K
 DOCKER_PROD --> FE_APP
 DOCKER_PROD --> BE_MAIN
 DOCKER_PROD --> DB
+DOCKER_PROD --> K
 ```
 
-## Core components
-- Next.js Frontend
-  - Provides the user interface, client-side services, and Prisma integration for database operations.
-  - Uses a centralized API client for backend communication and a shared Prisma client instance.
-- FastAPI Backend
-  - Exposes REST endpoints under API versions v1 and v2, with middleware for request/response logging and CORS.
-  - Orchestrates AI/ML workflows through LangChain and manages LLM configuration and testing.
-- AI/ML Orchestration
-  - LangChain-based LLM factory supports multiple providers (Google, OpenAI, Anthropic, Ollama, OpenRouter, DeepSeek).
-  - Includes helpers for JSON parsing from LLM responses and synchronous/asynchronous completion utilities.
-- PostgreSQL Database
-  - Persistent relational store accessed by both frontend (Prisma) and backend (direct connection via environment).
-  - Managed via Docker volumes and health-checked in production compose.
+## Building blocks
 
-## Architecture overview
-The system follows a microservices design with clear boundaries:
-- Frontend (Next.js) communicates with the Backend (FastAPI) over HTTP.
-- Backend integrates with PostgreSQL for persistence and with external AI/ML providers via LangChain.
-- Docker Compose orchestrates services locally and defines production-grade stages for migration and runtime.
+- Next.js: UI, Razorpay, session hydration. Rewrites `/api/v1/:path*` to the backend so cookies stay first-party.
+- FastAPI `APP_ROLE=api`: validate, meter, enqueue, job read, SSE, token streams.
+- FastAPI `APP_ROLE=worker`: consume lanes, run services, write job results.
+- FastAPI `APP_ROLE=migrate`: `alembic upgrade head`.
+- LLM factory: Google, OpenAI, Anthropic, Ollama, plus catalog from models.dev.
+- Two model roles: primary (`LLM_*`) and small (`SMALL_LLM_*`). Do not mix keys across user and server configs.
+- PostgreSQL: Prisma `public`, Alembic `talentsync_backend`.
+
+## How it fits together
 
 ```mermaid
 graph TB
-Client["Browser/App"]
-NextApp["Next.js App<br/>layout.tsx"]
-APIClient["API Client<br/>services/api-client.ts"]
-FastAPI["FastAPI App<br/>app/main.py"]
-LLMFactory["LLM Factory<br/>core/llm.py"]
-LLMHelpers["LLM Helpers<br/>services/llm_helpers.py"]
+Client["Browser"]
+NextApp["Next.js"]
+BFF["BFF routes"]
+FastAPI["API role"]
+Worker["Worker role"]
+LLMFactory["LLM factory"]
 DB["PostgreSQL"]
+K["Kafka"]
 Client --> NextApp
-NextApp --> APIClient
-APIClient --> FastAPI
-FastAPI --> LLMFactory
-LLMFactory --> LLMHelpers
+NextApp --> BFF
+BFF --> FastAPI
+FastAPI --> K
+K --> Worker
+Worker --> LLMFactory
 FastAPI --> DB
-LLMHelpers --> DB
+Worker --> DB
 ```
 
-## Detailed component analysis
+## Frontend
 
-### Frontend (Next.js) component analysis
-- Application bootstrap and theme providers are defined in the root layout.
-- Prisma client is initialized globally to avoid multiple instances during development and production.
-- API client encapsulates HTTP requests, error handling, and JSON parsing for backend responses.
+Root layout sets providers (session replacement for NextAuth, React Query, theme). `getSession()` in `lib/session.ts` verifies the access JWT with `BACKEND_JWT_SECRET`. Client `useSession()` hits `/api/v1/auth/me`.
 
 ```mermaid
 sequenceDiagram
 participant UI as "Next.js UI"
-participant Client as "API Client"
+participant BFF as "BFF"
 participant Backend as "FastAPI"
 participant DB as "PostgreSQL"
-UI->>Client : "Invoke API call"
-Client->>Backend : "HTTP request"
-Backend->>DB : "Read/Write data"
-DB-->>Backend : "Response"
-Backend-->>Client : "JSON response"
-Client-->>UI : "Parsed data or error"
+UI->>BFF : Feature request
+BFF->>Backend : Bearer + LLM headers
+Backend->>DB : job row
+Backend-->>BFF : 202 job_id
+BFF-->>UI : waiter
 ```
 
-### Backend (FastAPI) component analysis
-- Central FastAPI application registers middleware for request ID propagation and request/response logging.
-- CORS is configured via settings, and routes are grouped by feature and version (v1/v2).
-- LLM configuration and testing endpoints enable dynamic provider selection and validation.
+## Backend
+
+Middleware: request id, access logs, CORS. Feature routers under `/api/v1`. `task_llm` resolves BYOK vs server defaults. `feature_gate` debits before enqueue.
 
 ```mermaid
 sequenceDiagram
-participant Client as "Next.js Frontend"
-participant Backend as "FastAPI"
-participant LLM as "LLM Factory"
-participant Provider as "External LLM Provider"
-Client->>Backend : "POST /api/v2/llm/test"
-Backend->>LLM : "create_llm(provider, model, api_key, api_base)"
-LLM->>Provider : "ainvoke('Hi')"
-Provider-->>LLM : "Response"
-LLM-->>Backend : "LLMTestResponse"
-Backend-->>Client : "JSON result"
+participant Client as "BFF"
+participant Backend as "API"
+participant LLM as "resolve_for_job"
+participant K as "Kafka"
+Client->>Backend : POST /api/v1/ats/evaluate
+Backend->>LLM : pin provider/model/encrypted key
+Backend->>K : publish envelope
+Backend-->>Client : 202
 ```
 
-### AI/ML orchestration component analysis
-- LLM factory supports multiple providers and temperature handling, with fallbacks and defaults.
-- JSON parsing helpers normalize LLM outputs and extract structured data for downstream services.
-- Dependency resolver selects either per-request LLM configuration or server defaults.
+## AI/ML orchestration
 
 ```mermaid
 flowchart TD
-Start(["LLM Invocation"]) --> CheckProvider["Select Provider & Model"]
+Start(["LLM Invocation"]) --> CheckProvider["Select provider and model"]
 CheckProvider --> CreateLLM["create_llm(...)"]
-CreateLLM --> Invoke["invoke()/ainvoke()"]
-Invoke --> Parse["parse_llm_json()"]
-Parse --> Return["Structured JSON"]
+CreateLLM --> Invoke["ainvoke()"]
+Invoke --> Parse["parse JSON"]
+Parse --> Return["Structured result"]
 ```
 
-### Database layer component analysis
-- PostgreSQL is orchestrated via Docker Compose with named volumes for persistence.
-- Production compose adds health checks and explicit network segmentation.
-- Frontend uses Prisma client for type-safe database operations; backend connects directly via environment-derived URLs.
+Workers decrypt `job.llm_config` and call the same service functions the old sync routes used. No inline LLM path for metered features.
+
+## Database and Kafka
 
 ```mermaid
 graph TB
-Prisma["Prisma Client<br/>frontend/lib/prisma.ts"]
+Prisma["Prisma frontend/lib/prisma.ts"]
 DB["PostgreSQL"]
-Backend["FastAPI App<br/>app/main.py"]
+API["API role"]
+W["Worker"]
+K["Kafka"]
+Jobs["talentsync_backend.job"]
 Prisma --> DB
-Backend --> DB
+API --> DB
+API --> K
+K --> W
+W --> Jobs
+Jobs --> DB
 ```
 
-## Dependency analysis
-- Technology Stack Choices
-  - Frontend: Next.js with React, TypeScript, Prisma, and Radix UI components.
-  - Backend: FastAPI with Python, LangChain, and LangGraph for agent/graph workflows.
-  - Database: PostgreSQL managed via Docker volumes.
-  - Containerization: Docker with multi-stage builds for efficient production images.
-- Inter-Component Dependencies
-  - Frontend depends on backend REST endpoints and Prisma for data access.
-  - Backend depends on LangChain/LangGraph for AI/ML orchestration and PostgreSQL for persistence.
-  - Both frontend and backend depend on environment variables for configuration.
+Envelope is `job_id`, `job_type`, `user_id`, `attempt`. Payload stays in Postgres.
 
-```mermaid
-graph LR
-FE["Frontend (Next.js)"] --> BE["Backend (FastAPI)"]
-BE --> LLM["LangChain/LangGraph"]
-BE --> DB["PostgreSQL"]
-FE --> DB
-```
+## Dependencies
 
-## Performance considerations
-- Container Images
-  - Backend Dockerfile uses a slim Python base and caches dependencies via uv for faster builds.
-  - Frontend Dockerfile employs multi-stage builds to minimize runtime footprint and improve startup times.
-- AI/ML Responsiveness
-  - Separate faster LLM model configuration allows lightweight operations while heavier tasks use the primary model.
-  - JSON parsing helpers reduce retries and improve throughput for structured outputs.
-- Observability
-  - Request/response logging middleware records timing and payload sizes for performance insights.
-- Scalability
-  - Microservices enable independent scaling of frontend and backend tiers.
-  - PostgreSQL can be scaled separately; consider read replicas or connection pooling for high concurrency.
+- Frontend: Next.js, React 18.2, Prisma, TanStack Query, Razorpay. No `next-auth`.
+- Backend: FastAPI, LangChain, LangGraph, Motor, PyMuPDF, FastStream >=0.7.3.
+- Infra: Postgres 16, Kafka 3.9.1 KRaft, optional Prometheus/Grafana profile.
 
-[No sources needed since this section provides general guidance]
+## Performance
 
-## Troubleshooting guide
-- Environment Variables
-  - Ensure database and LLM provider keys are present in environment files consumed by Docker Compose.
-- Health Checks
-  - Production compose includes a database health check; verify readiness before starting dependent services.
-- LLM Connectivity
-  - Use the LLM test endpoint to validate provider configuration and connectivity.
-- Logging
-  - Review request/response logs emitted by the backend middleware for debugging payload issues.
+uv-cached backend image. Multi-stage frontend image. Small model for titles. Kafka poll interval 30 minutes so enrichments do not get kicked out of the consumer group.
 
-## Conclusion
-TalentSync-Normies adopts a clean microservices architecture with a Next.js frontend, FastAPI backend, LangChain-powered AI/ML orchestration, and PostgreSQL persistence, all containerized for reliable development and production deployments. The design supports independent scaling, reliable provider flexibility, and strong operational visibility. By using Docker Compose and multi-stage builds, the platform balances developer productivity with efficient resource utilization and maintainable CI/CD pipelines.
+## Troubleshooting
+
+- Missing `KAFKA_BOOTSTRAP_SERVERS`: workers never attach.
+- Health: API `/docs`, worker `/health` on 8001.
+- LLM test: `/api/v2/llm/test` still exists for provider checks.
+- `NEXTAUTH_*` in `.env.example` is leftover naming. Google OAuth settings are the ones that matter.

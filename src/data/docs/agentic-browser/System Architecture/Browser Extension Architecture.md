@@ -1,10 +1,10 @@
 # Browser extension architecture
 
 ## Introduction
-This page explains the browser extension architecture built with WXT and React. It covers the side panel UI, background script functionality, content script integration, and the messaging system between extension components. It documents the WXT configuration, component hierarchy in the side panel, and how the extension communicates with the backend through WebSocket connections. It also includes examples of lifecycle management, permission handling, cross-origin communication, the agent executor pattern, real-time conversation display, and authentication flow. Finally, it addresses browser compatibility, packaging, and deployment strategies, along with component composition patterns and integration with browser APIs.
+WXT + React extension architecture: side panel, background, content scripts, messaging, WebSocket to backend, auth, packaging.
 
 ## Project structure
-The extension is organized into entrypoints for background, content, and side panel, plus shared utilities and hooks. WXT manages build, manifest generation, and browser-specific targets.
+Entrypoints cover background, content, and side panel, plus shared utilities and hooks. WXT manages build, manifest generation, and browser-specific targets.
 
 ```mermaid
 graph TB
@@ -56,7 +56,7 @@ AUTH --> WS_CLIENT
 - Utilities: Command parsing, agent execution, and browser action execution.
 
 ## Architecture overview
-The extension follows a layered architecture:
+Extension pieces:
 - UI Layer: Side panel React app with hooks for auth, WebSocket, and tab management.
 - Control Layer: Side panel orchestrates agent execution and displays progress.
 - Communication Layer: WebSocket client for real-time updates; browser messaging for background ↔ side panel and background ↔ content script.
@@ -270,7 +270,7 @@ Common issues and resolutions:
 - Cross-origin limitations: Use host_permissions and appropriate permissions; avoid unsafe inline styles in injected UI.
 
 ## Conclusion
-The extension architecture cleanly separates concerns across UI, messaging, execution, and communication layers. The React-based side panel provides a modern interface with reliable authentication and real-time updates via WebSocket. The background script centralizes browser API interactions and action orchestration, while the content script handles page-level operations. With proper permission handling, lifecycle management, and cross-origin considerations, the extension is ready for production deployment across browsers.
+Host permissions are broad by design for automation. OAuth uses `browser.identity`. Point the client at the API base URL through env, not hardcoded strings.
 
 ## Appendices
 

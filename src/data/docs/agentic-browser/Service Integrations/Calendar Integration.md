@@ -1,7 +1,7 @@
 # Calendar integration
 
 ## Introduction
-This page explains the Google Calendar service integration implemented in the project. It covers calendar operations (event listing and creation), the OAuth2 authentication flow for Google Calendar API, scope configuration, request/response handling, and operational guidelines. It also documents date/time handling, timezone behavior, and practical guidance for performance and troubleshooting.
+Google Calendar path from extension OAuth through FastAPI to the Calendar API. List and create flows, token lifecycle, timezones.
 
 ## Project structure
 The calendar integration spans three layers:
@@ -42,7 +42,7 @@ Key responsibilities:
 - Authentication: obtains and refreshes access tokens via browser identity APIs and backend token exchange endpoints.
 
 ## Architecture overview
-The integration follows a layered architecture:
+Call path:
 - Extension frontend authenticates the user and stores tokens.
 - Backend routes accept validated requests and delegate to the service layer.
 - Service layer invokes tools that call Google Calendar API.
@@ -81,8 +81,8 @@ BE-->>Ext : "{result : created, event}"
 
 ### CalendarService
 - Responsibilities:
-  - List events: delegates to the listing tool with access token and max results.
-  - Create event: delegates to the creation tool with access token, summary, start/end times, and optional description.
+ - List events: delegates to the listing tool with access token and max results.
+ - Create event: delegates to the creation tool with access token, summary, start/end times, and optional description.
 - Error handling: logs exceptions and re-raises to the caller.
 
 ```mermaid
@@ -103,14 +103,14 @@ CalendarService --> CreateCalendarEvent : "delegates"
 
 ### Routers: calendar endpoints
 - GET-style endpoints (POST with request bodies) for:
-  - Listing events: validates presence of access token and max results; forwards to service.
-  - Creating events: validates presence of access token, summary, and ISO 8601 start/end times; forwards to service.
+ - Listing events: validates presence of access token and max results; forwards to service.
+ - Creating events: validates presence of access token, summary, and ISO 8601 start/end times; forwards to service.
 - Request validation:
-  - Enforces ISO 8601 format for start_time and end_time.
-  - Returns HTTP 400 for invalid or missing fields.
+ - Enforces ISO 8601 format for start_time and end_time.
+ - Returns HTTP 400 for invalid or missing fields.
 - Response:
-  - Listing returns a list of events.
-  - Creation returns a result and the created event object.
+ - Listing returns a list of events.
+ - Creation returns a result and the created event object.
 
 ```mermaid
 flowchart TD
@@ -131,13 +131,13 @@ CallSvc2 --> Done2(["Return {result: created, event}"])
 
 ### Tools: Google calendar API wrappers
 - Listing events:
-  - Endpoint: primary calendar events.
-  - Query parameters: max results, order by start time, single events, minimum time from now.
-  - Timeout: short-lived GET.
+ - Endpoint: primary calendar events.
+ - Query parameters: max results, order by start time, single events, minimum time from now.
+ - Timeout: short-lived GET.
 - Creating events:
-  - Endpoint: primary calendar events.
-  - Payload: summary, description, start/end with dateTime and timezone set to UTC.
-  - Timeout: moderate POST.
+ - Endpoint: primary calendar events.
+ - Payload: summary, description, start/end with dateTime and timezone set to UTC.
+ - Timeout: moderate POST.
 - Error handling: raises exceptions on non-200 responses.
 
 ```mermaid
@@ -156,13 +156,13 @@ GCAL-->>ToolPost : "200 + event"
 
 ### Authentication flow (OAuth2)
 - Extension login:
-  - Uses browser identity APIs to launch web auth flow with configured client ID and scopes.
-  - Scopes include Google Calendar and Gmail scopes.
-  - Exchanges authorization code for tokens via backend endpoints.
-  - Stores access and refresh tokens, along with metadata.
+ - Uses browser identity APIs to launch web auth flow with configured client ID and scopes.
+ - Scopes include Google Calendar and Gmail scopes.
+ - Exchanges authorization code for tokens via backend endpoints.
+ - Stores access and refresh tokens, along with metadata.
 - Token refresh:
-  - Automatically refreshes access tokens when nearing expiration if a refresh token exists.
-  - Provides manual refresh capability in UI.
+ - Automatically refreshes access tokens when nearing expiration if a refresh token exists.
+ - Provides manual refresh capability in UI.
 
 ```mermaid
 sequenceDiagram
@@ -182,59 +182,57 @@ ExtAuth-->>UI : "Store tokens and status"
 
 ### Agent tool integration
 - React agent tools define Pydantic models for calendar operations:
-  - CalendarToolInput: access token and max results.
-  - CalendarCreateEventInput: summary, start_time, end_time, description, optional access token.
+ - CalendarToolInput: access token and max results.
+ - CalendarCreateEventInput: summary, start_time, end_time, description, optional access token.
 - Tools:
-  - _calendar_tool: fetches events via get_calendar_events.
-  - _calendar_create_event_tool: creates events via create_calendar_event.
+ - _calendar_tool: fetches events via get_calendar_events.
+ - _calendar_create_event_tool: creates events via create_calendar_event.
 - Behavior:
-  - Bounds max_results to a safe range.
-  - Uses provided token or a default token when available.
+ - Bounds max_results to a safe range.
+ - Uses provided token or a default token when available.
 
 ## Dependency analysis
 - API wiring:
-  - FastAPI app registers the calendar router under /api/calendar.
+ - FastAPI app registers the calendar router under /api/calendar.
 - Router-to-service:
-  - Routers depend on CalendarService instances.
+ - Routers depend on CalendarService instances.
 - Service-to-tools:
-  - CalendarService depends on tools for listing and creating events.
+ - CalendarService depends on tools for listing and creating events.
 - Frontend-to-backend:
-  - Extension uses backend endpoints to exchange code and manage tokens.
+ - Extension uses backend endpoints to exchange code and manage tokens.
 
 ```mermaid
 graph LR
-Main["api/main.py"] --> CalR["routers/calendar.py"]
+Main["main.py"] --> CalR["routers/calendar.py"]
 CalR --> Svc["services/calendar_service.py"]
 Svc --> TGet["tools/calendar/get_calender_events.py"]
 Svc --> TPost["tools/calendar/create_calender_events.py"]
-Ext["extension/useAuth.ts"] --> Main
+Ext["clients/browser-extension/entrypoints/sidepanel/hooks/useAuth.ts"] --> Main
 ```
 
 ## Performance considerations
 - Timeouts:
-  - Listing events uses a short timeout for responsiveness.
-  - Creating events uses a slightly longer timeout to accommodate network variability.
+ - Listing events uses a short timeout for responsiveness.
+ - Creating events uses a slightly longer timeout to accommodate network variability.
 - Pagination and ordering:
-  - Listing events orders by start time and returns single events only, reducing payload size.
+ - Listing events orders by start time and returns single events only, reducing payload size.
 - Rate limits:
-  - No explicit quota handling is implemented in the code. When interacting with Google Calendar API, observe per-user and per-project quotas. Consider batching operations and adding retry/backoff logic if needed.
+ - No explicit quota handling is implemented in the code. When interacting with Google Calendar API, observe per-user and per-project quotas. Consider batching operations and adding retry/backoff logic if needed.
 - Timezone handling:
-  - Event creation sets timezone to UTC in the request payload. Ensure callers supply ISO 8601 timestamps in the intended local time; the API will interpret them accordingly.
-
-[No sources needed since this section provides general guidance]
+ - Event creation sets timezone to UTC in the request payload. Ensure callers supply ISO 8601 timestamps in the intended local time; the API will interpret them accordingly.
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - Missing or invalid access token:
-  - Ensure the access token is present and not expired. Use the extension's token display and refresh controls.
+ - Ensure the access token is present and not expired. Use the extension's token display and refresh controls.
 - Invalid ISO 8601 timestamps:
-  - Verify start_time and end_time conform to ISO 8601. The router enforces this and returns HTTP 400 otherwise.
+ - Verify start_time and end_time conform to ISO 8601. The router enforces this and returns HTTP 400 otherwise.
 - Network timeouts:
-  - Listing and creation endpoints specify timeouts. Retry after verifying connectivity and token validity.
+ - Listing and creation endpoints specify timeouts. Retry after verifying connectivity and token validity.
 - Token refresh failures:
-  - If automatic refresh fails, use the manual refresh button in the extension UI to obtain a new access token.
+ - If automatic refresh fails, use the manual refresh button in the extension UI to obtain a new access token.
 - Backend endpoint errors:
-  - The router catches exceptions and returns HTTP 500 with the error message. Check backend logs for details.
+ - The router catches exceptions and returns HTTP 500 with the error message. Check backend logs for details.
 
 Operational checks:
 - Confirm backend is running and reachable.
@@ -242,4 +240,5 @@ Operational checks:
 - Ensure the extension has stored a valid access token and refresh token when available.
 
 ## Conclusion
-The calendar integration provides a clean separation of concerns: the extension manages authentication and token lifecycle, the backend exposes typed endpoints with validation, the service layer coordinates operations, and the tools encapsulate Google Calendar API interactions. By adhering to ISO 8601 timestamps, UTC timezone semantics, and reliable error handling, the system supports reliable calendar operations. For production deployments, consider adding quota awareness, retry/backoff strategies, and improved logging for diagnostics.
+Extension manages tokens. Backend validates and calls Google. Tools expose the same operations to the agent. Keep those three layers in sync.
+

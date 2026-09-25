@@ -1,7 +1,7 @@
 # Message handlers
 
 ## Introduction
-This page provides detailed documentation for all message handlers in the assignment solver extension. It explains each handler's responsibilities, including HTML extraction, screenshot capture, Gemini API communication, answer application, and page information retrieval. It also documents handler factory functions, parameter validation, error handling, response formatting, and integration with platform adapters. Examples of invocation patterns illustrate how content scripts and background handlers collaborate.
+All background message handlers: HTML extraction, screenshots, Gemini calls, answer application, and page info. Factories, validation, error shapes, and how content scripts invoke each handler.
 
 ## Project structure
 The assignment solver is organized into distinct layers:
@@ -55,7 +55,7 @@ TY --> CI
 ```
 
 ## Core components
-- Message router: central dispatcher that routes messages to appropriate handlers and ensures responses are sent even for asynchronous handlers.
+- Message router: central dispatcher that routes messages to appropriate handlers and still sends a response for asynchronous handlers.
 - Message types: standardized constants and helpers for constructing messages and retrying transient failures.
 - Type definitions: shared JSDoc typedefs for messages, extraction results, page data, and screenshots.
 
@@ -144,7 +144,7 @@ EX->>TA : "tabs.sendMessage(tabId, GET_PAGE_HTML)"
 TA-->>SC : "GET_PAGE_HTML"
 SC-->>TA : "extractPageHTML()"
 TA-->>EX : "response"
-EX-->>BG : "sendResponse({html, images, ...})"
+EX-->>BG : "sendResponse({html, images,...})"
 ```
 
 ### Screenshot capture handler (CAPTURE_FULL_PAGE)
@@ -159,7 +159,7 @@ Error handling:
 - Returns an empty screenshots array and logs errors if capture fails.
 
 Response formatting:
-- Returns { screenshots: [...] } where each item includes MIME type, base64 data, scroll position, index, and total.
+- Returns { screenshots: [..] } where each item includes MIME type, base64 data, scroll position, index, and total.
 
 ```mermaid
 sequenceDiagram
@@ -253,7 +253,7 @@ participant BG as "Background"
 participant AH as "createAnswerHandler()"
 participant TA as "Tabs Adapter"
 participant SC as "Content Script"
-BG->>AH : "{type : APPLY_ANSWERS | SUBMIT_ASSIGNMENT, ...}"
+BG->>AH : "{type : APPLY_ANSWERS | SUBMIT_ASSIGNMENT,...}"
 AH->>TA : "tabs.sendMessage(tabId, PING)"
 alt "not loaded"
 AH->>TA : "scripting.executeScript(content.js)"
@@ -323,8 +323,6 @@ M --> C
 - Content script initialization: Injection and verification steps add latency; batching requests and caching content script readiness can improve responsiveness.
 - Image extraction: Skipping small or unloaded images avoids unnecessary processing and potential CORS errors.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Unknown message type: The router logs and responds with an error when no handler exists for a message type.
@@ -334,4 +332,4 @@ Common issues and resolutions:
 - Screenshot capture failures: Empty screenshots array indicates failure; check permissions and tab/window IDs.
 
 ## Conclusion
-The message handler system provides a reliable, extensible foundation for assignment extraction, screenshot capture, AI-powered assistance, and answer application. Factories encapsulate dependencies and logging, while platform adapters ensure cross-browser compatibility. The content script bridges background and DOM operations, and the router guarantees reliable message delivery and response handling.
+One factory per handler keeps deps explicit. Add a message type, register it on the router, and keep the response shape stable for the UI.

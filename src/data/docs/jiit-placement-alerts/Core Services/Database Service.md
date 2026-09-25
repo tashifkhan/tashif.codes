@@ -1,9 +1,9 @@
 # Database service
 
 ## Introduction
-This page provides detailed documentation for the DatabaseService component, which is the central MongoDB abstraction layer in the SuperSet Telegram Notification Bot. The service implements a protocol-like interface for MongoDB operations and encapsulates all data persistence concerns for notices, jobs, placement offers, users, and policies. It provides a clean separation between data access logic and business services, enabling dependency injection, testability, and modular operation across the system.
+DatabaseService is the MongoDB facade. Notices, jobs, offers, users, policies. Upserts, merge logic for offers, ObjectId serialization for JSON, and the DI boundary that keeps business code off raw pymongo.
 
-Key responsibilities include:
+It owns:
 - Centralized MongoDB access via DBClient
 - Notice lifecycle management (existence checks, insertion, retrieval, marking as sent)
 - Structured job upsert operations
@@ -14,7 +14,7 @@ Key responsibilities include:
 - Error handling and logging
 
 ## Project structure
-The DatabaseService resides in the services layer and collaborates with the DBClient for raw MongoDB connectivity. It integrates with other system components through dependency injection, enabling flexible orchestration in both CLI commands and runtime services.
+The DatabaseService resides in the services layer and collaborates with the DBClient for raw MongoDB connectivity. It integrates with other system components through dependency injection, so CLI commands and long-running servers can share the same wiring.
 
 ```mermaid
 graph TB
@@ -60,10 +60,10 @@ CFG --> DBC
 - DBClient: Handles MongoDB connection establishment, collection initialization, and connection lifecycle.
 - Configuration: Centralized settings management including MongoDB connection string and logging configuration.
 
-Key capabilities:
+It can:
 - Notice management: existence checks, insertions, retrieval, unsent notice enumeration, and marking as sent.
 - Structured job upsert: merges incoming job data with existing records.
-- Placement offers: bulk save with sophisticated merge logic for roles and student packages, emitting events for downstream processing.
+- Placement offers: bulk save with merge logic for roles and student packages, emitting events for downstream processing.
 - User management: add/reactivate/deactivate users with soft delete semantics.
 - Policy operations: upsert by year with change detection.
 - Serialization: converts ObjectId fields to strings for JSON transport.
@@ -203,7 +203,7 @@ Validate --> |No| Error([Return False, "Missing id"])
 ```
 
 ### Placement offer processing with merge logic
-The placement offers subsystem implements a complex merge algorithm designed to:
+The placement offers subsystem implements a complex merge algorithm built to:
 - Group offers by company name
 - Merge roles with package comparison (higher package wins)
 - Merge students with package comparison and role updates
@@ -284,7 +284,7 @@ end
 ```
 
 ### Serialization mechanisms for MongoDB ObjectId
-The DatabaseService provides a serialization helper to convert ObjectId fields to strings for JSON transport:
+The DatabaseService includes a serialization helper to convert ObjectId fields to strings for JSON transport:
 - Converts top-level _id field to string
 - Can be extended for nested ObjectId fields if needed
 
@@ -363,24 +363,4 @@ Common issues and resolutions:
 - Performance bottlenecks: Review query plans and add missing indexes as per DATABASE.md
 
 ## Conclusion
-DatabaseService provides a reliable, dependency-injected abstraction over MongoDB operations, enabling clean separation of concerns and facilitating integration across the system. Its detailed coverage of CRUD operations, sophisticated merge logic for placement offers, and serialization mechanisms make it a cornerstone of the data layer. Proper configuration, indexing, and logging practices ensure reliable operation in production environments.
-
-[No sources needed since this section summarizes without analyzing specific files]
-
-## Appendices
-
-### Practical examples
-
-#### Service initialization
-- CLI-driven initialization: main.py creates DBClient, connects, and passes it to DatabaseService for email processing and official data updates
-- Runner-driven initialization: NotificationRunner creates its own DBClient/DatabaseService instance for sending unsent notices
-
-#### Common operations
-- Notice management: existence checks, insertion, retrieval, unsent enumeration, and marking as sent
-- Structured job upsert: merge incoming job data with existing records
-- Placement offers: bulk save with merge logic and event emission
-- User management: add/reactivate/deactivate users
-- Policy operations: upsert by year with change detection
-
-### Database schema reference
-The database schema defines five main collections with specific indexes and data models. Notices, Jobs, PlacementOffers, Users, and OfficialPlacementData each have tailored schemas optimized for their respective use cases.
+DatabaseService is the MongoDB facade everyone else calls. CRUD, offer merges, ObjectId serialization. Indexes, sane config, and logs matter more here than clever code.

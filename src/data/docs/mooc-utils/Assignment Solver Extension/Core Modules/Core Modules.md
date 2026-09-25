@@ -1,7 +1,7 @@
 # Core modules
 
 ## Introduction
-This page explains the core module structure of the assignment-solver extension. It covers the background service with message routing and handler implementations, the content scripts responsible for DOM extraction, answer application, and the UI components that manage state, controllers, and user interactions. It also details the core utilities including shared types, message protocols, and logging systems, and provides diagrams and references to code locations for module interactions and customization points.
+Map of the extension's core layers: background worker, content scripts, UI controllers, and shared utilities. Use this as the table of contents for the deeper module docs.
 
 ## Project structure
 The extension is organized into distinct layers:
@@ -79,7 +79,7 @@ The extension follows a message-driven architecture:
 - The background service worker listens for UI-triggered actions and routes them to appropriate handlers.
 - Handlers interact with platform adapters and services, and may forward messages to content scripts.
 - Content scripts execute in-page DOM operations and respond to messages with extracted data or applied answers.
-- UI controllers orchestrate the end-to-end solve workflow, updating state and progress.
+- UI controllers orchestrate the full solve workflow, updating state and progress.
 
 ```mermaid
 sequenceDiagram
@@ -121,7 +121,7 @@ BG-->>UI : "Success"
 ### Background service worker and message routing
 - Initializes platform adapters and services.
 - Creates handlers for PING, EXTRACT_HTML, GET_PAGE_INFO, CAPTURE_FULL_PAGE, GEMINI_REQUEST, GEMINI_DEBUG, APPLY_ANSWERS, and SUBMIT_ASSIGNMENT.
-- Registers a router that dispatches messages to handlers, ensuring asynchronous completion and proper response handling.
+- Registers a router that dispatches messages to handlers and waits for async completion before responding.
 - Sets up extension action click to open the side panel and panel behavior for Chrome.
 
 ```mermaid
@@ -165,12 +165,12 @@ MessageTypes <.. Messages : "exports"
 
 ### Content scripts: DOM extraction and answer application
 - Content script listens for messages and performs:
-  - PING health checks.
-  - GET_PAGE_HTML extraction via extractor service.
-  - GET_PAGE_INFO quick page info for assignment detection.
-  - SCROLL_INFO and SCROLL_TO for screenshot capture.
-  - APPLY_ANSWERS and SUBMIT_ASSIGNMENT via applicator service.
-  - GEMINI_DEBUG console logging for debugging.
+ - PING health checks.
+ - GET_PAGE_HTML extraction via extractor service.
+ - GET_PAGE_INFO quick page info for assignment detection.
+ - SCROLL_INFO and SCROLL_TO for screenshot capture.
+ - APPLY_ANSWERS and SUBMIT_ASSIGNMENT via applicator service.
+ - GEMINI_DEBUG console logging for debugging.
 - Extractor locates assignment containers, extracts HTML and images, and finds submit/confirmation button IDs.
 - Applicator applies answers to radio buttons, checkboxes, and text inputs, and triggers submission.
 
@@ -315,7 +315,7 @@ BG-->>Ext : "Panel opened"
 ```
 
 ## Dependency analysis
-The modules exhibit clear separation of concerns:
+Module boundaries:
 - Background depends on platform adapters, services, and core message utilities.
 - Content scripts depend on extractor and applicator services plus core messages.
 - UI controllers depend on state, progress, settings, and runtime adapters.
@@ -350,8 +350,6 @@ SV --> TY["core/types.js"]
 - Recursive splitting: The solve and extract controllers split content on MAX_TOKENS errors to stay within model limits, improving reliability at the cost of extra API calls.
 - DOM operations: Content scripts throttle answer application with small delays to improve stability.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and remedies:
 - Content script not responding: The background extraction handler injects content scripts and verifies readiness with a PING message. If injection fails, the handler returns an error suggesting a page refresh.
@@ -360,4 +358,4 @@ Common issues and remedies:
 - Debugging: Use GEMINI_DEBUG messages to relay structured payloads to the page console for inspection.
 
 ## Conclusion
-The assignment-solver extension employs a clean, modular architecture centered around message-driven communication between the background service worker, content scripts, and UI controllers. Reliable utilities for messaging, types, and platform abstraction enable reliable cross-browser operation. The Gemini service integrates smoothly to extract and solve assignments, while UI controllers provide a guided, stepwise workflow with progress tracking and settings management. The documented extension points allow customization of handlers, controllers, and services to adapt to evolving assignment formats and user needs.
+Extend at the edges: new handlers, new controllers, new selectors. Avoid folding platform logic into the Gemini service.

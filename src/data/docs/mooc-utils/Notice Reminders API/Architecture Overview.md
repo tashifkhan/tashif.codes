@@ -1,7 +1,7 @@
 # Architecture overview
 
 ## Introduction
-This page presents a detailed architecture overview of the Notice Reminders API system. It explains the FastAPI application structure, middleware configuration (including CORS), routing architecture, dependency injection pattern, database registration process, and the application factory pattern. It also covers system design, component relationships, data flow patterns, infrastructure requirements, deployment considerations, and scalability aspects. Finally, it illustrates system context diagrams showing how the API integrates with external services like Swayam and NPTEL platforms.
+Layout of the Notice Reminders API: FastAPI app factory, routers, services, Tortoise persistence, and external scrapers. Auth cookies and CORS config sit at the edges.
 
 ## Project structure
 The Notice Reminders project is organized as a FastAPI application under the notice-reminders package. The structure separates concerns into:
@@ -64,7 +64,7 @@ graph TB
 EP["notice-reminders/main.py<br/>CLI/API entry"]
 APP["app/api/main.py<br/>create_app()"]
 CORS["CORS Middleware"]
-R_USERS["Routers: users, auth, subscriptions, ..."]
+R_USERS["Routers: users, auth, subscriptions,..."]
 DI["app/core/dependencies.py<br/>Factories"]
 CFG["app/core/config.py<br/>Settings"]
 DB["app/core/database.py<br/>Tortoise registration"]
@@ -159,7 +159,7 @@ DI_Factories --> AuthService
 
 ### Database registration process
 - Tortoise configuration defines connections and apps mapping models from the models package.
-- SQLite path provisioning ensures directories exist before schema generation.
+- SQLite path provisioning creates directories before schema generation.
 - Schema generation is controlled by debug flag and SQLite path existence.
 
 ```mermaid
@@ -306,8 +306,6 @@ P --> ME
 - Token TTL: Short-lived access tokens with refresh tokens improve security and reduce long-lived credential exposure.
 - Scraping: Introduce rate limiting and caching for Swayam/NPTEL endpoints to avoid overloading external services.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 - CORS errors: Verify allowed origins in settings match frontend origin.
 - Database initialization: Ensure SQLite path exists or enable schema generation in debug mode.
@@ -315,16 +313,12 @@ P --> ME
 - Route access denied: Ensure current user matches resource ownership and permissions.
 
 ## Conclusion
-The Notice Reminders API employs a clean, modular architecture using FastAPI, Tortoise ORM, and a reliable dependency injection pattern. The application factory centralizes configuration, while routers encapsulate domain logic. Authentication relies on JWT cookies, and CORS is configurable via environment settings. The design supports extensibility for NPTEL and improved scraping strategies, with clear separation between web, service, persistence, and external integration layers.
-
-[No sources needed since this section summarizes without analyzing specific files]
+App factory, routers, services, ORM. Keep scraping in services so routers stay HTTP-shaped.
 
 ## Appendices
 
 ### Deployment considerations
-- Environment variables: Configure settings via.env for database URL, JWT secrets, SMTP, and CORS origins.
+- Environment variables: Configure settings via .env for database URL, JWT secrets, SMTP, and CORS origins.
 - Database: Use PostgreSQL in production; ensure migrations are applied via Aerich.
 - Reverse proxy: Place behind Nginx or equivalent with HTTPS termination.
 - Scaling: Stateless API pods behind a load balancer; persist sessions via Redis if needed.
-
-[No sources needed since this section provides general guidance]

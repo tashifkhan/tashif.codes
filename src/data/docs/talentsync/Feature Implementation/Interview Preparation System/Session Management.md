@@ -1,9 +1,8 @@
 # Session management
 
-## Introduction
-This page provides a detailed guide to the Session Management component for digital interviews. It explains the interview session lifecycle from creation to termination, including state tracking, progress monitoring, and real-time synchronization. It documents the SessionManager class, session persistence strategies, configuration options, participant management, access control, and frontend integration via React Query hooks. It also covers workflows such as session resumption, timeout handling, and audit trail maintenance for compliance.
+Interview session lifecycle: create, track progress, resume, time out, and tear down. Covers `SessionManager`, persistence options, access control, and React Query hooks on the frontend.
 
-## Project structure
+## Repository layout
 The Session Management feature spans backend services and models, FastAPI routes, and frontend React Query hooks:
 - Backend Python modules define interview data models, session lifecycle, and orchestration.
 - FastAPI routes expose endpoints for session CRUD, answer submission, code execution, and event recording.
@@ -29,7 +28,7 @@ IG --> SM
 IG --> MD
 ```
 
-## Core components
+## Building blocks
 - SessionManager: In-memory session and event storage with lifecycle operations (create, start, complete, cancel, delete, list, cleanup).
 - InterviewGraph: Orchestrates session creation, question progression, answer evaluation, code execution, and summary generation.
 - FastAPI Routes: Expose endpoints for session management, answer submission (streaming and non-streaming), code execution, summary generation, and event recording.
@@ -41,7 +40,7 @@ Key responsibilities:
 - Audit and integrity: event recording for tab switches and focus changes.
 - Persistence strategy: current in-memory storage with production extension points to PostgreSQL.
 
-## Architecture overview
+## How it fits together
 The system follows a layered architecture:
 - Presentation: FastAPI routes handle HTTP requests and responses, including SSE streaming.
 - Application: InterviewGraph coordinates services and manages session state transitions.
@@ -67,9 +66,7 @@ IG-->>API : evaluation + next_question
 API-->>FE : {score, feedback, next_question, is_complete}
 ```
 
-## Detailed component analysis
-
-### SessionManager
+## SessionManager
 Responsibilities:
 - Create sessions with initial status and timestamps.
 - Persist sessions and maintain event logs per session.
@@ -80,7 +77,7 @@ Responsibilities:
 
 Design highlights:
 - In-memory dictionaries for sessions and events keyed by session_id.
-- Thread-safe in-process usage; production-grade persistence can be added via PostgreSQL integration.
+- Thread-safe in-process usage; durable persistence can be added via PostgreSQL integration.
 
 ```mermaid
 classDiagram
@@ -103,7 +100,7 @@ class SessionManager {
 }
 ```
 
-### InterviewGraph
+## InterviewGraph
 Responsibilities:
 - Orchestrate the interview flow: create session, generate questions, evaluate answers, execute code, and generate summaries.
 - Coordinate with SessionManager for state persistence.
@@ -129,7 +126,7 @@ NextQ --> |No| Complete["complete_interview(session_id)"]
 Complete --> End([End])
 ```
 
-### Interview session lifecycle
+## Interview session lifecycle
 Lifecycle stages:
 - Creation: SessionManager creates a session with PENDING status and initializes events list.
 - Start: InterviewGraph starts the session, sets IN_PROGRESS and started_at.
@@ -147,7 +144,7 @@ Completed --> [*]
 Cancelled --> [*]
 ```
 
-### Session configuration options
+## Session configuration options
 InterviewConfig supports:
 - Role and optional template/topic.
 - Number of questions and difficulty distribution.
@@ -156,12 +153,12 @@ InterviewConfig supports:
 
 These options influence question generation and session behavior.
 
-### Participant management and access control
+## Participant management and access control
 - Session retrieval and mutations require a valid session_id; routes return 404 if not found.
 - Event recording requires a valid session_id and supports event type validation.
 - No explicit user identity is modeled in the session data; access control can be enforced at the route level using authentication middleware.
 
-### Real-Time state synchronization
+## Real-Time state synchronization
 Streaming endpoints:
 - Answer submission streaming: yields partial evaluation chunks and a final complete event.
 - Code execution streaming: yields execution result followed by code review chunks and a final complete event.
@@ -169,7 +166,7 @@ Streaming endpoints:
 
 SSE generator converts async generators to Server-Sent Events with appropriate event types.
 
-### Session persistence strategies
+## Session persistence strategies
 Current implementation:
 - In-memory storage via SessionManager dictionaries for sessions and events.
 
@@ -177,21 +174,21 @@ Production extension points:
 - Routes demonstrate persistence via SessionManager; production can integrate PostgreSQL using asyncpg or ORM.
 - The comment in SessionManager indicates extending persistence to PostgreSQL.
 
-### Audit trail and integrity tracking
+## Audit trail and integrity tracking
 - InterviewEvent captures session_id, event_type, timestamp, and metadata.
 - Tab switch counting is maintained and exposed; excessive tab switches can be flagged for review.
 - Focus gained/lost and other events are supported for integrity tracking.
 
-### Frontend integration with React hooks
+## Frontend integration with React hooks
 Frontend hooks:
 - use-interviews.ts integrates with the backend via interview.service.ts to fetch and mutate interview data.
 - Types in interview.ts define the shape of interview sessions and requests.
 
 Note: The provided frontend files primarily cover generic interview data fetching and deletion. Specific interview session state management and real-time updates would typically be handled by additional hooks and services aligned with the backend streaming endpoints.
 
-### Examples of session workflows
+## Examples of session workflows
 
-#### Workflow 1: basic interview from setup to completion
+### Workflow 1: basic interview from setup to completion
 - Create session with profile and config.
 - Start interview (status becomes IN_PROGRESS).
 - Submit answers; session progresses through questions.
@@ -223,7 +220,7 @@ IG-->>API : summary
 API-->>FE : summary
 ```
 
-#### Workflow 2: timeout handling and cleanup
+### Workflow 2: timeout handling and cleanup
 - Old sessions can be removed after a configurable threshold (hours).
 - Health endpoint reports active session count.
 
@@ -239,25 +236,25 @@ Keep --> Scan
 Scan --> Done([Done])
 ```
 
-#### Workflow 3: session resumption
+### Workflow 3: session resumption
 - Current in-memory implementation does not persist state across restarts.
 - To support resumption, integrate SessionManager with persistent storage (e.g., PostgreSQL) and restore sessions on startup.
 
-### Concurrent session handling
+## Concurrent session handling
 - SessionManager uses in-memory dictionaries keyed by session_id, enabling concurrent access within a single process.
 - For multi-instance deployments, replace in-memory storage with a shared database and add locking or optimistic concurrency controls.
 
-### Session security measures
+## Session security measures
 - Session existence checks are performed before mutating state (routes return 404 if not found).
 - Event recording validates session presence.
 - No built-in user identity is attached to sessions; enforce access control at the route level using authentication and authorization middleware.
 
-### Compliance and audit trail maintenance
+## Compliance and audit trail maintenance
 - InterviewEvent captures timestamps and metadata for each event.
 - Tab switch counts and other event types enable integrity monitoring.
 - Summaries and scores are persisted with the session for final audit records.
 
-## Dependency analysis
+## Dependencies
 The following diagram shows key dependencies among components:
 
 ```mermaid
@@ -269,23 +266,21 @@ FE_Hooks["use-interviews.ts"] --> FE_Svc["interview.service.ts"]
 FE_Svc --> RT
 ```
 
-## Performance considerations
+## Performance
 - In-memory storage is efficient but not persistent; consider database-backed storage for production.
-- Streaming endpoints reduce client wait times; ensure proper buffering and backpressure handling.
+- Streaming endpoints reduce client wait times; handle buffering and backpressure handling.
 - Cleanup_old_sessions helps control memory usage; tune max_age_hours based on retention policies.
 - Consider indexing and pagination for list_sessions when scaling.
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Session not found: Ensure session_id is valid and created before use. Routes return 404 for missing sessions.
 - Question mismatch: When submitting answers, the provided question_id must match the current question; otherwise, validation errors are raised.
 - Excessive tab switches: Tab switch count is tracked; flag sessions with high counts for review.
 - Streaming errors: SSE generator emits error events; inspect client-side event handlers for error payloads.
 
-## Conclusion
-The Session Management component provides a reliable foundation for managing interview sessions with clear lifecycle stages, real-time streaming capabilities, and event-driven integrity tracking. While the current implementation uses in-memory storage, the architecture supports straightforward persistence integration for production environments. Frontend integration can be extended to use streaming endpoints and centralized state management for a smooth user experience.
-
-## Appendices
+## Appendix
 
 ### API reference summary
 - Create session: POST /interview/sessions

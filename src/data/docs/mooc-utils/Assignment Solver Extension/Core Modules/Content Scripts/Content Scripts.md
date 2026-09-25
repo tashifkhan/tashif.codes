@@ -1,11 +1,11 @@
 # Content scripts
 
 ## Introduction
-This page explains the content scripts responsible for DOM interaction in the assignment-solver extension. It covers:
-- The extraction system for identifying assignment questions, parsing HTML content, and extracting question data
-- The applicator system for applying answers to form elements, handling different input types, and managing user interactions
-- The content script lifecycle, communication with background scripts, and security considerations
-- Examples of DOM manipulation techniques, question type handling, and integration with the assignment solver workflow
+Content scripts run in the page. This doc covers:
+- Extraction: find questions, parse HTML, structure question data
+- Applicator: write answers into controls and handle input types
+- Lifecycle and messaging with the background worker
+- DOM techniques and how this ties into the solve workflow
 
 ## Project structure
 The content script is organized as a small module with three primary responsibilities:
@@ -90,12 +90,12 @@ SC-->>BG : Response
 - Loaded automatically on matching URLs per manifest configuration.
 - Initializes logger, extractor, and applicator instances.
 - Registers a message listener that handles:
-  - PING for health checks
-  - GET_PAGE_HTML for HTML and image extraction
-  - GET_PAGE_INFO for quick page metadata
-  - SCROLL_INFO and SCROLL_TO for screenshot coordination
-  - APPLY_ANSWERS and SUBMIT_ASSIGNMENT for answer application and submission
-  - GEMINI_DEBUG for debug relaying
+ - PING for health checks
+ - GET_PAGE_HTML for HTML and image extraction
+ - GET_PAGE_INFO for quick page metadata
+ - SCROLL_INFO and SCROLL_TO for screenshot coordination
+ - APPLY_ANSWERS and SUBMIT_ASSIGNMENT for answer application and submission
+ - GEMINI_DEBUG for debug relaying
 
 ```mermaid
 flowchart TD
@@ -183,7 +183,7 @@ end
 
 ### Background script integration and cross-browser compatibility
 - The background script manages message routing, tab targeting, and content script injection when needed.
-- It uses platform adapters to abstract browser differences and ensures reliable message delivery with retry logic where applicable.
+- It uses platform adapters to abstract browser differences and keeps reliable message delivery with retry logic where applicable.
 - The content script uses webextension-polyfill for cross-browser compatibility.
 
 ```mermaid
@@ -207,15 +207,15 @@ BG-->>UI : Response
 
 ## Dependency analysis
 - Content script depends on:
-  - Logger factory for structured logging
-  - Extractor for DOM parsing and image collection
-  - Applicator for answer application and submission
-  - Platform browser polyfill for cross-browser compatibility
-  - Core message types for consistent communication
+ - Logger factory for structured logging
+ - Extractor for DOM parsing and image collection
+ - Applicator for answer application and submission
+ - Platform browser polyfill for cross-browser compatibility
+ - Core message types for consistent communication
 - Background script depends on:
-  - Platform adapters for tabs and scripting APIs
-  - Message router for centralized message handling
-  - Handlers for extraction, answers, and page info
+ - Platform adapters for tabs and scripting APIs
+ - Message router for centralized message handling
+ - Handlers for extraction, answers, and page info
 
 ```mermaid
 graph LR
@@ -237,8 +237,6 @@ HANS["background/handlers/answers.js"] --> BG
 - Event dispatching: Applicator emits minimal DOM events (change, input, keyup) to trigger handlers without excessive reflows.
 - Injection timing: Background handlers wait briefly for Firefox initialization to reduce race conditions during content script injection.
 
-[No sources needed since this section provides general guidance]
-
 ## Security considerations
 - Content script scope: Runs only on trusted domains defined in the manifest and uses CSP to restrict connections.
 - Cross-origin images: Canvas-based conversion is guarded against CORS errors; such images are skipped to prevent security exceptions.
@@ -248,14 +246,14 @@ HANS["background/handlers/answers.js"] --> BG
 ## Troubleshooting guide
 Common issues and resolutions:
 - Content script not responding:
-  - The background handler pings the content script before sending messages; if it fails, the handler injects the content script and retries.
-  - Ensure the page matches the content script's URL patterns.
+ - The background handler pings the content script before sending messages; if it fails, the handler injects the content script and retries.
+ - Ensure the page matches the content script's URL patterns.
 - Missing submit or confirmation buttons:
-  - The extractor and applicator rely on specific IDs and selectors; if custom themes alter these, manual override may be needed.
+ - The extractor and applicator rely on specific IDs and selectors; if custom themes alter these, manual override may be needed.
 - CORS errors on images:
-  - Images from external domains that fail CORS are skipped; this prevents exceptions and allows extraction to continue.
+ - Images from external domains that fail CORS are skipped; this prevents exceptions and allows extraction to continue.
 - Firefox initialization delays:
-  - The background handler waits longer for Firefox to ensure the content script is ready before sending messages.
+ - The background handler waits longer for Firefox so the content script is ready before sending messages.
 
 ## Conclusion
-The content scripts provide a focused, extensible foundation for DOM interaction in the assignment solver. The extraction system reliably identifies assignment content and images, while the applicator system supports multiple question types and submission workflows. Reliable background orchestration, cross-browser compatibility, and security-conscious design ensure reliable operation across environments.
+Content scripts own the DOM. Everything else should ask them, not scrape from the background.

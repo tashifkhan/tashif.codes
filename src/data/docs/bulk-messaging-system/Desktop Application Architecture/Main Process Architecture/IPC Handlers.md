@@ -1,7 +1,7 @@
 # IPC handlers
 
 ## Introduction
-This page provides detailed coverage of the Inter-Process Communication (IPC) handler system used in the application. It documents all registered IPC handlers, including WhatsApp client initialization, message sending, contact import, and logout functionality. It also details the Gmail and SMTP IPC handlers for external service integration. The document explains the event-driven communication pattern between the main and renderer processes, parameter passing, return value handling, and error propagation mechanisms. Examples of successful operations and error scenarios are included, along with security implications and data validation at process boundaries.
+Registered `ipcMain.handle` routes for WhatsApp, Gmail, SMTP, and file import, including how errors come back to the renderer.
 
 ## Project structure
 The IPC system spans three primary areas:
@@ -36,28 +36,28 @@ Main --> SH
 This section enumerates all registered IPC handlers and their responsibilities.
 
 - Gmail handlers
-  - gmail-auth: Initiates OAuth2 authentication flow and stores tokens.
-  - gmail-token: Checks for existing stored token.
-  - send-email: Sends emails via Gmail API with progress events.
+ - gmail-auth: Initiates OAuth2 authentication flow and stores tokens.
+ - gmail-token: Checks for existing stored token.
+ - send-email: Sends emails via Gmail API with progress events.
 
 - SMTP handlers
-  - smtp-send: Sends emails via SMTP with progress events.
+ - smtp-send: Sends emails via SMTP with progress events.
 
 - WhatsApp handlers
-  - whatsapp-start-client: Initializes and authenticates a WhatsApp client, emits status and QR events.
-  - whatsapp-send-messages: Sends personalized messages to a list of contacts.
-  - whatsapp-import-contacts: Imports contacts from CSV or TXT files.
-  - whatsapp-logout: Logs out the WhatsApp client and cleans up cached files.
+ - whatsapp-start-client: Initializes and authenticates a WhatsApp client, emits status and QR events.
+ - whatsapp-send-messages: Sends personalized messages to a list of contacts.
+ - whatsapp-import-contacts: Imports contacts from CSV or TXT files.
+ - whatsapp-logout: Logs out the WhatsApp client and cleans up cached files.
 
 - File operations
-  - import-email-list: Opens a file dialog to select email list files.
-  - read-email-list-file: Reads and parses selected email list files.
+ - import-email-list: Opens a file dialog to select email list files.
+ - read-email-list-file: Reads and parses selected email list files.
 
 - Event emitters (renderer listeners)
-  - onWhatsAppStatus: Receives status updates from the WhatsApp client.
-  - onWhatsAppQR: Receives QR code data URL for authentication.
-  - onWhatsAppSendStatus: Receives real-time send status updates.
-  - onProgress: Receives email progress events.
+ - onWhatsAppStatus: Receives status updates from the WhatsApp client.
+ - onWhatsAppQR: Receives QR code data URL for authentication.
+ - onWhatsAppSendStatus: Receives real-time send status updates.
+ - onProgress: Receives email progress events.
 
 ## Architecture overview
 The IPC architecture follows an event-driven model:
@@ -88,30 +88,30 @@ Note over R,M : Real-time events via onWhatsAppStatus/onWhatsAppQR/onWhatsAppSen
 The WhatsApp handlers orchestrate client lifecycle, authentication, messaging, and cleanup.
 
 - whatsapp-start-client
-  - Responsibilities: Initialize WhatsApp client with local authentication, emit status and QR events, handle authentication lifecycle.
-  - Parameters: None.
-  - Return: Promise resolving to undefined or early return if client already running.
-  - Events emitted: whatsapp-status, whatsapp-qr.
-  - Error handling: Catches initialization failures and emits failure status.
+ - Responsibilities: Initialize WhatsApp client with local authentication, emit status and QR events, handle authentication lifecycle.
+ - Parameters: None.
+ - Return: Promise resolving to undefined or early return if client already running.
+ - Events emitted: whatsapp-status, whatsapp-qr.
+ - Error handling: Catches initialization failures and emits failure status.
 
 - whatsapp-send-messages
-  - Responsibilities: Validate client readiness, iterate contacts, personalize messages, send to registered users, enforce delays, aggregate results.
-  - Parameters: { contacts[], messageText }.
-  - Return: { success: boolean, sent: number, failed: number }.
-  - Events emitted: whatsapp-send-status.
-  - Error handling: Per-contact error handling with retries and delays.
+ - Responsibilities: Validate client readiness, iterate contacts, personalize messages, send to registered users, enforce delays, aggregate results.
+ - Parameters: { contacts[], messageText }.
+ - Return: { success: boolean, sent: number, failed: number }.
+ - Events emitted: whatsapp-send-status.
+ - Error handling: Per-contact error handling with retries and delays.
 
 - whatsapp-import-contacts
-  - Responsibilities: Open file dialog, parse CSV or TXT, normalize contacts.
-  - Parameters: None.
-  - Return: Promise resolving to contacts[] or null.
-  - Error handling: Graceful fallback to empty array on parse errors.
+ - Responsibilities: Open file dialog, parse CSV or TXT, normalize contacts.
+ - Parameters: None.
+ - Return: Promise resolving to contacts[] or null.
+ - Error handling: Graceful fallback to empty array on parse errors.
 
 - whatsapp-logout
-  - Responsibilities: Logout client, cleanup cached files, reset UI state.
-  - Parameters: None.
-  - Return: { success: boolean, message: string }.
-  - Events emitted: whatsapp-status, whatsapp-qr.
+ - Responsibilities: Logout client, cleanup cached files, reset UI state.
+ - Parameters: None.
+ - Return: { success: boolean, message: string }.
+ - Events emitted: whatsapp-status, whatsapp-qr.
 
 ```mermaid
 sequenceDiagram
@@ -135,22 +135,22 @@ P-->>BM : Promise resolved
 The Gmail handlers manage OAuth2 authentication and email sending.
 
 - gmail-auth
-  - Responsibilities: Create OAuth2 client, generate auth URL, open browser window, handle redirect, exchange code for token, store token.
-  - Parameters: None.
-  - Return: { success: boolean, error?: string }.
-  - Timeout: 5 minutes for completion.
-  - Security: Requires environment variables for client ID and secret.
+ - Responsibilities: Create OAuth2 client, generate auth URL, open browser window, handle redirect, exchange code for token, store token.
+ - Parameters: None.
+ - Return: { success: boolean, error?: string }.
+ - Timeout: 5 minutes for completion.
+ - Security: Requires environment variables for client ID and secret.
 
 - gmail-token
-  - Responsibilities: Check for stored token.
-  - Parameters: None.
-  - Return: { success: boolean, hasToken: boolean }.
+ - Responsibilities: Check for stored token.
+ - Parameters: None.
+ - Return: { success: boolean, hasToken: boolean }.
 
 - send-email
-  - Responsibilities: Validate token, iterate recipients, send via Gmail API, emit progress events, aggregate results.
-  - Parameters: { recipients[], subject, message, delay? }.
-  - Return: { success: boolean, results[] }.
-  - Events emitted: email-progress.
+ - Responsibilities: Validate token, iterate recipients, send via Gmail API, emit progress events, aggregate results.
+ - Parameters: { recipients[], subject, message, delay? }.
+ - Return: { success: boolean, results[] }.
+ - Events emitted: email-progress.
 
 ```mermaid
 flowchart TD
@@ -172,40 +172,40 @@ StoreToken --> ReturnOK["Return {success: true}"]
 The SMTP handler manages SMTP configuration, connection verification, and email sending.
 
 - smtp-send
-  - Responsibilities: Validate SMTP config, optionally save config (without password), verify connection, iterate recipients, send via SMTP, emit progress events, aggregate results.
-  - Parameters: { smtpConfig, recipients[], subject, message, delay?, saveCredentials? }.
-  - Return: { success: boolean, results[] }.
-  - Events emitted: email-progress.
+ - Responsibilities: Validate SMTP config, optionally save config (without password), verify connection, iterate recipients, send via SMTP, emit progress events, aggregate results.
+ - Parameters: { smtpConfig, recipients[], subject, message, delay?, saveCredentials? }.
+ - Return: { success: boolean, results[] }.
+ - Events emitted: email-progress.
 
 ### File operations IPC handlers
 These handlers support importing and parsing email lists.
 
 - import-email-list
-  - Responsibilities: Open file dialog for selecting email list files.
-  - Parameters: None.
-  - Return: Promise resolving to dialog result.
+ - Responsibilities: Open file dialog for selecting email list files.
+ - Parameters: None.
+ - Return: Promise resolving to dialog result.
 
 - read-email-list-file
-  - Responsibilities: Read file content, parse CSV or TXT, extract valid email addresses.
-  - Parameters: filePath.
-  - Return: Promise resolving to newline-separated emails or throws on error.
+ - Responsibilities: Read file content, parse CSV or TXT, extract valid email addresses.
+ - Parameters: filePath.
+ - Return: Promise resolving to newline-separated emails or throws on error.
 
 ### Renderer integration and event handling
 The renderer integrates with IPC through the preload bridge and updates UI state accordingly.
 
 - Preload API exposure
-  - Exposes authenticateGmail, getGmailToken, sendEmail, sendSMTPEmail, importEmailList, readEmailListFile, and WhatsApp-related methods.
-  - Provides event listeners: onWhatsAppStatus, onWhatsAppQR, onWhatsAppSendStatus, onProgress.
+ - Exposes authenticateGmail, getGmailToken, sendEmail, sendSMTPEmail, importEmailList, readEmailListFile, and WhatsApp-related methods.
+ - Provides event listeners: onWhatsAppStatus, onWhatsAppQR, onWhatsAppSendStatus, onProgress.
 
 - BulkMailer integration
-  - Subscribes to WhatsApp status and QR events.
-  - Validates forms, constructs payload objects, and awaits invoke promises.
-  - Updates state based on results and errors.
+ - Subscribes to WhatsApp status and QR events.
+ - Validates forms, constructs payload objects, and awaits invoke promises.
+ - Updates state based on results and errors.
 
 - Form components
-  - WhatsAppForm: Manages QR display, status color, and logs.
-  - GmailForm: Manages authentication status and email list import.
-  - SMTPForm: Manages SMTP configuration and email list import.
+ - WhatsAppForm: Manages QR display, status color, and logs.
+ - GmailForm: Manages authentication status and email list import.
+ - SMTPForm: Manages SMTP configuration and email list import.
 
 ```mermaid
 sequenceDiagram
@@ -257,30 +257,28 @@ Main --> CSV["csv-parser"]
 - Event-driven updates: Real-time progress events minimize polling and improve perceived performance.
 - Resource cleanup: WhatsApp client cleanup and file deletion prevent memory leaks and stale sessions.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 
 - WhatsApp authentication failures
-  - Symptoms: QR not generated, authentication failure messages.
-  - Causes: Headless browser issues, network problems, cached session conflicts.
-  - Resolution: Retry initialization, ensure headless arguments are valid, clear cached files, and verify network connectivity.
+ - Symptoms: QR not generated, authentication failure messages.
+ - Causes: Headless browser issues, network problems, cached session conflicts.
+ - Resolution: Retry initialization, ensure headless arguments are valid, clear cached files, and verify network connectivity.
 
 - Gmail authentication timeouts
-  - Symptoms: OAuth window closes without token.
-  - Causes: Redirect URI mismatch, missing environment variables, long redirect handling.
-  - Resolution: Verify GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, ensure REDIRECT_URI matches, and retry within timeout.
+ - Symptoms: OAuth window closes without token.
+ - Causes: Redirect URI mismatch, missing environment variables, long redirect handling.
+ - Resolution: Verify GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, ensure REDIRECT_URI matches, and retry within timeout.
 
 - SMTP connection verification failures
-  - Symptoms: Transport verification errors.
-  - Causes: Incorrect host/port/credentials, TLS issues.
-  - Resolution: Validate SMTP configuration, adjust secure flag, and test with a simple client.
+ - Symptoms: Transport verification errors.
+ - Causes: Incorrect host/port/credentials, TLS issues.
+ - Resolution: Validate SMTP configuration, adjust secure flag, and test with a simple client.
 
 - File import errors
-  - Symptoms: No contacts loaded, parsing errors.
-  - Causes: Unsupported file types, malformed CSV/ TXT.
-  - Resolution: Use supported formats (.csv,.txt), ensure correct column names or comma separation.
+ - Symptoms: No contacts loaded, parsing errors.
+ - Causes: Unsupported file types, malformed CSV/ TXT.
+ - Resolution: Use supported formats (.csv, .txt), ensure correct column names or comma separation.
 
 ## Security considerations
 - Context isolation: The preload script uses contextBridge to expose a minimal API surface, preventing direct Node.js access from the renderer.
@@ -290,4 +288,5 @@ Common issues and resolutions:
 - Error containment: Errors are returned as structured objects rather than thrown exceptions, reducing information leakage.
 
 ## Conclusion
-The IPC handler system provides a reliable, event-driven architecture for integrating external services and managing client lifecycles. WhatsApp handlers offer a complete authentication and messaging pipeline with real-time feedback. Gmail and SMTP handlers encapsulate external service complexities while maintaining clear error propagation and progress reporting. The preload bridge ensures secure, controlled access from the renderer, and form components deliver intuitive user experiences with detailed validation and error handling.
+
+Return `{ success, error }` style payloads instead of throwing across IPC. The UI already expects that pattern.

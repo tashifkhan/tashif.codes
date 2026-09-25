@@ -1,444 +1,387 @@
 # Timetable data format reference
 
-## Purpose and scope
+On-disk JSON for classes, calendars, and exams. Related: [Python pipeline](4.2-python-processing-pipeline), [Types](3.4-data-model-and-types).
 
-This page defines the JSON data formats used for timetable and academic calendar storage in the JIIT Time Table application. It covers the structure of timetable JSON files, academic calendar JSON files, directory organization, API endpoints for data access, and the data generation pipeline using `json_creater.py`.
+## Directories
 
-For information about how this data is processed by Python modules, see [Python Processing Pipeline](4.2-python-processing-pipeline). For details on how the data is consumed by React components, see [Data Model & Types](3.4-data-model-and-types).
+JSON lives in `website/data/` (API also checks `../data`). It is **not** under `public/data/`.
 
----
-
-## Data directory structure
-
-All static JSON data is stored in the `/public/data/` directory, organized hierarchically by data type, academic period, and campus variant.
-
-![Diagram 1](images/11-timetable-data-format-reference_diagram_1.png)
-
-### Directory organization
-
-| Directory Path | Purpose | Contents |
-| --- | --- | --- |
-| `/public/data/time-table/` | Timetable data storage | Semester-specific subdirectories (ODD25, EVEN25) |
-| `/public/data/time-table/ODD25/` | Odd semester 2025 timetables | `62.json`, `128.json`, `BCA.json` |
-| `/public/data/time-table/EVEN25/` | Even semester 2025 timetables | `62.json`, `128.json` |
-| `/public/data/calender/` | Academic calendar data | Academic year subdirectories (2425, 2526) |
-| `/public/data/calender/2425/` | Academic year 2024-25 | `calendar.json` |
-| `/public/data/calender/2526/` | Academic year 2025-26 | `calender.json` |
-| `/public/modules/` | Python processing modules | `BE128_creator.py`, `BE62_creator.py` |
-
----
-
-## Timetable JSON format
-
-### File naming convention
-
-Timetable files follow the pattern: `<campus>.json` where campus is one of:
-
-* `62` - 62 Campus (Noida Sector 62)
-* `128` - 128 Campus (Noida Sector 128)
-* `BCA` - BCA Program (available only for ODD semesters)
-
-### Access paths
-
-Timetable JSON files are accessed via the following URL pattern:
-
-```
-/data/time-table/<SEMESTER>/<CAMPUS>.json
+```mermaid
+flowchart TB
+  data[website/data]
+  data --> tt["time-table / year / SEM / campus.json"]
+  data --> cal["calender / yy1yy2.json"]
+  data --> exam["exam / year / SEM / T.json"]
 ```
 
-Examples:
+| Path | Contents |
+| --- | --- |
+| `website/data/time-table/{year}/{SEM}/{campus}.json` | Year-keyed timetable + subjects |
+| `website/data/calender/{yy1yy2}.json` | Academic events |
+| `website/data/exam/{year}/{SEM}/T*.json` | Exam rows |
+| `website/public/parser/*.whl` | Parser wheel (not JSON) |
 
-* `/data/time-table/ODD25/62.json`
-* `/data/time-table/ODD25/128.json`
-* `/data/time-table/ODD25/BCA.json`
-* `/data/time-table/EVEN25/62.json`
-* `/data/time-table/EVEN25/128.json`
+Campus files: `62`, `128`, `BCA`. ODD26 currently has `62` and `BCA`; EVEN26 has all three. Default semester constant: `ODD26`.
 
-### Data structure
+HTTP:
 
-![Diagram 2](images/11-timetable-data-format-reference_diagram_2.png)
-
-### Subject object schema
-
-Each subject in the timetable JSON follows this structure:
-
-| Field | Type | Description | Example |
-| --- | --- | --- | --- |
-| `code` | `string` | Subject code identifier | `"22B11CI111"` |
-| `name` | `string` | Full subject name | `"Data Structures"` |
-| `prof` | `string` | Professor/Instructor name | `"Dr. John Doe"` |
-| `type` | `string` | Class type (Lecture/Lab/Tutorial) | `"Lecture"`, `"Lab"`, `"Tutorial"` |
-| `slots` | `string[]` | Array of time slot identifiers | `["L1", "L2", "L3"]` |
-
-### Time slot identifiers
-
-Time slots use standard JIIT notation:
-
-* Lecture slots: `L1`, `L2`, `L3`, `L4`, `L5`, `L6`, `L7`, `L8`, `L9`
-* Lab slots: `LA1`, `LA2`, `LB1`, `LB2`, `LC1`, `LC2`, etc.
-* Tutorial slots: `T1`, `T2`, `T3`, etc.
-
-### Example timetable JSON structure
-
+```http
+GET /api/time-table
+GET /api/time-table/{semester}/{batch}
+GET /api/academic-calendar
+GET /api/academic-calendar/{year}
+GET /api/exam-schedule
+GET /api/exam-schedule/{semester}
+GET /api/mess-menu
 ```
+
+`batch` here is the campus file stem (`62`), not a student batch like `A6`. `GET /api/time-table/EVEN26/62` returns the whole campus file below.
+
+## Timetable file
+
+One JSON object per campus. Top-level keys are year numbers as strings. B.Tech files use `"1"` through `"4"`. BCA stops at `"3"`. Each year has two siblings: `timetable` (the grid) and `subjects` (the catalog for that year).
+
+```mermaid
+flowchart TB
+  File["EVEN26/62.json"]
+  File --> Y1["1"]
+  File --> Y2["2"]
+  File --> Y3["3"]
+  File --> Y4["4"]
+  Y1 --> TT[timetable]
+  Y1 --> SUB[subjects]
+  TT --> MON[MON]
+  TT --> TUES[TUES]
+  TT --> WED[WED]
+  MON --> S1["9-9.50 string array"]
+  MON --> Lunch["12-12.50 LUNCH"]
+  SUB --> Row["Code / Full Code / Subject"]
+```
+
+EVEN26 Sector 62 year 1, trimmed to one morning. This is the real shape, not a made-up schema:
+
+```json
 {
   "1": {
-    "IT": {
-      "1": [
-        {
-          "code": "22B11CI111",
-          "name": "Data Structures",
-          "prof": "Dr. John Doe",
-          "type": "Lecture",
-          "slots": ["L1", "L2", "L3"]
-        },
-        {
-          "code": "22B11CI112",
-          "name": "Data Structures Lab",
-          "prof": "Dr. John Doe",
-          "type": "Lab",
-          "slots": ["LA1", "LA2"]
-        }
-      ],
-      "2": [
-        // Batch 2 subjects
-      ]
+    "timetable": {
+      "MON": {
+        "9-9.50": [
+          "LB3,B4(CI121)-CR325/ANP",
+          "TA4(CI121)-TS10/APR",
+          "TG2(CI121)-F7/NIY"
+        ],
+        "10-10.50": [
+          "LA1,A2(PH211)-G1/ANU",
+          "LA3,A4(PH211)-FF1/RKD"
+        ],
+        "12-12.50": ["LUNCH"]
+      },
+      "TUES": {},
+      "WED": {},
+      "THUR": {},
+      "FRI": {},
+      "SAT": {}
     },
-    "CSE": {
-      // CSE branch data
-    }
+    "subjects": [
+      {
+        "Code": "CI111",
+        "Full Code": "",
+        "Subject": "Software Development Fundamentals-"
+      },
+      {
+        "Code": "PH211",
+        "Full Code": "",
+        "Subject": "Physics-2"
+      },
+      {
+        "Code": "PH271",
+        "Full Code": "",
+        "Subject": "Physics Lab-2"
+      }
+    ]
   },
   "2": {
-    // Year 2 data
+    "timetable": {},
+    "subjects": [
+      {
+        "Code": "MA223",
+        "Full Code": "25B12MA223",
+        "Subject": "Time Series Analysis and Forecasting"
+      }
+    ]
   }
 }
 ```
 
----
+Days in the file are `MON`, `TUES`, `WED`, `THUR`, `FRI`, `SAT`. Not every year has every day. Year 3 EVEN26/62 has no `TUES`. Year 4 has no `SAT`.
 
-## Academic calendar JSON format
+Slot keys are the Excel headings, written the way the creator dumped them: `9-9.50`, `10-10.50`, …, `4-4.50`. Year 2+ sometimes adds a 5pm slot. A slot value is always an array of strings. One string is one overlapping class in that hour. `LUNCH` is a real entry, not a hole in the object.
 
-### File naming convention
+Year 1 EVEN26/62 has 12 subjects. Year 2 has 38. Year 1 `Full Code` is often empty; the parser then matches on `Code` or a slice of whatever sits in the activity string. Year 2 fills `Full Code` with the catalog id (`25B12MA223`).
 
-Academic calendar files are named `calender.json` (note the spelling variant) and organized by academic year.
+TypeScript for the file (not exported as one type; this is the on-disk contract):
 
-### Access paths
-
-Academic calendar JSON files are accessed via:
-
-```
-/data/calender/<ACADEMIC_YEAR>/calender.json
-```
-
-Examples:
-
-* `/data/calender/2425/calendar.json` (2024-25 academic year)
-* `/data/calender/2526/calender.json` (2025-26 academic year)
-
-Note: The 2425 directory uses `calendar.json` while 2526 uses `calender.json` (inconsistent spelling in the codebase).
-
-### Event object schema
-
-Each event in the academic calendar follows this structure:
-
-| Field | Type | Description | Example |
-| --- | --- | --- | --- |
-| `title` | `string` | Event name | `"Mid-Term Examination"` |
-| `startDate` | `string` | ISO 8601 date format | `"2025-03-15"` |
-| `endDate` | `string` | ISO 8601 date format | `"2025-03-20"` |
-| `description` | `string` (optional) | Event details | `"Mid-term exams for all branches"` |
-| `category` | `string` | Event category | `"Examination"`, `"Holiday"`, `"Event"` |
-
-### Example academic calendar JSON structure
-
-```
-[
-  {
-    "title": "Mid-Term Examination",
-    "startDate": "2025-03-15",
-    "endDate": "2025-03-20",
-    "description": "Mid-term exams for all branches",
-    "category": "Examination"
-  },
-  {
-    "title": "Spring Break",
-    "startDate": "2025-04-01",
-    "endDate": "2025-04-07",
-    "category": "Holiday"
-  },
-  {
-    "title": "Tech Fest",
-    "startDate": "2025-05-10",
-    "endDate": "2025-05-12",
-    "description": "Annual technical festival",
-    "category": "Event"
-  }
-]
-```
-
-### Event categories
-
-Common event categories include:
-
-* `"Examination"` - Mid-term, end-term, re-examination periods
-* `"Holiday"` - University holidays, breaks
-* `"Event"` - Fests, seminars, workshops
-* `"Registration"` - Course registration periods
-* `"Academic"` - Semester start/end dates
-
----
-
-## Data access endpoints
-
-The application serves timetable and calendar data as static JSON files through predictable URL patterns.
-
-![Diagram 3](images/11-timetable-data-format-reference_diagram_3.png)
-
-### Timetable endpoints
-
-| Endpoint Pattern | Parameters | Returns |
-| --- | --- | --- |
-| `/data/time-table/<SEMESTER>/<CAMPUS>.json` | `SEMESTER`: `ODD25`, `EVEN25` `CAMPUS`: `62`, `128`, `BCA` | Timetable JSON for specified semester and campus |
-
-### Academic calendar endpoints
-
-| Endpoint Pattern | Parameters | Returns |
-| --- | --- | --- |
-| `/data/calender/<YEAR>/calender.json` | `YEAR`: `2425`, `2526`, etc. | Academic calendar events array |
-
-### cURL examples
-
-Fetch 62 campus timetable for Odd 2025 semester:
-
-```
-curl https://simple-timetable.tashif.codes/data/time-table/ODD25/62.json
-```
-
-Fetch 128 campus timetable for Even 2025 semester:
-
-```
-curl https://simple-timetable.tashif.codes/data/time-table/EVEN25/128.json
-```
-
-Fetch academic calendar for 2025-26:
-
-```
-curl https://simple-timetable.tashif.codes/data/calender/2526/calender.json
-```
-
----
-
-## Data generation pipeline
-
-The timetable and calendar data is generated from Excel files using external parsers and a Streamlit application (`json_creater.py`).
-
-### json\_creater.py
-
-The `json_creater.py` file is a Streamlit application that converts Excel files into the structured JSON format required by the application.
-
-**Location:** Root directory (`json_creater.py`)
-
-**Purpose:**
-
-* Convert raw Excel timetable data into hierarchical JSON structure
-* Organize data by year, branch, and batch
-* Generate properly formatted academic calendar JSON
-* Validate data structure before output
-
-**Workflow:**
-
-1. User uploads Excel files through Streamlit interface
-2. Parser scripts extract structured data from Excel
-3. `json_creater.py` processes and organizes data
-4. JSON files are written to `/public/data/` directory
-5. Files are committed to repository for deployment
-
-### External parser dependencies
-
-The data generation relies on two external parser projects:
-
-| Parser | Repository | Purpose |
-| --- | --- | --- |
-| **JIIT Time Table Parser** | [github.com/tashifkhan/JIIT-time-table-parser](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/github.com/tashifkhan/JIIT-time-table-parser) | Extracts timetable data from Excel files |
-| **JIIT Academic Calendar Parser** | [github.com/tashifkhan/JIIT-Academic-Calender](https://github.com/tashifkhan/JIIT-time-table-website/blob/0ffdedf5/github.com/tashifkhan/JIIT-Academic-Calender) | Extracts academic calendar events from Excel files |
-
----
-
-## Data consumption flow
-
-The JSON data flows through multiple layers of the application from storage to display.
-
-![Diagram 4](images/11-timetable-data-format-reference_diagram_4.png)
-
-### Data loading process
-
-1. **Initial Request:** React component requests timetable data for specific semester/campus
-2. **Service Worker Interception:** Request intercepted by service worker (`sw.js`)
-3. **Cache Check:** Service worker checks cache storage for existing data
-4. **Network Fallback:** If not cached, fetch from network
-5. **Cache Update:** Store fetched data in cache for offline access
-
-### Data processing pipeline
-
-1. **User Input:** User selects campus, year, branch, batch via `ScheduleForm`
-2. **JSON Retrieval:** Appropriate JSON file fetched via service worker
-3. **Pyodide Processing:** JSON passed to Python modules via `pyodide.ts` middleware
-4. **Schedule Generation:** `_creator.py` and branch-specific modules process data
-5. **React Rendering:** Processed schedule returned to React components
-6. **Display:** `ScheduleDisplay` renders color-coded timetable
-
-### Academic calendar flow
-
-1. **Calendar Selection:** User navigates to academic calendar page
-2. **JSON Fetch:** Calendar JSON fetched for selected academic year
-3. **Event Parsing:** Events parsed and formatted by `CalendarContent`
-4. **Display:** Events shown in calendar grid or list view
-5. **Export:** Optional sync to Google Calendar via Google Calendar API
-
----
-
-## JSON schema validation
-
-While the application does not enforce strict schema validation, the expected structure is implicitly defined by the Python processing modules and React components.
-
-### Timetable JSON expected structure
-
-```
-// TypeScript type definition (inferred from usage)
-type TimetableData = {
+```ts
+type CampusFile = {
   [year: string]: {
-    [branch: string]: {
-      [batch: string]: Subject[]
+    timetable: {
+      [day: string]: {
+        [slot: string]: string[];
+      };
+    };
+    subjects: Array<{
+      Code: string;
+      "Full Code": string;
+      Subject: string;
+    }>;
+  };
+};
+```
+
+### Activity strings
+
+Each class cell is a packed token, not a JSON object. From EVEN26/62 Monday 9am:
+
+```text
+TA4(CI121)-TS10/APR
+LB3,B4(CI121)-CR325/ANP
+LA1,A2(PH211)-G1/ANU
+PA5(PH271)-PL1/MKC/MTR
+LUNCH
+```
+
+`TA4(CI121)-TS10/APR` reads left to right:
+
+| Chunk | Value | Meaning |
+| --- | --- | --- |
+| leading letter | `T` | class type: `L` lecture, `T` tutorial, `P` practical |
+| batch | `A4` | student batch. Commas and ranges pack several: `LB3,B4`, `LA1,A2` |
+| `(…)` | `CI121` | subject code the parser looks up |
+| after `-` | `TS10` | room |
+| after `/` | `APR` | faculty initials. Labs can list two: `MKC/MTR` |
+
+The parser does not store faculty. It keeps name, type, and room. `subject_extractor` takes the parenthesis (dash fallback if there is none). `location_extractor` takes the room. Type is that first `L`/`T`/`P`. Batch matching is [the pipeline page](4.2-python-processing-pipeline).
+
+### Generated timetable
+
+Raw slots stay strings until Pyodide. `create_time_table(campus, year, time_table_json, subject_json, batch, electives)` walks every day, every slot, every string, and keeps the rows whose batch (and electives) match. That object is the timetable the grid and timeline render. It is also what `HomeContent` writes to localStorage as `cachedSchedule`.
+
+```mermaid
+flowchart TB
+  YT[YourTietable]
+  YT --> Mon[Monday]
+  YT --> Tue[Tuesday]
+  Mon --> Slot["09:00-10:00"]
+  Slot --> Cell["subject_name type location"]
+```
+
+Days become full names (`MON` → `Monday`). Slot keys become 24h ranges (`9-9.50` → `09:00-10:00`). Each cell is one class, not an array. `LUNCH` is dropped. Practicals (`P`) get an extra hour on the end, so `10-10.50` lab is `10:00-12:00`. If two matching classes land on the same hour, the later one overwrites. Type `C` is not in this output. EditEventDialog writes it onto `editedSchedule`.
+
+Subject lookup uses `Code`, then slices of `Full Code`. Year 1 EVEN26/62 often has empty `Full Code`, so a token like `CI121` or `MA211` can stay the code if nothing in `subjects` matches.
+
+Batch `A4`, year 1, EVEN26 Sector 62, no electives. This is the week `time_table_creator` builds from the campus file above:
+
+```json
+{
+  "Monday": {
+    "09:00-10:00": {
+      "subject_name": "CI121",
+      "type": "T",
+      "location": "TS10"
+    },
+    "10:00-11:00": {
+      "subject_name": "Physics-2",
+      "type": "L",
+      "location": "FF1"
+    },
+    "11:00-12:00": {
+      "subject_name": "MA211",
+      "type": "L",
+      "location": "FF1"
+    }
+  },
+  "Tuesday": {
+    "10:00-11:00": {
+      "subject_name": "HS111",
+      "type": "L",
+      "location": "FF1"
+    },
+    "11:00-12:00": {
+      "subject_name": "CI121",
+      "type": "L",
+      "location": "FF1"
+    }
+  },
+  "Wednesday": {
+    "09:00-10:00": {
+      "subject_name": "CI121",
+      "type": "L",
+      "location": "CR325"
+    },
+    "10:00-11:00": {
+      "subject_name": "Workshop",
+      "type": "T",
+      "location": "TS17"
+    },
+    "11:00-12:00": {
+      "subject_name": "HS111",
+      "type": "L",
+      "location": "FF4"
+    },
+    "13:00-15:00": {
+      "subject_name": "Software Development Fundamentals Lab-",
+      "type": "P",
+      "location": "CL02"
+    },
+    "16:00-17:00": {
+      "subject_name": "MA211",
+      "type": "L",
+      "location": "FF1"
+    }
+  },
+  "Thursday": {
+    "09:00-10:00": {
+      "subject_name": "Physics-2",
+      "type": "T",
+      "location": "TS6"
+    },
+    "10:00-12:00": {
+      "subject_name": "Physics Lab-2",
+      "type": "P",
+      "location": "PL2"
+    },
+    "13:00-14:00": {
+      "subject_name": "Physics-2",
+      "type": "L",
+      "location": "G1"
+    },
+    "14:00-15:00": {
+      "subject_name": "MA211",
+      "type": "L",
+      "location": "FF1"
+    },
+    "15:00-16:00": {
+      "subject_name": "MA211",
+      "type": "T",
+      "location": "TS7"
+    },
+    "16:00-17:00": {
+      "subject_name": "CI121",
+      "type": "L",
+      "location": "G8"
+    }
+  },
+  "Friday": {
+    "09:00-11:00": {
+      "subject_name": "Workshop",
+      "type": "P",
+      "location": "EW2"
+    },
+    "13:00-14:00": {
+      "subject_name": "HS111",
+      "type": "T",
+      "location": "TS6"
+    }
+  },
+  "Saturday": {
+    "10:00-11:00": {
+      "subject_name": "Physics-2",
+      "type": "L",
+      "location": "G1"
+    },
+    "11:00-13:00": {
+      "subject_name": "HS111",
+      "type": "P",
+      "location": "LL1"
     }
   }
 }
+```
 
-type Subject = {
-  code: string
-  name: string
-  prof: string
-  type: "Lecture" | "Lab" | "Tutorial"
-  slots: string[]
+TypeScript (`website/types/index.ts`):
+
+```ts
+interface YourTietable {
+  [day: string]: {
+    [timeSlot: string]: {
+      subject_name: string;
+      type: "L" | "T" | "P" | "C";
+      location: string;
+    };
+  };
 }
 ```
 
-### Academic calendar JSON expected structure
+`WeekSchedule` in `types/schedule.ts` is the same nested shape. After `toJs()`, Home JSON-clones it so Pyodide Proxies do not land in React state. Display reads `editedSchedule || schedule`. A new generate sets `editedSchedule` to null.
 
-```
-// TypeScript type definition (inferred from usage)
-type CalendarData = CalendarEvent[]
+`cachedSchedule` in localStorage is that week object. Next to it:
 
-type CalendarEvent = {
-  title: string
-  startDate: string  // ISO 8601 format
-  endDate: string    // ISO 8601 format
-  description?: string
-  category: string
+```json
+{
+  "year": "1",
+  "batch": "A4",
+  "campus": "62",
+  "selectedSubjects": []
 }
 ```
 
-### Data integrity requirements
+That params blob is `cachedScheduleParams`. `classConfigs` stores named form presets, not this grid. The share URL is year/batch/campus/electives, not the generated cells.
 
-| Requirement | Timetable JSON | Calendar JSON |
-| --- | --- | --- |
-| **Required Fields** | `code`, `name`, `prof`, `type`, `slots` | `title`, `startDate`, `endDate`, `category` |
-| **Optional Fields** | None | `description` |
-| **Date Format** | N/A | ISO 8601 (`YYYY-MM-DD`) |
-| **Slot Format** | JIIT standard notation | N/A |
-| **Nested Structure** | Year → Branch → Batch → Subjects | Flat array |
-| **Empty Values** | Not allowed | `description` can be empty |
+## Calendar file
 
----
+`website/data/calender/{yy1yy2}.json` is a JSON array. The folder name is a typo that stuck (`calender`). `2526.json` is academic year 2025-26 (146 events). Google-calendar shaped: `summary` plus `start.date` / `end.date` as ISO dates. Same-day events repeat the date. Ranges use a later `end`.
 
-## Caching and offline access
-
-The service worker implements aggressive caching for JSON data to enable offline functionality.
-
-### Cache strategy
-
-| Resource Type | Strategy | Cache Name | TTL |
-| --- | --- | --- | --- |
-| Timetable JSON | NetworkFirst → CacheFirst | `workbox-precache-v2` | Build-time precache |
-| Calendar JSON | NetworkFirst → CacheFirst | `workbox-precache-v2` | Build-time precache |
-| Static assets | Precache | `workbox-precache-v2` | Indefinite |
-
-### Precache manifest
-
-During build, Next.js with `@ducanh2912/next-pwa` generates a precache manifest that includes all JSON data files:
-
-```
-// Generated precache manifest (example)
+```json
 [
   {
-    "url": "/data/time-table/ODD25/62.json",
-    "revision": "abc123..."
+    "summary": "Registration of 1st Semester (B.Tech, Intgt M.Tech, All UG and Diploma)",
+    "start": { "date": "2025-07-10" },
+    "end": { "date": "2025-07-10" }
   },
   {
-    "url": "/data/time-table/ODD25/128.json",
-    "revision": "def456..."
+    "summary": "T1 Examination & Results - Examination Schedule",
+    "start": { "date": "2025-08-29" },
+    "end": { "date": "2025-09-06" }
   },
   {
-    "url": "/data/calender/2526/calender.json",
-    "revision": "ghi789..."
+    "summary": "Holiday - Semester Break - Diwali (Odd)",
+    "start": { "date": "2025-10-19" },
+    "end": { "date": "2025-10-26" }
   }
 ]
 ```
 
-### Offline behavior
+The UI treats a title that starts with `Holiday -` as a holiday. Everything else is an academic event.
 
-When offline:
+## Exam file
 
-1. Service worker serves all resources from cache
-2. Timetable generation continues using cached JSON + Pyodide WASM
-3. Academic calendar displays cached events
-4. Google Calendar sync is disabled (requires network)
-5. Export functions (PDF/PNG) continue to work
+`website/data/exam/{year}/{SEM}/T*.json` is a JSON array. EVEN26 T3 has 316 rows, all `subject_type: "L"` in that dump.
 
----
-
-## Updating timetable data
-
-When new semester data becomes available, the update process is:
-
-![Diagram 5](images/11-timetable-data-format-reference_diagram_5.png)
-
-### Update checklist
-
-* Obtain latest timetable Excel files from JIIT
-* Run JIIT Time Table Parser on Excel files
-* Run JIIT Academic Calendar Parser for calendar events
-* Execute `json_creater.py` to generate JSON files
-* Verify JSON structure matches expected schema
-* Check all year/branch/batch combinations present
-* Validate date formats in calendar JSON
-* Commit changes to Git repository
-* Trigger deployment pipeline
-* Verify service worker updates on live site
-* Test offline functionality with new data
-
----
-
-## Common data issues and troubleshooting
-
-| Issue | Symptom | Solution |
-| --- | --- | --- |
-| **Missing Branch** | Branch not appearing in dropdown | Add branch data to year object in JSON |
-| **Empty Batch** | No subjects for selected batch | Verify batch number exists in JSON structure |
-| **Invalid Slots** | Schedule not rendering correctly | Ensure slot identifiers match JIIT notation |
-| **Date Parse Error** | Calendar events not displaying | Validate ISO 8601 date format (`YYYY-MM-DD`) |
-| **Missing Electives** | Elective subjects not available | Check subject type is correctly set |
-| **Cache Stale Data** | Old timetable showing after update | Clear browser cache and service worker cache |
-| **JSON Syntax Error** | Application fails to load | Validate JSON syntax using linter |
-| **Inconsistent Structure** | Some years/branches broken | Ensure all levels follow hierarchy: year → branch → batch → subjects |
-
-### Validation commands
-
-Check JSON validity:
-
+```json
+[
+  {
+    "subject_code": "19M21BT117",
+    "subject_type": "L",
+    "subject_name": "ENZYMES AND BIOPROCESS TECHNOLOGY",
+    "exam_date": "11-05-2026",
+    "exam_time": "10.00 AM",
+    "exam_day": "Monday",
+    "semester": "2"
+  },
+  {
+    "subject_code": "24B11CS243",
+    "subject_type": "L",
+    "subject_name": "Data Science & Data Analytics: Theory & Practice",
+    "exam_date": "11-05-2026",
+    "exam_time": "10.00 AM",
+    "exam_day": "Monday",
+    "semester": "2, 4"
+  }
+]
 ```
-# Validate timetable JSON
-jq empty public/data/time-table/ODD25/62.json
 
-# Validate calendar JSON
-jq empty public/data/calender/2526/calender.json
-```
+`semester` on disk is a string: `"2"`, `"8"`, or a list like `"2, 4"` / `"1, 2, 3"`. The UI splits that into `semesters: number[]`. `ExamContent` searches with Fuse and can filter to "my exams" using the current timetable subjects. Dates stay `DD-MM-YYYY`. Times stay `10.00 AM`.
+
+## How files get there
+
+`creator/` Streamlit + Typer (Gemini for PDF notices) writes this JSON. Copy into `website/data/` (and repo-root `data/` if you use the parent fallback). The website does not parse Excel at runtime.

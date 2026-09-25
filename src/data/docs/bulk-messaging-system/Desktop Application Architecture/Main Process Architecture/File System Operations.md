@@ -1,7 +1,8 @@
 # File system operations
 
 ## Introduction
-This page explains file system operations within the Electron main process, focusing on:
+Main-process file work: contact/email list dialogs, reading chosen paths, and deleting WhatsApp auth/cache directories.
+
 - Contact import for CSV and TXT files for WhatsApp messaging
 - Email list import supporting multiple formats with validation
 - File reading mechanisms using Node.js streams and synchronous operations
@@ -47,8 +48,8 @@ M --> VN
 
 ## Core components
 - Electron main process IPC handlers for file operations:
-  - WhatsApp contact import from CSV/TXT using streams and synchronous reads
-  - Email list import dialog and content parsing for CSV/TXT
+ - WhatsApp contact import from CSV/TXT using streams and synchronous reads
+ - Email list import dialog and content parsing for CSV/TXT
 - Preload bridge exposing secure APIs to the renderer
 - Frontend components orchestrating user interactions and invoking IPC
 - Python utilities for reliable parsing and validation
@@ -88,15 +89,15 @@ Pre-->>UI : contacts[]
 ### WhatsApp contact import (CSV/TXT)
 - Dialog configuration allows selecting single file with filters for TXT and CSV
 - File extension determines parsing strategy:
-  - CSV: stream-based parsing using Node.js streams and csv-parser
-  - TXT: synchronous read with line-by-line processing and comma-separated values
+ - CSV: stream-based parsing using Node.js streams and csv-parser
+ - TXT: synchronous read with line-by-line processing and comma-separated values
 - Parsing logic:
-  - CSV: collects rows with number field; trims values; supports optional name field
-  - TXT: splits by newline, trims each line, splits by comma into number/name
+ - CSV: collects rows with number field; trims values; supports optional name field
+ - TXT: splits by newline, trims each line, splits by comma into number/name
 - Error handling:
-  - Stream errors are caught and handled gracefully by returning empty array
-  - Unsupported file type returns null
-  - Synchronous read errors are caught and return empty array
+ - Stream errors are caught and handled gracefully by returning empty array
+ - Unsupported file type returns null
+ - Synchronous read errors are caught and return empty array
 
 ```mermaid
 flowchart TD
@@ -123,11 +124,11 @@ Unsupported --> Done
 ### Email list import and parsing (CSV/TXT)
 - Dialog configuration allows selecting a single file with filters for TXT and CSV
 - After selection, the app reads the file content:
-  - CSV: stream-based parsing; attempts to detect email columns by common names or falls back to first column; filters entries containing "@"; joins lines with newline
-  - TXT: splits by newline, trims, filters non-empty lines containing "@"
+ - CSV: stream-based parsing; attempts to detect email columns by common names or falls back to first column; filters entries containing "@"; joins lines with newline
+ - TXT: splits by newline, trims, filters non-empty lines containing "@"
 - Error handling:
-  - Catches exceptions during file read and rethrows for upstream handling
-  - Logs errors to console for diagnostics
+ - Catches exceptions during file read and rethrows for upstream handling
+ - Logs errors to console for diagnostics
 
 ```mermaid
 sequenceDiagram
@@ -156,11 +157,11 @@ Pre-->>UI : emails
 
 ### File reading mechanisms: streams vs synchronous
 - Streams:
-  - Used for CSV parsing via fs.createReadStream and piping to csv-parser
-  - Benefits: memory efficient for large files; incremental processing
+ - Used for CSV parsing via fs.createReadStream and piping to csv-parser
+ - Benefits: memory efficient for large files; incremental processing
 - Synchronous:
-  - Used for TXT parsing via readFileSync
-  - Simpler for small files; straightforward line splitting and filtering
+ - Used for TXT parsing via readFileSync
+ - Simpler for small files; straightforward line splitting and filtering
 
 ```mermaid
 flowchart TD
@@ -173,38 +174,38 @@ T --> |No| E["Unsupported or error"]
 
 ### Dialog-Based file selection
 - WhatsApp contact import dialog:
-  - Properties: openFile
-  - Filters: Text Files (txt, csv) and All Files
+ - Properties: openFile
+ - Filters: Text Files (txt, csv) and All Files
 - Email list import dialog:
-  - Properties: openFile
-  - Filters: Text Files, CSV Files, All Files
+ - Properties: openFile
+ - Filters: Text Files, CSV Files, All Files
 - Both dialogs return a result object with canceled flag and filePaths array
 
 ### Error handling strategies
 - File access failures:
-  - Stream errors are captured and handled to avoid crashes; returns empty array
-  - Synchronous read errors are caught and return empty array
+ - Stream errors are captured and handled to avoid crashes; returns empty array
+ - Synchronous read errors are caught and return empty array
 - Invalid formats:
-  - Unsupported file types return null or empty results depending on context
-  - CSV parsing handles missing columns gracefully by skipping invalid rows
+ - Unsupported file types return null or empty results depending on context
+ - CSV parsing handles missing columns gracefully by skipping invalid rows
 - Permission issues:
-  - Dialog cancellation is handled; UI informs user
-  - Exceptions during file read are logged and surfaced to the UI
+ - Dialog cancellation is handled; UI informs user
+ - Exceptions during file read are logged and surfaced to the UI
 - Frontend validation:
-  - Email list import validates presence of subject, message, and recipient count
-  - Regex-based email validation ensures only valid addresses are processed
+ - Email list import validates presence of subject, message, and recipient count
+ - Regex email checks drop addresses that do not match before send
 
 ### Security considerations
 - Context isolation and secure IPC:
-  - Preload exposes only necessary APIs via contextBridge
-  - Electron's contextIsolation enabled in BrowserWindow configuration
+ - Preload exposes only necessary APIs via contextBridge
+ - Electron's contextIsolation enabled in BrowserWindow configuration
 - Path handling:
-  - No explicit path traversal checks observed; ensure dialogs restrict to intended directories
+ - No explicit path traversal checks observed; ensure dialogs restrict to intended directories
 - Data sanitization:
-  - Phone numbers and emails are trimmed and validated before use
-  - CSV column detection uses flexible heuristics; consider stricter schema enforcement if needed
+ - Phone numbers and emails are trimmed and validated before use
+ - CSV column detection uses flexible heuristics; consider stricter schema enforcement if needed
 - Environment and secrets:
-  - Gmail and SMTP credentials are stored securely via electron-store; avoid logging sensitive data
+ - Gmail and SMTP credentials are stored securely via electron-store; avoid logging sensitive data
 
 ## Dependency analysis
 External libraries and their roles:
@@ -238,15 +239,16 @@ SH --> ES
 ## Troubleshooting guide
 Common issues and resolutions:
 - Dialog canceled or no file selected:
-  - UI should inform the user and prevent further processing
+ - UI should inform the user and prevent further processing
 - Unsupported file type:
-  - Ensure file extension matches supported types; return null or empty result
+ - Ensure file extension matches supported types; return null or empty result
 - CSV parsing errors:
-  - Verify CSV structure and delimiters; handle missing columns gracefully
+ - Verify CSV structure and delimiters; handle missing columns gracefully
 - Permission denied:
-  - Confirm file permissions and path validity; prompt user to select another file
+ - Confirm file permissions and path validity; prompt user to select another file
 - Email list validation failures:
-  - Ensure recipients contain "@" and are non-empty; display specific invalid entries
+ - Ensure recipients contain "@" and are non-empty; display specific invalid entries
 
 ## Conclusion
-The Electron main process implements reliable file system operations for importing contacts and email lists. It uses Node.js streams for efficient CSV processing, synchronous reads for simple TXT parsing, and secure IPC via preload to expose capabilities to the renderer. Error handling is integrated at multiple layers, and security is addressed through context isolation and secure credential storage. For production hardening, consider adding explicit path validation and stricter CSV schema enforcement.
+
+Dialogs and deletes run in main for a reason. Keep new file features on that side of the bridge.

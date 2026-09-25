@@ -1,74 +1,81 @@
 # Getting started
 
 ## Introduction
-This guide helps you set up and run the WhatsappBulkMessaging desktop application. It covers prerequisites, installation, environment configuration, initial setup, quick start examples for each messaging service, troubleshooting, and verification steps. The application combines an Electron + React frontend with a Python backend for advanced contact processing.
+
+Install Node and Python deps, set Google OAuth env vars if you need Gmail, then run the Electron app from `electron/` and try a channel.
 
 ## Prerequisites
-Ensure your system meets these requirements before installing:
-- Node.js 16 or newer
-- Python 3.8 or newer
+
+- Node.js 20.19 or newer (Vite 8 needs 20.19+ or 22.12+; Electron 43 bundles Node 24 at runtime)
+- Python 3.10 or newer for `python-backend/`
 - Google Cloud Console access for Gmail API
 - A WhatsApp account
-- SMTP server credentials (if using SMTP method)
+- SMTP server credentials if you use SMTP
 
-These prerequisites are documented in the project's Getting Started section.
+Clone lands in `bulk-messaging-system`. The desktop app lives in `electron/`. Contact parsers live in `python-backend/`.
 
 ## Installation
-Follow these step-by-step instructions to install the application:
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/tashifkhan/bulk-messaging-system
-   cd WhatsappBulkMessaging
-   ```
+
+```bash
+git clone https://github.com/tashifkhan/bulk-messaging-system
+cd bulk-messaging-system
+```
 
 2. Install Electron dependencies:
-   ```bash
-   cd electron
-   npm install
-   ```
+
+```bash
+cd electron
+npm install
+```
 
 3. Install Python backend dependencies:
-   ```bash
-   cd ../python-backend
-   pip install -r requirements.txt
-   ```
 
-4. Start the development server:
-   ```bash
-   # From the electron directory
-   npm run dev
-   ```
+```bash
+cd ../python-backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
-This starts both the React development server and the Electron main process concurrently.
+On Windows, activate with `venv\Scripts\activate`.
+
+4. Start the development server from `electron/`:
+
+```bash
+# From the electron directory
+npm run dev
+```
+
+That runs Vite on port 5173 and then launches Electron (`concurrently` + `wait-on`). Optional: start Flask from `python-backend/` with `python app.py` so file import can hit `http://localhost:5000`.
 
 ## Environment configuration
-Configure environment variables for Gmail API authentication:
 
-1. Create a `.env` file in the `electron` directory with your Google OAuth2 credentials:
-   ```
-   GOOGLE_CLIENT_ID=your_client_id_here
-   GOOGLE_CLIENT_SECRET=your_client_secret_here
-   ```
+Create a `.env` file in `electron/` for Gmail OAuth2:
 
-2. Follow the Gmail API setup steps in the project documentation to create credentials and enable the Gmail API.
+```
+GOOGLE_CLIENT_ID=your_client_id_here
+GOOGLE_CLIENT_SECRET=your_client_secret_here
+```
 
-These configurations enable secure OAuth2 authentication for Gmail API integration.
+Enable the Gmail API in Google Cloud Console, create a desktop OAuth client, and put those values here. WhatsApp and SMTP do not need this file.
 
 ## Initial setup workflow
-Connect to WhatsApp using QR code authentication:
 
-1. Open the application and navigate to the WhatsApp tab.
+Connect WhatsApp with QR auth:
+
+1. Open the app and go to the WhatsApp tab.
 2. Click "Connect to WhatsApp".
-3. Scan the QR code displayed in the app using your phone's WhatsApp.
-4. Wait for authentication to complete.
+3. Scan the QR code with your phone's WhatsApp.
+4. Wait until the status reads ready or authenticated.
 
-The Electron main process manages the WhatsApp client lifecycle, handles QR generation, and emits status updates to the renderer.
+The main process owns the `whatsapp-web.js` client, turns the QR into a data URL, and pushes status events to the renderer.
 
 ```mermaid
 sequenceDiagram
 participant UI as "WhatsAppForm.jsx"
-participant Preload as "preload.js"
+participant Preload as "preload.cjs"
 participant Main as "main.js"
 participant WA as "whatsapp-web.js"
 UI->>Preload : startWhatsAppClient()
@@ -81,42 +88,47 @@ WA-->>Main : ready/authenticated events
 Main-->>UI : emit("whatsapp-status", "ready/Authenticated")
 ```
 
+If Chromium for Puppeteer is missing, install Chrome or Brave, or set `PUPPETEER_EXECUTABLE_PATH`.
+
 ## Quick start examples
+
 ### WhatsApp messaging
-1. Connect to WhatsApp using the QR code workflow described above.
-2. Import contacts via CSV/Excel or add numbers manually.
-3. Compose your message, optionally using `{{name}}` for personalization.
+
+1. Connect with the QR flow above.
+2. Import contacts via CSV/Excel or paste numbers.
+3. Compose a message. `{{name}}` personalizes when a name exists.
 4. Set a delay between messages and click "Send Mass Messages".
 
-The Electron main process sends messages using the WhatsApp Web client and reports progress.
+The main process sends through WhatsApp Web and reports progress.
 
 ### Gmail API
-1. Navigate to the Gmail tab.
-2. Click "Authenticate Gmail" to open the OAuth consent flow.
-3. After successful authentication, import or enter email addresses.
-4. Compose your email (subject and HTML content supported).
-5. Set the delay between emails and click "Send Bulk Email".
 
-The Gmail handler manages OAuth2 flow and sends emails via the Gmail API.
+1. Open the Gmail tab.
+2. Click "Authenticate Gmail" and finish the OAuth consent window.
+3. Import or enter addresses.
+4. Compose subject and HTML body.
+5. Set the delay and click "Send Bulk Email".
+
+`gmail-handler.js` stores the token with `electron-store` and sends through the Gmail API.
 
 ### SMTP
-1. Navigate to the SMTP tab.
-2. Enter your SMTP server configuration (host, port, username, password).
-3. Optionally enable secure connection (SSL/TLS).
-4. Import or enter email addresses.
-5. Compose your email and set the delay between emails.
-6. Click "Send SMTP Email".
 
-The SMTP handler validates configuration, connects to the server, and sends emails.
+1. Open the SMTP tab.
+2. Enter host, port, username, and password. Enable SSL/TLS if the server needs it.
+3. Import or enter addresses.
+4. Compose the email, set the delay, and click "Send SMTP Email".
+
+`smtp-handler.js` verifies the transport with Nodemailer, then sends.
 
 ## Architecture overview
-The application follows a hybrid architecture combining Electron + React for the UI and Python for backend utilities.
+
+Electron + React for the UI. Python for contact parsing. Channel work stays in the main process.
 
 ```mermaid
 graph TB
 subgraph "Desktop App (Electron)"
 UI[React UI]
-Preload[preload.js]
+Preload[preload.cjs]
 Main[main.js]
 Handlers[gmail-handler.js<br/>smtp-handler.js]
 end
@@ -142,11 +154,13 @@ PyAPI --> Utils
 ## Detailed component analysis
 
 ### Electron main process
-The main process orchestrates:
-- Window creation and development vs production loading
-- IPC handlers for Gmail, SMTP, and WhatsApp
+
+`electron/src/electron/main.js` handles:
+
+- Window creation, Vite URL in dev, `dist-react/index.html` in production
+- IPC for Gmail, SMTP, WhatsApp, and file dialogs
 - WhatsApp client lifecycle (init, QR, ready, authenticated, disconnected)
-- Contact import and email list parsing
+- Contact and email list parsing via `electron/src/shared/contact-parser.js`
 
 ```mermaid
 flowchart TD
@@ -161,17 +175,17 @@ Ready --> UI
 ```
 
 ### Gmail handler
-Handles OAuth2 authentication and email sending:
-- Validates environment variables
-- Opens browser window for consent
-- Exchanges authorization code for tokens
-- Stores tokens securely
-- Sends emails with progress reporting
+
+- Checks `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+- Opens a BrowserWindow for consent
+- Exchanges the code for tokens
+- Stores tokens in `electron-store`
+- Sends mail and emits progress
 
 ```mermaid
 sequenceDiagram
 participant UI as "GmailForm.jsx"
-participant Preload as "preload.js"
+participant Preload as "preload.cjs"
 participant Handler as "gmail-handler.js"
 participant Google as "Google OAuth2"
 participant GmailAPI as "Gmail API"
@@ -187,35 +201,44 @@ Handler-->>UI : progress events
 ```
 
 ### SMTP handler
-Manages SMTP configuration and sending:
-- Validates SMTP config
-- Saves credentials securely (excluding password)
-- Verifies connection
-- Sends emails with rate limiting and progress reporting
+
+- Validates host, port, and credentials
+- Saves config without the password
+- Verifies the connection
+- Sends with delay and progress events
 
 ### Python backend API
-Provides contact processing utilities:
-- Upload and parse CSV/Excel/Text files
-- Clean and validate phone numbers
-- Parse manually entered numbers
-- Validate individual numbers
+
+Flask on port 5000:
+
+- `POST /upload` for CSV, TXT, XLSX, XLS
+- `POST /parse-manual-numbers` for pasted text
+- `POST /validate-number` for a single number
+- `GET /health`
+
+If Flask is down, the Electron app falls back to basic parsing.
 
 ## Dependency analysis
-Key dependencies and their roles:
+
+Versions from `electron/package.json` and `python-backend/requirements.txt`:
 
 ```mermaid
 graph LR
 subgraph "Electron Dependencies"
-React[react@^19]
-Tailwind[tailwindcss@^4]
-WA[whatsapp-web.js@^1.30]
-Nodemailer[nodemailer@^7]
-Googleapis[googleapis@^150]
+React[react@^19.2]
+Tailwind[tailwindcss@^4.3]
+Electron[electron@^43]
+WA[whatsapp-web.js@^1.34]
+Nodemailer[nodemailer@^9]
+Googleapis[googleapis@^173]
+Builder[electron-builder@^26]
 end
 subgraph "Python Dependencies"
 Flask[flask]
+FlaskCors[flask-cors]
 Pandas[pandas]
 Openpyxl[openpyxl]
+Xlrd[xlrd]
 Werkzeug[werkzeug]
 end
 React --> WA
@@ -226,67 +249,37 @@ Nodemailer -.-> Python
 Googleapis -.-> Python
 ```
 
+Dev scripts use `concurrently`, `cross-env`, `wait-on`, Vite 8, and ESLint 10. Python packages are unpinned in `requirements.txt`.
+
 ## Troubleshooting guide
-Common installation and runtime issues:
 
-- **WhatsApp QR Code Not Loading**
-  - Check internet connection
-  - Restart the application
-  - Clear browser cache
+- **WhatsApp QR code not loading.** Check the network, restart, install Chrome/Brave, or set `PUPPETEER_EXECUTABLE_PATH`.
+- **Gmail authentication failed.** Confirm `.env` values, Cloud Console OAuth client type, and that Gmail API is enabled.
+- **SMTP connection issues.** Recheck host, port, TLS, and firewall. Gmail SMTP wants an app password.
+- **Contact import errors.** Use UTF-8 CSV/Excel/TXT and recognizable name/phone headers.
 
-- **Gmail Authentication Failed**
-  - Verify OAuth2 credentials
-  - Check Google Cloud Console settings
-  - Ensure Gmail API is enabled
+Also confirm:
 
-- **SMTP Connection Issues**
-  - Verify server settings
-  - Check firewall settings
-  - Use correct port and security settings
-
-- **Contact Import Errors**
-  - Check file format compatibility
-  - Verify file encoding (UTF-8)
-  - Ensure proper column headers
-
-Additional checks:
-- Confirm Node.js 16+ and Python 3.8+ are installed
-- Ensure environment variables are correctly set
-- Verify development server runs on port 5173
+- Node.js 20.19+ and Python 3.10+
+- Commands run from `electron/` and `python-backend/`, not a `WhatsappBulkMessaging` folder
+- Vite is on port 5173 (`strictPort: true`)
 
 ## Verification steps
-After completing setup, verify your installation:
 
-1. **Development Server**
-   - Confirm the React dev server starts on port 5173
-   - Check Electron main process logs for successful window creation
-
-2. **WhatsApp Connection**
-   - Launch the app and connect to WhatsApp
-   - Verify QR code appears and authenticates successfully
-   - Check status updates in the activity log
-
-3. **Gmail API**
-   - Authenticate with Gmail
-   - Send a test email to yourself
-   - Review progress in the activity log
-
-4. **SMTP**
-   - Configure SMTP settings
-   - Send a test email
-   - Confirm delivery status
-
-5. **Python Backend**
-   - Start the Flask API
-   - Test contact parsing endpoints
-   - Verify response formats
+1. **Development server.** Vite on 5173, Electron window opens, DevTools in dev mode.
+2. **WhatsApp.** QR appears, scan succeeds, status events show in the log.
+3. **Gmail API.** Authenticate, send a test to yourself, watch progress.
+4. **SMTP.** Verify config, send a test, confirm delivery status.
+5. **Python backend.** `python app.py`, hit `/health`, then upload a sample from `python-backend/sample_contacts.csv`.
 
 ## Next steps
-Once verified, explore advanced features:
-- Customize message templates
-- Configure rate limiting and delays
-- Export sending results and statistics
-- Integrate with external contact management systems
-- Package the application for distribution using electron-builder
 
-Build targets are configured for macOS, Windows, and Linux distributions.
+- Message templates (`template-save` / `template-list` IPC)
+- Send delays and per-recipient errors
+- `npm run dist:mac`, `dist:win`, or `dist:linux` from `electron/`
+
+electron-builder targets: macOS dmg (arm64), Windows portable + msi (x64), Linux AppImage (x64). Output is `electron/dist/`.
+
+## Conclusion
+
+Once `npm run dev` shows the window and a WhatsApp QR or SMTP verify works, you are in. Feature docs cover the IPC handlers and parsers next.

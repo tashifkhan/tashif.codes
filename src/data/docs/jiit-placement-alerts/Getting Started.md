@@ -1,125 +1,178 @@
 # Getting started
 
 ## Introduction
-The SuperSet Telegram Notification Bot is a placement notification system for JIIT students. It aggregates job postings, placement offers, and placement updates from JIIT's SuperSet portal, email sources, and official websites, then distributes them via Telegram and Web Push channels. The system includes automated scraping, LLM-powered content processing, and multi-channel notifications.
+JIIT placement alerts. The bot scrapes SuperSet, placement email, and the official site, stores the result in MongoDB, then pushes it on Telegram and Web Push.
 
-Key capabilities:
-- Automated scraping of SuperSet portal, emails, and official websites
-- Smart duplicate detection to prevent repeated notifications
-- LLM-powered extraction and structuring of placement data
-- Multi-channel broadcasting (Telegram and Web Push)
-- User management with simple commands (/start, /stop, /status)
-- Scheduled updates (3x daily IST)
-- Admin dashboard and daemon mode for production deployments
+The hosted bot is enough if you only want alerts. Self-host if you want your own credentials, years, or filters.
+
+What it does:
+- Scrapes SuperSet, email, and the official JIIT placement pages
+- Dedupes so the same notice does not go out twice
+- Uses Gemini (optional) to extract offers and notices from email
+- Sends on Telegram and Web Push
+- Registers users with `/start`, `/stop`, `/status`, `/placement_year`
+- Runs SuperSet plus email on the hour at midnight and 8 AM through 11 PM IST, and scrapes official data at 12 PM IST
+- Ships admin commands and daemon mode for a VPS
 
 ## Quick start: live bot usage
-No setup required! The bot is already running and ready to use:
+Already running:
 
-- **Telegram Bot**: [@SupersetNotificationBot](https://t.me/SupersetNotificationBot)
-- **Web Dashboard**: [JIIT Placement Updates](https://jiit-placement-updates.tashif.codes)
+- Telegram: [@SupersetNotificationBot](https://t.me/SupersetNotificationBot)
+- Site: [JIIT Placement Updates](https://jiit-placement-updates.tashif.codes)
 
-Steps:
-1. Open Telegram and search for [@SupersetNotificationBot](https://t.me/SupersetNotificationBot)
-2. Send `/start` to register for notifications
-3. You'll receive updates via Telegram automatically
-4. Use `/help` to see all available commands
+1. Open [@SupersetNotificationBot](https://t.me/SupersetNotificationBot)
+2. Send `/start`
+3. Pick a year with `/placement_year` if the default is wrong
+4. `/help` lists the rest
 
-## Self-Hosted setup
-For advanced users who want to run their own instance, follow these steps:
+User commands: `/start`, `/stop`, `/status`, `/placement_year`, `/stats`, `/noticestats`, `/web`, `/help`.
+
+## Self-hosted setup
 
 ### Prerequisites
-- **Python**: 3.12 or higher
-- **MongoDB**: Local or Atlas (cloud)
-- **Telegram Bot**: Created via @BotFather
-- **Email Account**: Gmail with app password (for email monitoring)
-- **API Key**: Google API key for Gemini (optional, for LLM features)
+- Python 3.12+
+- MongoDB, local or Atlas
+- A Telegram bot token from @BotFather
+- SuperSet login(s)
+- Gmail app password if you want email ingestion
+- `GOOGLE_API_KEY` if you want Gemini extraction
+
+Local MongoDB from `app/docker-compose.dev.yaml`:
+
+```bash
+cd app
+docker compose -f docker-compose.dev.yaml up -d
+```
 
 ### Installation steps
 
 #### 1. clone repository
 ```bash
-git clone https://github.com/tashifkhan/placement-alerts-superset-telegram-notification-bot.git
-cd placement-alerts-superset-telegram-notification-bot
+git clone https://github.com/tashifkhan/JIIT-placement-alerts.git
+cd JIIT-placement-alerts
 ```
 
 #### 2. install dependencies
+Code lives in `app/` (`pyproject.toml`, clients, core, model, servers). Install from there.
+
 ```bash
 cd app
-
-# Using uv (recommended)
-pip install uv
 uv sync
 
-# OR using pip
+# or with pip
 pip install -r requirements.txt
 ```
 
+`uv` is the lockfile path (`uv.lock`). Install uv first if you do not have it. Do not `pip install uv` as the main setup step.
+
 #### 3. get credentials
 
-**Telegram Bot Token:**
-1. Open Telegram and search for [@BotFather](https://t.me/botfather)
+Telegram bot token:
+1. Message [@BotFather](https://t.me/botfather)
 2. Send `/newbot`
-3. Follow the prompts and copy your token
+3. Copy the token into `.env`
 
-**Chat ID:**
-- Message [@userinfobot](https://t.me/userinfobot) to get your user ID
-- Or use the getUpdates API endpoint for group/channel IDs
+Chat ID:
+- Personal use: message [@userinfobot](https://t.me/userinfobot) and use the `user_id` as `TELEGRAM_CHAT_ID`
+- Channel or group: add the bot as admin, post something, then open `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates` and read `"chat":{"id":...}`. Group and channel IDs are negative.
 
-**MongoDB Connection String:**
-1. Create free account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register)
-2. Create a cluster
-3. Click "Connect" → "Connect Your Application"
-4. Copy the connection string
+MongoDB:
+1. Atlas free tier, or the compose service above
+2. Copy the connection string into `MONGO_CONNECTION_STR`
 
-**Gmail App Password:**
-1. Enable 2-factor authentication on Google Account
-2. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
-3. Generate password for "Mail" and "Windows Computer"
-4. Copy the 16-character password
+Gmail app password (email ingestion):
+1. Turn on 2-step verification
+2. Create an app password at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+3. Put it in `PLACEMENT_APP_PASSWORD` (the old `PLCAMENT_*` names still work)
 
 #### 4. configure environment
-Create `.env` file in the `app/` directory:
+Copy `.env.example` to `app/.env` and fill it in. Protected webhook routes fail closed unless `WEBHOOK_API_KEY` is set. Admin commands fail closed unless your Telegram user ID is in `ADMIN_TELEGRAM_USER_IDS`.
 
-```bash
+```
 # MongoDB
-MONGO_CONNECTION_STR=mongodb+srv://username:password@cluster.mongodb.net/SupersetPlacement
+MONGO_CONNECTION_STR=mongodb+srv://username:password@cluster.mongodb.net/database
+MONGO_DATABASE_NAME=2025-26
+GLOBAL_DATABASE_NAME=PlacementBotGlobal
+ACTIVE_PLACEMENT_YEAR=202526
+DEFAULT_PLACEMENT_YEAR=202526
+PLACEMENT_YEARS=["202526", "202627"]
 
 # Telegram
-TELEGRAM_BOT_TOKEN=123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
-TELEGRAM_CHAT_ID=987654321
+TELEGRAM_BOT_TOKEN=1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ
+TELEGRAM_CHAT_ID=your_chat_id
+ADMIN_TELEGRAM_USER_IDS=[123456789]
 
-# SuperSet Credentials (JSON format)
-SUPERSET_CREDENTIALS=[{"email": "cse_email@jiit.ac.in", "password": "password"}]
+# SuperSet credentials grouped by ingestion year
+SUPERSET_CREDENTIALS=[]
+SUPERSET_CREDENTIALS_BY_YEAR={"202526":[{"email":"senior@example.com","password":"replace-me"}],"202627":[{"email":"junior@example.com","password":"replace-me"}]}
 
-# Email & Gmail
+# Email + Gemini (optional)
 PLACEMENT_EMAIL=your_gmail@gmail.com
-PLACEMENT_PASSWORD=your_app_password
+PLACEMENT_APP_PASSWORD=your_app_password
 GOOGLE_API_KEY=your_google_api_key
 
-# Optional
-DEBUG=false
+# Protected webhook API
+WEBHOOK_API_KEY=generate_a_long_random_secret
+CORS_ORIGINS=["https://your-dashboard.example.com"]
 ```
 
-#### 5. run the bot
+Placement-year settings:
+- `PLACEMENT_YEARS` is what the bot UI and notification routing show.
+- `SUPERSET_CREDENTIALS_BY_YEAR` is what `update` and `update-supersets` scrape. Every year you want scraped needs a key with at least one credential.
+- `ACTIVE_PLACEMENT_YEAR` is the fallback year for operations.
+- `DEFAULT_PLACEMENT_YEAR` is assigned to new users until they pick one.
+
+Without `--year`, an update scrapes every year in `SUPERSET_CREDENTIALS_BY_YEAR`:
+
 ```bash
-# Run in foreground (development)
-python main.py bot
+cd app
+uv run main.py update --year 202627
+```
 
-# Run in background (daemon mode - production)
-python main.py bot --daemon
+Email ingestion reads the year from a plus alias such as `placement+202627@example.com`. An unread email with no valid year alias goes to `ACTIVE_PLACEMENT_YEAR` unless `--year` sets another fallback.
 
-# Run one-time update
-python main.py update
+#### 5. run the bot
+The bot server handles commands. The scheduler runs scraping and Telegram sends. You need both for a complete setup.
 
-# Send pending notifications
+```bash
+cd app
+
+python main.py bot                  # bot server, foreground
+python main.py scheduler            # scheduled jobs, foreground
+
+python main.py bot --daemon         # bot server, background
+python main.py scheduler --daemon   # scheduled jobs, background
+```
+
+Daemon control:
+
+```bash
+python main.py status               # both daemons
+python main.py stop bot
+python main.py stop scheduler
+```
+
+One-off runs:
+
+```bash
+python main.py update               # SuperSet + emails
 python main.py send --telegram
-
-# Start webhook server
+python main.py send --web
+python main.py send --both
+python main.py official             # official site scrape
 python main.py webhook --port 8000
+python main.py                      # update + send (legacy)
+```
+
+Tests:
+
+```bash
+cd app
+pytest
 ```
 
 ## Architecture overview
-The application follows a service-oriented architecture with dependency injection:
+Services plus dependency injection. Clients fetch, services process, runners and servers talk to Telegram and the webhook API.
 
 ```mermaid
 graph TB
@@ -133,7 +186,7 @@ SC[SupersetClientService]
 PS[PlacementService]
 ENS[EmailNoticeService]
 NFS[NoticeFormatterService]
-SSC[SupersetScraperClient]
+OPS[OfficialPlacementService]
 end
 subgraph "Storage"
 DB[(MongoDB)]
@@ -148,165 +201,120 @@ WS[Web Push Service]
 end
 SS --> SC
 GM --> ENS
-OW --> SSC
+OW --> OPS
 SC --> NFS
 ENS --> NFS
 NFS --> DB
-SSC --> DB
+OPS --> DB
 DB --> TS
 DB --> WS
 ```
 
 ## Environment variables
-The application uses Pydantic's BaseSettings for type-safe configuration. All configuration is managed through environment variables loaded from a `.env` file.
+Pydantic `BaseSettings` loads `.env` from `app/`.
 
-### Required variables
-- **Database**: `MONGO_CONNECTION_STR` - MongoDB connection URI
-- **Telegram**: `TELEGRAM_BOT_TOKEN` - API Token from @BotFather, `TELEGRAM_CHAT_ID` - Channel or Chat ID
-- **SuperSet Credentials**: `SUPERSET_CREDENTIALS` - JSON list of SuperSet credentials
-- **Email Intelligence**: `PLACEMENT_EMAIL` - Gmail address, `PLACEMENT_PASSWORD` - Gmail App Password, `GOOGLE_API_KEY` - Google API Key
+### Required
+- `MONGO_CONNECTION_STR`
+- `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
+- `SUPERSET_CREDENTIALS_BY_YEAR` (preferred) or `SUPERSET_CREDENTIALS`
 
-### Optional variables
-- **Web Push**: `VAPID_PRIVATE_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_EMAIL`
-- **Server Configuration**: `WEBHOOK_PORT`, `WEBHOOK_HOST`
-- **Daemon Mode**: `DAEMON_MODE`
-- **Logging**: `LOG_LEVEL`, `LOG_FILE`, `SCHEDULER_LOG_FILE`
+### Optional
+- `PLACEMENT_YEARS`, `ACTIVE_PLACEMENT_YEAR`, `DEFAULT_PLACEMENT_YEAR`, `MONGO_DATABASE_NAME`, `GLOBAL_DATABASE_NAME`
+- `PLACEMENT_EMAIL`, `PLACEMENT_APP_PASSWORD` (aliases `PLCAMENT_EMAIL`, `PLCAMENT_APP_PASSWORD`)
+- `GOOGLE_API_KEY`, `LLM_MODEL`
+- `VAPID_PRIVATE_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_EMAIL`
+- `WEBHOOK_PORT`, `WEBHOOK_HOST`, `WEBHOOK_API_KEY`, `CORS_ORIGINS`
+- `ADMIN_TELEGRAM_USER_IDS`
+- `LOG_LEVEL`, `LOG_FILE`, `SCHEDULER_LOG_FILE`
 
 ## Basic command usage
-The application is controlled via a unified CLI entry point `main.py`.
+Entry point is `app/main.py`.
 
-### Available commands
-- `bot` - Starts the Telegram Bot server (commands only)
-- `scheduler` - Runs scheduled update jobs server
-- `webhook` - Starts the FastAPI Webhook server
-- `update` - Full update: SuperSet + Emails (Placements + Notices)
-- `send` - Sending engine (dispatch pending messages)
-- `official` - Runs the official website scraper
+### Commands
+- `bot` - Telegram bot (commands only)
+- `scheduler` - APScheduler jobs
+- `webhook` - FastAPI webhook server
+- `update` - SuperSet + emails (placements + notices)
+- `update-supersets` - SuperSet only
+- `update-emails` - email only
+- `send` - dispatch unsent notices
+- `official` - official website scrape
+- `official-seed` - seed frozen prior-year official batches
+- `stop` / `status` - daemon control
 
-### Command options
-- `--daemon` - Run in daemon mode (suppress stdout)
-- `--telegram` - Via Telegram
-- `--web` - Via Web Push
-- `--both` - Via both channels
-- `--fetch` - Fetch first before sending
-- `--host` - Host for webhook server
-- `--port` - Port for webhook server
+### Options
+- `--daemon` / `-d` - background
+- `--year YEAR` - one SuperSet year, and email fallback year
+- `--telegram` / `--web` / `--both` - send channels
+- `--fetch` - update before send
+- `--host` / `--port` - webhook bind
 
 ## Verification checklist
-Before you begin, verify your environment meets all requirements:
 
-### 1. prerequisites verification
-- [ ] Python 3.12+ installed
-- [ ] MongoDB instance available (local or Atlas)
-- [ ] Telegram account with @BotFather access
-- [ ] Gmail account with 2FA enabled and app password
-- [ ] Google API key for Gemini (optional)
+### 1. prerequisites
+- [ ] Python 3.12+
+- [ ] MongoDB reachable
+- [ ] Telegram token from @BotFather
+- [ ] SuperSet credentials for each year you scrape
+- [ ] Gmail app password if you ingest email
+- [ ] Gemini key if you want LLM extraction
 
-### 2. environment setup
-- [ ] `.env` file created in `app/` directory
-- [ ] All required environment variables configured
-- [ ] MongoDB connection string valid
-- [ ] Telegram bot token and chat ID configured
-- [ ] SuperSet credentials in JSON format
-- [ ] Gmail credentials properly set up
+### 2. environment
+- [ ] `app/.env` filled in
+- [ ] `MONGO_CONNECTION_STR` works
+- [ ] `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` set
+- [ ] `SUPERSET_CREDENTIALS_BY_YEAR` covers every year you scrape
+- [ ] `ADMIN_TELEGRAM_USER_IDS` includes your user ID if you want admin commands
+- [ ] `WEBHOOK_API_KEY` set if you expose the webhook
 
-### 3. initial testing
-- [ ] Run `python main.py bot` to start bot server
-- [ ] Test `/start` command in Telegram
-- [ ] Verify user registration in database
-- [ ] Run `python main.py update` for manual update
-- [ ] Check logs for any errors
+### 3. first run
+- [ ] `python main.py bot` responds to `/start`
+- [ ] User shows up in the global Users collection
+- [ ] `python main.py update` completes
+- [ ] `python main.py scheduler` is running if you want the cron
+- [ ] Logs under `logs/` look clean
 
-### 4. production readiness
-- [ ] Set up daemon mode with `--daemon` flag
-- [ ] Configure proper logging and monitoring
-- [ ] Set up backup procedures for MongoDB
-- [ ] Configure firewall and network access
-- [ ] Set up process management (systemd or similar)
+### 4. production
+- [ ] `python main.py bot --daemon` and `python main.py scheduler --daemon`
+- [ ] `python main.py status` shows both
+- [ ] MongoDB backups
+- [ ] Firewall and webhook auth
 
 ## Troubleshooting common issues
 
 ### Bot not receiving messages
-**Symptoms**: Commands not responding, users not registering
-**Common Causes**:
-- Bot server not running
-- Long-polling vs Webhook confusion
-- User not registered
-- Chat ID mismatch
+Commands ignored, users not registering: bot process down, user never sent `/start`, or chat ID mismatch.
 
-**Solutions**:
-1. Verify bot server is running: `ps aux | grep main.py | grep bot`
-2. Check command format: `/start` (lowercase, no spaces)
-3. Verify TELEGRAM_CHAT_ID format (numeric only)
-4. Test manually with curl: `curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" -d "chat_id=$TELEGRAM_CHAT_ID&text=Test"`
+1. `ps aux | grep main.py | grep bot` or `python main.py status`
+2. Commands are lowercase: `/start`
+3. `TELEGRAM_CHAT_ID` is numeric. Groups are negative.
+4. Smoke test: `curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" -d "chat_id=$TELEGRAM_CHAT_ID&text=Test"`
 
 ### Database connection issues
-**Symptoms**: Connection timeout, authentication failed
-**Common Causes**:
-- Invalid connection string format
-- IP whitelist not configured
-- Incorrect credentials
-- Firewall blocking port 27017
+Timeout or auth failed:
 
-**Solutions**:
-1. Check connection string format: `mongodb+srv://user:pass@cluster.mongodb.net/db`
-2. Add IP to MongoDB Atlas whitelist
-3. URL-encode special characters in passwords
-4. Test connectivity: `telnet cluster.mongodb.net 27017`
+1. URI shape: `mongodb+srv://user:pass@cluster.mongodb.net/db`
+2. Atlas IP allowlist
+3. URL-encode special characters in the password
+4. `telnet cluster.mongodb.net 27017`
 
 ### Email processing problems
-**Symptoms**: Emails not being processed, offers not extracted
-**Common Causes**:
-- Gmail App Password incorrect
-- 2-Factor Authentication not enabled
-- LLM not working
-- Email format not recognized
+Unread mail sits there, offers never land:
 
-**Solutions**:
-1. Regenerate app password at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
-2. Enable 2-Step Verification in Google Account
-3. Check GOOGLE_API_KEY format (should start with AIzaSy)
-4. Test email processing manually
+1. New app password at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+2. 2-step verification on
+3. `GOOGLE_API_KEY` present if you expect LLM extraction
+4. `python main.py update-emails` by hand and read the log
 
 ### Notification delivery issues
-**Symptoms**: Notices processed but not sent to Telegram
-**Common Causes**:
-- sent_to_telegram flag already true
-- Telegram service connection issue
-- Chat ID not valid
-- Message too long
+Notices in Mongo, nothing on Telegram:
 
-**Solutions**:
-1. Check and reset sent flags if needed
-2. Test Telegram API connectivity
-3. Verify chat ID format (all numeric with optional minus)
-4. Check message length (Telegram has 4096 character limit)
+1. Check `sent_to_telegram` and re-send with `python main.py send --telegram`
+2. Telegram API connectivity
+3. Chat IDs numeric, optional leading minus
+4. Telegram caps a message at 4096 characters. The service splits long ones.
 
 ## Next steps
-Once your bot is running successfully:
+Use the live bot if you just want alerts. Self-host when you need your own SuperSet accounts or year routing.
 
-### 1. monitor operations
-- Set up logging and monitoring
-- Configure alerts for critical errors
-- Monitor database performance
-- Track user engagement metrics
-
-### 2. scale and customize
-- Add more data sources
-- Implement user filtering options
-- Improve notification templates
-- Add analytics dashboard
-
-### 3. maintenance
-- Regular database backups
-- Update credentials periodically
-- Monitor service health
-- Review and optimize performance
-
-### 4. community
-- Share your deployment experience
-- Contribute improvements
-- Report bugs and issues
-- Help other users deploy
-
-The bot is designed for both personal use and production deployment. Start with the live bot for immediate use, then consider self-hosting for customization and privacy requirements.
+Keep `python main.py scheduler` up. The cron is in code (`hour="0,8-23"` plus noon official scrape), not a GitHub Action. Workflows under `.github/workflows/` are disabled (`.legacy`).

@@ -1,15 +1,14 @@
 # Course search API
 
 ## Introduction
-This page provides detailed API documentation for course discovery and search endpoints. It covers:
-- Course search by keyword
-- Course listing and details retrieval
-- Course platform integration endpoints for Swayam and NPTEL
-- Search algorithms, filtering criteria, sorting options, and result formatting
-- Data synchronization and caching strategies
-- Examples of search queries, filter combinations, and response structures
+Course discovery against Swayam and NPTEL:
+- Keyword search
+- Listing and detail fetch
+- Platform-specific scrape paths
+- Caching after scrape
+- Example queries and response shapes
 
-The backend is a FastAPI application exposing REST endpoints for search and course management, backed by a database and asynchronous scrapers for Swayam/NPTEL.
+Filtering and fancy ranking are thin today; the handlers stay simple on purpose.
 
 ## Project structure
 The course search API is implemented in the notice-reminders backend module. Key areas:
@@ -105,11 +104,11 @@ Router-->>Client : "200 OK JSON"
 #### GET /search
 - Purpose: Search courses by keyword
 - Query parameters:
-  - q (required): Search string passed to the scraper
+ - q (required): Search string passed to the scraper
 - Response: Array of CourseResponse objects
 - Behavior:
-  - Calls CourseService.search_and_cache
-  - Returns validated CourseResponse entries
+ - Calls CourseService.search_and_cache
+ - Returns validated CourseResponse entries
 
 Example request:
 - GET /search?q=physics
@@ -126,8 +125,8 @@ Notes:
 - Query parameters: None
 - Response: Array of CourseResponse objects
 - Behavior:
-  - Returns all courses ordered by title ascending
-  - Uses CourseService.list_courses
+ - Returns all courses ordered by title ascending
+ - Uses CourseService.list_courses
 
 Example request:
 - GET /courses
@@ -138,10 +137,10 @@ Response structure:
 #### GET /courses/{course_code}
 - Purpose: Retrieve course details by unique code
 - Path parameters:
-  - course_code (required): Unique course identifier
+ - course_code (required): Unique course identifier
 - Response: Single CourseResponse object
 - Behavior:
-  - Returns 404 if not found
+ - Returns 404 if not found
 
 Example request:
 - GET /courses/123xyz
@@ -225,12 +224,12 @@ Scraper-->>Service : "list[Announcement]"
 
 ### Data models and schemas
 - Domain models (dataclasses):
-  - Course: title, url, code, instructor, institute, nc_code
-  - Announcement: title, date, content
+ - Course: title, url, code, instructor, institute, nc_code
+ - Announcement: title, date, content
 - Database model (Tortoise):
-  - Course: id, code(unique,index), title, url, instructor, institute, nc_code, created_at, updated_at
+ - Course: id, code(unique,index), title, url, instructor, institute, nc_code, created_at, updated_at
 - Pydantic response schema:
-  - CourseResponse: id, code, title, url, instructor, institute, nc_code, created_at, updated_at
+ - CourseResponse: id, code, title, url, instructor, institute, nc_code, created_at, updated_at
 
 ```mermaid
 classDiagram
@@ -270,14 +269,14 @@ CourseResponse <.. CourseDB : "validated from"
 
 ### Filtering, sorting, and pagination
 - Filtering:
-  - No explicit filters are exposed by the current endpoints
-  - Filtering can be implemented at the service level (e.g., by instructor, institute, or nc_code) by extending CourseService and adding router parameters
+ - No explicit filters are exposed by the current endpoints
+ - Filtering can be implemented at the service level (e.g., by instructor, institute, or nc_code) by extending CourseService and adding router parameters
 - Sorting:
-  - /courses endpoint sorts by title ascending
-  - /search endpoint does not apply sorting; order depends on upstream results
+ - /courses endpoint sorts by title ascending
+ - /search endpoint does not apply sorting; order depends on upstream results
 - Pagination:
-  - Not implemented in current endpoints
-  - Can be added by introducing limit/offset parameters and updating CourseService methods
+ - Not implemented in current endpoints
+ - Can be added by introducing limit/offset parameters and updating CourseService methods
 
 Recommendations:
 - Add query parameters for filters (e.g., instructor, institute, nc_code) and pagination (limit, offset)
@@ -285,14 +284,14 @@ Recommendations:
 
 ### Platform integration: swayam and NPTEL
 - Swayam:
-  - Course search via SwayamScraper.search_courses
-  - Course code extracted from preview URL pattern
+ - Course search via SwayamScraper.search_courses
+ - Course code extracted from preview URL pattern
 - NPTEL:
-  - Announcements retrieval via SwayamScraper.get_announcements
-  - Falls back to Swayam2 domain if NPTEL URL returns 404
+ - Announcements retrieval via SwayamScraper.get_announcements
+ - Falls back to Swayam2 domain if NPTEL URL returns 404
 - Configuration:
-  - Base URLs for Swayam and NPTEL are defined in Settings
-  - Cache TTL for recently updated filtering is configurable
+ - Base URLs for Swayam and NPTEL are defined in Settings
+ - Cache TTL for recently updated filtering is configurable
 
 ### Result formatting
 - All endpoints return JSON arrays for lists and single objects for details
@@ -324,43 +323,39 @@ CONFIG --> SVC
 - Database upsert: Field-level comparison minimizes unnecessary writes
 - Sorting: Single-field ordering reduces CPU overhead
 - Caching:
-  - Recently updated filtering uses a time window to limit result set size
-  - Consider adding Redis or in-memory cache for frequent search terms
+ - Recently updated filtering uses a time window to limit result set size
+ - Consider adding Redis or in-memory cache for frequent search terms
 - Pagination: Introduce limit/offset to bound response sizes
 - Concurrency: Scale workers behind ASGI server for higher throughput
-
-[No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - 404 Not Found on /courses/{course_code}:
-  - The requested course code does not exist in the database
-  - Verify the code and ensure search_and_cache was executed
+ - The requested course code does not exist in the database
+ - Verify the code and ensure search_and_cache was executed
 - Empty results from /search:
-  - Query may not match Swayam listings
-  - Try alternate keywords or check platform availability
+ - Query may not match Swayam listings
+ - Try alternate keywords or check platform availability
 - Unexpected empty announcements:
-  - NPTEL URL may require fallback to Swayam2
-  - Confirm course_code correctness and network connectivity
+ - NPTEL URL may require fallback to Swayam2
+ - Confirm course_code correctness and network connectivity
 - Slow responses:
-  - Increase concurrency or introduce caching for popular queries
-  - Monitor database write operations during upsert
+ - Increase concurrency or introduce caching for popular queries
+ - Monitor database write operations during upsert
 
 ## Conclusion
-The Course Search API provides a clean, extensible foundation for discovering and retrieving course information from Swayam and NPTEL. Current capabilities include keyword search, listing, and details retrieval with reliable scraping and local caching. Future enhancements should focus on filtering, pagination, and improved caching strategies to scale performance and usability.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Search and detail routes scrape then cache. Add filtering and pagination when result sets get large; the current handlers stay simple on purpose.
 
 ## Appendices
 
 ### API reference summary
 - GET /search?q={query}
-  - Returns: Array of CourseResponse
-  - Notes: No pagination or sorting enforced
+ - Returns: Array of CourseResponse
+ - Notes: No pagination or sorting enforced
 - GET /courses
-  - Returns: Array of CourseResponse sorted by title
+ - Returns: Array of CourseResponse sorted by title
 - GET /courses/{course_code}
-  - Returns: Single CourseResponse or 404
+ - Returns: Single CourseResponse or 404
 
 Response fields:
 - id, code, title, url, instructor, institute, nc_code, created_at, updated_at

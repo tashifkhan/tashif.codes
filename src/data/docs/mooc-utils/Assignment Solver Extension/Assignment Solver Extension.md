@@ -1,7 +1,7 @@
 # Assignment solver extension
 
 ## Introduction
-Assignment Solver is a privacy-focused Chrome and Firefox extension that assists with online assignments using Google's Gemini AI. It supports dual modes, Study Hints (non-invasive guidance) and Auto-Solve (automated answer application), and handles multiple question types: single-choice, multi-choice, fill-in-the-blank, and image-based questions. The extension operates client-side, storing your Gemini API key locally and communicating with the official Gemini API endpoint. It provides a side panel UI, reliable message routing, and cross-browser compatibility via webextension-polyfill.
+Assignment Solver is a Chrome and Firefox extension that helps with online assignments through Google's Gemini API. Study Hints mode gives guidance without filling forms. Auto-Solve can apply answers. It handles single-choice, multi-choice, fill-in-the-blank, and image questions, keeps your API key on the device, and talks to Gemini from the client.
 
 ## Project structure
 The extension is organized into modular layers:
@@ -67,19 +67,19 @@ SP -.-> CIN
 
 ## Core components
 - Dual-mode operation:
-  - Study Hints: Retrieve AI guidance without applying answers
-  - Auto-Solve: Extract, analyze, apply answers, and optionally auto-submit
+ - Study Hints: Retrieve AI guidance without applying answers
+ - Auto-Solve: Extract, analyze, apply answers, and optionally auto-submit
 - Supported question types:
-  - Single-choice (radio)
-  - Multi-choice (checkbox)
-  - Fill-in-the-blank (text/textarea)
-  - Image-based (embedded images and full-page screenshots)
+ - Single-choice (radio)
+ - Multi-choice (checkbox)
+ - Fill-in-the-blank (text/textarea)
+ - Image-based (embedded images and full-page screenshots)
 - Privacy-first design:
-  - API key stored locally via browser storage
-  - All processing occurs client-side or via official Gemini API
+ - API key stored locally via browser storage
+ - All processing occurs client-side or via official Gemini API
 - Cross-browser compatibility:
-  - Uses webextension-polyfill
-  - Dynamic manifest differences for Chrome (side_panel) and Firefox (sidebar_action)
+ - Uses webextension-polyfill
+ - Dynamic manifest differences for Chrome (side_panel) and Firefox (sidebar_action)
 
 ## Architecture overview
 The extension follows a layered architecture:
@@ -297,14 +297,14 @@ Browser <.. StorageAdapter : "used by"
 
 ## Dependency analysis
 - Build and packaging:
-  - Vite builds separate bundles for background, content script, and UI
-  - Scripts support watch mode for both Chrome and Firefox
+ - Vite builds separate bundles for background, content script, and UI
+ - Scripts support watch mode for both Chrome and Firefox
 - Manifest differences:
-  - Chrome uses side_panel; Firefox uses sidebar_action
-  - Host permissions include Google Generative Language API domain
+ - Chrome uses side_panel; Firefox uses sidebar_action
+ - Host permissions include Google Generative Language API domain
 - Cross-browser compatibility:
-  - webextension-polyfill ensures consistent APIs
-  - Optional API checks prevent runtime errors on missing features
+ - webextension-polyfill keeps consistent APIs
+ - Optional API checks prevent runtime errors on missing features
 
 ```mermaid
 graph LR
@@ -323,41 +323,37 @@ Poly --> CTXJS
 
 ## Performance considerations
 - Rate limiting:
-  - 500 ms delay between answer applications
-  - 200 ms delay between DOM operations
+ - 500 ms delay between answer applications
+ - 200 ms delay between DOM operations
 - Token handling:
-  - Recursive splitting of HTML and question sets to avoid MAX_TOKENS
+ - Recursive splitting of HTML and question sets to avoid MAX_TOKENS
 - Network resilience:
-  - Retry logic with backoff for background communication
+ - Retry logic with backoff for background communication
 - Model selection:
-  - Choose models aligned with free tier limits and stability
-
-[No sources needed since this section provides general guidance]
+ - Choose models aligned with free tier limits and stability
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - Could not get page HTML:
-  - Ensure you are on a real assignment page and fully loaded
-  - Refresh and re-extract
+ - Ensure you are on a real assignment page and fully loaded
+ - Refresh and re-extract
 - Question container not found:
-  - Re-extract; verify selectors match the platform
-  - Check console for detailed error info
+ - Re-extract; verify selectors match the platform
+ - Check console for detailed error info
 - API Key invalid:
-  - Verify key at Google AI Studio
-  - Ensure Gemini access is enabled
-  - Check for extra spaces when pasting
+ - Verify key at Google AI Studio
+ - Ensure Gemini access is enabled
+ - Check for extra spaces when pasting
 - Answers not being applied:
-  - Some platforms use custom components
-  - Inspect console for errors
-  - Apply answers individually to isolate issues
+ - Some platforms use custom components
+ - Inspect console for errors
+ - Apply answers individually to isolate issues
 - Rate limit errors:
-  - Wait before retrying
-  - Upgrade quota or reduce concurrent questions
+ - Wait before retrying
+ - Upgrade quota or reduce concurrent questions
 
 ## Conclusion
-Assignment Solver delivers a reliable, privacy-preserving solution for automated assignment assistance. Its modular architecture, cross-browser compatibility, and dual-mode operation make it adaptable to diverse educational platforms. By using client-side processing and structured Gemini prompts, it balances automation with transparency and user control.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Client-side Gemini calls, two modes, and structured prompts. Submit the form yourself after Auto-Solve unless you have verified the page selectors.
 
 ## Appendices
 
@@ -380,10 +376,10 @@ Assignment Solver delivers a reliable, privacy-preserving solution for automated
 
 ### Usage examples
 - Basic Workflow:
-  - Navigate to an assignment page
-  - Open the side panel and click "Solve Assignment"
-  - Review results and confirm auto-submit if enabled
+ - Navigate to an assignment page
+ - Open the side panel and click "Solve Assignment"
+ - Review results and confirm auto-submit if enabled
 - Manual Mode:
-  - Extract questions
-  - Get hints, select answers, and apply one by one
-  - Submit manually when finished
+ - Extract questions
+ - Get hints, select answers, and apply one by one
+ - Submit manually when finished

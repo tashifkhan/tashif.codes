@@ -1,7 +1,7 @@
 # Message composition and templates
 
 ## Introduction
-This page explains the message composition and templating functionality for WhatsApp bulk messaging. It covers the editing interface, personalization using {{name}} placeholders, validation and limits, dynamic content generation, preview and character counting, and best practices for crafting engaging messages while complying with platform guidelines.
+WhatsApp message box, `{{name}}` substitution, character limits, and the checks before the send handler runs.
 
 ## Project structure
 The message composition and templating features span the Electron front-end (React components and IPC), the Electron main process (WhatsApp client orchestration), and optional Python utilities for contact parsing and validation.
@@ -180,8 +180,6 @@ BM --> APP["app.py"]
 - Network stability: Ensure reliable connectivity; QR loading and authentication retries are handled
 - UI responsiveness: Disable send controls during operations to prevent duplicate submissions
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - QR code not loading: Retry connection or check console for errors
@@ -191,4 +189,5 @@ Common issues and resolutions:
 - Exceeding character limit: Trim message to under 4096 characters
 
 ## Conclusion
-The message composition and templating system provides a reliable, user-friendly interface for creating personalized WhatsApp messages at scale. With {{name}} placeholders, a clear character counter, and real-time feedback, users can craft engaging messages while respecting platform limits and best practices. The integration with Electron IPC and optional Python utilities ensures flexible contact processing and validation.
+
+`{{name}}` is literal. Contacts without names get an empty substitution, so preview with real rows.

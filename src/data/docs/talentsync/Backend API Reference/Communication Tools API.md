@@ -1,9 +1,8 @@
 # Communication tools API
 
-## Introduction
-This page provides detailed API documentation for AI-powered communication tools focused on cold email generation, cover letter creation, LinkedIn post generation, and job description editing. It explains request/response schemas, personalization parameters, prompt engineering approaches, content optimization strategies, brand consistency enforcement, bulk generation capabilities, template management, approval workflows, and quality assurance measures.
+AI-powered communication tools focused on cold email generation, cover letter creation, LinkedIn post generation, and job description editing.
 
-## Project structure
+## Repository layout
 The communication tools are implemented as FastAPI routes backed by LangChain-based services and prompts. Each tool has:
 - Route handlers that accept form or JSON payloads
 - Pydantic models defining request/response schemas
@@ -48,13 +47,13 @@ CMSV --> PR
 CMSV --> DP
 ```
 
-## Core components
+## Building blocks
 - Cold Email Generation and Editing: Two variants support file upload and raw text inputs, with optional company URL research and key points personalization.
 - Cover Letter Generation and Editing: Accepts resume text, job description, and personalization parameters; supports language selection.
 - LinkedIn Post Generation and Editing: Generates multiple posts with hashtags and CTAs; supports editing existing posts.
 - Job Description Editing: Aligns resume content with a specific job description, returning detailed changes and ATS metrics.
 
-## Architecture overview
+## How it fits together
 The system follows a layered architecture:
 - Routes: Define endpoints and bind request/response models
 - Services: Implement business logic, orchestrate LLM chains, and integrate external services
@@ -80,9 +79,7 @@ Service-->>Route : "ColdMailResponse"
 Route-->>Client : "200 OK with subject/body"
 ```
 
-## Detailed component analysis
-
-### Cold email generation and editing
+## Cold email generation and editing
 Endpoints:
 - POST /cold-mail/generator/ (file-based)
 - POST /cold-mail/generator/ (text-based)
@@ -125,7 +122,7 @@ GenChain --> ParseJSON["Parse JSON response"]
 ParseJSON --> ReturnResp["Return ColdMailResponse"]
 ```
 
-### Cover letter creation and editing
+## Cover letter creation and editing
 Endpoints:
 - POST /cover-letter/generator/
 - POST /cover-letter/edit/
@@ -157,7 +154,7 @@ Service-->>Route : "Body text"
 Route-->>Client : "CoverLetterResponse"
 ```
 
-### LinkedIn post generation and editing
+## LinkedIn post generation and editing
 Endpoints:
 - POST /linkedin/generate-posts
 - POST /linkedin/edit-post
@@ -212,7 +209,7 @@ PostGenerationRequest --> PostGenerationResponse : "produces"
 GeneratedPost <-- PostGenerationResponse : "contains"
 ```
 
-### Job description editing (resume alignment)
+## Job description editing (resume alignment)
 Endpoint:
 - POST /resume/edit-by-jd
 
@@ -239,7 +236,7 @@ Score --> Keywords["Identify addressed/missing keywords"]
 Keywords --> Respond["Return JDEditResponse"]
 ```
 
-## Dependency analysis
+## Dependencies
 Key dependencies and relationships:
 - Routes depend on service functions for business logic
 - Services depend on LangChain prompt modules for chain construction
@@ -260,20 +257,18 @@ SCM --> DP["services/data_processor.py"]
 COM["models/common/schemas.py"] --> JDS
 ```
 
-## Performance considerations
+## Performance
 - File processing: Temporary file handling and cleanup to avoid disk bloat; consider streaming and size limits
 - LLM invocation: Batch multiple posts in a single request to reduce overhead (supported by post_count)
 - Optional research: Enable company research only when company_url is provided to minimize latency
 - Resume formatting: Apply LLM-based formatting selectively for non-trivial formats to balance accuracy and speed
-- JSON parsing: Reliable parsing accommodates varied LLM outputs; ensure prompt consistency to reduce retries
+- JSON parsing: Reliable parsing accommodates varied LLM outputs; keep prompts consistent to cut retries
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Invalid resume format: Ensure uploaded files are supported and contain readable text; validation checks will reject malformed content
 - JSON parsing failures: Verify prompt outputs are valid JSON; adjust prompt instructions to enforce strict formatting
 - Company research errors: Confirm company_url validity and network connectivity; handle empty results gracefully
 - Unsupported file types: Supported formats include common document types; plain text and Markdown are accepted without reformatting
 - Rate limiting and timeouts: Configure LLM provider settings and consider retry/backoff strategies
-
-## Conclusion
-The Communication Tools API provides a cohesive set of endpoints for generating and refining professional communications. By using structured schemas, reliable prompt engineering, optional research, and quality checks, the system ensures personalized, consistent, and effective content across cold emails, cover letters, LinkedIn posts, and resume alignment to job descriptions. Extending these patterns enables scalable bulk generation, template management, and approval workflows tailored to organizational needs.

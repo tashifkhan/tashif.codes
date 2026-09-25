@@ -1,7 +1,7 @@
 # Database schema & models
 
 ## Introduction
-This page provides detailed database schema documentation for the SuperSet Telegram Notification Bot's MongoDB implementation. It covers the five main collections (Notices, Jobs, PlacementOffers, Users, OfficialData), their field definitions, data types, validation rules, entity relationships, indexes, and query patterns. It also explains data modeling decisions, normalization strategies, performance considerations, sample documents, common queries, data lifecycle management, retention policies, backup strategies, and integrity constraints.
+Top-level MongoDB docs for Notices, Jobs, PlacementOffers, Users, OfficialData. Fields, relationships, indexes, sample queries, retention, and the integrity rules upserts rely on.
 
 ## Project structure
 The database layer is implemented as a service that wraps a MongoDB client. The service exposes CRUD and aggregation operations for each collection, while the client manages the connection and collection references. Runners orchestrate data ingestion and notification dispatch, relying on the database service for persistence and retrieval.
@@ -38,7 +38,7 @@ DB --> C5
 - DBClient: Thin wrapper around PyMongo to manage connection, database selection, and collection initialization.
 - Runners: UpdateRunner orchestrates fetching notices/jobs from SuperSet, enriching and saving to DB; NotificationRunner retrieves unsent notices and broadcasts via Telegram/WebPush.
 
-Key responsibilities:
+It owns:
 - Notices: Store formatted notices with sent status per channel.
 - Jobs: Structured job listings with enrichment and deduplication.
 - PlacementOffers: Offers extracted from emails with merge logic and event emission.
@@ -220,13 +220,13 @@ Operational usage:
 
 ### Entity relationships and normalization
 - One-way relationships:
-  - Notices may link to Jobs via enrichment during formatting; no foreign key is stored.
-  - PlacementOffers are independent snapshots; no explicit links to Users.
+ - Notices may link to Jobs via enrichment during formatting; no foreign key is stored.
+ - PlacementOffers are independent snapshots; no explicit links to Users.
 - Denormalization:
-  - Notices embed sent flags per channel to avoid joins and simplify dispatch.
-  - Jobs embed structured fields for fast filtering and display.
+ - Notices embed sent flags per channel to avoid joins and simplify dispatch.
+ - Jobs embed structured fields for fast filtering and display.
 - Event-driven updates:
-  - PlacementOffers emits events for new offers and updates to trigger notifications.
+ - PlacementOffers emits events for new offers and updates to trigger notifications.
 
 ### Indexing strategy
 - Notices: Unique id; sent flags; creation time; source/category.
@@ -335,21 +335,4 @@ DatabaseService --> DBClient : "wraps"
 - Broadcast failures: Check Telegram bot token/chat ID and rate limits.
 
 ## Conclusion
-The MongoDB schema for the SuperSet Telegram Notification Bot emphasizes denormalization, embedded arrays, and channel-specific sent flags to enable efficient ingestion, formatting, and dispatch. The five collections are designed for high-cardinality, time-series, and preference-driven workflows. Proper indexing, batch operations, and TTL-based cleanup ensure scalability and maintainability.
-
-## Appendices
-
-### Appendix A: index creation commands
-See `DATABASE.md`.
-
-### Appendix B: data samples
-- Notices: `DATABASE.md`
-- Jobs: `DATABASE.md`
-- PlacementOffers: `DATABASE.md`
-- Users: `DATABASE.md`
-- OfficialPlacementData: `DATABASE.md`
-
-### Appendix C: operational scripts and data sources
-- Notices ingestion sample: `notices.json`
-- Jobs ingestion sample: `structured_job_listings.json`
-- Placement offers sample: `placement_offers.json`
+Schema leans on denormalized docs, embedded arrays, and per-channel sent flags. Five collections cover high-cardinality jobs, time-ish notice streams, and preference lookups. Indexes, batch writes, and TTL cleanup are what keep it from getting slow.

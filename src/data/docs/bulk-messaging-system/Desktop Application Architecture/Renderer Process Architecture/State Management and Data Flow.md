@@ -1,7 +1,7 @@
 # State management and data flow
 
 ## Introduction
-This page explains state management and data flow patterns in the renderer process of the BulkMessaging application. It focuses on how React state is organized within the BulkMailer component and coordinated across multiple messaging services (Gmail, SMTP, and WhatsApp). It documents the end-to-end flow from user interactions through component state to Electron IPC handlers, including state update patterns, event handling strategies, and UI consistency with backend service states. It also covers side effects handling, mutation patterns, and the integration between local component state and Electron's main process.
+How BulkMailer keeps Gmail, SMTP, and WhatsApp state in sync with IPC results and progress events.
 
 ## Project structure
 The renderer-side application is structured around a single-page React layout with a sidebar navigation and tabbed content areas. Each tab corresponds to a distinct messaging service with its own form and state management.
@@ -194,7 +194,7 @@ Patterns:
 - Cleanup and error handling in handlers.
 
 ### Data flow: from user interaction to backend and back
-End-to-end flow for Gmail bulk send:
+Gmail bulk send flow:
 
 ```mermaid
 sequenceDiagram
@@ -271,4 +271,5 @@ Common issues and resolutions:
 - SMTP verification failures: Verify host/port/credentials; enable TLS settings appropriately.
 
 ## Conclusion
-The BulkMailer component is the central coordinator for state and IPC in the renderer process. It integrates three distinct messaging services, Gmail, SMTP, and WhatsApp, by maintaining local state, subscribing to real-time events, and orchestrating IPC calls. The design emphasizes controlled updates, event-driven synchronization, and reliable error handling, ensuring a responsive and consistent user experience across services.
+
+Progress events and invoke results both mutate React state. Ignore either channel and the UI will lie about what finished.

@@ -1,10 +1,10 @@
 # System architecture
 
 ## Introduction
-This page describes the system architecture of Agentic Browser, focusing on the relationships between the React-based browser extension, the Python MCP server, the FastAPI backend, and the integrated services and tools. It explains how the MCP protocol enables the extension to communicate with the Python backend, how the FastAPI backend orchestrates services and tools, and how the model-agnostic design supports multiple LLM providers. Cross-cutting concerns such as security, transparency, monitoring, and separation of concerns between frontend and backend are addressed.
+How the React extension, Python MCP server, FastAPI backend, and tools fit together. MCP for tool transport, FastAPI for REST, shared LLM layer for providers.
 
 ## Project structure
-The repository is organized into distinct layers:
+Layout:
 - Extension: A Chromium extension built with React and TypeScript, implementing background and content scripts for browser automation and messaging.
 - Backend: A Python application exposing both an MCP server and a FastAPI HTTP API.
 - Core: Shared configuration and LLM abstraction.
@@ -22,7 +22,6 @@ end
 subgraph "Python Backend"
 MAIN["main.py"]
 MCP["mcp_server/server.py"]
-API["api/main.py"]
 CFG["core/config.py"]
 LLM["core/llm.py"]
 SRV_REACT["services/react_agent_service.py"]
@@ -32,21 +31,20 @@ ROUTER_REACT["routers/react_agent.py"]
 end
 BG --> |"Extension messaging"| CT
 BG --> |"MCP protocol"| MCP
-BG --> |"HTTP API"| API
-API --> |"Route handlers"| ROUTER_REACT
+BG --> |"HTTP API"| MAIN
+MAIN --> |"Route handlers"| ROUTER_REACT
 ROUTER_REACT --> |"Service call"| SRV_REACT
 SRV_REACT --> |"Agent graph"| AG_REACT
 SRV_REACT --> |"Tools"| TOOL_BROWSER
 SRV_REACT --> |"LLM provider"| LLM
-MAIN --> |"CLI entrypoint"| MCP
-MAIN --> |"CLI entrypoint"| API
-CFG --> API
+MAIN --> |"HTTP /mcp"| MCP
+CFG --> MAIN
 CFG --> MCP
 CFG --> LLM
 ```
 
 ## Core components
-- CLI entrypoint: Selects whether to run the API server or the MCP server.
+- CLI entrypoint: `main.py` / `agentic-api-run` starts FastAPI. `agentic-mcp` starts stdio MCP. HTTP MCP is mounted at `/mcp`.
 - FastAPI backend: Exposes HTTP endpoints under a unified router registry.
 - MCP server: Implements MCP protocol tools for LLM generation, GitHub Q&A, and website content conversion.
 - LLM abstraction: Provider-agnostic configuration supporting multiple LLM providers.
@@ -66,7 +64,7 @@ sequenceDiagram
 participant Ext as "Extension<br/>background.ts"
 participant Content as "Content Script<br/>content.ts"
 participant MCP as "MCP Server<br/>mcp_server/server.py"
-participant API as "FastAPI<br/>api/main.py"
+participant API as "FastAPI<br/>main.py"
 participant Svc as "Service<br/>services/react_agent_service.py"
 participant Agent as "Agent Graph<br/>agents/react_agent.py"
 participant Tools as "Tools<br/>tools/browser_use/tool.py"
@@ -84,21 +82,16 @@ API-->>Ext : "HTTP response"
 
 ## Detailed component analysis
 
-### CLI entrypoint and mode selection
-The CLI selects between running the API server or the MCP server, enabling flexible deployment modes.
+### CLI entrypoint
+`python main.py` and `agentic-api-run` start FastAPI with MCP at `/mcp`. `agentic-mcp` starts stdio MCP.
 
 ```mermaid
 flowchart TD
-Start(["Start"]) --> Parse["Parse CLI args"]
-Parse --> Mode{"Mode selected?"}
-Mode --> |API| RunAPI["Run API server"]
-Mode --> |MCP| RunMCP["Run MCP server"]
-Mode --> |None & yes| RunAPI
-Mode --> |None & interactive| Prompt["Prompt user"]
-Prompt --> Choice{"1 or 2"}
-Choice --> |1| RunAPI
-Choice --> |2| RunMCP
-RunAPI --> End(["Exit"])
+Start(["Start"]) --> Choose{"Entrypoint"}
+Choose --> |python main.py / agentic-api-run| RunAPI["Uvicorn FastAPI"]
+Choose --> |agentic-mcp| RunMCP["stdio MCP"]
+RunAPI --> Mount["Mount /mcp"]
+RunAPI --> End(["Running"])
 RunMCP --> End
 ```
 
@@ -199,7 +192,7 @@ BrowserActionTool --> BrowserActionInput : "args_schema"
 ```
 
 ### Extension messaging and action execution
-The extension's background script listens for messages from the UI and content scripts, handles tab management, and executes actions by injecting content scripts and sending messages. It also supports dynamic Gemini requests and action-plan execution.
+The extension's background script listens for messages from the UI and content scripts, handles tab management, and executes actions by injecting content scripts and sending messages. It supports dynamic Gemini requests and action-plan execution.
 
 ```mermaid
 flowchart TD
@@ -230,16 +223,15 @@ Loop --> ExecAct
 ```mermaid
 graph LR
 MAIN["main.py"] --> MCP["mcp_server/server.py"]
-MAIN --> API["api/main.py"]
-API --> ROUTERS["Routers"]
+MAIN --> ROUTERS["Routers"]
 ROUTERS --> SRV["Services"]
 SRV --> AG["agents/react_agent.py"]
 SRV --> TOOL["tools/browser_use/tool.py"]
 AG --> LLM["core/llm.py"]
 MCP --> LLM
-BG["extension/background.ts"] --> MCP
-BG --> API
-BG --> CT["extension/content.ts"]
+BG["clients/browser-extension/entrypoints/background.ts"] --> MCP
+BG --> MAIN
+BG --> CT["clients/browser-extension/entrypoints/content.ts"]
 ```
 
 ## Performance considerations
@@ -248,8 +240,6 @@ BG --> CT["extension/content.ts"]
 - HTTP API throughput: Use asynchronous FastAPI handlers and keep route logic lightweight; delegate heavy work to services.
 - Extension responsiveness: Avoid long-running injected scripts; prefer background-worker coordination and short-lived content-script interactions.
 - Caching: Reuse compiled agent graphs and compiled LLM clients where feasible.
-
-[No sources needed since this section provides general guidance]
 
 ## Security and transparency
 - Guardrails and prompt injection: Dedicated prompt injection validator and explicit system prompts guide the agent toward safe, transparent behavior.
@@ -265,18 +255,18 @@ BG --> CT["extension/content.ts"]
 
 ## Infrastructure requirements and deployment topology
 - Runtime environments:
-  - Python runtime for the MCP server and FastAPI backend.
-  - Chromium-based browser for the extension.
+ - Python runtime for the MCP server and FastAPI backend.
+ - Chromium-based browser for the extension.
 - Networking:
-  - Localhost binding controlled by configuration; adjust host/port for containerized deployments.
+ - Localhost binding controlled by configuration; adjust host/port for containerized deployments.
 - Scalability:
-  - Stateless FastAPI routes scale horizontally behind a reverse proxy.
-  - MCP server runs as a single process; consider process isolation per tenant if needed.
-  - Tool-heavy workloads benefit from caching and asynchronous processing.
+ - Stateless FastAPI routes scale horizontally behind a reverse proxy.
+ - MCP server runs as a single process; consider process isolation per tenant if needed.
+ - Tool-heavy workloads benefit from caching and asynchronous processing.
 - Containerization:
-  - Package the Python backend and serve via a containerized FastAPI app; run the MCP server alongside or separately.
+ - Package the Python backend and serve via a containerized FastAPI app; run the MCP server alongside or separately.
 - Secrets management:
-  - Store API keys and base URLs in environment variables; mount secrets securely in containers.
+ - Store API keys and base URLs in environment variables; mount secrets securely in containers.
 
 ## Troubleshooting guide
 - MCP tool errors: The MCP server wraps tool execution in try/catch and returns error text; verify tool names and arguments.
@@ -285,4 +275,5 @@ BG --> CT["extension/content.ts"]
 - React agent errors: Inspect chat history normalization and page-context injection; ensure HTML-to-markdown conversion succeeds.
 
 ## Conclusion
-Agentic Browser's architecture cleanly separates the extension, MCP server, and FastAPI backend, enabling modular tooling and model-agnostic LLM integration. The LangGraph-based agent orchestrates tools and services, while the extension manages browser automation and messaging. Security and transparency are embedded through guardrails and logging, and the design supports scalable, observable deployments.
+Extension, MCP, and FastAPI stay separate on purpose. LangGraph runs the agent; the extension runs the browser. Guardrails and logs cut across both.
+

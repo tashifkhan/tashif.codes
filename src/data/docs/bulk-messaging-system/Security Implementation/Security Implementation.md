@@ -1,7 +1,7 @@
 # Security implementation
 
 ## Introduction
-This page provides detailed security documentation for the desktop application. It focuses on the Electron security model, preload script security, secure IPC communication, OAuth2 authentication security for Gmail API, SMTP credential security, input validation and sanitization strategies, sandboxing and privilege separation, API key management, and compliance considerations for data protection.
+Security model for the desktop app: process isolation, OAuth/SMTP credential handling, input checks, and session cleanup.
 
 ## Project structure
 The application is an Electron desktop app with a React UI. Security-relevant areas include:
@@ -127,7 +127,7 @@ PB-->>UI : result
 - No automatic refresh logic present; relies on stored token validity.
 - Consider implementing token refresh using the stored token and persisting refreshed credentials.
 
-Best practices:
+Habits that help:
 - Encrypt stored tokens at rest.
 - Rotate tokens periodically.
 - Implement reliable error handling for token expiry.
@@ -144,8 +144,8 @@ Security considerations:
 
 ### Input validation and sanitization strategies
 - Frontend validation checks:
-  - Required fields for recipients, subject, and message.
-  - Basic email format validation using regex.
+ - Required fields for recipients, subject, and message.
+ - Basic email format validation using regex.
 - Renderer orchestrates validation before invoking handlers.
 
 Recommendations:
@@ -213,8 +213,6 @@ Recommendations:
 - Batch operations where feasible.
 - Monitor memory usage during mass operations.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and mitigations:
 - Authentication timeouts: increase timeout window or retry mechanism.
@@ -223,13 +221,12 @@ Common issues and mitigations:
 - Renderer API not available: ensure preload bridge is loaded and Electron environment is active.
 
 ## Conclusion
-The application implements a strong Electron security foundation with context isolation, a minimal preload bridge, and secure IPC. Gmail OAuth2 and SMTP operations are encapsulated in main-process handlers with careful credential handling. Frontend validation and rate limiting help prevent abuse. For production hardening, consider OS keychain integration for tokens, encrypted storage for SMTP configs, stricter TLS policies, and detailed error logging.
 
-[No sources needed since this section summarizes without analyzing specific files]
+Security here is boring on purpose: isolation, small IPC surface, careful credential lifetime. Keep it that way.
 
 ## Appendices
 
-### Security best practices checklist
+### Security habits checklist
 - Manage secrets via environment variables or OS keychain.
 - Encrypt sensitive data at rest.
 - Enforce HTTPS and certificate pinning where applicable.
@@ -237,5 +234,3 @@ The application implements a strong Electron security foundation with context is
 - Implement rate limiting and circuit breakers.
 - Regularly audit dependencies and update versions.
 - Conduct periodic security reviews and penetration testing.
-
-[No sources needed since this section provides general guidance]

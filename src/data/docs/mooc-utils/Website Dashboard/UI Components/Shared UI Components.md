@@ -1,10 +1,10 @@
 # Shared UI components
 
 ## Introduction
-This page describes the shared UI component library built with the shadcn/ui design system in a Next.js application. It documents reusable components including Button, Input, Card, Dialog, Alert Dialog, Badge, Combobox, Dropdown Menu, Field, Input Group, Label, Select, Separator, Sonner, and Textarea. For each component, we explain the props interface, styling customization options, accessibility features, and usage patterns. We also cover composition patterns, variant options, size variations, theme integration via Tailwind CSS and design tokens, and practical examples for integrating with form validation.
+shadcn/ui-based primitives used across the site: Button, Input, Card, Dialog, and the rest. Variants via CVA and Tailwind.
 
 ## Project structure
-The UI components live under website/components/ui and are composed with:
+The UI components live under website/components/ui and are composed :
 - Base primitives from @base-ui/react
 - Shadcn/ui configuration via components.json
 - Tailwind CSS v4 with CSS Variables and design tokens defined in app/globals.css
@@ -75,78 +75,78 @@ THEME --> SHADCN
 This section summarizes the primary components and their responsibilities, focusing on props, variants, sizes, and styling hooks.
 
 - Button
-  - Props: className, variant, size, plus primitive props
-  - Variants: default, outline, secondary, ghost, destructive, link
-  - Sizes: default, xs, sm, lg, icon, icon-xs, icon-sm, icon-lg
-  - Accessibility: focus-visible ring, aria-invalid states, outline-none
-  - Composition: integrates with Icon via SVG sizing rules
+ - Props: className, variant, size, plus primitive props
+ - Variants: default, outline, secondary, ghost, destructive, link
+ - Sizes: default, xs, sm, lg, icon, icon-xs, icon-sm, icon-lg
+ - Accessibility: focus-visible ring, aria-invalid states, outline-none
+ - Composition: integrates with Icon via SVG sizing rules
 
 - Input
-  - Props: className, type, plus native input props
-  - Accessibility: focus-visible ring, aria-invalid states, placeholder color
-  - Composition: used inside InputGroup
+ - Props: className, type, plus native input props
+ - Accessibility: focus-visible ring, aria-invalid states, placeholder color
+ - Composition: used inside InputGroup
 
 - Card
-  - Props: className, size ("default" | "sm")
-  - Subcomponents: CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter
-  - Composition: grid layout with optional action area
+ - Props: className, size ("default" | "sm")
+ - Subcomponents: CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter
+ - Composition: grid layout with optional action area
 
 - Dialog
-  - Props: Root, Trigger, Portal, Overlay, Content (showCloseButton), Header, Footer, Title, Description
-  - Accessibility: Backdrop, Close button with sr-only label, portal rendering
-  - Composition: Uses Button for close, Lucide X icon
+ - Props: Root, Trigger, Portal, Overlay, Content (showCloseButton), Header, Footer, Title, Description
+ - Accessibility: Backdrop, Close button with sr-only label, portal rendering
+ - Composition: Uses Button for close, Lucide X icon
 
 - Alert Dialog
-  - Props: Root, Trigger, Portal, Overlay, Content (size), Header, Footer, Media, Title, Description, Action, Cancel
-  - Accessibility: Backdrop, portal rendering, size variants
-  - Composition: Uses Button for actions
+ - Props: Root, Trigger, Portal, Overlay, Content (size), Header, Footer, Media, Title, Description, Action, Cancel
+ - Accessibility: Backdrop, portal rendering, size variants
+ - Composition: Uses Button for actions
 
 - Badge
-  - Props: className, variant, render, plus primitive props
-  - Variants: default, secondary, destructive, outline, ghost, link
-  - Accessibility: focus-visible ring, aria-invalid states
+ - Props: className, variant, render, plus primitive props
+ - Variants: default, secondary, destructive, outline, ghost, link
+ - Accessibility: focus-visible ring, aria-invalid states
 
 - Combobox
-  - Props: Root, Value, Trigger, Clear, Input (showTrigger, showClear), Content (positioning), List, Item, Group, Label, Collection, Empty, Separator, Chips, Chip, ChipsInput
-  - Accessibility: keyboard navigation, highlight states, item indicators
-  - Composition: integrates with InputGroup, Button, Lucide icons
+ - Props: Root, Value, Trigger, Clear, Input (showTrigger, showClear), Content (positioning), List, Item, Group, Label, Collection, Empty, Separator, Chips, Chip, ChipsInput
+ - Accessibility: keyboard navigation, highlight states, item indicators
+ - Composition: integrates with InputGroup, Button, Lucide icons
 
 - Dropdown Menu
-  - Props: Root, Portal, Trigger, Content (positioning), Group, Label (inset), Item (inset, variant), Submenu, Checkbox/Radio Items, Separator, Shortcut
-  - Accessibility: keyboard navigation, submenus, indicators
-  - Composition: integrates with Lucide icons
+ - Props: Root, Portal, Trigger, Content (positioning), Group, Label (inset), Item (inset, variant), Submenu, Checkbox/Radio Items, Separator, Shortcut
+ - Accessibility: keyboard navigation, submenus, indicators
+ - Composition: integrates with Lucide icons
 
 - Field
-  - Props: FieldSet, FieldLegend (variant), FieldGroup, Field (orientation), FieldContent, FieldLabel, FieldTitle, FieldDescription, FieldSeparator, FieldError (errors)
-  - Accessibility: grouping roles, legends, separators, error roles
-  - Composition: integrates with Label, Separator
+ - Props: FieldSet, FieldLegend (variant), FieldGroup, Field (orientation), FieldContent, FieldLabel, FieldTitle, FieldDescription, FieldSeparator, FieldError (errors)
+ - Accessibility: grouping roles, legends, separators, error roles
+ - Composition: integrates with Label, Separator
 
 - Input Group
-  - Props: InputGroup, InputGroupAddon (align), InputGroupButton (size, variant), InputGroupText, InputGroupInput, InputGroupTextarea
-  - Accessibility: focus management, click-to-focus on addon
-  - Composition: composes Button and Input/Textarea
+ - Props: InputGroup, InputGroupAddon (align), InputGroupButton (size, variant), InputGroupText, InputGroupInput, InputGroupTextarea
+ - Accessibility: focus management, click-to-focus on addon
+ - Composition: composes Button and Input/Textarea
 
 - Label
-  - Props: className, plus native label props
-  - Accessibility: associated with controls via htmlFor
+ - Props: className, plus native label props
+ - Accessibility: associated with controls via htmlFor
 
 - Select
-  - Props: Root, Trigger, Portal, Content (positioning), Group, Label, Item, Separator, Value
-  - Accessibility: keyboard navigation, highlight states
-  - Composition: integrates with Lucide icons
+ - Props: Root, Trigger, Portal, Content (positioning), Group, Label, Item, Separator, Value
+ - Accessibility: keyboard navigation, highlight states
+ - Composition: integrates with Lucide icons
 
 - Separator
-  - Props: className, decorative, orientation
-  - Accessibility: semantic role via role attribute
+ - Props: className, decorative, orientation
+ - Accessibility: semantic role via role attribute
 
 - Sonner
-  - Props: toast manager and helpers
-  - Integration: toast notifications
+ - Props: toast manager and helpers
+ - Integration: toast notifications
 
 - Textarea
-  - Props: className, plus native textarea props
-  - Accessibility: focus-visible ring, aria-invalid states
-  - Composition: used inside InputGroup
+ - Props: className, plus native textarea props
+ - Accessibility: focus-visible ring, aria-invalid states
+ - Composition: used inside InputGroup
 
 ## Architecture overview
 The UI components follow a layered architecture:
@@ -157,7 +157,7 @@ The UI components follow a layered architecture:
 
 ```mermaid
 graph TB
-PRIMS["@base-ui/react/*"] --> WRAPS["Component Wrappers<br/>button.tsx, input.tsx, ..."]
+PRIMS["@base-ui/react/*"] --> WRAPS["Component Wrappers<br/>button.tsx, input.tsx,..."]
 WRAPS --> VARS["Variants & Sizes<br/>cva()"]
 WRAPS --> CN["Class Merging<br/>cn()"]
 CN --> TWT["Tailwind Classes"]
@@ -169,19 +169,19 @@ THEME --> SHADCN["shadcn/tailwind.css"]
 
 ### Button
 - Props interface
-  - className: string
-  - variant: "default" | "outline" | "secondary" | "ghost" | "destructive" | "link"
-  - size: "default" | "xs" | "sm" | "lg" | "icon" | "icon-xs" | "icon-sm" | "icon-lg"
-  - Additional primitive props
+ - className: string
+ - variant: "default" | "outline" | "secondary" | "ghost" | "destructive" | "link"
+ - size: "default" | "xs" | "sm" | "lg" | "icon" | "icon-xs" | "icon-sm" | "icon-lg"
+ - Additional primitive props
 - Styling customization
-  - Uses cva() for variants and sizes
-  - Focus-visible ring, aria-invalid ring, disabled opacity, icon sizing rules
+ - Uses cva() for variants and sizes
+ - Focus-visible ring, aria-invalid ring, disabled opacity, icon sizing rules
 - Accessibility
-  - Focus-visible ring, outline-none, aria-invalid states
+ - Focus-visible ring, outline-none, aria-invalid states
 - Usage examples
-  - Primary action: variant="default", size="default"
-  - Icon-only: variant="ghost", size="icon"
-  - Danger: variant="destructive"
+ - Primary action: variant="default", size="default"
+ - Icon-only: variant="ghost", size="icon"
+ - Danger: variant="destructive"
 
 ```mermaid
 classDiagram
@@ -198,16 +198,16 @@ Button --> ButtonPrimitive : "wraps"
 
 ### Input
 - Props interface
-  - className: string
-  - type: string
-  - Additional native input props
+ - className: string
+ - type: string
+ - Additional native input props
 - Styling customization
-  - Focus-visible ring, aria-invalid ring, placeholder color, disabled states
+ - Focus-visible ring, aria-invalid ring, placeholder color, disabled states
 - Accessibility
-  - Focus-visible ring, aria-invalid states
+ - Focus-visible ring, aria-invalid states
 - Usage examples
-  - Inside InputGroup for addons/buttons
-  - Controlled via form libraries
+ - Inside InputGroup for addons/buttons
+ - Controlled via form libraries
 
 ```mermaid
 classDiagram
@@ -223,17 +223,17 @@ Input --> InputPrimitive : "wraps"
 
 ### Card
 - Props interface
-  - className: string
-  - size: "default" | "sm"
+ - className: string
+ - size: "default" | "sm"
 - Subcomponents
-  - CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter
+ - CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter
 - Styling customization
-  - Ring, background, shadow, rounded corners, grid layout
+ - Ring, background, shadow, rounded corners, grid layout
 - Accessibility
-  - Semantic grouping via data-* attributes and slots
+ - Semantic grouping via data-* attributes and slots
 - Usage examples
-  - Feature cards with action buttons
-  - Content containers with optional descriptions
+ - Feature cards with action buttons
+ - Content containers with optional descriptions
 
 ```mermaid
 classDiagram
@@ -257,20 +257,20 @@ Card <.. CardFooter
 
 ### Dialog
 - Props interface
-  - Dialog: Root
-  - DialogTrigger: Trigger
-  - DialogPortal: Portal
-  - DialogOverlay: Backdrop
-  - DialogContent: Popup (showCloseButton?)
-  - DialogHeader/Footer: container
-  - DialogTitle/Description: Title/Description
+ - Dialog: Root
+ - DialogTrigger: Trigger
+ - DialogPortal: Portal
+ - DialogOverlay: Backdrop
+ - DialogContent: Popup (showCloseButton?)
+ - DialogHeader/Footer: container
+ - DialogTitle/Description: Title/Description
 - Styling customization
-  - Animation classes, overlay backdrop, fixed positioning, z-index
+ - Animation classes, overlay backdrop, fixed positioning, z-index
 - Accessibility
-  - Portal rendering, sr-only close label, backdrop filtering support
+ - Portal rendering, sr-only close label, backdrop filtering support
 - Usage examples
-  - Form modals with header/footer
-  - Confirmation dialogs with close button
+ - Form modals with header/footer
+ - Confirmation dialogs with close button
 
 ```mermaid
 sequenceDiagram
@@ -292,23 +292,23 @@ B->>R : Close
 
 ### Alert dialog
 - Props interface
-  - AlertDialog: Root
-  - AlertDialogTrigger: Trigger
-  - AlertDialogPortal: Portal
-  - AlertDialogOverlay: Backdrop
-  - AlertDialogContent: Popup (size?)
-  - AlertDialogHeader/Footer: container
-  - AlertDialogMedia: media area
-  - AlertDialogTitle/Description: Title/Description
-  - AlertDialogAction: Button
-  - AlertDialogCancel: Close with Button renderer
+ - AlertDialog: Root
+ - AlertDialogTrigger: Trigger
+ - AlertDialogPortal: Portal
+ - AlertDialogOverlay: Backdrop
+ - AlertDialogContent: Popup (size?)
+ - AlertDialogHeader/Footer: container
+ - AlertDialogMedia: media area
+ - AlertDialogTitle/Description: Title/Description
+ - AlertDialogAction: Button
+ - AlertDialogCancel: Close with Button renderer
 - Styling customization
-  - Size variants, grid layout, animation classes
+ - Size variants, grid layout, animation classes
 - Accessibility
-  - Portal rendering, size-aware layouts
+ - Portal rendering, size-aware layouts
 - Usage examples
-  - Confirmation prompts with destructive action
-  - Informational alerts with media
+ - Confirmation prompts with destructive action
+ - Informational alerts with media
 
 ```mermaid
 sequenceDiagram
@@ -333,16 +333,16 @@ X->>R : Close
 
 ### Badge
 - Props interface
-  - className: string
-  - variant: "default" | "secondary" | "destructive" | "outline" | "ghost" | "link"
-  - render: component renderer
-  - Additional primitive props
+ - className: string
+ - variant: "default" | "secondary" | "destructive" | "outline" | "ghost" | "link"
+ - render: component renderer
+ - Additional primitive props
 - Styling customization
-  - Variants via cva(), focus-visible ring, aria-invalid states
+ - Variants via cva(), focus-visible ring, aria-invalid states
 - Accessibility
-  - Focus-visible ring, aria-invalid states
+ - Focus-visible ring, aria-invalid states
 - Usage examples
-  - Status badges, tags, links
+ - Status badges, tags, links
 
 ```mermaid
 classDiagram
@@ -358,23 +358,23 @@ Badge --> BadgePrimitive : "wraps"
 
 ### Combobox
 - Props interface
-  - Combobox: Root
-  - ComboboxValue: Value
-  - ComboboxTrigger: Trigger (with ChevronDown)
-  - ComboboxClear: Clear (with X)
-  - ComboboxInput: Input (showTrigger?, showClear?, disabled?)
-  - ComboboxContent: Popup (positioning props)
-  - ComboboxList: List
-  - ComboboxItem: Item (with Check indicator)
-  - ComboboxGroup/Label: Grouping
-  - ComboboxCollection/Empty/Separator
-  - ComboboxChips/Chip/ChipsInput
+ - Combobox: Root
+ - ComboboxValue: Value
+ - ComboboxTrigger: Trigger (with ChevronDown)
+ - ComboboxClear: Clear (with X)
+ - ComboboxInput: Input (showTrigger?, showClear?, disabled?)
+ - ComboboxContent: Popup (positioning props)
+ - ComboboxList: List
+ - ComboboxItem: Item (with Check indicator)
+ - ComboboxGroup/Label: Grouping
+ - ComboboxCollection/Empty/Separator
+ - ComboboxChips/Chip/ChipsInput
 - Styling customization
-  - Positioner-based placement, chips mode, item highlighting
+ - Positioner-based placement, chips mode, item highlighting
 - Accessibility
-  - Keyboard navigation, highlight states, item indicators
+ - Keyboard navigation, highlight states, item indicators
 - Usage examples
-  - Single/multi-select inputs, searchable lists, chips selection
+ - Single/multi-select inputs, searchable lists, chips selection
 
 ```mermaid
 flowchart TD
@@ -391,22 +391,22 @@ Close --> End(["Done"])
 
 ### Dropdown menu
 - Props interface
-  - DropdownMenu: Root
-  - DropdownMenuPortal: Portal
-  - DropdownMenuTrigger: Trigger
-  - DropdownMenuContent: Popup (positioning)
-  - DropdownMenuGroup/Label (inset)
-  - DropdownMenuItem (inset, variant)
-  - DropdownMenuSubmenu: SubRoot/SubTrigger/SubContent
-  - DropdownMenuCheckboxItem/RadioItem
-  - DropdownMenuSeparator
-  - DropdownMenuShortcut
+ - DropdownMenu: Root
+ - DropdownMenuPortal: Portal
+ - DropdownMenuTrigger: Trigger
+ - DropdownMenuContent: Popup (positioning)
+ - DropdownMenuGroup/Label (inset)
+ - DropdownMenuItem (inset, variant)
+ - DropdownMenuSubmenu: SubRoot/SubTrigger/SubContent
+ - DropdownMenuCheckboxItem/RadioItem
+ - DropdownMenuSeparator
+ - DropdownMenuShortcut
 - Styling customization
-  - Positioner-based placement, nested submenus, variant colors
+ - Positioner-based placement, nested submenus, variant colors
 - Accessibility
-  - Keyboard navigation, submenus, indicators
+ - Keyboard navigation, submenus, indicators
 - Usage examples
-  - Context menus, navigation dropdowns, settings panels
+ - Context menus, navigation dropdowns, settings panels
 
 ```mermaid
 classDiagram
@@ -432,15 +432,15 @@ DropdownMenu --> Items
 
 ### Field
 - Props interface
-  - FieldSet, FieldLegend (variant), FieldGroup
-  - Field (orientation: "vertical" | "horizontal" | "responsive")
-  - FieldContent, FieldLabel, FieldTitle, FieldDescription, FieldSeparator, FieldError (errors)
+ - FieldSet, FieldLegend (variant), FieldGroup
+ - Field (orientation: "vertical" | "horizontal" | "responsive")
+ - FieldContent, FieldLabel, FieldTitle, FieldDescription, FieldSeparator, FieldError (errors)
 - Styling customization
-  - Orientation-dependent layout, responsive breakpoints, separators
+ - Orientation-dependent layout, responsive breakpoints, separators
 - Accessibility
-  - Role grouping, legends, separators, error roles
+ - Role grouping, legends, separators, error roles
 - Usage examples
-  - Form groups with labels, descriptions, and error lists
+ - Form groups with labels, descriptions, and error lists
 
 ```mermaid
 classDiagram
@@ -463,18 +463,18 @@ Field <.. FieldSeparator
 
 ### Input group
 - Props interface
-  - InputGroup
-  - InputGroupAddon (align: "inline-start" | "inline-end" | "block-start" | "block-end")
-  - InputGroupButton (size variants, variant)
-  - InputGroupText
-  - InputGroupInput, InputGroupTextarea
+ - InputGroup
+ - InputGroupAddon (align: "inline-start" | "inline-end" | "block-start" | "block-end")
+ - InputGroupButton (size variants, variant)
+ - InputGroupText
+ - InputGroupInput, InputGroupTextarea
 - Styling customization
-  - Border focus ring, alignment, spacing, disabled opacity
+ - Border focus ring, alignment, spacing, disabled opacity
 - Accessibility
-  - Click-to-focus on addon, proper focus order
+ - Click-to-focus on addon, proper focus order
 - Usage examples
-  - Inputs with prepend/append buttons or text
-  - Search bars with action buttons
+ - Inputs with prepend/append buttons or text
+ - Search bars with action buttons
 
 ```mermaid
 classDiagram
@@ -494,55 +494,55 @@ InputGroup <.. InputGroupTextarea
 
 ### Label
 - Props interface
-  - className: string
-  - Additional native label props
+ - className: string
+ - Additional native label props
 - Styling customization
-  - Inherits from base label styles
+ - Inherits from base label styles
 - Accessibility
-  - Associated with controls via htmlFor
+ - Associated with controls via htmlFor
 - Usage examples
-  - Labels for inputs, checkboxes, radios
+ - Labels for inputs, checkboxes, radios
 
 ### Select
 - Props interface
-  - Root, Trigger, Portal, Content (positioning), Group, Label, Item, Separator, Value
+ - Root, Trigger, Portal, Content (positioning), Group, Label, Item, Separator, Value
 - Styling customization
-  - Positioner-based placement, item highlighting
+ - Positioner-based placement, item highlighting
 - Accessibility
-  - Keyboard navigation, highlight states
+ - Keyboard navigation, highlight states
 - Usage examples
-  - Dropdown selects, option pickers
+ - Dropdown selects, option pickers
 
 ### Separator
 - Props interface
-  - className: string
-  - decorative: boolean
-  - orientation: "horizontal" | "vertical"
+ - className: string
+ - decorative: boolean
+ - orientation: "horizontal" | "vertical"
 - Styling customization
-  - Border color, margin, padding
+ - Border color, margin, padding
 - Accessibility
-  - role attribute for semantic separation
+ - role attribute for semantic separation
 - Usage examples
-  - Dividers in forms, menus, cards
+ - Dividers in forms, menus, cards
 
 ### Sonner
 - Props interface
-  - Toast manager and helpers
+ - Toast manager and helpers
 - Styling customization
-  - Notification styling via Tailwind classes
+ - Notification styling via Tailwind classes
 - Usage examples
-  - Global notifications, toasts
+ - Global notifications, toasts
 
 ### Textarea
 - Props interface
-  - className: string
-  - Additional native textarea props
+ - className: string
+ - Additional native textarea props
 - Styling customization
-  - Focus-visible ring, aria-invalid ring, disabled states
+ - Focus-visible ring, aria-invalid ring, disabled states
 - Accessibility
-  - Focus-visible ring, aria-invalid states
+ - Focus-visible ring, aria-invalid states
 - Usage examples
-  - Multi-line inputs, comments, descriptions
+ - Multi-line inputs, comments, descriptions
 
 ## Dependency analysis
 The components depend on:
@@ -574,27 +574,27 @@ CFG["components.json"] --> THEME
 
 ## Troubleshooting guide
 - Focus ring not visible
-  - Ensure focus-visible ring classes are applied and not overridden.
-  - Verify theme variables for ring color.
+ - Ensure focus-visible ring classes are applied and not overridden.
+ - Verify theme variables for ring color.
 - Disabled state not working
-  - Check disabled pointer-events and opacity classes.
+ - Check disabled pointer-events and opacity classes.
 - Invalid state styling inconsistent
-  - Confirm aria-invalid classes and destructives ring/opacity.
+ - Confirm aria-invalid classes and destructives ring/opacity.
 - Combobox menu misaligned
-  - Adjust positioner props (side, align, offsets) and ensure anchor is set.
+ - Adjust positioner props (side, align, offsets) and ensure anchor is set.
 - Dropdown submenu not opening
-  - Verify SubmenuRoot and SubTrigger are paired and not disabled.
+ - Verify SubmenuRoot and SubTrigger are paired and not disabled.
 - InputGroup addon click does nothing
-  - Confirm click handler focuses the input element.
+ - Confirm click handler focuses the input element.
 
 ## Conclusion
-The shared UI component library uses shadcn/ui design principles with @base-ui/react primitives, Tailwind CSS v4, and CSS variables for consistent theming. Components expose clear props interfaces, variants, and sizes, while emphasizing accessibility and composability. The InputGroup, Field, and Combobox demonstrate advanced composition patterns suitable for reliable form experiences.
+CVA variants plus Tailwind. Add a variant before forking a component.
 
 ## Appendices
 - Theme integration
-  - Design tokens defined in app/globals.css map to Tailwind variables.
-  - components.json configures shadcn/ui style, icon library, and CSS variables.
+ - Design tokens defined in app/globals.css map to Tailwind variables.
+ - components.json configures shadcn/ui style, icon library, and CSS variables.
 - Practical form validation patterns
-  - Use Field components to group labels, descriptions, and errors.
-  - Apply aria-invalid on inputs and observe destructive ring/opacity.
-  - Use InputGroup for prepend/append actions alongside validation feedback.
+ - Use Field components to group labels, descriptions, and errors.
+ - Apply aria-invalid on inputs and observe destructive ring/opacity.
+ - Use InputGroup for prepend/append actions alongside validation feedback.

@@ -1,7 +1,7 @@
 # DOM manipulation and element targeting
 
 ## Introduction
-This page explains how the system discovers, targets, and manipulates webpage elements across the browser extension. It covers selector-based targeting, form detection, input identification, interactive component recognition, element state detection, dynamic content handling, accessibility considerations, visibility checks, and timeout strategies. Practical targeting strategies and troubleshooting guidance are included to help users reliably automate tasks on modern, dynamic websites.
+How we find and use page elements: selectors, forms, inputs, interactive widgets, visibility, polling, and timeouts on slow pages.
 
 ## Project structure
 The DOM manipulation and element targeting capabilities are implemented across:
@@ -33,7 +33,7 @@ Svc --> BG
 - Form and input detection: heuristics identify inputs, textareas, selects, and contenteditable regions; appropriate events are dispatched to simulate user input.
 - Interactive component recognition: a curated set of selectors targets buttons, links, and role-based controls.
 - Visibility and state detection: computed styles and offset checks determine visibility; wait conditions support dynamic content.
-- Dynamic content handling: polling loops with timeouts ensure robustness on slow-loading pages.
+- Dynamic content handling: polling loops with timeouts ensure reliability on slow-loading pages.
 - Accessibility-aware attributes: aria-label and other attributes are captured to improve targeting accuracy.
 
 ## Architecture overview
@@ -148,7 +148,7 @@ end
 ```
 
 ### Accessibility considerations and attribute capture
-- Captured attributes include id, class, type, placeholder, name, aria-label, and visible text to improve robustness and accessibility.
+- Captured attributes include id, class, type, placeholder, name, aria-label, and visible text to improve reliability and accessibility.
 - The interactive list is limited to avoid excessive payloads.
 
 ```mermaid
@@ -184,22 +184,23 @@ PY --> BG
 ## Troubleshooting guide
 Common issues and resolutions:
 - Element not found
-  - Verify the selector specificity and scope.
-  - Ensure the element exists before targeting; use wait conditions for dynamic content.
-  - Confirm the page is fully loaded or use navigation waits.
+ - Verify the selector specificity and scope.
+ - Ensure the element exists before targeting; use wait conditions for dynamic content.
+ - Confirm the page is fully loaded or use navigation waits.
 - Visibility errors
-  - Use visibility checks or filter visible elements when listing candidates.
-  - Adjust selectors to target visible subtrees.
+ - Use visibility checks or filter visible elements when listing candidates.
+ - Adjust selectors to target visible subtrees.
 - Dynamic content timing
-  - Increase timeout values for wait actions.
-  - Use polling intervals suited to the page's rendering speed.
+ - Increase timeout values for wait actions.
+ - Use polling intervals suited to the page's rendering speed.
 - Contenteditable vs. inputs
-  - For contenteditable, set innerText/textContent and dispatch input/change events.
-  - For inputs/textareas, set value and dispatch input/change/keyboard events.
+ - For contenteditable, set innerText/textContent and dispatch input/change events.
+ - For inputs/textareas, set value and dispatch input/change/keyboard events.
 - Accessibility attributes
-  - Include aria-label/id/class/name in selectors to improve reliability.
+ - Include aria-label/id/class/name in selectors to improve reliability.
 - Mixed environments
-  - For SPA or framework-heavy pages, ensure selectors target stable attributes and avoid brittle text-based targeting.
+ - For SPA or framework-heavy pages, ensure selectors target stable attributes and avoid brittle text-based targeting.
 
 ## Conclusion
-The system combines reliable selector-based targeting, detailed form and input handling, interactive component recognition, and resilient visibility/timeouts to reliably manipulate DOM elements across diverse web pages. By using accessibility attributes, limiting payloads, and using wait strategies, it achieves reliable automation on static and dynamic sites alike.
+Prefer stable selectors, capture useful attributes (`id`, `name`, `aria-label`, visible text), and poll with timeouts instead of single-shot queries on dynamic pages.
+

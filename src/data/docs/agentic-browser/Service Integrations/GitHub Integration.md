@@ -1,7 +1,7 @@
 # GitHub integration
 
 ## Introduction
-This page explains the GitHub service integration, focusing on repository analysis, code crawling, and content extraction. It covers the FastAPI router, service orchestration, data ingestion via a third-party library, prompt composition, and LLM-driven answer generation. It also documents request/response models, error handling strategies, and security considerations around tokens and API limits. Practical examples illustrate repository analysis workflows, code search patterns, and content processing.
+Repo ingest, URL normalization, context truncation, and LLM Q&A over code. Keys, rate limits, and failure modes.
 
 ## Project structure
 The GitHub integration spans a FastAPI router, a service layer, a data conversion utility, prompt composition, and LLM configuration. The frontend normalizes GitHub URLs before sending requests to the backend.
@@ -34,7 +34,7 @@ P --> L
 - Frontend URL Normalization: Ensures requests target the repository root rather than specific pages.
 
 ## Architecture overview
-The system follows a clear separation of concerns:
+The system keeps layers apart:
 - Router validates and extracts request parameters.
 - Service orchestrates ingestion and optional multimodal processing.
 - Converter normalizes URLs and retrieves repository metadata and content.
@@ -85,7 +85,7 @@ CallService --> ReturnResp["Return { content }"]
 
 ### Service: GitHubService
 - Ingests repository content asynchronously.
-- Handles errors from ingestion and maps them to user-friendly messages.
+- Handles errors from ingestion and maps them to plain messages.
 - Supports an optional attached file path for multimodal processing via a Google GenAI client.
 - Builds a LangChain prompt chain and invokes the configured LLM.
 - Applies context-window-aware truncation and returns the LLM's response.
@@ -183,49 +183,45 @@ FE["frontend normalize"] --> Router
 - Optional multimodal processing with file attachments should be used judiciously to avoid exceeding provider limits.
 - Provider selection and model defaults are configurable; choosing smaller models or providers with higher limits can improve cost and latency trade-offs.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Invalid repository URL or non-root path:
-  - Symptom: Error indicating invalid repository root or inability to clone/access.
-  - Resolution: Ensure the URL points to the repository root (owner/repo). The frontend normalizes URLs automatically.
+ - Symptom: Error indicating invalid repository root or inability to clone/access.
+ - Resolution: Ensure the URL points to the repository root (owner/repo). The frontend normalizes URLs automatically.
 - Repository not accessible:
-  - Symptom: Access denied or 404-like error.
-  - Resolution: Verify the repository is public or that appropriate permissions are configured if private.
+ - Symptom: Access denied or 404-like error.
+ - Resolution: Verify the repository is public or that appropriate permissions are configured if private.
 - Context window exceeded:
-  - Symptom: Token limit exceeded error.
-  - Resolution: Ask focused questions about specific files or directories to reduce content volume.
+ - Symptom: Token limit exceeded error.
+ - Resolution: Ask focused questions about specific files or directories to reduce content volume.
 - Missing API keys:
-  - Symptom: Initialization or invocation failures for LLM providers.
-  - Resolution: Set the required environment variables for the chosen provider.
+ - Symptom: Initialization or invocation failures for LLM providers.
+ - Resolution: Set the required environment variables for the chosen provider.
 - Authentication problems:
-  - Symptom: Authentication failures in the extension.
-  - Resolution: Confirm the backend service is running and retry authentication.
+ - Symptom: Authentication failures in the extension.
+ - Resolution: Confirm the backend service is running and retry authentication.
 
 ## Conclusion
-The GitHub integration provides a reliable pipeline for repository analysis and code search. By normalizing URLs, ingesting repository content, composing contextual prompts, and invoking an LLM, it enables intelligent code assistance. Proper configuration of API keys, awareness of context limits, and adherence to URL normalization best practices ensure reliable operation.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Normalize to the repo root, truncate for the model window, and keep API keys in env. Rate limits will bite before prompt quality does.
 
 ## Appendices
 
 ### Request/Response models
 - Request model fields:
-  - url: HTTP(S) URL to the repository.
-  - question: The query to be answered.
-  - chat_history: Optional conversation history.
-  - attached_file_path: Optional path to a file for multimodal processing.
+ - url: HTTP(S) URL to the repository.
+ - question: The query to be answered.
+ - chat_history: Optional conversation history.
+ - attached_file_path: Optional path to a file for multimodal processing.
 - Response model fields:
-  - content: The generated answer.
+ - content: The generated answer.
 
 ### Security considerations
 - Tokens and API keys:
-  - Configure provider-specific API keys via environment variables.
-  - Avoid embedding secrets in code or logs.
+ - Configure provider-specific API keys via environment variables.
+ - Avoid embedding secrets in code or logs.
 - Rate limiting:
-  - Choose providers and models aligned with expected usage.
-  - Implement retries with backoff and consider batching strategies.
+ - Choose providers and models aligned with expected usage.
+ - Implement retries with backoff and consider batching strategies.
 - Data privacy:
-  - Limit exposure of sensitive repository content.
-  - Prefer public repositories or ensure proper access controls for private ones.
+ - Limit exposure of sensitive repository content.
+ - Prefer public repositories or ensure proper access controls for private ones.

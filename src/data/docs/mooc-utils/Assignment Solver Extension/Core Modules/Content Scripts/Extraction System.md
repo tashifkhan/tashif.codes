@@ -1,7 +1,7 @@
 # Extraction system
 
 ## Introduction
-This page describes the extraction system that identifies and parses assignment questions from NPTEL and SWAYAM pages. It explains the HTML parsing algorithms, question type detection strategies, DOM traversal approaches, and the end-to-end pipeline from raw HTML to structured question data. It also covers dynamic content handling, iframe scenarios, platform-specific variations, error handling, performance optimizations, and integration with the Gemini AI system.
+Finds and parses questions on NPTEL and SWAYAM pages. HTML cleanup, question typing, and how extraction hands off to Gemini.
 
 ## Project structure
 The extraction system spans three layers:
@@ -40,7 +40,7 @@ BG --> GS
 ## Core components
 - Extractor: Finds assignment containers, extracts HTML, collects images, and gathers UI identifiers for submission.
 - Content Script: Exposes message handlers for extraction, answer application, and scrolling.
-- Background Router: Routes messages to appropriate handlers and ensures async response semantics.
+- Background Router: Routes messages to appropriate handlers and preserves async response semantics.
 - Extraction Handler: Manages content script injection, readiness checks, and HTML retrieval.
 - Gemini Service: Builds prompts, sends requests, validates responses, and parses JSON.
 - Applicator: Applies answers back to the page and submits the assignment.
@@ -104,7 +104,7 @@ Buttons --> Return(["Return {html, images, ids}"])
 
 Key behaviors:
 - Platform selectors target known NPTEL/SWAYAM classes and forms.
-- Fallback ensures extraction even if selectors miss.
+- Fallback still extracts even if selectors miss.
 - Image extraction filters small or unloaded images, converts via canvas, and attaches context metadata.
 
 ### Question type detection and DOM traversal
@@ -148,7 +148,7 @@ Supported question types returned by Gemini:
 - fill_blank
 
 ### Dynamic content and iframe scenarios
-- Dynamic rendering: The extraction handler pings the content script and injects it if absent, ensuring readiness before extraction.
+- Dynamic rendering: the extraction handler pings the content script and injects it if absent, then extracts.
 - Iframes: The extractor operates within the page context and cannot access cross-origin iframes. Screenshots can be used to supplement visual context for questions rendered in iframes.
 - Cross-browser: The system uses a browser API polyfill and adjusts timing for Firefox initialization.
 
@@ -160,7 +160,7 @@ Supported question types returned by Gemini:
 These formats are applied by the applicator using reliable DOM matching strategies.
 
 ## Dependency analysis
-The system exhibits clear separation of concerns:
+Layers and who owns what:
 - Background worker depends on platform adapters and message routing.
 - Content script depends on extractor and applicator.
 - Gemini service depends on schemas and parser.
@@ -201,7 +201,7 @@ Common issues and mitigations:
 - Firefox message channel timeouts: The Gemini service makes direct API calls from the background to avoid long delays.
 
 ## Conclusion
-The extraction system provides a reliable, cross-browser solution for identifying and parsing NPTEL/SWAYAM assignment questions. By combining targeted DOM traversal, resilient image extraction, and structured AI-driven parsing with strict schemas, it supports single-choice, multiple-choice, and fill-in-the-blank formats. The design emphasizes reliability, performance, and maintainability through modular components and clear message boundaries.
+Extraction quality bounds answer quality. When a platform changes markup, update selectors here before touching Gemini prompts.
 
 ## Appendices
 

@@ -1,7 +1,7 @@
 # PlacementOffers collection
 
 ## Introduction
-This page provides detailed documentation for the PlacementOffers collection schema that stores extracted and structured placement offer data from emails. It explains the unique identifier system, field semantics, embedded documents, arrays, enumerations, validation rules, and operational flows. It also includes example documents illustrating different offer scenarios and student selection patterns.
+PlacementOffers is where extracted offer emails land as structured docs. Ids, embedded student/role bits, enums, validation, and sample documents for different selection patterns.
 
 ## Project structure
 The PlacementOffers collection is part of the MongoDB database used by the SuperSet Telegram Notification Bot. The schema and operational logic are defined across documentation and service modules:
@@ -209,4 +209,4 @@ Common issues and resolutions:
 - Privacy concerns: Forwarded sender information is sanitized and not included in user-facing fields
 
 ## Conclusion
-The PlacementOffers collection schema provides a reliable foundation for storing and managing placement offer data extracted from emails. Its design supports efficient querying, maintains data integrity through validation and merge logic, and enables scalable notification workflows. The schema aligns with the application's extraction and persistence layers while maintaining flexibility for diverse offer scenarios and student selection patterns.
+PlacementOffers stores extracted offers with merge-friendly fields. Validation and upserts keep duplicates down; templates read the same shape NotificationService sends.

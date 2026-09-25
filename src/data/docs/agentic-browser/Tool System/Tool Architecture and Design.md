@@ -1,7 +1,7 @@
 # Tool architecture and design
 
 ## Introduction
-This page explains the Tool System architecture and design patterns used in the project. It focuses on the structured tool interface built with LangChain's StructuredTool, the tool registration and discovery mechanisms, standardized input/output schemas, the tool execution pipeline, error handling patterns, and asynchronous operation support. It also covers the tool discovery system, dependency injection patterns, and integration with the agent framework. Finally, it provides guidelines for designing tool interfaces, validation schemas, return value formatting, testing strategies, performance optimization, lifecycle management, resource cleanup, and debugging approaches.
+Design rules for tools: schemas, discovery, execution pipeline, errors, async, lifecycle, and how tools attach to the agent graph.
 
 ## Project structure
 The tool system is organized around:
@@ -33,7 +33,7 @@ PB["prompts/browser_use.py"]
 AS["utils/agent_sanitizer.py"]
 end
 subgraph "Frontend"
-EAT["extension/entrypoints/utils/executeAgent.ts"]
+EAT["clients/browser-extension/entrypoints/utils/executeAgent.ts"]
 end
 RA --> RT
 RT --> BT
@@ -158,7 +158,7 @@ Agent-->>Agent : "Append ToolMessage and continue"
 
 Guidelines:
 - Keep coroutines non-blocking; offload network/API calls to threads.
-- Wrap external calls with try/except and return user-friendly error strings.
+- Wrap external calls with try/except and return plain error strings.
 
 ### Error handling patterns
 - Input validation: Pydantic schemas enforce required fields and constraints.
@@ -174,7 +174,7 @@ Common patterns:
 - Discovery: `build_agent_tools` builds a tool list from a context dictionary.
 - Injection: Default values are injected via partial functions to avoid requiring repeated arguments in tool calls.
 
-Best practices:
+Notes:
 - Pass credentials and session data through context rather than hardcoding.
 - Keep tool constructors pure; defer side effects to coroutines.
 
@@ -246,10 +246,8 @@ EAT["executeAgent.ts"] --> RA
 ## Performance considerations
 - Offload blocking operations: Use `asyncio.to_thread` for network/API calls to prevent blocking the event loop.
 - Limit payload sizes: Browser action tools cap interactive elements and truncate long text to manage token usage.
-- Respect rate limits: External APIs (e.g., Gmail, Calendar) set timeouts; consider retry/backoff strategies in future enhancements.
+- Respect rate limits: External APIs (e.g., Gmail, Calendar) set timeouts; add retry/backoff when those APIs start throttling.
 - Caching: The agent graph is cached via `lru_cache` to avoid recompilation overhead.
-
-[No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 Common issues and resolutions:
@@ -264,9 +262,7 @@ Debugging tips:
 - Validate schemas locally using Pydantic models before invoking tools.
 
 ## Conclusion
-The tool system uses LangChain's StructuredTool to provide a consistent, validated interface for diverse capabilities. Tools are registered dynamically based on context, executed asynchronously with reliable error handling, and integrated smoothly into the agent graph. Services encapsulate domain logic and prompt-driven generation, while frontend utilities prepare payloads and coordinate with the backend. This architecture supports extensibility, maintainability, and safe, predictable behavior across heterogeneous integrations.
-
-[No sources needed since this section summarizes without analyzing specific files]
+`StructuredTool` in, validated args, async body, clean errors out. Services hold domain logic; frontend helpers only build payloads.
 
 ## Appendices
 
@@ -281,9 +277,7 @@ The tool system uses LangChain's StructuredTool to provide a consistent, validat
 - Unit tests for schemas: Validate required fields, constraints, and edge cases using Pydantic.
 - Integration tests for tools: Mock external APIs and assert normalized outputs.
 - Agent tests: Simulate tool invocation via ToolNode and verify ToolMessage handling.
-- End-to-end tests: Use executeAgent.ts to drive real payloads and confirm end-to-end flows.
-
-[No sources needed since this section provides general guidance]
+- Full-path tests: use executeAgent.ts with real payloads.
 
 ### Performance optimization techniques
 - Use thread pools for blocking operations; avoid synchronous network calls in coroutines.

@@ -1,7 +1,8 @@
 # WhatsApp client configuration
 
 ## Introduction
-This page explains how the application configures and manages the WhatsApp client, focusing on:
+WhatsApp client setup in the main process: LocalAuth, Puppeteer flags, QR handling, and what gets wiped on logout.
+
 - Puppeteer launch arguments and browser behavior
 - Authentication via QR code and session persistence
 - Session storage and cleanup
@@ -163,8 +164,6 @@ PJSON --> Pptr
 - Periodic cleanup of cache and auth directories prevents bloat.
 - Implementing configurable delays and backoff improves resilience and reduces rate-limit penalties.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - QR code not loading: Check network connectivity, restart the app, and retry scanning.
@@ -177,4 +176,5 @@ Operational tips:
 - Ensure the Electron environment is properly initialized before invoking APIs.
 
 ## Conclusion
-The application integrates WhatsApp Web using a hardened headless Chromium configuration with LocalAuth for session persistence. It provides a reliable UI for QR-based authentication, real-time status updates, and basic rate limiting. For production deployments, consider adding proxy support, configurable puppeteer options, and improved error recovery strategies.
+
+When QR or reconnect misbehaves, delete the LocalAuth cache directories and start the client again. Half-broken sessions are common after crashes.

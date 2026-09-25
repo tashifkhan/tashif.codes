@@ -1,9 +1,8 @@
 # Context providers
 
-## Introduction
-This page explains the context providers architecture and state synchronization mechanisms in the frontend application. It covers the provider hierarchy, context creation, and how state propagates through the component tree. It also documents the integration with React Query for data fetching and state updates, including caching, retries, and invalidation strategies. Practical topics include context composition, selective re-renders, debugging context state, provider ordering, context isolation, state sharing patterns, and integrations with database connections and encryption utilities.
+The context providers architecture and state synchronization mechanisms in the frontend application.
 
-## Project structure
+## Repository layout
 The provider stack is established at the root of the Next.js app shell and composed around the application's layout. Providers wrap the entire app subtree, enabling session-aware routing, centralized query caching, and cross-component notifications.
 
 ```mermaid
@@ -17,8 +16,8 @@ LayoutContent --> Sidebar["SidebarProvider"]
 LayoutContent --> Main["Main Layout Content"]
 ```
 
-## Core components
-- Providers: Creates and exposes a singleton React Query client with default caching and retry policies, wraps children in next-auth's SessionProvider, and renders React Query devtools.
+## Building blocks
+- Providers: QueryClient plus the FastAPI `SessionProvider` from `session-provider.tsx`, then React Query devtools.
 - LayoutContent: Wraps the main content area with a SidebarProvider to manage collapsible sidebar state and composes the Navbar and main content region.
 - use-toast: A toast notification service with a reducer-driven state machine and a lightweight pub/sub mechanism to broadcast toast updates across the app.
 
@@ -27,9 +26,9 @@ Key provider responsibilities:
 - QueryClientProvider: Exposes React Query's cache and background refresh capabilities to all components.
 - SidebarProvider: Manages a shared layout state (collapsed/collapsed) for responsive navigation.
 
-## Architecture overview
+## How it fits together
 The provider architecture establishes a layered context stack that enables:
-- Authentication context via next-auth
+- Authentication context via `session-provider.tsx`
 - Global query cache via React Query
 - Cross-component notifications via a local toast store
 - Layout state via a custom SidebarProvider
@@ -59,15 +58,13 @@ LC --> UT
 RQ --> SVC
 ```
 
-## Detailed component analysis
-
-### Provider hierarchy and composition
-- RootLayout composes Providers and LayoutContent, ensuring all pages inherit the same context stack.
-- Providers initializes a singleton QueryClient with:
-  - Stale time configured to treat data as fresh for a short period.
-  - Retry attempts for transient failures.
-  - Window focus refetch disabled to reduce unnecessary network activity.
-- SessionProvider from next-auth ensures authentication state is available to all downstream components.
+## Provider hierarchy and composition
+- RootLayout composes Providers and LayoutContent, so all pages inherit the same context stack.
+- Providers initializes a singleton QueryClient :
+ - Stale time configured to treat data as fresh for a short period.
+ - Retry attempts for transient failures.
+ - Window focus refetch disabled to reduce unnecessary network activity.
+- `SessionProvider` hydrates from `getSession()` and keeps `/api/v1/auth/me` in sync.
 - LayoutContent composes SidebarProvider to share layout state across the main content area.
 
 ```mermaid
@@ -86,7 +83,7 @@ Prov-->>LC : Pass children
 LC-->>LC : Compose SidebarProvider
 ```
 
-### React query integration and state propagation
+## React query integration and state propagation
 React Query is used pervasively for data fetching, caching, and state updates. Hooks encapsulate query keys, fetchers, and optimistic updates. Mutations commonly invalidate related queries to keep the UI synchronized.
 
 ```mermaid
@@ -112,17 +109,17 @@ RQ->>RQ : Invalidate queries by key
 RQ-->>Comp : Re-fetch affected queries
 ```
 
-### Context creation and isolation
-- Authentication context: Provided by next-auth's SessionProvider. Components can access session data via next-auth utilities.
+## Context creation and isolation
+- Authentication context: `useSession()` from `session-provider.tsx`. Do not import `next-auth/react`.
 - Query cache context: Provided by QueryClientProvider. All queries share a single cache instance with a shared stale/retry policy.
 - Toast context: Provided by a local reducer store exposed via use-toast. This is isolated to the app boundary and does not leak into server-side rendering contexts.
 - Layout context: Provided by SidebarProvider inside LayoutContent. This isolates sidebar state to the main content area.
 
-Best practices:
+Habits that help:
 - Keep provider order consistent across the app to avoid subtle hydration mismatches.
 - Prefer wrapping only the necessary subtree with custom providers to minimize re-renders.
 
-### State sharing patterns
+## State sharing patterns
 - Shared UI state: SidebarProvider shares collapsed state across components in the main layout.
 - Cross-component notifications: use-toast maintains a single source of truth for toast messages and broadcasts updates to all subscribers.
 - Data state: React Query manages normalized cache entries keyed by query keys. Mutations invalidate related keys to propagate changes.
@@ -131,7 +128,7 @@ Patterns:
 - Use query keys to scope cache invalidation precisely.
 - Combine multiple small providers for focused state domains (e.g., layout vs. data vs. UI feedback).
 
-### Integration with database connections and encryption utilities
+## Integration with database connections and encryption utilities
 - Database connection: Prisma client is initialized globally and reused across the backend. While not directly part of frontend providers, it underpins the APIs consumed by frontend services.
 - Encryption utilities: Encryption helpers are provided for sensitive data handling. They rely on environment variables for keys and throw explicit errors when keys are missing.
 
@@ -139,7 +136,7 @@ Guidelines:
 - Ensure environment variables are present in production to avoid runtime failures.
 - Use encryption utilities for sensitive payloads before sending to the backend.
 
-## Dependency analysis
+## Dependencies
 The provider stack introduces dependencies between components and services. Hooks depend on services, which in turn call backend endpoints. Mutations depend on React Query's cache invalidation to synchronize state.
 
 ```mermaid
@@ -155,7 +152,7 @@ Query -. invalidates .-> Hooks
 Session -. auth .-> Hooks
 ```
 
-## Performance considerations
+## Performance
 - Caching strategy: Configure staleTime to balance freshness and network usage. Short-lived caches reduce bandwidth but increase requests; longer caches improve performance but risk staleness.
 - Retries: Limit retries to avoid thundering herds on backend failures. Use exponential backoff at the service level if needed.
 - Refetch policies: Disable refetchOnWindowFocus to prevent unnecessary background refetches during idle browsing.
@@ -164,7 +161,7 @@ Session -. auth .-> Hooks
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
+## Troubleshooting
 Common issues and remedies:
 - Hydration mismatch: Ensure Providers wrap the entire app subtree consistently. Avoid toggling providers conditionally based on SSR state.
 - Toast not appearing: Verify use-toast is imported and called within the Providers boundary. Confirm that the Toaster component is rendered.
@@ -176,6 +173,3 @@ Debugging tips:
 - Use React Query devtools to inspect cache state, query status, and invalidation triggers.
 - Temporarily enable devtools in development to observe query lifecycles.
 - Add logging around mutations to verify invalidation keys and error handling paths.
-
-## Conclusion
-The provider architecture centers on a predictable stack: authentication, query caching, and UI state providers. React Query coordinates data fetching and state updates with explicit cache invalidation, while custom hooks and services encapsulate API interactions. By composing providers thoughtfully, scoping state to focused domains, and using devtools, the application achieves reliable state synchronization and maintainable performance.

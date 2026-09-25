@@ -1,7 +1,7 @@
 # Data flow & processing pipeline
 
 ## Introduction
-This page explains the complete data flow and processing pipeline for the SuperSet Telegram Notification Bot. It covers how data enters the system from external sources (SuperSet portal and Gmail/emails), how it is processed and transformed, and how notifications are delivered across Telegram and Web Push channels. It also details the sequential orchestration pattern that prevents data loss by marking emails as read only after successful processing, and the prioritization of placement offers over general notices. Error handling, retry mechanisms, and data consistency strategies are addressed throughout.
+End-to-end path from SuperSet and Gmail into MongoDB, then out to Telegram and Web Push. Placement offers jump the queue over general notices. Emails stay unread until processing finishes so a crash does not eat mail.
 
 ## Project structure
 The system is organized into modular components:
@@ -68,16 +68,16 @@ SCH --> CFG
 - CLI and Orchestration: Central CLI dispatches commands for updates, notifications, and administrative tasks. It coordinates SuperSet and email processing, and triggers notification delivery.
 - Runners: Encapsulate update and notification workflows for testability and reuse.
 - Processing Services:
-  - EmailNoticeService: LLM-driven classification and extraction of general notices from emails.
-  - PlacementService: Keyword-based classification and LLM extraction/validation for placement offers.
-  - Formatters: Transform structured data into human-friendly messages for Telegram and Web Push.
+ - EmailNoticeService: LLM-driven classification and extraction of general notices from emails.
+ - PlacementService: Keyword-based classification and LLM extraction/validation for placement offers.
+ - Formatters: Transform structured data into human-friendly messages for Telegram and Web Push.
 - External Clients:
-  - GoogleGroupsClient: IMAP-based email retrieval and marking.
-  - DBClient: MongoDB connectivity and collection access.
+ - GoogleGroupsClient: IMAP-based email retrieval and marking.
+ - DBClient: MongoDB connectivity and collection access.
 - Delivery Channels:
-  - TelegramService: Message formatting and broadcasting.
-  - WebPushService: VAPID-authenticated push notifications.
-  - NotificationService: Aggregates channels and orchestrates unsent notice delivery.
+ - TelegramService: Message formatting and broadcasting.
+ - WebPushService: VAPID-authenticated push notifications.
+ - NotificationService: Aggregates channels and orchestrates unsent notice delivery.
 
 ## Architecture overview
 The pipeline follows a sequential, resilient pattern:
@@ -156,14 +156,14 @@ SaveJobs --> End
 ```
 
 ### Email processing orchestration (placement vs general notices)
-- Sequential processing ensures no data loss: emails are fetched without marking read, processed, saved, and then marked read only upon successful completion or rejection.
+- Sequential processing: fetch without marking read, process, save, then mark read only after success or rejection.
 - Priority order:
-  1) Try PlacementService (keyword-based classification + LLM extraction/validation)
-  2) If not a placement offer, try EmailNoticeService (LLM-based classification and extraction)
-  3) Mark as read if processed (either as placement offer or as irrelevant/general notice)
+ 1) Try PlacementService (keyword-based classification + LLM extraction/validation)
+ 2) If not a placement offer, try EmailNoticeService (LLM-based classification and extraction)
+ 3) Mark as read if processed (either as placement offer or as irrelevant/general notice)
 - Retry and validation:
-  - PlacementService supports retries for extraction/validation failures.
-  - EmailNoticeService applies LLM extraction with retry up to a configured limit, then validates minimum requirements.
+ - PlacementService supports retries for extraction/validation failures.
+ - EmailNoticeService applies LLM extraction with retry up to a configured limit, then validates minimum requirements.
 
 ```mermaid
 flowchart TD
@@ -229,7 +229,7 @@ NS --> WPS["WebPushService"]
 ```
 
 ## Dependency analysis
-- Configuration-driven design: Settings are loaded centrally and cached, enabling consistent behavior across modules.
+- Configuration-driven design: Settings are loaded centrally and cached, so modules see the same settings.
 - Decoupled clients: GoogleGroupsClient and DBClient isolate external integrations for testability.
 - Dependency Injection: Runners and services accept optional injected dependencies, supporting both CLI and server modes.
 - Channel abstraction: NotificationService encapsulates channel differences behind a uniform interface.
@@ -281,15 +281,15 @@ NS --> WPS
 ## Troubleshooting guide
 Common issues and remedies:
 - Authentication failures:
-  - SuperSet login errors: Verify credentials and network connectivity; check logs for detailed error messages.
-  - Telegram/VAPID misconfiguration: Ensure tokens and keys are set; WebPushService logs warnings when disabled.
+ - SuperSet login errors: Verify credentials and network connectivity; check logs for detailed error messages.
+ - Telegram/VAPID misconfiguration: Ensure tokens and keys are set; WebPushService logs warnings when disabled.
 - Email processing stalls:
-  - If an email fails to process, it remains unread to allow retry on next run; confirm network and IMAP availability.
-  - Large messages: TelegramService automatically splits and retries; monitor chunk delivery.
+ - If an email fails to process, it remains unread to allow retry on next run; confirm network and IMAP availability.
+ - Large messages: TelegramService automatically splits and retries; monitor chunk delivery.
 - Delivery failures:
-  - NotificationService marks a notice as sent only after successful delivery to at least one channel; inspect per-channel results for granular diagnostics.
+ - NotificationService marks a notice as sent only after successful delivery to at least one channel; inspect per-channel results for granular diagnostics.
 - Database connectivity:
-  - Confirm MongoDB connection string and collection initialization; DBClient raises explicit errors on connection failures.
+ - Confirm MongoDB connection string and collection initialization; DBClient raises explicit errors on connection failures.
 
 ## Conclusion
-The system implements a reliable, sequential data pipeline that safely processes updates from SuperSet and Gmail/emails, prioritizes placement offers, and delivers notifications across Telegram and Web Push channels. Its design emphasizes resilience (retry and idempotent marking), efficiency (filtering and selective enrichment), and maintainability (DI and modular services). By following the documented flows and using the built-in error handling and logging, operators can reliably manage placement notifications and general notices.
+Sequential pipeline: SuperSet and Gmail in, placement offers first, then notices, then Telegram/Web Push out. Retries and idempotent sent flags absorb blips. DI keeps the stages replaceable.

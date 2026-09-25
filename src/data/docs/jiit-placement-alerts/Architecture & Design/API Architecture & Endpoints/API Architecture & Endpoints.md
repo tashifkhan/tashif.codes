@@ -1,14 +1,10 @@
 # API architecture & endpoints
 
 ## Introduction
-This page provides detailed API documentation for the webhook and bot server architecture. It covers FastAPI-based webhook endpoints, Telegram bot command handlers, dual-server architecture, integration points, security considerations, rate limiting, and error handling patterns. The system consists of:
-- A FastAPI webhook server exposing REST endpoints for health checks, statistics, web push subscriptions, and notification dispatch.
-- A Telegram bot server handling user commands and admin operations.
-- A scheduler server coordinating automated updates and broadcasts.
-- A unified notification service orchestrating multiple channels (Telegram and Web Push).
+Webhook server and bot server sit side by side. FastAPI handles HTTP and webhooks. The Telegram bot handles commands. Same services underneath, different front doors, with rate limits and shared error shapes.
 
 ## Project structure
-The application is organized around a service-oriented architecture with clear separation of concerns:
+The application is organized around a service-oriented architecture :
 - Entry points: main.py orchestrates CLI commands to start servers and run jobs.
 - Servers: dedicated FastAPI webhook server and Telegram bot server.
 - Services: notification, telegram, web push, database, and admin services.
@@ -57,7 +53,7 @@ DMN --> CFG
 
 ## Core components
 - FastAPI Webhook Server: Exposes health, stats, web push subscription, and notification endpoints. Provides dependency injection for database, notification, and web push services.
-- Telegram Bot Server: Handles user commands (/start, /stop, /status, /stats, /web) and admin commands (/users, /boo, etc.). Integrates with database and admin services.
+- Telegram Bot Server: User commands (`/start`, `/stop`, `/status`, `/placement_year`, `/stats`, `/noticestats`, `/web`, `/help`) and admin commands (`/users`, `/boo`, `/userstats`, and scrape/log/kill). Integrates with database and admin services.
 - Scheduler Server: Runs automated update jobs and broadcasts using APScheduler.
 - Notification Service: Aggregates channels and routes notifications to Telegram and Web Push.
 - Telegram Service: Implements Telegram API interactions and message formatting.
@@ -104,70 +100,70 @@ Webhook-->>Client : NotifyResponse
 The webhook server exposes the following endpoints:
 
 - GET /
-  - Purpose: Root health check.
-  - Response: HealthResponse with status and version.
-  - Authentication: None.
+ - Purpose: Root health check.
+ - Response: HealthResponse with status and version.
+ - Authentication: None.
 
 - GET /health
-  - Purpose: Detailed health status including database connectivity.
-  - Response: HealthResponse with status and version.
-  - Authentication: None.
+ - Purpose: Detailed health status including database connectivity.
+ - Response: HealthResponse with status and version.
+ - Authentication: None.
 
 - POST /api/push/subscribe
-  - Purpose: Subscribe a user to web push notifications.
-  - Request: PushSubscription model (endpoint, keys, user_id).
-  - Response: JSON with success boolean.
-  - Authentication: None.
-  - Notes: Requires web push service to be enabled.
+ - Purpose: Subscribe a user to web push notifications.
+ - Request: PushSubscription model (endpoint, keys, user_id).
+ - Response: JSON with success boolean.
+ - Authentication: None.
+ - Notes: Requires web push service to be enabled.
 
 - POST /api/push/unsubscribe
-  - Purpose: Unsubscribe a user from web push notifications.
-  - Request: PushSubscription model (endpoint, keys, user_id).
-  - Response: JSON with success boolean.
-  - Authentication: None.
+ - Purpose: Unsubscribe a user from web push notifications.
+ - Request: PushSubscription model (endpoint, keys, user_id).
+ - Response: JSON with success boolean.
+ - Authentication: None.
 
 - POST /api/notify
-  - Purpose: Send notification to specified channels.
-  - Request: NotifyRequest model (message, title, channels).
-  - Response: NotifyResponse with success and results.
-  - Authentication: None.
+ - Purpose: Send notification to specified channels.
+ - Request: NotifyRequest model (message, title, channels).
+ - Response: NotifyResponse with success and results.
+ - Authentication: None.
 
 - POST /api/notify/telegram
-  - Purpose: Send notification via Telegram only.
-  - Request: NotifyRequest model.
-  - Response: JSON with success boolean.
-  - Authentication: None.
+ - Purpose: Send notification via Telegram only.
+ - Request: NotifyRequest model.
+ - Response: JSON with success boolean.
+ - Authentication: None.
 
 - POST /api/notify/web-push
-  - Purpose: Send notification via Web Push only.
-  - Request: NotifyRequest model.
-  - Response: JSON with success boolean.
-  - Authentication: None.
+ - Purpose: Send notification via Web Push only.
+ - Request: NotifyRequest model.
+ - Response: JSON with success boolean.
+ - Authentication: None.
 
 - GET /api/stats
-  - Purpose: Get all statistics (placement, notice, user).
-  - Response: StatsResponse with placement_stats, notice_stats, user_stats.
-  - Authentication: None.
+ - Purpose: Get all statistics (placement, notice, user).
+ - Response: StatsResponse with placement_stats, notice_stats, user_stats.
+ - Authentication: None.
 
 - GET /api/stats/placements
-  - Purpose: Get placement statistics.
-  - Response: Dictionary with placement stats.
-  - Authentication: None.
+ - Purpose: Get placement statistics.
+ - Response: Dictionary with placement stats.
+ - Authentication: None.
 
 - GET /api/stats/notices
-  - Purpose: Get notice statistics.
-  - Response: Dictionary with notice stats.
-  - Authentication: None.
+ - Purpose: Get notice statistics.
+ - Response: Dictionary with notice stats.
+ - Authentication: None.
 
 - GET /api/stats/users
-  - Purpose: Get user statistics.
-  - Response: Dictionary with user stats.
-  - Authentication: None.
+ - Purpose: Get user statistics.
+ - Response: Dictionary with user stats.
+ - Authentication: None.
 
 - POST /webhook/update
-  - Purpose: Trigger update job via webhook.
-  - Response: JSON with success and result.
-  - Authentication: None.
+ - Purpose: Trigger update job via webhook.
+ - Response: JSON with success and result.
+ - Authentication: None.
 
 Request/Response Models
 - HealthResponse: status (string), version (string).
@@ -185,42 +181,49 @@ Security Considerations
 The Telegram bot server supports the following commands:
 
 - /start
-  - Registers a user and welcomes them with available commands.
-  - Interacts with DatabaseService to add or reactivate users.
+ - Registers a user and welcomes them with available commands.
+ - Interacts with DatabaseService to add or reactivate users.
 
 - /stop
-  - Deactivates a user's subscription.
+ - Deactivates a user's subscription.
 
 - /status
-  - Checks subscription status and displays user details.
+ - Checks subscription status and displays user details.
+
+- /placement_year
+ - Inline keyboard to pick a year from `PLACEMENT_YEARS`.
+ - Writes the choice with `set_user_placement_year`.
 
 - /stats
-  - Displays placement statistics computed by PlacementStatsCalculatorService.
+ - Displays placement statistics computed by PlacementStatsCalculatorService.
 
 - /noticestats
-  - Shows notice statistics from DatabaseService.
+ - Shows notice statistics from DatabaseService.
+
+- /help
+ - Lists user commands.
 
 - /userstats (admin)
-  - Displays user statistics (admin-only).
+ - Displays user statistics (admin-only).
 
 - /web
-  - Provides useful links to JIIT tools.
+ - Provides useful links to JIIT tools.
 
 Admin Commands
 - /users (admin)
-  - Lists all users and their subscription status.
+ - Lists all users and their subscription status.
 
 - /boo <message> (admin)
-  - Broadcasts a message to all active users.
+ - Broadcasts a message to all active users.
 
 - /fu or /scrapyyy (admin)
-  - Forces an immediate update workflow.
+ - Forces an immediate update workflow.
 
 - /logs [lines] (admin)
-  - Retrieves recent log entries.
+ - Retrieves recent log entries.
 
 - /kill (admin)
-  - Stops the scheduler daemon.
+ - Stops the scheduler daemon.
 
 Security and Authentication
 - Admin commands are restricted to the configured admin chat ID.
@@ -301,25 +304,25 @@ ATS --> DBS
 ## Troubleshooting guide
 Common Issues and Resolutions
 - Webhook Endpoints Return 501 Not Implemented
-  - Cause: Services not configured (web push or notification).
-  - Resolution: Ensure VAPID keys and notification channels are properly set.
+ - Cause: Services not configured (web push or notification).
+ - Resolution: Ensure VAPID keys and notification channels are properly set.
 
 - Telegram Bot Cannot Send Messages
-  - Cause: Missing bot token or chat ID.
-  - Resolution: Verify TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in environment.
+ - Cause: Missing bot token or chat ID.
+ - Resolution: Verify TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in environment.
 
 - Admin Commands Blocked
-  - Cause: Unauthorized chat ID.
-  - Resolution: Confirm admin chat ID matches the sender's chat ID.
+ - Cause: Unauthorized chat ID.
+ - Resolution: Confirm admin chat ID matches the sender's chat ID.
 
 - Scheduler Not Running
-  - Cause: Process not started or stopped.
-  - Resolution: Use CLI status and stop commands to manage daemon lifecycle.
+ - Cause: Process not started or stopped.
+ - Resolution: Use CLI status and stop commands to manage daemon lifecycle.
 
 Error Handling Patterns
 - HTTP Exceptions: Webhook endpoints raise HTTPException with appropriate status codes.
 - Graceful Degradation: Services catch exceptions and log errors without crashing.
-- Daemon Lifecycle: PID files and signal handling ensure clean shutdown.
+- Daemon Lifecycle: PID files and signal handling shut the process down cleanly.
 
 ## Conclusion
-The webhook and bot server architecture provides a reliable, modular foundation for delivering notifications across Telegram and Web Push channels. The dual-server design separates concerns effectively, while the service-oriented architecture enables testability and extensibility. For production deployments, consider adding authentication, rate limiting, and monitoring to complement the existing error handling and daemon utilities.
+Bot and webhook share services, not code copies. Good enough to run today. Before production, add auth, rate limits, and monitoring on top of the existing error handling and daemon helpers.

@@ -1,7 +1,7 @@
 # Troubleshooting and FAQ
 
 ## Introduction
-This page provides detailed troubleshooting and FAQ guidance for Agentic Browser. It covers installation and setup issues, configuration errors, agent execution failures, browser extension problems, backend server issues, MCP protocol problems, extension communication failures, LLM provider integration challenges, authentication concerns, tool execution issues, performance tuning, memory optimization, browser automation debugging, and diagnostic techniques. It also outlines known limitations, workarounds, planned improvements, and community support resources.
+Common breakages: install, config, agent runs, extension messaging, MCP, providers, and auth. Start with the symptom that matches, then use the diagnostics at the end if nothing fits.
 
 ## Project structure
 Agentic Browser comprises:
@@ -15,7 +15,7 @@ Agentic Browser comprises:
 graph TB
 subgraph "Backend"
 M["main.py<br/>CLI entrypoint"]
-API["api/main.py<br/>FastAPI app"]
+API["main.py<br/>FastAPI app"]
 MCP["mcp_server/server.py<br/>MCP server"]
 CFG["core/config.py<br/>Env & logging"]
 LLM["core/llm.py<br/>Provider adapter"]
@@ -37,33 +37,35 @@ BG --> API
 ```
 
 ## Core components
-- CLI entrypoint and mode selection
-  - Supports running as API server or MCP server with interactive or non-interactive modes
-  - Environment variables loaded via dotenv
-  - See `main.py`
+- CLI entrypoint
+ - API: `python main.py` or `agentic-api-run`
+ - Stdio MCP: `agentic-mcp`
+ - HTTP MCP is mounted at `/mcp` on the API process
+ - Environment variables loaded via dotenv
+ - See `main.py`
 
 - Backend servers
-  - API server: FastAPI app with routers for health, GitHub, website, YouTube, Google Search, Gmail, Calendar, PyJIIT, React agent, website validator, agent, and file upload
-  - MCP server: Implements tools for LLM generation, GitHub QA, website markdown conversion, and error handling
-  - See `api/main.py`, `mcp_server/server.py`
+ - API server: FastAPI app with routers for health, GitHub, website, YouTube, Google Search, Gmail, Calendar, PyJIIT, React agent, website validator, agent, and file upload
+ - MCP server: Implements tools for LLM generation, GitHub QA, website markdown conversion, and error handling
+ - See `main.py`, `mcp_server/server.py`
 
 - Configuration and logging
-  - Reads environment variables for host, port, debug, and Google API key
-  - Configures logging level and logger factory
-  - See `core/config.py`
+ - Reads environment variables for host, port, debug, and Google API key
+ - Configures logging level and logger factory
+ - See `core/config.py`
 
 - LLM provider abstraction
-  - Supports Google, OpenAI, Anthropic, Ollama, DeepSeek, OpenRouter
-  - Validates provider availability, API keys, base URLs, and model names
-  - Raises descriptive errors for misconfiguration
-  - See `core/llm.py`
+ - Supports Google, OpenAI, Anthropic, Ollama, DeepSeek, OpenRouter
+ - Validates provider availability, API keys, base URLs, and model names
+ - Raises descriptive errors for misconfiguration
+ - See `core/llm.py`
 
 - Extension
-  - Background script handles messaging, tab operations, action execution, and agent tool execution
-  - Content script provides page context helpers
-  - WebSocket client manages connection to backend API and agent execution
-  - Sidepanel UI formats responses and displays progress
-  - See `extension/entrypoints/background.ts`, `extension/entrypoints/content.ts`, `extension/entrypoints/utils/websocket-client.ts`, `extension/entrypoints/sidepanel/AgentExecutor.tsx`
+ - Background script handles messaging, tab operations, action execution, and agent tool execution
+ - Content script provides page context helpers
+ - WebSocket client manages connection to backend API and agent execution
+ - Sidepanel UI formats responses and displays progress
+ - See `clients/browser-extension/entrypoints/background.ts`, `clients/browser-extension/entrypoints/content.ts`, `clients/browser-extension/entrypoints/utils/websocket-client.ts`, `clients/browser-extension/entrypoints/sidepanel/AgentExecutor.tsx`
 
 ## Architecture overview
 Agentic Browser integrates a browser extension with a Python backend. The extension communicates with the backend via WebSocket for agent execution and with the MCP server for tool invocations. The backend orchestrates LLM calls and service tools.
@@ -89,15 +91,16 @@ MCP-->>Sidepanel : "tool result or error"
 
 ## Detailed component analysis
 
-### CLI and mode selection
+### CLI and process start
 Common issues:
-- Missing or invalid mode argument
+- Wrong entrypoint (API vs stdio MCP)
 - Environment variables not loaded
 - Port conflicts or host binding issues
 
 Resolution steps:
-- Verify mode selection: use explicit flags or respond to interactive prompt
-- Confirm.env presence and required keys
+- API: `python main.py` or `agentic-api-run`
+- Stdio MCP: `agentic-mcp`
+- Confirm `.env` presence and required keys
 - Check BACKEND_HOST and BACKEND_PORT values
 
 ### Backend API server
@@ -170,7 +173,7 @@ Common issues:
 Resolution steps:
 - Parse and sanitize error messages for readability
 - Accumulate progress events and render consistently
-- Format nested data structures for user-friendly display
+- Format nested data structures for plain display
 
 ### PyJIIT service exceptions
 Common issues:
@@ -331,8 +334,8 @@ Resolution steps:
 ## FAQ
 
 ### Setup and installation
-Q: How do I run the backend in API or MCP mode?
-A: Use the CLI with explicit flags or interactive prompt. Ensure environment variables are loaded.
+Q: How do I run the backend API and MCP?
+A: `python main.py` or `agentic-api-run` for FastAPI (MCP at `/mcp`). `agentic-mcp` for stdio MCP. Load environment variables from `.env`.
 
 Q: What environment variables are required?
 A: Configure host, port, debug, and provider-specific keys. See configuration module.
@@ -360,7 +363,7 @@ A: Validate selectors, ensure content script injection, and check navigation com
 - Provider-specific rate limits and quotas apply
 
 ### Workarounds and planned improvements
-- Use precise selectors for reliable automation
+- Use precise selectors
 - Implement retry logic for transient network errors
 - Plan for future improvements such as visual DOM debugger and offline retrieval
 
@@ -369,7 +372,7 @@ A: Validate selectors, ensure content script injection, and check navigation com
 - Report issues with detailed logs and reproducible steps
 
 ## Conclusion
-This guide consolidates troubleshooting strategies and FAQs for Agentic Browser across installation, configuration, backend servers, MCP protocol, extension communication, LLM providers, and browser automation. Use the diagnostic techniques and escalation procedures to resolve issues efficiently and contribute improvements to the project.
+Most failures are missing env vars, a dead WebSocket, or a bad provider key. Log levels up, reproduce once, then file an issue with the stack and the command you ran.
 
 ## Appendices
 

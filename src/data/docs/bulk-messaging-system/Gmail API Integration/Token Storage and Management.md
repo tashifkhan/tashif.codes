@@ -1,7 +1,7 @@
 # Token storage and management
 
 ## Introduction
-This page explains the Gmail OAuth2 token storage and management system implemented in the Electron application. It covers how credentials are persisted using electron-store, how authentication flows work, and how token usage is integrated into email sending. It also documents the current limitations around automatic token refresh and outlines recommended approaches for token lifecycle management, security hardening, and troubleshooting.
+Where Gmail tokens live after OAuth, how send reuses them, and what is still missing around automatic refresh.
 
 ## Project structure
 The token management system spans three primary areas:
@@ -57,7 +57,7 @@ Preload-->>UI : {success : true}
 ## Detailed component analysis
 
 ### Gmail authentication and token exchange
-- Environment validation ensures client ID and secret are present before initiating OAuth.
+- OAuth starts only after client ID and secret are present in env.
 - An OAuth2 client is created with the configured redirect URI.
 - A consent flow is opened in a hidden BrowserWindow; a 5-minute timeout guards against hanging windows.
 - On redirect, the handler extracts the authorization code, exchanges it for tokens, sets credentials on the OAuth2 client, and persists the token object.
@@ -160,8 +160,6 @@ Recommendations for improvement:
 - Use the OAuth2 client's built-in refresh mechanism when credentials expire.
 - Add token validation and error handling for expired or revoked tokens.
 
-[No sources needed since this section provides recommendations based on observed implementation]
-
 ### Security considerations for token storage
 Observed characteristics:
 - Tokens are stored locally using electron-store without explicit encryption.
@@ -174,8 +172,6 @@ Recommended enhancements:
 - Avoid storing unnecessary sensitive data and sanitize stored objects.
 - Consider platform-specific secure storage APIs when available.
 
-[No sources needed since this section provides general security guidance]
-
 ### Token lifecycle management and cleanup
 Current behavior:
 - No explicit token deletion or cleanup routine is implemented in the Gmail handler.
@@ -185,8 +181,6 @@ Recommended lifecycle steps:
 - Provide a "Clear Gmail Credentials" action that removes the stored token.
 - On application shutdown or user-initiated logout, clear stored tokens.
 - Periodically validate token health and proactively re-authenticate if needed.
-
-[No sources needed since this section proposes lifecycle improvements]
 
 ## Dependency analysis
 External libraries and their roles:
@@ -208,42 +202,41 @@ Preload["preload.js"] --> Main
 - Real-time progress events are emitted to keep the UI responsive.
 - Consider batching or adjusting delays based on recipient volume and service quotas.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 
 - Missing environment variables
-  - Symptom: Authentication fails early with a missing client ID/secret error.
-  - Resolution: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set in the environment before launching the app.
+ - Symptom: Authentication fails early with a missing client ID/secret error.
+ - Resolution: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set in the environment before launching the app.
 
 - Authentication timeout
-  - Symptom: The auth window closes after 5 minutes with a timeout error.
-  - Resolution: Retry authentication; ensure the system clock is correct and network connectivity is stable.
+ - Symptom: The auth window closes after 5 minutes with a timeout error.
+ - Resolution: Retry authentication; ensure the system clock is correct and network connectivity is stable.
 
 - No authorization code received
-  - Symptom: Redirect occurs but no code is extracted.
-  - Resolution: Verify the redirect URI matches the configured value and that the consent flow completes successfully.
+ - Symptom: Redirect occurs but no code is extracted.
+ - Resolution: Verify the redirect URI matches the configured value and that the consent flow completes successfully.
 
 - Token exchange error
-  - Symptom: Error during token exchange phase.
-  - Resolution: Confirm the authorization code is valid and the app has internet access; retry after a short delay.
+ - Symptom: Error during token exchange phase.
+ - Resolution: Confirm the authorization code is valid and the app has internet access; retry after a short delay.
 
 - Not authenticated with Gmail
-  - Symptom: Email sending returns an authentication error.
-  - Resolution: Trigger Gmail authentication again; verify token existence via the token check API.
+ - Symptom: Email sending returns an authentication error.
+ - Resolution: Trigger Gmail authentication again; verify token existence via the token check API.
 
 - Storage corruption
-  - Symptom: Unexpected errors when retrieving or setting tokens.
-  - Resolution: Clear the stored token manually and re-authenticate; inspect the store location for file integrity.
+ - Symptom: Unexpected errors when retrieving or setting tokens.
+ - Resolution: Clear the stored token manually and re-authenticate; inspect the store location for file integrity.
 
 - Refresh failures
-  - Symptom: API calls fail due to expired or invalid tokens.
-  - Resolution: Implement token refresh logic and add error handling to detect and recover from token expiration.
+ - Symptom: API calls fail due to expired or invalid tokens.
+ - Resolution: Implement token refresh logic and add error handling to detect and recover from token expiration.
 
 - Authentication timeouts
-  - Symptom: OAuth consent page does not load or redirects fail.
-  - Resolution: Check firewall/proxy settings, ensure localhost:3000 is reachable, and retry the flow.
+ - Symptom: OAuth consent page does not load or redirects fail.
+ - Resolution: Check firewall/proxy settings, ensure localhost:3000 is reachable, and retry the flow.
 
 ## Conclusion
-The current implementation provides a functional OAuth2 flow for Gmail with persistent token storage via electron-store. It enables authentication, token retrieval, and bulk email sending. However, it lacks automatic token refresh, encryption of stored tokens, and explicit cleanup routines. Improving these areas will improve reliability, security, and maintainability of the token lifecycle.
+
+Tokens persist across launches via electron-store. When send starts failing with 401s, re-authenticate rather than hand-editing the store.

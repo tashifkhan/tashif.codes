@@ -1,9 +1,7 @@
 # Placement notification formatter
 
 ## Introduction
-The Placement Notification Formatter is a specialized service responsible for transforming structured placement offer data into notification-ready content for delivery channels. This system handles the complete lifecycle from raw placement offer extraction to formatted message delivery, with particular emphasis on creating readable, informative notifications for Telegram and other channels.
-
-The formatter operates independently of database operations, maintaining clean separation of concerns while integrating smoothly with the broader notification ecosystem. It processes placement events (new offers and updates) and generates standardized, human-friendly content that preserves important details while optimizing for readability and character limits.
+PlacementNotificationFormatter turns offer documents into channel-ready text. Templates for final selections versus updates, HTML/Markdown choices, and the fields each template expects.
 
 ## Project structure
 The placement notification system is organized within the application's services layer, with clear boundaries between data extraction, formatting, and delivery components.
@@ -49,10 +47,10 @@ Specialized algorithms handle the transformation of raw placement data into huma
 - Selection criteria summarization
 
 ### Template generation
-The system implements template-based approaches for different placement scenarios, ensuring consistent formatting across various types of placement events.
+The system implements template-based approaches for different placement scenarios, so final selections and updates share the same layout rules.
 
 ## Architecture overview
-The placement notification system follows a layered architecture with clear separation of concerns and dependency injection for testability.
+The placement notification system follows a layered architecture and dependency injection for testability.
 
 ```mermaid
 sequenceDiagram
@@ -77,7 +75,7 @@ Notifier->>DB : Mark as Sent
 ## Detailed component analysis
 
 ### PlacementNotificationFormatter class
-The core formatter class implements sophisticated algorithms for transforming placement offer data into notification-ready content.
+The formatter turns placement offer docs into notification text.
 
 #### Data model definitions
 The formatter defines several Pydantic models that are the foundation for data transformation:
@@ -144,7 +142,7 @@ NoticeDocument --> OfferData : "references"
 ```
 
 #### Package formatting algorithm
-The formatter includes a sophisticated package formatting algorithm that converts raw numeric values into human-readable strings:
+Package formatting turns raw numbers into readable strings:
 
 ```mermaid
 flowchart TD
@@ -160,7 +158,7 @@ ReturnNull --> End
 ```
 
 #### Role breakdown algorithm
-The role breakdown algorithm organizes student placements by role with intelligent counting and formatting:
+Role breakdown groups students by role and formats the counts:
 
 ```mermaid
 flowchart TD
@@ -185,13 +183,13 @@ FormatLines --> End([Breakdown Text])
 #### Notification template generation
 The formatter implements template-based approaches for different placement scenarios:
 
-**Final Selection Templates:**
+**Final Selection Templates.**
 - Company placement summary with student count
 - Role breakdown with package information
 - Time sent information when available
 - Congratulations message
 
-**Update Templates:**
+**Update Templates.**
 - Incremental placement update with new student count
 - Total placement counter
 - New position breakdown
@@ -244,13 +242,13 @@ I --> J
 ```
 
 ### Coupling and cohesion analysis
-The system demonstrates excellent separation of concerns with low internal coupling and high external coupling. The formatter focuses solely on presentation logic while delegating data persistence and delivery to specialized services.
+Formatter only formats. Persistence and delivery stay in DatabaseService and NotificationService.
 
 ### Circular dependencies
 No circular dependencies were identified in the placement notification system, contributing to its maintainability and testability.
 
 ## Performance considerations
-The placement notification formatter is designed with several performance optimizations:
+Performance notes for the formatter:
 
 ### Memory efficiency
 - Streaming processing of large datasets
@@ -272,30 +270,26 @@ Common issues and their solutions when working with the placement notification f
 
 ### Data transformation issues
 - **Problem**: Incorrect package formatting
-  - **Solution**: Verify numeric values are properly converted and handle edge cases
-  - **Check**: Ensure package values are numeric and within expected ranges
+ - **Solution**: Verify numeric values are properly converted and handle edge cases
+ - **Check**: Ensure package values are numeric and within expected ranges
 
 - **Problem**: Missing role information in student listings
-  - **Solution**: Implement default role assignment when single role exists
-  - **Check**: Validate role assignment logic for multi-role scenarios
+ - **Solution**: Implement default role assignment when single role exists
+ - **Check**: Validate role assignment logic for multi-role scenarios
 
 ### Notification delivery problems
 - **Problem**: Telegram message delivery failures
-  - **Solution**: Check rate limiting and implement exponential backoff
-  - **Check**: Verify bot token and chat ID configuration
+ - **Solution**: Check rate limiting and implement exponential backoff
+ - **Check**: Verify bot token and chat ID configuration
 
 - **Problem**: Database storage conflicts
-  - **Solution**: Implement conflict resolution and retry logic
-  - **Check**: Verify unique identifier generation and collision handling
+ - **Solution**: Implement conflict resolution and retry logic
+ - **Check**: Verify unique identifier generation and collision handling
 
 ### Integration challenges
 - **Problem**: Email processing inconsistencies
-  - **Solution**: Implement reliable error handling and retry mechanisms
-  - **Check**: Validate email parsing and extraction logic
+ - **Solution**: Implement reliable error handling and retry mechanisms
+ - **Check**: Validate email parsing and extraction logic
 
 ## Conclusion
-The Placement Notification Formatter represents a sophisticated solution for transforming structured placement offer data into notification-ready content. Its design emphasizes clean separation of concerns, extensibility, and maintainability while providing reliable functionality for handling various placement scenarios.
-
-The system's modular architecture enables easy integration with different data sources and delivery channels, while its detailed error handling and performance optimizations ensure reliable operation in production environments. The formatter's ability to adapt to different placement types and maintain consistent presentation standards makes it an essential component of the broader notification ecosystem.
-
-Through careful attention to data modeling, formatting algorithms, and integration patterns, the Placement Notification Formatter provides a solid foundation for scalable placement notification systems that can evolve with changing requirements and data sources.
+Formatter turns offer docs into sendable text. Keep templates and merge logic separate and new offer shapes stay a template change.

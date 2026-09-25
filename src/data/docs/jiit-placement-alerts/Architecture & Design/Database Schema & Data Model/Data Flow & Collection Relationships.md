@@ -1,7 +1,7 @@
 # Data flow & collection relationships
 
 ## Introduction
-This page explains the data flow patterns and collection relationships in the notification system. It traces how data enters the system from external sources (SuperSet portal, email, official websites), how it is processed and stored in MongoDB collections, and how it is delivered to users. It also covers upsert logic to avoid duplicates, data lifecycle management, and how the schema supports real-time notifications and historical analysis.
+How documents move between collections after SuperSet, email, or official scrapes land. Upserts, lifecycle, and which relationships matter for live alerts versus historical digs.
 
 ## Project structure
 The system is organized around a modular architecture:
@@ -112,14 +112,14 @@ NS-->>DB : Mark as sent
 
 ### Data flow from external sources to MongoDB
 - SuperSet notices and jobs:
-  - SupersetClientService authenticates and fetches notices and job listings.
-  - UpdateRunner filters existing IDs, enriches only new jobs, and passes notices through NoticeFormatterService.
-  - DatabaseService saves notices and upserts jobs.
+ - SupersetClientService authenticates and fetches notices and job listings.
+ - UpdateRunner filters existing IDs, enriches only new jobs, and passes notices through NoticeFormatterService.
+ - DatabaseService saves notices and upserts jobs.
 - Email-based placement offers:
-  - PlacementService runs a LangGraph pipeline to classify, extract, validate, sanitize, and format placement offers.
-  - DatabaseService merges updates into PlacementOffers with deduplication by company and student records.
+ - PlacementService runs a LangGraph pipeline to classify, extract, validate, sanitize, and format placement offers.
+ - DatabaseService merges updates into PlacementOffers with deduplication by company and student records.
 - Official website statistics:
-  - OfficialPlacementService scrapes and normalizes data, then DatabaseService inserts or updates OfficialPlacementData using content hash to detect changes.
+ - OfficialPlacementService scrapes and normalizes data, then DatabaseService inserts or updates OfficialPlacementData using content hash to detect changes.
 
 ```mermaid
 sequenceDiagram
@@ -259,7 +259,7 @@ UpsertUser --> End
 ## Dependency analysis
 The system exhibits low coupling and high cohesion:
 - DBClient encapsulates MongoDB connectivity and collection exposure.
-- DatabaseService centralizes all DB operations and maintains clear separation of concerns.
+- DatabaseService centralizes all DB operations
 - SupersetClientService and OfficialPlacementService are specialized for ingestion.
 - NoticeFormatterService and PlacementService encapsulate LLM pipelines for processing.
 - NotificationRunner and NotificationService orchestrate delivery.
@@ -294,9 +294,7 @@ Common issues and resolutions:
 - Notification delivery failures: Inspect NotificationService broadcast results; verify channel configurations.
 
 ## Conclusion
-The system integrates external data sources, processes and structures content, and persists it in MongoDB collections with reliable upsert logic to prevent duplicates. It supports real-time notifications and historical analytics through dedicated collections and aggregation functions. Clear separation of concerns and modular components enable maintainability and scalability.
-
-[No sources needed since this section summarizes without analyzing specific files]
+External sources in, structured docs in MongoDB, upserts against duplicates, then notifications out. Live alerts and historical stats share collections on purpose.
 
 ## Appendices
 

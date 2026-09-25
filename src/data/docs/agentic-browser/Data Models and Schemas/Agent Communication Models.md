@@ -1,13 +1,7 @@
 # Agent communication models
 
 ## Introduction
-This page provides detailed data model documentation for agent communication schemas, focusing on:
-- The GenerateScriptRequest model used for browser automation requests, including goal specification, target URL handling, DOM structure representation, and constraint definitions
-- The corresponding response model and validation rules
-- The agent message payload structure, conversation context management, and state preservation mechanisms
-- Field definitions, optional parameter handling, and data type specifications
-- Examples of request/response cycles, error handling patterns, and validation scenarios
-- The relationship between agent models and the reactive agent system architecture
+Models for agent chat and browser-script generation: goals, DOM context, chat history, and response envelopes.
 
 ## Project structure
 The agent communication models span three primary layers:
@@ -146,7 +140,7 @@ API-->>Ext : GenerateScriptResponse
 ## Detailed component analysis
 
 ### GenerateScriptRequest/Response workflow
-This workflow demonstrates the end-to-end cycle for generating a browser automation action plan.
+Full cycle for generating a browser automation action plan:
 
 ```mermaid
 sequenceDiagram
@@ -285,4 +279,5 @@ Common issues and resolutions:
 - React agent errors: Service logs and returns a generic apology message
 
 ## Conclusion
-The agent communication models provide a reliable, typed interface for both browser automation and conversational AI tasks. The GenerateScriptRequest model enables precise automation planning by incorporating DOM context and constraints, while the ReactAgentRequest/Response models support rich conversational exchanges with optional tool use. Validation and error handling are consistently applied across layers to ensure predictable behavior and clear feedback.
+`GenerateScriptRequest` carries goal plus DOM. Chat models keep role/content tight. Validate early so the graph never sees junk.
+

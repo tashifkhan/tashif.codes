@@ -1,7 +1,6 @@
 # Landing page components
 
-## Introduction
-This page explains the landing page and marketing components used to convert visitors into engaged users and inform decision-makers. It covers:
+The landing page and marketing components used to convert visitors into engaged users and inform decision-makers.
 - Marketing hero and CTAs
 - Feature explanation and benefits
 - Social proof and testimonials
@@ -10,7 +9,7 @@ This page explains the landing page and marketing components used to convert vis
 
 Each component's purpose, styling approach, responsiveness, and integration with marketing copy is documented. Usage examples show how to assemble cohesive landing experiences across different contexts (e.g., job seeker vs. recruiter, product demo vs. investor storytelling).
 
-## Project structure
+## Repository layout
 The components are organized by feature area:
 - Landing marketing components live under frontend/components/landing
 - The main hero and engagement prompt live under frontend/components
@@ -72,7 +71,7 @@ SCR --> STACK
 SCR --> IND
 ```
 
-## Core components
+## Building blocks
 - LandingHero: Hero unit with dynamic headline, mode toggle (seeker vs. recruiter), metrics, and primary CTAs. Implements animated typing and ambient visuals.
 - KnowMoreButton: Persistent floating action to drive deeper engagement to the About page.
 - FinalCTA: Conversion-focused section with gradient headline, supporting text, paired buttons, and trust indicators.
@@ -80,14 +79,14 @@ SCR --> IND
 - ValueProps: Benefit-focused grid with hover states and radial accents.
 - Testimonials: Carousel-like social proof with quote cards and hover effects.
 
-These components are designed to be composed into landing pages that speak to distinct personas and use cases, while maintaining consistent brand language and motion.
+These components are meant to be composed into landing pages that speak to distinct personas and use cases, while maintaining consistent brand language and motion.
 
-## Architecture overview
+## How it fits together
 The landing and About page components share a cohesive design system:
 - Motion primitives via Framer Motion for entrance, hover, and progress effects
 - Brand-centric tokens (colors, typography, spacing) applied consistently
 - Responsive grids and layouts that adapt from mobile to desktop
-- Semantic section anchors enabling smooth navigation and scroll progress
+- Semantic section anchors for in-page anchors and scroll progress
 
 ```mermaid
 graph TB
@@ -114,9 +113,7 @@ ANCHOR --> PROGRESS
 PROGRESS --> NAVBAR
 ```
 
-## Detailed component analysis
-
-### LandingHero
+## LandingHero
 Purpose:
 - Establish brand promise, present dual persona value, and drive immediate action.
 Key behaviors:
@@ -150,7 +147,7 @@ U->>LH : Click primary CTA
 LH-->>U : Navigate to dashboard
 ```
 
-### KnowMoreButton
+## KnowMoreButton
 Purpose:
 - Provide persistent, low-friction access to the About page for curiosity-driven users.
 Behavior:
@@ -168,7 +165,7 @@ Scale --> Click["Click to About page"]
 Click --> End(["Engagement"])
 ```
 
-### FinalCTA
+## FinalCTA
 Purpose:
 - Convert attention into action with paired CTAs for seeker and recruiter.
 Behavior:
@@ -189,7 +186,7 @@ Trust --> CTA["User clicks CTA"]
 CTA --> Redirect["Navigate to role-specific dashboard"]
 ```
 
-### HowItWorks
+## HowItWorks
 Purpose:
 - Communicate the product flow in digestible steps with visual rhythm.
 Behavior:
@@ -208,7 +205,7 @@ Animate --> Hover["Hover reveals subtle glow"]
 Hover --> End(["User scans steps"])
 ```
 
-### ValueProps
+## ValueProps
 Purpose:
 - Present core benefits with iconography and hover states.
 Behavior:
@@ -227,7 +224,7 @@ Animate --> Hover["Hover reveals overlay glow"]
 Hover --> End(["User reads benefits"])
 ```
 
-### Testimonials
+## Testimonials
 Purpose:
 - Build credibility through real outcomes and roles.
 Behavior:
@@ -247,11 +244,11 @@ Scroll --> Hover["Hover reveals accent glow"]
 Hover --> End(["User reads quotes"])
 ```
 
-### About page components
+## About page components
 
-#### Sections (hero, pillars, workflow, footer)
+### Sections (hero, pillars, workflow, footer)
 Purpose:
-- Tell the story of the company, principles, and end-to-end workflow.
+- Tell the company story, principles, and full product workflow.
 Behavior:
 - Hero with animated background and gradient headline.
 - Pillars grid with hover elevation and colored backgrounds.
@@ -279,7 +276,7 @@ U->>Foot : Scroll to footer
 Foot-->>U : Call-to-action buttons
 ```
 
-#### ProblemStats
+### ProblemStats
 Purpose:
 - Highlight pain points with striking stats and visual emphasis.
 Behavior:
@@ -297,7 +294,7 @@ Animate --> Hover["Hover enhances glow and text"]
 Hover --> End(["User absorbs stats"])
 ```
 
-#### MarketGrowth
+### MarketGrowth
 Purpose:
 - Demonstrate TAM and growth trends to support positioning.
 Behavior:
@@ -315,7 +312,7 @@ Animate --> Hover["Hover enhances text and glow"]
 Hover --> End(["User reads projections"])
 ```
 
-#### DualValue
+### DualValue
 Purpose:
 - Explain compounding flywheel for both seekers and employers.
 Behavior:
@@ -334,7 +331,7 @@ Connect --> Hover["Hover enhances glow and text"]
 Hover --> End(["User understands flywheel"])
 ```
 
-#### CompetitiveEdgeTable
+### CompetitiveEdgeTable
 Purpose:
 - Compare feature support across categories to highlight differentiation.
 Behavior:
@@ -353,7 +350,7 @@ Hover --> Legend["Legend explains statuses"]
 Legend --> End(["User compares offerings"])
 ```
 
-#### WorkflowInteractive
+### WorkflowInteractive
 Purpose:
 - Visualize the parsing and scoring pipeline with interactive stages.
 Behavior:
@@ -372,7 +369,7 @@ Hover --> Mobile["Mobile: fallback image"]
 Mobile --> End(["User understands pipeline"])
 ```
 
-#### DatabaseArchitecture
+### DatabaseArchitecture
 Purpose:
 - Communicate data model and persistence design.
 Behavior:
@@ -389,9 +386,9 @@ Columns --> Hover["Hover enhances images"]
 Hover --> End(["User understands schema"])
 ```
 
-#### TechStackGrid
+### TechStackGrid
 Purpose:
-- Showcase the technology foundation with categorized modules.
+- show the technology foundation with categorized modules.
 Behavior:
 - Three-column grid with category cards and hover elevation.
 Integration with marketing copy:
@@ -406,7 +403,7 @@ Grid --> Hover["Hover enhances borders and glow"]
 Hover --> End(["User understands stack"])
 ```
 
-#### TargetIndustries
+### TargetIndustries
 Purpose:
 - Communicate adoption vectors and sector breakdown.
 Behavior:
@@ -424,7 +421,7 @@ Legend --> Hover["Hover enhances items"]
 Hover --> End(["User understands focus"])
 ```
 
-#### SectionNav
+### SectionNav
 Purpose:
 - Provide sticky navigation across long About page sections.
 Behavior:
@@ -442,7 +439,7 @@ Active --> Highlight["Animate highlight pill"]
 Highlight --> End(["User navigates sections"])
 ```
 
-#### SectionDivider
+### SectionDivider
 Purpose:
 - Visually separate major sections with a subtle gradient bar.
 Behavior:
@@ -458,7 +455,7 @@ Start(["Viewport enters"]) --> Divider["Render gradient divider"]
 Divider --> End(["User perceives section break"])
 ```
 
-#### ScrollProgress
+### ScrollProgress
 Purpose:
 - Indicate reading progress with a dynamic bar.
 Behavior:
@@ -475,15 +472,15 @@ Track --> Scale["Scale progress bar"]
 Scale --> End(["User sees completion"])
 ```
 
-## Dependency analysis
+## Dependencies
 - Motion and styling:
-  - Framer Motion powers entrances, hover states, and progress bars.
-  - Tailwind utilities define responsive grids, borders, and backdrop blur.
+ - Framer Motion powers entrances, hover states, and progress bars.
+ - Tailwind utilities define responsive grids, borders, and backdrop blur.
 - Navigation:
-  - Section anchors enable smooth scrolling and progress tracking.
-  - Intersection Observer synchronizes active section highlighting.
+ - Section anchors enable smooth scrolling and progress tracking.
+ - Intersection Observer synchronizes active section highlighting.
 - Icons:
-  - Lucide React provides consistent iconography across components.
+ - Lucide React provides consistent iconography across components.
 
 ```mermaid
 graph LR
@@ -523,36 +520,33 @@ BRAND --> DIV
 BRAND --> SCR
 ```
 
-## Performance considerations
+## Performance
 - Prefer lazy-loaded images for charts and diagrams to minimize initial payload.
 - Keep motion animations scoped to visible sections to avoid layout thrash.
 - Use CSS containment and transform-style for smoother hover effects.
 - Optimize SVGs and gradients to reduce render cost on lower-end devices.
 - Defer heavy animations until viewport-visible to improve First Contentful Paint.
 
-## Troubleshooting guide
+## Troubleshooting
 - Animations not triggering:
-  - Verify viewport and amount thresholds are appropriate for section heights.
-  - Confirm Framer Motion is initialized and not blocked by SSR environments.
+ - Verify viewport and amount thresholds are appropriate for section heights.
+ - Confirm Framer Motion is initialized and not blocked by SSR environments.
 - Scroll progress not updating:
-  - Ensure scroll container is the document body or a configured scroller.
-  - Check that the progress element is positioned fixed at the top.
+ - Ensure scroll container is the document body or a configured scroller.
+ - Check that the progress element is positioned fixed at the top.
 - Section nav not highlighting:
-  - Confirm section IDs match the nav targets and intersection observer is active.
-  - Validate root margin and thresholds align with viewport height.
+ - Confirm section IDs match the nav targets and intersection observer is active.
+ - Validate root margin and thresholds align with viewport height.
 - Hover states not appearing:
-  - Check backdrop blur and gradient classes are not conflicting with pointer-events.
-  - Ensure parent containers allow pointer events for interactive elements.
+ - Check backdrop blur and gradient classes are not conflicting with pointer-events.
+ - Ensure parent containers allow pointer events for interactive elements.
 
-## Conclusion
-These components form a cohesive, motion-rich system for communicating value, guiding conversions, and telling a compelling story. By composing them thoughtfully, aligning hero messaging with feature explanations, benefits, and social proof, you can craft landing pages that resonate with both job seekers and recruiters while informing stakeholders with technical depth.
-
-## Appendices
+## Appendix
 - Example compositions:
-  - Job Seeker Landing: Hero → HowItWorks → ValueProps → Testimonials → FinalCTA
-  - Recruiter Landing: Hero → HowItWorks → ValueProps → Testimonials → FinalCTA
-  - Investor Story: ProblemStats → MarketGrowth → DualValue → CompetitiveEdgeTable → WorkflowInteractive → DatabaseArchitecture → TechStackGrid → TargetIndustries → SectionNav + ScrollProgress
-- Best practices:
-  - Maintain consistent brand color application and typography hierarchy.
-  - Use progressive disclosure for complex workflows (e.g., hover reveals).
-  - Anchor sections with IDs and pair with scroll progress and sticky navigation.
+ - Job Seeker Landing: Hero → HowItWorks → ValueProps → Testimonials → FinalCTA
+ - Recruiter Landing: Hero → HowItWorks → ValueProps → Testimonials → FinalCTA
+ - Investor Story: ProblemStats → MarketGrowth → DualValue → CompetitiveEdgeTable → WorkflowInteractive → DatabaseArchitecture → TechStackGrid → TargetIndustries → SectionNav + ScrollProgress
+- Habits that help:
+ - Maintain consistent brand color application and typography hierarchy.
+ - Use progressive disclosure for complex workflows (e.g., hover reveals).
+ - Anchor sections with IDs and pair with scroll progress and sticky navigation.

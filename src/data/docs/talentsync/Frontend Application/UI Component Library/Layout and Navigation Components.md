@@ -1,18 +1,15 @@
 # Layout and navigation components
 
-## Update summary
-**Changes Made**
-- Improved Navbar component with sophisticated back button detection and dynamic page title display
-- Integrated detailed haptic feedback system with semantic intensity levels
-- Improved mobile navigation with contextual menu buttons and Framer Motion animations
-- Added modernized mobile menu system with improved user interaction patterns
-- Updated MobileBottomNav with better haptic feedback integration
+App chrome: desktop Navbar, mobile menus, sidebar, LLM config panel, FAB, and avatar menu.
 
-## Introduction
-This page provides detailed documentation for the layout and navigation components that form the backbone of the TalentSync application's user interface. The system has been improved with sophisticated mobile navigation patterns, detailed haptic feedback integration, and modernized navigation components. It covers the desktop Navbar with advanced back button detection and dynamic page titles, mobile navigation patterns with contextual menu buttons, sidebar management, AI configuration panel, floating action button, and user avatar management. The guide explains component state management, responsive behavior, routing integration, customization options, and accessibility considerations for navigation patterns.
+## Recent changes
+- Navbar back-button detection and dynamic titles
+- Haptic feedback helpers with intensity levels
+- Mobile nav with contextual menus and Framer Motion
+- MobileBottomNav haptic wiring
 
-## Project structure
-The layout and navigation system is organized around a few key files with improved haptic feedback capabilities:
+## Repository layout
+Key files:
 - Application shell and providers: `layout.tsx`, `layout-content.tsx`
 - Navigation configuration: `navigation.ts`
 - Desktop and mobile navigation: `navbar.tsx`, `mobile-bottom-nav.tsx`
@@ -62,9 +59,9 @@ LCP --> L
 UH --> HF
 ```
 
-## Core components
+## Building blocks
 This section introduces the primary components and their responsibilities with improved functionality:
-- **Navbar**: Desktop navigation with sophisticated back button detection, dynamic page title display, contextual menu buttons, Framer Motion animations, and detailed haptic feedback system.
+- **Navbar**: Desktop navigation with back button detection, dynamic page title display, contextual menu buttons, Framer Motion animations, and detailed haptic feedback system.
 - **MobileBottomNav**: Bottom tab navigation with integrated floating action button, improved haptic feedback, responsive behavior, and improved navigation logic.
 - **SidebarProvider**: Context provider for sidebar collapse state management.
 - **ModernMobileMenu**: Reusable interactive bottom navigation component with animated indicators, improved styling, and haptic feedback integration.
@@ -72,8 +69,8 @@ This section introduces the primary components and their responsibilities with i
 - **FloatingActionButton**: Animated floating action button with sub-actions, backdrop behavior, and haptic feedback integration.
 - **AvatarUpload**: User avatar management with URL validation, session updates, and haptic feedback.
 
-## Architecture overview
-The navigation architecture combines desktop and mobile patterns with a centralized sidebar state managed by a React Context and improved with detailed haptic feedback. The Navbar controls desktop layout and tablet menus with sophisticated back button detection and dynamic page titles, while MobileBottomNav handles mobile navigation with integrated floating action button and improved haptic feedback. The LLM configuration panel operates independently but integrates with the app shell for consistent theming and routing.
+## How it fits together
+The navigation architecture combines desktop and mobile patterns with a centralized sidebar state managed by a React Context and improved with detailed haptic feedback. The Navbar controls desktop layout and tablet menus with back button detection and dynamic page titles, while MobileBottomNav handles mobile navigation with integrated floating action button and improved haptic feedback. The LLM configuration panel operates independently but integrates with the app shell for consistent theming and routing.
 
 ```mermaid
 sequenceDiagram
@@ -97,183 +94,95 @@ Menu-->>MobileNav : activeIndex updated
 MobileNav->>Router : push(navItems[index].href)
 ```
 
-## Detailed component analysis
+## Navbar (desktop)
 
-### Improved navbar component (desktop navigation)
-The Navbar provides a detailed desktop navigation experience with sophisticated enhancements:
-- **Advanced Back Button Detection**: Intelligent back button visibility based on route patterns with configurable logic
-- **Dynamic Page Title Display**: Contextual page titles with prefix matching for dynamic routes and special route handling
-- **Contextual Menu Buttons**: Adaptive menu button that changes between hamburger and three-dot menus based on current route
-- **Framer Motion Animations**: Sophisticated entrance animations with spring physics and controlled transitions
-- **Detailed Haptic Feedback**: Semantic haptic feedback for different user interactions (light, heavy, medium)
-- **Collapsible Sidebar**: Smooth animations with responsive sidebar width management
-- **Main navigation items and quick action shortcuts**: Improved with haptic feedback integration
-- **User profile section with role display**: Session-aware rendering with haptic feedback
-- **Tablet-responsive menu overlay**: Controlled visibility with animated transitions
-- **Integration with Next.js routing and authentication**: Smooth navigation with sign-out flow
+What it does:
 
-Key behaviors:
-- Uses Framer Motion for entrance animations with spring physics (stiffness: 300, damping: 30)
-- Advanced back button detection using shouldShowBack() function with route exclusions
-- Dynamic page title resolution with exact and prefix matching for dynamic routes
-- Contextual menu button that adapts to current route (hamburger vs three-dots)
-- Detailed haptic feedback integration for all user interactions
-- Responsive sidebar width (collapsed vs expanded) with smooth transitions
-- Active state highlighting based on current path with improved visual feedback
-- Session-aware rendering for authenticated/unauthenticated users with haptic feedback
-- Tablet menu toggle with controlled visibility and animated transitions
+- Shows a back button only on routes that need one (`shouldShowBack`, with exclusions)
+- Resolves the page title from the path (exact match, then prefix for dynamic routes)
+- Swaps hamburger vs three-dot menus based on the current route
+- Animates entrance with Framer Motion springs (stiffness 300, damping 30)
+- Collapses or expands the sidebar width
+- Renders nav items, quick actions, and the session-aware profile block
+- On tablet, opens an overlay menu instead of the desktop sidebar
 
-State management:
-- Local state for mobile menu visibility with controlled animations
-- Context state for sidebar collapse with haptic feedback
-- Session state from NextAuth with loading states
-- Dynamic page title computation with route-based logic
+State:
 
-Routing integration:
-- Uses Next.js Link for client-side navigation with haptic feedback
-- Handles sign-out with callback URL and heavy haptic feedback
-- Integrates with dashboard and account pages with contextual titles
-- Supports dynamic route patterns with prefix matching
+- Local mobile-menu open flag
+- Sidebar collapse from context
+- `useSession()` from `session-provider.tsx` (including loading)
+- Computed title from the route
 
-Accessibility considerations:
-- Proper focus management with animated transitions
-- Keyboard navigable menu items with haptic feedback
-- Screen reader friendly labels with contextual titles
-- Sufficient color contrast with improved visual states
-- Semantic haptic feedback for different interaction types
+Routing:
 
-### Improved MobileBottomNav component
-MobileBottomNav implements an improved bottom navigation bar optimized for touch devices with detailed haptic feedback:
-- **Improved Tab Switching**: Responsive tab switching with active state tracking and haptic feedback
-- **Integrated FloatingActionButton**: Central floating action button with haptic feedback integration
-- **Dynamic Item Splitting**: Intelligent item splitting for floating action button placement with haptic feedback
-- **Custom CSS for Themed Appearance**: Improved styling with ripple effects and haptic feedback integration
-- **Path-based Active Index Calculation**: Improved route-based active index determination
-- **Detailed Haptic Feedback**: Semantic haptic feedback for all interactions (light, selection)
-
-Core functionality:
-- Transforms navigation items for the interactive menu with haptic feedback integration
-- Calculates active index based on current pathname with improved logic
-- Handles navigation with custom logic and haptic feedback
-- Manages item splitting for floating action button placement with haptic feedback
-- Integrates haptic feedback for all user interactions
-
-Integration points:
-- Uses Next.js router for navigation with haptic feedback
-- Uses NextAuth session for conditional rendering with haptic feedback
-- Integrates with FloatingActionButton for primary actions with haptic feedback
-- Improved haptic feedback system for all navigation interactions
-
-Responsive behavior:
-- Adapts to screen size changes with haptic feedback
-- Maintains consistent spacing for floating action button with haptic feedback
-- Uses CSS media queries for fine-tuning with improved styling
-- Optimized for different screen sizes with haptic feedback integration
-
-### SidebarProvider component
-SidebarProvider manages the global sidebar collapse state:
-- React Context for state sharing across components
-- Centralized state management for sidebar width
-- Type-safe context with error handling
-- Provider wrapper in the application layout
-
-Implementation details:
-- Uses useState hook for local state
-- Provides getter/setter pair through context
-- Enforces context usage with error messages
-- Minimal re-renders through selective state updates
-
-Usage pattern:
-- Wrapped around the main layout
-- Consumed by Navbar and other layout components
-- Enables coordinated sidebar behavior
-
-### Improved ModernMobileMenu component
-ModernMobileMenu provides a reusable bottom navigation foundation with improved features:
-- **Configurable Item Count**: 2-5 items with improved validation
-- **Animated Active State Indicators**: Sophisticated line width calculations with haptic feedback
-- **Dynamic Line Width Calculations**: Improved measurement and animation
-- **Theme-aware Accent Colors**: CSS variable integration with haptic feedback
-- **Touch-friendly Ripple Effects**: Improved visual feedback with haptic integration
-- **Improved Styling**: Improved visual design with haptic feedback integration
-
-Technical features:
-- Validates incoming items array with improved error handling
-- Uses refs for DOM measurements with haptic feedback integration
-- Effect-based resize handling with performance optimizations
-- Memoized style calculations with improved caching
-- Accessible markup with navigation role and haptic feedback
-
-Customization options:
-- Adjustable accent color via CSS variables with haptic feedback
-- Flexible item count and labels with validation
-- Customizable icon components with improved styling
-- Responsive design with media queries and haptic feedback
-
-### LlmConfigPanel component
-LlmConfigPanel offers a detailed AI configuration management interface:
-- Multi-provider support (OpenAI, Anthropic, Google, etc.)
-- Create, edit, test, activate, and delete operations
-- Form validation and error handling
-- Real-time testing with feedback
-- Active configuration management
-
-Core workflows:
-- Configuration list with status indicators
-- Modal dialogs for creation and editing
-- Test connection functionality
-- Activation/deactivation controls
-- Confirmation dialogs for destructive actions
-
-Data management:
-- Fetches configurations from backend API
-- Handles CRUD operations via REST endpoints
-- Manages loading states and error messages
-- Supports custom model entries
-
-UI/UX features:
-- Animated transitions and feedback
-- Status badges for configuration health
-- Gradient backgrounds and glassmorphism
-- Responsive grid layouts
-
-### Improved FloatingActionButton component
-FloatingActionButton provides an animated primary action button with detailed haptic feedback:
-- **Expandable Sub-menu**: Animated entries with haptic feedback integration
-- **Central Positioning**: Backdrop overlay with haptic feedback
-- **Smooth Rotation Animation**: Toggle state with controlled animations and haptic feedback
-- **Integration with Navigation Items**: Improved navigation with haptic feedback
-- **Touch-friendly Sizing**: Appropriate sizing with haptic feedback integration
-
-Behavioral patterns:
-- Toggle state management with controlled visibility and haptic feedback
-- Staggered animation for sub-actions with haptic feedback
-- Backdrop click-to-close functionality with haptic feedback
-- Route-based navigation on selection with haptic feedback
+- Next.js `Link` for client navigation
+- Sign-out with a callback URL
+- Titles for dashboard and account routes
 
 Accessibility:
-- Focus management during open/close with haptic feedback
-- Touch targets sized appropriately with haptic feedback
-- Visual feedback for hover/tap states with haptic feedback
-- Screen reader compatible labels with haptic feedback
 
-### AvatarUpload component
-AvatarUpload enables user avatar management:
-- URL-based avatar updates
-- Real-time preview functionality
-- Validation and error handling
-- Session synchronization
-- Clean form state management
+- Focus management on animated transitions
+- Keyboard-reachable menu items
+- Labels that match the current title
+- Contrast that holds in active and idle states
 
-Key features:
-- URL validation with format checks
-- Preview generation for URLs
-- Backend API integration for updates
-- Session refresh after avatar change
-- User-friendly error messaging
+Haptics fire on primary taps via `haptic("light" | "medium" | "heavy")`. That is wired once in the click handlers, not as a separate UI mode.
+
+## MobileBottomNav
+
+Bottom tab bar for touch layouts. Active tab tracks the pathname. A center slot hosts `FloatingActionButton`. Items split around that slot so the FAB stays centered. Ripple styling lives in the companion CSS.
+
+Behavior:
+
+- Map `navItems` into the interactive menu
+- Compute `activeIndex` from the pathname
+- `router.push` on tab select
+- Session-aware items when auth matters
+
+## SidebarProvider
+
+React context for sidebar collapsed/expanded width. `useState` behind a getter/setter pair, typed context, and an error if a consumer mounts outside the provider. Navbar and layout chrome read the same value so width stays in sync.
+
+## ModernMobileMenu
+
+Reusable bottom menu used by the mobile chrome:
+
+- 2-5 items, validated on the way in
+- Active indicator line width measured from refs
+- Accent color from CSS variables
+- Touch ripples on press
+
+Resize handling is effect-based. Styles that do not need fresh layout work are memoized. Markup uses a navigation role.
+
+## LlmConfigPanel
+
+Multi-provider LLM config UI (OpenAI, Anthropic, Google, and the rest of the factory list):
+
+- Create, edit, test, activate, delete
+- Form validation and error states
+- Live connection test
+- Active config highlighted in the list
+
+Data comes from the backend REST endpoints. Loading and error messages stay in the panel. UI uses status badges, simple transitions, and a responsive grid.
+
+## FloatingActionButton
+
+Animated primary action with an expandable sub-menu:
+
+- Backdrop overlay while open
+- Rotation on toggle
+- Staggered sub-action entries
+- Backdrop click closes
+- Selection routes through the nav item hrefs
+
+Touch targets stay large enough for thumbs. Focus moves cleanly on open/close. Haptics run on toggle and selection the same way as the bottom nav.
+
+## AvatarUpload
+
+URL-based avatar update with preview, validation, backend write, and a session refresh after success. Form state clears on a clean save.
 
 Integration:
-- Uses NextAuth session for updates
+- Uses `useSession().update()` after a successful avatar write
 - Calls user API endpoint for avatar changes
 - Updates UI state upon successful completion
 - Resets form on cancel or completion
@@ -294,14 +203,14 @@ The system provides seven semantic haptic intensity levels:
 ### Haptic utility functions
 The haptics system provides three core utility functions:
 - **haptic(intensity)**: Fire a haptic pulse with the specified intensity
-- **getHapticsEnabled()**: Check if user has haptics enabled
+- **getHapticsEnabled**: Check if user has haptics enabled
 - **setHapticsEnabled(value)**: Persist user haptic preference
 
 ### Haptic hook integration
-The useHaptics hook provides React integration with:
-- **haptic()**: Fire a haptic pulse with optional intensity
+The useHaptics hook provides React integration :
+- **haptic**: Fire a haptic pulse with optional intensity
 - **enabled**: Current haptic preference state
-- **setEnabled()**: Toggle or explicitly set haptic preference
+- **setEnabled**: Toggle or explicitly set haptic preference
 
 ### Implementation details
 - Built on the web-haptics library with graceful fallbacks
@@ -310,13 +219,13 @@ The useHaptics hook provides React integration with:
 - Defaults to enabled when no preference has been saved
 - Silent no-ops on unsupported browsers/devices (iOS, desktop)
 
-## Dependency analysis
+## Dependencies
 The navigation system exhibits clean separation of concerns with minimal coupling and improved haptic feedback integration:
-- Navbar depends on SidebarProvider, NextAuth, navigation configuration, and haptic feedback system
+- Navbar depends on SidebarProvider, `session-provider.tsx`, navigation configuration, and haptic feedback system
 - MobileBottomNav depends on ModernMobileMenu, FloatingActionButton, and haptic feedback system
 - SidebarProvider is a pure context without external dependencies
 - LlmConfigPanel is self-contained with API integration
-- AvatarUpload integrates with NextAuth and user API
+- AvatarUpload integrates with `useSession` and `POST /api/v1/user/update-avatar`
 - Haptic feedback system provides centralized haptic management
 
 ```mermaid
@@ -329,12 +238,12 @@ MBN --> FAB["FloatingActionButton"]
 MBN --> HF
 NAV --> MBN
 LCP["LlmConfigPanel"] --> API["Backend API"]
-AVU["AvatarUpload"] --> NA["NextAuth"]
+AVU["AvatarUpload"] --> NA["session-provider.tsx"]
 NAV --> AVU
 UH["use-haptics.ts"] --> HF
 ```
 
-## Performance considerations
+## Performance
 - Use of Framer Motion animations should be optimized for mobile devices with haptic feedback
 - Debounce resize handlers in menu components with improved performance monitoring
 - Lazy load heavy configuration panels when possible with haptic feedback optimization
@@ -345,7 +254,7 @@ UH["use-haptics.ts"] --> HF
 - Cache haptic intensity mappings for performance optimization
 - Use requestAnimationFrame for haptic feedback timing in animations
 
-## Troubleshooting guide
+## Troubleshooting
 Common issues and resolutions with haptic feedback integration:
 - **Navigation not updating after sidebar changes**: Verify SidebarProvider wrapping and haptic feedback integration
 - **Mobile menu not responding**: Check ModernMobileMenu item count validation and haptic feedback system
@@ -360,9 +269,6 @@ Debugging tips:
 - Use React DevTools to inspect component state and haptic feedback integration
 - Monitor network requests for API failures and haptic feedback timing
 - Check browser console for JavaScript errors and haptic system initialization
-- Verify NextAuth session state consistency and haptic preference persistence
+- Verify `useSession()` state and haptic preference persistence
 - Inspect CSS custom properties for theme-related issues and haptic feedback styling
 - Monitor haptic feedback calls with performance profiling tools
-
-## Conclusion
-The improved layout and navigation system provides a reliable, responsive, and tactilely rich foundation for the TalentSync application. The components work together smoothly to deliver an intuitive user experience across desktop, tablet, and mobile devices with detailed haptic feedback integration. The modular architecture allows for easy customization and extension while maintaining consistency in design and behavior. The integration with Next.js routing, authentication, backend APIs, and the detailed haptic feedback system ensures a cohesive and engaging application experience. The sophisticated back button detection, dynamic page titles, contextual menu buttons, and improved mobile navigation patterns provide users with a modern and intuitive navigation experience that responds to their interactions with appropriate tactile feedback.

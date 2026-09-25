@@ -1,7 +1,7 @@
 # Gmail OAuth2 security
 
 ## Introduction
-This page provides detailed documentation for the Gmail OAuth2 authentication security implementation in the bulk messaging application. It covers the complete OAuth2 flow, including client ID/secret configuration, redirect URI setup, consent screen handling, token storage mechanisms using electron-store, refresh token management, and security considerations such as scope limitations and secure token transmission. The implementation uses Electron's BrowserWindow-based OAuth flow with context isolation and security headers.
+Security choices in the Gmail OAuth flow: isolated BrowserWindow, limited scopes, encrypted token store, IPC-only secrets.
 
 ## Project structure
 The Gmail OAuth2 implementation spans multiple layers of the application architecture:
@@ -41,7 +41,7 @@ The system uses a minimal scope focused solely on email sending functionality:
 - Scope: `https://www.googleapis.com/auth/gmail.send`
 - Redirect URI: `http://localhost:3000/oauth/callback`
 - Access type: `offline` for refresh token acquisition
-- Consent prompt: `consent` to ensure refresh token retrieval
+- Consent prompt: `consent` so Google returns a refresh token
 
 ### Token storage mechanism
 Credentials are persisted using electron-store with automatic encryption:
@@ -57,7 +57,7 @@ The authentication process uses Electron's BrowserWindow with improved security:
 - Window timeout protection (5 minutes)
 
 ## Architecture overview
-The OAuth2 authentication architecture follows Electron's secure IPC pattern with clear separation of concerns:
+OAuth2 across main, preload, and renderer:
 
 ```mermaid
 sequenceDiagram
@@ -106,7 +106,7 @@ The authentication flow uses a dedicated BrowserWindow with improved security:
 - Node.js integration disabled for security isolation
 - Web security enabled to prevent XSS attacks
 - Window timeout protection prevents hanging authentication
-- Ready-to-show event ensures proper window display
+- ready-to-show waits until content is ready before showing the window
 
 #### Redirect handling and error management
 The handler implements reliable redirect handling:
@@ -221,17 +221,17 @@ Preload --> Main
 
 ### External dependencies
 The implementation depends on:
-- **googleapis**: Google API client library for OAuth2 and Gmail API
-- **electron-store**: Secure credential storage with automatic encryption
-- **dotenv**: Environment variable loading for client credentials
-- **electron**: Desktop application framework with BrowserWindow
+- **googleapis.** Google API client library for OAuth2 and Gmail API
+- **electron-store.** Secure credential storage with automatic encryption
+- **dotenv.** Environment variable loading for client credentials
+- **electron.** Desktop application framework with BrowserWindow
 
 ### Security dependencies
 The security model relies on:
-- **Context isolation**: Prevents renderer process compromise
-- **Node.js integration disabled**: Reduces attack surface
-- **Web security enabled**: Protection against XSS attacks
-- **Automatic token encryption**: electron-store encryption for credential protection
+- **Context isolation.** Prevents renderer process compromise
+- **Node.js integration disabled.** Reduces attack surface
+- **Web security enabled.** Protection against XSS attacks
+- **Automatic token encryption.** electron-store encryption for credential protection
 
 ## Performance considerations
 The OAuth2 implementation incorporates several performance and scalability considerations:
@@ -246,7 +246,7 @@ The OAuth2 implementation incorporates several performance and scalability consi
 - Configurable delay between email sends (default 1000ms)
 - Progress tracking enables user feedback
 - Batch processing with individual error handling
-- Graceful degradation on failures
+- Failures do not crash the auth window
 
 ### Resource management
 - BrowserWindow cleanup on completion or timeout
@@ -259,7 +259,7 @@ The OAuth2 implementation incorporates several performance and scalability consi
 ### Common authentication issues
 **Missing Environment Variables**
 - Symptom: Authentication returns error about missing client credentials
-- Solution: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set in.env file
+- Solution: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set in .env file
 - Prevention: Validate environment variables before OAuth2 initialization
 
 **OAuth2 Redirect Problems**
@@ -272,7 +272,7 @@ The OAuth2 implementation incorporates several performance and scalability consi
 - Solution: Check electron-store permissions and application data directory
 - Prevention: Implement token validation before email operations
 
-### Security considerations and best practices
+### Security considerations
 
 #### Scope limitations
 The implementation uses minimal required scope:
@@ -282,7 +282,7 @@ The implementation uses minimal required scope:
 
 #### Refresh token management
 - Uses offline access type to acquire refresh tokens
-- Stores complete token objects for smooth renewal
+- Stores complete token objects for clean renewal
 - Handles token expiration transparently through Google API client
 - Implements proper cleanup on authentication failures
 
@@ -295,10 +295,9 @@ The implementation uses minimal required scope:
 #### Error handling and recovery
 - Detailed error handling throughout OAuth2 flow
 - Timeout protection prevents hanging authentication
-- Graceful degradation on network failures
-- User-friendly error messages with actionable guidance
+- Network failures do not crash the auth window
+- Clear error messages with actionable guidance
 
 ## Conclusion
-The Gmail OAuth2 authentication implementation provides a secure, efficient, and user-friendly solution for integrating Gmail API functionality into the bulk messaging application. The implementation follows Electron security best practices through context isolation, proper IPC handling, and secure credential storage. Key security features include minimal scope usage, refresh token management, automatic encryption, and detailed error handling. The modular architecture allows for easy maintenance and extension while maintaining strong security guarantees.
 
-The system successfully balances security requirements with usability, providing users with a straightforward authentication experience while protecting their credentials and maintaining compliance with Google's OAuth2 security guidelines. The implementation is a reliable foundation for secure email automation in desktop applications.
+Keep scopes minimal and the auth window short-lived. The refresh token is the long-term secret; protect the store that holds it.

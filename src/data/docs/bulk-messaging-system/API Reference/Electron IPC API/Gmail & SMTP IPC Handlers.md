@@ -1,7 +1,8 @@
 # Gmail & SMTP IPC handlers
 
 ## Introduction
-This page provides detailed documentation for the Gmail and SMTP IPC handlers in the Electron-based bulk messaging application. It covers:
+Gmail and SMTP IPC handlers: OAuth authenticate, send mail with a delay, verify SMTP, and save a password-free config snapshot.
+
 - Gmail OAuth2 authentication flow initiation, authorization URL generation, and callback handling
 - Gmail token retrieval and validation
 - Email composition, attachment handling, and batch processing via Gmail API
@@ -45,15 +46,15 @@ MAIN --> SH
 
 ## Core components
 - Gmail IPC handlers:
-  - gmail-auth: Initiates OAuth2 flow, opens authorization window, handles redirect callback, exchanges code for tokens, stores credentials
-  - gmail-token: Checks local token availability
-  - send-email: Sends emails via Gmail API with progress events and rate limiting
+ - gmail-auth: Initiates OAuth2 flow, opens authorization window, handles redirect callback, exchanges code for tokens, stores credentials
+ - gmail-token: Checks local token availability
+ - send-email: Sends emails via Gmail API with progress events and rate limiting
 - SMTP IPC handler:
-  - smtp-send: Validates SMTP config, creates transport, verifies connectivity, sends emails with progress events and rate limiting
+ - smtp-send: Validates SMTP config, creates transport, verifies connectivity, sends emails with progress events and rate limiting
 - Frontend integration:
-  - Preload exposes invokeable APIs for renderer
-  - GmailForm and SMTPForm orchestrate user actions and display progress
-  - BulkMailer coordinates form validation and handler invocation
+ - Preload exposes invokeable APIs for renderer
+ - GmailForm and SMTPForm orchestrate user actions and display progress
+ - BulkMailer coordinates form validation and handler invocation
 
 Key runtime dependencies:
 - googleapis for Gmail API
@@ -96,13 +97,13 @@ PRE-->>UI : result
 #### Handler: gmail-auth
 - Purpose: Initiate OAuth2 flow for Gmail
 - Steps:
-  - Validate environment variables for client ID and secret
-  - Create OAuth2 client with configured redirect URI
-  - Generate authorization URL with offline access and consent prompt
-  - Open BrowserWindow to display authorization page
-  - Listen for redirect to capture authorization code
-  - Exchange code for tokens and store credentials securely
-  - Resolve promise with success/failure result
+ - Validate environment variables for client ID and secret
+ - Create OAuth2 client with configured redirect URI
+ - Generate authorization URL with offline access and consent prompt
+ - Open BrowserWindow to display authorization page
+ - Listen for redirect to capture authorization code
+ - Exchange code for tokens and store credentials securely
+ - Resolve promise with success/failure result
 - Timeout: 5 minutes for OAuth completion
 - Error handling: Catches missing env vars, token exchange errors, and window closure
 
@@ -130,20 +131,20 @@ StoreCreds --> ResolveSuccess["Resolve success"]
 #### Handler: send-email
 - Purpose: Send bulk emails via Gmail API
 - Input schema:
-  - recipients: array of email addresses
-  - subject: string
-  - message: HTML string
-  - delay: number (optional, milliseconds)
+ - recipients: array of email addresses
+ - subject: string
+ - message: HTML string
+ - delay: number (optional, milliseconds)
 - Processing:
-  - Validates token presence
-  - Sets up OAuth2 client with stored token
-  - Iterates recipients, emits progress events
-  - Constructs MIME message with HTML content-type
-  - Sends via gmail.users.messages.send
-  - Applies rate limiting delay between emails
+ - Validates token presence
+ - Sets up OAuth2 client with stored token
+ - Iterates recipients, emits progress events
+ - Constructs MIME message with HTML content-type
+ - Sends via gmail.users.messages.send
+ - Applies rate limiting delay between emails
 - Output schema:
-  - success: boolean
-  - results: array of { recipient, status, error? }
+ - success: boolean
+ - results: array of { recipient, status, error? }
 
 ```mermaid
 sequenceDiagram
@@ -171,24 +172,24 @@ PRE-->>UI : result
 #### Handler: smtp-send
 - Purpose: Send bulk emails via SMTP
 - Input schema:
-  - smtpConfig: { host, port, secure, user, pass }
-  - recipients: array of email addresses
-  - subject: string
-  - message: HTML string
-  - delay: number (optional)
-  - saveCredentials: boolean (optional)
+ - smtpConfig: { host, port, secure, user, pass }
+ - recipients: array of email addresses
+ - subject: string
+ - message: HTML string
+ - delay: number (optional)
+ - saveCredentials: boolean (optional)
 - Processing:
-  - Validates smtpConfig fields
-  - Optionally saves sanitized config to electron-store
-  - Creates nodemailer transport with TLS settings
-  - Verifies connection via transporter.verify()
-  - Iterates recipients, emits progress events
-  - Builds mailOptions with HTML and plain text
-  - Sends via transporter.sendMail()
-  - Applies rate limiting delay between emails
+ - Validates smtpConfig fields
+ - Optionally saves sanitized config to electron-store
+ - Creates nodemailer transport with TLS settings
+ - Verifies connection via transporter.verify()
+ - Iterates recipients, emits progress events
+ - Builds mailOptions with HTML and plain text
+ - Sends via transporter.sendMail()
+ - Applies rate limiting delay between emails
 - Output schema:
-  - success: boolean
-  - results: array of { recipient, status, error? }
+ - success: boolean
+ - results: array of { recipient, status, error? }
 
 ```mermaid
 flowchart TD
@@ -210,17 +211,17 @@ Next --> |No| ReturnOk["Return {success:true, results}"]
 
 ### Frontend integration and progress tracking
 - Preload exposes:
-  - authenticateGmail, getGmailToken, sendEmail
-  - sendSMTPEmail
-  - onProgress for email-progress events
+ - authenticateGmail, getGmailToken, sendEmail
+ - sendSMTPEmail
+ - onProgress for email-progress events
 - GmailForm and SMTPForm:
-  - Validate forms and recipients
-  - Trigger handler invocations
-  - Render activity log with status and errors
+ - Validate forms and recipients
+ - Trigger handler invocations
+ - Render activity log with status and errors
 - Progress events:
-  - Current/total counters
-  - Per-recipient status (sending/sent/failed)
-  - Error details for failures
+ - Current/total counters
+ - Per-recipient status (sending/sent/failed)
+ - Error details for failures
 
 ## Dependency analysis
 External libraries and their roles:
@@ -242,73 +243,70 @@ MAIN --> SH
 
 ## Performance considerations
 - Rate limiting: Both handlers apply configurable delays between emails to avoid throttling and reduce spam risk.
-- Batch processing: Iterative loop with per-recipient progress updates ensures visibility and graceful failure handling.
+- Batch processing: loop per recipient, emit progress, continue after single failures.
 - Connection verification: SMTP handler verifies transport before sending to minimize failures mid-batch.
 - Memory footprint: Gmail handler constructs base64-encoded MIME messages; consider message size limits and HTML complexity.
-
-[No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - Gmail OAuth timeout or window closed:
-  - Increase timeout window or re-initiate authentication
-  - Ensure redirect URI matches configured value
+ - Increase timeout window or re-initiate authentication
+ - Ensure redirect URI matches configured value
 - Missing environment variables:
-  - Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in.env
+ - Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env
 - Gmail API errors:
-  - Verify OAuth scopes and consent screen configuration
-  - Confirm token storage and refresh behavior
+ - Verify OAuth scopes and consent screen configuration
+ - Confirm token storage and refresh behavior
 - SMTP connection failures:
-  - Validate host/port/security settings
-  - Use correct authentication credentials
-  - Check firewall and TLS settings
+ - Validate host/port/security settings
+ - Use correct authentication credentials
+ - Check firewall and TLS settings
 - Progress tracking not updating:
-  - Ensure onProgress listeners are attached in renderer
-  - Verify event channel names match
+ - Ensure onProgress listeners are attached in renderer
+ - Verify event channel names match
 
 ## Conclusion
-The Gmail and SMTP IPC handlers provide reliable, secure, and user-friendly mechanisms for bulk email sending. They integrate smoothly with Electron's IPC model, offer detailed error handling and progress tracking, and adhere to security best practices for credential storage and transmission. The frontend components deliver a polished user experience with real-time feedback and validation.
 
-[No sources needed since this section summarizes without analyzing specific files]
+Both mail paths return structured results and emit progress events. Hook the events before you invoke send or the UI will miss early updates.
 
 ## Appendices
 
 ### Parameter validation schemas
 - Gmail send-email input:
-  - recipients: array<string>
-  - subject: string
-  - message: string (HTML)
-  - delay?: number (default 1000 ms)
+ - recipients: array<string>
+ - subject: string
+ - message: string (HTML)
+ - delay?: number (default 1000 ms)
 - SMTP send-email input:
-  - smtpConfig: { host, port, secure, user, pass }
-  - recipients: array<string>
-  - subject: string
-  - message: string (HTML)
-  - delay?: number (default 1000 ms)
-  - saveCredentials?: boolean
+ - smtpConfig: { host, port, secure, user, pass }
+ - recipients: array<string>
+ - subject: string
+ - message: string (HTML)
+ - delay?: number (default 1000 ms)
+ - saveCredentials?: boolean
 
 ### Security considerations
 - OAuth2 credentials:
-  - Stored in environment variables; loaded via dotenv
-  - Tokens stored in electron-store; avoid logging sensitive data
+ - Stored in environment variables; loaded via dotenv
+ - Tokens stored in electron-store; avoid logging sensitive data
 - SMTP credentials:
-  - Passwords are not saved to disk; only sanitized config is persisted
+ - Passwords are not saved to disk; only sanitized config is persisted
 - Transport security:
-  - TLS settings configured; self-signed certificate handling included
+ - TLS settings configured; self-signed certificate handling included
 - UI isolation:
-  - Context isolation enabled; preload bridge restricts exposed APIs
+ - Context isolation enabled; preload bridge restricts exposed APIs
 
 ### Example workflows
 - Gmail OAuth2 flow:
-  - User clicks "Authenticate Gmail"
-  - App opens authorization window
-  - User grants consent and receives code
-  - App exchanges code for tokens and stores them
+ - User clicks "Authenticate Gmail"
+ - App opens authorization window
+ - User grants consent and receives code
+ - App exchanges code for tokens and stores them
 - Bulk email sending (Gmail):
-  - User enters recipients, subject, and HTML message
-  - App invokes send-email with delay
-  - App displays per-recipient progress and final results
+ - User enters recipients, subject, and HTML message
+ - App invokes send-email with delay
+ - App displays per-recipient progress and final results
 - Bulk email sending (SMTP):
-  - User configures SMTP settings and imports recipients
-  - App validates config and verifies transport
-  - App sends emails with HTML and plain text variants
+ - User configures SMTP settings and imports recipients
+ - App validates config and verifies transport
+ - App sends emails with HTML and plain text variants

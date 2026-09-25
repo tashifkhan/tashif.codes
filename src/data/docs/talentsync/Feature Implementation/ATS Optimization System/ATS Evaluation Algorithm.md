@@ -1,14 +1,13 @@
 # ATS evaluation algorithm
 
-## Introduction
-This page explains the ATS evaluation algorithm implemented in the backend and how it integrates with the frontend to compare resume content against job descriptions. It covers:
+The ATS evaluation algorithm implemented in the backend and how it integrates with the frontend to compare resume content against job descriptions.
 - Keyword matching methodology and scoring mechanisms
 - The LangChain graph orchestration
 - Prompt engineering techniques used to extract structured insights
 - Normalization of raw analysis output into standardized response formats
 - Performance optimization and caching strategies for large-scale evaluations
 
-## Project structure
+## Repository layout
 The ATS evaluation spans backend services, prompts, models, routing, and frontend display components. The backend orchestrates the evaluation via a LangGraph state machine, while the frontend renders the resulting score and suggestions.
 
 ```mermaid
@@ -34,7 +33,7 @@ EVALUATOR_GRAPH --> LLM
 SERVICE --> MODELS
 ```
 
-## Core components
+## Building blocks
 - Input models define the shape of incoming requests and expected responses for ATS evaluation.
 - The evaluation service validates inputs, retrieves or enriches the job description, and invokes the evaluator graph.
 - The evaluator graph builds a LangGraph state machine that interacts with the LLM and optional tools.
@@ -47,7 +46,7 @@ Key responsibilities:
 - Structured JSON extraction and parsing
 - Rendering of match score and suggestions
 
-## Architecture overview
+## How it fits together
 The system follows a request-driven pipeline:
 - The frontend submits a request with resume text and either a raw job description or a link.
 - The backend route parses the request, validates it, and delegates to the evaluation service.
@@ -71,9 +70,7 @@ EVAL-->>SVC : "Parsed JSON"
 SVC-->>FE : "Standardized response"
 ```
 
-## Detailed component analysis
-
-### Keyword matching methodology
+## Keyword matching methodology
 The system extracts and compares keywords from the job description against the resume. The prompt defines the categories and metrics used for scoring, including:
 - Required and optional keyword coverage
 - Found and missing keywords lists
@@ -88,20 +85,20 @@ Example behaviors:
 - Required keyword coverage is computed as a ratio of matched required keywords to total required keywords.
 - Optional keyword coverage reflects partial matches and recommendations for improvement.
 
-### Scoring mechanism and compatibility percentages
+## Scoring mechanism and compatibility percentages
 The prompt prescribes a composite score calculation that blends multiple dimensions:
 - Semantic similarity to the job description
 - ATS compatibility (contact info completeness, content quality, structure/formatting)
 - Keyword coverage (required and optional)
 - Keyword density (keywords per 100 words)
 
-The evaluator returns a composite score (0–100) and per-category scores (0–1). The frontend displays the score out of 100 and provides contextual labels.
+The evaluator returns a composite score (0-100) and per-category scores (0-1). The frontend displays the score out of 100 and provides contextual labels.
 
 Normalization:
 - The service ensures numeric types for score and coerces lists for reasons and suggestions.
 - The response schema aligns with the frontend expectations.
 
-### LangChain graph orchestration
+## LangChain graph orchestration
 The evaluator graph composes a minimal state machine:
 - Nodes: agent (invokes the LLM with a prepared system prompt)
 - Optional: tools (search tool bound to the LLM)
@@ -110,7 +107,7 @@ The evaluator graph composes a minimal state machine:
 Key elements:
 - System prompt is built from resume, job description, company name, and optional website content.
 - The graph enforces JSON-first output by sending a directive message to the LLM.
-- JSON parsing is reliable, handling fenced code blocks and partial extractions.
+- JSON parsing handles fenced code blocks and partial extractions.
 
 ```mermaid
 flowchart TD
@@ -123,7 +120,7 @@ Tools --> Agent
 Agent --> End
 ```
 
-### Prompt engineering techniques
+## Prompt engineering techniques
 Two complementary prompts are used:
 - JD Evaluator prompt: A 100-point rubric with explicit scoring categories, synonym normalization rules, and strict JSON schema requirements.
 - ATS Analysis prompt: A broader analysis focused on ATS compatibility, keyword coverage, and recommendations.
@@ -136,7 +133,7 @@ Techniques:
 
 These prompts guide the LLM to produce structured, comparable outputs suitable for downstream normalization.
 
-### Normalization to standardized response formats
+## Normalization to standardized response formats
 The service normalizes raw LLM outputs into a standardized response:
 - Ensures presence of success flag, message, score, reasons_for_the_score, and suggestions
 - Coerces types and formats lists appropriately
@@ -144,7 +141,7 @@ The service normalizes raw LLM outputs into a standardized response:
 
 This guarantees consistent consumption by the frontend and downstream systems.
 
-### Examples: keyword matches, weights, and compatibility scores
+## Examples: keyword matches, weights, and compatibility scores
 Below are representative examples of how the system operates conceptually:
 - Keyword identification: Required and preferred keywords are extracted from the job description and compared to the resume text.
 - Weighted coverage: Required keywords carry higher weight than optional ones; missing required keywords reduce the composite score more than missing optional keywords.
@@ -152,7 +149,7 @@ Below are representative examples of how the system operates conceptually:
 
 Note: The exact numerical calculations are produced by the LLM guided by the prompt and are normalized by the service into the final response.
 
-## Dependency analysis
+## Dependencies
 The evaluation pipeline depends on:
 - LLM provider configuration and instantiation
 - Route-level input validation and job description retrieval
@@ -169,24 +166,22 @@ SERVICE --> MODELS["models/ats_evaluator/*"]
 FRONTEND["frontend/components/ats/EvaluationResults.tsx"] --> ROUTES
 ```
 
-## Performance considerations
+## Performance
 - Minimize LLM calls: The graph uses a single invocation with a JSON-first directive to reduce retries.
 - Reduce prompt size: Build the system prompt with concise resume and job description segments.
 - Tool availability: Optional tool binding is gated behind availability checks to avoid unnecessary overhead.
 - Caching strategies:
-  - LRU cache for text extraction helpers in related refiners to avoid recomputation across runs.
-  - Consider memoizing repeated comparisons keyed by resume hash and job description hash at the service boundary.
-  - Cache parsed JSON outputs when identical inputs are evaluated frequently.
+ - LRU cache for text extraction helpers in related refiners to avoid recomputation across runs.
+ - Consider memoizing repeated comparisons keyed by resume hash and job description hash at the service boundary.
+ - Cache parsed JSON outputs when identical inputs are evaluated frequently.
 - Concurrency: Batch multiple evaluations asynchronously and cap concurrent LLM invocations to respect provider limits.
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - JSON parsing failures: The evaluator strips code fences and attempts partial extraction; if parsing fails, the service raises a structured HTTP error.
 - Missing job description: The service requires either raw text or a link; absence triggers a 400 error.
 - LLM initialization: If the default provider key is missing, LLM instances are not created; fall back to defaults or configure environment variables.
 - Frontend rendering: Ensure the response contains score, reasons_for_the_score, and suggestions; the component expects arrays and numeric scores.
-
-## Conclusion
-The ATS evaluation algorithm combines structured prompts, a LangGraph orchestrator, and reliable normalization to deliver accurate, standardized compatibility assessments. By focusing on explicit keyword coverage, semantic alignment, and presentation quality, it produces actionable insights and a clear match score suitable for both automated workflows and human review.

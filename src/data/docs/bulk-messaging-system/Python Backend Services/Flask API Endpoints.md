@@ -1,7 +1,8 @@
 # Flask API endpoints
 
 ## Introduction
-This page provides detailed API documentation for the Flask-based contact processing endpoints used by the desktop application for bulk messaging. It covers:
+Flask routes used for upload, validate, parse-manual, and health. Request shapes and the JSON you get back.
+
 - Health check endpoint for system monitoring
 - File upload endpoint for importing contacts from CSV, TXT, and Excel files
 - Manual number parsing endpoint for direct phone number input
@@ -82,12 +83,12 @@ F-->>C : "{valid, cleaned_number, original}"
 - Purpose: System monitoring and readiness probe
 - Request: No body required
 - Response:
-  - Success: 200 OK with JSON object containing status and message
+ - Success: 200 OK with JSON object containing status and message
 - Example curl command:
-  - curl -s http://localhost:5000/health
+ - curl -s http://localhost:5000/health
 - Notes:
-  - No authentication required
-  - Typical use: Kubernetes liveness/readiness probes
+ - No authentication required
+ - Typical use: Kubernetes liveness/readiness probes
 
 Response schema:
 - Field: status (string) - "healthy"
@@ -100,19 +101,19 @@ HTTP status codes:
 - Path: POST /upload
 - Purpose: Import contacts from CSV, TXT, or Excel files
 - Request:
-  - Content-Type: multipart/form-data
-  - Field: file (required)
+ - Content-Type: multipart/form-data
+ - Field: file (required)
 - Response:
-  - Success: 200 OK with JSON object containing success flag, contacts array, count, and message
-  - Error: 400 Bad Request for invalid or unsupported files, or 500 Internal Server Error for processing failures
+ - Success: 200 OK with JSON object containing success flag, contacts array, count, and message
+ - Error: 400 Bad Request for invalid or unsupported files, or 500 Internal Server Error for processing failures
 - Example curl command:
-  - curl -s -F "file=@sample.csv" http://localhost:5000/upload
-  - curl -s -F "file=@contacts.xlsx" http://localhost:5000/upload
-  - curl -s -F "file=@numbers.txt" http://localhost:5000/upload
+ - curl -s -F "file=@sample.csv" http://localhost:5000/upload
+ - curl -s -F "file=@contacts.xlsx" http://localhost:5000/upload
+ - curl -s -F "file=@numbers.txt" http://localhost:5000/upload
 - Notes:
-  - Supported file types: txt, csv, xlsx, xls
-  - Maximum file size: 16 MB
-  - Uploaded files are removed after processing
+ - Supported file types: txt, csv, xlsx, xls
+ - Maximum file size: 16 MB
+ - Uploaded files are removed after processing
 
 Request schema:
 - Field: file (binary) - file to upload
@@ -120,9 +121,9 @@ Request schema:
 Response schema (success):
 - Field: success (boolean) - true
 - Field: contacts (array) - array of contact objects
-  - Each contact object:
-    - number (string) - normalized phone number
-    - name (string or null) - contact name or auto-generated placeholder
+ - Each contact object:
+ - number (string) - normalized phone number
+ - name (string or null) - contact name or auto-generated placeholder
 - Field: count (integer) - number of contacts extracted
 - Field: message (string) - operation summary
 
@@ -138,9 +139,9 @@ Processing logic:
 - Validates presence and extension of uploaded file
 - Saves file securely to uploads/ directory
 - Detects file type and parses accordingly:
-  - CSV: reads with pandas, detects phone/name columns, cleans numbers
-  - TXT: splits by separators, attempts to detect phone number patterns
-  - Excel: reads with pandas, similar column detection and cleaning
+ - CSV: reads with pandas, detects phone/name columns, cleans numbers
+ - TXT: splits by separators, attempts to detect phone number patterns
+ - Excel: reads with pandas, similar column detection and cleaning
 - Removes uploaded file after processing
 
 ```mermaid
@@ -166,17 +167,17 @@ Success --> |No| Return500["Return 500: Failed to process file"]
 - Path: POST /parse-manual-numbers
 - Purpose: Parse manually entered phone numbers with optional names
 - Request:
-  - Content-Type: application/json
-  - Body: JSON object with numbers field
+ - Content-Type: application/json
+ - Body: JSON object with numbers field
 - Response:
-  - Success: 200 OK with JSON object containing success flag, contacts array, count, and message
-  - Error: 400 Bad Request if numbers field is missing, or 500 Internal Server Error for processing failures
+ - Success: 200 OK with JSON object containing success flag, contacts array, count, and message
+ - Error: 400 Bad Request if numbers field is missing, or 500 Internal Server Error for processing failures
 - Example curl command:
-  - curl -s -H "Content-Type: application/json" -d '{"numbers":"+1234567890\n555-123-4567"}' http://localhost:5000/parse-manual-numbers
-  - curl -s -H "Content-Type: application/json" -d '{"numbers":"John:+1234567890\nJane:555-123-4567"}' http://localhost:5000/parse-manual-numbers
+ - curl -s -H "Content-Type: application/json" -d '{"numbers":"+1234567890\n555-123-4567"}' http://localhost:5000/parse-manual-numbers
+ - curl -s -H "Content-Type: application/json" -d '{"numbers":"John:+1234567890\nJane:555-123-4567"}' http://localhost:5000/parse-manual-numbers
 - Notes:
-  - Supports newline, comma, and semicolon separators
-  - Recognizes "Name: Number" or "Number - Name" formats
+ - Supports newline, comma, and semicolon separators
+ - Recognizes "Name: Number" or "Number - Name" formats
 
 Request schema:
 - Field: numbers (string) - one or more phone numbers separated by newlines, commas, or semicolons
@@ -184,9 +185,9 @@ Request schema:
 Response schema (success):
 - Field: success (boolean) - true
 - Field: contacts (array) - array of contact objects
-  - Each contact object:
-    - number (string) - normalized phone number
-    - name (string or null) - contact name or auto-generated placeholder
+ - Each contact object:
+ - number (string) - normalized phone number
+ - name (string or null) - contact name or auto-generated placeholder
 - Field: count (integer) - number of contacts parsed
 - Field: message (string) - operation summary
 
@@ -208,15 +209,15 @@ Parsing logic:
 - Path: POST /validate-number
 - Purpose: Validate and normalize a single phone number
 - Request:
-  - Content-Type: application/json
-  - Body: JSON object with number field
+ - Content-Type: application/json
+ - Body: JSON object with number field
 - Response:
-  - Success: 200 OK with JSON object indicating validity and normalized number
-  - Error: 400 Bad Request if number field is missing, or 500 Internal Server Error for processing failures
+ - Success: 200 OK with JSON object indicating validity and normalized number
+ - Error: 400 Bad Request if number field is missing, or 500 Internal Server Error for processing failures
 - Example curl command:
-  - curl -s -H "Content-Type: application/json" -d '{"number":"+1234567890"}' http://localhost:5000/validate-number
+ - curl -s -H "Content-Type: application/json" -d '{"number":"+1234567890"}' http://localhost:5000/validate-number
 - Notes:
-  - Returns cleaned number if valid, otherwise null
+ - Returns cleaned number if valid, otherwise null
 
 Request schema:
 - Field: number (string) - phone number to validate
@@ -263,45 +264,36 @@ Flask --> Werkzeug["werkzeug"]
 - CPU-bound parsing: Regex and pandas operations; large files may take time
 - Memory usage: Depends on file size and number of contacts
 - Recommendations:
-  - Validate file sizes client-side before upload
-  - Consider streaming or chunked processing for very large files
-  - Use asynchronous processing for heavy workloads
-  - Implement rate limiting at the application level if needed
-
-[No sources needed since this section provides general guidance]
+ - Validate file sizes client-side before upload
+ - Consider streaming or chunked processing for very large files
+ - Use asynchronous processing for heavy workloads
+ - Implement rate limiting at the application level if needed
 
 ## Troubleshooting guide
 Common issues and resolutions:
 - Health check fails:
-  - Ensure the Flask server is running on the expected host/port
-  - Check network connectivity and firewall settings
+ - Ensure the Flask server is running on the expected host/port
+ - Check network connectivity and firewall settings
 - Upload endpoint returns 400:
-  - Verify the file field is present and not empty
-  - Confirm file extension is one of txt, csv, xlsx, xls
-  - Check file size does not exceed 16 MB
+ - Verify the file field is present and not empty
+ - Confirm file extension is one of txt, csv, xlsx, xls
+ - Check file size does not exceed 16 MB
 - Upload endpoint returns 500:
-  - Inspect server logs for exceptions during file processing
-  - Validate file encoding and structure
+ - Inspect server logs for exceptions during file processing
+ - Validate file encoding and structure
 - Manual number parsing returns 400:
-  - Ensure the JSON body contains a numbers field
+ - Ensure the JSON body contains a numbers field
 - Number validation returns 400:
-  - Ensure the JSON body contains a number field
+ - Ensure the JSON body contains a number field
 - CORS errors:
-  - Confirm flask-cors is enabled and origin is allowed
+ - Confirm flask-cors is enabled and origin is allowed
 - Rate limiting:
-  - Implement application-level throttling if needed
-  - Consider external rate limiting proxies
+ - Implement application-level throttling if needed
+ - Consider external rate limiting proxies
 
 ## Conclusion
-The Flask API provides essential contact processing capabilities for the desktop application:
-- Health check for monitoring
-- File upload with reliable parsing for CSV, TXT, and Excel
-- Manual number parsing with flexible input formats
-- Single number validation with normalization
 
-The endpoints are designed for simplicity and reliability, with clear error handling and sensible defaults. For production deployments, consider adding authentication, rate limiting, and input sanitization as needed.
-
-[No sources needed since this section summarizes without analyzing specific files]
+These endpoints are intentionally thin wrappers around the extractors. Fix parsing bugs in the utilities, not in the route handlers.
 
 ## Appendices
 
@@ -311,17 +303,17 @@ The endpoints are designed for simplicity and reliability, with clear error hand
 
 ### Practical usage examples
 - Health check:
-  - curl -s http://localhost:5000/health
+ - curl -s http://localhost:5000/health
 - Upload CSV:
-  - curl -s -F "file=@sample.csv" http://localhost:5000/upload
+ - curl -s -F "file=@sample.csv" http://localhost:5000/upload
 - Upload Excel:
-  - curl -s -F "file=@contacts.xlsx" http://localhost:5000/upload
+ - curl -s -F "file=@contacts.xlsx" http://localhost:5000/upload
 - Upload TXT:
-  - curl -s -F "file=@numbers.txt" http://localhost:5000/upload
+ - curl -s -F "file=@numbers.txt" http://localhost:5000/upload
 - Manual numbers:
-  - curl -s -H "Content-Type: application/json" -d '{"numbers":"+1234567890\n555-123-4567"}' http://localhost:5000/parse-manual-numbers
+ - curl -s -H "Content-Type: application/json" -d '{"numbers":"+1234567890\n555-123-4567"}' http://localhost:5000/parse-manual-numbers
 - Validate number:
-  - curl -s -H "Content-Type: application/json" -d '{"number":"+1234567890"}' http://localhost:5000/validate-number
+ - curl -s -H "Content-Type: application/json" -d '{"number":"+1234567890"}' http://localhost:5000/validate-number
 
 ### Security measures
 - CORS enabled globally; restrict origins in production
@@ -333,11 +325,9 @@ The endpoints are designed for simplicity and reliability, with clear error hand
 ### Rate limiting considerations
 - No built-in rate limiting in the current implementation
 - Recommended approaches:
-  - Use Flask-Limiter or similar libraries
-  - Implement application-level counters
-  - Place a reverse proxy with rate limiting in front of the API
-
-[No sources needed since this section provides general guidance]
+ - Use Flask-Limiter or similar libraries
+ - Implement application-level counters
+ - Place a reverse proxy with rate limiting in front of the API
 
 ### File size limits
 - Maximum upload size: 16 MB
@@ -346,4 +336,4 @@ The endpoints are designed for simplicity and reliability, with clear error hand
 ### Supported file formats
 - CSV: Comma-separated values with automatic column detection for phone and name
 - TXT: One contact per line; supports "Name: Number" and "Number - Name" formats
-- Excel:.xlsx and.xls files with automatic column detection
+- Excel: .xlsx and .xls files with automatic column detection

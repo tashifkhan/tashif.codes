@@ -1,12 +1,7 @@
 # Validation and error handling
 
 ## Introduction
-This page explains the validation and error handling patterns used across the application's model schemas and services. It focuses on:
-- Pydantic validation rules and configuration
-- Custom sanitization and prompt injection detection
-- Error response formats and exception handling
-- Input validation workflows and security considerations
-- Debugging techniques and performance optimization strategies
+Validation stack: Pydantic models, router checks, sanitizers, and LLM-based prompt-injection detection on website content.
 
 ## Project structure
 The validation and error handling spans several layers:
@@ -14,7 +9,7 @@ The validation and error handling spans several layers:
 - Routers that enforce basic input checks and translate exceptions
 - Services that orchestrate validation, sanitization, and LLM-based checks
 - Utilities for sanitization and prompt injection detection
-- Domain-specific exception classes for reliable error signaling
+- Domain-specific exception classes for error signaling
 
 ```mermaid
 graph TB
@@ -54,21 +49,21 @@ PYWR --> PYEX
 
 ## Core components
 - Pydantic models define strict input contracts and defaults:
-  - WebsiteRequest: validates URL, question, optional chat history, optional client HTML, and optional file path.
-  - WebsiteValidatorRequest/Response: validates HTML input and produces a boolean safety flag.
-  - AgentMessage and ReactAgentRequest: enforce message roles, minimum lengths, optional tool metadata, aliases for legacy fields, and whitespace trimming.
-  - ReactAgentResponse: ensures final messages and output content are present.
-  - YTVideoInfo: typed fields for YouTube metadata with defaults and optional transcript/captions.
+ - WebsiteRequest: validates URL, question, optional chat history, optional client HTML, and optional file path.
+ - WebsiteValidatorRequest/Response: validates HTML input and produces a boolean safety flag.
+ - AgentMessage and ReactAgentRequest: enforce message roles, minimum lengths, optional tool metadata, aliases for legacy fields, and whitespace trimming.
+ - ReactAgentResponse: ensures final messages and output content are present.
+ - YTVideoInfo: typed fields for YouTube metadata with defaults and optional transcript/captions.
 - Router-level validation:
-  - React agent endpoint enforces presence of question and converts errors to HTTP exceptions.
-  - Website validator endpoint exposes a dedicated route returning a Pydantic response model.
+ - React agent endpoint enforces presence of question and converts errors to HTTP exceptions.
+ - Website validator endpoint exposes a dedicated route returning a Pydantic response model.
 - Sanitization utilities:
-  - JSON action plan sanitizer validates structure, required fields, and action safety (including disallowed script patterns).
-  - Legacy JS sanitizer detects disallowed patterns for backward compatibility.
+ - JSON action plan sanitizer validates structure, required fields, and action safety (including disallowed script patterns).
+ - Legacy JS sanitizer detects disallowed patterns for backward compatibility.
 - Prompt injection detection:
-  - Website validator service converts HTML to Markdown and queries an LLM with a prompt designed to detect injection attempts.
+ - Website validator service converts HTML to Markdown and queries an LLM with a prompt meant to detect injection attempts.
 - Exception taxonomy:
-  - Domain-specific exceptions for API errors, login/session states, and account-related failures.
+ - Domain-specific exceptions for API errors, login/session states, and account-related failures.
 
 ## Architecture overview
 The validation pipeline integrates router-level checks, Pydantic model validation, and service-layer sanitization and LLM-based safety checks.
@@ -96,23 +91,23 @@ Router-->>Client : "200 OK with CrawllerResponse"
 
 ### Pydantic validation rules and configuration
 - WebsiteRequest
-  - Enforces presence of URL and question.
-  - chat_history defaults to an empty list; client_html and attached_file_path are optional.
-  - No explicit length constraints are applied at the model level.
+ - Enforces presence of URL and question.
+ - chat_history defaults to an empty list; client_html and attached_file_path are optional.
+ - No explicit length constraints are applied at the model level.
 - WebsiteValidatorRequest/Response
-  - WebsiteValidatorRequest accepts raw HTML; WebsiteValidatorResponse returns a boolean flag indicating safety.
+ - WebsiteValidatorRequest accepts raw HTML; WebsiteValidatorResponse returns a boolean flag indicating safety.
 - AgentMessage
-  - role is constrained to a fixed set of literal values.
-  - content has a minimum length constraint; whitespace is stripped globally via model configuration.
-  - tool_call_id and tool_calls support aliases for backward compatibility.
+ - role is constrained to a fixed set of literal values.
+ - content has a minimum length constraint; whitespace is stripped globally via model configuration.
+ - tool_call_id and tool_calls support aliases for backward compatibility.
 - ReactAgentRequest
-  - messages must be a non-empty list.
-  - google_access_token supports aliasing for legacy clients; whitespace normalization enabled.
-  - pyjiit_login_response is optional and can accept either a Pydantic model or dict.
+ - messages must be a non-empty list.
+ - google_access_token supports aliasing for legacy clients; whitespace normalization enabled.
+ - pyjiit_login_response is optional and can accept either a Pydantic model or dict.
 - ReactAgentResponse
-  - Ensures final messages and output content are present.
+ - Ensures final messages and output content are present.
 - YTVideoInfo
-  - Provides sensible defaults for all fields; transcripts and captions are optional.
+ - Provides sensible defaults for all fields; transcripts and captions are optional.
 
 ```mermaid
 classDiagram
@@ -164,10 +159,10 @@ ReactAgentResponse --> AgentMessage : "contains"
 
 ### Router-Level validation and error handling
 - React agent endpoint
-  - Validates that the question is present; otherwise raises an HTTP 400.
-  - Delegates to the service; any unhandled exceptions are caught and mapped to HTTP 500 with a sanitized detail.
+ - Validates that the question is present; otherwise raises an HTTP 400.
+ - Delegates to the service; any unhandled exceptions are caught and mapped to HTTP 500 with a sanitized detail.
 - Website validator endpoint
-  - Uses a Pydantic response model to serialize the safety result.
+ - Uses a Pydantic response model to serialize the safety result.
 
 ```mermaid
 flowchart TD
@@ -185,7 +180,7 @@ ReturnOK --> End
 
 ### Website validator service: prompt injection detection
 - Converts HTML to Markdown.
-- Constructs a prompt template designed to detect prompt injection attempts.
+- Constructs a prompt template meant to detect prompt injection attempts.
 - Invokes an LLM chain and interprets the result to produce a boolean safety flag.
 
 ```mermaid
@@ -232,14 +227,14 @@ NextAction --> |Done| Done["Return data + problems"]
 
 ### Exception handling and security considerations
 - Domain-specific exceptions:
-  - APIError, LoginError, SessionError, SessionExpired, NotLoggedIn, AccountAPIError.
+ - APIError, LoginError, SessionError, SessionExpired, NotLoggedIn, AccountAPIError.
 - Wrapper behavior:
-  - Authentication guard checks session presence and raises appropriate exceptions.
-  - HTTP responses are validated; unauthorized responses trigger session expiration handling.
+ - Authentication guard checks session presence and raises appropriate exceptions.
+ - HTTP responses are validated; unauthorized responses trigger session expiration handling.
 - Security implications:
-  - Prompt injection detection via LLM reduces risk of instruction contamination.
-  - JSON action plan sanitizer enforces structural integrity and blocks known dangerous patterns.
-  - Legacy JS sanitizer provides additional safeguards for older code paths.
+ - Prompt injection detection via LLM reduces risk of instruction contamination.
+ - JSON action plan sanitizer enforces structural integrity and blocks known dangerous patterns.
+ - Legacy JS sanitizer provides additional safeguards for older code paths.
 
 ```mermaid
 classDiagram
@@ -282,19 +277,20 @@ PYWR["tools/pyjiit/wrapper.py"] --> PYEX["tools/pyjiit/exceptions.py"]
 
 ## Troubleshooting guide
 - Router-level 400 errors:
-  - Ensure the question field is present and non-empty.
-  - Verify request body matches the expected model shape.
+ - Ensure the question field is present and non-empty.
+ - Verify request body matches the expected model shape.
 - Router-level 500 errors:
-  - Inspect service logs for underlying exceptions.
-  - Confirm that the service returns a string on error rather than raising unhandled exceptions.
+ - Inspect service logs for underlying exceptions.
+ - Confirm that the service returns a string on error rather than raising unhandled exceptions.
 - Website validation failures:
-  - Confirm HTML is well-formed before invoking the validator.
-  - Review LLM response interpretation logic for unexpected content.
+ - Confirm HTML is well-formed before invoking the validator.
+ - Review LLM response interpretation logic for unexpected content.
 - JSON action plan issues:
-  - Validate that actions arrays contain required fields per action type.
-  - Check for disallowed script patterns flagged by the sanitizer.
+ - Validate that actions arrays contain required fields per action type.
+ - Check for disallowed script patterns flagged by the sanitizer.
 - Exception classification:
-  - Distinguish between session-related and API-level errors to apply correct retry/backoff strategies.
+ - Distinguish between session-related and API-level errors to apply correct retry/backoff strategies.
 
 ## Conclusion
-The application employs a layered validation strategy combining Pydantic models, router-level checks, sanitization utilities, and LLM-based safety assessments. Exceptions are explicitly modeled to improve observability and error handling. By adhering to these patterns, developers can maintain reliable input validation, secure processing, and predictable error reporting across the system.
+Layer the checks. Model errors at the boundary you can see them. The website validator converts HTML to Markdown, then asks an LLM whether it looks like injection.
+

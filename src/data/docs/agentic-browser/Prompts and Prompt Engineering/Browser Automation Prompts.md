@@ -1,7 +1,7 @@
 # Browser automation prompts
 
 ## Introduction
-This page explains the browser automation prompt system used to translate natural language commands into executable browser actions. It covers the prompt templates that guide the model to produce JSON action plans, the validation and sanitization pipeline, and the end-to-end execution flow from API to browser automation. It also documents error recovery strategies, safety validations, prompt optimization for browser compatibility, and integration with the broader agent ecosystem.
+Prompts that turn goals into JSON browser plans: action vocabulary, constraints, WAIT/tab rules, and how the tool wrapper calls them.
 
 ## Project structure
 The browser automation capability spans:
@@ -42,7 +42,7 @@ H --> G
 - Extension execution: Background and content scripts execute actions on the active tab, with content helpers for DOM-level operations.
 
 ## Architecture overview
-End-to-end flow from natural language to browser execution:
+From natural language to browser execution:
 
 ```mermaid
 sequenceDiagram
@@ -74,7 +74,7 @@ BG-->>Client : execution summary
 ### Prompt template and action planning
 - Purpose: Provide a precise, structured prompt that instructs the model to output a JSON action plan containing atomic actions.
 - Available actions: DOM manipulation (click, type, scroll, wait, select, execute_script) and tab/window control (open_tab, close_tab, switch_tab, navigate, reload_tab, duplicate_tab).
-- Selector guidance: Encourages using the most specific and reliable selectors from the provided DOM structure.
+- Selector guidance: Prefer the most specific selectors from the provided DOM structure.
 - Search-first strategy: Prefers constructing full search URLs directly in OPEN_TAB actions rather than opening blank pages and typing.
 - Critical rules: Clear separation between DOM actions (on http/https) and tab control actions; emphasize descriptions and atomicity.
 
@@ -197,8 +197,6 @@ BG --> UA["executeActions.ts"]
 - Provider selection: Choose providers and models aligned with latency and cost targets; adjust temperature for determinism.
 - Caching: Consider caching repeated DOM structures or frequently used search URLs to minimize recomputation.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and remedies:
 - Invalid JSON or missing fields: The sanitizer reports missing actions array, empty actions, or required fields per action type. Fix the prompt instructions or model behavior to adhere to the schema.
@@ -208,17 +206,15 @@ Common issues and remedies:
 - Execution timeouts: The background script waits for navigation/reload completion; add explicit WAIT actions when appropriate.
 
 ## Conclusion
-The browser automation prompt system couples a precise, structured prompt with reliable validation and execution layers. By enforcing clear action types, selector precedence, and safety rules, it reliably translates natural language into executable browser scripts. The modular design enables provider flexibility, easy debugging, and extensibility for diverse browser contexts.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Pair navigation with WAIT. Validate tab IDs before SWITCH/CLOSE. The tool wrapper and router are the external entry points; the extension executes the plan.
 
 ## Appendices
 
 ### Prompt variations across browser contexts
 - Search-heavy tasks: Prefer OPEN_TAB with constructed search URLs to avoid typing on chrome:// pages.
 - Form-filling scenarios: Use TYPE with precise selectors; ensure the target is an http/https site.
-- Navigation-heavy workflows: Combine OPEN_TAB with WAIT and subsequent DOM actions for robustness.
-- Multi-tab workflows: Use SWITCH_TAB and CLOSE_TAB thoughtfully, ensuring tab IDs are valid.
+- Navigation-heavy workflows: Combine OPEN_TAB with WAIT, then DOM actions.
+- Multi-tab workflows: Use SWITCH_TAB and CLOSE_TAB only with valid tab IDs.
 
 ### Prompt versioning and adaptation
 - Version the prompt template by incrementing identifiers and maintaining backward-compatible examples.

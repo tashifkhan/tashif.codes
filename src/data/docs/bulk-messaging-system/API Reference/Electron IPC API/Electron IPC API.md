@@ -1,10 +1,10 @@
 # Electron IPC API
 
 ## Introduction
-This page provides detailed IPC API documentation for the Electron inter-process communication system. It covers all ipcMain.handle handlers, event-driven communication patterns, preload script security model, and practical usage examples for the WhatsApp bulk messaging and email sending features.
+IPC handlers the preload bridge exposes to the renderer. Invoke channels for WhatsApp, Gmail, SMTP, and file import, plus the events that stream progress back.
 
 ## Project structure
-The Electron application follows a clear separation of concerns with distinct main process, preload bridge, and renderer process components:
+Main process, preload bridge, and renderer stay in their lanes:
 
 ```mermaid
 graph TB
@@ -145,22 +145,26 @@ P3 --> R2
 #### whatsapp-start-client handler
 This handler manages the complete WhatsApp Web client lifecycle:
 
-**Handler Registration:**
+**Handler Registration.**
+
 - Channel: `whatsapp-start-client`
 - Purpose: Initialize and manage WhatsApp Web client
 
-**Parameter Types:**
+**Parameter Types.**
+
 - No parameters required
 
-**Return Value Schema:**
+**Return Value Schema.**
+
 ```javascript
 {
-  success: boolean,
-  message?: string
+ success: boolean,
+ message?: string
 }
 ```
 
-**Error Handling Patterns:**
+**Error Handling Patterns.**
+
 - Client already running detection
 - Initialization failure reporting
 - Authentication error propagation
@@ -188,34 +192,36 @@ Main->>UI : mainWindow.webContents.send('whatsapp-status', 'Client disconnected'
 ```
 
 #### whatsapp-send-messages handler
-Bulk message sending functionality with detailed error handling:
+Bulk message sending functionality with clear error handling:
 
-**Handler Registration:**
+**Handler Registration.**
+
 - Channel: `whatsapp-send-messages`
 - Purpose: Send messages to multiple WhatsApp contacts
 
-**Parameter Types:**
+**Parameter Types.**
+
 ```typescript
 interface WhatsAppMessageData {
-  contacts: Array<{
-    number: string;
-    name?: string;
-  }>;
-  messageText: string;
+ contacts: Array<{
+ number: string;
+ name?: string;
+ }>;
+ messageText: string;
 }
 ```
 
-**Return Value Schema:**
+**Return Value Schema.**
+
 ```javascript
 {
-  success: boolean;
-  sent: number;
-  failed: number;
+ success: boolean;
+ sent: number;
+ failed: number;
 }
 ```
 
-**Processing Logic:**
-1. Validate client readiness
+**Processing Logic.** 1. Validate client readiness
 2. Iterate through contacts with personalization
 3. Check user registration status
 4. Send messages with rate limiting
@@ -248,22 +254,26 @@ ReturnSuccess --> End
 #### whatsapp-import-contacts handler
 Multi-format contact import with validation:
 
-**Handler Registration:**
+**Handler Registration.**
+
 - Channel: `whatsapp-import-contacts`
 - Purpose: Import contacts from CSV/Text files
 
-**Parameter Types:**
+**Parameter Types.**
+
 - No parameters required
 
-**Return Value Schema:**
+**Return Value Schema.**
+
 ```javascript
 Array<{
-  number: string;
-  name?: string;
+ number: string;
+ name?: string;
 }> | null
 ```
 
-**Supported Formats:**
+**Supported Formats.**
+
 - CSV: Automatic parsing with header detection
 - TXT: Line-by-line parsing with comma separation
 - Error handling for unsupported formats
@@ -271,22 +281,26 @@ Array<{
 #### whatsapp-logout handler
 Secure client logout with cleanup:
 
-**Handler Registration:**
+**Handler Registration.**
+
 - Channel: `whatsapp-logout`
 - Purpose: Logout from WhatsApp and cleanup resources
 
-**Parameter Types:**
+**Parameter Types.**
+
 - No parameters required
 
-**Return Value Schema:**
+**Return Value Schema.**
+
 ```javascript
 {
-  success: boolean;
-  message: string;
+ success: boolean;
+ message: string;
 }
 ```
 
-**Cleanup Operations:**
+**Cleanup Operations.**
+
 - Client logout attempt
 - Cache directory deletion
 - Authentication directory cleanup
@@ -297,23 +311,25 @@ Secure client logout with cleanup:
 #### gmail-auth handler
 OAuth2 authentication flow with browser window:
 
-**Handler Registration:**
+**Handler Registration.**
+
 - Channel: `gmail-auth`
 - Purpose: Handle Gmail OAuth2 authentication
 
-**Parameter Types:**
+**Parameter Types.**
+
 - No parameters required
 
-**Return Value Schema:**
+**Return Value Schema.**
+
 ```javascript
 {
-  success: boolean;
-  error?: string;
+ success: boolean;
+ error?: string;
 }
 ```
 
-**Authentication Flow:**
-1. Generate OAuth2 URL with required scopes
+**Authentication Flow.** 1. Generate OAuth2 URL with required scopes
 2. Open authentication window
 3. Handle redirect callbacks
 4. Exchange authorization code for tokens
@@ -322,92 +338,103 @@ OAuth2 authentication flow with browser window:
 #### gmail-token handler
 Token availability checking:
 
-**Handler Registration:**
+**Handler Registration.**
+
 - Channel: `gmail-token`
 - Purpose: Check if Gmail authentication token exists
 
-**Parameter Types:**
+**Parameter Types.**
+
 - No parameters required
 
-**Return Value Schema:**
+**Return Value Schema.**
+
 ```javascript
 {
-  success: boolean;
-  hasToken: boolean;
+ success: boolean;
+ hasToken: boolean;
 }
 ```
 
 #### send-email handler
 Bulk email sending via Gmail API:
 
-**Handler Registration:**
+**Handler Registration.**
+
 - Channel: `send-email`
 - Purpose: Send bulk emails using Gmail API
 
-**Parameter Types:**
+**Parameter Types.**
+
 ```typescript
 interface GmailEmailData {
-  recipients: string[];
-  subject: string;
-  message: string;
-  delay?: number;
+ recipients: string[];
+ subject: string;
+ message: string;
+ delay?: number;
 }
 ```
 
-**Return Value Schema:**
+**Return Value Schema.**
+
 ```javascript
 {
-  success: boolean;
-  results: Array<{
-    recipient: string;
-    status: 'sent' | 'failed';
-    error?: string;
-  }>;
+ success: boolean;
+ results: Array<{
+ recipient: string;
+ status: 'sent' | 'failed';
+ error?: string;
+ }>;
 }
 ```
 
-**Progress Events:**
+**Progress Events.**
+
 - `email-progress` events emitted during processing
 - Real-time status updates for each recipient
 
 #### smtp-send handler
 Bulk email sending via SMTP:
 
-**Handler Registration:**
+**Handler Registration.**
+
 - Channel: `smtp-send`
 - Purpose: Send bulk emails using SMTP configuration
 
-**Parameter Types:**
+**Parameter Types.**
+
 ```typescript
 interface SMTPData {
-  smtpConfig: {
-    host: string;
-    port: number;
-    secure: boolean;
-    user: string;
-    pass: string;
-  };
-  recipients: string[];
-  subject: string;
-  message: string;
-  delay?: number;
-  saveCredentials?: boolean;
+ smtpConfig: {
+ host: string;
+ port: number;
+ secure: boolean;
+ user: string;
+ pass: string;
+ };
+ recipients: string[];
+ subject: string;
+ message: string;
+ delay?: number;
+ saveCredentials?: boolean;
 }
 ```
 
-**Return Value Schema:**
+**Return Value Schema.**
+
 ```javascript
 {
-  success: boolean;
-  results: Array<{
-    recipient: string;
-    status: 'sent' | 'failed';
-    error?: string;
-  }>;
+ success: boolean;
+ results: Array<{
+ recipient: string;
+ status: 'sent' | 'failed';
+ error?: string;
+ }>;
 }
 ```
 
-**Security Features:**
+**Security Features.**
+
 - Credential encryption with electron-store
 - TLS verification
 - Self-signed certificate support
@@ -417,12 +444,14 @@ interface SMTPData {
 #### WhatsApp status events
 The main process emits status updates to the renderer:
 
-**Events Emitted:**
+**Events Emitted.**
+
 - `whatsapp-status`: General connection status
 - `whatsapp-qr`: QR code data URL or null
 - `whatsapp-send-status`: Message sending progress
 
-**Event Flow:**
+**Event Flow.**
+
 ```mermaid
 sequenceDiagram
 participant Main as "Main Process"
@@ -466,7 +495,8 @@ Electron --> CSV
 ### Build configuration
 The Vite configuration supports development and production builds:
 
-**Build Features:**
+**Build Features.**
+
 - React and Tailwind CSS integration
 - Development server with hot reload
 - Production optimization
@@ -477,10 +507,10 @@ The Vite configuration supports development and production builds:
 ### Rate limiting and throttling
 The system implements multiple layers of rate limiting:
 
-1. **WhatsApp Message Delays**: 3-second intervals between messages
-2. **Email Delays**: Configurable delays between email sends
-3. **API Rate Limits**: Gmail API quota management
-4. **Connection Pooling**: Efficient resource utilization
+1. **WhatsApp Message Delays.** 3-second intervals between messages
+2. **Email Delays.** Configurable delays between email sends
+3. **API Rate Limits.** Gmail API quota management
+4. **Connection Pooling.** Efficient resource use
 
 ### Memory management
 - Proper cleanup of event listeners
@@ -499,22 +529,20 @@ The system implements multiple layers of rate limiting:
 ### Common issues and solutions
 
 #### WhatsApp connection problems
-- **QR Code Not Loading**: Check network connectivity and restart client
-- **Authentication Failures**: Verify WhatsApp Web compatibility
-- **Client Disconnections**: Monitor for network interruptions
+- **QR Code Not Loading.** Check network connectivity and restart client
+- **Authentication Failures.** Verify WhatsApp Web compatibility
+- **Client Disconnections.** Monitor for network interruptions
 
 #### Email delivery issues
-- **Gmail Authentication**: Verify OAuth2 credentials and API enablement
-- **SMTP Configuration**: Validate server settings and credentials
-- **Rate Limiting**: Adjust delay parameters appropriately
+- **Gmail Authentication.** Verify OAuth2 credentials and API enablement
+- **SMTP Configuration.** Validate server settings and credentials
+- **Rate Limiting.** Adjust delay parameters appropriately
 
 #### IPC communication issues
-- **Function Not Available**: Ensure preload bridge is properly loaded
-- **Event Listener Cleanup**: Verify proper removal of event listeners
-- **Memory Leaks**: Monitor for accumulated event listeners
+- **Function Not Available.** Ensure preload bridge is properly loaded
+- **Event Listener Cleanup.** Verify proper removal of event listeners
+- **Memory Leaks.** Monitor for accumulated event listeners
 
 ## Conclusion
 
-The Electron IPC API implementation provides a reliable, secure, and efficient communication layer between the renderer and main processes. The system successfully handles complex operations like WhatsApp Web integration, Gmail API authentication, and SMTP email sending while maintaining strong security boundaries through context isolation and selective API exposure.
-
-Key strengths include detailed error handling, real-time progress tracking, secure credential storage, and flexible configuration options. The modular design allows for easy extension and maintenance of the IPC communication system.
+Treat the preload API as the only public surface from the renderer. If a method is missing at runtime, the preload script did not load.

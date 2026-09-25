@@ -1,7 +1,7 @@
 # Development and customization
 
 ## Introduction
-This page provides a detailed guide to developing and customizing the Assignment Solver browser extension. It covers setting up the development environment, enabling watch mode for auto-rebuild, configuring the build system, and extending functionality across Chrome and Firefox. It also explains customization options such as adjusting CSS selectors for different platforms, adding new question types, and extending the plugin architecture. Finally, it outlines debugging techniques, testing strategies, and deployment considerations for both Chrome and Firefox.
+Dev setup, watch mode, the Vite build, and how to extend the extension for Chrome and Firefox. Selector tweaks, new question types, debugging, and packaging.
 
 ## Project structure
 The extension is organized into modular layers:
@@ -116,18 +116,18 @@ BG-->>UI : Report progress and completion
 
 ### Build system and watch mode
 - Scripts:
-  - dev:chrome and dev:firefox enable watch mode for live rebuilds
-  - build:chrome and build:firefox produce separate outputs
-  - build builds both browsers
+ - dev:chrome and dev:firefox enable watch mode for live rebuilds
+ - build:chrome and build:firefox produce separate outputs
+ - build builds both browsers
 - Vite configuration:
-  - Dynamic manifest generation plugin writes manifest.json per browser
-  - HTML transformation plugin adjusts script path for sidepanel.html
-  - Aliases for @core, @platform, @services, @background, @ui, @content
-  - Define constants for browser and version
+ - Dynamic manifest generation plugin writes manifest.json per browser
+ - HTML transformation plugin adjusts script path for sidepanel.html
+ - Aliases for @core, @platform, @services, @background, @ui, @content
+ - Define constants for browser and version
 - Manifest generation:
-  - Base permissions and CSP
-  - Browser-specific side panel vs sidebar action
-  - Host permissions for NPTEL/Swayam and Gemini API
+ - Base permissions and CSP
+ - Browser-specific side panel vs sidebar action
+ - Host permissions for NPTEL/Swayam and Gemini API
 
 ```mermaid
 flowchart TD
@@ -140,16 +140,16 @@ Output --> Reload["Browser reloads extension"]
 
 ### UI controllers and state management
 - Side panel initialization:
-  - Waits for background readiness (important for Firefox)
-  - Initializes controllers: detection, progress, settings, solve
-  - Loads stored API key into settings
+ - Waits for background readiness (important for Firefox)
+ - Initializes controllers: detection, progress, settings, solve
+ - Loads stored API key into settings
 - Detection controller:
-  - Queries page info and toggles UI states
-  - Listens for tab update messages
+ - Queries page info and toggles UI states
+ - Listens for tab update messages
 - Solve controller:
-  - Orchestrates extraction, screenshot capture, AI solving, answer application, and optional submission
-  - Implements recursive splitting for MAX_TOKENS errors
-  - Progress tracking and result rendering
+ - Orchestrates extraction, screenshot capture, AI solving, answer application, and optional submission
+ - Implements recursive splitting for MAX_TOKENS errors
+ - Progress tracking and result rendering
 
 ```mermaid
 classDiagram
@@ -178,14 +178,14 @@ SidePanelUI --> SolveController : "uses"
 
 ### Content extraction and answer application
 - Extractor:
-  - Finds assignment containers and fallbacks
-  - Extracts images and converts to base64 when possible
-  - Identifies submit and confirmation button IDs
-  - Provides page info for assignment detection
+ - Finds assignment containers and fallbacks
+ - Extracts images and converts to base64 when possible
+ - Identifies submit and confirmation button IDs
+ - Provides page info for assignment detection
 - Applicator:
-  - Applies single/multi choice and fill-in-the-blank answers
-  - Simulates user interactions (click, change, input, keyup)
-  - Submits assignment using configured button IDs
+ - Applies single/multi choice and fill-in-the-blank answers
+ - Simulates user interactions (click, change, input, keyup)
+ - Submits assignment using configured button IDs
 
 ```mermaid
 flowchart TD
@@ -199,13 +199,13 @@ Interact --> Done["Answers applied"]
 
 ### Gemini service and schemas
 - Gemini service:
-  - Builds content parts with text, screenshots, and embedded images
-  - Supports thinking budgets and reasoning levels
-  - Uses direct API calls to bypass message channel timeouts
-  - Parses responses with reliable error handling
+ - Builds content parts with text, screenshots, and embedded images
+ - Supports thinking budgets and reasoning levels
+ - Uses direct API calls to bypass message channel timeouts
+ - Parses responses with reliable error handling
 - Schemas:
-  - Extraction-only and extraction-with-answers schemas
-  - Enforce required fields and types for reliable parsing
+ - Extraction-only and extraction-with-answers schemas
+ - Enforce required fields and types for reliable parsing
 
 ```mermaid
 classDiagram
@@ -268,8 +268,6 @@ Package["Package Scripts"] --> Vite
 - Direct API calls for background worker avoid message channel timeouts in Firefox
 - CSS animations and transitions optimized for smooth UI feedback
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Could not get page HTML: ensure you are on a real assignment page and refresh before re-extracting
@@ -281,13 +279,11 @@ Common issues and resolutions:
 Debugging techniques:
 - Use Gemini debug relay to stream stage-specific payloads to the page console
 - Inspect background worker logs and content script logs
-- Verify tab pinning to ensure messages target the correct tab
+- Verify tab pinning so messages target the correct tab
 - Check network requests to Gemini API for errors
 
 ## Conclusion
-The Assignment Solver extension provides a reliable, cross-browser solution for AI-powered assignment solving. Its modular architecture, dynamic build system, and extensible controllers make it straightforward to customize for new platforms and question types. By using watch mode, structured schemas, and detailed controllers, developers can rapidly iterate and deploy enhancements for both Chrome and Firefox.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Watch mode, then load unpacked. Change selectors and question types behind the existing controller and schema seams.
 
 ## Appendices
 
@@ -303,19 +299,19 @@ The Assignment Solver extension provides a reliable, cross-browser solution for 
 
 ### Build system configuration
 - Vite configuration:
-  - Plugins: manifest generation and HTML transformation
-  - Inputs: background, content, and UI entry points
-  - Aliases and defines for cross-browser and versioning
+ - Plugins: manifest generation and HTML transformation
+ - Inputs: background, content, and UI entry points
+ - Aliases and defines for cross-browser and versioning
 - Manifest generation:
-  - Base permissions and CSP
-  - Browser-specific side panel and sidebar action
-  - Host permissions for supported domains
+ - Base permissions and CSP
+ - Browser-specific side panel and sidebar action
+ - Host permissions for supported domains
 
 ### Customization options
 
 #### Modifying CSS selectors for different platforms
 - Adjust selectors in the extractor to target platform-specific containers and question elements
-- Update selectors for images and submit buttons to ensure accurate extraction
+- Update selectors for images and submit buttons so accurate extraction
 
 #### Adding new question types
 - Extend extraction schema to include new question types
@@ -338,8 +334,6 @@ The Assignment Solver extension provides a reliable, cross-browser solution for 
 - Mock browser APIs using platform adapters
 - Validate message flows with minimal integration tests
 - End-to-end tests on supported platforms with representative pages
-
-[No sources needed since this section provides general guidance]
 
 ### Deployment considerations
 

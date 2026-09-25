@@ -1,7 +1,7 @@
 # Deployment & operations
 
 ## Introduction
-This page provides detailed deployment and operations guidance for the SuperSet Telegram Notification Bot. It covers production deployment strategies across local machines/VPS, Docker, and cloud platforms (Heroku, Railway, Render). It also documents daemon mode configuration, process management, monitoring approaches, CI/CD pipelines, infrastructure requirements, scaling, performance optimization, maintenance, logging, backups, disaster recovery, and security hardening.
+Shipping and running the bot: local/VPS, Docker, Heroku/Railway/Render. Daemon mode, process managers, monitoring, backups, and the security checklist that usually gets skipped until something breaks.
 
 ## Project structure
 The application is organized around a modular CLI entry point and three primary runtime servers:
@@ -84,7 +84,7 @@ Operational implications:
 - Provides helpers for safe printing and caching settings.
 
 Operational implications:
-- Store secrets in environment variables or.env files.
+- Store secrets in environment variables or .env files.
 - Adjust log levels and file paths per environment.
 
 ### Daemon utilities
@@ -106,13 +106,13 @@ Operational implications:
 - Can run as a standalone server or as a daemon.
 
 ### Scheduler server
-- Runs automated update jobs at multiple times per day and daily official placement scraping.
-- Mirrors the legacy update flow: fetch SuperSet and emails, then send notifications.
-- Uses an async scheduler with timezone-aware cron jobs.
+- Runs SuperSet plus email at midnight and 8 AM through 11 PM IST, and official scrape at 12 PM IST.
+- Mirrors the legacy update flow: fetch SuperSet and emails, then send Telegram.
+- Uses AsyncIOScheduler with Asia/Kolkata cron jobs in `app/servers/scheduler_server.py`.
 
 Operational implications:
-- Ideal for running as a separate daemon process.
-- Schedules align with IST business hours plus midnight.
+- Run as its own daemon: `python main.py scheduler --daemon`.
+- Overnight 1 AM through 7 AM IST is idle on purpose.
 
 ### Webhook server (FastAPI)
 - Exposes health checks, push subscription endpoints, notification dispatch, and statistics.
@@ -137,6 +137,9 @@ EM-->>SCH : "Email results"
 SCH->>NOT : "send_updates(telegram=True, web=False)"
 NOT-->>SCH : "Send results"
 ```
+
+
+Scheduled scraping is `python main.py scheduler` on the host. Workflow files under `.github/workflows/` are `.legacy` and do not drive the live cron.
 
 ## Dependency analysis
 Runtime dependencies are declared via pyproject.toml and pinned in requirements.txt. The application relies on:
@@ -174,112 +177,4 @@ Common operational issues and remedies:
 - Scheduler jobs failing: review logs for exceptions and resource limits.
 
 ## Conclusion
-The SuperSet Telegram Notification Bot is designed for modular, scalable deployment across local, containerized, and cloud environments. By using daemon mode, centralized configuration, and separate servers, operators can achieve reliable, maintainable operations with clear separation of concerns.
-
-[No sources needed since this section summarizes without analyzing specific files]
-
-## Appendices
-
-### A. production deployment strategies
-
-- Local machine/VPS
-  - Install Python 3.12+ and dependencies.
-  - Configure environment variables and.env file.
-  - Start servers in daemon mode using CLI commands.
-  - Use systemd or similar supervisors for automatic restarts.
-
-- Docker (single service stack)
-  - Use the provided compose file to run MongoDB locally.
-  - Build and run the application container with environment variables mapped.
-  - Persist MongoDB data via volumes.
-
-- Cloud platforms
-  - Heroku: Use a Python buildpack, configure dynos for bot/scheduler/webhook, and attach a MongoDB add-on. Set environment variables in the dashboard.
-  - Railway: Provision a MongoDB service and connect via connection string. Deploy the app with environment variables.
-  - Render: Provision a MongoDB service and connect via connection string. Deploy the app with environment variables.
-
-[No sources needed since this section provides general guidance]
-
-### B. infrastructure requirements
-- Compute: Minimal single-core CPU and 512 MB RAM for basic operation; scale based on traffic and processing volume.
-- Storage: Persistent storage for MongoDB data and logs.
-- Networking: Outbound access to Telegram, email providers, and external APIs; inbound access for webhook server if exposed publicly.
-- Secrets management: Environment variables for tokens, keys, and connection strings.
-
-[No sources needed since this section provides general guidance]
-
-### C. scaling considerations
-- Horizontal scaling: Run multiple instances of each server behind a load balancer (for webhook server).
-- Vertical scaling: Increase CPU/RAM for periods of heavy email processing or notification bursts.
-- Queue-based processing: Offload heavy workloads to background workers or queues if growth demands it.
-
-[No sources needed since this section provides general guidance]
-
-### D. monitoring and observability
-- Logs: Centralize logs from daemonized processes and webhook server to a log aggregation system.
-- Metrics: Track job durations, error rates, and throughput.
-- Health checks: Use webhook server's health endpoints for readiness/liveness probes.
-- Alerts: Configure alerts for failed jobs, high error rates, and resource exhaustion.
-
-[No sources needed since this section provides general guidance]
-
-### E. CI/CD pipeline setup
-- Existing workflows demonstrate scheduled runs using GitHub Actions with uv for dependency management and environment variable injection.
-- Extend workflows to include linting, unit/integration tests, and deployment stages.
-
-```mermaid
-flowchart TD
-A["Code Commit"] --> B["GitHub Actions"]
-B --> C["Install uv and sync deps"]
-B --> D["Run scheduled jobs"]
-B --> E["Inject secrets"]
-D --> F["Publish results/logs"]
-```
-
-### F. maintenance procedures
-- Regularly rotate secrets and update dependencies.
-- Review and prune old logs and stale PID files.
-- Validate database connectivity and indexes periodically.
-- Audit webhook endpoints for unauthorized access.
-
-[No sources needed since this section provides general guidance]
-
-### G. log management
-- Use file logging with rotation in production.
-- Ensure daemon mode does not suppress critical logs.
-- Forward logs to centralized systems for retention and analysis.
-
-[No sources needed since this section provides general guidance]
-
-### H. backup and disaster recovery
-- Back up MongoDB data regularly and test restoration procedures.
-- Maintain.env and configuration backups.
-- Document recovery playbooks for each server and data store.
-
-[No sources needed since this section provides general guidance]
-
-### I. security hardening
-- Enforce HTTPS for webhook server and external integrations.
-- Restrict CORS origins to trusted domains.
-- Use strong secrets and rotate them regularly.
-- Apply least privilege to database and API endpoints.
-- Rate-limit webhook endpoints and validate inputs.
-
-[No sources needed since this section provides general guidance]
-
-### J. SSL/TLS and access control
-- Obtain TLS certificates for webhook server domain.
-- Use environment variables for VAPID keys and Telegram tokens.
-- Restrict admin commands to authorized users only.
-
-[No sources needed since this section provides general guidance]
-
-### K. example runtime commands
-- Start bot in background: python main.py bot -d
-- Start scheduler in background: python main.py scheduler -d
-- Check daemon status: python main.py status
-- Stop a daemon: python main.py stop bot
-- Run webhook server: python main.py webhook --host 0.0.0.0 --port 8000
-
-### L. Docker compose reference
-- MongoDB service with exposed port and mounted volume for persistence.
+Local, Docker, or a PaaS box. Daemon mode, one config, three servers. Keep concerns split and the process manager boring.

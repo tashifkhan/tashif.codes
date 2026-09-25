@@ -1,13 +1,13 @@
 # Data schemas and protocols
 
 ## Introduction
-This page specifies the data schemas and communication protocols used by the assignment solver extension. It covers:
-- Extraction schema for structuring question data (question types, choices, input fields)
-- Answer schema with selected options, confidence levels, and reasoning
-- Message protocol for inter-component communication
-- Data validation rules and error handling
-- JSON examples and schema evolution strategies
-- Guidelines for extending schemas to support new question types
+Schemas and message protocols for the extension:
+- Extraction schema (question types, choices, inputs)
+- Answer schema (selected options, confidence, reasoning)
+- Inter-component message protocol
+- Validation and error shapes
+- JSON examples and how to evolve schemas
+- Notes for adding new question types
 
 ## Project structure
 The assignment solver is organized into distinct layers:
@@ -63,67 +63,67 @@ This section defines the primary data schemas and message protocol used across t
 Defines the structure returned by the extraction phase. It includes submission button identifiers, optional confirmation button identifiers, and an array of questions.
 
 - Root properties
-  - submit_button_id: string
-  - confirm_submit_button_ids: object with keys:
-    - not_all_attempt_submit: string
-    - not_all_attempt_cancel: string
-    - no_attempt_ok: string
-  - questions: array of question objects
+ - submit_button_id: string
+ - confirm_submit_button_ids: object with keys:
+ - not_all_attempt_submit: string
+ - not_all_attempt_cancel: string
+ - no_attempt_ok: string
+ - questions: array of question objects
 
 - Question object properties
-  - question_id: string
-  - question_type: enum ["single_choice", "multi_choice", "fill_blank"]
-  - question: string
-  - choices: array of choice objects
-  - inputs: array of input objects
+ - question_id: string
+ - question_type: enum ["single_choice", "multi_choice", "fill_blank"]
+ - question: string
+ - choices: array of choice objects
+ - inputs: array of input objects
 
 - Choice object properties
-  - option_id: string
-  - text: string
+ - option_id: string
+ - text: string
 
 - Input object properties
-  - input_id: string
-  - input_type: string
+ - input_id: string
+ - input_type: string
 
 Required fields
 - Root: submit_button_id, questions
 - Question: question_id, question_type, question, choices, inputs
 
 JSON example
-- See `EXTRACTION_ONLY_SCHEMA`
+  - See `EXTRACTION_ONLY_SCHEMA`
 
 ### Extraction schema (with answers)
 Extends the extraction schema with an answer object for each question, enabling the solver to return complete solutions.
 
 - Question object additions
-  - answer: object with:
-    - answer_text: string
-    - answer_option_ids: array of string
-    - confidence: enum ["high", "medium", "low"] (optional)
-    - reasoning: string (optional)
+ - answer: object :
+ - answer_text: string
+ - answer_option_ids: array of string
+ - confidence: enum ["high", "medium", "low"] (optional)
+ - reasoning: string (optional)
 
 Required fields
 - Question: answer.answer_text, answer.answer_option_ids
 - Optional: answer.confidence, answer.reasoning
 
 JSON example
-- See `EXTRACTION_WITH_ANSWERS_SCHEMA`
+  - See `EXTRACTION_WITH_ANSWERS_SCHEMA`
 
 ### Message protocol
 Defines typed messages exchanged between UI, background, and content scripts.
 
 - Message type constants
-  - Content script communication: PING, GET_PAGE_HTML, GET_PAGE_INFO, APPLY_ANSWERS, SUBMIT_ASSIGNMENT
-  - Background communication: EXTRACT_HTML, CAPTURE_FULL_PAGE, GEMINI_REQUEST, GEMINI_DEBUG
-  - Internal: SCROLL_INFO, SCROLL_TO, TAB_UPDATED
+ - Content script communication: PING, GET_PAGE_HTML, GET_PAGE_INFO, APPLY_ANSWERS, SUBMIT_ASSIGNMENT
+ - Background communication: EXTRACT_HTML, CAPTURE_FULL_PAGE, GEMINI_REQUEST, GEMINI_DEBUG
+ - Internal: SCROLL_INFO, SCROLL_TO, TAB_UPDATED
 
 - Message shape
-  - type: string (one of the above)
-  - payload: any (optional)
+ - type: string (one of the above)
+ - payload: any (optional)
 
 - Utilities
-  - createMessage(type, payload?): constructs a message
-  - sendMessageWithRetry(runtime, message, options?): sends a message with exponential backoff for transient connection errors
+ - createMessage(type, payload?): constructs a message
+ - sendMessageWithRetry(runtime, message, options?): sends a message with exponential backoff for transient connection errors
 
 Common flows
 - UI -> Background: GET_PAGE_INFO, APPLY_ANSWERS, SUBMIT_ASSIGNMENT
@@ -175,7 +175,7 @@ RT-->>UI : Extraction result
 
 ### Extraction flow
 - Content script identifies assignment containers, extracts HTML and images, and locates submit and confirmation button IDs.
-- Background handler ensures content script is loaded and forwards requests.
+- Background handler checks that the content script is loaded, then forwards requests.
 - Gemini service validates extraction results against EXTRACTION_ONLY_SCHEMA.
 
 ```mermaid
@@ -194,9 +194,9 @@ ReturnResult --> End(["End"])
 
 ### Answer application flow
 - Content script applies answers based on question type:
-  - single_choice: selects a radio button
-  - multi_choice: toggles checkboxes
-  - fill_blank: fills text inputs
+ - single_choice: selects a radio button
+ - multi_choice: toggles checkboxes
+ - fill_blank: fills text inputs
 - Background handler forwards messages to content script and verifies readiness.
 
 ```mermaid
@@ -290,48 +290,42 @@ BR --> GMI
 - Retry strategy: sendMessageWithRetry reduces failure rates on slower platforms like Firefox.
 - Content script injection: Delay and verification steps prevent race conditions during initialization.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Content script not responding
-  - Ensure content script is injected and PING succeeds; verify tab context and active tab selection.
-  - Reference: `extraction.js`, `answers.js`
+ - Ensure content script is injected and PING succeeds; verify tab context and active tab selection.
+ - Reference: `extraction.js`, `answers.js`
 - Gemini response parsing failures
-  - Parser attempts multiple strategies; check for fenced code blocks or truncated JSON and review finish reasons.
-  - Reference: `parser.js`
+ - Parser attempts multiple strategies; check for fenced code blocks or truncated JSON and review finish reasons.
+ - Reference: `parser.js`
 - API communication errors
-  - sendMessageWithRetry handles transient errors; inspect error payloads and model availability.
-  - Reference: `messages.js`, `gemini.js`
+ - sendMessageWithRetry handles transient errors; inspect error payloads and model availability.
+ - Reference: `messages.js`, `gemini.js`
 
 ## Conclusion
-The assignment solver employs schema-driven generation and reliable parsing to reliably extract and solve assessment questions. The message protocol and cross-browser adapters ensure consistent behavior across environments. Extensibility is achieved by evolving schemas and adding new question types while preserving backward compatibility.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Schemas are the contract. Change them with the parser and handlers in the same PR or you will ship silent mismatches.
 
 ## Appendices
 
 ### JSON examples
 - Extraction result (questions only)
-  - See `EXTRACTION_ONLY_SCHEMA`
+ - See `EXTRACTION_ONLY_SCHEMA`
 - Extraction result (with answers)
-  - See `EXTRACTION_WITH_ANSWERS_SCHEMA`
+ - See `EXTRACTION_WITH_ANSWERS_SCHEMA`
 
 ### Schema evolution strategies
 - Backward compatibility
-  - Keep required fields stable; introduce optional fields with defaults.
+ - Keep required fields stable; introduce optional fields with defaults.
 - Versioning
-  - Use separate schemas for major versions or a version field within the payload.
+ - Use separate schemas for major versions or a version field within the payload.
 - Validation-first
-  - Enforce schemas via responseSchema and parser checks before downstream processing.
+ - Enforce schemas via responseSchema and parser checks before downstream processing.
 - Testing
-  - Maintain test fixtures aligned with schemas to catch regressions early.
-
-[No sources needed since this section provides general guidance]
+ - Maintain test fixtures aligned with schemas to catch regressions early.
 
 ### Guidelines for new question types
 - Define a new question_type enum value and update schemas accordingly.
 - Extend answer schema with appropriate fields (e.g., additional input types).
 - Update content applicator to handle new input selectors and behaviors.
 - Add or modify system prompts to guide the model for the new type.
-- Validate with parser and handlers to ensure robustness.
+- Validate with parser and handlers so reliability.

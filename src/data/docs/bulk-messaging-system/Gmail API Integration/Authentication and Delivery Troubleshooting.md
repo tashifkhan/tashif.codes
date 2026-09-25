@@ -1,7 +1,7 @@
 # Authentication and delivery troubleshooting
 
 ## Introduction
-This page provides a detailed troubleshooting guide for Gmail API integration issues within the desktop application. It focuses on authentication failures (invalid client credentials, consent screen errors, OAuth2 flow interruptions), email sending problems (rate limit violations, API quota exceeded errors, delivery failures), and platform-specific considerations for Windows, macOS, and Linux. It also covers debugging techniques using console logs, network inspection, and API response analysis, along with step-by-step resolution guides for certificate issues, proxy configuration, and network connectivity problems. Security-related troubleshooting for blocked applications and suspicious activity warnings is included.
+When Gmail OAuth fails, quotas trip, or mail does not send. Symptoms, where to look in logs, and fixes that usually work.
 
 ## Project structure
 The application is an Electron-based desktop app with a React frontend and Node/Electron backend. Gmail integration is handled in the Electron main process via the Google APIs client library, while the UI provides authentication and sending controls.
@@ -175,8 +175,6 @@ SMTPHandler --> ElectronStore
 - Progress reporting: Real-time updates per recipient improve user feedback and help diagnose slow endpoints.
 - Connection verification: SMTP handler verifies transport configuration before sending to reduce runtime failures.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 
 ### Authentication failures
@@ -251,7 +249,7 @@ Relevant implementation references:
 - SMTP connection verification: `smtp-handler.js`
 - TLS settings for SMTP: `smtp-handler.js`
 
-### Platform-Specific issues (windows, macOS, linux)
+### Platform-specific issues (windows, macOS, linux)
 
 Common symptoms:
 - Application fails to start or load resources.
@@ -336,4 +334,5 @@ Relevant implementation references:
 - Progress event emission: `gmail-handler.js`, `smtp-handler.js`
 
 ## Conclusion
-This guide consolidates practical troubleshooting strategies for Gmail API and SMTP integration within the Electron application. By validating credentials, ensuring proper OAuth consent, monitoring progress events, and addressing platform-specific and network conditions, most authentication and delivery issues can be resolved efficiently. Use the referenced implementation files to correlate observed symptoms with code-level diagnostics and apply the recommended resolutions.
+
+Most Gmail pain is misconfigured Cloud Console credentials or quota. Confirm a single message send before blaming bulk logic.

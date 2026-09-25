@@ -1,7 +1,7 @@
 # Extension development guide
 
 ## Introduction
-This guide provides a detailed walkthrough for developing browser extensions using the WXT framework. It covers environment setup, configuration, build processes, TypeScript setup, component development patterns, testing strategies, packaging and distribution, cross-browser compatibility, debugging techniques, and performance optimization. It also includes practical examples for adding new components, extending functionality, and integrating with backend services.
+Local loop for extension work: install, hot reload, component layout, config, and how to test messaging without publishing.
 
 ## Project structure
 The extension is organized around WXT entrypoints and React components:
@@ -50,10 +50,10 @@ TS --> WXT_TS
 - TypeScript configuration extends WXT's internal tsconfig, enabling JSX and path aliases.
 - Package scripts orchestrate development, building, and packaging for multiple browsers.
 - Entry points:
-  - background.ts: message routing, tab management, agent tool execution, Gemini integration
-  - content.ts: optional page overlay and action execution helpers
-  - sidepanel/index.tsx: mounts React app into shadow DOM
-  - popup/popup.tsx: tab list UI and activation/deactivation messaging
+ - background.ts: message routing, tab management, agent tool execution, Gemini integration
+ - content.ts: optional page overlay and action execution helpers
+ - sidepanel/index.tsx: mounts React app into shadow DOM
+ - popup/popup.tsx: tab list UI and activation/deactivation messaging
 - React hooks encapsulate authentication, tab management, and WebSocket connectivity.
 - Settings menu integrates model selection, API keys, base URLs, and credential storage.
 
@@ -92,7 +92,7 @@ BG-->>App : Final result
 ### WXT configuration and build
 - Modules: React module enabled for smooth integration.
 - Manifest: Name, description, permissions, and host permissions configured.
-- Scripts: dev, build, zip, and compile commands for Chrome and Firefox targets.
+- Scripts: from repo root, `pnpm dev:extension`, `pnpm build:extension`, `pnpm zip:extension`, plus Firefox variants. Filter is `@agentic-browser/browser-extension`.
 
 ### TypeScript configuration
 - Root tsconfig extends WXT's internal tsconfig.
@@ -131,7 +131,7 @@ BG-->>App : Final result
 
 ### Background service worker
 - Message router for agent tool execution, tab activation/deactivation, tab queries, action execution, Gemini requests, and generated agent runs.
-- Implements reliable async handlers with error propagation.
+- Async handlers propagate errors instead of swallowing them.
 - Tab tracking listeners update stored tab information.
 
 ### Content script
@@ -179,7 +179,7 @@ TS --> WXT_TS
 - Minimize DOM manipulations in content scripts; batch updates and avoid frequent reflows.
 - Debounce tab event listeners to reduce unnecessary storage writes.
 - Prefer lazy initialization for heavy modules (e.g., dynamic imports for Gemini SDK).
-- Use WebSocket for real-time updates; fall back to HTTP polling gracefully.
+- Use WebSocket for real-time updates; fall back to HTTP polling.
 - Keep Shadow DOM UI lightweight; defer heavy computations to background or content contexts.
 - Avoid excessive background memory retention; clean up listeners and timers on unmount.
 
@@ -192,7 +192,7 @@ Common issues and resolutions:
 - WebSocket connectivity: Implement auto-reconnect logic and fallback to HTTP when disconnected.
 
 ## Conclusion
-This guide outlined the WXT-based extension architecture, configuration, and development patterns. By using React hooks, Shadow DOM UI, and a reliable background service worker, the extension achieves modular, maintainable, and scalable functionality. Following the provided practices ensures reliable builds, cross-browser compatibility, and efficient performance.
+Incremental builds, reusable hooks, and config in WXT/env. Do not scatter API base URLs across components.
 
 ## Appendices
 
@@ -214,7 +214,7 @@ This guide outlined the WXT-based extension architecture, configuration, and dev
 ### Testing strategies
 - Unit test hooks and utilities using a testing framework compatible with browser APIs.
 - Snapshot test React components to detect layout regressions.
-- End-to-end test message flows between popup, sidepanel, and background.
+- Test message flows between popup, sidepanel, and background.
 - Mock external services (e.g., Gemini, backend endpoints) for deterministic tests.
 
 ### Extension store submission and security review

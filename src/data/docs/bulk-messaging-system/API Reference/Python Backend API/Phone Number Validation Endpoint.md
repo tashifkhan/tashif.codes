@@ -1,9 +1,8 @@
 # Phone number validation endpoint
 
 ## Introduction
-This page provides detailed documentation for the `/validate-number` endpoint, which validates and cleans phone numbers for the WhatsApp bulk messaging system. The endpoint accepts a POST request with a JSON payload containing a phone number string, applies standardized cleaning rules, and returns a normalized result indicating validity and the cleaned number format.
+`POST /validate-number` cleans one phone string with the same rules the file importers use and returns whether it survived.
 
-The validation algorithm focuses on:
 - Extracting only digits while handling international prefixes and separators
 - Enforcing length constraints (minimum 7 and maximum 15 digits)
 - Normalizing international formats and country codes
@@ -41,7 +40,7 @@ Key responsibilities:
 - Return standardized response schema with validation outcome
 
 ## Architecture overview
-The `/validate-number` endpoint integrates with the broader contact processing pipeline. It shares the same cleaning logic used by file import and manual number parsing utilities, ensuring consistent normalization across the application.
+The `/validate-number` endpoint integrates with the broader contact processing pipeline. It shares the same cleaning logic used by file import and manual number parsing utilities, keeping normalization across the application.
 
 ```mermaid
 sequenceDiagram
@@ -63,11 +62,11 @@ Response-->>Client : JSON result
 - Path: `/validate-number`
 - Content-Type: application/json
 - Request Body:
-  - `number`: string (required)
+ - `number`: string (required)
 - Response Schema:
-  - `valid`: boolean (true if cleaned_number is not null)
-  - `cleaned_number`: string|null (normalized phone number or null if invalid)
-  - `original`: string (original input value)
+ - `valid`: boolean (true if cleaned_number is not null)
+ - `cleaned_number`: string|null (normalized phone number or null if invalid)
+ - `original`: string (original input value)
 
 Behavior:
 - Validates presence of the `number` field
@@ -101,15 +100,15 @@ ReturnCleaned --> End
 ```
 
 #### Step-by-Step processing
-1. **Input Validation**: Reject empty or null inputs immediately
-2. **Whitespace Normalization**: Strip leading/trailing spaces
-3. **Separator Removal**: Eliminate common phone number separators
-4. **Character Filtering**: Retain only digits and the plus sign
-5. **International Prefix Handling**:
+1. **Input Validation.** Reject empty or null inputs immediately
+2. **Whitespace Normalization.** Strip leading/trailing spaces
+3. **Separator Removal.** Eliminate common phone number separators
+4. **Character Filtering.** Retain only digits and the plus sign
+5. **International Prefix Handling.**
    - Remove leading zeros when not international
-   - Prepend plus sign when length > 10 and no plus
-6. **Length Validation**: Enforce 7-15 digit constraint
-7. **Output**: Return normalized number or null if invalid
+ - Prepend plus sign when length > 10 and no plus
+6. **Length Validation.** Enforce 7-15 digit constraint
+7. **Output.** Return normalized number or null if invalid
 
 ### Response schema specification
 The endpoint consistently returns a JSON object with three fields:
@@ -120,37 +119,37 @@ The endpoint consistently returns a JSON object with three fields:
 This schema enables downstream systems to:
 - Determine immediate usability of the number
 - Access both original and normalized forms for logging
-- Integrate smoothly with contact import workflows
+- Integrate cleanly with contact import workflows
 
 ### Practical examples
 
 #### Valid inputs and expected outcomes
 - Input: `"+1-555-123-4567"`
-  - Output: `{"valid": true, "cleaned_number": "+15551234567", "original": "+1-555-123-4567"}`
+ - Output: `{"valid": true, "cleaned_number": "+15551234567", "original": "+1-555-123-4567"}`
 - Input: `"(555) 123-4567"`
-  - Output: `{"valid": true, "cleaned_number": "+15551234567", "original": "(555) 123-4567"}`
+ - Output: `{"valid": true, "cleaned_number": "+15551234567", "original": "(555) 123-4567"}`
 - Input: `"0015551234567"`
-  - Output: `{"valid": true, "cleaned_number": "+15551234567", "original": "0015551234567"}`
+ - Output: `{"valid": true, "cleaned_number": "+15551234567", "original": "0015551234567"}`
 - Input: `"5551234567"`
-  - Output: `{"valid": true, "cleaned_number": "+5551234567", "original": "5551234567"}`
+ - Output: `{"valid": true, "cleaned_number": "+5551234567", "original": "5551234567"}`
 
 #### Invalid inputs and expected outcomes
 - Input: `"123"`
-  - Output: `{"valid": false, "cleaned_number": null, "original": "123"}`
+ - Output: `{"valid": false, "cleaned_number": null, "original": "123"}`
 - Input: `"1234567890123456"`
-  - Output: `{"valid": false, "cleaned_number": null, "original": "1234567890123456"}`
+ - Output: `{"valid": false, "cleaned_number": null, "original": "1234567890123456"}`
 - Input: `"abc-def-ghij"`
-  - Output: `{"valid": false, "cleaned_number": null, "original": "abc-def-ghij"}`
+ - Output: `{"valid": false, "cleaned_number": null, "original": "abc-def-ghij"}`
 - Input: `""`
-  - Output: `{"valid": false, "cleaned_number": null, "original": ""}`
+ - Output: `{"valid": false, "cleaned_number": null, "original": ""}`
 
 #### Edge cases
 - Input: `"++15551234567"`
-  - Output: `{"valid": true, "cleaned_number": "+15551234567", "original": "++15551234567"}`
-- Input: `"  +1 555 123 4567  "`
-  - Output: `{"valid": true, "cleaned_number": "+15551234567", "original": "  +1 555 123 4567  "}`
+ - Output: `{"valid": true, "cleaned_number": "+15551234567", "original": "++15551234567"}`
+- Input: `" +1 555 123 4567 "`
+ - Output: `{"valid": true, "cleaned_number": "+15551234567", "original": " +1 555 123 4567 "}`
 - Input: `"123-456-7890123456"` (exceeds 15 digits)
-  - Output: `{"valid": false, "cleaned_number": null, "original": "123-456-7890123456"}`
+ - Output: `{"valid": false, "cleaned_number": null, "original": "123-456-7890123456"}`
 
 ### Integration patterns with contact import workflows
 The `/validate-number` endpoint complements the broader contact processing pipeline:
@@ -216,7 +215,7 @@ G --> H
 - Regex Operations: Single-pass cleaning with predictable performance characteristics
 - Scalability: Suitable for batch processing with minimal overhead
 
-Best practices:
+Habits that help:
 - Use streaming for large datasets when applicable
 - Cache frequently processed numbers if needed
 - Consider batching multiple validations for improved throughput
@@ -240,4 +239,5 @@ Common issues and resolutions:
 - Dependency issues: Ensure requirements are installed
 
 ## Conclusion
-The `/validate-number` endpoint provides a reliable, standardized mechanism for phone number validation and cleaning within the WhatsApp bulk messaging system. Its consistent algorithm ensures reliable normalization across diverse input formats, while the unified response schema facilitates smooth integration with contact import workflows and downstream messaging systems. The implementation balances simplicity with detailed coverage of international phone number formats, making it suitable for production deployment in multi-country messaging scenarios.
+
+Invalid numbers come back with `cleaned_number: null`. Callers should drop those rows instead of sending them to WhatsApp.

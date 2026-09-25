@@ -1,7 +1,7 @@
 # Credential storage and encryption
 
 ## Introduction
-This page explains how the application securely stores and manages credentials for OAuth2 (Gmail), SMTP, and WhatsApp authentication. It covers the storage mechanisms, encryption practices, key management, secure retrieval, and lifecycle management from creation to destruction. It also documents platform-specific protections and outlines security considerations for backups, recovery, and secure deletion.
+Credential storage for Gmail, SMTP, and WhatsApp: what is encrypted, what is omitted, and how cleanup works on logout.
 
 ## Project structure
 The credential-related logic spans the Electron main process, preload bridge, and React UI components:
@@ -71,7 +71,7 @@ Bridge-->>UI : "Results"
 
 ## Detailed component analysis
 
-### Gmail OAuth2 token storage
+### Gmail oAuth2 token storage
 - Token persistence: The handler stores the OAuth2 token using a secure local store after successful consent.
 - Retrieval: On subsequent sends, the token is retrieved from the store and applied to the OAuth2 client.
 - Refresh behavior: The handler reconstructs the OAuth2 client with stored credentials for sending emails.
@@ -187,8 +187,6 @@ WWA --> M["main.js"]
 - Transport verification: Verifying SMTP connectivity once before sending improves throughput.
 - Rate limiting: Delays between sends mitigate provider throttling and improve reliability.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common credential-related issues and resolutions:
 - Gmail authentication failures: Verify environment variables and OAuth consent flow completion.
@@ -198,10 +196,5 @@ Common credential-related issues and resolutions:
 - Cleanup after logout: Ensure cache and auth directories are deleted on logout or app close.
 
 ## Conclusion
-The application implements secure credential handling by:
-- Using OAuth2 for Gmail with token storage and retrieval
-- Persisting minimal SMTP configuration while excluding passwords
-- Using local authentication for WhatsApp and cleaning cache/auth directories on logout
-- Enforcing a secure IPC bridge to prevent renderer-side exposure of sensitive operations
 
-These practices align with the documented security features and provide a reliable foundation for protecting sensitive data across platforms.
+Inventory secrets when you add a channel. The pattern so far is encrypt tokens, omit passwords, delete session dirs on logout.

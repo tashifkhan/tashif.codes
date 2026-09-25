@@ -1,7 +1,7 @@
 # Authentication and session management
 
 ## Introduction
-This page explains the WhatsApp authentication and session management system implemented in the Electron application. It focuses on the QR code authentication flow using the LocalAuth strategy from whatsapp-web.js, the client lifecycle (startup, ready state, authentication failure handling, disconnection), session persistence and cache management for automatic reconnection, and practical troubleshooting steps for common issues. It also covers security considerations and best practices for local authentication storage and session cleanup.
+WhatsApp QR login with LocalAuth, session reuse, disconnect handling, and clearing auth/cache when logout is forced.
 
 ## Project structure
 The authentication and session management spans three layers:
@@ -108,7 +108,7 @@ Error --> Initializing : "retry"
 
 ### Session persistence and cache management
 - LocalAuth Strategy: Persists authentication state locally so subsequent runs can reconnect without scanning a QR.
-- Cache Cleanup: On logout and app close/quit, the main process deletes the.wwebjs_cache and.wwebjs_auth directories to force re-authentication and clear stale session data.
+- Cache Cleanup: On logout and app close/quit, the main process deletes the .wwebjs_cache and .wwebjs_auth directories to force re-authentication and clear stale session data.
 - Automatic Reconnection: Subsequent starts reuse persisted credentials until invalidated by logout or cache deletion.
 
 ```mermaid
@@ -179,51 +179,48 @@ Bridge --> Main
 - QR generation: Converting QR strings to data URLs is lightweight but avoid excessive regeneration.
 - Cleanup: Deleting cache and auth directories prevents accumulation of stale data.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - QR code not loading
-  - Symptoms: QR image shows as failed or blank.
-  - Causes: Network issues, QR generation errors, renderer image load failure.
-  - Resolution: Retry connection; check console for QR generation errors; ensure network connectivity.
-  - Related code: QR error handling and retry button in the renderer.
+ - Symptoms: QR image shows as failed or blank.
+ - Causes: Network issues, QR generation errors, renderer image load failure.
+ - Resolution: Retry connection; check console for QR generation errors; ensure network connectivity.
+ - Related code: QR error handling and retry button in the renderer.
 
 - Authentication failure
-  - Symptoms: Status indicates "Authentication failed".
-  - Causes: Invalid QR, corrupted session cache, or authentication timeout.
-  - Resolution: Clear session cache and retry; ensure device is linked; check logs for detailed messages.
-  - Related code: auth_failure event handler and status emission.
+ - Symptoms: Status indicates "Authentication failed".
+ - Causes: Invalid QR, corrupted session cache, or authentication timeout.
+ - Resolution: Clear session cache and retry; ensure device is linked; check logs for detailed messages.
+ - Related code: auth_failure event handler and status emission.
 
 - Disconnection
-  - Symptoms: Status indicates "Client disconnected".
-  - Causes: Network issues, browser crash, or external logout.
-  - Resolution: Reconnect by initiating authentication again; ensure stable network.
-  - Related code: disconnected event handler and client cleanup.
+ - Symptoms: Status indicates "Client disconnected".
+ - Causes: Network issues, browser crash, or external logout.
+ - Resolution: Reconnect by initiating authentication again; ensure stable network.
+ - Related code: disconnected event handler and client cleanup.
 
 - Session corruption or stale cache
-  - Symptoms: Repeated authentication failures despite valid credentials.
-  - Resolution: Force logout to clear cache and auth directories; restart the client.
-  - Related code: logout handler and deleteWhatsAppFiles().
+ - Symptoms: Repeated authentication failures despite valid credentials.
+ - Resolution: Force logout to clear cache and auth directories; restart the client.
+ - Related code: logout handler and deleteWhatsAppFiles().
 
 - Application lifecycle cleanup
-  - Symptoms: Old session persists after app close.
-  - Resolution: Rely on app/window close and before-quit handlers to logout and delete files.
-  - Related code: app lifecycle hooks and deleteWhatsAppFiles().
+ - Symptoms: Old session persists after app close.
+ - Resolution: Rely on app/window close and before-quit handlers to logout and delete files.
+ - Related code: app lifecycle hooks and deleteWhatsAppFiles().
 
 ## Security considerations
 - Local authentication storage
-  - LocalAuth stores session data locally; protect the application directory and avoid sharing it.
-  - Consider restricting file permissions on the.wwebjs_cache and.wwebjs_auth directories.
+ - LocalAuth stores session data locally; protect the application directory and avoid sharing it.
+ - Consider restricting file permissions on the .wwebjs_cache and .wwebjs_auth directories.
 - Session cleanup
-  - Always call logout and delete session files when switching users or ending a session.
-  - On app close/quit, ensure cleanup routines run to prevent accidental reuse of stale sessions.
+ - Always call logout and delete session files when switching users or ending a session.
+ - On app close/quit, ensure cleanup routines run to prevent accidental reuse of stale sessions.
 - Input validation
-  - Validate and sanitize contact inputs to avoid injection or malformed data.
+ - Validate and sanitize contact inputs to avoid injection or malformed data.
 - Least privilege
-  - Run the application with minimal required privileges; avoid unnecessary filesystem access outside designated areas.
-
-[No sources needed since this section provides general guidance]
+ - Run the application with minimal required privileges; avoid unnecessary filesystem access outside designated areas.
 
 ## Conclusion
-The application implements a reliable, user-friendly WhatsApp authentication flow using LocalAuth. The QR-based authentication is handled smoothly across the renderer, preload bridge, and main process, with clear status updates and resilient error handling. Session persistence enables quick reconnection, while explicit cleanup ensures secure and predictable lifecycle management. Following the troubleshooting and security recommendations will help maintain a reliable and secure messaging experience.
+
+QR not loading is usually network or a stuck Chromium profile. Clear auth/cache, restart client, scan again.

@@ -1,10 +1,10 @@
 # Browser extension
 
 ## Introduction
-This page explains the Browser Extension component of the Agentic Browser project. It focuses on the React-based side panel built with the WXT framework, covering the side panel UI structure, component organization, state management, messaging between extension components, authentication flow, settings management, and the AgentExecutor implementation. It also documents the WebSocket client for real-time communication, content script integration for page-level automation, and cross-browser compatibility considerations.
+WXT/React extension: side panel, background, content scripts, agent executor, and WebSocket client. Entry points and the main call paths.
 
 ## Project structure
-The extension is organized under the extension directory with the following key areas:
+The extension lives in `clients/browser-extension/` with the following key areas:
 - Side panel entrypoint with React app and hooks
 - Background script for extension-wide operations and messaging
 - Content script for page-level automation
@@ -247,7 +247,7 @@ Common issues and resolutions:
 - Storage sync: Listen to browser.storage.onChanged for immediate UI updates.
 
 ## Conclusion
-The extension combines a React side panel with a reliable background and content script architecture. It supports real-time agent execution via WebSocket, secure authentication with Google OAuth, flexible settings management, and smooth page automation. Following the guidelines in this page will help extend and maintain the system effectively across browsers.
+Start from `main.tsx`, run agents through `AgentExecutor.handleExecute`, dispatch page actions via background, and connect WebSocket when you want streaming.
 
 ## Appendices
 
@@ -262,10 +262,10 @@ The extension combines a React side panel with a reliable background and content
 
 ### Development examples
 - Initialize side panel entrypoint and React root:
-  - `main.tsx`
+ - `main.tsx`
 - Execute an agent command:
-  - `AgentExecutor.handleExecute`
+ - `AgentExecutor.handleExecute`
 - Send action to active tab:
-  - `background.handleExecuteAction`
+ - `background.handleExecuteAction`
 - Connect to WebSocket:
-  - `websocket-client.connect`
+ - `websocket-client.connect`

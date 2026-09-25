@@ -1,90 +1,101 @@
 # Getting started
 
 ## Introduction
-Agentic Browser is a next-generation browser extension powered by a Python MCP (Model Context Protocol) server. It enables an intelligent agent to understand and act on web content, supporting multiple LLM providers and offering a secure, declarative action system for browser automation.
+Agentic Browser pairs a Python FastAPI and MCP backend with a WXT/React extension. Point it at an LLM provider, load the extension, and you can ask for page actions that run through a declarative, reviewed plan.
 
-Key goals:
-- Model-agnostic agent backend using Python, LangChain, and MCP
-- Secure browser extension using WebExtensions API
-- Advanced agent workflows with retrieval-augmented generation and multi-step tasks
-- Strong guardrails and transparency layers
-- Open-source extensibility
+Source: [github.com/tashifkhan/agentic-browser](https://github.com/tashifkhan/agentic-browser)
 
 ## Project structure
-The repository is organized into backend and frontend components:
-- Backend (Python): FastAPI server and MCP server
-- Frontend (TypeScript/React): Browser extension built with WXT
-- Shared tools and services for specialized workflows
+The repo is a monorepo:
+- Backend (Python >=3.12): FastAPI app in `main.py`, MCP in `mcp_server/`, agents, routers, tools, services, skills, and memory (sqlmodel/asyncpg, Neo4j, OpenSearch)
+- Frontend workspace (pnpm): `clients/browser-extension` (WXT), `clients/debug-web` (Vite dashboard), `clients/shared`
 
 ```mermaid
 graph TB
 subgraph "Backend"
-A["FastAPI Server<br/>api/run.py"]
+A["FastAPI Server<br/>main.py"]
 B["MCP Server<br/>mcp_server/server.py"]
-C["Core Config & LLM<br/>core/config.py, core/llm.py"]
+C["Core Config and LLM<br/>core/config.py, core/llm.py"]
+MEM["Memory<br/>sqlmodel, asyncpg, neo4j, opensearch"]
 end
-subgraph "Frontend"
-D["WXT Config<br/>extension/wxt.config.ts"]
-E["Background Script<br/>entrypoints/background.ts"]
-F["Content Script<br/>entrypoints/content.ts"]
-G["Agent Utils<br/>entrypoints/utils/*"]
+subgraph "Frontend workspace"
+D["WXT Config<br/>clients/browser-extension/wxt.config.ts"]
+E["Background Script<br/>clients/browser-extension/entrypoints/background.ts"]
+F["Content Script<br/>clients/browser-extension/entrypoints/content.ts"]
+G["Agent Utils<br/>clients/browser-extension/entrypoints/utils/*"]
+DBG["Debug dashboard<br/>clients/debug-web"]
+SHR["Shared client lib<br/>clients/shared"]
 end
 A --> C
 B --> C
+A --> MEM
 D --> E
 D --> F
 E --> F
 G --> A
+DBG --> A
+SHR --> D
 ```
 
 ## Prerequisites
 Before installing Agentic Browser, ensure your environment meets the following requirements:
 
 - Python
-  - Version requirement: Python >= 3.12
-  - Package manager: uv (recommended) or pip
-  - Virtual environment recommended
+ - Version requirement: Python >= 3.12
+ - Package manager: uv (recommended) or pip
+ - Virtual environment recommended
 
-- Node.js and Package Manager
-  - Node.js version: managed by the project's package manager configuration
-  - Package manager: pnpm (recommended) or npm
-  - TypeScript support included in the frontend configuration
+- Node.js and pnpm
+ - Workspace `packageManager` is `pnpm@9.0.0` in the root `package.json`
+ - TypeScript is configured in the client packages
 
-- Browser Extension Development
-  - Chromium-based browsers (Chrome, Edge, Brave) or Firefox for development
-  - Permissions and manifest configuration defined in the extension manifest
-  - WebExtensions API support for background scripts, content scripts, and side panel
+- Browser extension development
+ - Chromium-based browsers (Chrome, Edge, Brave) or Firefox
+ - Permissions and manifest live in `clients/browser-extension/wxt.config.ts`
+ - WebExtensions API support for background scripts, content scripts, and side panel
 
-- LLM Provider Keys (optional for initial setup)
-  - Supported providers include Google, OpenAI, Anthropic, Ollama, DeepSeek, OpenRouter
-  - API keys or base URLs configured via environment variables or UI
+- LLM provider keys (optional for initial setup)
+ - Supported providers include Google, OpenAI, Anthropic, Ollama, DeepSeek, OpenRouter
+ - API keys or base URLs configured via environment variables or UI
 
 ## Installation
-Follow these step-by-step instructions to install both backend and frontend components.
+Install the backend and the pnpm workspace.
 
 ### Backend (Python)
-1. Clone the repository and navigate to the project root.
+1. Clone the repository and stay at the project root.
 2. Create and activate a Python virtual environment (recommended).
 3. Install dependencies using uv:
-   - Run: uv pip install -e.
-4. Verify installation by checking installed packages from pyproject.toml.
+ - Run: `uv pip install -e .`
+4. Verify packages from `pyproject.toml`.
 
 Notes:
-- The project uses uv for dependency resolution and installation.
-- The FastAPI server and MCP server are both supported via the main entry point.
+- The project uses uv for dependency resolution (`uv.lock`).
+- FastAPI and MCP share the same Python package. CLI aliases in `pyproject.toml` are `agentic-api-run` (`main:run`) and `agentic-mcp` (`mcp_server.server:run`).
 
-### Frontend (extension)
-1. Navigate to the extension directory.
-2. Install dependencies using pnpm:
-   - Run: pnpm install
-3. Build or develop the extension:
-   - Development: pnpm dev
-   - Production build: pnpm build
-   - Firefox builds: pnpm dev:firefox or pnpm build:firefox
+### Frontend (pnpm workspace)
+From the repository root:
+
+```bash
+pnpm install
+pnpm dev:extension
+pnpm build:extension
+pnpm dev:debug
+```
+
+Those scripts filter the workspace packages:
+
+```bash
+pnpm --filter @agentic-browser/browser-extension dev
+pnpm --filter @agentic-browser/browser-extension build
+pnpm --filter @agentic-browser/browser-extension dev:firefox
+pnpm --filter @agentic-browser/debug-web dev
+```
+
+You can also run the same scripts inside `clients/browser-extension/` after a root `pnpm install`. Do not `cd extension`; that directory is gone.
 
 Manifest and permissions:
 - The extension manifest defines permissions for tabs, storage, scripting, identity, side panel, web navigation, web request, cookies, bookmarks, history, clipboard, notifications, context menus, and downloads.
-- Host permissions include <all_urls>.
+- Host permissions include `<all_urls>`.
 
 ## Initial setup
 Configure environment variables and basic settings before launching the servers.
@@ -100,7 +111,7 @@ Key variables:
 - GOOGLE_API_KEY: Google provider API key (required for Google provider)
 - OPENAI_API_KEY, ANTHROPIC_API_KEY, OLLAMA_BASE_URL, DEEPSEEK_API_KEY, OPENROUTER_API_KEY: Additional provider keys and base URLs
 
-Note: The backend loads environment variables from a.env file automatically.
+Note: The backend loads environment variables from a `.env` file automatically.
 
 ### API key setup for LLM providers
 - For Google provider, set GOOGLE_API_KEY.
@@ -109,7 +120,7 @@ Note: The backend loads environment variables from a.env file automatically.
 - Keys can be provided directly to the LLM client or via environment variables.
 
 UI-based key management:
-- The extension includes a UI component for saving API keys locally in the extension storage.
+- The extension includes a UI component for saving API keys locally in extension storage.
 
 ### Basic configuration options
 - Backend host/port: Controlled by environment variables.
@@ -117,24 +128,27 @@ UI-based key management:
 - Provider selection and model defaults are defined in the LLM configuration.
 
 ## Quick start
-Launch the MCP server, install the browser extension, and perform basic browser automation tasks.
+Launch the API (and optional MCP stdio server), install the browser extension, and try a slash command.
 
-### Launch the MCP server
-1. From the project root, run the main entry point with the MCP flag:
-   - Command: python main.py --mcp
-2. Alternatively, use the script alias defined in pyproject.toml:
-   - Command: agentic-mcp
+### Launch the API and MCP
+1. From the project root, start FastAPI (Uvicorn on port 5454 by default):
+ - Command: `python main.py`
+ - Alias: `agentic-api-run`
+2. MCP is mounted on the same app at `/mcp`. For stdio MCP, use the script alias:
+ - Command: `agentic-mcp`
 
 Verification:
-- The MCP server initializes and exposes tools for LLM generation, GitHub Q&A, and website content conversion.
+- The FastAPI app serves health and agent routes under `/api/*`.
+- The MCP server exposes tools for LLM generation, GitHub Q&A, and website content conversion.
 
 ### Install the browser extension
-1. Build the extension:
-   - Development: pnpm dev
-   - Production: pnpm build
+1. From the repo root, build or develop the extension:
+ - Development: `pnpm dev:extension`
+ - Production: `pnpm build:extension`
+ - Firefox: `pnpm dev:extension:firefox` or `pnpm build:extension:firefox`
 2. Load the unpacked extension in your browser:
-   - Chrome/Edge: Load unpacked from the extension build output directory
-   - Firefox: Use the appropriate developer loading mechanism
+ - Chrome/Edge: Load unpacked from `clients/browser-extension/.output/`
+ - Firefox: Use the Firefox developer loading path for the Firefox build output
 
 Permissions:
 - The extension requests broad permissions for tabs, storage, scripting, identity, side panel, web navigation, web request, cookies, bookmarks, history, clipboard, notifications, context menus, and downloads.
@@ -142,35 +156,35 @@ Permissions:
 ### Perform basic browser automation tasks
 - Use slash commands in the extension UI to trigger agent workflows.
 - Example slash commands include:
-  - /browser-action: Execute browser automation tasks (navigate, click, type, scroll)
-  - /react-ask: Chat with the React ReAct agent
-  - /google-search: Perform a quick web search
-  - /gmail-unread: Check unread emails
-  - /calendar-events: View upcoming schedule
-  - /youtube-ask: Q&A with YouTube videos
+ - /browser-action: Execute browser automation tasks (navigate, click, type, scroll)
+ - /react-ask: Chat with the React ReAct agent
+ - /google-search: Perform a quick web search
+ - /gmail-unread: Check unread emails
+ - /calendar-events: View upcoming schedule
+ - /youtube-ask: Q&A with YouTube videos
 
 Execution flow:
 - The extension parses slash commands and routes them to the backend via HTTP requests.
 - The background script handles messaging and action execution, including tab/window control and DOM manipulation.
 
 ## Architecture overview
-Agentic Browser integrates a Python MCP server with a React-based browser extension. The extension communicates with the backend to execute agent workflows and browser actions.
+Agentic Browser integrates a Python FastAPI/MCP backend with a React-based browser extension. The extension talks HTTP and WebSocket to the API. MCP is available over stdio or at `/mcp` on the FastAPI process.
 
 ```mermaid
 graph TB
 subgraph "Browser Extension"
-BG["Background Script<br/>entrypoints/background.ts"]
-CT["Content Script<br/>entrypoints/content.ts"]
-UI["Side Panel & UI"]
+BG["Background Script<br/>clients/browser-extension/entrypoints/background.ts"]
+CT["Content Script<br/>clients/browser-extension/entrypoints/content.ts"]
+UI["Side Panel and UI"]
 end
 subgraph "Backend"
 MCP["MCP Server<br/>mcp_server/server.py"]
-API["FastAPI Server<br/>api/run.py"]
-CFG["Config & LLM<br/>core/config.py, core/llm.py"]
+API["FastAPI Server<br/>main.py"]
+CFG["Config and LLM<br/>core/config.py, core/llm.py"]
 end
 UI --> BG
-BG <- --> API
-BG <- --> MCP
+BG <--> API
+BG <--> MCP
 MCP --> CFG
 API --> CFG
 CT --> BG
@@ -180,11 +194,11 @@ CT --> BG
 
 ### Backend servers
 - FastAPI Server
-  - Starts the API server with configurable host and port.
-  - Provides endpoints for agent workflows and tools.
+ - Starts with configurable host and port from `main.py` (`run()` uses Uvicorn).
+ - Provides endpoints for agent workflows, memory, skills, and tools.
 - MCP Server
-  - Exposes tools for LLM generation, GitHub Q&A, and website content conversion.
-  - Supports multiple providers with dynamic configuration.
+ - Exposes tools for LLM generation, GitHub Q&A, and website content conversion.
+ - Supports multiple providers with dynamic configuration.
 
 ```mermaid
 sequenceDiagram
@@ -196,7 +210,7 @@ Client->>BG : "Slash command or action"
 BG->>API : "HTTP request to agent endpoint"
 API-->>BG : "Response data"
 BG-->>Client : "Render results"
-Note over BG,MCP : "Alternative : BG can call MCP tools directly"
+Note over BG,MCP : "Alternative: BG can call MCP tools"
 ```
 
 ### LLM configuration and provider support
@@ -219,13 +233,13 @@ RaiseError --> Done
 
 ### Extension components
 - Background Script
-  - Handles messaging, tab/window control, and action execution.
-  - Injects content scripts and performs DOM manipulation.
+ - Handles messaging, tab/window control, and action execution.
+ - Injects content scripts and performs DOM manipulation.
 - Content Script
-  - Provides lightweight page interaction helpers.
+ - Provides lightweight page interaction helpers.
 - Agent Utilities
-  - Parse slash commands and route to backend endpoints.
-  - Capture page context and construct payloads for agent workflows.
+ - Parse slash commands and route to backend endpoints.
+ - Capture page context and construct payloads for agent workflows.
 
 ```mermaid
 sequenceDiagram
@@ -244,8 +258,8 @@ BG-->>UI : "Display results"
 ```
 
 ## Dependency analysis
-- Backend dependencies are declared in pyproject.toml and include FastAPI, Uvicorn, LangChain, LangGraph, MCP, and others.
-- Frontend dependencies are declared in extension/package.json and include React, WXT, socket.io-client, and UI libraries.
+- Backend dependencies are declared in `pyproject.toml` and include FastAPI, Uvicorn, LangChain, LangGraph, MCP, sqlmodel, asyncpg, neo4j, and opensearch-py.
+- Frontend dependencies are declared in `clients/browser-extension/package.json` and include React, WXT, socket.io-client, and `@agentic-browser/shared`.
 
 ```mermaid
 graph LR
@@ -257,7 +271,7 @@ L["LangChain/LangGraph"]
 M["MCP"]
 end
 subgraph "Frontend Dependencies"
-N["package.json"]
+N["clients/browser-extension/package.json"]
 R["React"]
 W["WXT"]
 S["Socket.io Client"]
@@ -277,37 +291,34 @@ N --> S
 - Minimize repeated DOM queries and injections; batch actions when possible.
 - Configure logging appropriately (DEBUG vs INFO) to reduce overhead during production runs.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common setup and runtime issues:
 
 - Missing Python version
-  - Ensure Python >= 3.12 is installed and selected in your environment.
+ - Ensure Python >= 3.12 is installed and selected in your environment.
 
 - Missing Node.js or pnpm
-  - Install Node.js and pnpm; rebuild the extension after installation.
+ - Install Node.js and pnpm 9; run `pnpm install` at the repo root.
 
 - Backend server startup
-  - Use the main entry point with the MCP flag to start the MCP server.
-  - Verify host and port settings via environment variables.
+ - Use `python main.py` or `agentic-api-run` for the API.
+ - Use `agentic-mcp` for stdio MCP.
+ - Verify host and port settings via environment variables.
 
 - LLM provider configuration errors
-  - Ensure required API keys or base URLs are set for the chosen provider.
-  - Check for typos in environment variable names.
+ - Ensure required API keys or base URLs are set for the chosen provider.
+ - Check for typos in environment variable names.
 
 - Extension not loading
-  - Confirm permissions in the manifest and load the extension as unpacked.
-  - Check browser developer tools for errors.
+ - Confirm permissions in `clients/browser-extension/wxt.config.ts` and load the unpacked build from `.output/`.
+ - Check browser developer tools for errors.
 
 - Action execution failures
-  - Verify that the active tab is reachable and not blocked by CORS or privacy restrictions.
-  - Review background script logs for detailed error messages.
+ - Verify that the active tab is reachable and not blocked by CORS or privacy restrictions.
+ - Review background script logs for detailed error messages.
 
 ## Conclusion
-Agentic Browser combines a powerful Python MCP server with a modern React-based browser extension to deliver model-agnostic, secure, and extensible web automation. By following the prerequisites, installation steps, and initial setup guide, you can quickly launch the backend servers, install the extension, and start performing automated browser tasks using slash commands.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Backend is Python (FastAPI + MCP). Frontend is the WXT package under `clients/browser-extension/`. Once both are running and a provider key is set, slash commands and the side panel are enough to try a real task.
 
 ## Appendices
 
@@ -323,9 +334,9 @@ Agentic Browser combines a powerful Python MCP server with a modern React-based 
 - OPENROUTER_API_KEY: OpenRouter provider API key
 
 ### Appendix B: example slash commands
-- /browser-action: Execute browser automation tasks (navigate, click, type, scroll)
-- /react-ask: Chat with the React ReAct agent
-- /google-search: Perform a quick web search
-- /gmail-unread: Check unread emails
-- /calendar-events: View upcoming schedule
-- /youtube-ask: Q&A with YouTube videos
+  - /browser-action: Execute browser automation tasks (navigate, click, type, scroll)
+  - /react-ask: Chat with the React ReAct agent
+  - /google-search: Perform a quick web search
+  - /gmail-unread: Check unread emails
+  - /calendar-events: View upcoming schedule
+  - /youtube-ask: Q&A with YouTube videos

@@ -1,7 +1,7 @@
 # Security considerations
 
 ## Introduction
-This page provides detailed security documentation for Agentic Browser. It covers the security architecture, guardrails, transparency layers, and safety mechanisms. It explains the user approval system for browser actions, activity logging, intelligent content filtering, prompt injection prevention, agent sanitization, secure domain allowlisting, BYOKeys security model, encrypted credential storage, secure communication protocols, threat modeling, vulnerability assessment, and best practices for browser extension development. It also addresses data protection, privacy, compliance, configuration guidelines, penetration testing, incident response, security testing methodologies, code review practices, and security monitoring strategies.
+Security model for Agentic Browser: user approval for browser actions, activity logs, content filtering, prompt-injection checks, action-plan sanitization, domain allowlists, and BYOKeys so credentials never sit on our servers.
 
 ## Project structure
 Agentic Browser consists of:
@@ -50,7 +50,7 @@ UTL --> ENC
 ## Core components
 - Prompt Injection Prevention: A dedicated prompt template validates incoming markdown for prompt injection attempts.
 - Agent Sanitization: Validates and sanitizes JSON action plans from the LLM, enforcing strict action schemas and blocking dangerous patterns.
-- User Approval System: Sidepanel hooks orchestrate OAuth flows and manage tokens; WebSocket fallback ensures resilient operation.
+- User Approval System: Sidepanel hooks orchestrate OAuth flows and manage tokens; WebSocket falls back to HTTP when the socket drops.
 - Activity Logging: Background worker logs messages and tracks tab state; content script logs per-page actions.
 - Intelligent Content Filtering: Website validator router exposes a validation endpoint; GitHub URL normalization reduces noise.
 - Secure Communication: BYOKeys model keeps API keys local; encrypted credential storage uses symmetric encryption with daily rotating keys.
@@ -58,7 +58,7 @@ UTL --> ENC
 - Domain Allowlisting: Explicit URL normalization and validation routes limit risky contexts.
 
 ## Architecture overview
-The security architecture integrates frontend and backend components with layered protections:
+Security cuts across frontend and backend:
 - Extension runtime enforces user consent and safe action execution.
 - Background worker coordinates tab operations and injects content scripts.
 - Content script performs DOM-level actions with strict selectors.
@@ -127,7 +127,7 @@ O --> F
 ### User approval system and authentication
 - Purpose: Manage OAuth flows, token lifecycle, and user consent.
 - Mechanism: Uses browser identity APIs for OAuth; stores tokens in extension storage; supports manual refresh and expiry checks.
-- Impact: Ensures secure, auditable access to external services.
+- Impact: Access to external services stays auditable.
 
 ```mermaid
 sequenceDiagram
@@ -149,7 +149,7 @@ BG->>Ext : "Update token"
 ### Activity logging and transparency
 - Purpose: Provide visibility into extension actions and state.
 - Mechanism: Background worker logs messages; content script logs per-page actions; WebSocket status updates UI.
-- Impact: Enables auditing and troubleshooting.
+- Impact: You can audit and troubleshoot from the logs.
 
 ```mermaid
 sequenceDiagram
@@ -178,7 +178,7 @@ V --> O["Return Validated Context"]
 ```
 
 ### BYOKeys security model and secure communication
-- Purpose: Ensure API keys never leave the local extension context.
+- Purpose: API keys stay in the local extension context.
 - Mechanism: Dynamic import of Gemini SDK in background; API key supplied per-request; encryption utilities for sensitive payloads.
 - Impact: Minimizes exposure of secrets and secures credential transport.
 
@@ -249,8 +249,6 @@ CFG["config.py"] --> API
 - Payload Limits: DOM extraction limits reduce memory footprint.
 - Logging Overhead: Excessive logging can impact performance; tune levels appropriately.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 - Authentication Failures: Verify backend availability, OAuth client configuration, and token refresh logic.
 - WebSocket Disconnections: Fallback to HTTP is supported; check connection status and auto-connect settings.
@@ -258,92 +256,79 @@ CFG["config.py"] --> API
 - Encryption Issues: Confirm daily key rotation and encoding/decoding steps.
 
 ## Conclusion
-Agentic Browser implements a layered security model combining prompt injection detection, agent sanitization, user consent, encrypted storage, and secure communication. The architecture emphasizes transparency, resilience (via WebSocket fallback), and safe action execution. Adhering to the recommended configurations, testing methodologies, and operational procedures will help maintain a reliable and compliant deployment.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Approve actions before they run, keep keys in the browser or env, and treat untrusted page text as hostile input. The sanitizer and injection checks are mandatory, not optional polish.
 
 ## Appendices
 
 ### Security configuration guidelines
 - Environment Variables
-  - Configure logging levels and backend host/port via environment variables.
-  - Store secrets using secure secret managers; avoid committing to source control.
+ - Configure logging levels and backend host/port via environment variables.
+ - Store secrets using secure secret managers; avoid committing to source control.
 - API Endpoints
-  - Restrict route prefixes and enable CORS policies appropriate to the extension origin.
+ - Restrict route prefixes and enable CORS policies appropriate to the extension origin.
 - Extension Permissions
-  - Grant only necessary permissions; minimize host permissions and content script matches.
+ - Grant only necessary permissions; minimize host permissions and content script matches.
 - Encryption
-  - Rotate keys daily; keep IVs constant; encode payloads before storage.
+ - Rotate keys daily; keep IVs constant; encode payloads before storage.
 
 ### Penetration testing approaches
 - Input Validation
-  - Test prompt injection vectors against the prompt injection validator.
-  - Validate JSON action plans with malformed and malicious payloads.
+ - Test prompt injection vectors against the prompt injection validator.
+ - Validate JSON action plans with malformed and malicious payloads.
 - Authentication
-  - Verify OAuth flows, token refresh, and expiration handling under network failures.
+ - Verify OAuth flows, token refresh, and expiration handling under network failures.
 - Browser Actions
-  - Attempt to inject unsafe selectors and scripts; ensure sanitization blocks them.
+ - Attempt to inject unsafe selectors and scripts; ensure sanitization blocks them.
 - Cryptography
-  - Validate encryption boundaries and key derivation logic.
-
-[No sources needed since this section provides general guidance]
+ - Validate encryption boundaries and key derivation logic.
 
 ### Incident response procedures
 - Detection
-  - Monitor logs for authentication errors, WebSocket disconnections, and action failures.
+ - Monitor logs for authentication errors, WebSocket disconnections, and action failures.
 - Containment
-  - Temporarily disable affected routes or revoke tokens.
+ - Temporarily disable affected routes or revoke tokens.
 - Eradication
-  - Patch vulnerabilities; rotate keys; update OAuth client secrets if compromised.
+ - Patch vulnerabilities; rotate keys; update OAuth client secrets if compromised.
 - Recovery
-  - Re-enable services gradually; validate functionality; monitor metrics.
+ - Re-enable services gradually; validate functionality; monitor metrics.
 - Postmortem
-  - Document root causes, remediation steps, and preventive controls.
-
-[No sources needed since this section provides general guidance]
+ - Document root causes, remediation steps, and preventive controls.
 
 ### Security testing methodologies
 - Static Analysis
-  - Scan for hardcoded secrets, unsafe patterns, and insecure dependencies.
+ - Scan for hardcoded secrets, unsafe patterns, and insecure dependencies.
 - Dynamic Analysis
-  - Run automated tests against sanitized inputs and authenticated flows.
+ - Run automated tests against sanitized inputs and authenticated flows.
 - Fuzzing
-  - Fuzz JSON action plans and URL normalization logic.
+ - Fuzz JSON action plans and URL normalization logic.
 - Penetration Testing
-  - Perform authorized assessments targeting extension and backend.
-
-[No sources needed since this section provides general guidance]
+ - Perform authorized assessments targeting extension and backend.
 
 ### Code review practices
 - Input Sanitization
-  - Require sanitization and validation for all LLM outputs and user inputs.
+ - Require sanitization and validation for all LLM outputs and user inputs.
 - Authentication
-  - Enforce token refresh and expiry checks; avoid storing tokens longer than necessary.
+ - Enforce token refresh and expiry checks; avoid storing tokens longer than necessary.
 - Browser APIs
-  - Validate permissions and message routing; avoid broad host permissions.
+ - Validate permissions and message routing; avoid broad host permissions.
 - Cryptography
-  - Review key derivation, IV usage, and encoding/decoding correctness.
-
-[No sources needed since this section provides general guidance]
+ - Review key derivation, IV usage, and encoding/decoding correctness.
 
 ### Security monitoring strategies
 - Logs
-  - Centralize extension and backend logs; apply retention policies.
+ - Centralize extension and backend logs; apply retention policies.
 - Metrics
-  - Track authentication success rates, action execution rates, and WebSocket connectivity.
+ - Track authentication success rates, action execution rates, and WebSocket connectivity.
 - Alerts
-  - Alert on repeated failures, unusual spikes, and authentication anomalies.
-
-[No sources needed since this section provides general guidance]
+ - Alert on repeated failures, unusual spikes, and authentication anomalies.
 
 ### Secure development practices
 - Least Privilege
-  - Limit extension permissions and API access.
+ - Limit extension permissions and API access.
 - Defense in Depth
-  - Combine multiple safeguards: sanitization, validation, encryption, and authorization.
+ - Combine multiple safeguards: sanitization, validation, encryption, and authorization.
 - Secure Defaults
-  - Disable debug logs in production; enforce HTTPS and secure cookies.
+ - Disable debug logs in production; enforce HTTPS and secure cookies.
 - Updates Management
-  - Establish a process for timely updates to dependencies and cryptography libraries.
+ - Establish a process for timely updates to dependencies and cryptography libraries.
 
-[No sources needed since this section provides general guidance]

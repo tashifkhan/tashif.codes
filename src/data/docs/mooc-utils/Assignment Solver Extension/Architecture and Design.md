@@ -1,15 +1,15 @@
 # Architecture and design
 
 ## Introduction
-This page describes the architecture and design of the Assignment Solver browser extension. The system consists of three primary components:
-- Background service worker (service worker): orchestrates messaging, coordinates tasks, and manages platform adapters.
-- Content script: interacts with the page DOM to extract assignment content, images, and apply answers.
-- UI side panel: provides a user interface for initiating solves, configuring preferences, and displaying results.
+Three pieces make up the Assignment Solver extension:
+- Background service worker: messaging, task coordination, platform adapters.
+- Content script: DOM read/write for extraction and answer application.
+- Side panel UI: start solves, edit preferences, show results.
 
-The extension follows a modular, dependency injection-driven design with factory functions and platform adapters to ensure cross-browser compatibility. It implements a reliable message-passing system and a three-phase pipeline: extraction, analyze (AI parsing), and apply (DOM manipulation). The design emphasizes resilience against transient connection failures and supports both Chrome and Firefox through a unified browser API wrapper.
+Messaging, adapters, and how those layers fit together are the focus here.
 
 ## Project structure
-The extension is organized around a clear separation of concerns:
+Extension layers:
 - background/: background service worker entry point, message routing, and platform adapters
 - content/: content script entry point and DOM interaction utilities
 - ui/: side panel UI entry point and controllers
@@ -61,7 +61,7 @@ UIHTML --> UIIDX
 - UI side panel: waits for background readiness, initializes controllers, and coordinates the solve flow.
 
 Key cross-cutting concerns:
-- Message types and retry logic: centralized in core/messages.js to ensure consistent communication semantics across components.
+- Message types and retry logic: centralized in core/messages.js so consistent communication semantics across components.
 - Platform adapters: unify Chrome/Firefox differences for runtime, tabs, panel, and browser detection.
 
 ## Architecture overview
@@ -115,7 +115,7 @@ Responsibilities:
 
 Design highlights:
 - Dependency injection via factory functions for adapters and services.
-- Centralized message router ensures consistent async handling and response semantics.
+- Centralized message router keeps consistent async handling and response semantics.
 - Reliable logging and error handling for cross-browser environments.
 
 ```mermaid
@@ -309,7 +309,7 @@ APPLY --> SUB["SUBMIT_ASSIGNMENT (optional)"]
 ```
 
 ## Dependency analysis
-The system exhibits loose coupling and high cohesion:
+The system has loose coupling and high cohesion:
 - Background depends on platform adapters and services; handlers depend on adapters and logger.
 - Content script depends on extractor and applicator; both depend on logger.
 - UI depends on runtime adapter, storage, and controllers; solve controller depends on Gemini service and state.
@@ -349,4 +349,4 @@ Common issues and remedies:
 - Panel opening failures: panel adapter handles Firefox vs Chrome differences; verify permissions and API availability.
 
 ## Conclusion
-The Assignment Solver extension demonstrates a clean, modular architecture with strong cross-browser compatibility. Its dependency injection and factory-based design enable easy testing and maintenance. The message-passing system, combined with reliable retry logic and token-aware processing, delivers a reliable user experience across Chrome and Firefox. The UI's progress tracking and results presentation improve usability, while the content script's DOM-centric operations ensure precise automation of assignment workflows.
+Background, content script, and UI stay loosely coupled through messages and injected adapters. That split is what makes Chrome/Firefox and test doubles workable.

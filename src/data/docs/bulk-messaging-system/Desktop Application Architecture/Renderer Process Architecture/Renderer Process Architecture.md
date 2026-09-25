@@ -1,7 +1,7 @@
 # Renderer process architecture
 
 ## Introduction
-This page explains the React renderer process architecture for the bulk messaging application. It traces the component hierarchy from the entry points, documents the central orchestrator BulkMailer, and details state management, component communication, Electron IPC integration, UI rendering pipeline, lifecycle management, performance optimizations, and separation of concerns between UI and business logic.
+Renderer-side architecture: BulkMailer owns tab state and IPC calls; forms stay presentational where possible.
 
 ## Project structure
 The renderer process is organized around a small React application bootstrapped in Electron. The UI is composed of a single-page layout with a sidebar navigation, top bar, and tabbed content areas for Gmail, SMTP, and WhatsApp messaging. Business logic is delegated to Electron main process handlers via IPC.
@@ -300,13 +300,13 @@ BM->>UI : Update waResults/waStatus
 
 ### Gmail and SMTP integration details
 - Gmail:
-  - OAuth2 flow with BrowserWindow and redirect handling.
-  - Stores tokens via electron-store; verifies presence before sending.
-  - Emits email-progress events for granular feedback.
+ - OAuth2 flow with BrowserWindow and redirect handling.
+ - Stores tokens via electron-store; verifies presence before sending.
+ - Emits email-progress events for granular feedback.
 - SMTP:
-  - Validates config, creates Nodemailer transport, verifies connectivity.
-  - Sends HTML emails with rate-limiting delays.
-  - Optionally persists partial config for convenience.
+ - Validates config, creates Nodemailer transport, verifies connectivity.
+ - Sends HTML emails with rate-limiting delays.
+ - Optionally persists partial config for convenience.
 
 ```mermaid
 flowchart TD
@@ -358,8 +358,6 @@ Recommendations:
 - Persist frequently used SMTP config securely.
 - Consider caching parsed contacts to avoid repeated Python parsing.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Electron API not available: Ensure preload bridge is loaded and contextIsolation is enabled.
@@ -374,4 +372,5 @@ Diagnostics:
 - Verify file import filters and formats (CSV/TXT).
 
 ## Conclusion
-The renderer process architecture centers on BulkMailer as the single source of truth for state and IPC coordination. React components remain presentation-focused, communicating through props and callbacks. Electron IPC cleanly separates UI from business logic, with handlers encapsulating Gmail, SMTP, and WhatsApp operations. The design emphasizes maintainability, scalability, and user feedback via real-time progress updates.
+
+Keep service-specific state next to the form that uses it, and lift only what BulkMailer needs for tab chrome and shared status.

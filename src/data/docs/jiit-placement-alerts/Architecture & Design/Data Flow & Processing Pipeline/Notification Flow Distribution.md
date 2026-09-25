@@ -1,7 +1,7 @@
 # Notification flow distribution
 
 ## Introduction
-This page describes the notification flow distribution system that orchestrates multi-channel delivery of notifications to users via Telegram and Web Push. It explains the routing architecture, batching strategy, channel prioritization, delivery guarantees, error handling, retry logic, user preferences, and queueing mechanisms. It also documents integration patterns between the notification service and channel handlers, including message transformation and delivery confirmation.
+Getting a notice from "ready to send" onto Telegram and Web Push. Routing, batching, channel preference, retries, queues, and what counts as delivered before we flip the sent flags.
 
 ## Project structure
 The notification system spans several modules:
@@ -92,13 +92,13 @@ Runner-->>CLI : results summary
 
 ### NotificationService
 - Responsibilities:
-  - Aggregates multiple channels and routes messages accordingly.
-  - Batches unsent notices and marks them sent upon successful delivery.
-  - Provides channel-specific send and broadcast helpers.
+ - Aggregates multiple channels and routes messages accordingly.
+ - Batches unsent notices and marks them sent upon successful delivery.
+ - Provides channel-specific send and broadcast helpers.
 - Key behaviors:
-  - Channel selection by name for targeted delivery.
-  - Iterative broadcast across enabled channels with per-channel error handling.
-  - Delivery guarantees: marks as sent if at least one channel succeeds; otherwise increments failures.
+ - Channel selection by name for targeted delivery.
+ - Iterative broadcast across enabled channels with per-channel error handling.
+ - Delivery guarantees: marks as sent if at least one channel succeeds; otherwise increments failures.
 
 ```mermaid
 classDiagram
@@ -115,15 +115,15 @@ class NotificationService {
 
 ### TelegramService
 - Responsibilities:
-  - Implements channel contract for Telegram.
-  - Formats messages (Markdown/HTML) and handles long messages by chunking.
-  - Broadcasts to all active users with rate limiting.
-  - Retries with fallback to plain text when formatting fails.
+ - Implements channel contract for Telegram.
+ - Formats messages (Markdown/HTML) and handles long messages by chunking.
+ - Broadcasts to all active users with rate limiting.
+ - Retries with fallback to plain text when formatting fails.
 - Key behaviors:
-  - Long message splitting with newline-aware chunking.
-  - Markdown-to-Telegram conversion and HTML conversion.
-  - Per-user delivery with small delays to avoid rate limits.
-  - Fallback retry without parse_mode on initial failure.
+ - Long message splitting with newline-aware chunking.
+ - Markdown-to-Telegram conversion and HTML conversion.
+ - Per-user delivery with small delays to avoid rate limits.
+ - Fallback retry without parse_mode on initial failure.
 
 ```mermaid
 flowchart TD
@@ -145,15 +145,15 @@ DirectSent --> |No| Fallback
 
 ### WebPushService
 - Responsibilities:
-  - Implements channel contract for Web Push.
-  - Manages VAPID authentication and subscription-based delivery.
-  - Broadcasts to all users with push subscriptions.
-  - Gracefully degrades when pywebpush is unavailable.
+ - Implements channel contract for Web Push.
+ - Manages VAPID authentication and subscription-based delivery.
+ - Broadcasts to all users with push subscriptions.
+ - Gracefully degrades when pywebpush is unavailable.
 - Key behaviors:
-  - Checks availability of VAPID keys and pywebpush library.
-  - Broadcasts per subscription with truncation and payload formatting.
-  - Handles expired subscriptions by removing them from DB (placeholder).
-  - Returns success counts and error details.
+ - Checks availability of VAPID keys and pywebpush library.
+ - Broadcasts per subscription with truncation and payload formatting.
+ - Handles expired subscriptions by removing them from DB (placeholder).
+ - Returns success counts and error details.
 
 ```mermaid
 classDiagram
@@ -173,13 +173,13 @@ class WebPushService {
 
 ### NotificationRunner
 - Responsibilities:
-  - CLI-driven orchestration for sending unsent notices.
-  - Dependency injection for testability and modularity.
-  - Conditional enabling of channels based on flags and availability.
+ - CLI-driven orchestration for sending unsent notices.
+ - Dependency injection for testability and modularity.
+ - Conditional channel selection based on flags and availability.
 - Key behaviors:
-  - Creates channel instances only when enabled.
-  - Builds NotificationService with selected channels.
-  - Executes send_unsent_notices and returns results.
+ - Creates channel instances only when enabled.
+ - Builds NotificationService with selected channels.
+ - Executes send_unsent_notices and returns results.
 
 ```mermaid
 sequenceDiagram
@@ -204,13 +204,13 @@ Runner-->>CLI : results
 
 ### DatabaseService integration
 - Responsibilities:
-  - Stores notices with pending state and tracks delivery per channel.
-  - Retrieves unsent notices and marks them sent upon successful delivery.
-  - Provides user lists for channel broadcasts.
+ - Stores notices with pending state and tracks delivery per channel.
+ - Retrieves unsent notices and marks them sent upon successful delivery.
+ - Provides user lists for channel broadcasts.
 - Key behaviors:
-  - get_unsent_notices() returns notices not yet sent to Telegram.
-  - mark_as_sent() sets sent flag and timestamps.
-  - get_active_users() supplies recipients for broadcasts.
+ - get_unsent_notices() returns notices not yet sent to Telegram.
+ - mark_as_sent() sets sent flag and timestamps.
+ - get_active_users() supplies recipients for broadcasts.
 
 ```mermaid
 flowchart TD
@@ -239,15 +239,15 @@ NS --> WP["WebPushService"]
 
 ## Dependency analysis
 - Coupling:
-  - NotificationService depends on channel implementations via a simple interface (channel_name property and broadcast_to_all_users/send_message).
-  - Channels depend on DatabaseService for user lists and on TelegramClient for Telegram API calls.
-  - NotificationRunner injects channels and DB into NotificationService.
+ - NotificationService depends on channel implementations via a simple interface (channel_name property and broadcast_to_all_users/send_message).
+ - Channels depend on DatabaseService for user lists and on TelegramClient for Telegram API calls.
+ - NotificationRunner injects channels and DB into NotificationService.
 - Cohesion:
-  - Each service has a single responsibility: orchestration, channel delivery, or persistence.
+ - Each service has a single responsibility: orchestration, channel delivery, or persistence.
 - External dependencies:
-  - Telegram Bot API (via TelegramClient).
-  - Optional Web Push library (pywebpush) with graceful degradation.
-  - MongoDB via DatabaseService.
+ - Telegram Bot API (via TelegramClient).
+ - Optional Web Push library (pywebpush) with graceful degradation.
+ - MongoDB via DatabaseService.
 
 ```mermaid
 graph LR
@@ -264,29 +264,29 @@ Sched["SchedulerServer"] --> Runner
 
 ## Performance considerations
 - Batching:
-  - NotificationService iterates unsent notices and broadcasts to enabled channels; batching occurs at the notice level.
+ - NotificationService iterates unsent notices and broadcasts to enabled channels; batching occurs at the notice level.
 - Rate limiting:
-  - TelegramService applies small delays between user sends and long message chunking to avoid rate limits.
-  - TelegramClient implements exponential backoff and respects Retry-After headers.
+ - TelegramService applies small delays between user sends and long message chunking to avoid rate limits.
+ - TelegramClient implements exponential backoff and respects Retry-After headers.
 - Concurrency:
-  - Current implementation performs sequential broadcasts per notice; parallelization could improve throughput but risks rate limits and DB contention.
+ - Current implementation performs sequential broadcasts per notice; parallelization could improve throughput but risks rate limits and DB contention.
 - Memory and CPU:
-  - Long message splitting and markdown conversions are linear in message length; consider streaming or chunking strategies for very large content.
+ - Long message splitting and markdown conversions are linear in message length; consider streaming or chunking strategies for very large content.
 
 [No sources needed since this section provides general guidance]
 
 ## Troubleshooting guide
 - Telegram delivery failures:
-  - Verify bot token and chat ID are configured; TelegramClient validates presence before sending.
-  - Check rate limits; TelegramClient handles 429 with Retry-After.
-  - Long messages are split; if formatting fails, TelegramService retries without parse_mode.
+ - Verify bot token and chat ID are configured; TelegramClient validates presence before sending.
+ - Check rate limits; TelegramClient handles 429 with Retry-After.
+ - Long messages are split; if formatting fails, TelegramService retries without parse_mode.
 - Web Push delivery failures:
-  - Ensure VAPID keys are configured; WebPushService checks availability and logs warnings when disabled.
-  - Expired subscriptions are handled by attempting removal; implement DB-specific removal logic if needed.
+ - Ensure VAPID keys are configured; WebPushService checks availability and logs warnings when disabled.
+ - Expired subscriptions are handled by attempting removal; implement DB-specific removal logic if needed.
 - Database connectivity:
-  - DatabaseService methods return empty results or errors when collections are uninitialized; confirm connection string and collection initialization.
+ - DatabaseService methods return empty results or errors when collections are uninitialized; confirm connection string and collection initialization.
 - CLI usage:
-  - Use send command with appropriate flags (--telegram, --web, --both) and optional --fetch to include data updates.
+ - Use send command with appropriate flags (--telegram, --web, --both) and optional --fetch to include data updates.
 
 ## Conclusion
-The notification flow distribution system provides a reliable, extensible architecture for delivering notices across Telegram and Web Push channels. It emphasizes separation of concerns, dependency injection, and graceful degradation. Delivery guarantees are achieved by marking notices as sent only when at least one channel succeeds, while error handling and retry logic ensure resilience against transient failures. The design supports future extensions, such as additional channels or improved batching strategies, without disrupting existing functionality.
+Notification flow is routing, batching, and channel handlers with DI between them. A notice is marked sent only when at least one channel succeeds. Retries cover blips; missing channels degrade instead of failing the whole batch. New channels should plug in the same way.

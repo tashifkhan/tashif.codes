@@ -1,7 +1,7 @@
 # Prompt security and validation
 
 ## Introduction
-This page focuses on prompt security and injection prevention mechanisms implemented in the codebase. It explains how the system detects and mitigates prompt injection risks, sanitizes inputs for agents and external data sources, and enforces guardrails to prevent prompt poisoning, jailbreaking attempts, and malicious input exploitation. It also documents validation rules, logging and error handling for suspicious inputs, and secure prompt construction guidelines, along with integration points across the backend and agent workflows.
+Injection detection, action-plan sanitization, logging around bad inputs, and how endpoints refuse unsafe content.
 
 ## Project structure
 Security-relevant components are organized across prompts, services, routers, agents, utilities, and core infrastructure:
@@ -198,13 +198,13 @@ Note over Router,Service : Exceptions are logged and surfaced as HTTP 500
 
 ## Dependency analysis
 - Website Validator depends on:
-  - HTML-to-Markdown conversion
-  - Prompt template for injection detection
-  - LLM client for classification
+ - HTML-to-Markdown conversion
+ - Prompt template for injection detection
+ - LLM client for classification
 - Agent Service depends on:
-  - GraphBuilder for workflow compilation
-  - LLM client for generation
-  - Logging for security event capture
+ - GraphBuilder for workflow compilation
+ - LLM client for generation
+ - Logging for security event capture
 - Agent Sanitizer is independent but integrates with agent action outputs.
 - LLM Provider abstraction centralizes provider selection and error handling.
 
@@ -226,44 +226,40 @@ CFG --> RAS
 - Sanitization: Regex-based checks are linear in input size; keep action plans minimal and avoid overly complex scripts.
 - Logging: Configure appropriate log levels to balance observability and performance.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and remediation steps:
 - Validation returns unexpected results:
-  - Verify HTML input is well-formed and not empty.
-  - Confirm the LLM provider is configured and reachable.
-  - Check that the prompt template remains unchanged and the response format matches expectations.
+ - Verify HTML input is well-formed and not empty.
+ - Confirm the LLM provider is configured and reachable.
+ - Check that the prompt template remains unchanged and the response format matches expectations.
 - Agent action plan errors:
-  - Ensure required fields are present for each action type.
-  - Review dangerous script patterns flagged by sanitization.
-  - Validate that action types are part of the allowed set.
+ - Ensure required fields are present for each action type.
+ - Review dangerous script patterns flagged by sanitization.
+ - Validate that action types are part of the allowed set.
 - Endpoint failures:
-  - Inspect router-level HTTP exceptions and service logs.
-  - Confirm environment variables for API keys and base URLs are set.
+ - Inspect router-level HTTP exceptions and service logs.
+ - Confirm environment variables for API keys and base URLs are set.
 - Logging:
-  - Adjust logging level via configuration and review logs for security events.
+ - Adjust logging level via configuration and review logs for security events.
 
 ## Conclusion
-The system employs a layered security approach: HTML-to-Markdown conversion and LLM-based classification for prompt injection detection, strict JSON action plan validation with script safety checks, and reliable logging and error handling across endpoints and agent workflows. These measures collectively reduce the risk of prompt poisoning, jailbreaking, and malicious input exploitation while maintaining flexibility and performance.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Markdown conversion plus LLM classification catches many injections. JSON plan checks catch bad scripts. Neither replaces the other.
 
 ## Appendices
 
 ### Validation rules and threat modeling
 - Prompt Injection Detection:
-  - Input: Website HTML
-  - Transformation: HTML → Markdown
-  - Output: Boolean classification indicating safety
+ - Input: Website HTML
+ - Transformation: HTML → Markdown
+ - Output: Boolean classification indicating safety
 - Agent Action Validation:
-  - Required fields per action type
-  - Allowed action categories
-  - Script pattern scanning for dangerous constructs
+ - Required fields per action type
+ - Allowed action categories
+ - Script pattern scanning for dangerous constructs
 - Threat Modeling Approaches:
-  - Principle of least privilege for actions
-  - Separation of concerns between content parsing and safety decisions
-  - Defensive logging and HTTP error surfacing
+ - Principle of least privilege for actions
+ - Separation of concerns between content parsing and safety decisions
+ - Defensive logging and HTTP error surfacing
 
 ### Secure prompt construction guidelines
 - Keep system prompts concise and explicit about prohibited behaviors.

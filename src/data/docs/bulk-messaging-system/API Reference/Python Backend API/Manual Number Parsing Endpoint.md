@@ -2,20 +2,18 @@
 
 ## Introduction
 
-The `/parse-manual-numbers` endpoint is a core component of the Bulk Messaging System designed to process manually entered phone numbers from users. This endpoint enables users to quickly add contacts by pasting phone numbers directly into the application, supporting various input formats and automatic validation.
-
-The endpoint is a bridge between the Electron frontend and Python backend, using Pyodide to execute Python code directly in the browser environment. This allows for immediate processing of phone numbers without requiring a separate server connection.
+`POST /parse-manual-numbers` takes a pasted blob of numbers (and optional names), cleans them, and returns contact objects the UI can import.
 
 ## Endpoint overview
 
 The `/parse-manual-numbers` endpoint is implemented as a Flask route that accepts POST requests containing JSON-formatted phone number data. The endpoint is specifically designed for manual number entry scenarios where users paste phone numbers directly into the application interface.
 
 Key characteristics:
-- **HTTP Method**: POST
-- **Endpoint**: `/parse-manual-numbers`
-- **Content-Type**: application/json
-- **Processing Engine**: Python backend via Pyodide
-- **Primary Use Case**: Manual contact entry in the WhatsApp messaging interface
+- **HTTP Method.** POST
+- **Endpoint.** `/parse-manual-numbers`
+- **Content-Type.** application/json
+- **Processing Engine.** Python backend via Pyodide
+- **Primary Use Case.** Manual contact entry in the WhatsApp messaging interface
 
 ## Request format
 
@@ -24,20 +22,20 @@ The endpoint expects a JSON payload with a single required field:
 ### Request body structure
 ```json
 {
-  "numbers": "string"
+ "numbers": "string"
 }
 ```
 
 ### Field specifications
 - **numbers** (required): String containing one or more phone numbers
-  - Can contain multiple numbers separated by newlines, commas, or semicolons
-  - Each line can optionally contain a name prefix separated by colon, hyphen, or pipe
-  - Supports mixed formatting within the same input string
+ - Can contain multiple numbers separated by newlines, commas, or semicolons
+ - Each line can optionally contain a name prefix separated by colon, hyphen, or pipe
+ - Supports mixed formatting within the same input string
 
 ### Example request
 ```json
 {
-  "numbers": "+1234567890\nJohn Doe: +0987654321\n+1111222333 - Jane Smith"
+ "numbers": "+1234567890\nJohn Doe: +0987654321\n+1111222333 - Jane Smith"
 }
 ```
 
@@ -63,10 +61,10 @@ Each resulting segment undergoes individual processing:
 For each line, the algorithm attempts to separate name and number components:
 
 #### Format detection logic
-1. **Colon Separation**: `"Name: Number"` or `"Name: Number"`
-2. **Hyphen Separation**: `"Name - Number"` or `"Name - Number"`
-3. **Pipe Separation**: `"Name | Number"`
-4. **Single Number**: Just a phone number without name
+1. **Colon Separation.** `"Name: Number"` or `"Name: Number"`
+2. **Hyphen Separation.** `"Name - Number"` or `"Name - Number"`
+3. **Pipe Separation.** `"Name | Number"`
+4. **Single Number.** Just a phone number without name
 
 #### Intelligent assignment
 The algorithm uses pattern matching to determine which part contains the phone number:
@@ -92,15 +90,15 @@ The endpoint returns a standardized JSON response containing the processed conta
 ### Response structure
 ```json
 {
-  "success": boolean,
-  "contacts": [
-    {
-      "number": "string",
-      "name": "string"
-    }
-  ],
-  "count": integer,
-  "message": "string"
+ "success": boolean,
+ "contacts": [
+ {
+ "number": "string",
+ "name": "string"
+ }
+ ],
+ "count": integer,
+ "message": "string"
 }
 ```
 
@@ -113,19 +111,19 @@ The endpoint returns a standardized JSON response containing the processed conta
 ### Example response
 ```json
 {
-  "success": true,
-  "contacts": [
-    {
-      "number": "+1234567890",
-      "name": "Contact 1"
-    },
-    {
-      "number": "+0987654321",
-      "name": "John Doe"
-    }
-  ],
-  "count": 2,
-  "message": "Successfully parsed 2 contacts"
+ "success": true,
+ "contacts": [
+ {
+ "number": "+1234567890",
+ "name": "Contact 1"
+ },
+ {
+ "number": "+0987654321",
+ "name": "John Doe"
+ }
+ ],
+ "count": 2,
+ "message": "Successfully parsed 2 contacts"
 }
 ```
 
@@ -149,36 +147,36 @@ The endpoint supports a wide variety of input formats to accommodate different u
 
 ### Multi-line input
 - Newline-separated:
-  ```
-  +1234567890
-  +0987654321
-  +1111222333
-  ```
+ ```
+ +1234567890
+ +0987654321
+ +1111222333
+ ```
 
 ### Mixed format input
 - Combined formats in single input:
-  ```
-  John Doe: +1234567890
-  +0987654321 - Jane Smith
-  +1111222333
-  ```
+ ```
+ John Doe: +1234567890
+ +0987654321 - Jane Smith
+ +1111222333
+ ```
 
 ## Validation rules
 
-The endpoint applies strict validation rules to ensure data quality and consistency:
+Validation rules applied before a contact is kept:
 
 ### Phone number validation
-- **Length Constraints**: Minimum 7 digits, maximum 15 digits
-- **Format Requirements**: Must contain at least 7 digits (allowing separators)
-- **International Format**: Automatically adds plus sign prefix when missing
-- **Leading Zero Handling**: Removes leading zeros for international numbers
-- **Character Filtering**: Removes all non-digit characters except plus signs
+- **Length Constraints.** Minimum 7 digits, maximum 15 digits
+- **Format Requirements.** Must contain at least 7 digits (allowing separators)
+- **International Format.** Automatically adds plus sign prefix when missing
+- **Leading Zero Handling.** Removes leading zeros for international numbers
+- **Character Filtering.** Removes all non-digit characters except plus signs
 
 ### Input validation
-- **Required Fields**: The `numbers` field is mandatory
-- **Empty Input**: Empty or whitespace-only input returns an error
-- **Line Processing**: Ignores empty lines and whitespace-only lines
-- **Separator Flexibility**: Accepts multiple separator types interchangeably
+- **Required Fields.** The `numbers` field is mandatory
+- **Empty Input.** Empty or whitespace-only input returns an error
+- **Line Processing.** Ignores empty lines and whitespace-only lines
+- **Separator Flexibility.** Accepts multiple separator types interchangeably
 
 ### Error scenarios
 - Missing `numbers` field: Returns 400 Bad Request
@@ -215,7 +213,7 @@ The endpoint handles several edge cases gracefully:
 
 ## Error handling
 
-The endpoint implements detailed error handling:
+The endpoint implements clear error handling:
 
 ### Client-Side errors (400 bad request)
 - Missing `numbers` field in request body
@@ -230,7 +228,7 @@ The endpoint implements detailed error handling:
 ### Error response format
 ```json
 {
-  "error": "string"
+ "error": "string"
 }
 ```
 
@@ -241,7 +239,7 @@ The endpoint implements detailed error handling:
 
 ## Integration details
 
-The endpoint integrates smoothly with the Electron frontend through Pyodide:
+The endpoint integrates cleanly with the Electron frontend through Pyodide:
 
 ### Frontend integration
 The Electron application loads the Python parsing script dynamically and executes it in the browser using Pyodide. The integration occurs in the WhatsApp messaging interface where users can add contacts manually.
@@ -262,68 +260,74 @@ The Electron application loads the Python parsing script dynamically and execute
 ## Practical examples
 
 ### Example 1: basic phone numbers
-**Input:**
+**Input.**
+
 ```
 +1234567890
 123-456-7890
 123.456.7890
 ```
 
-**Output:**
+**Output.**
+
 ```json
 {
-  "success": true,
-  "contacts": [
-    {"number": "+1234567890", "name": "Contact 1"},
-    {"number": "+1234567890", "name": "Contact 2"},
-    {"number": "+1234567890", "name": "Contact 3"}
-  ],
-  "count": 3,
-  "message": "Successfully parsed 3 contacts"
+ "success": true,
+ "contacts": [
+ {"number": "+1234567890", "name": "Contact 1"},
+ {"number": "+1234567890", "name": "Contact 2"},
+ {"number": "+1234567890", "name": "Contact 3"}
+ ],
+ "count": 3,
+ "message": "Successfully parsed 3 contacts"
 }
 ```
 
 ### Example 2: name-number pairs
-**Input:**
+**Input.**
+
 ```
 John Doe: +1234567890
 Jane Smith - +0987654321
 Bob Johnson | +1111222333
 ```
 
-**Output:**
+**Output.**
+
 ```json
 {
-  "success": true,
-  "contacts": [
-    {"number": "+1234567890", "name": "John Doe"},
-    {"number": "+0987654321", "name": "Jane Smith"},
-    {"number": "+1111222333", "name": "Bob Johnson"}
-  ],
-  "count": 3,
-  "message": "Successfully parsed 3 contacts"
+ "success": true,
+ "contacts": [
+ {"number": "+1234567890", "name": "John Doe"},
+ {"number": "+0987654321", "name": "Jane Smith"},
+ {"number": "+1111222333", "name": "Bob Johnson"}
+ ],
+ "count": 3,
+ "message": "Successfully parsed 3 contacts"
 }
 ```
 
 ### Example 3: mixed format input
-**Input:**
+**Input.**
+
 ```
 +1234567890
 Alice Brown: +2222333444
 +3333444555 - Charlie Davis
 ```
 
-**Output:**
+**Output.**
+
 ```json
 {
-  "success": true,
-  "contacts": [
-    {"number": "+1234567890", "name": "Contact 1"},
-    {"number": "+2222333444", "name": "Alice Brown"},
-    {"number": "+3333444555", "name": "Charlie Davis"}
-  ],
-  "count": 3,
-  "message": "Successfully parsed 3 contacts"
+ "success": true,
+ "contacts": [
+ {"number": "+1234567890", "name": "Contact 1"},
+ {"number": "+2222333444", "name": "Alice Brown"},
+ {"number": "+3333444555", "name": "Charlie Davis"}
+ ],
+ "count": 3,
+ "message": "Successfully parsed 3 contacts"
 }
 ```
 
@@ -332,39 +336,45 @@ Alice Brown: +2222333444
 ### Common issues and solutions
 
 #### Issue: numbers not being recognized
-**Symptoms**: Empty response or minimal contacts
-**Causes**:
+**Symptoms.** Empty response or minimal contacts
+**Causes.**
+
 - Numbers shorter than 7 digits
 - Numbers without any digits
 - Invalid separators
 - Leading/trailing whitespace
 
-**Solutions**:
+**Solutions.**
+
 - Ensure numbers contain at least 7 digits
 - Use standard phone number formats
 - Remove extra whitespace
 - Use supported separators (colon, hyphen, pipe)
 
 #### Issue: names not extracted correctly
-**Symptoms**: Contacts show as "Contact 1", "Contact 2"
-**Causes**:
+**Symptoms.** Contacts show as "Contact 1", "Contact 2"
+**Causes.**
+
 - Missing name prefixes
 - Unsupported separator characters
 - Ambiguous format detection
 
-**Solutions**:
+**Solutions.**
+
 - Use colon (:), hyphen (-), or pipe (|) separators
 - Place name before the separator
 - Ensure phone numbers contain sufficient digits
 
 #### Issue: processing errors
-**Symptoms**: HTTP 500 errors or blank responses
-**Causes**:
+**Symptoms.** HTTP 500 errors or blank responses
+**Causes.**
+
 - Extremely large input files
 - Memory limitations
 - Python runtime errors
 
-**Solutions**:
+**Solutions.**
+
 - Break large inputs into smaller chunks
 - Check browser console for error details
 - Verify input format consistency
@@ -377,15 +387,4 @@ Alice Brown: +2222333444
 
 ## Conclusion
 
-The `/parse-manual-numbers` endpoint provides a reliable solution for processing manually entered phone numbers in the Bulk Messaging System. Its flexible parsing algorithm accommodates various input formats while maintaining strict validation standards to ensure data quality.
-
-The endpoint's integration with Pyodide enables smooth browser-side processing without requiring server connectivity, making it highly responsive and reliable. The detailed error handling and extensive support for different input formats make it suitable for diverse user scenarios.
-
-Key benefits include:
-- **Flexibility**: Supports multiple input formats and separators
-- **Validation**: Strict quality checks prevent invalid data entry
-- **Integration**: Smooth browser-side execution via Pyodide
-- **Scalability**: Handles various input sizes efficiently
-- **User Experience**: Immediate feedback and error reporting
-
-This endpoint is a important component in the overall contact management workflow, enabling users to quickly add contacts through intuitive manual entry while maintaining data integrity and system reliability.
+Garbage in still yields a 200 with an empty contacts list when nothing validates. Check `count` before telling the user import succeeded.

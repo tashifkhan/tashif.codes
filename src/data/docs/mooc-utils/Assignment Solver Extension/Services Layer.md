@@ -1,11 +1,11 @@
 # Services layer
 
 ## Introduction
-This page describes the services layer responsible for business logic in the assignment solver extension. It covers:
-- Gemini AI integration: API key management, model selection, request/response handling, and answer parsing
-- Local storage service for persisting user preferences and cached data
-- Service architecture using factory patterns, dependency injection, and reliable error handling
-- Configuration options, rate limiting considerations, and integration examples with core extension components
+Service layer behind the handlers:
+- Gemini integration: API key, model choice, request/response, answer parsing
+- Local storage for preferences and cache
+- Factory and dependency-injection wiring, with explicit errors
+- Config, rate limits, and how core components call in
 
 ## Project structure
 The services layer is organized around two primary service factories:
@@ -48,23 +48,23 @@ Handlers --> GeminiSvc
 
 ## Core components
 - Gemini Service Factory
-  - Builds content with HTML, images, and screenshots
-  - Configures reasoning budgets per model family
-  - Sends requests via background worker or direct API
-  - Parses structured JSON responses with multiple fallback strategies
+ - Builds content with HTML, images, and screenshots
+ - Configures reasoning budgets per model family
+ - Sends requests via background worker or direct API
+ - Parses structured JSON responses with multiple fallback strategies
 - Storage Service Factory
-  - Persists API key, cached extractions, user answers, and model preferences
-  - Exports formatted answer sets for submission
+ - Persists API key, cached extractions, user answers, and model preferences
+ - Exports formatted answer sets for submission
 - Platform Adapters
-  - Runtime adapter for cross-browser messaging
-  - Tabs adapter for tab queries and content messaging
-  - Storage adapter for browser local storage
+ - Runtime adapter for cross-browser messaging
+ - Tabs adapter for tab queries and content messaging
+ - Storage adapter for browser local storage
 - Background Worker and Handlers
-  - Initializes services and registers message handlers
-  - Routes GEMINI_REQUEST to Gemini service
+ - Initializes services and registers message handlers
+ - Routes GEMINI_REQUEST to Gemini service
 - UI Settings Controller
-  - Loads and saves API key and model preferences
-  - Updates UI to reflect reasoning budget mapping
+ - Loads and saves API key and model preferences
+ - Updates UI to reflect reasoning budget mapping
 
 ## Architecture overview
 The services layer follows a factory pattern with explicit dependency injection. Background worker initializes platform adapters and services, then registers message handlers. Content scripts communicate via the runtime adapter. The Gemini service encapsulates API concerns and response parsing, while the storage service centralizes persistence.
@@ -103,8 +103,8 @@ Key behaviors:
 - Reasoning budget mapping and model filtering for thinking support
 - Payload construction with system instructions and response schemas
 - Two transport modes:
-  - callAPI: routed through background worker for UI-initiated requests
-  - directAPICall: used by background worker to avoid message channel timeouts
+ - callAPI: routed through background worker for UI-initiated requests
+ - directAPICall: used by background worker to avoid message channel timeouts
 - Reliable parsing with multiple fallbacks and truncation repair
 
 ```mermaid
@@ -167,8 +167,8 @@ Responsibilities:
 - Route GEMINI_REQUEST to Gemini service for direct API calls
 
 Integration points:
-- Runtime adapter for cross-browser messaging
-- Tabs adapter for tab queries and content messaging
+  - Runtime adapter for cross-browser messaging
+  - Tabs adapter for tab queries and content messaging
 - Gemini handler executes direct API calls from background context
 
 ```mermaid
@@ -221,14 +221,14 @@ Content["Content Script"] --> Runtime
 
 ## Performance considerations
 - Thinking budget and reasoning levels
-  - Gemini supports reasoning budgets for supported models; unsupported models skip thinking configuration
-  - Budget mapping caps maximum thinking budget per reasoning level
+ - Gemini supports reasoning budgets for supported models; unsupported models skip thinking configuration
+ - Budget mapping caps maximum thinking budget per reasoning level
 - Image size handling
-  - Large images are skipped to prevent exceeding API constraints
+ - Large images are skipped to prevent exceeding API constraints
 - Retry and connection resilience
-  - Message sending includes exponential backoff for transient connection errors
+ - Message sending includes exponential backoff for transient connection errors
 - Direct API calls from background
-  - Background worker uses direct fetch to bypass message channel timeouts
+ - Background worker uses direct fetch to bypass message channel timeouts
 
 Recommendations:
 - Prefer background-only direct calls for heavy payloads
@@ -238,15 +238,15 @@ Recommendations:
 ## Troubleshooting guide
 Common issues and resolutions:
 - API key errors
-  - Ensure API key is saved via settings and retrieved by storage service
-  - Verify model preferences are set appropriately
+ - Ensure API key is saved via settings and retrieved by storage service
+ - Verify model preferences are set appropriately
 - Parsing failures
-  - Parser attempts multiple strategies; check logs for trimmed content and finish reasons
-  - For MAX_TOKENS, truncated JSON repair is attempted
+ - Parser attempts multiple strategies; check logs for trimmed content and finish reasons
+ - For MAX_TOKENS, truncated JSON repair is attempted
 - Connection errors
-  - sendMessageWithRetry handles transient connection failures; inspect logs for repeated errors
+ - sendMessageWithRetry handles transient connection failures; inspect logs for repeated errors
 - Blocked or empty responses
-  - Blocked prompts surface block reasons; empty candidates trigger errors
+ - Blocked prompts surface block reasons; empty candidates trigger errors
 
 Operational tips:
 - Use GEMINI_DEBUG messages to inspect payloads in content scripts
@@ -254,18 +254,18 @@ Operational tips:
 - Validate browser compatibility via platform adapters
 
 ## Conclusion
-The services layer cleanly separates AI orchestration, persistence, and platform integration through factory patterns and dependency injection. The Gemini service encapsulates API complexity with reliable parsing and configuration, while the storage service centralizes user preferences and caches. The architecture supports cross-browser compatibility, resilient messaging, and extensible configuration for model selection and reasoning budgets.
+Services hide Gemini and storage details from handlers. Keep HTTP and prompt logic here so handlers stay about messaging.
 
 ## Appendices
 
 ### Configuration options
 - Model selection
-  - Extraction model and solving model IDs
-  - Reasoning levels: none, low, medium, high
+ - Extraction model and solving model IDs
+ - Reasoning levels: none, low, medium, high
 - Defaults
-  - Extraction model defaults to a supported 2.5-family model
-  - Solving model defaults to a supported 3.0-family model
-  - Reasoning levels default to high for both tasks
+ - Extraction model defaults to a supported 2.5-family model
+ - Solving model defaults to a supported 3.0-family model
+ - Reasoning levels default to high for both tasks
 
 ### Rate limiting implementation
 - Client-side retry with backoff for transient connection errors
@@ -274,11 +274,11 @@ The services layer cleanly separates AI orchestration, persistence, and platform
 
 ### Integration examples with core extension components
 - Settings controller
-  - Saves API key and model preferences to storage service
-  - Loads stored values into UI controls
+ - Saves API key and model preferences to storage service
+ - Loads stored values into UI controls
 - Background worker
-  - Creates Gemini service with runtime adapter and logger
-  - Registers GEMINI_REQUEST handler for direct API calls
+ - Creates Gemini service with runtime adapter and logger
+ - Registers GEMINI_REQUEST handler for direct API calls
 - Content script
-  - Receives UI commands and interacts with page DOM
-  - Supports debug relaying for Gemini payloads
+ - Receives UI commands and interacts with page DOM
+ - Supports debug relaying for Gemini payloads

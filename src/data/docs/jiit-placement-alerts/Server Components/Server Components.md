@@ -1,14 +1,7 @@
 # Server components
 
 ## Introduction
-This page explains the server components of the SuperSet Telegram Notification Bot. It covers:
-- The Telegram bot server with command handlers and user interaction patterns
-- The scheduler server using APScheduler for automated job execution
-- The FastAPI webhook server for external integrations
-- Runner orchestration services coordinating update workflows and notification distribution
-- Startup sequences, configuration management, error handling, and monitoring approaches
-- Deployment considerations, scaling strategies, and integration patterns with cloud platforms
-- Security considerations, rate limiting, and performance optimization techniques
+The three long-running processes: Telegram bot, APScheduler, FastAPI webhook. How runners sit under them and which CLI commands start each piece.
 
 ## Project structure
 The application is organized into modular servers, runners, services, and clients, with centralized configuration and daemon utilities. The main CLI coordinates server startup and operational modes.
@@ -48,7 +41,7 @@ DB_SVC --> DB_CLIENT
 ```
 
 ## Core components
-- Telegram Bot Server: Provides user commands (/start, /help, /stop, /status, /stats, /noticestats, /userstats, /web) and admin commands via dependency-injected services. It runs in polling mode and supports graceful shutdown.
+- Telegram Bot Server: User commands (`/start`, `/help`, `/stop`, `/status`, `/placement_year`, `/stats`, `/noticestats`, `/web`) plus admin `/userstats`. Polling mode, graceful shutdown.
 - Scheduler Server: Uses APScheduler to run periodic update jobs (SuperSet + Emails) and official placement scraping at fixed intervals.
 - Webhook Server: FastAPI-based server exposing health, push subscription, notification dispatch, and statistics endpoints for external integrations.
 - Runner Services: Encapsulate update fetching and notification sending logic for reuse across servers and CLI commands.
@@ -90,22 +83,23 @@ DB_SVC --> DB_CLIENT
 
 ### Telegram bot server
 - Responsibilities:
-  - Initialize Telegram Application with DI-enabled services
-  - Register command handlers for user/admin commands
-  - Manage lifecycle: initialize, start polling, keep alive, graceful shutdown
+ - Initialize Telegram Application with DI-enabled services
+ - Register command handlers for user/admin commands
+ - Manage lifecycle: initialize, start polling, keep alive, graceful shutdown
 - Command Handlers:
-  - /start: user registration and activation
-  - /help: command reference
-  - /stop: deactivation
-  - /status: subscription status
-  - /stats: placement statistics
-  - /noticestats: notice delivery stats
-  - /userstats: admin-only user stats
-  - /web: suite links
-  - Admin commands wired via injected AdminTelegramService
+ - /start: user registration and activation
+ - /help: command reference
+ - /stop: deactivation
+ - /status: subscription status
+ - /placement_year: pick which placement year to follow
+ - /stats: placement statistics
+ - /noticestats: notice delivery stats
+ - /web: suite links
+ - /userstats: admin-only user stats
+ - Admin commands wired via injected AdminTelegramService (`ADMIN_TELEGRAM_USER_IDS`)
 - Lifecycle:
-  - run_async builds Application, sets up handlers, starts polling
-  - run blocks until interrupted, then shutdown gracefully
+ - run_async builds Application, sets up handlers, starts polling
+ - run blocks until interrupted, then shutdown gracefully
 
 ```mermaid
 sequenceDiagram
@@ -123,20 +117,20 @@ Bot-->>User : "welcome message"
 
 ### Scheduler server (APScheduler)
 - Responsibilities:
-  - Schedule periodic update jobs (SuperSet + Emails) every hour from 8 AM to 11 PM IST
-  - Daily official placement scrape at noon IST
-  - Orchestrate runners for update and notification sending
+ - Schedule SuperSet + email updates at midnight and every hour from 8 AM to 11 PM IST (`hour="0,8-23"`)
+ - Daily official placement scrape at noon IST
+ - Orchestrate runners for update and notification sending
 - Job Execution:
-  - run_scheduled_update mirrors legacy behavior: fetch SuperSet updates, fetch email updates, send via Telegram
-  - run_official_placement_scrape scrapes official data and persists to DB
+ - run_scheduled_update mirrors legacy behavior: fetch SuperSet updates, fetch email updates, send via Telegram
+ - run_official_placement_scrape scrapes official data and persists to DB
 - Scheduler Setup:
-  - AsyncIOScheduler with Asia/Kolkata timezone
-  - Cron-based jobs at hourly intervals plus daily official scrape
+ - AsyncIOScheduler with Asia/Kolkata timezone
+ - Two cron jobs in `setup_scheduler()`, not a 24-hour hourly loop
 
 ```mermaid
 flowchart TD
 Start(["Scheduler Start"]) --> Init["Initialize AsyncIOScheduler"]
-Init --> Jobs["Add Cron Jobs (Hourly + Noon)"]
+Init --> Jobs["Add Cron Jobs (0,8-23 + Noon)"]
 Jobs --> Loop{"Every Tick"}
 Loop --> Hourly["run_scheduled_update()"]
 Hourly --> SS["fetch_and_process_updates()"]
@@ -148,20 +142,20 @@ Loop --> Loop
 
 ### Webhook server (FastAPI)
 - Responsibilities:
-  - Health endpoints
-  - Web push subscription management
-  - Notification dispatch to Telegram and/or Web Push
-  - Statistics endpoints for placements, notices, users
-  - External webhook to trigger unsent notice delivery
+ - Health endpoints
+ - Web push subscription management
+ - Notification dispatch to Telegram and/or Web Push
+ - Statistics endpoints for placements, notices, users
+ - External webhook to trigger unsent notice delivery
 - Dependencies:
-  - DI via lifespan to construct DatabaseService, WebPushService, and NotificationService
-  - CORS enabled for external integrations
+ - DI via lifespan to construct DatabaseService, WebPushService, and NotificationService
+ - CORS enabled for external integrations
 - Endpoints:
-  - GET /, GET /health
-  - POST /api/push/subscribe, POST /api/push/unsubscribe, GET /api/push/vapid-key
-  - POST /api/notify, POST /api/notify/telegram, POST /api/notify/web-push
-  - GET /api/stats, /api/stats/placements, /api/stats/notices, /api/stats/users
-  - POST /webhook/update
+ - GET /, GET /health
+ - POST /api/push/subscribe, POST /api/push/unsubscribe, GET /api/push/vapid-key
+ - POST /api/notify, POST /api/notify/telegram, POST /api/notify/web-push
+ - GET /api/stats, /api/stats/placements, /api/stats/notices, /api/stats/users
+ - POST /webhook/update
 
 ```mermaid
 sequenceDiagram
@@ -179,12 +173,12 @@ API-->>Ext : "NotifyResponse"
 
 ### Runner orchestration services
 - UpdateRunner:
-  - Logs in to SuperSet, pre-fetches existing IDs, filters new notices/jobs, enriches only new jobs, processes notices with job enrichment callback, saves to DB
-  - Optimizes API calls by enriching only new jobs and using existing job structures for linking
+ - Logs in to SuperSet, pre-fetches existing IDs, filters new notices/jobs, enriches only new jobs, processes notices with job enrichment callback, saves to DB
+ - Optimizes API calls by enriching only new jobs and using existing job structures for linking
 - NotificationRunner:
-  - Enables sending unsent notices via Telegram and/or Web Push
-  - Creates channels on demand and delegates to NotificationService
-  - Supports context manager for resource cleanup
+ - Enables sending unsent notices via Telegram and/or Web Push
+ - Creates channels on demand and delegates to NotificationService
+ - Supports context manager for resource cleanup
 
 ```mermaid
 flowchart TD
@@ -202,12 +196,12 @@ SaveJ --> UEnd
 
 ### Notification service and database service
 - NotificationService:
-  - Aggregates channels (Telegram, Web Push), broadcasts to all users, and tracks sent status
-  - Sends unsent notices and marks them sent upon successful delivery
+ - Aggregates channels (Telegram, Web Push), broadcasts to all users, and tracks sent status
+ - Sends unsent notices and marks them sent upon successful delivery
 - DatabaseService:
-  - Manages notices, jobs, placement offers, users, policies, and official placement data
-  - Provides statistics and helpers for unsent notices and user management
-  - Implements deduplication and merging for placement offers
+ - Manages notices, jobs, placement offers, users, policies, and official placement data
+ - Provides statistics and helpers for unsent notices and user management
+ - Implements deduplication and merging for placement offers
 
 ```mermaid
 classDiagram
@@ -246,14 +240,14 @@ DatabaseService --> DBClient : "wraps"
 
 ## Dependency analysis
 - Configuration:
-  - Centralized Settings with environment variable loading and logging setup
-  - Daemon mode toggles stdout vs file logging
+ - Centralized Settings with environment variable loading and logging setup
+ - Daemon mode toggles stdout vs file logging
 - Daemon Utilities:
-  - Double-fork daemonization, PID file management, stop/status helpers
+ - Double-fork daemonization, PID file management, stop/status helpers
 - Server-to-Service Coupling:
-  - Servers depend on DI-created services; runners encapsulate orchestration
+ - Servers depend on DI-created services; runners encapsulate orchestration
 - External Dependencies:
-  - Python packages pinned in requirements.txt and pyproject.toml
+ - Python packages pinned in requirements.txt and pyproject.toml
 
 ```mermaid
 graph LR
@@ -272,72 +266,72 @@ DB_SVC --> DB_CLIENT["DBClient"]
 
 ## Performance considerations
 - UpdateRunner optimization:
-  - Pre-fetch existing IDs to avoid redundant API calls
-  - Enrich only new jobs with detailed info to minimize cost
-  - Use job lookups to avoid repeated enrich calls
+ - Pre-fetch existing IDs to avoid redundant API calls
+ - Enrich only new jobs with detailed info to minimize cost
+ - Use job lookups to avoid repeated enrich calls
 - Notification batching:
-  - Broadcast to all users per channel and mark sent atomically
+ - Broadcast to all users per channel and mark sent atomically
 - Logging:
-  - Reduce noise from third-party libraries and route to file in daemon mode
+ - Reduce noise from third-party libraries and route to file in daemon mode
 - Scheduler cadence:
-  - Hourly updates balance freshness and cost; adjust cron schedule as needed
+ - Updates at midnight and 8 AM through 11 PM IST. Overnight 1 AM through 7 AM is idle. Change the cron in `scheduler_server.py`.
 
 [No sources needed since this section provides general guidance]
 
 ## Security considerations
 - Environment variables:
-  - Store tokens and secrets in.env; Settings validates and loads them
+ - Store tokens and secrets in .env; Settings validates and loads them
 - Webhook server:
-  - CORS enabled broadly for development; restrict origins in production
-  - No built-in authentication on endpoints; consider API keys or signed requests for external integrations
+ - CORS enabled broadly for development; restrict origins in production
+ - No built-in authentication on endpoints; consider API keys or signed requests for external integrations
 - Rate limiting:
-  - No explicit rate limiting in code; consider adding throttling at the FastAPI layer or upstream proxy
+ - No explicit rate limiting in code; consider adding throttling at the FastAPI layer or upstream proxy
 - Transport security:
-  - Use HTTPS in production; configure reverse proxies accordingly
+ - Use HTTPS in production; configure reverse proxies accordingly
 - Daemon logging:
-  - Ensure logs do not expose sensitive data; sanitize outputs
+ - Ensure logs do not expose sensitive data; sanitize outputs
 
 ## Deployment and scaling
 - Local development:
-  - docker-compose.dev.yaml provisions MongoDB locally with exposed port and volume storage
+ - docker-compose.dev.yaml provisions MongoDB locally with exposed port and volume storage
 - Containerization:
-  - Pin Python version and dependencies via pyproject.toml and requirements.txt
+ - Pin Python version and dependencies via pyproject.toml and requirements.txt
 - Process management:
-  - Use daemon mode (-d) for long-running servers; manage via PID files and stop/status commands
+ - Use daemon mode (-d) for long-running servers; manage via PID files and stop/status commands
 - Scaling strategies:
-  - Horizontal scaling: run multiple instances behind a load balancer; ensure shared MongoDB
-  - Vertical scaling: increase CPU/RAM for CPU-bound tasks (enrichment, notifications)
-  - Queue-based offloading: introduce message queues for high-volume notifications
+ - Horizontal scaling: run multiple instances behind a load balancer; ensure shared MongoDB
+ - Vertical scaling: increase CPU/RAM for CPU-bound tasks (enrichment, notifications)
+ - Queue-based offloading: introduce message queues for high-volume notifications
 - Cloud platforms:
-  - Kubernetes: deploy stateless webhook and scheduler pods; persistent MongoDB via StatefulSet or managed service
-  - Platform-as-a-Service: run as separate processes (bot, scheduler, webhook) with environment variables
+ - Kubernetes: deploy stateless webhook and scheduler pods; persistent MongoDB via StatefulSet or managed service
+ - Platform-as-a-Service: run as separate processes (bot, scheduler, webhook) with environment variables
 
 ## Monitoring and observability
 - Logging:
-  - Centralized setup via setup_logging; file handler plus optional stream handler
-  - Daemon mode suppresses stdout; logs written to files
+ - Centralized setup via setup_logging; file handler plus optional stream handler
+ - Daemon mode suppresses stdout; logs written to files
 - Metrics:
-  - No built-in metrics endpoints; consider adding Prometheus metrics for job durations and error rates
+ - No built-in metrics endpoints; consider adding Prometheus metrics for job durations and error rates
 - Health checks:
-  - Webhook server exposes / and /health endpoints
+ - Webhook server exposes / and /health endpoints
 - Alerting:
-  - Integrate with external monitoring systems to track server uptime and error rates
+ - Integrate with external monitoring systems to track server uptime and error rates
 
 ## Troubleshooting guide
 - Telegram bot not starting:
-  - Verify TELEGRAM_BOT_TOKEN is set; ensure network connectivity to Telegram
-  - Check logs for initialization errors
+ - Verify TELEGRAM_BOT_TOKEN is set; ensure network connectivity to Telegram
+ - Check logs for initialization errors
 - Scheduler not running jobs:
-  - Confirm daemon mode and logging; verify cron schedule and timezone
-  - Inspect scheduler logs for exceptions during job execution
+ - Confirm daemon mode and logging; verify cron schedule and timezone
+ - Inspect scheduler logs for exceptions during job execution
 - Webhook server errors:
-  - Validate MONGO_CONNECTION_STR and database availability
-  - Check CORS configuration and endpoint permissions
+ - Validate MONGO_CONNECTION_STR and database availability
+ - Check CORS configuration and endpoint permissions
 - Database connectivity:
-  - Confirm MongoDB is reachable and credentials are correct
-  - Review DBClient connection logs
+ - Confirm MongoDB is reachable and credentials are correct
+ - Review DBClient connection logs
 - Daemon control:
-  - Use stop/status commands to inspect PID and process state
+ - Use stop/status commands to inspect PID and process state
 
 ## Conclusion
-The SuperSet Telegram Notification Bot is composed of three distinct servers (Telegram, Scheduler, Webhook) orchestrated by runner services and supported by reliable configuration, daemon utilities, and database services. The design emphasizes modularity, dependency injection, and separation of concerns, enabling flexible deployment, scaling, and maintenance. By applying the recommendations in this page, especially around security hardening, rate limiting, and observability, you can operate the system reliably in production environments.
+Three servers, Telegram, scheduler, webhook, plus runners underneath. DI keeps them from growing into one blob. Harden auth, add rate limits, and watch the logs before you call it production.

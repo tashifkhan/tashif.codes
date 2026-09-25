@@ -1,16 +1,7 @@
 # Troubleshooting guide
 
 ## Introduction
-This guide provides detailed troubleshooting procedures for the Bulk Messaging System, focusing on:
-- WhatsApp-related issues (QR authentication failures, connection timeouts, rate limiting)
-- Gmail API authentication and quota/performance issues
-- SMTP connection and credential problems
-- Contact import and validation errors
-- Application performance, memory, and crash recovery
-- Platform-specific diagnostics (Windows, macOS, Linux)
-- Security and credential management
-
-The goal is to help users diagnose, isolate, and resolve common issues quickly using actionable steps and diagnostic techniques.
+Practical fixes for WhatsApp QR/auth issues, Gmail OAuth and quotas, SMTP connect failures, bad contact files, and platform quirks.
 
 ## Project structure
 The system comprises:
@@ -130,21 +121,21 @@ SH-->>UI : "email-progress events"
 ### WhatsApp troubleshooting
 Common issues and resolutions:
 - QR code not loading or rendering
-  - Causes: Puppeteer headless mode, missing sandbox args, QR generation failure
-  - Steps: Reconnect, clear cached auth/session files, restart app, check console logs
-  - References: `main.js`, `main.js`
+ - Causes: Puppeteer headless mode, missing sandbox args, QR generation failure
+ - Steps: Reconnect, clear cached auth/session files, restart app, check console logs
+ - References: `main.js`, `main.js`
 - Authentication failures
-  - Causes: Expired/invalid session, blocked device, network issues
-  - Steps: Logout and clear cache, reconnect, ensure stable internet
-  - References: `main.js`, `main.js`
+ - Causes: Expired/invalid session, blocked device, network issues
+ - Steps: Logout and clear cache, reconnect, ensure stable internet
+ - References: `main.js`, `main.js`
 - Disconnections
-  - Causes: Network instability, long idle periods
-  - Steps: Reconnect, reduce delays, monitor status logs
-  - References: `main.js`
+ - Causes: Network instability, long idle periods
+ - Steps: Reconnect, reduce delays, monitor status logs
+ - References: `main.js`
 - Sending delays and rate limiting
-  - Mechanism: Built-in delays between messages to avoid detection
-  - Steps: Adjust delays, monitor "not registered" vs "failed" statuses
-  - References: `main.js`
+ - Mechanism: Built-in delays between messages to avoid detection
+ - Steps: Adjust delays, monitor "not registered" vs "failed" statuses
+ - References: `main.js`
 
 ```mermaid
 flowchart TD
@@ -169,17 +160,17 @@ Next --> SendLoop
 ### Gmail API troubleshooting
 Common issues and resolutions:
 - OAuth2 authentication failures
-  - Causes: Missing environment variables, consent screen not shown, redirect mismatch
-  - Steps: Verify GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET, ensure prompt=consent, check redirect URI
-  - References: `gmail-handler.js`, `gmail-handler.js`
+ - Causes: Missing environment variables, consent screen not shown, redirect mismatch
+ - Steps: Verify GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET, ensure prompt=consent, check redirect URI
+ - References: `gmail-handler.js`, `gmail-handler.js`
 - Token retrieval and storage
-  - Mechanism: Store refresh token securely; reuse on subsequent runs
-  - Steps: Confirm token presence, re-authenticate if missing
-  - References: `gmail-handler.js`, `gmail-handler.js`
+ - Mechanism: Store refresh token securely; reuse on subsequent runs
+ - Steps: Confirm token presence, re-authenticate if missing
+ - References: `gmail-handler.js`, `gmail-handler.js`
 - Email sending progress and failures
-  - Mechanism: Per-recipient progress events, delay between sends
-  - Steps: Inspect email-progress events, adjust delay, review error messages
-  - References: `gmail-handler.js`, `GmailForm.jsx`
+ - Mechanism: Per-recipient progress events, delay between sends
+ - Steps: Inspect email-progress events, adjust delay, review error messages
+ - References: `gmail-handler.js`, `GmailForm.jsx`
 
 ```mermaid
 sequenceDiagram
@@ -201,21 +192,21 @@ GH-->>UI : "email-progress events"
 ### SMTP troubleshooting
 Common issues and resolutions:
 - Connection verification failures
-  - Causes: Incorrect host/port/security settings, firewall, TLS issues
-  - Steps: Verify credentials, test with nodemailer.verify(), adjust secure flag
-  - References: `smtp-handler.js`
+ - Causes: Incorrect host/port/security settings, firewall, TLS issues
+ - Steps: Verify credentials, test with nodemailer.verify(), adjust secure flag
+ - References: `smtp-handler.js`
 - Authentication failures
-  - Causes: Wrong username/password, two-factor auth, app-specific passwords
-  - Steps: Use correct credentials, enable less secure apps if required, retry
-  - References: `smtp-handler.js`
+ - Causes: Wrong username/password, two-factor auth, app-specific passwords
+ - Steps: Use correct credentials, enable less secure apps if required, retry
+ - References: `smtp-handler.js`
 - Network connectivity problems
-  - Causes: Corporate firewall, ISP blocks, DNS issues
-  - Steps: Test external SMTP servers, adjust ports (587/465), verify TLS
-  - References: `README.md`
+ - Causes: Corporate firewall, ISP blocks, DNS issues
+ - Steps: Test external SMTP servers, adjust ports (587/465), verify TLS
+ - References: `README.md`
 - Email sending progress and failures
-  - Mechanism: Per-recipient progress events, delay between sends
-  - Steps: Inspect email-progress events, adjust delay, review error messages
-  - References: `smtp-handler.js`, `SMTPForm.jsx`
+ - Mechanism: Per-recipient progress events, delay between sends
+ - Steps: Inspect email-progress events, adjust delay, review error messages
+ - References: `smtp-handler.js`, `SMTPForm.jsx`
 
 ```mermaid
 sequenceDiagram
@@ -234,24 +225,24 @@ SH-->>UI : "email-progress events"
 ### Contact import and processing troubleshooting
 Common issues and resolutions:
 - Unsupported file formats
-  - Supported: CSV, Excel (.xlsx/.xls), TXT
-  - Steps: Convert files to supported formats, ensure UTF-8 encoding
-  - References: `app.py`, `extract_contacts.py`
+ - Supported: CSV, Excel (.xlsx/.xls), TXT
+ - Steps: Convert files to supported formats, ensure UTF-8 encoding
+ - References: `app.py`, `extract_contacts.py`
 - CSV parsing errors
-  - Causes: Unexpected delimiters, missing headers, mixed encodings
-  - Steps: Normalize headers, standardize delimiters, validate encoding
-  - References: `app.py`, `extract_contacts.py`
+ - Causes: Unexpected delimiters, missing headers, mixed encodings
+ - Steps: Normalize headers, standardize delimiters, validate encoding
+ - References: `app.py`, `extract_contacts.py`
 - TXT parsing issues
-  - Causes: Non-standard separators, extra whitespace
-  - Steps: Use comma or tab separators, trim lines
-  - References: `app.py`, `extract_contacts.py`
+ - Causes: Non-standard separators, extra whitespace
+ - Steps: Use comma or tab separators, trim lines
+ - References: `app.py`, `extract_contacts.py`
 - Phone number validation and formatting
-  - Mechanism: Cleaning, digit-only checks, length validation
-  - Steps: Use validate-number endpoint, review cleaned numbers
-  - References: `app.py`, `validate_number.py`
+ - Mechanism: Cleaning, digit-only checks, length validation
+ - Steps: Use validate-number endpoint, review cleaned numbers
+ - References: `app.py`, `validate_number.py`
 - Manual number parsing via Pyodide
-  - Steps: Ensure Pyodide loaded, check console for errors, retry parsing
-  - References: `pyodide.js`, `WhatsAppForm.jsx`
+ - Steps: Ensure Pyodide loaded, check console for errors, retry parsing
+ - References: `pyodide.js`, `WhatsAppForm.jsx`
 
 ```mermaid
 flowchart TD
@@ -292,117 +283,116 @@ PC --> PD["Pandas/openpyxl/xlrd"]
 
 ## Performance considerations
 - Rate limiting and delays
-  - WhatsApp: ~3s delay after successful send; ~5s after failure
-  - Gmail/SMTP: configurable delay between emails
-  - References: `main.js`, `gmail-handler.js`, `smtp-handler.js`
+ - WhatsApp: ~3s delay after successful send; ~5s after failure
+ - Gmail/SMTP: configurable delay between emails
+ - References: `main.js`, `gmail-handler.js`, `smtp-handler.js`
 - Memory and session cleanup
-  - Clear WhatsApp cache/auth directories on logout/close
-  - References: `main.js`, `main.js`
+ - Clear WhatsApp cache/auth directories on logout/close
+ - References: `main.js`, `main.js`
 - UI responsiveness
-  - Use progress events and disable controls during sending
-  - References: `GmailForm.jsx`, `SMTPForm.jsx`, `WhatsAppForm.jsx`
-
-[No sources needed since this section provides general guidance]
+ - Use progress events and disable controls during sending
+ - References: `GmailForm.jsx`, `SMTPForm.jsx`, `WhatsAppForm.jsx`
 
 ## Troubleshooting guide
 
 ### WhatsApp troubleshooting
 - QR code not loading
-  - Verify internet connectivity and device stability
-  - Restart the app and reconnect
-  - Clear cached auth/session files and retry
-  - References: `main.js`, `main.js`
+ - Verify internet connectivity and device stability
+ - Restart the app and reconnect
+ - Clear cached auth/session files and retry
+ - References: `main.js`, `main.js`
 - Authentication failures
-  - Ensure consent screen appears and redirect matches configured URI
-  - Re-authenticate if token invalid/expired
-  - References: `gmail-handler.js`, `gmail-handler.js`
+ - Ensure consent screen appears and redirect matches configured URI
+ - Re-authenticate if token invalid/expired
+ - References: `gmail-handler.js`, `gmail-handler.js`
 - Connection timeouts/disconnections
-  - Improve network stability; reconnect and resume
-  - Monitor "disconnected" events and reset state
-  - References: `main.js`
+ - Improve network stability; reconnect and resume
+ - Monitor "disconnected" events and reset state
+ - References: `main.js`
 - Rate limiting and delays
-  - Adjust delays to balance speed and safety
-  - Review "not registered" vs "failed" outcomes
-  - References: `main.js`
+ - Adjust delays to balance speed and safety
+ - Review "not registered" vs "failed" outcomes
+ - References: `main.js`
 
 ### Gmail API troubleshooting
 - OAuth2 authentication problems
-  - Confirm GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set
-  - Ensure prompt=consent is used to receive refresh tokens
-  - Check redirect URI alignment with local callback
-  - References: `gmail-handler.js`, `gmail-handler.js`
+ - Confirm GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set
+ - Ensure prompt=consent is used to receive refresh tokens
+ - Check redirect URI alignment with local callback
+ - References: `gmail-handler.js`, `gmail-handler.js`
 - API quota exceeded or throttling
-  - Reduce send frequency using delay setting
-  - Monitor per-recipient progress and errors
-  - References: `gmail-handler.js`, `gmail-handler.js`
+ - Reduce send frequency using delay setting
+ - Monitor per-recipient progress and errors
+ - References: `gmail-handler.js`, `gmail-handler.js`
 - Permission issues
-  - Ensure Gmail API is enabled and OAuth consent screen configured
-  - References: `README.md`
+ - Ensure Gmail API is enabled and OAuth consent screen configured
+ - References: `README.md`
 
 ### SMTP troubleshooting
 - Server configuration errors
-  - Verify host, port, and secure flag match provider requirements
-  - Use 587/465 as appropriate; enable TLS/SSL accordingly
-  - References: `README.md`
+ - Verify host, port, and secure flag match provider requirements
+ - Use 587/465 as appropriate; enable TLS/SSL accordingly
+ - References: `README.md`
 - Authentication failures
-  - Use correct username/password; consider app-specific passwords
-  - References: `smtp-handler.js`
+ - Use correct username/password; consider app-specific passwords
+ - References: `smtp-handler.js`
 - Network connectivity problems
-  - Test with external SMTP providers; check firewall and DNS
-  - References: `smtp-handler.js`
+ - Test with external SMTP providers; check firewall and DNS
+ - References: `smtp-handler.js`
 - Email sending progress and failures
-  - Inspect email-progress events; adjust delay and review error messages
-  - References: `smtp-handler.js`, `SMTPForm.jsx`
+ - Inspect email-progress events; adjust delay and review error messages
+ - References: `smtp-handler.js`, `SMTPForm.jsx`
 
 ### Contact import and processing troubleshooting
 - File format problems
-  - Supported: CSV, Excel (.xlsx/.xls), TXT
-  - Ensure UTF-8 encoding and standard delimiters
-  - References: `app.py`, `extract_contacts.py`
+ - Supported: CSV, Excel (.xlsx/.xls), TXT
+ - Ensure UTF-8 encoding and standard delimiters
+ - References: `app.py`, `extract_contacts.py`
 - Validation errors
-  - Use validate-number endpoint to check cleaned numbers
-  - References: `app.py`, `validate_number.py`
+ - Use validate-number endpoint to check cleaned numbers
+ - References: `app.py`, `validate_number.py`
 - Manual number parsing via Pyodide
-  - Ensure Pyodide is loaded; check console for errors
-  - References: `pyodide.js`, `WhatsAppForm.jsx`
+ - Ensure Pyodide is loaded; check console for errors
+ - References: `pyodide.js`, `WhatsAppForm.jsx`
 
 ### Application performance, memory, and crash recovery
 - Performance tuning
-  - Increase delay between messages/emails to avoid throttling
-  - Use progress events to keep UI responsive
-  - References: `main.js`, `gmail-handler.js`, `smtp-handler.js`
+ - Increase delay between messages/emails to avoid throttling
+ - Use progress events to keep UI responsive
+ - References: `main.js`, `gmail-handler.js`, `smtp-handler.js`
 - Memory leaks
-  - Ensure cleanup of WhatsApp sessions and auth files on logout/close
-  - References: `main.js`, `main.js`
+ - Ensure cleanup of WhatsApp sessions and auth files on logout/close
+ - References: `main.js`, `main.js`
 - Crash recovery
-  - Restart app; clear cache/auth directories if stuck
-  - References: `main.js`
+ - Restart app; clear cache/auth directories if stuck
+ - References: `main.js`
 
 ### Platform-Specific troubleshooting
 - Windows
-  - Ensure Node.js and Python prerequisites are installed
-  - Use Windows Defender exceptions if needed
-  - References: `README.md`
+ - Ensure Node.js and Python prerequisites are installed
+ - Use Windows Defender exceptions if needed
+ - References: `README.md`
 - macOS
-  - Use Apple Silicon or Intel builds as applicable
-  - Check Gatekeeper and security preferences
-  - References: `README.md`
+ - Use Apple Silicon or Intel builds as applicable
+ - Check Gatekeeper and security preferences
+ - References: `README.md`
 - Linux
-  - Install required system dependencies for Electron and Puppeteer
-  - References: `README.md`
+ - Install required system dependencies for Electron and Puppeteer
+ - References: `README.md`
 
 ### Security and credential management
 - OAuth2 credentials
-  - Store GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET securely
-  - Use environment variables; avoid committing secrets
-  - References: `gmail-handler.js`
+ - Store GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET securely
+ - Use environment variables; avoid committing secrets
+ - References: `gmail-handler.js`
 - SMTP credentials
-  - Use encrypted storage when saving configs
-  - Avoid storing plain-text passwords
-  - References: `smtp-handler.js`
+ - Use encrypted storage when saving configs
+ - Avoid storing plain-text passwords
+ - References: `smtp-handler.js`
 - Encrypted storage
-  - Electron Store persists tokens/configs securely
-  - References: `gmail-handler.js`, `smtp-handler.js`
+ - Electron Store persists tokens/configs securely
+ - References: `gmail-handler.js`, `smtp-handler.js`
 
 ## Conclusion
-This guide consolidates practical troubleshooting steps for WhatsApp, Gmail API, SMTP, and contact processing within the Bulk Messaging System. By following the diagnostic flows, adjusting configurations, and using built-in progress/logging mechanisms, most issues can be resolved efficiently. For persistent problems, consult the referenced sections and logs, and consider platform-specific adjustments.
+
+Reproduce with one recipient and logging visible. Bulk mode hides which step actually failed.

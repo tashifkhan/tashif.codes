@@ -1,7 +1,7 @@
 # Background service
 
 ## Introduction
-This page explains the background service worker for the assignment-solver extension. It covers initialization, dependency injection, platform adapter setup, the message router, handler implementations, and extension lifecycle management including icon click and panel opening. The goal is to help developers understand how background tasks are orchestrated, how messages flow through the system, and how to extend or troubleshoot the service worker.
+The background service worker owns initialization, dependency wiring, platform adapters, the message router, handlers, and lifecycle hooks like icon click and side panel open. If you need to extend or debug background work, start here.
 
 ## Project structure
 The background service worker is organized around a dependency injection pattern. Platform adapters abstract browser APIs, services encapsulate business logic, and handlers implement message-specific workflows. The router centralizes message dispatching.
@@ -68,7 +68,7 @@ RT --> MSG
 
 ## Core components
 - Initialization and DI: The background entry point initializes logging, platform adapters, services, and message handlers, then registers the router with the runtime adapter.
-- Message Router: Central dispatcher that selects a handler by message type, ensures responses are sent, and handles both sync and async handlers.
+- Message Router: Central dispatcher that selects a handler by message type, sends responses for both sync and async handlers.
 - Platform Adapters: Unified wrappers for browser APIs (runtime, tabs, scripting, panel) enabling cross-browser compatibility.
 - Services: Business logic abstractions (e.g., Gemini API client, storage).
 - Handlers: Message-specific implementations for extraction, screenshot capture, Gemini requests, answer application, and page info retrieval.
@@ -93,7 +93,7 @@ Handler->>Tabs : "sendMessage(tabId, {type : PING})"
 Tabs-->>Handler : "PONG or error"
 Handler->>Script : "executeScript(files : ['content.js'])"
 Script-->>Handler : "Injected"
-Handler->>Tabs : "sendMessage(tabId, {type : GET_PAGE_HTML | APPLY_ANSWERS | ...})"
+Handler->>Tabs : "sendMessage(tabId, {type : GET_PAGE_HTML | APPLY_ANSWERS |...})"
 Tabs-->>Handler : "Response"
 else "Direct service call"
 Handler->>Gemini : "directAPICall(...)"
@@ -133,7 +133,7 @@ OpenPanel --> Done(["Ready"])
 - Ensures sendResponse is always called.
 - Handles both synchronous and asynchronous handlers.
 - Returns true synchronously for Firefox compatibility.
-- Logs errors and ensures response on exceptions.
+- Logs errors and keeps response on exceptions.
 
 ```mermaid
 flowchart TD
@@ -149,7 +149,7 @@ Done --> End
 
 ### Message types and retry utilities
 - MESSAGE_TYPES enumerates all supported message types for UI and background communication.
-- sendMessageWithRetry adds robustness for transient connection failures, particularly important for Firefox.
+- sendMessageWithRetry adds reliability for transient connection failures, particularly important for Firefox.
 
 ```mermaid
 classDiagram
@@ -328,7 +328,7 @@ SidePanel-->>User : "Panel visible"
 ```
 
 ## Dependency analysis
-The background worker composes a cohesive dependency graph:
+The background worker composes a connected dependency graph:
 - index.js orchestrates DI and wiring.
 - router.js depends on MESSAGE_TYPES.
 - Handlers depend on platform adapters and services.
@@ -367,15 +367,13 @@ GSI --> MSG
 - Content script injection delays: Includes deliberate waits for Firefox initialization to improve reliability.
 - Retry logic: sendMessageWithRetry mitigates transient connection failures during background initialization.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Content script not responding: Handlers inject content script and verify with a ping; ensure the content script is compatible and reload the page if needed.
 - No active tab found: Handlers return explicit errors when no active tab is available; switch to a valid tab.
 - Panel open/close failures: Panel adapter logs and throws on unavailable APIs; verify browser support for sidePanel or sidebarAction.
 - Gemini API errors: Gemini service parses raw responses and throws on parse failures; check API key validity and payload schema.
-- Router errors: Router logs handler errors and ensures sendResponse is called; inspect logs for detailed error messages.
+- Router errors: Router logs handler errors and still calls sendResponse; inspect logs for details.
 
 ## Conclusion
-The background service worker employs a clean dependency injection pattern with platform adapters and services abstracting browser APIs and business logic. The message router provides reliable dispatching with proper error handling and Firefox compatibility. Handlers encapsulate specific workflows: extraction, screenshot capture, Gemini API requests, answer application, and page info retrieval. The extension lifecycle integrates icon click handling and panel opening with cross-browser support.
+The worker is a thin composition root: adapters in, router out, handlers as pure-ish functions of those deps.

@@ -1,7 +1,7 @@
 # Course management
 
 ## Introduction
-This page describes the course management system with a focus on course discovery for Swayam and NPTEL platforms. It explains the web scraping integration, course data parsing, the service layer, data normalization, caching strategies, search and filtering capabilities, pagination, API endpoints, request/response schemas, and integration patterns with external platforms. It also provides examples of course data structures and service usage patterns.
+Course discovery for Swayam and NPTEL: search, detail fetch, caching, and how course records feed subscriptions.
 
 ## Project structure
 The course management system resides in the notice-reminders package and exposes:
@@ -251,21 +251,21 @@ Svc_Swayam --> Scraper["scrapers/__init__.py"]
 - Announcement retrieval: Alternate NPTEL domain is handled automatically; if still failing, verify course code correctness and external availability.
 
 ## Conclusion
-The course management system integrates Swayam and NPTEL scraping with a reliable service layer, ORM-backed persistence, and clean API endpoints. Course discovery, normalization, and caching are implemented to keep data fresh while minimizing redundant work. Extending the system with pagination, richer filters, and improved error resilience will further improve usability and reliability.
+Search, upsert course rows, then subscribe. Cache hits should not hide stale titles forever; pick a TTL that matches term changes.
 
 ## Appendices
 
 ### API endpoints summary
 - GET /courses
-  - Description: List all courses
-  - Response: Array of CourseResponse
+ - Description: List all courses
+ - Response: Array of CourseResponse
 - GET /courses/{course_code}
-  - Description: Get a course by code
-  - Response: CourseResponse
-  - Error: 404 if not found
+ - Description: Get a course by code
+ - Response: CourseResponse
+ - Error: 404 if not found
 - GET /search?q={query}
-  - Description: Search courses by query
-  - Response: Array of CourseResponse
+ - Description: Search courses by query
+ - Response: Array of CourseResponse
 - GET /courses/{course_code}/announcements
-  - Description: List announcements for a course
-  - Response: Array of AnnouncementResponse
+ - Description: List announcements for a course
+ - Response: Array of AnnouncementResponse

@@ -1,7 +1,7 @@
 # Service integration models
 
 ## Introduction
-This page describes the service integration schemas used across external services in the project. It focuses on request/response models for general service queries, crawler-specific structures, and GitHub integration models. It explains field definitions, validation rules, and transformation patterns, highlights shared patterns and service-specific variations, and outlines how these models relate to service implementations. Authentication data handling, rate-limiting considerations, and validation requirements are also addressed.
+Shared and per-service request/response models for GitHub, Gmail, Calendar, search, and related crawlers. Validation rules and auth fields.
 
 ## Project structure
 The service integration models are organized under a dedicated models namespace with separate packages for requests and responses. Supporting models include PyJIIT authentication payloads and YouTube video info structures. Services consume these models to orchestrate external integrations.
@@ -51,68 +51,68 @@ M_YT --> S_GitHub
 This section summarizes the primary request/response models used across services, highlighting shared fields and service-specific extensions.
 
 - AskRequest/AskResponse
-  - Purpose: General-purpose query with optional chat history and optional file attachment.
-  - Fields:
-    - AskRequest: url, question, chat_history (default empty list), attached_file_path (optional).
-    - AskResponse: answer, video_title, video_channel.
-  - Validation: Basic presence and type checks via Pydantic; url is validated as a URL in GitHubRequest variant.
-  - Transformation: Used by services to construct prompts and parse LLM outputs.
+ - Purpose: General-purpose query with optional chat history and optional file attachment.
+ - Fields:
+ - AskRequest: url, question, chat_history (default empty list), attached_file_path (optional).
+ - AskResponse: answer, video_title, video_channel.
+ - Validation: Basic presence and type checks via Pydantic; url is validated as a URL in GitHubRequest variant.
+ - Transformation: Used by services to construct prompts and parse LLM outputs.
 
 - CrawlerRequest/CrawllerResponse
-  - Purpose: Crawler-focused query with optional OAuth token, persisted PyJIIT login, client HTML, and optional file attachment.
-  - Fields:
-    - CrawlerRequest: question, chat_history (default empty list), google_access_token (alias support), pyjiit_login_response (alias support), client_html (optional), attached_file_path (optional).
-    - CrawllerResponse: answer.
-  - Validation: Aliased fields support tolerant parsing; Pydantic enforces presence/typing.
-  - Transformation: Enables authenticated crawling and context injection.
+ - Purpose: Crawler-focused query with optional OAuth token, persisted PyJIIT login, client HTML, and optional file attachment.
+ - Fields:
+ - CrawlerRequest: question, chat_history (default empty list), google_access_token (alias support), pyjiit_login_response (alias support), client_html (optional), attached_file_path (optional).
+ - CrawllerResponse: answer.
+ - Validation: Aliased fields support tolerant parsing; Pydantic enforces presence/typing.
+ - Transformation: Enables authenticated crawling and context injection.
 
 - GitHubRequest/GitHubResponse
-  - Purpose: GitHub repository Q&A with URL validation and optional attachments.
-  - Fields:
-    - GitHubRequest: url (HttpUrl), question, chat_history (default empty list), attached_file_path (optional).
-    - GitHubResponse: content.
-  - Validation: url enforced as HttpUrl; optional attachments supported.
-  - Transformation: Converts repository to markdown, optionally attaches files, and invokes LLM chain.
+ - Purpose: GitHub repository Q&A with URL validation and optional attachments.
+ - Fields:
+ - GitHubRequest: url (HttpUrl), question, chat_history (default empty list), attached_file_path (optional).
+ - GitHubResponse: content.
+ - Validation: url enforced as HttpUrl; optional attachments supported.
+ - Transformation: Converts repository to markdown, optionally attaches files, and invokes LLM chain.
 
 - ReactAgentRequest/ReactAgentResponse
-  - Purpose: Multi-turn conversational agent with structured messages and optional authentication.
-  - Fields:
-    - AgentMessage: role (enum-like literal), content (min length 1), name (optional), tool_call_id (optional), tool_calls (optional).
-    - ReactAgentRequest: messages (non-empty list), google_access_token (alias support), pyjiit_login_response (alias support).
-    - ReactAgentResponse: messages (final conversation state), output (latest assistant message).
-  - Validation: Role constrained; content min length enforced; aliases supported.
-  - Transformation: Aggregates tool calls and assistant replies into a final state.
+ - Purpose: Multi-turn conversational agent with structured messages and optional authentication.
+ - Fields:
+ - AgentMessage: role (enum-like literal), content (min length 1), name (optional), tool_call_id (optional), tool_calls (optional).
+ - ReactAgentRequest: messages (non-empty list), google_access_token (alias support), pyjiit_login_response (alias support).
+ - ReactAgentResponse: messages (final conversation state), output (latest assistant message).
+ - Validation: Role constrained; content min length enforced; aliases supported.
+ - Transformation: Aggregates tool calls and assistant replies into a final state.
 
 - WebsiteRequest/WebsiteResponse
-  - Purpose: Website-based Q&A with optional client HTML and file attachment.
-  - Fields:
-    - WebsiteRequest: url, question, chat_history (default empty list), client_html (optional), attached_file_path (optional).
-    - WebsiteResponse: answer.
-  - Validation: Basic presence/type checks; url treated as string.
-  - Transformation: Supplies extracted page context to LLM.
+ - Purpose: Website-based Q&A with optional client HTML and file attachment.
+ - Fields:
+ - WebsiteRequest: url, question, chat_history (default empty list), client_html (optional), attached_file_path (optional).
+ - WebsiteResponse: answer.
+ - Validation: Basic presence/type checks; url treated as string.
+ - Transformation: Supplies extracted page context to LLM.
 
 - SubtitlesRequest/SubtitlesResponse
-  - Purpose: Subtitle retrieval for a given video URL and language.
-  - Fields:
-    - SubtitlesRequest: url, lang (default "en").
-    - SubtitlesResponse: subtitles.
-  - Validation: Basic presence/type checks.
-  - Transformation: Returns subtitle text for downstream processing.
+ - Purpose: Subtitle retrieval for a given video URL and language.
+ - Fields:
+ - SubtitlesRequest: url, lang (default "en").
+ - SubtitlesResponse: subtitles.
+ - Validation: Basic presence/type checks.
+ - Transformation: Returns subtitle text for downstream processing.
 
 - PyjiitLoginResponse
-  - Purpose: Authentication payload from PyJIIT portal with derived session metadata.
-  - Fields: raw_response, regdata, institute, instituteid, memberid, userid, token, expiry, clientid, membertype, name.
-  - Validation: Nested typed fields; populate_by_name enabled.
-  - Transformation: Provides JWT token and session identifiers for authenticated requests.
+ - Purpose: Authentication payload from PyJIIT portal with derived session metadata.
+ - Fields: raw_response, regdata, institute, instituteid, memberid, userid, token, expiry, clientid, membertype, name.
+ - Validation: Nested typed fields; populate_by_name enabled.
+ - Transformation: Provides JWT token and session identifiers for authenticated requests.
 
 - YTVideoInfo
-  - Purpose: Structured metadata for YouTube videos.
-  - Fields: title, description, duration, uploader, upload_date, view_count, like_count, tags, categories, captions, transcript.
-  - Validation: Defaults ensure safe fallbacks; optional fields accommodate missing data.
-  - Transformation: Normalizes scraped or API-derived video metadata.
+ - Purpose: Structured metadata for YouTube videos.
+ - Fields: title, description, duration, uploader, upload_date, view_count, like_count, tags, categories, captions, transcript.
+ - Validation: Defaults ensure safe fallbacks; optional fields accommodate missing data.
+ - Transformation: Normalizes scraped or API-derived video metadata.
 
 ## Architecture overview
-The service integration architecture follows a clear separation of concerns:
+The service integration architecture keeps layers apart:
 - Models define strict request/response schemas with validation.
 - Services consume models, transform inputs, and produce outputs.
 - Authentication payloads (e.g., PyJIIT) are embedded in requests to enable secure access to protected resources.
@@ -156,7 +156,7 @@ UseInService --> End(["Produce AskResponse"])
 
 ### CrawlerRequest/CrawllerResponse
 - Shared pattern: Supports chat history, optional OAuth token, persisted PyJIIT login, client HTML, and attached file.
-- Validation: Aliased fields tolerate minor typos during deserialization; defaults ensure safe handling.
+- Validation: Aliased fields tolerate minor typos during deserialization; defaults fill gaps.
 - Transformation: Enables authenticated crawling and contextual enrichment via client HTML and attachments.
 
 ```mermaid
@@ -177,7 +177,7 @@ CrawlerRequest --> CrawllerResponse : "produces"
 
 ### GitHubRequest/GitHubResponse
 - Shared pattern: Validates URL as HttpUrl; supports optional chat history and attached file.
-- Validation: Strict URL validation; optional fields allow flexible invocation.
+- Validation: Strict URL validation; optional fields keep callers free to omit unused inputs.
 - Transformation: Converts repository to markdown, optionally attaches files, and invokes LLM chain to produce content.
 
 ```mermaid
@@ -196,7 +196,7 @@ Service-->>Client : "GitHubResponse(content)"
 
 ### ReactAgentRequest/ReactAgentResponse
 - Shared pattern: Messages carry roles and optional tool calls; supports authentication via OAuth and PyJIIT login.
-- Validation: Role constrained; content minimum length enforced; aliases improve robustness.
+- Validation: Role constrained; content minimum length enforced; aliases improve reliability.
 - Transformation: Aggregates final conversation state and assistant output for downstream consumption.
 
 ```mermaid
@@ -236,8 +236,8 @@ UseInService --> End(["Produce WebsiteResponse"])
 
 ### SubtitlesRequest/SubtitlesResponse
 - Shared pattern: Retrieves subtitles for a given video URL and language.
-- Validation: Basic presence/type checks; default language ensures robustness.
-- Transformation: Returns subtitle text for downstream processing.
+- Validation: Basic presence/type checks; default language fills in when omitted.
+  - Transformation: Returns subtitle text for downstream processing.
 
 ```mermaid
 flowchart TD
@@ -349,8 +349,9 @@ Common issues and resolutions:
 - Invalid GitHub URL: Ensure the URL points to the repository root; otherwise, return a clear message instructing to navigate to the main repository page.
 - Access failures: Verify repository visibility and URL correctness; return actionable guidance for 404 or clone-related errors.
 - Context window exceeded: For very large repositories, suggest narrowing the question to specific files or directories.
-- Attached file processing: If file upload fails, log the error and return a user-friendly message.
+- Attached file processing: If file upload fails, log the error and return a plain message.
 - Authentication: Validate PyJIIT token presence and expiry; ensure aliases are handled consistently.
 
 ## Conclusion
-The service integration models provide a consistent, validated foundation for interacting with external services. Shared patterns enable cross-service compatibility, while service-specific variants address unique requirements such as authentication, file attachments, and specialized transformations. By adhering to these schemas and using the outlined best practices, developers can implement reliable integrations with predictable validation, error handling, and performance characteristics.
+Shared base shapes where they help, service-specific fields where they must diverge. Enforce min lengths and enums so bad clients fail fast.
+

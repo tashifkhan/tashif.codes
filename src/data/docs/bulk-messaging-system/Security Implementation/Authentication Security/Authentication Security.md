@@ -1,7 +1,8 @@
 # Authentication security
 
 ## Introduction
-This page analyzes the authentication security implementations across supported services in the application. It covers:
+Auth security across WhatsApp LocalAuth, Gmail OAuth2, and SMTP credentials: storage choices and process boundaries.
+
 - OAuth2 authentication security for Gmail API, including token storage, refresh token management, and secure credential handling
 - SMTP authentication security, including credential encryption, SSL/TLS enforcement, and secure connection establishment
 - Local authentication security for WhatsApp Web using LocalAuth strategy
@@ -70,9 +71,9 @@ Main-->>UI : resolve success
 
 ## Detailed component analysis
 
-### Gmail OAuth2 authentication security
+### Gmail oAuth2 authentication security
 - Credential loading: Client ID and secret are loaded from environment variables, preventing hardcoded secrets in source.
-- Authorization flow: Offline access is requested to obtain refresh tokens; consent prompt ensures explicit user approval.
+- Authorization flow: Offline access is requested to obtain refresh tokens; consent prompt asks the user to approve scopes.
 - Token storage: Tokens are persisted using electron-store, which provides OS-level encrypted storage on supported platforms.
 - Token usage: Stored tokens are applied to the OAuth2 client before sending emails; missing tokens block email operations.
 - Timeout and error handling: Authentication window enforces a 5-minute timeout and handles OAuth errors and missing authorization codes.
@@ -94,7 +95,7 @@ StoreToken --> Done(["Authenticated"])
 ```
 
 ### SMTP authentication security
-- Configuration validation: Ensures host, port, user, and password are provided before attempting to connect.
+- Configuration validation: Requires host, port, user, and password before connect.
 - Optional credential persistence: Non-sensitive configuration (host, port, secure flag, user) can be saved; passwords are intentionally omitted for security.
 - Transport creation: Nodemailer transporter configured with TLS; secure flag selects port 465 vs others.
 - Certificate handling: TLS verification can be relaxed for self-signed certificates, but this introduces risk and should be used cautiously.
@@ -117,7 +118,7 @@ SendLoop --> Done(["Complete"])
 ### WhatsApp web local authentication security
 - LocalAuth strategy: Uses LocalAuth to maintain device-linked sessions locally, avoiding persistent cloud credentials.
 - QR-based authentication: Generates QR codes for user scanning; QR data is transmitted via IPC to the renderer for display.
-- Session lifecycle: Automatic cleanup of.wwebjs_cache and.wwebjs_auth directories on startup and logout to remove cached session data.
+- Session lifecycle: Automatic cleanup of .wwebjs_cache and .wwebjs_auth directories on startup and logout to remove cached session data.
 - Headless browser: Puppeteer runs in headless mode with hardened arguments to reduce attack surface.
 
 ```mermaid
@@ -168,25 +169,17 @@ SHANDLER["smtp-handler.js"] --> STORE
 ## Troubleshooting guide
 Common issues and resolutions:
 - Gmail authentication failures:
-  - Missing environment variables: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set before starting.
-  - Timeout or closed window: Increase awareness of 5-minute timeout; reattempt authentication.
-  - Missing authorization code: Verify redirect URI and consent flow completion.
+ - Missing environment variables: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set before starting.
+ - Timeout or closed window: Increase awareness of 5-minute timeout; reattempt authentication.
+ - Missing authorization code: Verify redirect URI and consent flow completion.
 - SMTP connection problems:
-  - Incomplete configuration: Provide host, port, user, and password.
-  - TLS certificate issues: Use secure flag appropriately; avoid disabling certificate verification unless necessary.
-  - Connection verification failure: Confirm server settings and network access.
+ - Incomplete configuration: Provide host, port, user, and password.
+ - TLS certificate issues: Use secure flag appropriately; avoid disabling certificate verification unless necessary.
+ - Connection verification failure: Confirm server settings and network access.
 - WhatsApp session issues:
-  - QR generation errors: Check QR code rendering and IPC channels.
-  - Session cleanup: On logout or app close, cached files are removed; ensure proper shutdown sequences.
+ - QR generation errors: Check QR code rendering and IPC channels.
+ - Session cleanup: On logout or app close, cached files are removed; ensure proper shutdown sequences.
 
 ## Conclusion
-The application implements reliable authentication security across services:
-- Gmail OAuth2 uses environment-based credentials, offline access for refresh tokens, and encrypted local storage for tokens.
-- SMTP authentication enforces TLS, validates configuration, and avoids persisting sensitive data unnecessarily.
-- WhatsApp Web employs LocalAuth with QR-based authentication and cleans cached session data to mitigate exposure risks.
 
-Recommended enhancements for production hardening:
-- Implement token refresh logic for Gmail when tokens expire
-- Enforce certificate verification for SMTP (avoid disabling unauthorized certs)
-- Add credential rotation mechanisms and secure secret management
-- Introduce access control patterns and audit logs for sensitive operations
+Three auth stories, one rule: secrets stay out of the renderer and out of git.

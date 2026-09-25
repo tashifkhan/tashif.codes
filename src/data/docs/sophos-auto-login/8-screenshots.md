@@ -1,33 +1,39 @@
 # Screenshots
 
-Here are some examples of the script in action:
+Terminal shots from the Rich TUI. Filenames match `quickstart/static/screenshots/` in the repo, typos included.
 
 ## Interactive menu
 
-The main interactive menu providing various options for credential management and starting the login process.
+`python autologin.py` with no flags. Options 1 to 11.
+
 ![Interactive Menu](images/interative_menu.png)
 
 ## Starting auto-login
 
-Output when starting the auto-login process using the CLI.
+`--start` / menu option 2. Foreground `run_auto_login()`.
+
 ![Start Auto-Login via CLI](images/autologin-start.png)
 
 ## Daemon status
 
-Checking the status of the background daemon process using the CLI.
+`--status` / menu option 10. Parsed from `~/.sophos-autologin/sophos-autologin.log`.
+
 ![Daemon Status via CLI](images/status.png)
 
 ## Exit daemon
 
-Stopping the daemon process and logging out using the CLI.
+`--exit` / `-q`. Logout of the active ID, then kill the daemon.
+
 ![Exit Daemon via CLI](images/exit.png)
 
 ## Logout
 
-Logging out from all active sessions using the CLI.
+`--logout` / `-lo` / menu option 9. Every stored credential, daemon left running.
+
 ![Logout via CLI](images/logout.png)
 
 ## Speed test
 
-Running an internet speed test using the CLI.
+`--speedtest` / `-t` / menu option 8.
+
 ![Speed Test via CLI](images/sppedtest.png)

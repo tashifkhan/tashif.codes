@@ -1,9 +1,8 @@
 # Cover letter creation
 
-## Introduction
-This page explains the Cover Letter Creation system that generates AI-powered, personalized cover letters from job descriptions and candidate profiles. It covers the prompt engineering strategies, integration with job description analysis and candidate skill matching, customization options, content structure, editing and revision workflows, ATS considerations, and frontend composition and preview capabilities.
+Builds cover letters from a job description and candidate profile, with a preview panel and AI edit pass.
 
-## Project structure
+## Repository layout
 The system spans backend FastAPI routes and LangChain-based services, a job description fetcher agent, and a React-based frontend with dedicated components and hooks for form input, preview, and editing.
 
 ```mermaid
@@ -36,15 +35,15 @@ C --> F
 K --> L
 ```
 
-## Core components
+## Building blocks
 - Backend request/response models define the shape of inputs and outputs for cover letter generation and editing.
 - The cover letter service composes prompts, resolves job descriptions from URLs or text, and invokes an LLM to produce plain-text cover letters.
 - FastAPI routes accept multipart/form-data, assemble resume data, and delegate to the service layer.
-- The frontend provides a form for collecting inputs, a preview panel with copy/download/edit controls, and React Query hooks for optimistic UI and state management.
+- The frontend has a form for collecting inputs, a preview panel with copy/download/edit controls, and React Query hooks for optimistic UI and state management.
 - A job description fetcher agent retrieves clean markdown from URLs via an external service.
 - ATS-related services and prompts support keyword coverage, formatting, and compatibility analysis.
 
-## Architecture overview
+## How it fits together
 The system follows a layered architecture:
 - Frontend collects inputs and renders previews.
 - API routes validate and forward requests to the service layer.
@@ -68,17 +67,15 @@ API-->>SVC : "CoverLetterResponse"
 SVC-->>UI : "render GeneratedLetterPanel"
 ```
 
-## Detailed component analysis
-
-### Backend: cover letter generation and editing
+## Backend: cover letter generation and editing
 - Request/response models encapsulate inputs and outputs for generation and editing workflows.
 - The generation service:
-  - Resolves job descriptions from a URL (via markdown fetcher) or uses provided text, merging both when available.
-  - Formats a strict prompt with constraints on length, paragraph count, tone, and content focus.
-  - Calls the LLM with a role instruction and returns plain text.
+ - Resolves job descriptions from a URL (via markdown fetcher) or uses provided text, merging both when available.
+ - Formats a strict prompt with constraints on length, paragraph count, tone, and content focus.
+ - Calls the LLM with a role instruction and returns plain text.
 - Editing service:
-  - Accepts a previous cover letter and user edit instructions.
-  - Enforces strict adherence to instructions while preserving quality and constraints.
+ - Accepts a previous cover letter and user edit instructions.
+ - Enforces strict adherence to instructions while preserving quality and constraints.
 
 ```mermaid
 flowchart TD
@@ -89,9 +86,9 @@ InvokeLLM --> Output["Plain Text Cover Letter"]
 Output --> End(["End"])
 ```
 
-### Backend: job description resolution
+## Backend: job description resolution
 - When a URL is provided, the system fetches clean markdown content and prepends any additional context text.
-- Ensures robustness by returning empty strings on failure and normalizing protocol prefixes.
+- Ensures reliability by returning empty strings on failure and normalizing protocol prefixes.
 
 ```mermaid
 flowchart TD
@@ -107,7 +104,7 @@ G --> I
 H --> I
 ```
 
-### Backend: routes and data flow
+## Backend: routes and data flow
 - Routes accept form-encoded inputs, construct a minimal resume data object, and call the service layer.
 - Both generation and editing endpoints return a unified response model.
 
@@ -126,12 +123,12 @@ Service-->>Route : "body"
 Route-->>Client : "CoverLetterResponse"
 ```
 
-### Frontend: inputs and preview
+## Frontend: inputs and preview
 - CoverLetterDetailsForm collects:
-  - Personal details (your name, desired role/goal).
-  - Job description via URL or text, with a toggle to switch modes.
-  - Key points to highlight and additional context.
-  - Optional recipient and company details.
+ - Personal details (your name, desired role/goal).
+ - Job description via URL or text, with a toggle to switch modes.
+ - Key points to highlight and additional context.
+ - Optional recipient and company details.
 - GeneratedLetterPanel displays the cover letter, supports copy/download, and toggles an edit mode with instructions.
 - The page orchestrates state, validation, and submission via React Query mutations.
 
@@ -165,7 +162,7 @@ CoverLetterPage --> CoverLetterDetailsForm : "renders"
 CoverLetterPage --> GeneratedLetterPanel : "renders"
 ```
 
-### Frontend: service and hooks
+## Frontend: service and hooks
 - cover-letter.service.ts defines typed endpoints for generation and editing.
 - use-cover-letters.ts exposes React Query hooks for fetching sessions, deleting entries, and mutating generation/editing requests.
 - Types cover-letter.ts define session and entry shapes for persistence and display.
@@ -178,14 +175,14 @@ C --> D["GeneratedLetterPanel.tsx"]
 C --> E["CoverLetterDetailsForm.tsx"]
 ```
 
-### Prompt engineering strategies
-- Constraints ensure concise, readable, and ATS-friendly output:
-  - Word and paragraph limits.
-  - Specific opening referencing a concrete JD element.
-  - Middle section aligns 1–2 resume qualifications to stated requirements.
-  - Closing remains modest and actionable.
-  - Tone is confident yet not overly eager.
-  - Plain text output avoids markdown or JSON.
+## Prompt engineering strategies
+- Constraints keep output concise, readable, and ATS-friendly output:
+ - Word and paragraph limits.
+ - Specific opening referencing a concrete JD element.
+ - Middle section aligns 1-2 resume qualifications to stated requirements.
+ - Closing remains modest and concrete.
+ - Tone is confident yet not overly eager.
+ - Plain text output avoids markdown or JSON.
 - Editing prompt enforces strict adherence to user instructions while preserving quality and constraints.
 
 ```mermaid
@@ -199,7 +196,7 @@ P --> C6["Plain text output"]
 P --> C7["Do not invent info"]
 ```
 
-### Integration with job description analysis and candidate matching
+## Integration with job description analysis and candidate matching
 - ATS analysis service evaluates keyword coverage, formatting, and compatibility, producing structured metrics and recommendations.
 - While cover letter generation focuses on narrative, ATS analysis can guide resume refinement and JD alignment, complementing cover letter personalization.
 
@@ -211,23 +208,23 @@ C --> D["Recommendations"]
 D --> E["Integration Point"]
 ```
 
-### Customization options
+## Customization options
 - Tailor to roles and companies via:
-  - Recipient and company names.
-  - Job description URL or text.
-  - Additional context and key points to highlight.
-  - Language selection for output.
+ - Recipient and company names.
+ - Job description URL or text.
+ - Additional context and key points to highlight.
+ - Language selection for output.
 - Editing allows iterative refinement with explicit instructions.
 
-### Content structure
+## Content structure
 - Opening: Reference one specific JD aspect (product, tech, or problem).
-- Middle: Align 1–2 relevant resume qualifications to stated requirements.
+- Middle: Align 1-2 relevant resume qualifications to stated requirements.
 - Closing: Brief availability to discuss without desperation.
 - Tone: Confident peer; avoid placeholders and invented facts.
 
-### Editing and revision workflows
+## Editing and revision workflows
 - Toggle edit mode, provide instructions, and apply changes to refine content.
-- Validation ensures a cover letter exists and instructions are provided before editing.
+- Validation requires a cover letter exists and instructions are provided before editing.
 
 ```mermaid
 sequenceDiagram
@@ -243,18 +240,18 @@ API-->>Hook : "CoverLetterResponse"
 Hook-->>UI : "new body"
 ```
 
-### ATS optimization and formatting considerations
+## ATS optimization and formatting considerations
 - The cover letter output is plain text, avoiding markdown or JSON, which improves ATS compatibility.
 - Constraints prevent problematic characters and enforce concise formatting.
 - ATS analysis provides complementary insights for keyword coverage and formatting improvements.
 
-### Frontend composition and preview functionality
+## Frontend composition and preview functionality
 - Resume selection supports choosing an existing resume or uploading a file.
-- Auto-preloading from analysis data streamlines user experience.
+- Analysis data can preload the form.
 - Copy-to-clipboard and download-as-text enable easy reuse.
 - Loading overlays and toasts provide feedback during generation and editing.
 
-## Dependency analysis
+## Dependencies
 - Frontend depends on typed services and hooks for network operations.
 - Backend routes depend on the cover letter service and the job description agent.
 - ATS analysis is decoupled and can be used independently for resume optimization.
@@ -269,20 +266,17 @@ SRV --> SCHEMA["models/cover_letter/schemas.py"]
 BEATSA["services/ats.py"] --> BEATSP["data/prompt/ats_analysis.py"]
 ```
 
-## Performance considerations
+## Performance
 - Minimizing prompt size and enforcing strict constraints reduces token usage and latency.
 - Fetching job descriptions from URLs introduces network latency; caching or pre-fetching can help.
 - Plain text output avoids extra parsing overhead for downstream consumers.
 
-## Troubleshooting guide
+## Troubleshooting
 - Job description URL errors: Ensure the URL is reachable and returns content; the agent returns empty content on failure.
 - Missing inputs: The page validates presence of required fields before submitting.
 - Editing failures: Confirm a cover letter exists and edit instructions are provided.
 - ATS mismatch: Use ATS analysis to identify missing keywords and formatting gaps; iterate on resume and cover letter alignment.
 
-## Conclusion
-The Cover Letter Creation system combines precise prompt engineering, flexible input modes, and a streamlined editing workflow to produce tailored, ATS-friendly cover letters. Its modular backend and intuitive frontend enable rapid iteration and high-quality output aligned with job requirements and candidate profiles.
-
-## Appendices
+## Appendix
 - Example prompt constraints and requirements are embedded in the service layer and enforced during generation and editing.
-- ATS analysis provides actionable insights for keyword coverage and formatting improvements.
+- ATS analysis provides concrete feedback for keyword coverage and formatting improvements.

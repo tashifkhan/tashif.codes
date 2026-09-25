@@ -1,7 +1,7 @@
 # Error handling & rate limiting
 
 ## Introduction
-This page consolidates the error handling patterns and rate limiting strategies across the two server types in the project: the Telegram Bot Server and the Webhook/REST API Server. It defines the standardized error response format, documents rate limiting policies, and explains how rate limit headers and 429 responses are handled. It also covers retry mechanisms, circuit breaker patterns, and graceful degradation strategies for reliable service operation.
+How both servers fail and how they slow callers down. Shared error JSON, rate-limit headers, 429 handling, retries, and what happens when a dependency is unhealthy.
 
 ## Project structure
 The error handling and rate limiting concerns are distributed across:
@@ -38,9 +38,9 @@ MAIN --> WEB
 ## Core components
 - Standardized error response format with code, human-readable message, timestamp, and request ID.
 - Rate limiting policies:
-  - Bot Commands: 30 per minute per user
-  - REST API: 100 per minute per IP
-  - Webhook: unlimited (trusted Telegram servers)
+ - Bot Commands: 30 per minute per user
+ - REST API: 100 per minute per IP
+ - Webhook: unlimited (trusted Telegram servers)
 - Rate limit headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
 - 429 responses with retry-after guidance
 - Retry/backoff and exponential backoff for Telegram API calls
@@ -83,9 +83,9 @@ ReturnErr --> End(["Client Receives Standardized Error"])
 ```
 
 ### Rate limiting policies and headers
-- Bot Commands: 30 per minute per user
-- REST API: 100 per minute per IP
-- Webhook: unlimited (trusted Telegram servers)
+  - Bot Commands: 30 per minute per user
+  - REST API: 100 per minute per IP
+  - Webhook: unlimited (trusted Telegram servers)
 - Rate limit headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
 - 429 responses include a retry-after hint
 
@@ -222,4 +222,4 @@ Error code reference (HTTP status mappings and guidance):
 - SERVICE_UNAVAILABLE (503): Dependency failure; retry after recovery.
 
 ## Conclusion
-The project implements a consistent error response format and standardized rate limiting policies across both server types. The Telegram client's retry/backoff and 429 handling, combined with service-level graceful degradation and reliable logging, ensures resilient operation under load and transient failures. Adhering to the documented policies and using the provided patterns will maintain reliability and predictable behavior for both users and operators.
+Shared error JSON on both servers. Telegram client retries and backs off on 429. Webhook routes should return the same shape so clients only learn one failure format.

@@ -1,7 +1,7 @@
 # File import and processing
 
 ## Introduction
-This page explains the file import and contact extraction system used to process CSV, Excel (.xlsx/.xls), and text files for bulk messaging applications. It covers automatic file type detection, fallback parsing strategies, column detection for phone numbers and names, reliable error handling, supported formats and naming conventions, performance considerations for large files, and security measures for file processing.
+CSV, Excel, and text import. Column detection, fallback parsers, and the cleanup rules applied before a number is kept.
 
 ## Project structure
 The system spans two primary environments:
@@ -76,18 +76,18 @@ end
 
 ### File type detection and routing
 - Electron detects file extension and routes to either:
-  - Python backend via HTTP POST for CSV/TXT/XLSX/XLS
-  - Native CSV parser for CSV/TXT within Electron for manual parsing
+ - Python backend via HTTP POST for CSV/TXT/XLSX/XLS
+ - Native CSV parser for CSV/TXT within Electron for manual parsing
 - Unsupported formats (e.g., XLSX/XLS) currently return empty results in the Electron-managed import flow.
 
 ### CSV extraction pipeline
 - Uses pandas to read CSV files.
 - Keyword-based column detection:
-  - Phone columns: look for keywords such as phone, number, mobile, cell, tel.
-  - Name columns: look for keywords such as name, contact, person.
+ - Phone columns: look for keywords such as phone, number, mobile, cell, tel.
+ - Name columns: look for keywords such as name, contact, person.
 - Fallback strategy:
-  - If pandas parsing fails, falls back to manual CSV reader with UTF-8 encoding.
-  - Defaults to first column as phone and second as name if no matches found.
+ - If pandas parsing fails, falls back to manual CSV reader with UTF-8 encoding.
+ - Defaults to first column as phone and second as name if no matches found.
 
 ```mermaid
 flowchart TD
@@ -119,7 +119,7 @@ AddToList --> Done(["Return contacts[]"])
 - Uses pandas to read Excel files.
 - Applies identical keyword-based column detection as CSV.
 - Fallback strategy:
-  - If pandas parsing fails, returns empty contacts silently.
+ - If pandas parsing fails, returns empty contacts silently.
 
 ```mermaid
 flowchart TD
@@ -144,17 +144,17 @@ ReturnEmpty --> Done
 - Reads file as UTF-8 text.
 - Splits lines and attempts to split by common separators (comma, semicolon, tab, pipe).
 - Heuristic to detect phone numbers:
-  - Look for segments containing digits and common separators (+, -, (), spaces).
-  - If no clear split, regex match for phone-like strings in the entire line.
+ - Look for segments containing digits and common separators (+, -, (), spaces).
+ - If no clear split, regex match for phone-like strings in the entire line.
 - Name extraction:
-  - First non-empty segment that does not look like a phone number.
+ - First non-empty segment that does not look like a phone number.
 - Cleans and validates phone numbers using the shared validator.
 
 ```mermaid
 flowchart TD
 Start(["Start TXT Extraction"]) --> ReadLines["Read lines with UTF-8"]
 ReadLines --> ForEachLine["For each non-empty line"]
-ForEachLine --> SplitParts["Split by , ; \\t |"]
+ForEachLine --> SplitParts["Split by, ; \\t |"]
 SplitParts --> FindPhone["Find first segment that looks like phone"]
 FindPhone --> FoundPhone{"Found phone candidate?"}
 FoundPhone --> |Yes| AssignName["Assign remaining segment as name"]
@@ -203,7 +203,7 @@ NextEntry --> Done(["Return contacts[]"])
 ### Phone number cleaning and validation
 - Removes separators and non-digit characters except plus sign.
 - Normalizes leading zeros and adds country prefix when applicable.
-- Validates digit count to ensure realistic phone lengths.
+- Checks digit count against the 7-15 range.
 - Used consistently across CSV, Excel, TXT, and manual parsing.
 
 ```mermaid
@@ -259,15 +259,14 @@ ElectronUI --> Pyodide
 - File uploads are removed after processing to avoid disk pressure.
 - Electron-managed CSV/TXT import avoids heavy backend calls for small files processed in the renderer.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Unsupported file type: Ensure file extension is CSV, TXT, XLSX, or XLS. XLSX/XLS are not supported in the Electron-managed import flow.
 - Encoding errors: Files should be UTF-8 encoded. The system attempts UTF-8 decoding; non-UTF-8 files may fail.
-- Malformed data: Phone numbers must contain 7–15 digits after cleaning. Entries with invalid phone formats are skipped.
+- Malformed data: Phone numbers must contain 7-15 digits after cleaning. Entries with invalid phone formats are skipped.
 - Large files: CSV fallback parsing is designed for streaming; Excel files may require optimization or smaller chunks.
 - Column naming: Use keywords like phone, number, mobile, cell, tel for phone columns; name, contact, person for names.
 
 ## Conclusion
-The file import and contact extraction system provides a reliable, multi-format pipeline with automatic detection and fallback strategies. It supports CSV, Excel, and text files, with keyword-based column detection for phone numbers and names. Phone number cleaning and validation ensure consistent formats, while error handling and security measures protect against malformed inputs and unsupported formats. For large files, streaming and fallback parsing minimize memory usage and improve reliability.
+
+Prefer clear column headers. Fallback parsers exist, but keyword detection on `phone` / `name` columns is the happy path.

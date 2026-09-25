@@ -1,7 +1,7 @@
 # Side panel UI components
 
 ## Introduction
-This page provides detailed documentation for the Side Panel UI Components of the Agentic Browser extension. It focuses on the main App.tsx component structure, state management, and component composition patterns. It details the UnifiedSettingsMenu for configuration management, ProfileSidebar for user information display, ResponseSection for showing agent responses, and LoadingScreen for user feedback. The guide explains component hierarchy, prop passing, state synchronization, and styling approaches. It includes examples of component usage, customization options, and responsive design considerations. It also documents the integration with React hooks for authentication, tab management, and WebSocket communication, along with accessibility features, cross-browser styling compatibility, and performance optimization strategies.
+Side panel UI: `App.tsx`, `UnifiedSettingsMenu`, `ProfileSidebar`, `ResponseSection`, `LoadingScreen`, and the hooks for auth, tabs, and WebSocket.
 
 ## Project structure
 The Side Panel UI resides under the extension entrypoint sidepanel and follows a feature-based organization:
@@ -77,7 +77,7 @@ Key integration points:
 The Side Panel UI follows a unidirectional data flow:
 - App.tsx initializes hooks and state, then conditionally renders either LoadingScreen, SignInScreen, or the main UI with AgentExecutor and settings/profile panels.
 - Hooks manage browser-specific integrations (storage, tabs, identity, WebSocket).
-- Components receive props and trigger updates via callbacks, ensuring predictable state transitions.
+- Components receive props and trigger updates via callbacks.
 
 ```mermaid
 sequenceDiagram
@@ -122,7 +122,7 @@ Customization and responsiveness:
 
 Accessibility and cross-browser compatibility:
 - Relies on browser APIs (storage, identity, tabs) and applies minimal DOM manipulation.
-- Global CSS ensures consistent styling across browsers.
+- Global CSS keeps styling aligned across browsers.
 
 ### UnifiedSettingsMenu: configuration management
 Responsibilities:
@@ -227,4 +227,5 @@ Common issues and resolutions:
 - Styling inconsistencies: Confirm global fonts are loaded and CSS selectors match component classes.
 
 ## Conclusion
-The Side Panel UI Components form a cohesive, modular system centered around App.tsx. They use React hooks for cross-cutting concerns, maintain consistent styling through global CSS, and provide intuitive controls for configuration and user profile management. The architecture supports scalability, accessibility, and cross-browser compatibility while keeping performance considerations front-of-mind.
+Props down, callbacks up. Shared CSS keeps the panel consistent. Hooks own auth, tabs, and socket state so presentational pieces stay dull.
+

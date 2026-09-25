@@ -1,7 +1,7 @@
 # Service architecture
 
 ## Introduction
-This page describes the service architecture of the SuperSet Telegram Notification Bot. The system is built around a modular, dependency-injected design where 12+ services encapsulate distinct responsibilities: data persistence, content processing, notification delivery, and administrative operations. The main entry point orchestrates service creation and coordinates workflows, enabling independent testing, maintenance, and deployment of each component.
+Twelve-plus services behind dependency injection: persistence, content processing, delivery, admin. main.py wires them up so each piece can be tested or swapped without dragging the rest along.
 
 ## Project structure
 The service layer resides under app/services and exposes cohesive modules for data access, processing, formatting, and delivery. The main entry point initializes services and wires them together for different operational modes (CLI commands, servers, daemons).
@@ -63,10 +63,10 @@ The core processing layer consists of the following services, each with a single
 - PlacementStatsCalculatorService: Computes placement statistics (overall, branch-wise, company-wise).
 - AdminTelegramService: Administrative commands for users, broadcasts, scraping, daemon control, and logs viewing.
 
-These services communicate through constructor injection and method calls, avoiding internal instantiation and enabling testability.
+These services communicate through constructor injection and method calls, avoiding internal instantiation so tests can inject fakes.
 
 ## Architecture overview
-The system follows a dependency injection pattern at the application entry point. Commands in main.py instantiate shared dependencies (e.g., DBClient, DatabaseService) and pass them into services. This ensures services remain stateless and easily testable.
+The system follows a dependency injection pattern at the application entry point. Commands in main.py instantiate shared dependencies (e.g., DBClient, DatabaseService) and pass them into services. Services stay free of hidden globals and stay easy to test.
 
 ```mermaid
 sequenceDiagram
@@ -386,4 +386,4 @@ STATS --> DB
 - Daemon control: Use AdminTelegramService commands to stop scheduler and view logs.
 
 ## Conclusion
-The SuperSet Telegram Notification Bot employs a clean, dependency-injected service architecture. The main entry point centralizes initialization and orchestration, while services maintain focused responsibilities and well-defined interfaces. This design enables independent testing, modular maintenance, and scalable extension across data sources, processing pipelines, and delivery channels.
+main.py wires services through constructors. Each service owns one job. That is why you can test PlacementService without standing up Telegram.

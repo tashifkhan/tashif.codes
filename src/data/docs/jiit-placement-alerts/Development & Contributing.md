@@ -1,10 +1,10 @@
 # Development & contributing
 
 ## Introduction
-This page provides detailed development and contribution guidance for the SuperSet Telegram Notification Bot. It covers local setup, testing, code standards, development tools, debugging and profiling, performance optimization, CI/CD, and extension strategies for adding new notification channels and data sources.
+Local setup, tests, style, debugging, and how to add a channel or data source without inventing a parallel stack. CI expectations and the extension points that already exist.
 
 ## Project structure
-The project is organized as a modular Python application under the app/ directory with clear separation of concerns:
+The project is organized as a modular Python application under the `app/` directory:
 - Core configuration and daemon utilities
 - Service layer for business logic
 - Servers for Telegram bot, webhook, and update orchestration
@@ -49,7 +49,7 @@ BOT --> TG
 - Notification runner coordinating dispatch across channels
 - Telegram bot server handling commands and user interactions
 
-Key responsibilities and integration points are defined in the CLI and service wiring.
+Responsibilities and integration points are defined in the CLI and service wiring.
 
 ## Architecture overview
 The system follows a dependency-injected, modular architecture:
@@ -109,7 +109,7 @@ SetupLog --> Done(["Ready"])
 ```
 
 ### Daemon utilities
-Unix-style daemonization with PID file management, graceful stop, and status reporting. Ensures background processes detach cleanly and redirect output.
+Unix-style daemonization with PID file management, graceful stop, and status reporting. Background processes detach and redirect output.
 
 ```mermaid
 flowchart TD
@@ -196,7 +196,7 @@ BS-->>TGB : Stats reply
 ## Dependency analysis
 - Project metadata and dependencies are defined in pyproject.toml and requirements.txt
 - Development uses uv for dependency management and reproducible environments
-- Docker Compose provides a local MongoDB instance for development
+- Docker Compose spins up a local MongoDB instance for development
 
 ```mermaid
 graph TB
@@ -234,28 +234,28 @@ Common issues and remedies:
 
 ## Extensibility & integration guide
 - Adding a new notification channel:
-  - Implement a channel-specific service following the INotificationChannel pattern
-  - Integrate via NotificationRunner and CLI flags
-  - Add tests and update documentation
+ - Implement a channel-specific service following the INotificationChannel pattern
+ - Integrate via NotificationRunner and CLI flags
+ - Add tests and update documentation
 - Adding a new data source:
-  - Create a client/service pair similar to SupersetClientService or PlacementService
-  - Wire into update orchestration in main.py
-  - Ensure idempotent persistence and event generation for notifications
+ - Create a client/service pair similar to SupersetClientService or PlacementService
+ - Wire into update orchestration in main.py
+ - Ensure idempotent persistence and event generation for notifications
 - Integrating additional LLM pipelines:
-  - Extend LangGraph workflows in dedicated services
-  - Maintain separation of concerns and inject dependencies
+ - Extend LangGraph workflows in dedicated services
+ - Maintain separation of concerns and inject dependencies
 
 ## Continuous integration and release management
-- Scheduled workflows run the bot hourly and scrape official data
-- Python version pinned to 3.11 in CI for stability
-- Secrets injected for Telegram, MongoDB, SuperSet credentials, and email access
-- Use uv caching for faster dependency installs in CI
+- GitHub Actions under `.github/workflows/` are disabled (`.legacy`). Live scraping is `python main.py scheduler`, not CI.
+- Python 3.12+ (`requires-python` in `app/pyproject.toml`)
+- Secrets for Telegram, MongoDB, SuperSet, and email live in `.env`
+- `uv sync` from `app/` is the install path; `uv.lock` is the lockfile
 
 ## Development & testing guide
 - Local setup with uv sync and Docker Compose for MongoDB
 - Run pytest for unit tests and coverage
 - Use mocks for external services in tests
-- Follow AGENTS.md style and best practices
+- Follow AGENTS.md style rules
 
 ## Debugging and profiling
 - Use safe_print for daemon-friendly output
@@ -270,4 +270,4 @@ Common issues and remedies:
 - Configuration via Pydantic settings with validation
 
 ## Conclusion
-This guide consolidates local development, testing, contribution, and operational practices for the SuperSet Telegram Notification Bot. By following the documented workflows, standards, and extension patterns, contributors can reliably add features, integrate new channels, and maintain system performance and reliability.
+Clone `https://github.com/tashifkhan/JIIT-placement-alerts`, `cd app`, `uv sync`, copy `.env.example`. Tests are pytest under `app/tests/`. The scheduler cron is in `app/servers/scheduler_server.py`.

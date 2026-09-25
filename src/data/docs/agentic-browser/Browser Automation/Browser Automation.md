@@ -1,10 +1,10 @@
 # Browser automation
 
 ## Introduction
-This page explains the Browser Automation system that powers declarative, model-driven web actions inside a browser extension. Agents declare high-level actions (such as clicking elements, filling forms, extracting DOM structures, and navigating), and the extension safely executes them within the active tab using injected scripts. The system integrates a content script architecture, a background service worker for coordination, and message passing between components. It also documents dynamic script generation for safe execution, security guardrails, and cross-browser compatibility considerations.
+Declarative browser actions inside the extension. Agents emit plans (click, fill, extract, navigate); the background worker and content script execute them in the active tab with logging and approval.
 
 ## Project structure
-The extension is organized into:
+Extension layout:
 - Background service worker for tab control, tool dispatch, and message handling
 - Content script for lightweight page-side actions and overlays
 - Side panel React app for user interaction, agent orchestration, and command parsing
@@ -44,7 +44,7 @@ CFG --> UI
 - Agent Orchestration: The side panel parses slash commands, resolves endpoints, captures page context, and executes agent workflows that may include generated action plans.
 
 ## Architecture overview
-The system follows a layered architecture:
+Stack from the outside in:
 - UI Layer (Side Panel): Parses user intent, resolves agent actions, and triggers execution.
 - Orchestration Layer: Executes agent workflows, captures page context, and coordinates action plans.
 - Control Layer (Background): Dispatches tools/actions to appropriate handlers, manages tabs, and injects scripts.
@@ -106,7 +106,7 @@ Page --> Result(["Return result"])
 ```
 
 ### DOM inspection and manipulation
-The system supports reliable DOM inspection and manipulation:
+DOM inspection and manipulation:
 - Element targeting: CLICK, TYPE, SELECT, GET_ELEMENT_TEXT, GET_ELEMENT_ATTRIBUTES, FIND_ELEMENTS
 - Form filling: TYPE supports contenteditable and standard inputs; FILL_FORM supports multiple fields and optional submission
 - Scrolling: SCROLL supports direction, amount, and scrolling to an element
@@ -216,4 +216,5 @@ Common issues and resolutions:
 - Cross-browser differences: Some APIs behave differently across engines; test on target browsers and adjust accordingly.
 
 ## Conclusion
-The Browser Automation system provides a secure, declarative framework for agents to control the browser. By combining a reliable background dispatcher, safe dynamic script injection, and a user-friendly side panel, it enables powerful automation while maintaining safety and transparency. With careful attention to permissions, logging, and sanitization, the system can be extended and adapted across browsers with confidence.
+Background dispatches, content scripts touch the DOM, the side panel shows what will run. Permissions, logs, and sanitization are the real product, not the click helpers.
+

@@ -1,7 +1,7 @@
 # Environment variables
 
 ## Introduction
-This page provides detailed guidance for environment variables used across the application. It covers required variables (such as Google OAuth client credentials), service-specific credentials (Gmail and SMTP), optional configuration for development and runtime behavior, precedence and fallback mechanisms, security best practices, cross-platform considerations, and configuration templates for development, staging, and production.
+Env vars the app reads for OAuth, SMTP, and local runtime. Missing Google client credentials will stop Gmail auth cold.
 
 ## Project structure
 The application consists of:
@@ -38,16 +38,16 @@ PYAPP -. "Optional local dev" .- DEV
 
 ## Core components
 - Required environment variables
-  - GOOGLE_CLIENT_ID: Used by the Gmail OAuth flow to construct the OAuth2 client.
-  - GOOGLE_CLIENT_SECRET: Used by the Gmail OAuth flow to construct the OAuth2 client.
+ - GOOGLE_CLIENT_ID: Used by the Gmail OAuth flow to construct the OAuth2 client.
+ - GOOGLE_CLIENT_SECRET: Used by the Gmail OAuth flow to construct the OAuth2 client.
 - Optional environment variables
-  - NODE_ENV: Controls development mode behavior and logging verbosity.
+ - NODE_ENV: Controls development mode behavior and logging verbosity.
 - Service-specific configuration
-  - Gmail: OAuth2 flow requires GOOGLE_* variables; tokens are stored securely.
-  - SMTP: Accepts host, port, user, pass, and secure flags at runtime; optional encrypted storage of partial config.
+ - Gmail: OAuth2 flow requires GOOGLE_* variables; tokens are stored securely.
+ - SMTP: Accepts host, port, user, pass, and secure flags at runtime; optional encrypted storage of partial config.
 
 Notes:
-- The project documentation instructs creating a.env file in the electron directory and loading dotenv in the Gmail handler module.
+- The project documentation instructs creating a .env file in the electron directory and loading dotenv in the Gmail handler module.
 - The Electron main process does not directly read environment variables; Gmail and SMTP handlers manage their own configuration needs.
 
 ## Architecture overview
@@ -71,21 +71,21 @@ Main-->>UI : "Auth result"
 
 ## Detailed component analysis
 
-### Gmail OAuth environment variables
+### Gmail oAuth environment variables
 - Purpose: Construct OAuth2 client for Gmail API.
 - Required variables:
-  - GOOGLE_CLIENT_ID
-  - GOOGLE_CLIENT_SECRET
+ - GOOGLE_CLIENT_ID
+ - GOOGLE_CLIENT_SECRET
 - Behavior:
-  - The handler validates presence of both variables before proceeding.
-  - If missing, returns an error indicating missing credentials.
-  - On success, exchanges authorization code for tokens and persists them securely.
+ - The handler validates presence of both variables before proceeding.
+ - If missing, returns an error indicating missing credentials.
+ - On success, exchanges authorization code for tokens and persists them securely.
 - Precedence and fallback:
-  - No fallback mechanism is implemented; missing variables cause immediate failure.
+ - No fallback mechanism is implemented; missing variables cause immediate failure.
 - Security:
-  - Tokens are stored using electron-store; passwords are not persisted.
+ - Tokens are stored using electron-store; passwords are not persisted.
 - Cross-platform:
-  - Uses dotenv loader and process.env; behavior is consistent across platforms.
+ - Uses dotenv loader and process.env; behavior is consistent across platforms.
 
 ```mermaid
 flowchart TD
@@ -104,16 +104,16 @@ ReturnError --> Done
 ### SMTP configuration
 - Purpose: Send emails via SMTP.
 - Required runtime configuration:
-  - host, port, user, pass
+ - host, port, user, pass
 - Optional behavior:
-  - secure flag indicates SSL/TLS mode.
-  - saveCredentials flag persists partial SMTP config (excluding password).
+ - secure flag indicates SSL/TLS mode.
+ - saveCredentials flag persists partial SMTP config (excluding password).
 - Precedence and fallback:
-  - No fallback; incomplete configuration returns an error.
+ - No fallback; incomplete configuration returns an error.
 - Security:
-  - Password is not stored; only host/port/secure/user are saved when requested.
+ - Password is not stored; only host/port/secure/user are saved when requested.
 - Cross-platform:
-  - Configuration is passed from UI to handler; behavior is consistent.
+ - Configuration is passed from UI to handler; behavior is consistent.
 
 ```mermaid
 flowchart TD
@@ -133,12 +133,12 @@ ReturnError --> Done
 ### Development mode and logging
 - Purpose: Control development vs production behavior and logging verbosity.
 - Variable:
-  - NODE_ENV
+ - NODE_ENV
 - Behavior:
-  - Development mode enables dev tools and alternate asset loading.
-  - Scripts set NODE_ENV using cross-env for cross-platform compatibility.
+ - Development mode enables dev tools and alternate asset loading.
+ - Scripts set NODE_ENV using cross-env for cross-platform compatibility.
 - Precedence and fallback:
-  - Defaults to production-like behavior if unset; explicit setting overrides.
+ - Defaults to production-like behavior if unset; explicit setting overrides.
 
 ```mermaid
 flowchart TD
@@ -153,19 +153,19 @@ Prod --> End
 ### Python backend environment
 - Purpose: Local contact processing API.
 - Behavior:
-  - The backend runs on a configurable port and serves endpoints for health checks and contact processing.
-  - No environment variables are required for operation; it listens on a fixed port in development.
+ - The backend runs on a configurable port and serves endpoints for health checks and contact processing.
+ - No environment variables are required for operation; it listens on a fixed port in development.
 - Notes:
-  - The Electron app can integrate with this backend when available; otherwise, it falls back to basic parsing.
+ - The Electron app can integrate with this backend when available; otherwise, it falls back to basic parsing.
 
 ## Dependency analysis
 - Dotenv loading:
-  - The Gmail handler imports dotenv and expects a.env file in the working directory.
+ - The Gmail handler imports dotenv and expects a .env file in the working directory.
 - Electron scripts:
-  - Development and production scripts set NODE_ENV using cross-env for cross-platform compatibility.
+ - Development and production scripts set NODE_ENV using cross-env for cross-platform compatibility.
 - Handler dependencies:
-  - Gmail handler depends on GOOGLE_* variables.
-  - SMTP handler depends on runtime configuration passed from the UI.
+ - Gmail handler depends on GOOGLE_* variables.
+ - SMTP handler depends on runtime configuration passed from the UI.
 
 ```mermaid
 graph LR
@@ -179,61 +179,57 @@ SMH["smtp-handler.js"] --> STORE
 
 ## Performance considerations
 - Rate limiting:
-  - Gmail and SMTP handlers implement delays between operations to respect provider limits and reduce risk of throttling.
+ - Gmail and SMTP handlers implement delays between operations to respect provider limits and reduce risk of throttling.
 - Resource usage:
-  - Development mode increases memory footprint due to dev tools and hot reload; production builds optimize for performance.
+ - Development mode increases memory footprint due to dev tools and hot reload; production builds optimize for performance.
 
 ## Troubleshooting guide
 Common environment variable issues and resolutions:
 - Missing Google OAuth credentials:
-  - Symptom: Authentication fails early with a missing credentials error.
-  - Resolution: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are present in the.env file and loaded by dotenv.
+ - Symptom: Authentication fails early with a missing credentials error.
+ - Resolution: Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are present in the .env file and loaded by dotenv.
 - Incorrect NODE_ENV:
-  - Symptom: Dev tools not opening or assets not loading.
-  - Resolution: Set NODE_ENV to development for dev mode; otherwise defaults to production-like behavior.
+ - Symptom: Dev tools not opening or assets not loading.
+ - Resolution: Set NODE_ENV to development for dev mode; otherwise defaults to production-like behavior.
 - Incomplete SMTP configuration:
-  - Symptom: Immediate error indicating incomplete SMTP configuration.
-  - Resolution: Provide host, port, user, and pass; optionally set secure based on server requirements.
+ - Symptom: Immediate error indicating incomplete SMTP configuration.
+ - Resolution: Provide host, port, user, and pass; optionally set secure based on server requirements.
 
 Detection and validation:
 - Gmail handler explicitly checks for GOOGLE_* variables and returns a structured error if missing.
 - SMTP handler validates required fields and returns a clear error message for incomplete configuration.
 
 ## Conclusion
-The application relies on a small set of environment variables for secure service integration:
-- GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET for Gmail OAuth
-- Optional NODE_ENV for development control
-- Runtime SMTP configuration for email sending
 
-Best practices include storing secrets in.env files, avoiding hardcoded credentials, and using electron-store for secure persistence of tokens and partial SMTP configs. Development scripts ensure cross-platform compatibility for environment variable handling.
+Keep secrets in env or the OS keychain-backed store. Do not commit `.env` files with real client secrets.
 
 ## Appendices
 
 ### Configuration templates
 - Development (.env)
-  - GOOGLE_CLIENT_ID=your_google_client_id
-  - GOOGLE_CLIENT_SECRET=your_google_client_secret
+ - GOOGLE_CLIENT_ID=your_google_client_id
+ - GOOGLE_CLIENT_SECRET=your_google_client_secret
 - Staging/Production
-  - GOOGLE_CLIENT_ID=your_production_client_id
-  - GOOGLE_CLIENT_SECRET=your_production_client_secret
-  - NODE_ENV=production
+ - GOOGLE_CLIENT_ID=your_production_client_id
+ - GOOGLE_CLIENT_SECRET=your_production_client_secret
+ - NODE_ENV=production
 
 Note: These templates reflect the variables currently used by the application. Adjust values according to your service providers and deployment targets.
 
-### Security best practices
+### Security habits
 - Credential storage
-  - Store secrets in.env files outside version control.
-  - Use electron-store for encrypted persistence of tokens and partial SMTP configs.
+ - Store secrets in .env files outside version control.
+ - Use electron-store for encrypted persistence of tokens and partial SMTP configs.
 - Access control
-  - Restrict file permissions on.env and application directories.
+ - Restrict file permissions on .env and application directories.
 - Encryption requirements
-  - Rely on electron-store's built-in encryption for persisted tokens.
+ - Rely on electron-store's built-in encryption for persisted tokens.
 - Least privilege
-  - Grant only necessary scopes to OAuth clients.
-  - Avoid saving passwords; rely on short-lived tokens where possible.
+ - Grant only necessary scopes to OAuth clients.
+ - Avoid saving passwords; rely on short-lived tokens where possible.
 
 ### Platform-Specific notes
 - Cross-platform environment handling
-  - Scripts use cross-env to normalize NODE_ENV across Windows, macOS, and Linux.
+ - Scripts use cross-env to normalize NODE_ENV across Windows, macOS, and Linux.
 - Asset loading differences
-  - Development loads from localhost:5173; production loads bundled assets.
+ - Development loads from localhost:5173; production loads bundled assets.

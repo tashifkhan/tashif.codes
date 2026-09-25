@@ -1,7 +1,6 @@
 # Resume analysis API
 
-## Introduction
-This page provides detailed API documentation for the resume analysis functionality. It covers:
+Resume analysis HTTP API: upload, text analysis, and batch processing under the FastAPI resume routes.
 - File upload endpoints for resume processing
 - Text-based analysis endpoints
 - Batch processing capabilities
@@ -10,7 +9,7 @@ This page provides detailed API documentation for the resume analysis functional
 - The NLP processing pipeline, entity recognition, and structured output formats
 - Practical examples of resume analysis workflows, error handling for malformed inputs, and performance considerations for large files
 
-## Project structure
+## Repository layout
 The resume analysis feature is implemented as part of a FastAPI backend. Key components include:
 - Routers that define API endpoints for file-based and text-based analysis
 - Services that orchestrate document processing, LLM-based extraction, and validation
@@ -34,16 +33,16 @@ SvcRA --> Models["Models: resume/schemas.py"]
 Models --> Common["Common Models: common/schemas.py"]
 ```
 
-## Core components
+## Building blocks
 - File-based resume analysis endpoint: Accepts a resume file and returns structured data via LLM extraction and validation.
 - Text-based resume analysis endpoint: Accepts pre-formatted text and returns detailed analysis.
 - Detailed analysis service: Extracts skills, languages, education, experience, projects, and more.
 - Enrichment endpoints: Analyze, improve, refine, regenerate, and apply improvements to resume data.
 - Tailored resume generation: Aligns resume content with a target job role and optional context.
 - Data processors: Handle document conversion, text formatting, JSON extraction, and LLM prompt chains.
-- Schemas: Define typed request/response models for reliable API contracts.
+- Schemas: Define typed request/response models for typed API contracts.
 
-## Architecture overview
+## How it fits together
 The system follows a layered architecture:
 - Presentation layer: FastAPI routers expose endpoints for file and text-based analysis, enrichment, improvement, and tailored resume generation.
 - Application layer: Services coordinate document processing, LLM interactions, and data validation.
@@ -70,13 +69,11 @@ S-->>C : ResumeUploadResponse(data, cleaned_data_dict)
 end
 ```
 
-## Detailed component analysis
-
-### File-Based resume analysis
+## File-Based resume analysis
 Endpoints:
-- POST /api/v1/resume/analysis
-- POST /api/v2/resume/format-and-analyze
-- POST /api/v2/resume/analysis
+  - POST /api/v1/resume/analysis
+  - POST /api/v2/resume/format-and-analyze
+  - POST /api/v2/resume/analysis
 
 Processing flow:
 - Reads uploaded file bytes and writes to a temporary location
@@ -101,10 +98,10 @@ BuildResp --> End(["Return response"])
 Err400 --> End
 ```
 
-### Text-Based resume analysis
+## Text-Based resume analysis
 Endpoints:
-- POST /api/v2/resume/format-and-analyze
-- POST /api/v2/resume/analysis
+  - POST /api/v2/resume/format-and-analyze
+  - POST /api/v2/resume/analysis
 
 Processing flow:
 - Accepts pre-formatted text
@@ -129,7 +126,7 @@ D-->>S : analysis_dict
 S-->>C : ComprehensiveAnalysisData
 ```
 
-### Detailed analysis pipeline
+## Detailed analysis pipeline
 The detailed analysis extracts:
 - Skills with proficiency percentages
 - Languages
@@ -188,7 +185,7 @@ ComprehensiveAnalysisData --> SkillProficiency : "contains"
 ComprehensiveAnalysisData --> EducationEntry : "contains"
 ```
 
-### Resume enrichment endpoints
+## Resume enrichment endpoints
 Capabilities:
 - Analyze resume items for enrichment
 - Generate improved descriptions
@@ -222,7 +219,7 @@ R->>S : apply_regenerated_items(resume_data, items)
 S-->>C : {"updated_resume"}
 ```
 
-### Resume improvement and tailored resume
+## Resume improvement and tailored resume
 - Improve endpoint aligns resume with keywords and refines content.
 - Tailored resume endpoint generates a tailored analysis given a target role and optional context.
 
@@ -247,7 +244,7 @@ TR->>ST : tailor_resume(process_document(file), ...)
 ST-->>C : ComprehensiveAnalysisResponse
 ```
 
-## Dependency analysis
+## Dependencies
 Key dependencies and relationships:
 - Routers depend on services for business logic
 - Services depend on document processing utilities and LLM data processors
@@ -268,7 +265,7 @@ TR["tailored_resume.py"] --> TRS["tailored_resume.py"]
 TR --> RS
 ```
 
-## Performance considerations
+## Performance
 - Document conversion: PDF/DOC/DOCX are converted to Markdown for consistent parsing; fallback conversion uses multimodal LLM for PDFs when supported.
 - LLM reliability: Text and JSON formatting includes fallbacks and error handling to avoid blocking failures.
 - Large files: Temporary file handling prevents memory overload during processing.
@@ -277,38 +274,34 @@ TR --> RS
 
 [No sources needed since this section provides general guidance]
 
-## Troubleshooting guide
-Common issues and resolutions:
+## Troubleshooting
+Common issues:
+
 - Unsupported file type: Ensure file extension is TXT, MD, PDF, or DOCX; otherwise conversion returns None and a 400 error is raised.
 - Empty or invalid resume text: Validation checks for resume keywords; failure triggers a 400 error.
 - LLM unavailability or malformed JSON: JSON extraction attempts multiple parsing strategies; on failure returns empty dict or raises 500.
 - Rate limit or auth errors: Detected conditions trigger fallback to original text with warnings.
 
-## Conclusion
-The resume analysis API provides reliable endpoints for file-based and text-based processing, detailed structured extraction, enrichment workflows, and tailored resume generation. Typed schemas ensure reliable integrations, while resilient LLM processing and validation improve reliability for varied inputs.
-
-[No sources needed since this section summarizes without analyzing specific files]
-
-## Appendices
+## Appendix
 
 ### API endpoints summary
 - File-based analysis
-  - POST /api/v1/resume/analysis
-  - POST /api/v2/resume/format-and-analyze
-  - POST /api/v2/resume/analysis
+ - POST /api/v1/resume/analysis
+ - POST /api/v2/resume/format-and-analyze
+ - POST /api/v2/resume/analysis
 - Enrichment
-  - POST /api/v1/resume/enrichment/analyze
-  - POST /api/v1/resume/enrichment/improve
-  - POST /api/v1/resume/enrichment/refine
-  - POST /api/v1/resume/enrichment/apply
-  - POST /api/v1/resume/enrichment/regenerate
-  - POST /api/v1/resume/enrichment/apply-regenerated
+ - POST /api/v1/resume/enrichment/analyze
+ - POST /api/v1/resume/enrichment/improve
+ - POST /api/v1/resume/enrichment/refine
+ - POST /api/v1/resume/enrichment/apply
+ - POST /api/v1/resume/enrichment/regenerate
+ - POST /api/v1/resume/enrichment/apply-regenerated
 - Improvement
-  - POST /api/v1/resume/improve
-  - POST /api/v1/resume/refine
+ - POST /api/v1/resume/improve
+ - POST /api/v1/resume/refine
 - Tailored Resume
-  - POST /api/v1/resume/tailor (text-based)
-  - POST /api/v1/resume/tailor (file-based)
+ - POST /api/v1/resume/tailor (text-based)
+ - POST /api/v1/resume/tailor (file-based)
 
 ### Structured output schemas
 - ComprehensiveAnalysisData: Skills, languages, education, experience, projects, publications, certifications, achievements, personal identifiers, predicted field

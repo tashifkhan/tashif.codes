@@ -1,13 +1,12 @@
 # Python backend services
 
 ## Introduction
-This page provides detailed documentation for the Python backend services and utilities that power contact processing and validation in the WhatsApp bulk messaging system. The backend consists of a Flask-based API for file uploads and phone number validation, along with standalone utilities for extracting contacts from CSV, TXT, and Excel files, validating individual phone numbers, and parsing manually entered numbers. It also covers integration with the Pyodide runtime for browser-based Python execution within the Electron application, local development server implementation, and command-line interface functions.
+Python side of contact work: Flask API, file extractors, validation, and the bits mirrored into the renderer via Pyodide.
 
-The backend is designed to:
 - Support multiple file formats with automatic format detection
 - Extract and clean phone numbers with flexible international formatting
 - Provide reliable error handling and fallback parsing
-- Integrate smoothly with the Electron frontend via Pyodide
+- Integrate cleanly with the Electron frontend via Pyodide
 - Offer a lightweight local development server for testing and validation
 
 ## Project structure
@@ -48,30 +47,30 @@ J --> A
 This section outlines the primary backend components and their responsibilities.
 
 - Flask API server
-  - Provides endpoints for health checks, file uploads, manual number parsing, and phone number validation
-  - Implements file type validation, secure filename handling, and cleanup of uploaded files
-  - Uses pandas for CSV and Excel parsing with fallback to pure Python parsing
+ - Provides endpoints for health checks, file uploads, manual number parsing, and phone number validation
+ - Implements file type validation, secure filename handling, and cleanup of uploaded files
+ - Uses pandas for CSV and Excel parsing with fallback to pure Python parsing
 
 - Contact extraction utilities
-  - Extracts contacts from CSV, TXT, and Excel files
-  - Detects phone number and name columns automatically
-  - Cleans and standardizes phone numbers with flexible international formatting
+ - Extracts contacts from CSV, TXT, and Excel files
+ - Detects phone number and name columns automatically
+ - Cleans and standardizes phone numbers with flexible international formatting
 
 - Phone number validation utility
-  - Validates and cleans individual phone numbers
-  - Enforces length constraints and international formatting rules
+ - Validates and cleans individual phone numbers
+ - Enforces length constraints and international formatting rules
 
 - Manual numbers parser
-  - Parses manually entered phone numbers with optional names
-  - Supports multiple input formats and separators
+ - Parses manually entered phone numbers with optional names
+ - Supports multiple input formats and separators
 
 - Pyodide integration
-  - Loads Pyodide runtime and executes Python scripts in the browser
-  - Enables manual number parsing directly from the Electron UI
+ - Loads Pyodide runtime and executes Python scripts in the browser
+ - Enables manual number parsing directly from the Electron UI
 
 - Local development server and CLI functions
-  - Provides a local Flask server for development and testing
-  - Offers CLI functions for sending WhatsApp messages and managing contacts
+ - Provides a local Flask server for development and testing
+ - Offers CLI functions for sending WhatsApp messages and managing contacts
 
 ## Architecture overview
 The backend architecture follows a layered design:
@@ -177,7 +176,7 @@ The contact extraction utilities support three file formats with automatic forma
 - Extracts names from the remaining parts of each line
 
 #### Excel processing
-- Supports both.xlsx and.xls formats via pandas
+- Supports both .xlsx and .xls formats via pandas
 - Automatically detects column headers for phone numbers and names
 - Handles missing values and NaN entries gracefully
 
@@ -341,81 +340,81 @@ SQL --> DB
 The backend implements several performance optimization techniques:
 
 - Efficient file processing
-  - Uses pandas for fast CSV and Excel parsing
-  - Implements fallback parsing for edge cases
-  - Minimizes memory usage by processing files line-by-line for TXT files
+ - Uses pandas for fast CSV and Excel parsing
+ - Implements fallback parsing for edge cases
+ - Minimizes memory usage by processing files line-by-line for TXT files
 
 - Regex optimization
-  - Pre-compiles regex patterns for phone number detection
-  - Uses efficient character class matching
-  - Avoids excessive backtracking in patterns
+ - Pre-compiles regex patterns for phone number detection
+ - Uses efficient character class matching
+ - Avoids excessive backtracking in patterns
 
 - Memory management
-  - Cleans up uploaded files immediately after processing
-  - Uses generators for large file processing
-  - Avoids loading entire files into memory unnecessarily
+ - Cleans up uploaded files immediately after processing
+ - Uses generators for large file processing
+ - Avoids loading entire files into memory unnecessarily
 
 - Error handling efficiency
-  - Implements early exit for invalid inputs
-  - Uses try-except blocks around expensive operations
-  - Provides fallback parsing to minimize processing failures
+ - Implements early exit for invalid inputs
+ - Uses try-except blocks around expensive operations
+ - Provides fallback parsing to minimize processing failures
 
 - Browser-based execution
-  - Pyodide runtime is loaded once and reused
-  - Python scripts are cached after initial load
-  - Minimal overhead for repeated parsing operations
+ - Pyodide runtime is loaded once and reused
+ - Python scripts are cached after initial load
+ - Minimal overhead for repeated parsing operations
 
 ## Troubleshooting guide
 Common issues and their solutions:
 
 ### File processing errors
-- **Empty or malformed files**: The system provides fallback parsing for CSV files when pandas fails
-- **Encoding issues**: Files are processed with UTF-8 encoding; ensure proper file encoding
-- **Column header variations**: The system searches for common keywords in column names
+- **Empty or malformed files.** The system provides fallback parsing for CSV files when pandas fails
+- **Encoding issues.** Files are processed with UTF-8 encoding; ensure proper file encoding
+- **Column header variations.** The system searches for common keywords in column names
 
 ### Phone number validation failures
-- **Invalid length**: Numbers must be between 7 and 15 digits after cleaning
-- **Unsupported characters**: Only digits, plus signs, and common separators are allowed
-- **Format inconsistencies**: The cleaner removes separators and applies international formatting rules
+- **Invalid length.** Numbers must be between 7 and 15 digits after cleaning
+- **Unsupported characters.** Only digits, plus signs, and common separators are allowed
+- **Format inconsistencies.** The cleaner removes separators and applies international formatting rules
 
 ### Pyodide integration issues
-- **CDN loading failures**: The system attempts to load Pyodide from CDN; check network connectivity
-- **Script execution errors**: Python scripts are executed asynchronously; check console for error messages
-- **Memory limitations**: Large input texts may exceed Pyodide memory limits
+- **CDN loading failures.** The system attempts to load Pyodide from CDN; check network connectivity
+- **Script execution errors.** Python scripts are executed asynchronously; check console for error messages
+- **Memory limitations.** Large input texts may exceed Pyodide memory limits
 
 ### Local development server issues
-- **Database initialization**: The server creates tables on startup; ensure proper permissions
-- **File upload errors**: Check upload directory permissions and available disk space
-- **CORS issues**: Ensure proper CORS configuration for frontend integration
+- **Database initialization.** The server creates tables on startup; ensure proper permissions
+- **File upload errors.** Check upload directory permissions and available disk space
+- **CORS issues.** Ensure proper CORS configuration for frontend integration
 
 ## Security considerations
 The backend implements several security measures:
 
 - Input validation and sanitization
-  - Secure filename handling prevents directory traversal attacks
-  - File type validation restricts uploads to allowed formats
-  - Phone number cleaning removes potentially malicious characters
+ - Secure filename handling prevents directory traversal attacks
+ - File type validation restricts uploads to allowed formats
+ - Phone number cleaning removes potentially malicious characters
 
 - File processing security
-  - Uploaded files are deleted after processing
-  - CSV parsing falls back to pure Python reader to avoid pandas vulnerabilities
-  - TXT file processing strips whitespace and validates input
+ - Uploaded files are deleted after processing
+ - CSV parsing falls back to pure Python reader to avoid pandas vulnerabilities
+ - TXT file processing strips whitespace and validates input
 
 - Pyodide runtime security
-  - Python scripts are executed in isolated browser context
-  - Input text is escaped before Python string injection
-  - Runtime is loaded from trusted CDN
+ - Python scripts are executed in isolated browser context
+ - Input text is escaped before Python string injection
+ - Runtime is loaded from trusted CDN
 
 - Database security (local development)
-  - SQLite database stored locally with proper permissions
-  - SQL injection prevention through ORM usage
-  - User credentials stored securely
+ - SQLite database stored locally with proper permissions
+ - SQL injection prevention through ORM usage
+ - User credentials stored securely
 
 - CORS configuration
-  - Flask-CORS enabled for controlled cross-origin requests
-  - Proper headers set for API responses
+ - Flask-CORS enabled for controlled cross-origin requests
+ - Proper headers set for API responses
 
-Best practices for production deployment:
+Production deployment habits:
 - Use HTTPS for all API endpoints
 - Implement rate limiting for file uploads
 - Add authentication and authorization for sensitive operations
@@ -423,8 +422,5 @@ Best practices for production deployment:
 - Regular security updates for dependencies
 
 ## Conclusion
-The Python backend services provide a reliable foundation for contact processing and validation in the WhatsApp bulk messaging system. The modular design enables smooth integration with the Electron frontend while maintaining flexibility for local development and testing. Key strengths include detailed file format support, intelligent phone number cleaning and validation, efficient processing algorithms, and secure browser-based Python execution via Pyodide.
 
-The implementation demonstrates good engineering practices with proper error handling, fallback mechanisms, and security considerations. The architecture supports future enhancements such as additional file formats, improved validation rules, and expanded integration capabilities.
-
-For production deployment, consider adding detailed logging, monitoring, authentication, and rate limiting to complement the existing security measures. The modular structure makes it straightforward to extend functionality while maintaining backward compatibility.
+Treat this package as a library the desktop app happens to ship . Keep side effects in the Flask layer, not in the pure parsers.

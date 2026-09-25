@@ -1,7 +1,7 @@
 # API integration
 
 ## Introduction
-This page describes the API integration layer that connects the Next.js frontend to the Notice Reminders backend. It explains the API client implementation, request/response handling, error management, TypeScript interfaces, data transformation patterns, authentication flow, and endpoint specifications. It also outlines strategies for rate limiting, retries, and offline handling to improve user experience.
+How the Next.js site calls the Notice Reminders API: client setup, cookies, React Query keys, and error handling.
 
 ## Project structure
 The integration spans two primary areas:
@@ -97,7 +97,7 @@ ReturnData --> End
 Recommendations:
 - Add retry logic with jitter for transient failures.
 - Implement rate-limit-aware backoff and queueing.
-- Surface user-friendly messages while preserving error details.
+- Surface easy to use messages while preserving error details.
 
 ### TypeScript interfaces and data transformation
 Frontend types mirror backend schemas. The backend validates and serializes responses using Pydantic models. The frontend consumes these as strongly typed interfaces.
@@ -209,7 +209,7 @@ BE-->>FE : "Delete cookies"
 - Interceptor pattern: a single request wrapper applies headers and credentials uniformly.
 - Response parsing: JSON parsing with 204 handling; errors normalized into APIError.
 
-Enhancements:
+Possible follow-ups:
 - Add request/response logging for debugging.
 - Introduce a thin interceptor layer around fetch to centralize retry/backoff and rate-limit handling.
 
@@ -217,67 +217,65 @@ Enhancements:
 Below are the endpoint groups and their functions exposed by the frontend client and implemented by the backend.
 
 - Users
-  - GET /users/{user_id}
-  - PATCH /users/{user_id}
-  - DELETE /users/{user_id}
-  - POST /users/{user_id}/channels
-  - GET /users/{user_id}/channels
+ - GET /users/{user_id}
+ - PATCH /users/{user_id}
+ - DELETE /users/{user_id}
+ - POST /users/{user_id}/channels
+ - GET /users/{user_id}/channels
 
 - Auth
-  - POST /auth/request-otp
-  - POST /auth/verify-otp
-  - POST /auth/refresh
-  - POST /auth/logout
-  - GET /auth/me
+ - POST /auth/request-otp
+ - POST /auth/verify-otp
+ - POST /auth/refresh
+ - POST /auth/logout
+ - GET /auth/me
 
 - Courses
-  - GET /courses
-  - GET /courses/{course_code}
+ - GET /courses
+ - GET /courses/{course_code}
 
 - Search
-  - GET /search?q={query}
+ - GET /search?q={query}
 
 - Announcements
-  - GET /courses/{course_code}/announcements
+ - GET /courses/{course_code}/announcements
 
 - Subscriptions
-  - POST /subscriptions
-  - GET /subscriptions
-  - DELETE /subscriptions/{subscription_id}
+ - POST /subscriptions
+ - GET /subscriptions
+ - DELETE /subscriptions/{subscription_id}
 
 - Notifications
-  - GET /notifications
-  - GET /notifications/users/{user_id}
-  - PATCH /notifications/{notification_id}/read
+ - GET /notifications
+ - GET /notifications/users/{user_id}
+ - PATCH /notifications/{notification_id}/read
 
 Note: All endpoints are protected by authentication where indicated. The frontend client wraps these in typed functions.
 
 ### Parameter validation and error boundary handling
 - Backend validation:
-  - Pydantic models validate incoming payloads (e.g., email format, required fields).
-  - Route-level checks enforce ownership and existence (e.g., 403 for unauthorized access, 404 for missing resources).
+ - Pydantic models validate incoming payloads (e.g., email format, required fields).
+ - Route-level checks enforce ownership and existence (e.g., 403 for unauthorized access, 404 for missing resources).
 - Frontend error boundaries:
-  - APIError carries status and message; wrap calls in try/catch and surface user-friendly messages.
-  - Consider adding global error handlers to unify toast/snackbar notifications.
+ - APIError carries status and message; wrap calls in try/catch and surface easy to use messages.
+ - Consider adding global error handlers to unify toast/snackbar notifications.
 
 ### Rate limiting, retry logic, and offline handling
 Current client behavior:
 - No built-in rate-limit awareness or retry logic.
 - Uses standard fetch with credentials and JSON.
 
-Recommended enhancements:
+Recommended improvements:
 - Rate limiting:
-  - Track recent request counts per time window.
-  - Back off on 429 responses; parse Retry-After header if present.
+ - Track recent request counts per time window.
+ - Back off on 429 responses; parse Retry-After header if present.
 - Retry logic:
-  - Retry transient network errors and 5xx responses with exponential backoff and jitter.
-  - Idempotency keys for idempotent operations.
+ - Retry transient network errors and 5xx responses with exponential backoff and jitter.
+ - Idempotency keys for idempotent operations.
 - Offline handling:
-  - Queue requests when offline; replay on reconnect.
-  - Use service workers or local storage to persist pending mutations.
-  - Show optimistic updates with rollback on failure.
-
-[No sources needed since this section provides general guidance]
+ - Queue requests when offline; replay on reconnect.
+ - Use service workers or local storage to persist pending mutations.
+ - Show optimistic updates with rollback on failure.
 
 ## Dependency analysis
 The frontend API client depends on:
@@ -304,20 +302,18 @@ BE_ROUTERS --> BE_SCHEMAS["notice-reminders/app/schemas/*"]
 - Cache immutable data (courses) locally with expiry to reduce network usage.
 - Use background refetch strategies to keep data fresh without blocking UI.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Authentication failures:
-  - Verify cookies are being sent; ensure SameSite/Lax compatibility.
-  - On 401/403, redirect to login or refresh session.
+ - Verify cookies are being sent; ensure SameSite/Lax compatibility.
+ - On 401/403, redirect to login or refresh session.
 - Network errors:
-  - Wrap API calls in try/catch; display user-friendly messages.
-  - Implement retry with backoff for transient failures.
+ - Wrap API calls in try/catch; display easy to use messages.
+ - Implement retry with backoff for transient failures.
 - Backend validation errors:
-  - Inspect APIError status and message; show specific field errors when available.
+ - Inspect APIError status and message; show specific field errors when available.
 - CORS issues:
-  - Confirm backend allows frontend origin and credentials.
+ - Confirm backend allows frontend origin and credentials.
 
 ## Conclusion
-The frontend API integration layer provides a clean, typed interface to the Notice Reminders backend. It centralizes request configuration, enforces authentication via cookies, and normalizes errors. Extending the client with retry/backoff, rate-limit awareness, and offline handling will significantly improve resilience and user experience. Aligning frontend types with backend schemas ensures reliable data contracts across the stack.
+Credentials include cookies; React Query owns cache keys. Fix CORS and base URL before rewriting fetch wrappers.

@@ -1,7 +1,7 @@
 # HTML extraction handler
 
 ## Introduction
-This page provides detailed technical documentation for the HTML extraction handler, which enables the extension to retrieve processed HTML content from web pages. The handler manages tab selection, content script injection, HTML retrieval, error handling, and response formatting. It includes practical examples for tab ID resolution, active tab fallback, and content script verification patterns, along with cross-browser compatibility considerations for Firefox and Chrome.
+Pulls processed HTML from the active tab. Resolves tab IDs, injects the content script when needed, fetches HTML, and returns a structured response. Firefox and Chrome both get callouts where they diverge.
 
 ## Project structure
 The HTML extraction capability spans several modules:
@@ -105,7 +105,7 @@ Ready --> End
 ```
 
 ### Content script lifecycle
-The handler ensures the content script is ready before requesting HTML:
+The handler waits until the content script is ready before requesting HTML:
 - Ping verification: sends PING message to check if content script is loaded
 - Injection: if ping fails, executes content script via scripting.executeScript
 - Verification: sends PING again to confirm readiness
@@ -191,7 +191,7 @@ Note over Handler,Content : "Content script verified"
 The extraction handler depends on platform adapters and messaging infrastructure:
 - Tabs adapter abstracts browser.tabs.* APIs
 - Scripting adapter abstracts browser.scripting.executeScript
-- Message router ensures asynchronous responses and proper channel management
+- Message router keeps the message channel open for async responses
 - Content script provides extraction service and message handling
 
 ```mermaid
@@ -209,12 +209,10 @@ Content --> Extractor
 ```
 
 ## Performance considerations
-- Firefox initialization delay: the handler introduces a deliberate wait after injection to ensure content script readiness
+- Firefox initialization delay: the handler introduces a deliberate wait after injection so content script readiness
 - Image extraction overhead: converting images to base64 can be expensive; the extractor filters small or unloaded images
 - Selector traversal: multiple DOM queries are performed to locate assessment containers; selectors are prioritized for efficiency
-- Asynchronous message handling: the router keeps message channels open for Firefox compatibility, preventing premature closure
-
-[No sources needed since this section provides general guidance]
+- Asynchronous message handling: the router keeps message channels open for Firefox compatibility, so the port is not closed early
 
 ## Troubleshooting guide
 Common issues and resolutions:
@@ -229,7 +227,7 @@ Diagnostic tips:
 - Check response enrichment for tab/window IDs
 
 ## Cross-Browser compatibility
-The extension uses webextension-polyfill to ensure compatibility across Chrome and Firefox:
+The extension uses webextension-polyfill so compatibility across Chrome and Firefox:
 - Unified browser API: all platform adapters use browser.* instead of browser-specific APIs
 - Firefox-specific handling: longer delay after injection to accommodate slower initialization
 - Manifest configuration: content script registered for NPTEL domains with document_idle execution
@@ -241,4 +239,4 @@ Key compatibility points:
 - Manifest permissions: includes activeTab, tabs, storage, sidePanel, and scripting
 
 ## Conclusion
-The HTML extraction handler provides a reliable mechanism for retrieving processed HTML from web pages while managing tab context, ensuring content script readiness, and delivering structured responses. Its design emphasizes reliability through verification, error handling, and cross-browser compatibility. The modular architecture enables easy maintenance and extension for future enhancements.
+Resolve the tab, ensure the content script is there, then ask for HTML. Most flakes are missing injection or a stale tab id.

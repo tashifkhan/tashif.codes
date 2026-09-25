@@ -1,7 +1,7 @@
 # Notice reminders components
 
 ## Introduction
-This page provides detailed documentation for the notice reminders UI components that power course subscription management, notification delivery, user authentication, and account settings. It explains component props, state management, API integration patterns, and user interaction flows. It also covers form handling, validation rules, loading states, error handling, component composition with shared UI components, and integration with the backend API. Examples of component usage and customization options are included to help developers integrate and extend the functionality effectively.
+Dashboard UI for subscriptions, notifications, auth forms, and account settings. Props, React Query usage, validation, and shared primitives.
 
 ## Project structure
 The notice reminders UI components live under the website application in the notice-reminders directory. They rely on a shared UI component library and a typed API client to communicate with the backend service. Authentication state is managed globally via a context provider, and React Query is used for caching and optimistic updates.
@@ -442,15 +442,13 @@ API --> TYPES
 - Conditional queries: Queries are enabled only when conditions are met (e.g., minimum query length).
 - Loading states: Components render spinners and skeleton-like states to improve perceived performance.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Authentication errors: Ensure the auth context is initialized and the user is loaded before rendering protected components.
-- Network failures: The API client throws a typed error with status and message; display user-friendly messages and retry logic.
+- Network failures: The API client throws a typed error with status and message; display easy to use messages and retry logic.
 - Validation errors: Form components display inline errors; ensure validation schemas match backend expectations.
 - Stale data: React Query invalidates queries on success; if data does not update, check query keys and invalidation logic.
 - Toast notifications: Ensure the Toaster provider is mounted in the app layout.
 
 ## Conclusion
-The notice reminders components provide a cohesive, reusable set of UI elements for course subscription management, notifications, authentication, and user settings. By using shared UI components, a typed API client, and React Query, the system achieves predictable state management, responsive interactions, and maintainable code. Developers can extend and customize these components to fit evolving requirements while preserving consistent behavior and user experience.
+Compose shared primitives, talk to the typed client, let React Query own server state. Forms validate before they mutate.

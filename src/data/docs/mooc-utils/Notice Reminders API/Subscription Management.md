@@ -1,18 +1,18 @@
 # Subscription management
 
 ## Introduction
-This page describes the subscription management system for course announcements. It explains how users subscribe to courses, how subscriptions are validated and persisted, and how notification channels are managed alongside subscriptions. It also documents the subscription CRUD APIs, request/response schemas, and integration patterns used by the frontend. The system supports per-user subscriptions to courses, with optional notification channels for delivery of alerts.
+Per-user course subscriptions and optional notification channels. Create path, ownership checks, and how CourseService makes sure the course row exists first.
 
 ## Project structure
 The subscription management spans a FastAPI backend and a Next.js frontend:
 - Backend (FastAPI):
-  - API routers define endpoints for subscription operations.
-  - Services encapsulate business logic for subscriptions and notification channels.
-  - Models define persistence for subscriptions, courses, notification channels, and users.
-  - Schemas define request/response data contracts.
+ - API routers define endpoints for subscription operations.
+ - Services encapsulate business logic for subscriptions and notification channels.
+ - Models define persistence for subscriptions, courses, notification channels, and users.
+ - Schemas define request/response data contracts.
 - Frontend (Next.js):
-  - React components integrate with the backend via typed API helpers.
-  - TanStack Query manages caching and optimistic updates for subscriptions.
+ - React components integrate with the backend via typed API helpers.
+ - TanStack Query manages caching and optimistic updates for subscriptions.
 
 ```mermaid
 graph TB
@@ -49,7 +49,7 @@ C --> E
 - Frontend integration: React components and API client for subscription management.
 
 ## Architecture overview
-The subscription workflow integrates frontend requests with backend services and persistence. Authentication is enforced for subscription operations. Course lookup ensures subscriptions target valid courses. Subscriptions are scoped to users and persisted with uniqueness constraints.
+The subscription workflow integrates frontend requests with backend services and persistence. Authentication is enforced for subscription operations. Course lookup keeps subscriptions target valid courses. Subscriptions are scoped to users and persisted with uniqueness constraints.
 
 ```mermaid
 sequenceDiagram
@@ -76,9 +76,9 @@ API-->>FE : "Subscription"
 ### Subscription model and service
 - Model fields include foreign keys to User and Course, timestamps, and an activation flag. Uniqueness constraint prevents duplicate subscriptions per user-course pair.
 - Service methods:
-  - Subscribe: Creates a subscription or returns an existing one on integrity errors.
-  - List all and list for user: Ordered by creation time descending.
-  - Delete: Removes a subscription.
+ - Subscribe: Creates a subscription or returns an existing one on integrity errors.
+ - List all and list for user: Ordered by creation time descending.
+ - Delete: Removes a subscription.
 
 ```mermaid
 classDiagram
@@ -114,7 +114,7 @@ Course "1" <--* "many" Subscription : "FK course"
 ```
 
 ### Course lookup and validation
-- CourseService searches and caches courses, ensuring course records exist before subscription creation.
+- CourseService searches and caches courses so a course row exists before subscription creation.
 - Uniqueness on course code prevents duplicates and supports efficient lookups.
 
 ```mermaid
@@ -206,24 +206,24 @@ class Announcement {
 
 ### API endpoints for subscription operations
 - Create subscription
-  - Method: POST
-  - Path: /subscriptions
-  - Authenticated: Yes
-  - Request body: SubscriptionCreate (course_code)
-  - Response: SubscriptionResponse
-  - Behavior: Validates course existence; creates or retrieves subscription; returns created_at ordering
+ - Method: POST
+ - Path: /subscriptions
+ - Authenticated: Yes
+ - Request body: SubscriptionCreate (course_code)
+ - Response: SubscriptionResponse
+ - Behavior: Validates course existence; creates or retrieves subscription; returns created_at ordering
 - List subscriptions
-  - Method: GET
-  - Path: /subscriptions
-  - Authenticated: Yes
-  - Response: array of SubscriptionResponse
-  - Behavior: Returns user-scoped subscriptions ordered by created_at descending
+ - Method: GET
+ - Path: /subscriptions
+ - Authenticated: Yes
+ - Response: array of SubscriptionResponse
+ - Behavior: Returns user-scoped subscriptions ordered by created_at descending
 - Delete subscription
-  - Method: DELETE
-  - Path: /subscriptions/{subscription_id}
-  - Authenticated: Yes
-  - Response: 204 No Content
-  - Behavior: Validates ownership; deletes subscription
+ - Method: DELETE
+ - Path: /subscriptions/{subscription_id}
+ - Authenticated: Yes
+ - Response: 204 No Content
+ - Behavior: Validates ownership; deletes subscription
 
 ```mermaid
 sequenceDiagram
@@ -244,19 +244,19 @@ API-->>FE : "Subscriptions"
 
 ### Request/Response schemas
 - SubscriptionCreate
-  - Fields: course_code (string)
+ - Fields: course_code (string)
 - SubscriptionResponse
-  - Fields: id, user_id, course_id, is_active, created_at (datetime)
+ - Fields: id, user_id, course_id, is_active, created_at (datetime)
 - NotificationChannelCreate
-  - Fields: channel (string), address (string), is_active (bool, default true)
+ - Fields: channel (string), address (string), is_active (bool, default true)
 - NotificationChannelResponse
-  - Fields: id, user_id, channel, address, is_active, created_at (datetime)
+ - Fields: id, user_id, channel, address, is_active, created_at (datetime)
 - UserUpdate
-  - Fields: email (optional), name (optional), telegram_id (optional), is_active (optional)
+ - Fields: email (optional), name (optional), telegram_id (optional), is_active (optional)
 - UserResponse
-  - Fields: id, email, name, telegram_id, is_active, created_at, updated_at
+ - Fields: id, email, name, telegram_id, is_active, created_at, updated_at
 - CourseResponse
-  - Fields: id, code, title, url, instructor, institute, nc_code, created_at, updated_at
+ - Fields: id, code, title, url, instructor, institute, nc_code, created_at, updated_at
 
 ### Frontend integration patterns
 - SubscriptionManager fetches subscriptions and courses, renders subscription cards, and supports unsubscription via mutation.
@@ -308,47 +308,43 @@ U --> NCS
 - Course caching minimizes repeated external lookups and improves responsiveness.
 - Frontend caching via TanStack Query reduces network calls and accelerates list operations.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 - Course not found during subscription creation:
-  - Verify course_code correctness and that the course exists in the cache.
-  - Check CourseService.get_by_code behavior and external course provider availability.
+ - Verify course_code correctness and that the course exists in the cache.
+ - Check CourseService.get_by_code behavior and external course provider availability.
 - Access denied on unsubscribe:
-  - Ensure the subscription belongs to the current user; otherwise, a 403 is raised.
+ - Ensure the subscription belongs to the current user; otherwise, a 403 is raised.
 - Duplicate subscription:
-  - Creation returns the existing subscription due to uniqueness constraints; no error is raised.
+ - Creation returns the existing subscription due to uniqueness constraints; no error is raised.
 - Empty subscription list:
-  - Confirm user has active subscriptions and that the list endpoint is called with proper authentication.
+ - Confirm user has active subscriptions and that the list endpoint is called with proper authentication.
 
 ## Conclusion
-The subscription management system provides a reliable, user-scoped mechanism to track course subscriptions with strong validation against course existence and deduplicated persistence. Notification channels complement subscriptions by allowing users to configure preferred delivery methods. The backend exposes clear CRUD endpoints, while the frontend integrates smoothly with TanStack Query for responsive UX. Together, these components support scalable course announcement tracking and delivery.
-
-[No sources needed since this section summarizes without analyzing specific files]
+Create only after the course exists. Ownership checks belong in the service, not the React form.
 
 ## Appendices
 
 ### API endpoint reference
 - POST /subscriptions
-  - Authenticated: Yes
-  - Request: SubscriptionCreate
-  - Response: SubscriptionResponse
-  - Notes: Creates or retrieves subscription for the given course_code
+ - Authenticated: Yes
+ - Request: SubscriptionCreate
+ - Response: SubscriptionResponse
+ - Notes: Creates or retrieves subscription for the given course_code
 - GET /subscriptions
-  - Authenticated: Yes
-  - Response: array of SubscriptionResponse
-  - Notes: Lists user's subscriptions ordered by created_at descending
+ - Authenticated: Yes
+ - Response: array of SubscriptionResponse
+ - Notes: Lists user's subscriptions ordered by created_at descending
 - DELETE /subscriptions/{subscription_id}
-  - Authenticated: Yes
-  - Response: 204 No Content
-  - Notes: Requires ownership of the subscription
+ - Authenticated: Yes
+ - Response: 204 No Content
+ - Notes: Requires ownership of the subscription
 
 ### Example workflows
 - Subscribe to a course:
-  - Frontend calls createSubscription with course_code.
-  - Backend validates course existence and persists subscription.
-  - Frontend updates local cache and displays the new subscription.
+ - Frontend calls createSubscription with course_code.
+ - Backend validates course existence and persists subscription.
+ - Frontend updates local cache and displays the new subscription.
 - Unsubscribe from a course:
-  - Frontend triggers deleteSubscription.
-  - Backend verifies ownership and deletes the subscription.
-  - Frontend invalidates cache and removes the subscription card.
+ - Frontend triggers deleteSubscription.
+ - Backend verifies ownership and deletes the subscription.
+ - Frontend invalidates cache and removes the subscription card.

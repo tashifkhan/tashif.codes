@@ -1,9 +1,7 @@
 # OfficialPlacementData collection
 
 ## Introduction
-This page provides detailed documentation for the OfficialPlacementData collection schema that stores aggregated placement statistics from official sources. The collection is a historical snapshot repository for placement data, enabling trend analysis, comparison across time periods, and reporting on placement outcomes.
-
-The schema supports flexible aggregation of placement metrics while accommodating varying statistical data from different official sources. It includes unique identifiers for snapshots, timestamp tracking, overall statistics, branch-wise distributions, company-wise breakdowns, sector-wise statistics, and source tracking.
+OfficialPlacementData stores placement snapshots over time. Use it for trends, period comparisons, and reports that need the official numbers rather than whatever landed in email.
 
 ## Project structure
 The OfficialPlacementData collection is part of the MongoDB database schema for the SuperSet Telegram Notification Bot system. It integrates with the broader data pipeline that includes notices, jobs, placement offers, and user management collections.
@@ -44,7 +42,7 @@ PSCS --> OPD
 The OfficialPlacementData collection schema consists of several key components that work together to provide detailed placement statistics:
 
 ### Unique identifiers and timestamp tracking
-- **data_id**: Unique identifier for each snapshot, enabling deduplication and versioning
+- **data_id**: Unique identifier for each snapshot, for dedupe and versioning
 - **timestamp**: ISODate field for precise temporal tracking of snapshots
 - **content_hash**: SHA-256 hash of content (excluding volatile fields) for automatic change detection
 
@@ -82,7 +80,7 @@ Dynamic embedded object for industry sector breakdown:
 - updated_at: Last modification timestamp
 
 ## Architecture overview
-The OfficialPlacementData collection participates in a multi-layered architecture that transforms raw placement data into actionable insights:
+The OfficialPlacementData collection sits in the pipeline that turns scraped placement pages into stats you can chart:
 
 ```mermaid
 sequenceDiagram
@@ -148,7 +146,7 @@ OfficialPlacementData --> CompanyStatistics : "array of"
 ```
 
 ### Snapshot management and versioning
-The collection implements sophisticated snapshot management through content hashing:
+Snapshots use content hashing:
 
 ```mermaid
 flowchart TD
@@ -277,16 +275,7 @@ The OfficialPlacementData collection is optimized for analytical workloads with 
 **Verification**: Cross-check calculations against raw data sources
 
 ## Conclusion
-The OfficialPlacementData collection schema provides a reliable foundation for storing and analyzing placement statistics from official sources. Its flexible design accommodates varying statistical data while maintaining performance and data integrity. The schema supports detailed analytics through multiple aggregation layers and enables efficient historical trend analysis.
-
-Key strengths include:
-- Flexible schema design supporting dynamic statistical data
-- Sophisticated snapshot management with content hashing
-- Detailed statistical aggregation capabilities
-- Optimized indexing for analytical workloads
-- Integration with the broader data ecosystem
-
-The collection is a critical component in the SuperSet Telegram Notification Bot's data infrastructure, enabling data-driven decision making and detailed placement analytics.
+OfficialPlacementData is the snapshot store for official stats. Hash to skip unchanged pages, aggregate for trends, keep the raw-ish payload when the official format drifts.
 
 ## Appendices
 
@@ -295,40 +284,40 @@ The collection is a critical component in the SuperSet Telegram Notification Bot
 #### Basic snapshot structure
 ```javascript
 {
-  _id: ObjectId("..."),
-  data_id: "official_2025_01_20",
-  timestamp: ISODate("2025-01-20T00:00:00Z"),
-  overall_statistics: {
-    total_students: 500,
-    total_placed: 450,
-    placement_percentage: 90,
-    average_package: 15.5,
-    highest_package: 45.0,
-    lowest_package: 8.0
-  },
-  branch_wise: {
-    "CSE": {
-      total: 200,
-      placed: 190,
-      percentage: 95,
-      average_package: 18.0
-    }
-  },
-  company_wise: [
-    {
-      company: "Google",
-      students_placed: 45,
-      average_package: 24.0,
-      roles: ["Software Engineer", "Data Engineer"]
-    }
-  ],
-  sector_wise: {
-    "IT": 150,
-    "Finance": 120
-  },
-  source_url: "https://jiit.ac.in/placement",
-  created_at: ISODate("2025-01-20T06:30:00Z"),
-  updated_at: ISODate("2025-01-20T06:30:00Z")
+ _id: ObjectId("..."),
+ data_id: "official_2025_01_20",
+ timestamp: ISODate("2025-01-20T00:00:00Z"),
+ overall_statistics: {
+ total_students: 500,
+ total_placed: 450,
+ placement_percentage: 90,
+ average_package: 15.5,
+ highest_package: 45.0,
+ lowest_package: 8.0
+ },
+ branch_wise: {
+ "CSE": {
+ total: 200,
+ placed: 190,
+ percentage: 95,
+ average_package: 18.0
+ }
+ },
+ company_wise: [
+ {
+ company: "Google",
+ students_placed: 45,
+ average_package: 24.0,
+ roles: ["Software Engineer", "Data Engineer"]
+ }
+ ],
+ sector_wise: {
+ "IT": 150,
+ "Finance": 120
+ },
+ source_url: "https://jiit.ac.in/placement",
+ created_at: ISODate("2025-01-20T06:30:00Z"),
+ updated_at: ISODate("2025-01-20T06:30:00Z")
 }
 ```
 
@@ -337,8 +326,8 @@ The collection is a critical component in the SuperSet Telegram Notification Bot
 #### Latest snapshot retrieval
 ```javascript
 db.OfficialPlacementData.findOne(
-  { timestamp: { $gt: new Date(Date.now() - 24*60*60*1000) } },
-  { "branch_wise": 1 }
+ { timestamp: { $gt: new Date(Date.now() - 24*60*60*1000) } },
+ { "branch_wise": 1 }
 )
 ```
 
@@ -350,7 +339,7 @@ db.OfficialPlacementData.find().sort({ timestamp: 1 })
 #### Branch-wise comparison
 ```javascript
 db.OfficialPlacementData.aggregate([
-  { $unwind: "$branch_wise" },
-  { $group: { _id: "$branch_wise.branch", avg_package: { $avg: "$branch_wise.average_package" } } }
+ { $unwind: "$branch_wise" },
+ { $group: { _id: "$branch_wise.branch", avg_package: { $avg: "$branch_wise.average_package" } } }
 ])
 ```

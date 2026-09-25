@@ -1,7 +1,7 @@
 # Authentication system
 
 ## Introduction
-This page describes the OTP-based authentication system used by the application. It explains the authentication context implementation, session management, and user state handling. It documents the OTP login flow, JWT token management, and cookie-based authentication persistence. It also covers authentication hooks, protected route handling, and the user session lifecycle. API integration patterns for authentication endpoints, error handling strategies, and security considerations are included, along with logout functionality, token refresh mechanisms, and authentication state synchronization across the application.
+OTP auth on the website: login UI, JWT cookies from the backend, guarded routes, and session refresh.
 
 ## Project structure
 The authentication system spans two primary areas:
@@ -247,8 +247,6 @@ BE_AUTHR --> BE_SCA["Auth Schemas<br/>notice-reminders/app/schemas/auth.py"]
 - Network efficiency: Frontend reuses a single API client with credentials; backend avoids redundant lookups by validating tokens and OTPs efficiently.
 - Database queries: OTP retrieval filters by email, code, unused, and expiration; refresh token validation checks revocation and expiry.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting guide
 Common issues and resolutions:
 - Missing or expired access token: Ensure cookies are present and not expired; trigger refresh if needed.
@@ -258,13 +256,11 @@ Common issues and resolutions:
 - API errors: Inspect APIError status and message returned by the client.
 
 Error handling patterns:
-- Frontend: APIError with status and message; display user-friendly messages.
+- Frontend: APIError with status and message; display easy to use messages.
 - Backend: HTTPException with appropriate status codes for missing/invalid/expired tokens and OTPs.
 
 ## Conclusion
-The authentication system combines a reliable backend with cookie-based JWT tokens and a streamlined frontend OTP flow. It emphasizes security through short-lived access tokens, refresh token rotation, OTP expiration, and strict validation. The frontend provides a clear user experience with guarded routes and centralized state management, while the backend ensures reliable session persistence and secure token lifecycle management.
-
-[No sources needed since this section summarizes without analyzing specific files]
+OTP UI on the client, JWT cookies from the API, route guards in the app. Refresh failures should bounce to login, not half-render the dashboard.
 
 ## Appendices
 

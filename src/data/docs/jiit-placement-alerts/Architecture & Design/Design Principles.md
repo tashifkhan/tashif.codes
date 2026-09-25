@@ -1,7 +1,7 @@
 # Design principles
 
 ## Introduction
-This page explains the design principles underpinning the SuperSet Telegram Notification Bot. The system follows Service-Oriented Architecture (SOA) with a strong emphasis on single responsibility, dependency injection for loose coupling, and separation of concerns across data access, business logic, presentation, and distribution layers. It also documents the orchestration pattern used for email processing to prevent data loss, ensuring emails are marked as read only after successful processing.
+SOA with single responsibility, constructor injection, and clear layering: clients, services, runners, servers. Email orchestration marks mail read only after a successful pass so a half-failed run does not drop messages.
 
 ## Project structure
 The project is organized into distinct layers:
@@ -60,8 +60,8 @@ SCH --> UR
 
 Key design principles demonstrated:
 - Single Responsibility: Each class focuses on one concern (e.g., DBClient for DB connectivity, PlacementService for placement extraction).
-- Dependency Injection: Services accept dependencies via constructor parameters, enabling testability and runtime substitution.
-- Separation of Concerns: Data access (clients), business logic (services), orchestration (runners), presentation (servers), and distribution (notification service) are cleanly separated.
+- Dependency Injection: Services accept dependencies via constructor parameters, so you can test with fakes and swap implementations at runtime.
+- Separation of Concerns: Data access (clients), business logic (services), orchestration (runners), presentation (servers), and distribution (notification service) stay separate.
 
 ## Architecture overview
 The system adheres to SOA with DI and layered separation:
@@ -102,17 +102,17 @@ NS --> DBS
 ## Detailed component analysis
 
 ### Dependency injection patterns and loose coupling
-- Constructor injection: Services accept dependencies (e.g., DatabaseService, GoogleGroupsClient, TelegramService) via constructor parameters, enabling runtime substitution and test doubles.
+- Constructor injection: Services accept dependencies (e.g., DatabaseService, GoogleGroupsClient, TelegramService) via constructor parameters, so you can swap fakes at runtime.
 - Optional dependencies with defaults: Runners conditionally construct services if not provided, allowing reuse across CLI, servers, and tests.
 - Resource ownership: Runners track whether they own DB connections and close them deterministically via context managers.
 
 Examples from the codebase:
 - DatabaseService receives a DBClient instance and delegates collection access, keeping persistence logic isolated.
-- PlacementService and EmailNoticeService accept DB and formatter/policy services, enabling modular composition.
+- PlacementService and EmailNoticeService accept DB and formatter/policy services, so composition stays modular.
 - UpdateRunner and NotificationRunner accept services or construct them locally, supporting DI and isolation.
 
 ### Orchestration pattern for email processing (sequential, read-affirmed)
-The email processing orchestrator ensures data integrity by fetching content without marking as read, attempting placement detection, then notice detection, and finally marking as read only after successful processing or determination of irrelevance. This prevents data loss if transient failures occur mid-processing.
+Orchestrator fetches without marking read, tries placement then notice detection, and marks read only after success or a clear reject. A mid-run crash leaves mail unread.
 
 ```mermaid
 sequenceDiagram
@@ -226,7 +226,7 @@ NS->>DBS : "mark_as_sent(post_id)"
 ```
 
 ### Orchestration flow in CLI (SuperSet + emails + send)
-The CLI composes a full pipeline: SuperSet updates, email updates (placement offers and notices), and notification dispatch. This demonstrates SOA with DI and layered orchestration.
+The CLI composes a full pipeline: SuperSet updates, email updates (placement offers and notices), and notification dispatch. Same SOA + DI pattern as the long-running servers.
 
 ```mermaid
 flowchart TD
@@ -274,4 +274,4 @@ BOT --> NS
 - Resource lifecycle: Runners manage DB connections and close them deterministically.
 
 ## Conclusion
-The SuperSet Telegram Notification Bot applies SOA with DI and separation of concerns to achieve maintainability, testability, and extensibility. The orchestration pattern for email processing prioritizes data integrity by marking emails as read only after successful processing. These design principles enable clean layering, easy testing, and straightforward extension of new sources, channels, and processing logic.
+SOA, DI, layered clients/services/runners/servers. Mark email read only after a successful pass. That one rule saves more data than any retry knobs.

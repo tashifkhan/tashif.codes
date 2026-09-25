@@ -1,7 +1,7 @@
 # CSV file extraction
 
 ## Introduction
-This page explains the CSV file contact extraction functionality used to import phone numbers and names from CSV files for bulk messaging. It covers the automatic column detection algorithm, fallback parsing when pandas fails, phone number cleaning and validation, supported formats and column naming variations, and common parsing errors with their solutions.
+CSV contact extraction: keyword column detection, pandas read, and a line-by-line fallback when pandas chokes.
 
 ## Project structure
 The CSV extraction feature is implemented in the Python backend module and integrates with the Flask API. The relevant files are organized as follows:
@@ -169,7 +169,7 @@ Valid --> |No| ReturnNone
 ### Supported CSV formats and column naming variations
 Supported file formats:
 - CSV: comma-separated values
-- Excel:.xlsx and.xls files
+- Excel: .xlsx and .xls files
 - Text: plain text files (one contact per line)
 
 Column naming variations recognized by the automatic detection:
@@ -187,7 +187,7 @@ Common issues and resolutions:
 - Empty or malformed CSV: The fallback manual parser handles basic CSV files even when pandas fails
 - Non-UTF-8 encoding: The fallback parser explicitly opens files with UTF-8 encoding
 - Missing headers: The system defaults to first and second columns when headers do not match keywords
-- Invalid phone numbers: Numbers outside the 7–15 digit range are ignored
+- Invalid phone numbers: Numbers outside the 7-15 digit range are ignored
 - Mixed separators: The cleaning routine removes separators and validates digits
 
 ## Dependency analysis
@@ -224,8 +224,9 @@ REQ --> CORS
 ## Troubleshooting guide
 - CSV parsing fails: Ensure the file is UTF-8 encoded and has consistent separators
 - No contacts extracted: Verify column headers match phone/name keywords or accept default column selection
-- Invalid phone numbers ignored: Confirm numbers contain 7–15 digits after cleaning
+- Invalid phone numbers ignored: Confirm numbers contain 7-15 digits after cleaning
 - Excel files not supported: Install required dependencies (openpyxl/xlrd) as listed in requirements
 
 ## Conclusion
-The CSV contact extraction feature provides reliable automatic column detection, resilient fallback parsing, and detailed phone number cleaning with international formatting. By following the supported formats and naming conventions, users can reliably import contacts from CSV files for bulk messaging workflows.
+
+If pandas fails on a CSV, the fallback reader still tries. Prefer UTF-8 and an obvious phone column to avoid that path.
