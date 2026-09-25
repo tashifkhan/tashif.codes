@@ -145,6 +145,7 @@ const DOC_PROPER_NOUNS = new Set([
   'august', 'september', 'october', 'november', 'december',
   'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
   'sunday', 'english', 'next', 'nuxt', 'hono', 'fastify', 'trpc',
+  'leetcode', 'codechef', 'codeforces', 'hackerrank', 'codetrace', 'githost',
 ]);
 
 const DOC_PROPER_PHRASES = [
@@ -161,11 +162,13 @@ const DOC_ACRONYMS: Record<string, string> = {
   sql: 'SQL', html: 'HTML', css: 'CSS', js: 'JS', ts: 'TS', db: 'DB',
   ci: 'CI', cd: 'CD', http: 'HTTP', https: 'HTTPS', rest: 'REST',
   json: 'JSON', xml: 'XML', yaml: 'YAML', toml: 'TOML', cors: 'CORS',
+  graphql: 'GraphQL', apis: 'APIs',
   csrf: 'CSRF', xss: 'XSS', smtp: 'SMTP', pdf: 'PDF', png: 'PNG',
   jpg: 'JPG', svg: 'SVG', gif: 'GIF', wasm: 'WASM', pwa: 'PWA',
   oauth: 'OAuth', mcp: 'MCP', llm: 'LLM', llms: 'LLMs', sdk: 'SDK',
   cli: 'CLI', ide: 'IDE', ssl: 'SSL', tls: 'TLS', dns: 'DNS', cdn: 'CDN',
   sso: 'SSO', orm: 'ORM', ssh: 'SSH', cicd: 'CI/CD',
+  gfg: 'GFG', tuf: 'TUF', rcee: 'RCEE',
 };
 
 function sentenceCaseWord(word: string, isFirst = false): string {
@@ -199,6 +202,13 @@ const DOC_SPLIT_BRANDS: Record<string, string> = {
   'Lang Chain': 'LangChain', 'Lang Graph': 'LangGraph', 'Mongo DB': 'MongoDB',
   'Postgre SQL': 'PostgreSQL', 'Word Press': 'WordPress', 'i OS': 'iOS',
   'Web Socket': 'WebSocket', 'Web Sockets': 'WebSockets',
+  'Dev Ops': 'DevOps',
+  'Leet Code': 'LeetCode',
+  'Code Chef': 'CodeChef',
+  'Code Forces': 'Codeforces',
+  'Hacker Rank': 'HackerRank',
+  'Git Host': 'GitHost',
+  'Code Trace': 'CodeTrace',
 };
 
 export function sentenceCaseDocTitle(title: string): string {
@@ -399,6 +409,18 @@ const SECTION_ORDER: Record<string, string[]> = {
     'Testing Strategy',
     'Troubleshooting & FAQ',
   ],
+  'talentsync-hr': [
+    'Getting Started',
+    'Project Overview',
+    'Architecture Overview',
+    'Backend API Reference',
+    'Frontend Application',
+    'Screening and matching',
+    'Database Design',
+    'Authentication and authorization',
+    'Deployment and DevOps',
+    'Troubleshooting and FAQ',
+  ],
 };
 
 function sortByDefinedOrder(items: SidebarItem[], projectSlug: string): SidebarItem[] {
@@ -472,12 +494,13 @@ function buildFolderSidebar(projectSlug: string, projectDir: string): SidebarIte
           depth,
         });
       } else {
-        // No index file found - create a non-linkable section header
-        // Use the first child's slug as a fallback, or '#'
-        const firstChild = children[0];
+        // No index file found - a plain folder, not a page. Borrowing the
+        // first child's slug made the folder match that page too, which lit
+        // the folder as active, cut the breadcrumb short and repeated the
+        // page in prev/next.
         items.push({
           title: sentenceCaseDocTitle(formatTitle(subDir)),
-          slug: firstChild ? firstChild.slug : '#',
+          slug: '#',
           path: subDir,
           order: 0,
           children: children.length > 0 ? children : undefined,
@@ -552,7 +575,9 @@ const sidebarCache = new Map<string, SidebarItem[]>();
 
 export function getSidebar(projectSlug: string): SidebarItem[] {
   const cacheKey = projectSlug.toLowerCase();
-  const cached = sidebarCache.get(cacheKey);
+  // Dev adds markdown files without restarting the process. Skip the
+  // module-level cache so new pages show up in the sidebar.
+  const cached = import.meta.env.DEV ? undefined : sidebarCache.get(cacheKey);
   if (cached) return cached;
 
   const realProjectDirName = resolveProjectDir(projectSlug);

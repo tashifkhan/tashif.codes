@@ -1,5 +1,5 @@
 ---
-import { ChevronRight, FileText } from "lucide-react";
+import { ChevronRight, FileText, Folder, FolderOpen } from "lucide-react";
 import type { SidebarItem } from "@/types";
 
 interface Props {
@@ -60,18 +60,29 @@ const rowClasses = (item: SidebarItem) => [
 						>
 							<ChevronRight className="tree-chevron mt-[3px] h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-150" />
 							{
+								// Same icon language as leaves: a file icon means the
+								// section has its own page, a folder means it only
+								// groups other pages.
 								item.slug !== "#" ? (
 									<a
 										href={`/docs/${item.slug}`}
 										data-haptic-nav
 										data-sidebar-active={isActive(item) ? "true" : undefined}
 										aria-current={isActive(item) ? "page" : undefined}
-										class="min-w-0 flex-1 hover:underline underline-offset-4 decoration-border"
+										title={`Read ${item.title}`}
+										class="flex min-w-0 flex-1 items-start gap-2 hover:underline underline-offset-4 decoration-border"
 									>
-										{item.title}
+										<FileText
+											className={`mt-[3px] h-3.5 w-3.5 shrink-0 ${isActive(item) ? "text-primary" : "text-muted-foreground/70"}`}
+										/>
+										<span class="min-w-0">{item.title}</span>
 									</a>
 								) : (
-									<span class="min-w-0 flex-1">{item.title}</span>
+									<span class="flex min-w-0 flex-1 items-start gap-2">
+										<Folder className="tree-folder-closed mt-[3px] h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+										<FolderOpen className="tree-folder-open mt-[3px] h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+										<span class="min-w-0">{item.title}</span>
+									</span>
 								)
 							}
 							<span class="mt-[2px] shrink-0 rounded-full bg-muted/60 px-1.5 text-[10px] font-medium tabular-nums text-muted-foreground">
@@ -110,5 +121,12 @@ const rowClasses = (item: SidebarItem) => [
 <style>
 	details[open] > summary :global(.tree-chevron) {
 		transform: rotate(90deg);
+	}
+	details > summary :global(.tree-folder-open),
+	details[open] > summary :global(.tree-folder-closed) {
+		display: none;
+	}
+	details[open] > summary :global(.tree-folder-open) {
+		display: block;
 	}
 </style>

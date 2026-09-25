@@ -8,6 +8,7 @@ import { getAllDocs, getSidebar, getDocPagination, findSidebarTrail, processDocC
 import { buttonVariants } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Menu, Copy, Check } from "lucide-react";
 import { allProjects } from "../../../data/projects";
+import { DOCS_CARD_COPY } from "../../../data/docsCopy";
 
 export async function getStaticPaths() {
 	return getAllDocs();
@@ -21,8 +22,17 @@ const { prev, next } = getDocPagination(project, slug);
 // leading h1 and the generated "Table of Contents" section from the body.
 const processedContent = processDocContent(content);
 
-const currentProject = allProjects.find((p) => p.slug === project);
-const projectTitle = currentProject?.title || project.replace(/-/g, " ");
+const currentProject = allProjects.find(
+	(p) => p.slug.toLowerCase() === project.toLowerCase()
+);
+const docsCopy = DOCS_CARD_COPY[project.toLowerCase()];
+const projectTitle =
+	docsCopy?.title || currentProject?.title || project.replace(/-/g, " ");
+const projectDescription = docsCopy?.description || currentProject?.description;
+const githubBaseUrl =
+	docsCopy?.github ||
+	currentProject?.github_link ||
+	`https://github.com/tashifkhan/${project}`;
 const pageTitle = title.replace(/^[\d.\s]+/, "");
 
 // Sidebar slugs are always lowercase; the project dir name may not be.
@@ -30,6 +40,9 @@ const activePath = `${project.toLowerCase()}/${slug}`;
 
 // Chevron-separated breadcrumb trail (matches PageShell's convention)
 const trail = findSidebarTrail(sidebar, activePath) ?? [];
+// On desktop the sidebar shows "Docs ›" on the same line, so the page trail
+// starts at the project there. Phones have no sidebar and keep the full trail.
+const SIDEBAR_CRUMBS = 2;
 const breadcrumbs = [
 	{ label: "Home", href: "/" },
 	{ label: "Docs", href: "/docs" },
@@ -66,8 +79,11 @@ const breadcrumbs = [
 			<DocsSidebar
 				project={project}
 				currentProject={currentProject}
+				title={projectTitle}
+				description={projectDescription}
 				sidebar={sidebar}
 				activePath={activePath}
+				githubUrl={githubBaseUrl}
 			/>
 		</aside>
 
@@ -102,8 +118,11 @@ const breadcrumbs = [
 			<DocsSidebar
 				project={project}
 				currentProject={currentProject}
+				title={projectTitle}
+				description={projectDescription}
 				sidebar={sidebar}
 				activePath={activePath}
+				githubUrl={githubBaseUrl}
 				mobile
 			/>
 		</div>
@@ -128,10 +147,15 @@ const breadcrumbs = [
 							>
 								{
 									breadcrumbs.map((crumb, i) => (
-										<li class="flex items-center gap-x-2 min-w-0">
+										<li
+											class:list={[
+												"flex items-center gap-x-2 min-w-0",
+												i < SIDEBAR_CRUMBS && "lg:hidden",
+											]}
+										>
 											{i > 0 && (
 												<ChevronRight
-													className="w-3.5 h-3.5 shrink-0 text-muted-foreground/50"
+													className={`w-3.5 h-3.5 shrink-0 text-muted-foreground/50 ${i === SIDEBAR_CRUMBS ? "lg:hidden" : ""}`}
 													aria-hidden="true"
 												/>
 											)}
@@ -196,8 +220,7 @@ const breadcrumbs = [
 						<MarkdownRenderer
 							content={processedContent}
 							project={project}
-							githubBaseUrl={currentProject?.github_link ||
-								`https://github.com/tashifkhan/${project}`}
+							githubBaseUrl={githubBaseUrl}
 						/>
 
 						<nav
