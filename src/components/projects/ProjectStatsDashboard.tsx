@@ -15,6 +15,7 @@ import {
 	Smartphone,
 	Globe,
 	Monitor,
+	X,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -66,10 +67,32 @@ type StatsBreakdown = {
 };
 
 type AllStats = {
-	metadata: { export_date: string; source: string };
+	metadata: { export_date: string; source: string; excludes_history?: boolean };
 	timeseries: TimeseriesEntry[];
 	stats: StatsBreakdown;
 };
+
+type FilterField = keyof StatsBreakdown;
+type StatsFilter = { field: FilterField; value: string };
+type SelectFilter = (field: FilterField, value: string) => void;
+
+const FILTER_LABELS: Record<FilterField, string> = {
+	path: "Path",
+	referrer: "Referrer",
+	country: "Country",
+	device_type: "Device",
+	os_name: "OS",
+};
+
+function readUrlFilters(): StatsFilter[] {
+	if (typeof window === "undefined") return [];
+	return new URLSearchParams(window.location.search).getAll("filter").flatMap((raw) => {
+		const split = raw.indexOf(":");
+		const field = raw.slice(0, split) as FilterField;
+		const value = raw.slice(split + 1);
+		return split > 0 && value && field in FILTER_LABELS ? [{ field, value }] : [];
+	});
+}
 
 type ProjectInfo = {
 	slug: string;
@@ -291,10 +314,14 @@ const DonutChart = memo(({
 	data,
 	title,
 	height = 300,
+	active,
+	onSelect,
 }: {
 	data: StatEntry[];
 	title: string;
 	height?: number;
+	active?: string;
+	onSelect?: (key: string) => void;
 }) => {
 	const chartData = useMemo(
 		() =>
@@ -372,20 +399,31 @@ const DonutChart = memo(({
 					definition={definition}
 					height={chartHeight}
 					ariaLabel={title}
-					className="w-full stats-tanstack-chart"
+					className={cn("w-full stats-tanstack-chart", onSelect && "cursor-pointer")}
 					style={{ color: "var(--color-muted-foreground)" }}
+					onSelect={(point) => {
+						const name = (point?.datum as { name?: string } | undefined)?.name;
+						if (name) onSelect?.(name);
+					}}
 				/>
 			</div>
 
 			<div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2">
 				{chartData.map((entry, index) => (
-					<div key={`${title}-${entry.name}`} className="inline-flex items-center gap-1.5">
+					<button
+						type="button"
+						key={`${title}-${entry.name}`}
+						onClick={() => onSelect?.(entry.name)}
+						aria-pressed={active === entry.name}
+						title={`Filter by ${entry.name}`}
+						className="inline-flex items-center gap-1.5 rounded px-1 -mx-1 hover:bg-muted/50 transition-colors"
+					>
 						<span
 							className="h-2 w-2 rounded-sm shrink-0"
 							style={{ backgroundColor: COLORS[index % COLORS.length] }}
 						/>
-						<span className="text-[11px] text-muted-foreground font-medium">{entry.name}</span>
-					</div>
+						<span className={cn("text-[11px] font-medium", active === entry.name ? "text-primary" : "text-muted-foreground")}>{entry.name}</span>
+					</button>
 				))}
 			</div>
 		</div>
@@ -645,11 +683,17 @@ const BreakdownList = memo(({
 	items,
 	maxVal,
 	icon: Icon,
+	field,
+	active,
+	onSelect,
 }: {
 	title: string;
 	items: StatEntry[];
 	maxVal: number;
 	icon?: React.ComponentType<{ className?: string }>;
+	field: FilterField;
+	active?: string;
+	onSelect: SelectFilter;
 }) => (
 	<div className={cn(CARD, "max-h-[300px] sm:max-h-[400px] md:h-[400px] flex flex-col")}>
 		<div className="px-5 py-3.5 border-b border-border flex items-center gap-2 shrink-0">
@@ -664,11 +708,17 @@ const BreakdownList = memo(({
 			) : (
 				<div className="divide-y divide-border">
 					{items.map((item, i) => (
-						<div key={item.key} className="group px-5 py-3 hover:bg-muted/50 transition-colors">
+						<button
+							type="button"
+							key={item.key}
+							onClick={() => onSelect(field, item.key)}
+							aria-pressed={active === item.key}
+							className={cn("group block w-full text-left px-5 py-3 hover:bg-muted/50 transition-colors", active === item.key && "bg-muted/50")}
+						>
 							<div className="flex justify-between items-baseline gap-3 mb-2">
 								<span
-									className="text-sm text-foreground truncate font-medium group-hover:text-primary transition-colors"
-									title={item.key}
+									className={cn("text-sm truncate font-medium group-hover:text-primary transition-colors", active === item.key ? "text-primary" : "text-foreground")}
+									title={`Filter by ${item.key}`}
 								>
 									{item.key.replace(/^https?:\/\/[^/]+/, "") || "/"}
 								</span>
@@ -677,7 +727,7 @@ const BreakdownList = memo(({
 								</span>
 							</div>
 							<ProgressBar value={item.pageviews} maxVal={maxVal} index={i} />
-						</div>
+						</button>
 					))}
 				</div>
 			)}
@@ -719,6 +769,22 @@ export default function ProjectStatsDashboard() {
 	const [period, setPeriod] = useState<string>("0");
 	const [granularity, setGranularity] = useState<Granularity>("week");
 	const [retryToken, setRetryToken] = useState<number>(0);
+	const [filters, setFilters] = useState<StatsFilter[]>([]);
+	useEffect(() => setFilters(readUrlFilters()), []);
+	const filterParams = useMemo(() => filters.map((f) => `${f.field}:${f.value}`), [filters]);
+	const activeFilter = useMemo(
+		() => Object.fromEntries(filters.map((f) => [f.field, f.value])) as Partial<Record<FilterField, string>>,
+		[filters],
+	);
+
+	// Clicking an entry filters by it; clicking the active entry again clears it.
+	const selectFilter = useCallback<SelectFilter>((field, value) => {
+		trigger("selection");
+		setFilters((current) => {
+			const rest = current.filter((f) => f.field !== field);
+			return current.some((f) => f.field === field && f.value === value) ? rest : [...rest, { field, value }];
+		});
+	}, []);
 	const API_PREFIX = "/projects/stats/api";
 
 	const API_BASE = useMemo(() => {
@@ -736,7 +802,7 @@ export default function ProjectStatsDashboard() {
 		return "";
 	}, []);
 
-	const { snapshot, loading, slow, error: statsError, refresh } = useProjectStats<AllStats>(API_BASE, selectedSlug, period);
+	const { snapshot, loading, slow, error: statsError, refresh } = useProjectStats<AllStats>(API_BASE, selectedSlug, period, filterParams);
 	const stats = snapshot?.data ?? null;
 	const error = projectsError || statsError;
 	const displayedPeriod = snapshot?.days ?? period;
@@ -780,14 +846,16 @@ export default function ProjectStatsDashboard() {
 		return () => controller.abort();
 	}, [API_BASE, getInitialProject, retryToken]);
 
-	// Update URL when project changes
+	// Update URL when project or filters change
 	useEffect(() => {
 		if (selectedSlug && typeof window !== "undefined") {
 			const url = new URL(window.location.href);
 			url.searchParams.set("project", selectedSlug);
+			url.searchParams.delete("filter");
+			for (const filter of filterParams) url.searchParams.append("filter", filter);
 			window.history.replaceState({}, "", url.toString());
 		}
-	}, [selectedSlug]);
+	}, [selectedSlug, filterParams]);
 
 	// Derived metrics
 	const totals = useMemo(() => {
@@ -873,6 +941,7 @@ export default function ProjectStatsDashboard() {
 						onValueChange={(v) => {
 							trigger("selection");
 							setSelectedSlug(v);
+							setFilters([]);
 						}}
 					>
 						<SelectTrigger data-haptic="manual" className="w-full sm:w-[240px] bg-card border-border hover:border-accent focus:ring-primary/20 ring-offset-0 text-foreground transition-colors">
@@ -934,7 +1003,32 @@ export default function ProjectStatsDashboard() {
 				</div>
 			</div>
 
-			{(loading || (!selectedSlug && !error) || (error && stats) || (snapshot && (snapshot.slug !== selectedSlug || snapshot.days !== period))) && (
+			{filters.length > 0 && (
+				<div className="flex flex-wrap items-center gap-2 text-xs">
+					<span className="text-muted-foreground">Filtered by</span>
+					{filters.map((f) => (
+						<button
+							type="button"
+							key={f.field}
+							onClick={() => selectFilter(f.field, f.value)}
+							aria-label={`Remove ${FILTER_LABELS[f.field]} filter`}
+							className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-foreground hover:border-accent transition-colors"
+						>
+							<span className="text-muted-foreground">{FILTER_LABELS[f.field]}</span>
+							<span className="font-medium max-w-[16rem] truncate">{f.value}</span>
+							<X className="w-3 h-3 text-muted-foreground" />
+						</button>
+					))}
+					<Button variant="ghost" size="sm" onClick={() => { trigger("selection"); setFilters([]); }}>Clear</Button>
+					{stats?.metadata.excludes_history && (
+						<span className="basis-full text-muted-foreground">
+							Filtered views count live analytics only. Traffic from before the move off Vercel Analytics can't be broken down this way, so it isn't included.
+						</span>
+					)}
+				</div>
+			)}
+
+			{(loading || (!selectedSlug && !error) || (error && stats) || (snapshot && (snapshot.slug !== selectedSlug || snapshot.days !== period || snapshot.filterKey !== filterParams.join("\n")))) && (
 				<Alert role="status" aria-live="polite">
 					<AlertDescription>
 						{error || (slow ? "Fetching historical data. This is taking longer than usual." : stats ? "Updating stats…" : "Loading analytics…")}
@@ -1107,18 +1201,27 @@ export default function ProjectStatsDashboard() {
 								title="Top Paths"
 								items={stats.stats.path}
 								maxVal={maxPathPageviews}
+								field="path"
+								active={activeFilter.path}
+								onSelect={selectFilter}
 								icon={Eye}
 							/>
 							<BreakdownList
 								title="Top Referrers"
 								items={stats.stats.referrer}
 								maxVal={maxReferrerPageviews}
+								field="referrer"
+								active={activeFilter.referrer}
+								onSelect={selectFilter}
 								icon={Globe}
 							/>
 							<BreakdownList
 								title="Top Countries"
 								items={stats.stats.country}
 								maxVal={maxCountryPageviews}
+								field="country"
+								active={activeFilter.country}
+								onSelect={selectFilter}
 								icon={Globe}
 							/>
 						</div>
@@ -1127,12 +1230,12 @@ export default function ProjectStatsDashboard() {
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 							{stats.stats.device_type.length > 0 && (
 								<BreakdownChartCard title="Device Types" icon={Smartphone}>
-									<DonutChart data={stats.stats.device_type} title="Device Types" />
+									<DonutChart data={stats.stats.device_type} title="Device Types" active={activeFilter.device_type} onSelect={(key) => selectFilter("device_type", key)} />
 								</BreakdownChartCard>
 							)}
 							{stats.stats.os_name.length > 0 && (
 								<BreakdownChartCard title="Operating Systems" icon={Monitor}>
-									<DonutChart data={stats.stats.os_name} title="OS" />
+									<DonutChart data={stats.stats.os_name} title="OS" active={activeFilter.os_name} onSelect={(key) => selectFilter("os_name", key)} />
 								</BreakdownChartCard>
 							)}
 						</div>

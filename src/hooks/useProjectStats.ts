@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 type StatsData = { metadata: { export_date: string } };
-type Snapshot<T> = { slug: string; days: string; data: T };
+type Snapshot<T> = { slug: string; days: string; filterKey: string; data: T };
 type Result<T> = {
 	data: T | null;
 	error?: string;
@@ -11,21 +11,24 @@ type Result<T> = {
 // Bounded page-session cache for switching between already visited periods.
 const snapshots = new Map<string, StatsData>();
 
-export function useProjectStats<T extends StatsData>(apiBase: string, slug: string, days: string) {
+// Filters are "field:value" strings, sent as repeated ?filter= params.
+export function useProjectStats<T extends StatsData>(apiBase: string, slug: string, days: string, filters: readonly string[] = []) {
 	const [snapshot, setSnapshot] = useState<Snapshot<T> | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [slow, setSlow] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [revision, setRevision] = useState(0);
 	const forceNext = useRef(false);
+	// A stable dependency for the effect; filter values never contain newlines.
+	const filterKey = filters.join("\n");
 
 	useEffect(() => {
 		if (!slug) return;
 		const controller = new AbortController();
 		let active = true;
-		const key = `${apiBase}:${slug}:${days}`;
+		const key = `${apiBase}:${slug}:${days}:${filterKey}`;
 		const saved = snapshots.get(key) as T | undefined;
-		if (saved) setSnapshot({ slug, days, data: saved });
+		if (saved) setSnapshot({ slug, days, filterKey, data: saved });
 		setLoading(true);
 		setError(null);
 		setSlow(false);
@@ -35,6 +38,7 @@ export function useProjectStats<T extends StatsData>(apiBase: string, slug: stri
 
 		async function request(refresh: boolean): Promise<Result<T>> {
 			const params = new URLSearchParams({ slugs: slug, days });
+			for (const filter of filterKey ? filterKey.split("\n") : []) params.append("filter", filter);
 			if (refresh) params.set("refresh", "true");
 			const deadline = window.setTimeout(() => controller.abort(new Error("Analytics took too long to respond. Try again.")), 305000);
 			try {
@@ -52,7 +56,7 @@ export function useProjectStats<T extends StatsData>(apiBase: string, slug: stri
 		function display(result: Result<T>) {
 			if (!active || controller.signal.aborted) return;
 			if (result.data) {
-				setSnapshot({ slug, days, data: result.data });
+				setSnapshot({ slug, days, filterKey, data: result.data });
 				snapshots.delete(key);
 				snapshots.set(key, result.data);
 				if (snapshots.size > 20) snapshots.delete(snapshots.keys().next().value!);
@@ -94,7 +98,7 @@ export function useProjectStats<T extends StatsData>(apiBase: string, slug: stri
 		}
 		void run();
 		return () => { active = false; controller.abort(); window.clearTimeout(slowTimer); };
-	}, [apiBase, slug, days, revision]);
+	}, [apiBase, slug, days, filterKey, revision]);
 
 	return { snapshot, loading, slow, error, refresh: () => { forceNext.current = true; setRevision((value) => value + 1); } };
 }
