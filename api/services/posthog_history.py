@@ -2,8 +2,9 @@
 Long-range PostHog stats built from calendar-quarter windows.
 
 A single 912-day breakdown can run past PostHog's own gateway timeout (504).
-Quarters keep each query small, and a quarter that has ended never changes,
-so its results are saved and later refreshes only query the current quarter.
+Quarters keep each query small, one per quarter (see query_window), and a
+quarter that has ended never changes, so its results are saved and later
+refreshes only query the current quarter.
 
 Visitors are summed across quarters, the same way merge_stat_lists sums them
 across Vercel and PostHog data, so someone who visits in two quarters counts
@@ -19,7 +20,7 @@ from models import StatEntry, TimeseriesEntry
 from services import snapshots
 from services.merger import merge_stat_lists
 from services.parallel import gather_queries
-from services.posthog import PH_FIELDS, query_posthog
+from services.posthog import PH_FIELDS, query_window
 
 logger = logging.getLogger(__name__)
 PREFIX = "posthog-quarter:v1:"
@@ -56,54 +57,20 @@ def windows(days: int, today: date, align: bool = False) -> list[tuple[date, dat
     return result
 
 
-def _bounds(start: date, end: date) -> str:
-    return (
-        f"timestamp >= toDateTime('{start.isoformat()} 00:00:00') "
-        f"AND timestamp < toDateTime('{end.isoformat()} 00:00:00')"
-    )
+def _bounds(start: date, end: date | None) -> str:
+    # PostHog reads these in the project's timezone, so the current window
+    # has no upper bound or it would cut off the end of today there.
+    bounds = f"timestamp >= toDateTime('{start.isoformat()} 00:00:00')"
+    if end is not None:
+        bounds += f" AND timestamp < toDateTime('{end.isoformat()} 00:00:00')"
+    return bounds
 
 
-async def _timeseries(project_id: str, start: date, end: date, where: str) -> list[dict]:
-    rows = await query_posthog(project_id, f"""
-        SELECT toStartOfDay(timestamp) as d, count() as pageviews, count(DISTINCT distinct_id) as visitors
-        FROM events
-        WHERE event = '$pageview' AND {_bounds(start, end)}{where}
-        GROUP BY d
-        ORDER BY d ASC
-    """)
-    return [{"date": str(row[0]), "pageviews": row[1], "visitors": row[2]} for row in rows]
+async def _fetch_window(project_id: str, start: date, end: date | None, where: str) -> dict:
+    return await query_window(project_id, _bounds(start, end), where, WINDOW_LIMIT)
 
 
-async def _breakdown(project_id: str, field: str, start: date, end: date, where: str) -> list[dict]:
-    target = PH_FIELDS[field]
-    rows = await query_posthog(project_id, f"""
-        SELECT {target} as key, count() as pageviews, count(DISTINCT distinct_id) as visitors
-        FROM events
-        WHERE event = '$pageview' AND {_bounds(start, end)} AND {target} IS NOT NULL{where}
-        GROUP BY key
-        ORDER BY pageviews DESC
-        LIMIT {WINDOW_LIMIT}
-    """)
-    return [{"key": str(row[0]), "pageviews": row[1], "visitors": row[2]} for row in rows]
-
-
-async def _fetch_window(project_id: str, start: date, end: date, where: str) -> dict:
-    results = await gather_queries(
-        _timeseries(project_id, start, end, where),
-        *(_breakdown(project_id, field, start, end, where) for field in PH_FIELDS),
-    )
-    return {"timeseries": results[0], "breakdowns": dict(zip(PH_FIELDS, results[1:]))}
-
-
-async def _cached_window(project_id: str, start: date, end: date, today: date, where: str = "") -> dict:
-    # Only whole quarters that have ended are final.
-    final = start == quarter_start(start) and end == next_quarter(start) and end <= today
-    if not final:
-        return await _fetch_window(project_id, start, end, where)
-
-    key = f"{PREFIX}{project_id}:{start.isoformat()}"
-    if where:
-        key += ":" + hashlib.sha256(where.encode()).hexdigest()[:16]
+async def _read_cached(key: str) -> dict | None:
     if key in _memory:
         return _memory[key]
     if snapshots.configured():
@@ -114,6 +81,27 @@ async def _cached_window(project_id: str, start: date, end: date, today: date, w
                 return _memory[key]
         except Exception:
             logger.warning("Quarter cache read failed for %s", key)
+    return None
+
+
+async def _cached_window(project_id: str, start: date, end: date, today: date, where: str = "") -> dict:
+    # Only whole quarters that have ended are final.
+    final = start == quarter_start(start) and end == next_quarter(start) and end <= today
+    if not final:
+        return await _fetch_window(project_id, start, end if end <= today else None, where)
+
+    base_key = f"{PREFIX}{project_id}:{start.isoformat()}"
+    key = base_key
+    if where:
+        key += ":" + hashlib.sha256(where.encode()).hexdigest()[:16]
+        # Lifetime reaches back before most projects used PostHog. A quarter
+        # with no events at all has none for any filter either.
+        base = await _read_cached(base_key)
+        if base is not None and not base["timeseries"]:
+            return base
+    cached = await _read_cached(key)
+    if cached is not None:
+        return cached
 
     window = await _fetch_window(project_id, start, end, where)
     _memory[key] = window

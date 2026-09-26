@@ -1,12 +1,6 @@
 """Services package for the analytics API."""
 
-from .posthog import (
-    query_posthog,
-    fetch_timeseries,
-    fetch_timeseries_batched,
-    fetch_breakdown,
-    fetch_all_breakdowns,
-)
+from .posthog import query_posthog, query_window
 from .cloudflare import (
     fetch_cf_timeseries,
     fetch_cf_all_breakdowns,
@@ -22,10 +16,7 @@ from .cache import cached, invalidate
 
 __all__ = [
     "query_posthog",
-    "fetch_timeseries",
-    "fetch_timeseries_batched",
-    "fetch_breakdown",
-    "fetch_all_breakdowns",
+    "query_window",
     "fetch_cf_timeseries",
     "fetch_cf_all_breakdowns",
     "load_vercel_data",

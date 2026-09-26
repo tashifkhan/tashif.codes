@@ -7,10 +7,8 @@ from core.config import list_available_projects
 from core.dependencies import get_project
 from models import AllStats, Metadata, ProjectInfo, ProjectListResponse
 from services import (
-    fetch_all_breakdowns,
     fetch_cf_all_breakdowns,
     fetch_cf_timeseries,
-    fetch_timeseries_batched,
     filter_stats_by_date,
     filter_timeseries_by_date,
     get_empty_stats,
@@ -100,19 +98,10 @@ async def _get_project_stats_internal(
             ts_task, breakdowns_task
         )
 
-    elif ph_id and query_days > 90:
-        # Long ranges go quarter by quarter; past quarters come from cache.
+    elif ph_id:
+        # One query per calendar quarter; past quarters come from cache.
         live_timeseries, live_breakdowns = await fetch_history(
             ph_id, query_days, align=effective_days == 0, where=posthog_where(filters, PH_FIELDS)
-        )
-
-    elif ph_id:
-        where = posthog_where(filters, PH_FIELDS)
-        ts_task = fetch_timeseries_batched(ph_id, total_days=query_days, batch_days=90, where=where)
-        breakdowns_task = fetch_all_breakdowns(ph_id, query_days, where=where)
-
-        live_timeseries, live_breakdowns = await gather_queries(
-            ts_task, breakdowns_task
         )
 
     # 3. Merge Vercel and live data
