@@ -5,10 +5,16 @@ Handles loading and processing of Vercel migration data from local JSON files.
 """
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime, time, timedelta, timezone
 from pathlib import Path
 
-from models import AllStats, Metadata, Stats, TimeseriesEntry
+from models import AllStats, Metadata, StatEntry, Stats, TimeseriesEntry
+
+from .filters import Filter, raw_values
+
+# Export days are IST calendar days; the unfiltered timeseries stamps each
+# at IST midnight, so filtered history does the same.
+IST = timezone(timedelta(hours=5, minutes=30))
 
 
 def load_vercel_data(file_path: Path) -> AllStats | None:
@@ -144,4 +150,47 @@ def filter_stats_by_date(stats: "Stats", days: int | None = None) -> "Stats":
         referrer=filter_and_aggregate(stats.referrer),
         os_name=filter_and_aggregate(stats.os_name),
         country=filter_and_aggregate(stats.country),
+    )
+
+
+def filter_vercel_history(data: AllStats, filters: list[Filter], days: int | None = None) -> AllStats | None:
+    """
+    Vercel history matching one filter, or None when it can't be filtered.
+
+    The export has daily totals per key for each field on its own, so one
+    filter gives an exact daily timeseries and that field's own entries.
+    Other fields, and any combination of filters, have no data to split.
+    """
+    if len(filters) != 1:
+        return None
+    field, value = filters[0]
+    matches = raw_values(field, value)
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).date() if days else None
+    entries = [
+        entry
+        for entry in getattr(data.stats, field)
+        if entry.key.lower() in matches
+        and entry.migration_date
+        and (cutoff is None or entry.migration_date >= cutoff)
+    ]
+
+    daily: dict = {}
+    for entry in entries:
+        day = daily.setdefault(entry.migration_date, [0, 0])
+        day[0] += entry.pageviews
+        day[1] += entry.visitors
+    timeseries = [
+        TimeseriesEntry(
+            date=datetime.combine(day, time(), IST).astimezone(timezone.utc),
+            pageviews=pageviews,
+            visitors=visitors,
+            bounce_rate=0,
+            migration_date=day,
+        )
+        for day, (pageviews, visitors) in sorted(daily.items())
+    ]
+    return AllStats(
+        metadata=data.metadata,
+        timeseries=timeseries,
+        stats=Stats(**{field: [StatEntry(key=e.key, pageviews=e.pageviews, visitors=e.visitors) for e in entries]}),
     )

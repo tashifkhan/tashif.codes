@@ -11,6 +11,7 @@ from services import (
     fetch_cf_timeseries,
     filter_stats_by_date,
     filter_timeseries_by_date,
+    filter_vercel_history,
     get_empty_stats,
     load_vercel_data,
     merge_stats,
@@ -70,19 +71,24 @@ async def _get_project_stats_internal(
     )
 
     # 1. Load Vercel migration data and filter by days. The export only has
-    # per-dimension totals, so filtered views leave it out entirely.
-    if vercel_file and not filters:
-        vercel_data = load_vercel_data(vercel_file)
-        if vercel_data is None:
-            vercel_data = get_empty_stats()
-    else:
-        vercel_data = get_empty_stats()
-
+    # daily totals per field, so it can answer one filter but not several.
     filter_days = effective_days if effective_days > 0 else None
+    vercel_data = (load_vercel_data(vercel_file) if vercel_file else None) or get_empty_stats()
+    excludes_history = False
+    if filters:
+        history = filter_vercel_history(vercel_data, filters, filter_days)
+        excludes_history = history is None and any(
+            entry.pageviews for entry in filter_timeseries_by_date(vercel_data.timeseries, filter_days)
+        )
+        vercel_data = history or get_empty_stats()
+    history_field = filters[0][0] if filters and not excludes_history and vercel_data.timeseries else None
+
+    # Filtered history is already cut to the period.
+    history_days = None if filters else filter_days
     filtered_vercel_timeseries = filter_timeseries_by_date(
-        vercel_data.timeseries, filter_days
+        vercel_data.timeseries, history_days
     )
-    filtered_vercel_stats = filter_stats_by_date(vercel_data.stats, filter_days)
+    filtered_vercel_stats = filter_stats_by_date(vercel_data.stats, history_days)
 
     # 2. Fetch live analytics data based on provider
     live_timeseries = []
@@ -113,7 +119,8 @@ async def _get_project_stats_internal(
         metadata=Metadata(
             export_date=datetime.datetime.now(datetime.UTC),
             source=f"unified_{project_slug}",
-            excludes_history=bool(filters and vercel_file and vercel_file.exists()),
+            excludes_history=excludes_history,
+            history_field=history_field,
         ),
         timeseries=merged_timeseries,
         stats=merged_stats,
@@ -141,7 +148,7 @@ async def get_project_stats(
     filter: list[str] = Query(
         default=[],
         max_length=MAX_FILTERS,
-        description="Breakdown filters as field:value, e.g. country:🇮🇳 India. Filtered stats leave out Vercel migration history.",
+        description="Breakdown filters as field:value, e.g. country:🇮🇳 India. With one filter, Vercel migration history counts in the chart, totals and that field; more filters leave it out.",
     ),
 ):
     """

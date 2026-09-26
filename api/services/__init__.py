@@ -10,6 +10,7 @@ from .vercel import (
     get_empty_stats,
     filter_timeseries_by_date,
     filter_stats_by_date,
+    filter_vercel_history,
 )
 from .merger import merge_stat_lists, merge_timeseries, merge_stats
 from .cache import cached, invalidate
@@ -23,6 +24,7 @@ __all__ = [
     "get_empty_stats",
     "filter_timeseries_by_date",
     "filter_stats_by_date",
+    "filter_vercel_history",
     "merge_stat_lists",
     "merge_timeseries",
     "merge_stats",

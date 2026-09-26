@@ -14,9 +14,12 @@ class Metadata(BaseModel):
 
     export_date: datetime
     source: str
-    # True when filters left out Vercel migration history, which has no
-    # per-event data to filter.
+    # Vercel migration history has per-day totals for each field on its own,
+    # with no per-event data. One filter can use its field's daily totals, so
+    # history counts in the chart, totals and that field's list
+    # (history_field). More filters leave history out (excludes_history).
     excludes_history: bool = False
+    history_field: str | None = None
 
 
 class TimeseriesEntry(BaseModel):
