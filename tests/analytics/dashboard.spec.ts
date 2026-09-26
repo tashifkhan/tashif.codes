@@ -4,7 +4,7 @@ function result(views = 123, stale = false, refresh_error: string | null = null)
   return { results: [{ slug: "dashboard", data: {
     metadata: { export_date: "2026-09-21T07:00:00Z", source: "test" },
     timeseries: [{ date: "2026-09-20T00:00:00Z", pageviews: views, visitors: 42, bounce_rate: 0 }],
-    stats: { path: [], device_type: [], referrer: [], os_name: [], country: [] },
+    stats: { path: [], device_type: [], referrer: [{ key: "google.com", pageviews: 9, visitors: 4 }], os_name: [], country: [] },
   }, error: null, cache: { stale, refreshing: false, refresh_error, retry_after: 0 } }] };
 }
 
@@ -34,7 +34,7 @@ test("stale snapshot appears before background refresh finishes", async ({ page 
   });
   await page.goto("/projects/stats?project=dashboard");
   await expect(page.getByText("123", { exact: true })).toBeVisible();
-  await expect(page.getByRole("status")).toContainText("Updating stats");
+  await expect(page.getByRole("button", { name: "Refreshing" })).toBeDisabled();
   await expect(page.getByLabel("Loading analytics charts")).toHaveCount(0);
   finish();
   await expect(page.getByText("456", { exact: true })).toBeVisible();
@@ -64,8 +64,8 @@ test("period change keeps old data honestly labelled", async ({ page }) => {
   await expect(page.getByText("123", { exact: true })).toBeVisible();
   await page.getByRole("combobox").nth(1).click();
   await page.getByRole("option", { name: "Last 7 days", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText("Showing tashif.codes, lifetime");
-  await expect(page.getByText("123", { exact: true })).toBeVisible();
+  await expect(page.getByRole("status")).toContainText("Loading last 7 days");
+  await expect(page.locator("[aria-busy=true]")).toContainText("123");
   finish();
   await expect(page.locator("div.tabular-nums").filter({ hasText: /^7$/ })).toBeVisible();
   await expect(page.getByRole("status")).toHaveCount(0);
@@ -126,4 +126,23 @@ test("switching projects ignores the previous project's late refresh", async ({ 
   finish();
   await expect(page.getByText("456", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Refresh stats" })).toBeEnabled();
+});
+
+test("clicking an entry filters the dashboard and dims the old view meanwhile", async ({ page }) => {
+  await projects(page);
+  let finish!: () => void;
+  const waiting = new Promise<void>(resolve => { finish = resolve; });
+  await page.route("**/projects/stats/api/v1/stats?**", async route => {
+    if (new URL(route.request().url()).searchParams.get("filter") === "referrer:google.com") { await waiting; await route.fulfill({ json: result(55) }); }
+    else await route.fulfill({ json: result() });
+  });
+  await page.goto("/projects/stats?project=dashboard");
+  await page.getByRole("button", { name: /google\.com/ }).click();
+  await expect(page.getByRole("button", { name: "Remove Referrer filter" })).toBeVisible();
+  await expect(page.getByRole("status")).toContainText("Applying filters");
+  await expect(page.locator("[aria-busy=true]")).toContainText("123");
+  expect(new URL(page.url()).searchParams.get("filter")).toBe("referrer:google.com");
+  finish();
+  await expect(page.locator("div.tabular-nums").filter({ hasText: /^55$/ })).toBeVisible();
+  await expect(page.getByRole("status")).toHaveCount(0);
 });

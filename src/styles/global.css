@@ -955,22 +955,39 @@ a.motion-card:focus-visible {
   font-family: var(--font-mono) !important;
   font-size: 12px !important;
   line-height: 1.6 !important;
+  min-width: 180px;
 }
 
-.stats-chart-tooltip [data-ts-chart-tooltip-title],
-.stats-chart-tooltip .ts-chart-tooltip-title {
-  color: var(--color-primary);
-  font-size: 10px;
+.stats-chart-tooltip .ts-chart-tooltip__title {
+  color: var(--color-foreground);
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.1em;
-  margin-bottom: 6px;
+  margin-bottom: 6px !important;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.stats-chart-tooltip [data-ts-chart-tooltip-row],
-.stats-chart-tooltip .ts-chart-tooltip-row {
+.stats-chart-tooltip .ts-chart-tooltip__rows {
+  display: grid;
+  gap: 2px;
+}
+
+.stats-chart-tooltip .ts-chart-tooltip__row {
   color: var(--color-muted-foreground);
   font-size: 12px;
   font-weight: 500;
+}
+
+/* Value column, and hint rows that have no value */
+.stats-chart-tooltip .ts-chart-tooltip__row > :last-child {
+  color: var(--color-foreground);
+}
+
+.stats-chart-tooltip .ts-chart-tooltip__row:last-child:not(:has(> *)),
+.stats-chart-tooltip .ts-chart-tooltip__row:last-child:has(> :last-child:empty) {
+  color: var(--color-primary);
+  font-size: 11px;
+  margin-top: 4px;
 }
 
 .stats-tanstack-chart .ts-chart-host,
