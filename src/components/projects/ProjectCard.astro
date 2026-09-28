@@ -58,6 +58,7 @@ const accent = project.languages[0] ? languageColor(project.languages[0]) : null
 				<h3
 					class="flex-1 font-sans text-[15px] sm:text-base font-semibold leading-snug tracking-tight text-foreground group-hover:text-primary transition-colors"
 					data-project-title
+					transition:name={`project-title-${project.slug}`}
 				>
 					<a
 						href={`/projects/${project.slug}`}

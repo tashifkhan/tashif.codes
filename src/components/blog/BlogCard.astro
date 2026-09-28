@@ -61,6 +61,7 @@ const coverUrl = resolveCoverImage(post);
 									src={coverUrl}
 									alt=""
 									data-blog-cover
+									transition:name={`blog-cover-${post.slug}`}
 									class="absolute inset-0 w-full h-full object-cover object-left transition-transform duration-200 motion-safe:group-hover:scale-[1.015]"
 									loading="lazy"
 								/>
@@ -99,6 +100,7 @@ const coverUrl = resolveCoverImage(post);
 							<h2
 								class="text-2xl font-bold tracking-tight group-hover:text-primary transition-colors"
 								data-blog-title
+								transition:name={`blog-title-${post.slug}`}
 							>
 								{post.title}
 							</h2>
@@ -158,6 +160,7 @@ const coverUrl = resolveCoverImage(post);
 						src={coverUrl || ""}
 						alt=""
 						data-blog-cover
+						transition:name={coverUrl ? `blog-cover-${post.slug}` : undefined}
 						class={cn(
 							"w-full h-full object-cover transition-transform duration-200 motion-safe:group-hover:scale-[1.015]",
 							coverUrl ? "" : "hidden"
@@ -181,7 +184,7 @@ const coverUrl = resolveCoverImage(post);
 						className="text-lg leading-tight group-hover:text-primary transition-colors line-clamp-2"
 						data-blog-title
 					>
-						{post.title}
+						<span transition:name={`blog-title-${post.slug}`}>{post.title}</span>
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="p-5 py-2 flex-1">
