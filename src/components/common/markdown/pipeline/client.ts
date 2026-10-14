@@ -197,25 +197,34 @@ export function initTabs(root: ParentNode = document): void {
   })
 }
 
+/**
+ * Diagram labels use Excalifont, Excalidraw's handwriting face, to match the
+ * rough.js strokes from `look: 'handDrawn'`. Self-hosted from
+ * public/fonts/excalifont (OFL), declared in markdown.css.
+ */
+export const MERMAID_FONT = "'Excalifont', var(--font-sans, 'Lexend'), cursive"
+
+// Outlines and arrows are darker than the card borders elsewhere: rough.js
+// strokes are thin and broken, and pale slate made them look washed out.
 export const MERMAID_DARK: Record<string, unknown> = {
   darkMode: true,
   background: '#0d0e15',
   mainBkg: '#11131c',
   primaryColor: '#11131c',
   primaryTextColor: '#dce1ec',
-  primaryBorderColor: '#2a2f42',
+  primaryBorderColor: '#8b93ab',
   nodeTextColor: '#dce1ec',
-  lineColor: '#6c7590',
+  lineColor: '#9aa2b8',
   secondaryColor: '#1a1d2a',
   tertiaryColor: '#151827',
   clusterBkg: '#0b0c12',
-  clusterBorder: '#1a1d2a',
+  clusterBorder: '#3a4058',
   edgeLabelBackground: '#11131c',
   noteBkgColor: '#1a1d2a',
   noteTextColor: '#dce1ec',
   noteBorderColor: '#2a2f42',
-  defaultLinkColor: '#6c7590',
-  fontFamily: "var(--font-sans, 'Lexend', sans-serif)",
+  defaultLinkColor: '#9aa2b8',
+  fontFamily: MERMAID_FONT,
 }
 
 export const MERMAID_LIGHT: Record<string, unknown> = {
@@ -224,19 +233,19 @@ export const MERMAID_LIGHT: Record<string, unknown> = {
   mainBkg: '#f8fafc',
   primaryColor: '#f1f5f9',
   primaryTextColor: '#1e293b',
-  primaryBorderColor: '#cbd5e1',
+  primaryBorderColor: '#334155',
   nodeTextColor: '#1e293b',
-  lineColor: '#64748b',
+  lineColor: '#334155',
   secondaryColor: '#e2e8f0',
   tertiaryColor: '#f8fafc',
   clusterBkg: '#f8fafc',
-  clusterBorder: '#e2e8f0',
+  clusterBorder: '#94a3b8',
   edgeLabelBackground: '#ffffff',
   noteBkgColor: '#fff7ed',
   noteTextColor: '#7c2d12',
   noteBorderColor: '#fed7aa',
-  defaultLinkColor: '#64748b',
-  fontFamily: "var(--font-sans, 'Lexend', sans-serif)",
+  defaultLinkColor: '#334155',
+  fontFamily: MERMAID_FONT,
 }
 
 const WARN_ICON =
@@ -294,10 +303,22 @@ export async function renderMermaidBlocks(
 
   const dark = options.dark ?? isDarkTheme()
 
+  // Excalifont only appears inside diagrams, so nothing on the page has
+  // requested it yet. Load it before mermaid measures labels, or every box is
+  // sized for the fallback font.
+  try {
+    await document.fonts?.load("14px 'Excalifont'")
+  } catch {}
+
   mermaid.initialize({
     startOnLoad: false,
     theme: 'base',
     themeVariables: dark ? MERMAID_DARK : MERMAID_LIGHT,
+    fontFamily: MERMAID_FONT,
+    // rough.js strokes and hachure fills, like Excalidraw. A fixed seed keeps
+    // the wobble identical across reloads and theme switches.
+    look: 'handDrawn',
+    handDrawnSeed: 7,
     // Natural SVG size; CSS max-width scales to the column (mobile can zoom).
     sequence: { useMaxWidth: false, diagramMarginX: 16, diagramMarginY: 16 },
     // Keep subgraph titles under ~22 characters. mermaid hard-caps a cluster
