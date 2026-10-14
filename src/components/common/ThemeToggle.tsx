@@ -40,12 +40,15 @@ export default function ThemeToggle() {
 		const idx = themes.indexOf(theme);
 		const next = themes[(idx + 1) % themes.length];
 		setTheme(next);
-		document.documentElement.classList.remove("dark", "cream");
-		if (next === "dark") {
-			document.documentElement.classList.add("dark");
-		} else if (next === "cream") {
-			document.documentElement.classList.add("cream");
-		}
+		const root = document.documentElement;
+		root.classList.add("theme-fade");
+		window.setTimeout(() => root.classList.remove("theme-fade"), 240);
+		// One frame with the transition armed, then the palette class changes.
+		requestAnimationFrame(() => {
+			root.classList.remove("dark", "cream");
+			if (next === "dark") root.classList.add("dark");
+			else if (next === "cream") root.classList.add("cream");
+		});
 		localStorage.setItem("theme", next);
 	};
 

@@ -5,7 +5,11 @@ No animation runtime or JavaScript listeners were added for these effects.
 
 Shared timing lives in `src/styles/global.css`: 80 ms for a press, 140 ms for
 controls and menu entrances, and 200 ms for cards. Navigation uses a 120/180 ms
-crossfade through the existing Astro router, without vertical page movement.
+crossfade through Astro's `ClientRouter`, without vertical page movement.
+Full page loads opt in with `@view-transition { navigation: auto }`. The
+dashboard header is persisted. Section tabs, project titles, post titles, and
+post covers share a `transition:name`, so the browser morphs that element
+instead of crossfading it with the page. Reduced motion turns those animations off.
 
 - `motion-control` supports buttons rendered as links and tab controls.
   Enabled buttons also receive a small pressed state. Layout dimensions stay fixed.

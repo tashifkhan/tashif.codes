@@ -112,6 +112,7 @@ export async function getStaticPaths() {
 	<Fragment slot="header">
 		<h1
 			class="font-sans text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent mb-2 sm:mb-4 pb-1"
+			transition:name={`project-title-${project.slug}`}
 		>
 			{project.title}
 		</h1>

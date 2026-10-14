@@ -143,15 +143,14 @@ const totalComments = initialComments.reduce(
 
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
 			<!-- Post Header -->
-			<div
-				class="mb-10 max-w-4xl animate-in fade-in slide-in-from-bottom duration-500"
-			>
+			<div class="mb-10 max-w-4xl">
 				{
 					coverUrl && (
 						<div class="mb-8 overflow-hidden rounded-xl border border-border/60 bg-muted/20 shadow-sm">
 							<img
 								src={coverUrl}
 								alt=""
+								transition:name={`blog-cover-${post.slug}`}
 								class="w-full max-h-[420px] object-cover"
 							/>
 						</div>
@@ -172,6 +171,7 @@ const totalComments = initialComments.reduce(
 
 				<h1
 					class="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight leading-[1.15] mb-6 font-mono text-foreground"
+					transition:name={`blog-title-${post.slug}`}
 				>
 					{post.title}
 				</h1>

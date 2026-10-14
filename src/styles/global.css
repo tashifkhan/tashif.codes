@@ -869,6 +869,21 @@ html.cream { color-scheme: light; }
   --motion-ease: cubic-bezier(0.2, 0, 0, 1);
 }
 
+/* Theme swaps interpolate color. The class is added only while toggling,
+   so page load and navigation stay instant. */
+html {
+  transition: background-color var(--motion-normal) var(--motion-ease), color var(--motion-normal) var(--motion-ease);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-fade body,
+  html.theme-fade body * {
+    transition-property: color, background-color, border-color, outline-color, fill, stroke, box-shadow;
+    transition-duration: var(--motion-normal);
+    transition-timing-function: var(--motion-ease);
+  }
+}
+
 .motion-control,
 button,
 [role="tab"],
@@ -923,11 +938,30 @@ a.motion-card:focus-visible {
 }
 @keyframes menu-out { to { opacity: 0; } }
 
-/* A brief crossfade keeps the reading position visually stable. */
+/* Same-document swaps come from Astro's ClientRouter. Full loads opt in here. */
+@view-transition {
+  navigation: auto;
+}
+
+/* A brief crossfade keeps the reading position visually stable.
+   Named groups (titles, covers, header) morph on their own above it. */
 @keyframes page-out { to { opacity: 0; } }
 @keyframes page-in { from { opacity: 0; } }
 ::view-transition-old(root) { animation: page-out 120ms ease-out both; }
 ::view-transition-new(root) { animation: page-in 180ms var(--motion-ease) both; }
+
+::view-transition-group(site-header),
+::view-transition-group(section-tabs) {
+  animation-duration: 180ms;
+  animation-timing-function: var(--motion-ease);
+  z-index: 10;
+}
+
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-timing-function: var(--motion-ease);
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -941,7 +975,12 @@ a.motion-card:focus-visible {
   }
   .motion-card, .motion-tooltip { transform: none !important; }
   [data-blog-cover], .motion-card-arrow { translate: none !important; scale: none !important; }
-  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-image-pair(*) {
+    animation: none !important;
+  }
 }
 
 /* ── TanStack Charts tooltips (project stats dashboard) ── */
