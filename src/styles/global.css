@@ -923,10 +923,12 @@ a.motion-card:focus-visible {
 }
 @keyframes menu-out { to { opacity: 0; } }
 
-/* Page sidebars rise 10 px into place on load and navigation.
-   Main content stays put so reading never waits on it. */
+/* Page blocks rise 10 px into place on load and navigation. Set
+   --rise-delay to stagger. Backwards fill drops the transform once the
+   animation ends, so fixed-position descendants keep the viewport as
+   their containing block. */
 .rise-in {
-  animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--rise-delay, 0ms) backwards;
 }
 @keyframes rise-in {
   from { opacity: 0; transform: translateY(10px); }

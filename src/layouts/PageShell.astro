@@ -78,7 +78,7 @@ const tintClass = {
 			class="relative bg-card/80 backdrop-blur border-b border-border/60 transition-colors duration-300"
 		>
 			<div
-				class:list={[containerClass, "mx-auto px-4 sm:px-6 lg:px-8", headerPadding]}
+				class:list={[containerClass, "rise-in mx-auto px-4 sm:px-6 lg:px-8", headerPadding]}
 			>
 				{
 					breadcrumbs && breadcrumbs.length > 0 ? (
@@ -132,14 +132,18 @@ const tintClass = {
 			</div>
 		</header>
 
+		<!-- Fixed bars live outside the animated containers -->
+		<slot name="overlay" />
+
 		<main class="relative">
 			<div
 				class:list={[
 					containerClass,
-					"mx-auto px-4 sm:px-6 lg:px-8",
+					"rise-in mx-auto px-4 sm:px-6 lg:px-8",
 					mainPadding,
 					mainClass,
 				]}
+				style="--rise-delay: 80ms"
 			>
 				<slot />
 			</div>
