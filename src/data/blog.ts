@@ -72,13 +72,19 @@ export function sortBlogPostsNewestFirst<T extends { date: string; slug: string 
 	});
 }
 
-/** Unique tags across posts (used as filter categories). */
-export function getBlogCategories(posts: BlogPost[]): string[] {
-	return [
-		...new Set(
-			posts.flatMap((post) => (Array.isArray(post.tags) ? post.tags : [])),
-		),
-	];
+/** Tags with post counts, most-used first, ties alphabetical. */
+export function getBlogTagCounts(
+	posts: BlogPost[],
+): { name: string; count: number }[] {
+	const counts = new Map<string, number>();
+	for (const post of posts) {
+		for (const tag of Array.isArray(post.tags) ? post.tags : []) {
+			counts.set(tag, (counts.get(tag) ?? 0) + 1);
+		}
+	}
+	return [...counts]
+		.map(([name, count]) => ({ name, count }))
+		.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
 
 /** Word count + reading time from markdown body (200 wpm, min 1 min). */
@@ -371,7 +377,7 @@ export const blogPosts: BlogPost[] = await loadBlogPosts();
 /** ISO timestamp when blog list data was last fetched (build / server). */
 export const blogFetchedAt: string = new Date().toISOString();
 
-export const blogCategories: string[] = getBlogCategories(blogPosts);
+export const blogTags = getBlogTagCounts(blogPosts);
 export const totalBlogWords: number = getTotalBlogWords(blogPosts);
 export const avgReadingMinutes: number = getAvgReadingMinutes(blogPosts);
 export const numBlogPosts: number = blogPosts.length;

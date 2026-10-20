@@ -5,7 +5,7 @@ import BlogCard from "../../components/blog/BlogCard.astro";
 import EmptyState from "../../components/common/EmptyState.astro";
 import DataFreshness from "../../components/common/DataFreshness";
 import { ExternalLink, Rss } from "lucide-react";
-import { blogPosts, blogFetchedAt, blogCategories, avgReadingMinutes, numBlogPosts, totalBlogWords } from "../../data/blog";
+import { blogPosts, blogFetchedAt, blogTags, avgReadingMinutes, numBlogPosts, totalBlogWords } from "../../data/blog";
 ---
 
 <PageShell
@@ -98,9 +98,7 @@ import { blogPosts, blogFetchedAt, blogCategories, avgReadingMinutes, numBlogPos
 		</div>
 	</Fragment>
 
-	<div class="mb-10">
-		<BlogFilters client:load categories={blogCategories} />
-	</div>
+	<BlogFilters client:load tags={blogTags} />
 
 	{
 		blogPosts.length > 0 ? (
@@ -151,6 +149,7 @@ import { blogPosts, blogFetchedAt, blogCategories, avgReadingMinutes, numBlogPos
 		const categories: string[] = (window as any).__blogCategories || ["all"];
 		const cards = document.querySelectorAll<HTMLElement>("[data-blog-card]");
 
+		let visibleCount = 0;
 		cards.forEach((card) => {
 			const title = card.querySelector("[data-blog-title]")?.textContent || "";
 			const excerpt =
@@ -172,6 +171,7 @@ import { blogPosts, blogFetchedAt, blogCategories, avgReadingMinutes, numBlogPos
 
 			const visible = matchesSearch && matchesCategory;
 			card.style.display = visible ? "" : "none";
+			if (visible) visibleCount++;
 			const parent = card.parentElement;
 			if (parent && parent !== document.body) {
 				// Keep grid cells tidy when a card is hidden
@@ -180,6 +180,12 @@ import { blogPosts, blogFetchedAt, blogCategories, avgReadingMinutes, numBlogPos
 				}
 			}
 		});
+
+		document.dispatchEvent(
+			new CustomEvent("blog-filter-result", {
+				detail: { visible: visibleCount, total: cards.length },
+			})
+		);
 	}
 
 	document.addEventListener("blog-search", (e: Event) => {

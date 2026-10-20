@@ -6,7 +6,7 @@ import DataFreshness from "../common/DataFreshness";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight, ExternalLink, Rss } from "lucide-react";
-import { blogPosts, blogFetchedAt, blogCategories, avgReadingMinutes, numBlogPosts } from "../../data/blog";
+import { blogPosts, blogFetchedAt, blogTags, avgReadingMinutes, numBlogPosts } from "../../data/blog";
 
 interface Props {
 	active?: boolean;
@@ -15,7 +15,7 @@ interface Props {
 const { active = false } = Astro.props;
 ---
 
-<div id="blog-section" class:list={["relative", !active && "hidden"]}>
+<div id="blog-section" class:list={["relative rise-in", !active && "hidden"]}>
 	<!-- Section heading: single compact row -->
 	<div class="mb-4 sm:mb-5 flex items-center gap-x-2 sm:gap-x-3 min-w-0">
 		<h2
@@ -82,7 +82,7 @@ const { active = false } = Astro.props;
 			</a>
 		</div>
 	</div>
-	<BlogFilters client:visible categories={blogCategories} />
+	<BlogFilters client:visible tags={blogTags} />
 	{
 		blogPosts.length > 0 ? (
 			<div class="space-y-10">
