@@ -21,7 +21,7 @@ export const experiences: ExperienceEntry[] = [
 		period: "April 2026 – Present",
 		color: "purple",
 		website: "https://sitg.dev",
-		logo: "https://44.255.46.29:3000/icon.svg?icon.46fd8538.svg",
+		logo: "https://52.26.46.179:3000/icon.svg?icon.46fd8538.svg",
 		points: [
 			"Own the compliance AI pipeline end-to-end; extended it to new regulatory frameworks and certificate scopes.",
 			"Built a real-time notification system (<strong>SSE</strong> + <strong>SMTP</strong> + <strong>Slack</strong>) monitoring <strong>Bugzilla</strong>, <strong>Google Groups</strong>, <strong>CCADB</strong>, and <strong>Regulatory Ballots</strong> for same-day compliance surfacing.",
@@ -35,7 +35,7 @@ export const experiences: ExperienceEntry[] = [
 		period: "Nov 2025 – May 2026",
 		color: "purple",
 		website: "https://sitg.dev",
-		logo: "https://35.86.142.168/icon.svg?icon.46fd8538.svg",
+		logo: "https://52.26.46.179:3000/icon.svg?icon.46fd8538.svg",
 		points: [
 			"Built the pipeline the current role now owns: <strong>Django</strong>/<strong>Python</strong> converting hierarchical PDFs to Markdown and extracting structured compliance statements.",
 			"Ran LLM workloads async via <strong>Celery</strong>, <strong>Redis</strong>, and <strong>Kafka</strong> so a slow document never blocks a request.",
