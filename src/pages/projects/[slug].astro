@@ -236,6 +236,7 @@ export async function getStaticPaths() {
 
 	<!-- Reading Progress Bar -->
 	<div
+		slot="overlay"
 		id="reading-progress"
 		class="fixed top-0 left-0 h-[3px] bg-primary z-[60]"
 		style="width:0;transition:width 80ms linear"
@@ -244,6 +245,7 @@ export async function getStaticPaths() {
 
 	<!-- Compact header — slides in once the hero header scrolls out of view -->
 	<div
+		slot="overlay"
 		id="compact-header"
 		class="fixed inset-x-0 top-0 z-50 -translate-y-full transition-transform duration-300 border-b border-border/60 bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/70"
 	>

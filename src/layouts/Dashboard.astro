@@ -72,7 +72,7 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 
 			<ProjectsSection active={activeTab === "projects"} />
 
-			<div id="resume-section" class:list={[activeTab !== "resume" && "hidden"]}>
+			<div id="resume-section" class:list={["rise-in", activeTab !== "resume" && "hidden"]}>
 				<Resume />
 			</div>
 
@@ -391,42 +391,47 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 		}, 80);
 	});
 
-	// Blog search and filter functionality (title + tags)
-	document.addEventListener("blog-search", (e: Event) => {
-		const searchTerm = (e as CustomEvent).detail.term;
-		const blogCards = document.querySelectorAll("[data-blog-card]");
+	// Blog search and tag filters combine: a card shows only if it matches both.
+	const blogFilter = { term: "", categories: ["all"] as string[] };
+
+	function applyBlogFilters() {
+		const blogCards = document.querySelectorAll<HTMLElement>("[data-blog-card]");
+		const { term, categories } = blogFilter;
+		let visible = 0;
 
 		blogCards.forEach((card) => {
 			const title = card.querySelector("[data-blog-title]")?.textContent || "";
-			const tags = Array.from(card.querySelectorAll("[data-blog-tag]")).map(
-				(el) => el.textContent || ""
-			);
-
-			// Use enhanced search for better matching
-			const titleMatch = enhancedSearch(title, searchTerm, false);
-			const tagMatch = tags.some((t) => enhancedSearch(t, searchTerm, false));
-
-			(card as HTMLElement).style.display =
-				titleMatch || tagMatch ? "block" : "none";
-		});
-	});
-
-	document.addEventListener("blog-category", (e: Event) => {
-		const categories = (e as CustomEvent).detail.categories as string[];
-		const blogCards = document.querySelectorAll("[data-blog-card]");
-
-		blogCards.forEach((card) => {
 			const tags = (card.getAttribute("data-blog-tags") || "")
 				.split(",")
 				.filter(Boolean);
 
-			// Match if "all" is selected OR if any of the selected categories matches any of the post's tags
-			const matches =
+			const searchMatch =
+				enhancedSearch(title, term, false) ||
+				tags.some((t) => enhancedSearch(t, term, false));
+			const tagMatch =
 				categories.includes("all") ||
 				categories.some((cat) => tags.includes(cat));
 
-			(card as HTMLElement).style.display = matches ? "block" : "none";
+			const matches = searchMatch && tagMatch;
+			card.style.display = matches ? "" : "none";
+			if (matches) visible++;
 		});
+
+		document.dispatchEvent(
+			new CustomEvent("blog-filter-result", {
+				detail: { visible, total: blogCards.length },
+			})
+		);
+	}
+
+	document.addEventListener("blog-search", (e: Event) => {
+		blogFilter.term = (e as CustomEvent).detail.term;
+		applyBlogFilters();
+	});
+
+	document.addEventListener("blog-category", (e: Event) => {
+		blogFilter.categories = (e as CustomEvent).detail.categories as string[];
+		applyBlogFilters();
 	});
 
 	// Initialize filters and handle link clicks

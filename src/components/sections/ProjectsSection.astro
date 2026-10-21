@@ -20,7 +20,7 @@ interface Props {
 const { active = false } = Astro.props;
 ---
 
-<div id="projects-section" class:list={[!active && "hidden"]}>
+<div id="projects-section" class:list={["rise-in", !active && "hidden"]}>
 	<!-- Section heading: single compact row -->
 	<div class="mb-4 sm:mb-5 flex items-center gap-x-2 sm:gap-x-3 min-w-0">
 		<h2
