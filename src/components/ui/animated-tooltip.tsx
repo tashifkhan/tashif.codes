@@ -54,7 +54,7 @@ export const AnimatedTooltip = ({
 										},
 									}}
 									exit={{ opacity: 0, y: 6, scale: 0.95 }}
-									className={`motion-tooltip absolute -top-9 z-50 flex items-center gap-1.5 whitespace-nowrap rounded-full bg-black px-3 py-1.5 text-[11px] leading-none text-white shadow-xl ${tooltipPosition}`}
+									className={`motion-tooltip absolute -top-9 z-50 flex w-max max-w-none! items-center gap-1.5 whitespace-nowrap rounded-full bg-black px-3 py-1.5 text-[11px] leading-none text-white shadow-xl ${tooltipPosition}`}
 								>
 									<span className="font-medium">{item.name}</span>
 									<span className="text-white/40" aria-hidden="true">
