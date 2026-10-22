@@ -13,20 +13,20 @@
  */
 
 html[data-skin="studio"] {
-	/* ---- taf.sh v2 tokens, light ---- */
-	--background: #f4f2f0;
+	/* ---- taf.sh v2 tokens, light / paper ---- */
+	--background: #f6f1e9;
 	--foreground: #171615;
-	--card: #fbfaf9;
+	--card: #fdfaf4;
 	--card-foreground: #171615;
-	--popover: #fbfaf9;
+	--popover: #fdfaf4;
 	--popover-foreground: #171615;
 
 	--primary: #0f7a6c;
 	--primary-foreground: #ffffff;
 
-	--secondary: #ece8e5;
+	--secondary: #eee7dc;
 	--secondary-foreground: #3d3836;
-	--muted: #ece8e5;
+	--muted: #eee7dc;
 	--muted-foreground: #5f5956;
 
 	--accent: rgba(15, 122, 108, 0.1);
@@ -35,23 +35,23 @@ html[data-skin="studio"] {
 	--destructive: #b3261e;
 	--destructive-foreground: #ffffff;
 
-	--border: #dcd6d2;
-	--input: #e6e1de;
+	--border: #ded4c5;
+	--input: #e7ded1;
 	--ring: #0f7a6c;
 
 	--chart-1: #0f7a6c;
 	--chart-2: #171615;
 	--chart-3: #857f7b;
 	--chart-4: #0b5b50;
-	--chart-5: #c7c1bd;
+	--chart-5: #c7b9a6;
 
-	--sidebar: #fbfaf9;
+	--sidebar: #fdfaf4;
 	--sidebar-foreground: #171615;
 	--sidebar-primary: #0f7a6c;
 	--sidebar-primary-foreground: #ffffff;
-	--sidebar-accent: #ece8e5;
+	--sidebar-accent: #eee7dc;
 	--sidebar-accent-foreground: #3d3836;
-	--sidebar-border: #dcd6d2;
+	--sidebar-border: #ded4c5;
 	--sidebar-ring: #0f7a6c;
 
 	/* Legacy variables still read by the older chrome. */
@@ -157,19 +157,6 @@ html[data-skin="studio"].dark {
 	--color-orange-800: #a3efe7;
 	--color-orange-900: #0b3f39;
 	--color-orange-950: #072a26;
-}
-
-/* Cream keeps the studio type and hairlines, with a little more warmth. */
-html[data-skin="studio"].cream {
-	--background: #f6f1e9;
-	--card: #fdfaf4;
-	--popover: #fdfaf4;
-	--secondary: #eee7dc;
-	--muted: #eee7dc;
-	--border: #ded4c5;
-	--input: #e7ded1;
-	--bg-color: var(--background);
-	--card-bg: var(--card);
 }
 
 /* ---------------------------------------------------------------- base */

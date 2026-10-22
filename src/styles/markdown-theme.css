@@ -29,7 +29,7 @@
    * Component tokens.
    *
    * The chart palette already exists for exactly this — a second and third
-   * accent that hold up in light, dark and cream — so the tones borrow from it
+   * accent that hold up in light and dark — so the tones borrow from it
    * rather than introducing new colours.
    */
   --md-accent-2: var(--chart-2);

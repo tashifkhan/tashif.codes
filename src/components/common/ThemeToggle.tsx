@@ -3,15 +3,15 @@ import { Sun, Moon, Vibrate, VibrateOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { trigger, hapticsEnabled, setHapticsEnabled } from "@/lib/haptics";
 
-const themes = ["dark", "cream"] as const;
+const themes = ["dark", "light"] as const;
 type Theme = (typeof themes)[number];
 
 /** The class on <html> is the source of truth, not React state. */
 function readTheme(): Theme {
-	if (typeof document === "undefined") return "cream";
+	if (typeof document === "undefined") return "light";
 	const root = document.documentElement;
 	if (root.classList.contains("dark")) return "dark";
-	return "cream";
+	return "light";
 }
 
 export default function ThemeToggle() {
@@ -43,9 +43,8 @@ export default function ThemeToggle() {
 		const next = themes[(themes.indexOf(current) + 1) % themes.length];
 
 		const apply = () => {
-			root.classList.remove("dark", "cream");
+			root.classList.remove("dark");
 			if (next === "dark") root.classList.add("dark");
-			else if (next === "cream") root.classList.add("cream");
 			root.style.colorScheme = next === "dark" ? "dark" : "light";
 			try {
 				localStorage.setItem("theme", next);
@@ -103,7 +102,7 @@ export default function ThemeToggle() {
 				title="Switch theme"
 			>
 				<Sun className="theme-icon-sun h-5 w-5" />
-				<span className="theme-icon-cream" style={{ color: "#A47551" }}>
+				<span className="theme-icon-light" style={{ color: "#A47551" }}>
 					<Moon className="h-5 w-5" />
 				</span>
 			</Button>

@@ -65,24 +65,26 @@ const showStudioChrome =
 			})();
 		</script>
 		<script is:inline>
-			// Dark and paper-cream only. Migrate the old white "light" value and
-			// paint the chosen class before the stylesheet can show a white page.
+			// Dark and light only. The light palette is the paper cream one.
+			// Paint the chosen class before the stylesheet can show a white page.
 			(() => {
 				try {
 					const stored = localStorage.getItem("theme");
 					const theme =
-						stored === "dark" || stored === "cream"
-							? stored
-							: matchMedia("(prefers-color-scheme: dark)").matches
-								? "dark"
-								: "cream";
+						stored === "dark"
+							? "dark"
+							: stored === "light" || stored === "cream"
+								? "light"
+								: matchMedia("(prefers-color-scheme: dark)").matches
+									? "dark"
+									: "light";
 					document.documentElement.classList.toggle("dark", theme === "dark");
-					document.documentElement.classList.toggle("cream", theme === "cream");
+					document.documentElement.classList.remove("cream");
 					document.documentElement.style.colorScheme =
 						theme === "dark" ? "dark" : "light";
 					localStorage.setItem("theme", theme);
 				} catch {
-					document.documentElement.classList.add("cream");
+					document.documentElement.classList.remove("dark", "cream");
 				}
 			})();
 		</script>
@@ -279,23 +281,20 @@ const showStudioChrome =
 		<Analytics />
 		<script is:inline>
 			// Keep the chosen palette on the root across ClientRouter swaps. The
-			// old white light theme is gone; "light" migrates to paper cream.
+			// light palette is paper; a stored "cream" value becomes "light".
 			function applyTheme() {
 				const storedTheme = localStorage.getItem("theme");
 				const theme =
-					storedTheme === "dark" || storedTheme === "cream"
-						? storedTheme
-						: window.matchMedia("(prefers-color-scheme: dark)").matches
-							? "dark"
-							: "cream";
+					storedTheme === "dark"
+						? "dark"
+						: storedTheme === "light" || storedTheme === "cream"
+							? "light"
+							: window.matchMedia("(prefers-color-scheme: dark)").matches
+								? "dark"
+								: "light";
 
-				if (theme === "dark") {
-					document.documentElement.classList.add("dark");
-					document.documentElement.classList.remove("cream");
-				} else {
-					document.documentElement.classList.remove("dark");
-					document.documentElement.classList.add("cream");
-				}
+				document.documentElement.classList.toggle("dark", theme === "dark");
+				document.documentElement.classList.remove("cream");
 				document.documentElement.style.colorScheme =
 					theme === "dark" ? "dark" : "light";
 
