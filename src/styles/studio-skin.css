@@ -159,6 +159,53 @@ html[data-skin="studio"].dark {
 	--color-orange-950: #072a26;
 }
 
+/* The orange skin keeps its accent but takes the same paper / warm-dark
+   surface palette as the teal skin, so the ambient field, cards and page
+   transitions read identically in both. */
+html[data-skin="simple"] {
+	--background: #f6f1e9;
+	--foreground: #171615;
+	--card: #fdfaf4;
+	--card-foreground: #171615;
+	--popover: #fdfaf4;
+	--popover-foreground: #171615;
+	--secondary: #eee7dc;
+	--secondary-foreground: #3d3836;
+	--muted: #eee7dc;
+	--muted-foreground: #5f5956;
+	--accent: rgba(249, 115, 22, 0.1);
+	--accent-foreground: #9a3412;
+	--border: #ded4c5;
+	--input: #e7ded1;
+	--sidebar: #fdfaf4;
+	--sidebar-foreground: #171615;
+	--sidebar-accent: #eee7dc;
+	--sidebar-accent-foreground: #3d3836;
+	--sidebar-border: #ded4c5;
+}
+
+html[data-skin="simple"].dark {
+	--background: #0e0d0d;
+	--foreground: #f2f1f0;
+	--card: #151313;
+	--card-foreground: #f2f1f0;
+	--popover: #1c1a1a;
+	--popover-foreground: #f2f1f0;
+	--secondary: #1c1a1a;
+	--secondary-foreground: #c4bfbe;
+	--muted: #1c1a1a;
+	--muted-foreground: #a19c9b;
+	--accent: rgba(249, 115, 22, 0.14);
+	--accent-foreground: #fdba74;
+	--border: #2c2828;
+	--input: #221f1f;
+	--sidebar: #151313;
+	--sidebar-foreground: #f2f1f0;
+	--sidebar-accent: #1c1a1a;
+	--sidebar-accent-foreground: #c4bfbe;
+	--sidebar-border: #2c2828;
+}
+
 /* ---------------------------------------------------------------- base */
 
 html[data-skin="studio"] {
@@ -310,26 +357,11 @@ html[data-skin="studio"] [data-page-surface] {
 	background: transparent !important;
 }
 
-/* The simple skin keeps its own palette but gets the same ambient field. The
-   field reads --primary and --border from this skin, so the dots and blueprint
-   stay orange/grey instead of turning teal. */
+/* The simple skin keeps its orange accent but gets the same ambient field:
+   the dot lattice, drafting grid and blueprint geometry all read this skin's
+   --primary and --border, so the effect stays orange/grey. */
 html[data-skin="simple"] [data-page-surface] {
 	background: transparent !important;
-}
-
-html[data-skin="simple"] .studio-field {
-	opacity: 0.55;
-}
-
-/* Simple keeps the drafting geometry on the sides, not the generic full-page
-   dot lattice. That quiet side linework is the hook. */
-html[data-skin="simple"] .studio-field [data-studio-grid],
-html[data-skin="simple"] .studio-field [data-studio-field] {
-	display: none;
-}
-
-html[data-skin="simple"].dark .studio-field {
-	opacity: 0.4;
 }
 
 /* Keep the footer content above the floating design switcher. On pages with
@@ -640,11 +672,11 @@ html[data-skin="studio"] .font-sans.text-xl {
 	}
 }
 
-:root[data-skin="studio"]::view-transition-old(root) {
+:root[data-skin]::view-transition-old(root) {
 	animation: 650ms cubic-bezier(0.7, 0, 0.2, 1) both studio-page-back;
 }
 
-:root[data-skin="studio"]::view-transition-new(root) {
+:root[data-skin]::view-transition-new(root) {
 	animation: 650ms cubic-bezier(0.7, 0, 0.2, 1) both studio-panel-in;
 }
 
@@ -653,11 +685,11 @@ html[data-skin="studio"] .font-sans.text-xl {
  * away to the left (up on phones), revealing the page underneath instead of
  * dragging a new page in from the left.
  */
-:root[data-skin="studio"][data-astro-nav-direction="back"]::view-transition-old(root) {
+:root[data-skin][data-astro-nav-direction="back"]::view-transition-old(root) {
 	animation: 500ms cubic-bezier(0.7, 0, 0.2, 1) both studio-page-out-back;
 }
 
-:root[data-skin="studio"][data-astro-nav-direction="back"]::view-transition-new(root) {
+:root[data-skin][data-astro-nav-direction="back"]::view-transition-new(root) {
 	animation: none;
 }
 
@@ -706,45 +738,45 @@ html[data-skin="studio"] .font-sans.text-xl {
 	}
 }
 
-:root[data-skin="studio"][data-astro-nav-section="docs"] [data-docs-main] {
+:root[data-skin][data-astro-nav-section="docs"] [data-docs-main] {
 	view-transition-name: docs-main;
 }
 
 @media (min-width: 1024px) {
-	:root[data-skin="studio"][data-astro-nav-section="docs"] [data-docs-sidebar] {
+	:root[data-skin][data-astro-nav-section="docs"] [data-docs-sidebar] {
 		view-transition-name: docs-sidebar;
 	}
 }
 
-:root[data-skin="studio"][data-astro-nav-section="docs"]::view-transition-old(root) {
+:root[data-skin][data-astro-nav-section="docs"]::view-transition-old(root) {
 	animation: docs-fade-out 160ms ease-in both;
 }
 
-:root[data-skin="studio"][data-astro-nav-section="docs"]::view-transition-new(root) {
+:root[data-skin][data-astro-nav-section="docs"]::view-transition-new(root) {
 	animation: docs-fade-in 240ms var(--motion-ease) both;
 }
 
-:root[data-skin="studio"][data-astro-nav-section="docs"]::view-transition-old(docs-sidebar) {
+:root[data-skin][data-astro-nav-section="docs"]::view-transition-old(docs-sidebar) {
 	animation: docs-fade-out 160ms ease-in both;
 }
 
-:root[data-skin="studio"][data-astro-nav-section="docs"]::view-transition-new(docs-sidebar) {
+:root[data-skin][data-astro-nav-section="docs"]::view-transition-new(docs-sidebar) {
 	animation: docs-fade-in 240ms var(--motion-ease) both;
 }
 
-:root[data-skin="studio"][data-astro-nav-section="docs"]::view-transition-old(docs-main) {
+:root[data-skin][data-astro-nav-section="docs"]::view-transition-old(docs-main) {
 	animation: docs-main-out 180ms ease-in both;
 }
 
-:root[data-skin="studio"][data-astro-nav-section="docs"]::view-transition-new(docs-main) {
+:root[data-skin][data-astro-nav-section="docs"]::view-transition-new(docs-main) {
 	animation: docs-main-in 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-:root[data-skin="studio"][data-astro-nav-section="docs"][data-astro-nav-direction="back"]::view-transition-old(docs-main) {
+:root[data-skin][data-astro-nav-section="docs"][data-astro-nav-direction="back"]::view-transition-old(docs-main) {
 	animation-name: docs-main-out-back;
 }
 
-:root[data-skin="studio"][data-astro-nav-section="docs"][data-astro-nav-direction="back"]::view-transition-new(docs-main) {
+:root[data-skin][data-astro-nav-section="docs"][data-astro-nav-direction="back"]::view-transition-new(docs-main) {
 	animation-name: docs-main-in-back;
 }
 
@@ -793,8 +825,8 @@ html[data-skin="simple"] .rise-in {
 	:root:active-view-transition-type(theme)::view-transition-new(root),
 	:root[data-skin-switch]::view-transition-new(root),
 	:root[data-theme-switch]::view-transition-new(root),
-	:root[data-skin="studio"]::view-transition-old(root),
-	:root[data-skin="studio"]::view-transition-new(root) {
+	:root[data-skin]::view-transition-old(root),
+	:root[data-skin]::view-transition-new(root) {
 		animation: none !important;
 	}
 }
