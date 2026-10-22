@@ -232,14 +232,6 @@ html[data-skin="studio"] b {
 	font-weight: 600;
 }
 
-html[data-skin="studio"] ::-webkit-scrollbar-thumb {
-	background: color-mix(in oklab, var(--primary) 45%, transparent);
-}
-
-html[data-skin="studio"] * {
-	scrollbar-color: color-mix(in oklab, var(--primary) 45%, transparent) transparent;
-}
-
 html[data-skin="studio"] .code-block-wrapper {
 	border-color: var(--border);
 	background: #0b0f0f;
