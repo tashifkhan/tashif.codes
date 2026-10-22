@@ -314,6 +314,18 @@ html[data-skin="studio"] [data-page-surface] {
 	background: transparent !important;
 }
 
+/* Keep the footer content above the floating design switcher. On pages with
+   the inline switcher the floating one is hidden, so the footer can stay tight. */
+[data-site-footer] > div {
+	padding-bottom: 6rem;
+}
+
+@media (min-width: 1024px) {
+	body:has([data-skin-switcher-inline]) [data-site-footer] > div {
+		padding-bottom: 1.5rem;
+	}
+}
+
 /* ------------------------------------------------------ header + tabs */
 
 html[data-skin="studio"] header {

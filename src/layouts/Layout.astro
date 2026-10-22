@@ -245,7 +245,10 @@ const showStudioChrome =
 			<slot />
 			{
 				showStudioChrome && (
-					<footer class="studio-only border-t border-border/60 bg-background/70 backdrop-blur-sm">
+					<footer
+						data-site-footer
+						class="studio-only border-t border-border/60 bg-background/70 backdrop-blur-sm"
+					>
 						<div class="mx-auto flex w-full max-w-7xl flex-col gap-2 px-4 py-6 font-mono text-[0.6875rem] tracking-wide text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
 							<span>tashif.codes</span>
 							<a
