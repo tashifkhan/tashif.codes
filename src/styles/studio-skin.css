@@ -501,12 +501,129 @@ html[data-skin="studio"] .font-sans.text-xl {
 	}
 }
 
+@keyframes studio-panel-in-back {
+	from {
+		transform: translateX(-100%);
+	}
+}
+
+@keyframes studio-page-back-reverse {
+	to {
+		opacity: 0.55;
+		transform: translateX(6%) scale(0.96);
+	}
+}
+
 :root[data-skin="studio"]::view-transition-old(root) {
 	animation: 650ms cubic-bezier(0.7, 0, 0.2, 1) both studio-page-back;
 }
 
 :root[data-skin="studio"]::view-transition-new(root) {
 	animation: 650ms cubic-bezier(0.7, 0, 0.2, 1) both studio-panel-in;
+}
+
+/* Back navigation, breadcrumbs and browser history: reverse the travel. */
+:root[data-skin="studio"][data-nav-direction="back"]::view-transition-old(root) {
+	animation-name: studio-page-back-reverse;
+}
+
+:root[data-skin="studio"][data-nav-direction="back"]::view-transition-new(root) {
+	animation-name: studio-panel-in-back;
+}
+
+/*
+ * Docs: leave the sidebar in place and lift the reading pane. The root only
+ * fades, so the previous slide does not drag the whole documentation shell
+ * across the screen.
+ */
+@keyframes docs-fade-out {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes docs-fade-in {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes docs-main-out {
+	to {
+		opacity: 0;
+		transform: translateY(-6px);
+	}
+}
+
+@keyframes docs-main-in {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+}
+
+@keyframes docs-main-out-back {
+	to {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+}
+
+@keyframes docs-main-in-back {
+	from {
+		opacity: 0;
+		transform: translateY(-14px);
+	}
+}
+
+:root[data-skin="studio"] [data-docs-main] {
+	view-transition-name: docs-main;
+}
+
+@media (min-width: 1024px) {
+	:root[data-skin="studio"] [data-docs-sidebar] {
+		view-transition-name: docs-sidebar;
+	}
+}
+
+:root[data-skin="studio"]:has([data-docs-page])::view-transition-old(root) {
+	animation: docs-fade-out 160ms ease-in both;
+}
+
+:root[data-skin="studio"]:has([data-docs-page])::view-transition-new(root) {
+	animation: docs-fade-in 240ms var(--motion-ease) both;
+}
+
+:root[data-skin="studio"]:has([data-docs-page])::view-transition-old(docs-sidebar) {
+	animation: docs-fade-out 160ms ease-in both;
+}
+
+:root[data-skin="studio"]:has([data-docs-page])::view-transition-new(docs-sidebar) {
+	animation: docs-fade-in 240ms var(--motion-ease) both;
+}
+
+:root[data-skin="studio"]:has([data-docs-page])::view-transition-old(docs-main) {
+	animation: docs-main-out 180ms ease-in both;
+}
+
+:root[data-skin="studio"]:has([data-docs-page])::view-transition-new(docs-main) {
+	animation: docs-main-in 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+:root[data-skin="studio"]:has([data-docs-page])[data-nav-direction="back"]::view-transition-old(docs-main) {
+	animation-name: docs-main-out-back;
+}
+
+:root[data-skin="studio"]:has([data-docs-page])[data-nav-direction="back"]::view-transition-new(docs-main) {
+	animation-name: docs-main-in-back;
+}
+
+::view-transition-group(docs-main) {
+	animation-duration: 380ms;
+}
+
+::view-transition-group(docs-sidebar) {
+	animation-duration: 240ms;
 }
 
 @media (max-width: 767px) {
@@ -520,6 +637,19 @@ html[data-skin="studio"] .font-sans.text-xl {
 		to {
 			opacity: 0.55;
 			transform: translateY(-3%) scale(0.97);
+		}
+	}
+
+	@keyframes studio-panel-in-back {
+		from {
+			transform: translateY(-100%);
+		}
+	}
+
+	@keyframes studio-page-back-reverse {
+		to {
+			opacity: 0.55;
+			transform: translateY(3%) scale(0.97);
 		}
 	}
 }
