@@ -1,0 +1,241 @@
+---
+/**
+ * The studio skin's ambient canvas. A faint dot lattice that leans away from
+ * the pointer and picks up the accent, plus optional blueprint geometry that
+ * draws itself in. Everything reads the live CSS tokens, so light/dark/cream
+ * all resolve correctly and switch without a reload.
+ *
+ * Rendered inside `.studio-only` containers, so the simple skin never shows
+ * it. The canvas is pointer-events-none; the field listens on its parent.
+ */
+interface Props {
+	class?: string;
+	geometry?: boolean;
+	/** Dot spacing in CSS pixels. */
+	gap?: number;
+	/** Mask applied to the canvas so the dots fade out at the edges. */
+	mask?: string;
+}
+
+const {
+	class: className = "",
+	geometry = false,
+	gap = 28,
+	mask = "radial-gradient(ellipse 90% 75% at 65% 35%, black 15%, transparent 78%)",
+} = Astro.props;
+---
+
+<div
+	class:list={["studio-field pointer-events-none absolute inset-0 overflow-hidden", className]}
+	data-studio-field-host
+	data-gap={gap}
+	aria-hidden="true"
+>
+	<!-- Faint drafting grid, the sheet the dots sit on. -->
+	<div
+		class="absolute inset-0 opacity-40"
+		style="background-image:linear-gradient(to right,var(--border) 1px,transparent 1px),linear-gradient(to bottom,var(--border) 1px,transparent 1px);background-size:72px 72px;mask-image:radial-gradient(ellipse 90% 80% at 50% 40%,black 30%,transparent 100%);"
+	>
+	</div>
+
+	{
+		geometry && (
+			<div class="absolute inset-0" data-studio-geo>
+				<svg
+					width="1440"
+					height="900"
+					viewBox="0 0 1440 900"
+					preserveAspectRatio="xMidYMid slice"
+					class="absolute inset-0 size-full overflow-visible"
+				>
+					<circle data-studio-draw cx="1090" cy="300" r="250" fill="none" stroke="var(--border-strong, var(--border))" stroke-width="1" opacity="0.7" />
+					<circle data-studio-draw cx="1090" cy="300" r="145" fill="none" stroke="var(--primary)" stroke-width="1" stroke-dasharray="3 6" opacity="0.45" />
+					<circle data-studio-draw cx="280" cy="680" r="360" fill="none" stroke="var(--border-strong, var(--border))" stroke-width="1" opacity="0.55" />
+					<line data-studio-draw x1="0" y1="300" x2="1440" y2="300" stroke="var(--border)" stroke-width="1" opacity="0.75" />
+					<line data-studio-draw x1="1090" y1="0" x2="1090" y2="900" stroke="var(--border)" stroke-width="1" opacity="0.75" />
+					<line data-studio-draw x1="280" y1="680" x2="1090" y2="300" stroke="var(--primary)" stroke-width="1" opacity="0.28" />
+					<circle cx="1090" cy="300" r="3.5" fill="none" stroke="var(--primary)" stroke-width="1" opacity="0.8" />
+					<circle cx="280" cy="680" r="3.5" fill="none" stroke="var(--muted-foreground)" stroke-width="1" opacity="0.6" />
+					<circle data-studio-draw cx="720" cy="450" r="540" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="900 2600" />
+					<circle data-studio-draw cx="1090" cy="300" r="400" fill="none" stroke="var(--border)" stroke-width="1" opacity="0.5" />
+				</svg>
+			</div>
+		)
+	}
+
+	<canvas
+		class="absolute inset-0 size-full"
+		style={`mask-image:${mask};-webkit-mask-image:${mask};`}
+		data-studio-field
+	></canvas>
+</div>
+
+<script>
+	const FIELD_SELECTOR = "[data-studio-field-host]";
+
+	function initStudioFields() {
+		const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+		document.querySelectorAll<HTMLElement>(FIELD_SELECTOR).forEach((host) => {
+			if (host.dataset.ready === "true") return;
+			host.dataset.ready = "true";
+
+			const canvas = host.querySelector<HTMLCanvasElement>("[data-studio-field]");
+			if (!canvas) return;
+
+			const ctx = canvas.getContext("2d");
+			if (!ctx) return;
+
+			const gap = Number(host.dataset.gap) || 28;
+			let width = 0;
+			let height = 0;
+			let dpr = 1;
+			let mx = -9999;
+			let my = -9999;
+			let raf = 0;
+			let visible = true;
+			let dotColor = "#857f7b";
+			let accentColor = "#0f7a6c";
+
+			// Resolve the tokens in this subtree, not on :root: pages may pin
+			// their own theme colors and the field must follow.
+			const readColors = () => {
+				const probe = document.createElement("span");
+				probe.style.cssText =
+					"position:absolute;visibility:hidden;pointer-events:none;color:var(--muted-foreground);background:var(--primary)";
+				host.append(probe);
+				const style = getComputedStyle(probe);
+				dotColor = style.color;
+				accentColor = style.backgroundColor;
+				probe.remove();
+			};
+
+			const draw = () => {
+				raf = 0;
+				if (!width || !height) return;
+				ctx.clearRect(0, 0, width, height);
+				for (let x = gap / 2; x < width; x += gap) {
+					for (let y = gap / 2; y < height; y += gap) {
+						const dx = x - mx;
+						const dy = y - my;
+						const distance = Math.sqrt(dx * dx + dy * dy);
+						const near = Math.min(1, Math.max(0, 1 - distance / 180));
+						const push = near * 10;
+						const px = x + (distance ? (dx / distance) * push : 0);
+						const py = y + (distance ? (dy / distance) * push : 0);
+						ctx.fillStyle = near > 0.05 ? accentColor : dotColor;
+						ctx.globalAlpha = 0.3 + near * 0.65;
+						const radius = 1 + near * 1.6;
+						ctx.fillRect(px - radius / 2, py - radius / 2, radius, radius);
+					}
+				}
+				ctx.globalAlpha = 1;
+			};
+
+			const schedule = () => {
+				if (!raf && visible) raf = requestAnimationFrame(draw);
+			};
+
+			const resize = () => {
+				dpr = Math.min(devicePixelRatio || 1, 2);
+				width = canvas.clientWidth;
+				height = canvas.clientHeight;
+				if (!width || !height) return;
+				canvas.width = Math.round(width * dpr);
+				canvas.height = Math.round(height * dpr);
+				ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+				draw();
+			};
+
+			const parent = host.parentElement ?? host;
+
+			parent.addEventListener(
+				"pointermove",
+				(event) => {
+					const rect = canvas.getBoundingClientRect();
+					mx = event.clientX - rect.left;
+					my = event.clientY - rect.top;
+					if (!reduced) schedule();
+				},
+				{ passive: true },
+			);
+
+			parent.addEventListener("pointerleave", () => {
+				mx = my = -9999;
+				schedule();
+			});
+
+			if (!reduced) {
+				// A little parallax on the drafting sheet; the dots follow the pointer.
+				parent.addEventListener(
+					"pointermove",
+					(event) => {
+						const geo = host.querySelector<HTMLElement>("[data-studio-geo]");
+						if (!geo) return;
+						const rect = parent.getBoundingClientRect();
+						const nx = (event.clientX - rect.left) / rect.width - 0.5;
+						const ny = (event.clientY - rect.top) / rect.height - 0.5;
+						geo.style.transform = `translate3d(${(nx * -18).toFixed(1)}px,${(ny * -12).toFixed(1)}px,0)`;
+					},
+					{ passive: true },
+				);
+			}
+
+			new IntersectionObserver(([entry]) => {
+				visible = entry.isIntersecting;
+				if (visible) schedule();
+			}).observe(host);
+
+			// A frame of delay keeps the ResizeObserver from tripping its own
+			// loop warning when the backing store changes size.
+			new ResizeObserver(() => requestAnimationFrame(resize)).observe(canvas);
+
+			const refresh = () => {
+				if (!host.isConnected) {
+					observer?.disconnect();
+					return;
+				}
+				readColors();
+				resize();
+			};
+
+			let observer: MutationObserver | undefined = new MutationObserver(refresh);
+			observer.observe(document.documentElement, {
+				attributes: true,
+				attributeFilter: ["data-skin", "data-theme", "class", "style"],
+			});
+
+			matchMedia("(prefers-color-scheme: light)").addEventListener("change", refresh);
+			readColors();
+			resize();
+
+			// Draw the blueprint strokes in on first paint.
+			host.querySelectorAll<SVGGeometryElement>("[data-studio-draw]").forEach((shape, index) => {
+				if (reduced) return;
+				let length = 0;
+				try {
+					length = shape.getTotalLength();
+				} catch {
+					return;
+				}
+				const dash = shape.getAttribute("stroke-dasharray");
+				shape.style.strokeDasharray = `${length} ${length}`;
+				shape.style.strokeDashoffset = String(length);
+				setTimeout(() => {
+					shape.style.transition = "stroke-dashoffset 2.1s cubic-bezier(0.6,0,0.2,1)";
+					shape.style.strokeDashoffset = "0";
+					if (dash) {
+						setTimeout(() => {
+							shape.style.transition = "";
+							shape.style.strokeDasharray = dash;
+							shape.style.strokeDashoffset = "";
+						}, 2200);
+					}
+				}, 120 + index * 110);
+			});
+		});
+	}
+
+	initStudioFields();
+	document.addEventListener("astro:page-load", initStudioFields);
+</script>

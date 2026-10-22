@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { flushSync } from "react-dom";
 import { Sun, Moon, Vibrate, VibrateOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { trigger, hapticsEnabled, setHapticsEnabled } from "@/lib/haptics";
@@ -35,18 +36,56 @@ export default function ThemeToggle() {
 		}
 	}, []);
 
-	const toggleTheme = () => {
+	const toggleTheme = (event: React.MouseEvent<HTMLButtonElement>) => {
 		trigger("selection");
 		const idx = themes.indexOf(theme);
 		const next = themes[(idx + 1) % themes.length];
-		setTheme(next);
-		document.documentElement.classList.remove("dark", "cream");
-		if (next === "dark") {
-			document.documentElement.classList.add("dark");
-		} else if (next === "cream") {
-			document.documentElement.classList.add("cream");
+
+		const apply = () => {
+			document.documentElement.classList.remove("dark", "cream");
+			if (next === "dark") {
+				document.documentElement.classList.add("dark");
+			} else if (next === "cream") {
+				document.documentElement.classList.add("cream");
+			}
+			localStorage.setItem("theme", next);
+		};
+
+		const root = document.documentElement;
+		const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		const supportsTypes =
+			typeof CSS !== "undefined" &&
+			CSS.supports("selector(:active-view-transition-type(theme))");
+
+		// The new palette is revealed as a circle growing from the button, in
+		// both the original and studio skins. Browsers without the API repaint
+		// instantly.
+		if (document.startViewTransition && !reduced && supportsTypes) {
+			const box = event.currentTarget.getBoundingClientRect();
+			const x = box.left + box.width / 2;
+			const y = box.top + box.height / 2;
+			const radius = Math.hypot(
+				Math.max(x, window.innerWidth - x),
+				Math.max(y, window.innerHeight - y),
+			);
+			root.style.setProperty("--vt-x", `${x}px`);
+			root.style.setProperty("--vt-y", `${y}px`);
+			root.style.setProperty("--vt-r", `${radius}px`);
+			root.dataset.themeSwitch = "";
+
+			const transition = document.startViewTransition({
+				update: () => {
+					apply();
+					flushSync(() => setTheme(next));
+				},
+				types: ["theme"],
+			} as unknown as () => void);
+			transition.finished.finally(() => delete root.dataset.themeSwitch);
+			return;
 		}
-		localStorage.setItem("theme", next);
+
+		apply();
+		setTheme(next);
 	};
 
 	return (

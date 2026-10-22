@@ -1,6 +1,7 @@
 ---
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/common/ThemeToggle";
+import SkinSwitcher from "@/components/common/SkinSwitcher.astro";
 import { owner, socials } from "../../data/profile";
 import { leetCodeData } from "../../data/leetcode";
 
@@ -28,13 +29,13 @@ class="relative backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:support
 			<div class="flex flex-col gap-0.5">
 				<h1
 					class="text-2xl sm:text-[1.75rem] font-bold text-foreground leading-tight tracking-tight text-left"
-					style="font-family: 'Lexend', sans-serif; letter-spacing: -0.02em;"
+					style="letter-spacing: -0.02em;"
 				>
 					{owner.name}
 				</h1>
 				<div class="flex items-center gap-2 justify-start">
 					<span class="block w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
-					<p class="text-muted-foreground text-sm font-medium text-left" style="font-family: 'Lexend', sans-serif;">
+					<p class="text-muted-foreground text-sm font-medium text-left">
 						{profile.realName || owner.fallbackTitle}
 					</p>
 				</div>
@@ -72,8 +73,13 @@ class="relative backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:support
 
 			<!-- Theme Button (Inline on Desktop, Absolute on Mobile) -->
 			<div class="absolute right-4 top-[60%] -translate-y-1/2 sm:static sm:translate-y-0 z-20">
-				<div class="rounded-full bg-secondary/40 ring-1 ring-border/60 hover:ring-border transition-all">
-					<ThemeToggle client:load />
+				<div class="flex items-center gap-2 shrink-0">
+					<div class="rounded-full bg-secondary/40 ring-1 ring-border/60 hover:ring-border transition-all shrink-0">
+						<SkinSwitcher />
+					</div>
+					<div class="flex items-center rounded-full bg-secondary/40 ring-1 ring-border/60 hover:ring-border transition-all shrink-0">
+						<ThemeToggle client:load />
+					</div>
 				</div>
 			</div>
 		</div>

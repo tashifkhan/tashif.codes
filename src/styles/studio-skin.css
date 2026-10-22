@@ -1,0 +1,544 @@
+/*
+ * ---------------------------------------------------------------------------
+ * Studio skin — the taf.sh v2 design language
+ * ---------------------------------------------------------------------------
+ * Selected from the Design dropdown, pinned on <html data-skin="studio">.
+ * The original skin is the absence of that attribute (well, "simple"), so
+ * every rule here is scoped and the old site is untouched.
+ *
+ * The palette is taf.sh's warm grayscale + one teal. Light is the default;
+ * `.dark` swaps to the warm near-black set, exactly like the studio site.
+ * The tokens below are the same names the shadcn utilities already consume,
+ * which is why one block re-skins every page, card and control at once.
+ */
+
+html[data-skin="studio"] {
+	/* ---- taf.sh v2 tokens, light ---- */
+	--background: #f4f2f0;
+	--foreground: #171615;
+	--card: #fbfaf9;
+	--card-foreground: #171615;
+	--popover: #fbfaf9;
+	--popover-foreground: #171615;
+
+	--primary: #0f7a6c;
+	--primary-foreground: #ffffff;
+
+	--secondary: #ece8e5;
+	--secondary-foreground: #3d3836;
+	--muted: #ece8e5;
+	--muted-foreground: #5f5956;
+
+	--accent: rgba(15, 122, 108, 0.1);
+	--accent-foreground: #0b5b50;
+
+	--destructive: #b3261e;
+	--destructive-foreground: #ffffff;
+
+	--border: #dcd6d2;
+	--input: #e6e1de;
+	--ring: #0f7a6c;
+
+	--chart-1: #0f7a6c;
+	--chart-2: #171615;
+	--chart-3: #857f7b;
+	--chart-4: #0b5b50;
+	--chart-5: #c7c1bd;
+
+	--sidebar: #fbfaf9;
+	--sidebar-foreground: #171615;
+	--sidebar-primary: #0f7a6c;
+	--sidebar-primary-foreground: #ffffff;
+	--sidebar-accent: #ece8e5;
+	--sidebar-accent-foreground: #3d3836;
+	--sidebar-border: #dcd6d2;
+	--sidebar-ring: #0f7a6c;
+
+	/* Legacy variables still read by the older chrome. */
+	--bg-color: var(--background);
+	--text-color: var(--foreground);
+	--card-bg: var(--card);
+	--primary-color: var(--primary);
+	--label-color: var(--muted-foreground);
+
+	--radius: 1rem;
+
+	--font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+	--font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+	--font-serif: "Newsreader", ui-serif, Georgia, serif;
+	--font-lexend: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+	--font-geist-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+	--font-geist-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+	--font-display: "Inter Tight Variable", "Inter Tight", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+
+	--motion-press: 80ms;
+	--motion-fast: 140ms;
+	--motion-normal: 200ms;
+	--motion-ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+	/* Studio surfaces are flat; depth comes from hairlines instead of blur. */
+	--shadow-2xs: 0 1px 0 rgb(23 22 21 / 0.03);
+	--shadow-xs: 0 1px 1px rgb(23 22 21 / 0.04);
+	--shadow-sm: 0 1px 2px rgb(23 22 21 / 0.05);
+	--shadow: 0 1px 3px rgb(23 22 21 / 0.06);
+	--shadow-md: 0 4px 12px rgb(23 22 21 / 0.07);
+	--shadow-lg: 0 12px 32px rgb(23 22 21 / 0.1);
+	--shadow-xl: 0 20px 48px rgb(23 22 21 / 0.12);
+	--shadow-2xl: 0 28px 64px rgb(23 22 21 / 0.16);
+
+	/* taf.sh teal replaces the orange family everywhere it was hardcoded. */
+	--color-orange-200: #b9e3dd;
+	--color-orange-300: #7fcfc4;
+	--color-orange-400: #4fd1c5;
+	--color-orange-500: #16a394;
+	--color-orange-600: #0f7a6c;
+	--color-orange-700: #0b5b50;
+	--color-orange-800: #08443c;
+	--color-orange-900: #062f29;
+	--color-orange-950: #041f1b;
+}
+
+html[data-skin="studio"].dark {
+	--background: #0e0d0d;
+	--foreground: #f2f1f0;
+	--card: #151313;
+	--card-foreground: #f2f1f0;
+	--popover: #1c1a1a;
+	--popover-foreground: #f2f1f0;
+
+	--primary: #4fd1c5;
+	--primary-foreground: #04211f;
+
+	--secondary: #1c1a1a;
+	--secondary-foreground: #c4bfbe;
+	--muted: #1c1a1a;
+	--muted-foreground: #a19c9b;
+
+	--accent: rgba(79, 209, 197, 0.14);
+	--accent-foreground: #7ce3d9;
+
+	--destructive: #ff8a80;
+	--destructive-foreground: #210604;
+
+	--border: #2c2828;
+	--input: #221f1f;
+	--ring: #4fd1c5;
+
+	--chart-1: #4fd1c5;
+	--chart-2: #f2f1f0;
+	--chart-3: #a19c9b;
+	--chart-4: #7ce3d9;
+	--chart-5: #77716f;
+
+	--sidebar: #151313;
+	--sidebar-foreground: #f2f1f0;
+	--sidebar-primary: #4fd1c5;
+	--sidebar-primary-foreground: #04211f;
+	--sidebar-accent: #1c1a1a;
+	--sidebar-accent-foreground: #c4bfbe;
+	--sidebar-border: #2c2828;
+	--sidebar-ring: #4fd1c5;
+
+	--shadow-2xs: 0 1px 0 rgb(0 0 0 / 0.2);
+	--shadow-xs: 0 1px 1px rgb(0 0 0 / 0.25);
+	--shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+	--shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+	--shadow-md: 0 4px 12px rgb(0 0 0 / 0.4);
+	--shadow-lg: 0 12px 32px rgb(0 0 0 / 0.5);
+	--shadow-xl: 0 20px 48px rgb(0 0 0 / 0.55);
+	--shadow-2xl: 0 28px 64px rgb(0 0 0 / 0.6);
+
+	--color-orange-200: #0b3f39;
+	--color-orange-300: #0f5a51;
+	--color-orange-400: #7ce3d9;
+	--color-orange-500: #4fd1c5;
+	--color-orange-600: #4fd1c5;
+	--color-orange-700: #7ce3d9;
+	--color-orange-800: #a3efe7;
+	--color-orange-900: #0b3f39;
+	--color-orange-950: #072a26;
+}
+
+/* Cream keeps the studio type and hairlines, with a little more warmth. */
+html[data-skin="studio"].cream {
+	--background: #f6f1e9;
+	--card: #fdfaf4;
+	--popover: #fdfaf4;
+	--secondary: #eee7dc;
+	--muted: #eee7dc;
+	--border: #ded4c5;
+	--input: #e7ded1;
+	--bg-color: var(--background);
+	--card-bg: var(--card);
+}
+
+/* ---------------------------------------------------------------- base */
+
+html[data-skin="studio"] {
+	background-color: var(--background);
+}
+
+html[data-skin="studio"] body {
+	background-color: var(--background);
+	color: var(--foreground);
+	font-family: var(--font-sans);
+	letter-spacing: -0.006em;
+}
+
+html[data-skin="studio"] .font-sans {
+	font-family: var(--font-sans);
+}
+
+html[data-skin="studio"] .font-display {
+	font-family: var(--font-display);
+}
+
+html[data-skin="studio"] .font-mono,
+html[data-skin="studio"] code,
+html[data-skin="studio"] pre,
+html[data-skin="studio"] kbd,
+html[data-skin="studio"] samp {
+	font-family: var(--font-mono);
+}
+
+html[data-skin="studio"] :is(h1, h2, h3, h4, h5, h6) {
+	font-family: var(--font-display);
+	font-weight: 650;
+	letter-spacing: -0.035em;
+}
+
+html[data-skin="studio"] .font-mono :is(h1, h2, h3, h4, h5, h6),
+html[data-skin="studio"] :is(h1, h2, h3, h4, h5, h6).font-mono {
+	font-family: var(--font-mono);
+	letter-spacing: inherit;
+}
+
+html[data-skin="studio"] button,
+html[data-skin="studio"] [role="tab"] {
+	font-family: inherit;
+}
+
+html[data-skin="studio"] ::selection {
+	background: color-mix(in oklab, var(--primary) 28%, transparent);
+	color: inherit;
+}
+
+html[data-skin="studio"] :focus-visible {
+	outline-color: var(--primary);
+}
+
+html[data-skin="studio"] strong,
+html[data-skin="studio"] b {
+	font-weight: 600;
+}
+
+html[data-skin="studio"] ::-webkit-scrollbar-thumb {
+	background: color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+html[data-skin="studio"] * {
+	scrollbar-color: color-mix(in oklab, var(--primary) 45%, transparent) transparent;
+}
+
+html[data-skin="studio"] .code-block-wrapper {
+	border-color: var(--border);
+	background: #0b0f0f;
+	box-shadow: none;
+}
+
+html[data-skin="studio"] .code-block-wrapper:hover {
+	border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+	box-shadow: none;
+	transform: none;
+}
+
+html[data-skin="studio"] .language-label {
+	background: var(--primary);
+	color: var(--primary-foreground);
+	font-family: var(--font-mono);
+}
+
+/* ------------------------------------------------ studio-only chrome */
+
+.studio-only {
+	display: none !important;
+}
+
+html[data-skin="studio"] .studio-only {
+	display: block !important;
+}
+
+.studio-grain {
+	display: none;
+}
+
+@keyframes studio-grain {
+	0% { translate: 0 0; }
+	20% { translate: -5% -8%; }
+	40% { translate: 7% 3%; }
+	60% { translate: -3% 9%; }
+	80% { translate: 8% -6%; }
+	100% { translate: 0 0; }
+}
+
+html[data-skin="studio"] .studio-grain {
+	display: block;
+}
+
+html[data-skin="studio"] .studio-grain > div {
+	animation: studio-grain 0.9s steps(6) infinite;
+}
+
+html[data-skin="studio"] .studio-field {
+	opacity: 0.85;
+}
+
+/* ------------------------------------------------------ header + tabs */
+
+html[data-skin="studio"] header {
+	background-color: color-mix(in oklab, var(--card) 76%, transparent);
+	border-color: var(--border);
+	backdrop-filter: blur(18px) saturate(115%);
+}
+
+html[data-skin="studio"] [data-tabs] {
+	background-color: color-mix(in oklab, var(--background) 82%, transparent);
+	border-bottom: 1px solid var(--border);
+}
+
+html[data-skin="studio"] [data-tabs-inner] {
+	height: auto;
+	background: transparent !important;
+	gap: 0.25rem;
+	padding: 0.375rem 0;
+}
+
+html[data-skin="studio"] [data-tab] {
+	height: 2.25rem;
+	border: 1px solid transparent;
+	border-radius: 999px;
+	padding: 0 0.9rem;
+	font-family: var(--font-mono);
+	font-size: 0.6875rem;
+	font-weight: 400;
+	letter-spacing: 0.01em;
+	color: var(--muted-foreground);
+	box-shadow: none;
+}
+
+html[data-skin="studio"] [data-tab]:hover {
+	border-color: var(--border);
+	color: var(--foreground);
+}
+
+html[data-skin="studio"] [data-tab][data-state="active"] {
+	background: var(--foreground);
+	color: var(--background);
+	border-color: var(--foreground);
+	box-shadow: none;
+}
+
+html[data-skin="studio"] [data-tabs] nav,
+html[data-skin="studio"] [data-tabs-inner] {
+	scrollbar-width: none;
+}
+
+/* The page header used by PageShell (projects, docs, archive, stats). */
+html[data-skin="studio"] [data-page-shell] {
+	background: var(--background);
+}
+
+html[data-skin="studio"] [data-page-tint] {
+	display: none;
+}
+
+html[data-skin="studio"] [data-page-header] {
+	background: color-mix(in oklab, var(--card) 68%, transparent);
+	border-color: var(--border);
+	backdrop-filter: blur(18px);
+}
+
+html[data-skin="studio"] [data-page-header] h1 {
+	font-family: var(--font-display);
+	font-weight: 650;
+	letter-spacing: -0.04em;
+}
+
+html[data-skin="studio"] [data-page-pill],
+html[data-skin="studio"] .rounded-full.border {
+	border-color: var(--border);
+}
+
+/* Cards in the feed: slightly rounder, hairline first, no heavy shadow. */
+html[data-skin="studio"] [data-project-card] article,
+html[data-skin="studio"] [data-blog-card] > div {
+	border-radius: 1.5rem;
+	border-color: var(--border);
+}
+
+/* The two places that pinned a cool near-black surface by hand. */
+html[data-skin="studio"] [data-project-card] article,
+html[data-skin="studio"] [class~="dark:bg-[#101119]"] {
+	background-color: var(--card);
+}
+
+html[data-skin="studio"] [data-project-card] article:hover {
+	border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+}
+
+html[data-skin="studio"] [data-project-card] h3 {
+	font-family: var(--font-display);
+	letter-spacing: -0.025em;
+}
+
+html[data-skin="studio"] #welcome-banner {
+	border-radius: 1.25rem;
+	border-color: var(--border);
+	background: color-mix(in oklab, var(--card) 78%, transparent);
+}
+
+html[data-skin="studio"] #welcome-banner .font-mono {
+	font-family: var(--font-mono);
+}
+
+/* Section headings + stats keep the display face. */
+html[data-skin="studio"] .font-sans.text-lg,
+html[data-skin="studio"] .font-sans.text-xl {
+	font-family: var(--font-display);
+	letter-spacing: -0.02em;
+}
+
+/* ------------------------------------------------------- switcher menu */
+
+.skin-menu:not([hidden]) {
+	animation: skin-menu-in 180ms var(--motion-ease);
+	transform-origin: top right;
+}
+
+/* The site's mobile reset caps every element at its containing block; a
+   dropdown has to be allowed to grow past the trigger. */
+.skin-menu {
+	max-width: calc(100vw - 2rem);
+}
+
+[data-skin-switcher-float] .skin-menu:not([hidden]) {
+	transform-origin: bottom left;
+}
+
+@keyframes skin-menu-in {
+	from {
+		opacity: 0;
+		scale: 0.97;
+		translate: 0 -4px;
+	}
+}
+
+[data-skin-switcher-float] {
+	display: block;
+}
+
+[data-skin-switcher-inline] {
+	display: none;
+}
+
+@media (min-width: 1024px) {
+	[data-skin-switcher-inline] {
+		display: block;
+	}
+
+	body:has([data-skin-switcher-inline]) [data-skin-switcher-float] {
+		display: none;
+	}
+}
+
+@media print {
+	[data-skin-switcher-float],
+	[data-skin-switcher-inline],
+	.studio-grain {
+		display: none !important;
+	}
+}
+
+/* -------------------------------------------------- view transitions */
+
+@keyframes studio-reveal {
+	from {
+		clip-path: circle(0 at var(--vt-x, 50%) var(--vt-y, 0));
+	}
+	to {
+		clip-path: circle(var(--vt-r, 150vmax) at var(--vt-x, 50%) var(--vt-y, 0));
+	}
+}
+
+/* Every named element gives its name up during the reveal so the whole page
+   is wiped, not cross-faded piece by piece. */
+:root[data-skin-switch] *,
+:root[data-theme-switch] * {
+	view-transition-name: none !important;
+}
+
+:root:active-view-transition-type(skin)::view-transition-old(root),
+:root:active-view-transition-type(theme)::view-transition-old(root) {
+	animation: none !important;
+}
+
+:root:active-view-transition-type(skin)::view-transition-new(root),
+:root:active-view-transition-type(theme)::view-transition-new(root) {
+	animation: studio-reveal 700ms cubic-bezier(0.7, 0, 0.2, 1) both !important;
+}
+
+/* Studio navigation: the old page recedes, the new sheet slides over it. */
+@keyframes studio-panel-in {
+	from {
+		transform: translateX(100%);
+	}
+}
+
+@keyframes studio-page-back {
+	to {
+		opacity: 0.55;
+		transform: translateX(-6%) scale(0.96);
+	}
+}
+
+:root[data-skin="studio"]::view-transition-old(root) {
+	animation: 650ms cubic-bezier(0.7, 0, 0.2, 1) both studio-page-back;
+}
+
+:root[data-skin="studio"]::view-transition-new(root) {
+	animation: 650ms cubic-bezier(0.7, 0, 0.2, 1) both studio-panel-in;
+}
+
+@media (max-width: 767px) {
+	@keyframes studio-panel-in {
+		from {
+			transform: translateY(100%);
+		}
+	}
+
+	@keyframes studio-page-back {
+		to {
+			opacity: 0.55;
+			transform: translateY(-3%) scale(0.97);
+		}
+	}
+}
+
+/* Studio page-load rise, slightly slower and softer than the original. */
+html[data-skin="studio"] .rise-in {
+	animation-duration: 720ms;
+	animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html[data-skin="studio"] .studio-grain > div {
+		animation: none;
+	}
+
+	:root:active-view-transition-type(skin)::view-transition-new(root),
+	:root:active-view-transition-type(theme)::view-transition-new(root),
+	:root[data-skin="studio"]::view-transition-old(root),
+	:root[data-skin="studio"]::view-transition-new(root) {
+		animation: none !important;
+	}
+}
