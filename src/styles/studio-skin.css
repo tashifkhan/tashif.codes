@@ -355,8 +355,10 @@ html[data-skin="studio"] .studio-grain > div {
 	animation: studio-grain 0.9s steps(6) infinite;
 }
 
-html[data-skin="studio"] .studio-field {
-	opacity: 0.85;
+/* The global field is fixed behind the content wrapper. Page roots drop their
+   own opaque surface so the dots show through; cards keep theirs. */
+html[data-skin="studio"] [data-page-surface] {
+	background: transparent !important;
 }
 
 /* ------------------------------------------------------ header + tabs */

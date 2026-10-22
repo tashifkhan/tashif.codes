@@ -1,32 +1,29 @@
 ---
 /**
- * The studio skin's ambient canvas. A faint dot lattice that leans away from
- * the pointer and picks up the accent, plus optional blueprint geometry that
- * draws itself in. Everything reads the live CSS tokens, so light/dark/cream
- * all resolve correctly and switch without a reload.
+ * The studio skin's full-viewport ambient canvas. A faint dot lattice that
+ * leans away from the pointer and picks up the accent, plus optional
+ * blueprint geometry that draws itself in. Everything reads the live CSS
+ * tokens, so light/dark/cream all resolve correctly and switch without a
+ * reload.
  *
- * Rendered inside `.studio-only` containers, so the simple skin never shows
- * it. The canvas is pointer-events-none; the field listens on its parent.
+ * The field is fixed behind the content wrapper. It is hidden in the simple
+ * skin, on the docs reader, and in print.
  */
 interface Props {
 	class?: string;
 	geometry?: boolean;
 	/** Dot spacing in CSS pixels. */
 	gap?: number;
-	/** Mask applied to the canvas so the dots fade out at the edges. */
-	mask?: string;
 }
 
-const {
-	class: className = "",
-	geometry = false,
-	gap = 28,
-	mask = "radial-gradient(ellipse 90% 75% at 65% 35%, black 15%, transparent 78%)",
-} = Astro.props;
+const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 ---
 
 <div
-	class:list={["studio-field pointer-events-none absolute inset-0 overflow-hidden", className]}
+	class:list={[
+		"studio-field studio-only pointer-events-none fixed inset-0 overflow-hidden",
+		className,
+	]}
 	data-studio-field-host
 	data-gap={gap}
 	aria-hidden="true"
@@ -34,7 +31,7 @@ const {
 	<!-- Faint drafting grid, the sheet the dots sit on. -->
 	<div
 		class="absolute inset-0 opacity-40"
-		style="background-image:linear-gradient(to right,var(--border) 1px,transparent 1px),linear-gradient(to bottom,var(--border) 1px,transparent 1px);background-size:72px 72px;mask-image:radial-gradient(ellipse 90% 80% at 50% 40%,black 30%,transparent 100%);"
+		style="background-image:linear-gradient(to right,var(--border) 1px,transparent 1px),linear-gradient(to bottom,var(--border) 1px,transparent 1px);background-size:72px 72px;"
 	>
 	</div>
 
@@ -65,7 +62,6 @@ const {
 
 	<canvas
 		class="absolute inset-0 size-full"
-		style={`mask-image:${mask};-webkit-mask-image:${mask};`}
 		data-studio-field
 	></canvas>
 </div>
@@ -149,36 +145,33 @@ const {
 
 			const parent = host.parentElement ?? host;
 
-			parent.addEventListener(
-				"pointermove",
-				(event) => {
-					const rect = canvas.getBoundingClientRect();
-					mx = event.clientX - rect.left;
-					my = event.clientY - rect.top;
-					if (!reduced) schedule();
-				},
-				{ passive: true },
-			);
+			const onPointerMove = (event: PointerEvent) => {
+				const rect = canvas.getBoundingClientRect();
+				mx = event.clientX - rect.left;
+				my = event.clientY - rect.top;
+				if (!reduced) schedule();
+			};
 
-			parent.addEventListener("pointerleave", () => {
+			const onPointerLeave = () => {
 				mx = my = -9999;
 				schedule();
-			});
+			};
 
+			parent.addEventListener("pointermove", onPointerMove, { passive: true });
+			parent.addEventListener("pointerleave", onPointerLeave);
+
+			let onGeoMove: ((event: PointerEvent) => void) | undefined;
 			if (!reduced) {
 				// A little parallax on the drafting sheet; the dots follow the pointer.
-				parent.addEventListener(
-					"pointermove",
-					(event) => {
-						const geo = host.querySelector<HTMLElement>("[data-studio-geo]");
-						if (!geo) return;
-						const rect = parent.getBoundingClientRect();
-						const nx = (event.clientX - rect.left) / rect.width - 0.5;
-						const ny = (event.clientY - rect.top) / rect.height - 0.5;
-						geo.style.transform = `translate3d(${(nx * -18).toFixed(1)}px,${(ny * -12).toFixed(1)}px,0)`;
-					},
-					{ passive: true },
-				);
+				onGeoMove = (event: PointerEvent) => {
+					const geo = host.querySelector<HTMLElement>("[data-studio-geo]");
+					if (!geo) return;
+					const rect = parent.getBoundingClientRect();
+					const nx = (event.clientX - rect.left) / rect.width - 0.5;
+					const ny = (event.clientY - rect.top) / rect.height - 0.5;
+					geo.style.transform = `translate3d(${(nx * -18).toFixed(1)}px,${(ny * -12).toFixed(1)}px,0)`;
+				};
+				parent.addEventListener("pointermove", onGeoMove, { passive: true });
 			}
 
 			new IntersectionObserver(([entry]) => {
@@ -215,7 +208,19 @@ const {
 				attributeFilter: ["data-skin", "data-theme", "class"],
 			});
 
-			matchMedia("(prefers-color-scheme: light)").addEventListener("change", scheduleRefresh);
+			const lightMedia = matchMedia("(prefers-color-scheme: light)");
+			lightMedia.addEventListener("change", scheduleRefresh);
+
+			// The field lives outside the page content, so the body survives a
+			// ClientRouter swap. Drop the listeners before the old canvas goes.
+			document.addEventListener("astro:before-swap", () => {
+				parent.removeEventListener("pointermove", onPointerMove);
+				parent.removeEventListener("pointerleave", onPointerLeave);
+				if (onGeoMove) parent.removeEventListener("pointermove", onGeoMove);
+				lightMedia.removeEventListener("change", scheduleRefresh);
+				observer?.disconnect();
+			}, { once: true });
+
 			readColors();
 			resize();
 

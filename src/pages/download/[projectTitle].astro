@@ -1,6 +1,5 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import StudioField from "../../components/common/StudioField.astro";
 import { getDownloadUrl, getAllDownloadProjects } from "../../lib/downloadRedirect";
 import { ArrowLeft, AlertCircle, Download } from "lucide-react";
 
@@ -26,11 +25,7 @@ if (downloadUrl) {
 ---
 
 <Layout title={`Downloading ${projectTitle} by Tashif Ahmad Khan`} image={`/og/download/${encodeURIComponent(projectTitle)}.jpg`}>
-	<div class="relative min-h-screen bg-muted dark:bg-card py-8">
-		<StudioField
-			class="studio-only inset-x-0 top-0 h-[24rem] opacity-60"
-			mask="linear-gradient(to bottom, black 0%, black 45%, transparent 100%)"
-		/>
+	<div data-page-surface class="relative min-h-screen bg-muted dark:bg-card py-8">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="mb-8">
 				<a

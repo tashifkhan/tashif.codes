@@ -1,6 +1,5 @@
 ---
 import Layout from "./Layout.astro";
-import StudioField from "../components/common/StudioField.astro";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import type { SeoProps } from "../lib/seo";
 
@@ -66,13 +65,9 @@ const tintClass = {
 >
 	<div
 		data-page-shell
+		data-page-surface
 		class="relative min-h-screen bg-gradient-to-b from-muted to-background dark:from-background dark:to-card text-foreground transition-colors duration-300 font-sans"
 	>
-		<StudioField
-			class="studio-only inset-x-0 top-0 h-[26rem] opacity-80"
-			geometry={true}
-			mask="linear-gradient(to bottom, black 0%, black 55%, transparent 100%)"
-		/>
 		{
 			tint !== "none" && (
 				<div

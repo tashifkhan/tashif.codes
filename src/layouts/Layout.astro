@@ -4,6 +4,7 @@ import PostHog from "../components/common/posthog.astro";
 import Haptics from "../components/common/Haptics.astro";
 import SkinSwitcher from "../components/common/SkinSwitcher.astro";
 import DotCursor from "../components/common/DotCursor.astro";
+import StudioField from "../components/common/StudioField.astro";
 import { ClientRouter } from "astro:transitions";
 import Analytics from "@vercel/analytics/astro";
 import {
@@ -36,6 +37,12 @@ const social = resolveSocialImageMeta({
 	pathname: url ?? Astro.url.pathname,
 	alt: title,
 });
+
+// The docs reader and the printable resume keep a solid surface. Everything
+// else gets the viewport-wide dot field and the studio footer.
+const isDocsReader = /^\/docs\/[^/]+/.test(Astro.url.pathname);
+const showStudioChrome =
+	!isDocsReader && Astro.url.pathname !== "/print-resume";
 ---
 
 <!doctype html>
@@ -209,7 +216,29 @@ const social = resolveSocialImageMeta({
 		<ClientRouter />
 	</head>
 	<body>
-		<slot />
+		{showStudioChrome && <StudioField class="opacity-60" geometry={true} />}
+		<div class="relative z-10">
+			<slot />
+			{
+				showStudioChrome && (
+					<footer class="studio-only border-t border-border/60 bg-background/70 backdrop-blur-sm">
+						<div class="mx-auto flex w-full max-w-7xl flex-col gap-2 px-4 py-6 font-mono text-[0.6875rem] tracking-wide text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+							<span>tashif.codes</span>
+							<a
+								href="https://taf.sh"
+								target="_blank"
+								rel="noopener noreferrer"
+								data-haptic-external
+								class="inline-flex items-center gap-2 pr-16 text-muted-foreground transition-colors hover:text-primary"
+							>
+								Studio work at taf.sh
+								<span aria-hidden="true">↗</span>
+							</a>
+						</div>
+					</footer>
+				)
+			}
+		</div>
 		<DotCursor />
 		<!-- Studio skin film grain. Hidden unless html[data-skin="studio"]. -->
 		<div

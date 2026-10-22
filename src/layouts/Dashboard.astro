@@ -8,7 +8,6 @@
 import Layout from "./Layout.astro";
 import SiteHeader from "../components/sections/SiteHeader.astro";
 import SectionTabs from "../components/sections/SectionTabs.astro";
-import StudioField from "../components/common/StudioField.astro";
 import WelcomeBanner from "../components/sections/WelcomeBanner.astro";
 import ProjectsSection from "../components/sections/ProjectsSection.astro";
 import BlogSection from "../components/sections/BlogSection.astro";
@@ -53,12 +52,9 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 	url={Astro.url.pathname}
 >
 	<div
+		data-page-surface
 		class="relative min-h-screen bg-background text-foreground dark:text-foreground transition-colors duration-300 font-sans scroll-smooth"
 	>
-		<StudioField
-			class="studio-only inset-x-0 top-0 h-[28rem] opacity-70"
-			mask="linear-gradient(to bottom, black 0%, black 45%, transparent 100%)"
-		/>
 		<div
 			class="pointer-events-none absolute inset-0 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]"
 		>
