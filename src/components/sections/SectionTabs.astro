@@ -60,7 +60,7 @@ const tabClass =
 							class={tabClass}
 						>
 							<Icon size={16} className="mr-2" />
-							{tab.label}
+							<span data-tab-label data-scramble={tab.label}>{tab.label}</span>
 						</a>
 					);
 				})
@@ -68,3 +68,68 @@ const tabClass =
 		</div>
 	</div>
 </nav>
+
+<script is:inline>
+	(() => {
+		if (window.__tabScrambleWired) return;
+		window.__tabScrambleWired = true;
+
+		const glyphs = "!<>-_\\/[]{}=+*^?#%&$abcdefxyz0123456789";
+		const running = new WeakMap();
+		const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+
+		const scramble = (element) => {
+			if (reduced.matches) return;
+			const text = element.dataset.scramble || "";
+			if (!text) return;
+
+			const token = (running.get(element) || 0) + 1;
+			running.set(element, token);
+			const start = performance.now();
+			const length = text.length;
+
+			const frame = (now) => {
+				if (running.get(element) !== token) return;
+				const progress = Math.min(1, (now - start) / 380);
+				const settled = Math.floor(progress * length);
+				let output = text.slice(0, settled);
+				for (let i = settled; i < length; i++) {
+					output +=
+						text[i] === " "
+							? " "
+							: glyphs[(Math.random() * glyphs.length) | 0];
+				}
+				element.textContent = output;
+				if (progress < 1) requestAnimationFrame(frame);
+				else element.textContent = text;
+			};
+
+			requestAnimationFrame(frame);
+		};
+
+		document.addEventListener("pointerover", (event) => {
+			if (document.documentElement.dataset.skin !== "studio") return;
+			const target =
+				event.target instanceof Element
+					? event.target.closest("[data-scramble]")
+					: null;
+			if (
+				!target ||
+				(event.relatedTarget instanceof Node && target.contains(event.relatedTarget))
+			) {
+				return;
+			}
+			scramble(target);
+		});
+
+		document.addEventListener("focusin", (event) => {
+			if (document.documentElement.dataset.skin !== "studio") return;
+			const tab =
+				event.target instanceof Element
+					? event.target.closest("[data-tab]")
+					: null;
+			const label = tab?.querySelector("[data-scramble]");
+			if (label instanceof HTMLElement) scramble(label);
+		});
+	})();
+</script>
