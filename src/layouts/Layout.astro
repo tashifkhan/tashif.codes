@@ -3,7 +3,6 @@ import "../styles/global.css";
 import PostHog from "../components/common/posthog.astro";
 import Haptics from "../components/common/Haptics.astro";
 import SettingsDock from "../components/common/SettingsDock.tsx";
-import SiteHeader from "../components/sections/SiteHeader.astro";
 import DotCursor from "../components/common/DotCursor.astro";
 import StudioField from "../components/common/StudioField.astro";
 import { ClientRouter } from "astro:transitions";
@@ -251,7 +250,6 @@ const showAmbientChrome =
 	<body>
 		{showAmbientChrome && <StudioField class="opacity-70" geometry={true} />}
 		<div class="relative z-10">
-			{showAmbientChrome && <SiteHeader />}
 			<slot />
 			{
 				showAmbientChrome && (

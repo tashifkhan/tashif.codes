@@ -6,6 +6,7 @@
  * the matching URL when a tab is clicked. See src/lib/tabs.ts.
  */
 import Layout from "./Layout.astro";
+import SiteHeader from "../components/sections/SiteHeader.astro";
 import SectionTabs from "../components/sections/SectionTabs.astro";
 import WelcomeBanner from "../components/sections/WelcomeBanner.astro";
 import ProjectsSection from "../components/sections/ProjectsSection.astro";
@@ -63,6 +64,7 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 			</div>
 		</div>
 
+		<SiteHeader />
 		<SectionTabs activeTab={activeTab} />
 		<h1 class="sr-only">{titleLabel ?? owner.name}</h1>
 
