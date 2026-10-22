@@ -65,6 +65,28 @@ const showStudioChrome =
 			})();
 		</script>
 		<script is:inline>
+			// Dark and paper-cream only. Migrate the old white "light" value and
+			// paint the chosen class before the stylesheet can show a white page.
+			(() => {
+				try {
+					const stored = localStorage.getItem("theme");
+					const theme =
+						stored === "dark" || stored === "cream"
+							? stored
+							: matchMedia("(prefers-color-scheme: dark)").matches
+								? "dark"
+								: "cream";
+					document.documentElement.classList.toggle("dark", theme === "dark");
+					document.documentElement.classList.toggle("cream", theme === "cream");
+					document.documentElement.style.colorScheme =
+						theme === "dark" ? "dark" : "light";
+					localStorage.setItem("theme", theme);
+				} catch {
+					document.documentElement.classList.add("cream");
+				}
+			})();
+		</script>
+		<script is:inline>
 			// Direction-aware page transitions. Breadcrumbs and back links mark
 			// themselves `data-nav-back`; browser traversal falls through to the
 			// popstate / Navigation API handlers below.
@@ -256,27 +278,28 @@ const showStudioChrome =
 		<PostHog />
 		<Analytics />
 		<script is:inline>
-			// Apply theme before paint to avoid flash — runs on initial load and after every swap
+			// Keep the chosen palette on the root across ClientRouter swaps. The
+			// old white light theme is gone; "light" migrates to paper cream.
 			function applyTheme() {
 				const storedTheme = localStorage.getItem("theme");
 				const theme =
-					storedTheme ||
-					(window.matchMedia("(prefers-color-scheme: dark)").matches
-						? "dark"
-						: "light");
+					storedTheme === "dark" || storedTheme === "cream"
+						? storedTheme
+						: window.matchMedia("(prefers-color-scheme: dark)").matches
+							? "dark"
+							: "cream";
 
-				if (theme === "cream") {
-					document.documentElement.classList.remove("dark");
-					document.documentElement.classList.add("cream");
-				} else if (theme === "dark") {
+				if (theme === "dark") {
 					document.documentElement.classList.add("dark");
 					document.documentElement.classList.remove("cream");
 				} else {
 					document.documentElement.classList.remove("dark");
-					document.documentElement.classList.remove("cream");
+					document.documentElement.classList.add("cream");
 				}
+				document.documentElement.style.colorScheme =
+					theme === "dark" ? "dark" : "light";
 
-				if (!storedTheme) {
+				if (storedTheme !== theme) {
 					localStorage.setItem("theme", theme);
 				}
 			}

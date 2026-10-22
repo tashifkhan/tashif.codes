@@ -110,13 +110,27 @@ html, body, * {
 }
 
 .cream {
-  --bg-color: #fdf6e3;
+  --bg-color: #f6f1e9;
   --primary-color: #f5e9da;
   --accent-color: #A47551;
-  --text-color: #3b2f1e;
-  --card-bg: #f7f1e1;
-  --label-color: #555;
+  --text-color: #171615;
+  --card-bg: #fdfaf4;
+  --label-color: #5f5956;
   --radius: 8px;
+  --background: #f6f1e9;
+  --foreground: #171615;
+  --card: #fdfaf4;
+  --card-foreground: #171615;
+  --popover: #fdfaf4;
+  --popover-foreground: #171615;
+  --secondary: #eee7dc;
+  --secondary-foreground: #3d3836;
+  --muted: #eee7dc;
+  --muted-foreground: #5f5956;
+  --accent: #e7dfd2;
+  --accent-foreground: #3d3836;
+  --border: #ded4c5;
+  --input: #e7ded1;
 }
 
 body {
@@ -140,7 +154,6 @@ code, pre, .font-mono {
 
 /* Theme toggle icon follows the class on <html>, not React state. */
 .theme-icon-sun,
-.theme-icon-moon,
 .theme-icon-cream {
   display: none;
 }
@@ -149,11 +162,7 @@ html.dark .theme-icon-sun {
   display: block;
 }
 
-html:not(.dark):not(.cream) .theme-icon-moon {
-  display: block;
-}
-
-html.cream .theme-icon-cream {
+html:not(.dark) .theme-icon-cream {
   display: block;
 }
 
