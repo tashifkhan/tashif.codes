@@ -1,7 +1,5 @@
 ---
 import { Button } from "@/components/ui/button";
-import ThemeToggle from "@/components/common/ThemeToggle";
-import SkinSwitcher from "@/components/common/SkinSwitcher.astro";
 import { owner, socials } from "../../data/profile";
 import { leetCodeData } from "../../data/leetcode";
 
@@ -42,7 +40,7 @@ class="relative z-50 backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:su
 			</div>
 		</div>
 
-		<!-- Right/Center: Social Links and Theme Button -->
+		<!-- Right/Center: Social Links -->
 		<div class="flex items-center justify-center sm:justify-end w-full sm:w-auto mt-1 sm:mt-0">
 			<!-- Social Links -->
 			<div class="flex items-center gap-0.5 sm:gap-1 z-10">
@@ -66,21 +64,6 @@ class="relative z-50 backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:su
 						</Button>
 					))
 				}
-			</div>
-
-			<!-- Desktop Divider -->
-			<div class="hidden sm:block w-px h-5 bg-border/60 mx-3 sm:mx-4 z-10"></div>
-
-			<!-- Theme Button (Inline on Desktop, Absolute on Mobile) -->
-			<div class="absolute right-4 top-[60%] -translate-y-1/2 sm:static sm:translate-y-0 z-20">
-				<div class="flex items-center gap-2 shrink-0">
-					<div class="rounded-full bg-secondary/40 ring-1 ring-border/60 hover:ring-border transition-all shrink-0">
-						<SkinSwitcher />
-					</div>
-					<div class="flex items-center rounded-full bg-secondary/40 ring-1 ring-border/60 hover:ring-border transition-all shrink-0">
-						<ThemeToggle client:load />
-					</div>
-				</div>
 			</div>
 		</div>
 	</div>

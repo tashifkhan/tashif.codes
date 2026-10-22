@@ -437,8 +437,19 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 
 	// Initialize filters and handle link clicks
 	document.addEventListener("astro:page-load", () => {
-		const theme = localStorage.getItem("theme") || "dark";
-		document.documentElement.classList.toggle("dark", theme === "dark");
+		const storedTheme = localStorage.getItem("theme");
+		const mode =
+			storedTheme === "dark" ||
+			storedTheme === "light" ||
+			storedTheme === "system"
+				? storedTheme
+				: "system";
+		const dark =
+			mode === "dark" ||
+			(mode === "system" &&
+				window.matchMedia("(prefers-color-scheme: dark)").matches);
+		document.documentElement.classList.toggle("dark", dark);
+		document.documentElement.style.colorScheme = dark ? "dark" : "light";
 
 		// Apply initial filter state (show all projects by default)
 		document.dispatchEvent(

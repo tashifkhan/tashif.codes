@@ -2,7 +2,7 @@
 import "../styles/global.css";
 import PostHog from "../components/common/posthog.astro";
 import Haptics from "../components/common/Haptics.astro";
-import SkinSwitcher from "../components/common/SkinSwitcher.astro";
+import SettingsDock from "../components/common/SettingsDock.tsx";
 import DotCursor from "../components/common/DotCursor.astro";
 import StudioField from "../components/common/StudioField.astro";
 import { ClientRouter } from "astro:transitions";
@@ -65,24 +65,32 @@ const showAmbientChrome =
 			})();
 		</script>
 		<script is:inline>
-			// Dark and light only. The light palette is the paper cream one.
-			// Paint the chosen class before the stylesheet can show a white page.
+			// Light, dark, or system. Paint the resolved palette before CSS.
 			(() => {
 				try {
 					const stored = localStorage.getItem("theme");
-					const theme =
-						stored === "dark"
-							? "dark"
-							: stored === "light" || stored === "cream"
+					const mode =
+						stored === "dark" || stored === "light" || stored === "system"
+							? stored
+							: stored === "cream"
 								? "light"
-								: matchMedia("(prefers-color-scheme: dark)").matches
-									? "dark"
-									: "light";
-					document.documentElement.classList.toggle("dark", theme === "dark");
-					document.documentElement.classList.remove("cream");
-					document.documentElement.style.colorScheme =
-						theme === "dark" ? "dark" : "light";
-					localStorage.setItem("theme", theme);
+								: "system";
+					const root = document.documentElement;
+					const dark =
+						mode === "dark" ||
+						(mode === "system" &&
+							matchMedia("(prefers-color-scheme: dark)").matches);
+
+					root.classList.toggle("dark", dark);
+					root.classList.remove("cream");
+					root.style.colorScheme = dark ? "dark" : "light";
+					root.dataset.themeMode = mode;
+
+					if (mode !== stored) {
+						try {
+							localStorage.setItem("theme", mode);
+						} catch {}
+					}
 				} catch {
 					document.documentElement.classList.remove("dark", "cream");
 				}
@@ -292,36 +300,47 @@ const showAmbientChrome =
 			>
 			</div>
 		</div>
-		<SkinSwitcher variant="floating" />
+		<SettingsDock client:load />
 		<Haptics />
 		<PostHog />
 		<Analytics />
 		<script is:inline>
 			// Keep the chosen palette on the root across ClientRouter swaps. The
-			// light palette is paper; a stored "cream" value becomes "light".
+			// mode is light, dark, or system; a stored "cream" becomes light.
 			function applyTheme() {
-				const storedTheme = localStorage.getItem("theme");
-				const theme =
-					storedTheme === "dark"
-						? "dark"
-						: storedTheme === "light" || storedTheme === "cream"
+				const stored = localStorage.getItem("theme");
+				const mode =
+					stored === "dark" || stored === "light" || stored === "system"
+						? stored
+						: stored === "cream"
 							? "light"
-							: window.matchMedia("(prefers-color-scheme: dark)").matches
-								? "dark"
-								: "light";
+							: "system";
+				const root = document.documentElement;
+				const dark =
+					mode === "dark" ||
+					(mode === "system" &&
+						window.matchMedia("(prefers-color-scheme: dark)").matches);
 
-				document.documentElement.classList.toggle("dark", theme === "dark");
-				document.documentElement.classList.remove("cream");
-				document.documentElement.style.colorScheme =
-					theme === "dark" ? "dark" : "light";
+				root.classList.toggle("dark", dark);
+				root.classList.remove("cream");
+				root.style.colorScheme = dark ? "dark" : "light";
+				root.dataset.themeMode = mode;
 
-				if (storedTheme !== theme) {
-					localStorage.setItem("theme", theme);
+				if (stored !== mode) {
+					try {
+						localStorage.setItem("theme", mode);
+					} catch {}
 				}
 			}
 
 			applyTheme();
 			document.addEventListener("astro:after-swap", applyTheme);
+
+			const themeMedia = window.matchMedia("(prefers-color-scheme: dark)");
+			themeMedia.addEventListener("change", () => {
+				const stored = localStorage.getItem("theme");
+				if (stored === "system" || stored === null) applyTheme();
+			});
 		</script>
 	</body>
 </html>
