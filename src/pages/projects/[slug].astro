@@ -603,13 +603,13 @@ export async function getStaticPaths() {
 						<h2 class="text-[10px] font-bold tracking-[0.18em] text-muted-foreground mb-4">
 							Contributors
 						</h2>
-						<div class="mt-10 flex flex-row items-center justify-start">
+						<div class="flex flex-row items-center justify-start">
 							<AnimatedTooltip
 								client:load
 								items={contributors.map((c, i) => ({
 									id: i + 1,
-									name: c.login || "Contributor",
-									designation: `${c.contributions} contribution${c.contributions === 1 ? "" : "s"}`,
+									name: c.login,
+									designation: `${c.contributions} contributions`,
 									image: c.avatar_url,
 									url: c.html_url,
 								}))}
