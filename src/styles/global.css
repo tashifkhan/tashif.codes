@@ -891,10 +891,6 @@ summary {
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .motion-card:hover { transform: translateY(-2px); }
 
-  [data-social-card]:hover [data-social-icon] {
-    transform: scale(1.06);
-  }
-
   [data-social-card]:hover [data-social-mark] {
     transform: scale(1.08);
     opacity: 0.09;

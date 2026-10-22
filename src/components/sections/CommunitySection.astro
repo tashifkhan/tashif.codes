@@ -24,7 +24,6 @@ const socialCards = [
 		href: socialLink("GitHub"),
 		icon: Github,
 		detail: `@${githubProfiles[0].handle}`,
-		iconClass: "bg-foreground text-background",
 		markClass: "text-foreground",
 	},
 	{
@@ -32,7 +31,6 @@ const socialCards = [
 		href: socialLink("Twitter"),
 		icon: Twitter,
 		detail: "Tech insights & updates",
-		iconClass: "border border-sky-500/20 bg-sky-500/15 text-sky-500",
 		markClass: "text-sky-500",
 	},
 	{
@@ -40,7 +38,6 @@ const socialCards = [
 		href: socialLink("LinkedIn"),
 		icon: Linkedin,
 		detail: "Professional network",
-		iconClass: "border border-blue-500/20 bg-blue-500/15 text-blue-500",
 		markClass: "text-blue-500",
 	},
 	{
@@ -48,7 +45,6 @@ const socialCards = [
 		href: socialLink("Email"),
 		icon: Mail,
 		detail: emailAddress,
-		iconClass: "border border-primary/20 bg-primary/10 text-primary",
 		markClass: "text-primary",
 	},
 ];
@@ -88,7 +84,7 @@ const { active = false } = Astro.props;
 	<div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
 		{
 			socialCards.map(
-				({ label, href, icon: Icon, detail, iconClass, markClass }) => (
+				({ label, href, icon: Icon, detail, markClass }) => (
 					<a
 						href={href}
 						data-haptic-social
@@ -106,15 +102,6 @@ const { active = false } = Astro.props;
 							]}
 						>
 							<Icon className="h-28 w-28" />
-						</span>
-						<span
-							data-social-icon
-							class:list={[
-								"relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-105",
-								iconClass,
-							]}
-						>
-							<Icon className="h-5 w-5" />
 						</span>
 						<span class="relative z-10 min-w-0 flex-1">
 							<span class="block truncate text-sm font-semibold text-foreground">
