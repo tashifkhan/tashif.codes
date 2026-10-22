@@ -237,15 +237,7 @@ html[data-skin="studio"] .language-label {
 	font-family: var(--font-mono);
 }
 
-/* ------------------------------------------------ studio-only chrome */
-
-.studio-only {
-	display: none !important;
-}
-
-html[data-skin="studio"] .studio-only {
-	display: block !important;
-}
+/* ------------------------------------------------ ambient chrome */
 
 .studio-grain {
 	display: none;
@@ -280,13 +272,15 @@ html[data-skin="studio"] .studio-only {
 }
 
 @media (hover: hover) and (pointer: fine) {
-	html[data-skin="studio"] .dot-cursor {
+	html[data-skin="studio"] .dot-cursor,
+	html[data-skin="simple"] .dot-cursor {
 		display: block;
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
-	html[data-skin="studio"] .dot-cursor {
+	html[data-skin="studio"] .dot-cursor,
+	html[data-skin="simple"] .dot-cursor {
 		display: none;
 	}
 }
@@ -300,11 +294,13 @@ html[data-skin="studio"] .studio-only {
 	100% { translate: 0 0; }
 }
 
-html[data-skin="studio"] .studio-grain {
+html[data-skin="studio"] .studio-grain,
+html[data-skin="simple"] .studio-grain {
 	display: block;
 }
 
-html[data-skin="studio"] .studio-grain > div {
+html[data-skin="studio"] .studio-grain > div,
+html[data-skin="simple"] .studio-grain > div {
 	animation: studio-grain 0.9s steps(6) infinite;
 }
 
@@ -312,6 +308,21 @@ html[data-skin="studio"] .studio-grain > div {
    own opaque surface so the dots show through; cards keep theirs. */
 html[data-skin="studio"] [data-page-surface] {
 	background: transparent !important;
+}
+
+/* The simple skin keeps its own palette but gets the same ambient field. The
+   field reads --primary and --border from this skin, so the dots and blueprint
+   stay orange/grey instead of turning teal. */
+html[data-skin="simple"] [data-page-surface] {
+	background: transparent !important;
+}
+
+html[data-skin="simple"] .studio-field {
+	opacity: 0.45;
+}
+
+html[data-skin="simple"].dark .studio-field {
+	opacity: 0.3;
 }
 
 /* Keep the footer content above the floating design switcher. On pages with
@@ -541,6 +552,7 @@ html[data-skin="studio"] .font-sans.text-xl {
 @media print {
 	[data-skin-switcher-float],
 	[data-skin-switcher-inline],
+	.studio-field,
 	.studio-grain,
 	.dot-cursor {
 		display: none !important;
@@ -744,13 +756,14 @@ html[data-skin="studio"] .font-sans.text-xl {
 }
 
 /* Studio page-load rise, slightly slower and softer than the original. */
-html[data-skin="studio"] .rise-in {
+html[data-skin="studio"] .rise-in,
+html[data-skin="simple"] .rise-in {
 	animation-duration: 720ms;
 	animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
-	html[data-skin="studio"] .studio-grain > div {
+	.studio-grain > div {
 		animation: none;
 	}
 

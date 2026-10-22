@@ -39,9 +39,9 @@ const social = resolveSocialImageMeta({
 });
 
 // The docs reader and the printable resume keep a solid surface. Everything
-// else gets the viewport-wide dot field and the studio footer.
+// else gets the viewport-wide ambient field and the shared footer.
 const isDocsReader = /^\/docs\/[^/]+/.test(Astro.url.pathname);
-const showStudioChrome =
+const showAmbientChrome =
 	!isDocsReader && Astro.url.pathname !== "/print-resume";
 ---
 
@@ -240,14 +240,14 @@ const showStudioChrome =
 		<ClientRouter />
 	</head>
 	<body>
-		{showStudioChrome && <StudioField class="opacity-70" geometry={true} />}
+		{showAmbientChrome && <StudioField class="opacity-70" geometry={true} />}
 		<div class="relative z-10">
 			<slot />
 			{
-				showStudioChrome && (
+				showAmbientChrome && (
 					<footer
 						data-site-footer
-						class="studio-only border-t border-border/60 bg-background/70 backdrop-blur-sm"
+						class="border-t border-border/60 bg-background/70 backdrop-blur-sm"
 					>
 						<div class="mx-auto flex w-full max-w-7xl flex-col gap-2 px-4 py-6 font-mono text-[0.6875rem] tracking-wide text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
 							<span>tashif.codes</span>

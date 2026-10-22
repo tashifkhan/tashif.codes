@@ -108,7 +108,6 @@ const tabClass =
 		};
 
 		document.addEventListener("pointerover", (event) => {
-			if (document.documentElement.dataset.skin !== "studio") return;
 			const target =
 				event.target instanceof Element
 					? event.target.closest("[data-scramble]")
@@ -123,7 +122,6 @@ const tabClass =
 		});
 
 		document.addEventListener("focusin", (event) => {
-			if (document.documentElement.dataset.skin !== "studio") return;
 			const tab =
 				event.target instanceof Element
 					? event.target.closest("[data-tab]")

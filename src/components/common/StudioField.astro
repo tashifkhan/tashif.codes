@@ -1,13 +1,12 @@
 ---
 /**
- * The studio skin's full-viewport ambient canvas. A faint dot lattice that
- * leans away from the pointer and picks up the accent, plus optional
- * blueprint geometry that draws itself in. Everything reads the live CSS
- * tokens, so light/dark all resolve correctly and switch without a
- * reload.
+ * The site's full-viewport ambient canvas. A faint dot lattice that leans away
+ * from the pointer and picks up the accent, plus optional blueprint geometry
+ * that draws itself in. Everything reads the live CSS tokens, so every skin and
+ * light/dark combination resolves correctly and switches without a reload.
  *
- * The field is fixed behind the content wrapper. It is hidden in the simple
- * skin, on the docs reader, and in print.
+ * The field is fixed behind the content wrapper and is used by both skins. It
+ * is omitted from the docs reader and print views.
  */
 interface Props {
 	class?: string;
@@ -21,7 +20,7 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 
 <div
 	class:list={[
-		"studio-field studio-only pointer-events-none fixed inset-0 overflow-hidden",
+		"studio-field pointer-events-none fixed inset-0 overflow-hidden",
 		className,
 	]}
 	data-studio-field-host
