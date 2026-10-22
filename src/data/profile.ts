@@ -1,4 +1,4 @@
-import { Github, Globe, Linkedin, Mail, Twitter } from "lucide-react";
+import { Github, Linkedin, Mail, Twitter } from "lucide-react";
 import type { SocialLink } from "@/types";
 
 
@@ -57,7 +57,6 @@ export function githubAttributedStatsUrl(
 
 export const socials: SocialLink[] = [
 	{ icon: Github, link: "https://github.com/tashifkhan", label: "GitHub" },
-	{ icon: Globe, link: "https://portfolio.tashif.codes", label: "Portfolio" },
 	{
 		icon: Linkedin,
 		link: "https://www.linkedin.com/in/tashifkhan/",

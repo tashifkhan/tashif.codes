@@ -318,11 +318,18 @@ html[data-skin="simple"] [data-page-surface] {
 }
 
 html[data-skin="simple"] .studio-field {
-	opacity: 0.45;
+	opacity: 0.55;
+}
+
+/* Simple keeps the drafting geometry on the sides, not the generic full-page
+   dot lattice. That quiet side linework is the hook. */
+html[data-skin="simple"] .studio-field [data-studio-grid],
+html[data-skin="simple"] .studio-field [data-studio-field] {
+	display: none;
 }
 
 html[data-skin="simple"].dark .studio-field {
-	opacity: 0.3;
+	opacity: 0.4;
 }
 
 /* Keep the footer content above the floating design switcher. On pages with
