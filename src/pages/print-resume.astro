@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { contactEmail } from "../data/profile";
 ---
 
 <Layout title="Printable Resume | Tashif Ahmad Khan" image="/og/resume.jpg">
@@ -150,7 +151,7 @@ import Layout from "../layouts/Layout.astro";
 		<h1 style="margin-bottom:0.2em;">TASHIF AHMAD KHAN</h1>
 		<div>
 			<strong>Mail:</strong>
-			<a href="mailto:developer@tashif.codes">developer@tashif.codes</a>
+			<a href={`mailto:${contactEmail}`}>{contactEmail}</a>
 		</div>
 		<div class="contact-links">
 			<a

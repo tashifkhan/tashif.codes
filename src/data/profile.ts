@@ -8,6 +8,9 @@ export const owner = {
 	fallbackTitle: "Software Developer",
 };
 
+/** Default contact address used by the header, contact cards, resume and print sheet. */
+export const contactEmail = "me@taf.sh";
+
 /** Personal account used when "Personal only" is toggled on. */
 export const personalGithubUsername = "tashifkhan";
 
@@ -67,5 +70,5 @@ export const socials: SocialLink[] = [
 		link: "https://tashif.codes/twitter",
 		label: "Twitter",
 	},
-	{ icon: Mail, link: "mailto:tashif@duck.com", label: "Email" },
+	{ icon: Mail, link: `mailto:${contactEmail}`, label: "Email" },
 ];

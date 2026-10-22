@@ -146,9 +146,9 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 					/>
 				</div>
 
-				<div className="flex flex-row gap-2 w-full md:w-auto">
+				<div className="flex flex-wrap gap-2 w-full md:flex-nowrap md:w-auto">
 					{/* Star list selector */}
-					<div className="relative flex-1">
+					<div className="relative w-full min-w-0 md:w-auto md:flex-1">
 						<Select onOpenChange={() => trigger("light")} value={selectedList} onValueChange={handleListChange}>
 							<SelectTrigger
 								data-haptic="manual"
@@ -170,7 +170,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 						variant={showLiveOnly ? "default" : "outline"}
 						onClick={handleLiveFilter}
 						aria-pressed={showLiveOnly}
-						className={`gap-2 whitespace-nowrap ${
+						className={`flex-1 md:flex-none gap-2 whitespace-nowrap ${
 							!showLiveOnly ? "bg-background/50 backdrop-blur-sm" : ""
 						}`}
 					>
@@ -181,7 +181,7 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 						variant={showReleasesOnly ? "default" : "outline"}
 						onClick={handleReleasesFilter}
 						aria-pressed={showReleasesOnly}
-						className={`gap-2 whitespace-nowrap ${
+						className={`flex-1 md:flex-none gap-2 whitespace-nowrap ${
 							!showReleasesOnly ? "bg-background/50 backdrop-blur-sm" : ""
 						}`}
 					>

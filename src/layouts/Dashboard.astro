@@ -618,7 +618,8 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 					"Sent via dashboard contact form",
 				];
 				const body = encodeURIComponent(bodyLines.join("\n"));
-				const mailto = `mailto:tashif@duck.com?subject=${encodeURIComponent(subject)}&body=${body}`;
+				const contactEmail = contactForm.dataset.contactEmail || "me@taf.sh";
+				const mailto = `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${body}`;
 
 				if (statusEl) statusEl.textContent = "Opening your email client...";
 				trigger("light");
