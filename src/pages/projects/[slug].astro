@@ -608,8 +608,8 @@ export async function getStaticPaths() {
 								client:load
 								items={contributors.map((c, i) => ({
 									id: i + 1,
-									name: c.login,
-									designation: `${c.contributions} contributions`,
+									name: c.login || "Contributor",
+									designation: `${c.contributions} contribution${c.contributions === 1 ? "" : "s"}`,
 									image: c.avatar_url,
 									url: c.html_url,
 								}))}
