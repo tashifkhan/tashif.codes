@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
-	Check,
 	ChevronDown,
 	Monitor,
 	Moon,
@@ -12,6 +11,7 @@ import {
 	Vibrate,
 	VibrateOff,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
 	hapticsEnabled,
 	setHapticsEnabled,
@@ -243,19 +243,46 @@ export default function SettingsDock() {
 								: { opacity: 0, y: 14, scale: 0.92 }
 						}
 						animate={{ opacity: 1, y: 0, scale: 1 }}
-						exit={{ opacity: 0, y: 10, scale: 0.55 }}
+						exit={{ opacity: 0, y: 12, scale: 0.6 }}
 						transition={transition}
-						className="flex items-center gap-1 rounded-2xl border border-border/70 bg-card/90 p-1 shadow-xl backdrop-blur-xl sm:gap-1.5 sm:p-1.5"
+						className="w-[min(92vw,22rem)] rounded-[2rem] border border-border/60 bg-card/65 p-2.5 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.55)] ring-1 ring-white/10 backdrop-blur-2xl"
 					>
+						<div className="flex items-center justify-between px-1.5">
+							<div className="flex items-center gap-1.5">
+								<SlidersHorizontal
+									size={12}
+									className="text-muted-foreground"
+								/>
+								<span className="text-[10px] font-medium tracking-wide text-muted-foreground">
+									Appearance
+								</span>
+							</div>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon"
+								aria-label="Collapse appearance settings"
+								title="Collapse"
+								data-haptic="manual"
+								onClick={() => {
+									trigger("selection");
+									setExpanded(false);
+								}}
+								className="h-7 w-7 rounded-full text-muted-foreground"
+							>
+								<ChevronDown className="h-3.5 w-3.5" />
+							</Button>
+						</div>
+
 						<div
 							role="radiogroup"
 							aria-label="Theme mode"
-							className="flex items-center gap-0.5 rounded-full bg-muted/40 p-0.5"
+							className="mt-2 grid grid-cols-3 gap-1 rounded-[1.25rem] bg-muted/50 p-1"
 						>
 							{MODES.map(({ value, label, icon: Icon }) => {
 								const active = mode === value;
 								return (
-									<button
+									<Button
 										key={value}
 										type="button"
 										role="radio"
@@ -263,134 +290,138 @@ export default function SettingsDock() {
 										aria-label={`${label} theme`}
 										title={`${label} theme`}
 										data-haptic="manual"
+										variant={active ? "default" : "ghost"}
+										size="sm"
 										onClick={(event) => chooseMode(value, event)}
 										className={cn(
-											"grid h-7 w-7 place-items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:h-8 sm:w-8",
+											"h-8 gap-1 rounded-[1rem] px-1.5 text-[10px] font-medium sm:h-9 sm:gap-1.5 sm:px-2 sm:text-[11px]",
 											active
-												? "bg-primary/15 text-primary shadow-sm"
-												: "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+												? "shadow-sm"
+												: "text-muted-foreground hover:bg-background/60",
 										)}
 									>
-										<Icon size={14} strokeWidth={1.8} />
-									</button>
+										<Icon className="h-3.5 w-3.5" />
+										<span>{label}</span>
+									</Button>
 								);
 							})}
 						</div>
 
-						<span className="h-4 w-px bg-border/70 sm:h-5" aria-hidden="true" />
+						<div className="mt-2 grid grid-cols-2 gap-2">
+							<div className="rounded-[1.35rem] border border-border/50 bg-background/40 p-2.5">
+								<p className="text-[10px] font-medium tracking-wide text-muted-foreground">
+									Accent
+								</p>
+								<div
+									role="radiogroup"
+									aria-label="Accent colour"
+									className="mt-2 flex items-center gap-2"
+								>
+									{ACCENTS.map(({ value, label, color }) => {
+										const active = skin === value;
+										return (
+											<Button
+												key={value}
+												type="button"
+												role="radio"
+												aria-checked={active}
+												aria-label={label}
+												title={label}
+												data-haptic="manual"
+												variant="ghost"
+												size="icon"
+												onClick={(event) => chooseSkin(value, event)}
+												className={cn(
+													"h-8 w-8 rounded-full p-0 transition-transform hover:scale-105",
+													active
+														? "ring-2 ring-foreground/60 ring-offset-2 ring-offset-card"
+														: "",
+												)}
+											>
+												<span
+													className="h-5 w-5 rounded-full ring-1 ring-black/10"
+													style={{ backgroundColor: color }}
+												/>
+											</Button>
+										);
+									})}
+								</div>
+							</div>
 
-						<div
-							role="radiogroup"
-							aria-label="Accent colour"
-							className="flex items-center gap-1 px-0.5"
-						>
-							{ACCENTS.map(({ value, label, color }) => {
-								const active = skin === value;
-								return (
-									<button
-										key={value}
+							<div className="rounded-[1.35rem] border border-border/50 bg-background/40 p-2.5">
+								<p className="text-[10px] font-medium tracking-wide text-muted-foreground">
+									Haptics
+								</p>
+								<div className="mt-2 flex items-center justify-between gap-2">
+									{hapticsOn ? (
+										<Vibrate className="h-3.5 w-3.5 text-muted-foreground" />
+									) : (
+										<VibrateOff className="h-3.5 w-3.5 text-muted-foreground" />
+									)}
+									<Button
 										type="button"
-										role="radio"
-										aria-checked={active}
-										aria-label={label}
-										title={label}
+										role="switch"
+										aria-checked={hapticsOn}
+										aria-label="Haptic feedback"
+										title={`Haptic feedback ${hapticsOn ? "on" : "off"}`}
 										data-haptic="manual"
-										onClick={(event) => chooseSkin(value, event)}
-										className={cn(
-											"grid h-6 w-6 place-items-center rounded-full transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:h-7 sm:w-7",
-											active
-												? "ring-2 ring-foreground/50 ring-offset-2 ring-offset-card"
-												: "",
-										)}
+										variant="ghost"
+										onClick={toggleHaptics}
+										className="h-8 rounded-full px-1.5"
 									>
 										<span
-											className="grid h-4 w-4 place-items-center rounded-full"
-											style={{ backgroundColor: color }}
-										>
-											{active && (
-												<Check
-													size={9}
-													strokeWidth={3}
-													className="text-white"
-												/>
+											className={cn(
+												"relative h-5 w-9 rounded-full transition-colors",
+												hapticsOn
+													? "bg-primary"
+													: "bg-muted-foreground/25",
 											)}
+										>
+											<span
+												className={cn(
+													"absolute top-0.5 h-4 w-4 rounded-full bg-background shadow-sm transition-transform",
+													hapticsOn
+														? "translate-x-4"
+														: "translate-x-0.5",
+												)}
+											/>
 										</span>
-									</button>
-								);
-							})}
+									</Button>
+								</div>
+							</div>
 						</div>
-
-						<span className="h-4 w-px bg-border/70 sm:h-5" aria-hidden="true" />
-
-						<button
-							type="button"
-							role="switch"
-							aria-checked={hapticsOn}
-							aria-label="Haptic feedback"
-							title={`Haptic feedback ${hapticsOn ? "on" : "off"}`}
-							data-haptic="manual"
-							onClick={toggleHaptics}
-							className="flex h-7 items-center gap-1.5 rounded-full px-1.5 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:h-8"
-						>
-							{hapticsOn ? (
-								<Vibrate size={14} strokeWidth={1.8} />
-							) : (
-								<VibrateOff size={14} strokeWidth={1.8} />
-							)}
-							<span
-								className={cn(
-									"relative h-4 w-7 rounded-full transition-colors",
-									hapticsOn ? "bg-primary" : "bg-muted-foreground/25",
-								)}
-							>
-								<span
-									className={cn(
-										"absolute top-0.5 h-3 w-3 rounded-full bg-background shadow transition-transform",
-										hapticsOn ? "translate-x-3.5" : "translate-x-0.5",
-									)}
-								/>
-							</span>
-						</button>
-
-						<button
-							type="button"
-							aria-label="Collapse appearance settings"
-							title="Collapse"
-							data-haptic="manual"
-							onClick={() => {
-								trigger("selection");
-								setExpanded(false);
-							}}
-							className="grid h-7 w-7 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:h-8 sm:w-8"
-						>
-							<ChevronDown size={15} strokeWidth={1.8} />
-						</button>
 					</motion.div>
 				)}
 
 				{visible && !expanded && (
-					<motion.button
+					<motion.div
 						key="collapsed"
-						type="button"
-						aria-label="Open appearance settings"
-						title="Appearance and haptics"
-						data-haptic="manual"
 						initial={prefersReduced ? false : { opacity: 0, scale: 0.5, y: 8 }}
 						animate={{ opacity: 1, scale: 1, y: 0 }}
 						exit={{ opacity: 0, scale: 0.5 }}
 						transition={transition}
-						onClick={() => {
-							trigger("selection");
-							setExpanded(true);
-						}}
-						className="relative grid h-11 w-11 place-items-center rounded-full border border-border/70 bg-card/90 text-foreground shadow-xl backdrop-blur-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+						className="w-fit"
 					>
-						<SlidersHorizontal size={18} strokeWidth={1.8} />
-						<span
-							className="absolute bottom-1.5 right-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-card"
-							style={{ backgroundColor: accentColor }}
-						/>
-					</motion.button>
+						<Button
+							type="button"
+							aria-label="Open appearance settings"
+							title="Appearance and haptics"
+							data-haptic="manual"
+							variant="ghost"
+							size="icon"
+							onClick={() => {
+								trigger("selection");
+								setExpanded(true);
+							}}
+							className="relative h-[52px] w-[52px] rounded-full border border-border/60 bg-card/70 text-foreground shadow-xl ring-1 ring-white/10 backdrop-blur-2xl hover:bg-card/90"
+						>
+							<SlidersHorizontal className="h-5 w-5" />
+							<span
+								className="absolute bottom-2 right-2 h-2.5 w-2.5 rounded-full ring-2 ring-card"
+								style={{ backgroundColor: accentColor }}
+							/>
+						</Button>
+					</motion.div>
 				)}
 			</AnimatePresence>
 		</div>
