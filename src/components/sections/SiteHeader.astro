@@ -10,10 +10,10 @@ const role = profile.realName || owner.fallbackTitle;
 
 <header data-site-header class="relative z-50">
 	<div
-		class="mx-auto flex max-w-7xl flex-col items-start gap-2.5 px-4 pb-3 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-6 md:py-4 lg:px-8"
+		class="mx-auto flex max-w-7xl items-center gap-3 px-4 pb-3 pt-4 sm:px-6 md:py-4 lg:px-8"
 	>
 		<!-- Contact bubble: avatar, name and role in one glass capsule -->
-		<div class="header-glass header-bubble flex max-w-full items-center gap-3 rounded-full p-1.5 pr-5">
+		<div class="header-glass header-bubble flex min-w-0 items-center gap-3 rounded-full p-1.5 pr-5">
 			<span class="relative shrink-0">
 				<img
 					src={owner.avatar}
@@ -37,10 +37,12 @@ const role = profile.realName || owner.fallbackTitle;
 			</div>
 		</div>
 
-		<!-- Social links: icon buttons on the right, one circle each -->
+		<!-- Social links: icon buttons on the right, one circle each. Phones
+		     keep the row beside the bubble; the last two links wait until the
+		     capsule and four circles fit on one line. -->
 		<nav
 			aria-label="Social links"
-			class="header-socials flex w-fit items-center gap-2 self-end sm:self-auto"
+			class="header-socials ml-auto flex w-fit shrink-0 items-center gap-2"
 		>
 			{
 				socials.map((social, i) => {
@@ -54,7 +56,10 @@ const role = profile.realName || owner.fallbackTitle;
 							aria-label={social.label}
 							title={social.label}
 							style={`--i:${i}`}
-							class="header-glass header-link inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+							class:list={[
+								"header-glass header-link h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+								i > 1 ? "hidden min-[500px]:inline-flex" : "inline-flex",
+							]}
 						>
 							<social.icon className="h-4 w-4" aria-hidden="true" />
 						</a>
