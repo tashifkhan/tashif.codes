@@ -32,7 +32,7 @@ const titleFor = (titleLabel: string) =>
 		: `${owner.name} | Dashboard & Portfolio`;
 
 const tabClass =
-	"inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background motion-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:text-foreground shrink-0";
+	"inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 py-1.5 text-xs font-medium ring-offset-background motion-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:text-foreground shrink-0 sm:px-3 sm:text-sm";
 ---
 
 <nav
@@ -59,7 +59,7 @@ const tabClass =
 							aria-current={isActive ? "page" : undefined}
 							class={tabClass}
 						>
-							<Icon size={16} className="mr-2" />
+							<Icon size={16} className="mr-2 hidden sm:block" />
 							<span data-tab-label data-scramble={tab.label}>{tab.label}</span>
 						</a>
 					);
@@ -131,5 +131,31 @@ const tabClass =
 			const label = tab?.querySelector("[data-scramble]");
 			if (label instanceof HTMLElement) scramble(label);
 		});
+	})();
+</script>
+
+<script is:inline>
+	(() => {
+		const centerActiveTab = () => {
+			const nav = document.querySelector("[data-tabs]");
+			const active = nav?.querySelector('[data-tab][aria-current="page"]');
+			if (!(nav instanceof HTMLElement) || !(active instanceof HTMLElement)) {
+				return;
+			}
+
+			const navRect = nav.getBoundingClientRect();
+			const activeRect = active.getBoundingClientRect();
+			if (activeRect.left < navRect.left || activeRect.right > navRect.right) {
+				active.scrollIntoView({ block: "nearest", inline: "center" });
+			}
+		};
+
+		const run = () => requestAnimationFrame(centerActiveTab);
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", run, { once: true });
+		} else {
+			run();
+		}
+		document.addEventListener("astro:page-load", run);
 	})();
 </script>
