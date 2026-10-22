@@ -443,6 +443,27 @@ html[data-skin="studio"] [data-blog-card] > div {
 	border-color: var(--border);
 }
 
+/* Social cards keep their brand motifs in the simple skin; studio turns
+   them into one teal family so the contact page reads as one system. */
+html[data-skin="studio"] [data-social-card] {
+	border-color: var(--border);
+	background: color-mix(in oklab, var(--card) 78%, transparent);
+}
+
+html[data-skin="studio"] [data-social-card]:hover {
+	border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+}
+
+html[data-skin="studio"] [data-social-icon] {
+	border: 1px solid color-mix(in oklab, var(--primary) 25%, transparent);
+	background: color-mix(in oklab, var(--primary) 12%, transparent);
+	color: var(--primary);
+}
+
+html[data-skin="studio"] [data-social-mark] svg {
+	color: var(--primary);
+}
+
 /* The two places that pinned a cool near-black surface by hand. */
 html[data-skin="studio"] [data-project-card] article,
 html[data-skin="studio"] [class~="dark:bg-[#101119]"] {
