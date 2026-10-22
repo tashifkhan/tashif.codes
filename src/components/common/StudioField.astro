@@ -30,7 +30,7 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 >
 	<!-- Faint drafting grid, the sheet the dots sit on. -->
 	<div
-		class="absolute inset-0 opacity-40"
+		class="absolute inset-0 opacity-30"
 		style="background-image:linear-gradient(to right,var(--border) 1px,transparent 1px),linear-gradient(to bottom,var(--border) 1px,transparent 1px);background-size:72px 72px;"
 	>
 	</div>
@@ -90,7 +90,6 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 			let my = -9999;
 			let raf = 0;
 			let visible = true;
-			let dotColor = "#857f7b";
 			let accentColor = "#0f7a6c";
 
 			// Resolve the tokens in this subtree, not on :root: pages may pin
@@ -98,11 +97,9 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 			const readColors = () => {
 				const probe = document.createElement("span");
 				probe.style.cssText =
-					"position:absolute;visibility:hidden;pointer-events:none;color:var(--muted-foreground);background:var(--primary)";
+					"position:absolute;visibility:hidden;pointer-events:none;background:var(--primary)";
 				host.append(probe);
-				const style = getComputedStyle(probe);
-				dotColor = style.color;
-				accentColor = style.backgroundColor;
+				accentColor = getComputedStyle(probe).backgroundColor;
 				probe.remove();
 			};
 
@@ -119,10 +116,13 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 						const push = near * 10;
 						const px = x + (distance ? (dx / distance) * push : 0);
 						const py = y + (distance ? (dy / distance) * push : 0);
-						ctx.fillStyle = near > 0.05 ? accentColor : dotColor;
-						ctx.globalAlpha = 0.3 + near * 0.65;
-						const radius = 1 + near * 1.6;
-						ctx.fillRect(px - radius / 2, py - radius / 2, radius, radius);
+						// Round teal dots, like the accent dot from taf.sh.
+						ctx.fillStyle = accentColor;
+						ctx.globalAlpha = 0.4 + near * 0.6;
+						const radius = 0.8 + near * 1.4;
+						ctx.beginPath();
+						ctx.arc(px, py, radius, 0, Math.PI * 2);
+						ctx.fill();
 					}
 				}
 				ctx.globalAlpha = 1;

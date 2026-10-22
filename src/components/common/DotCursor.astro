@@ -1,8 +1,8 @@
 ---
 /**
- * A small trail of dots that follows the pointer. It is decorative, so it
- * stays out of the accessibility tree, never blocks clicks, and only runs on
- * fine pointers in the Studio skin with motion allowed.
+ * The single accent dot that follows the pointer. It stays out of the
+ * accessibility tree, never blocks clicks, and only runs on fine pointers in
+ * the Studio skin with motion allowed.
  *
  * The native cursor stays visible. This is an accent, not a replacement.
  */
@@ -10,112 +10,79 @@
 
 <div class="dot-cursor" data-dot-cursor data-visible="false" aria-hidden="true">
 	<span></span>
-	<span></span>
-	<span></span>
-	<span></span>
-	<span></span>
-	<span></span>
 </div>
 
 <script>
 	(() => {
-		type DotState = {
-			root: HTMLElement;
-			nodes: HTMLElement[];
-			points: { x: number; y: number }[];
-			tx: number;
-			ty: number;
-			raf: number;
-			visible: boolean;
-			seen: boolean;
-		};
-
-		let state: DotState | null = null;
-		const finePointer = matchMedia("(hover: hover) and (pointer: fine)");
-		const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-
-		const bind = () => {
-			const root = document.querySelector<HTMLElement>("[data-dot-cursor]");
-			if (!root) {
-				state = null;
-				return;
-			}
-			const nodes = Array.from(root.querySelectorAll<HTMLElement>("span"));
-			if (!nodes.length) return;
-			state = {
-				root,
-				nodes,
-				points: nodes.map(() => ({ x: innerWidth / 2, y: innerHeight / 2 })),
-				tx: innerWidth / 2,
-				ty: innerHeight / 2,
-				raf: 0,
-				visible: false,
-				seen: false,
-			};
-		};
-
-		const setVisible = (visible: boolean) => {
-			if (!state) return;
-			state.visible = visible;
-			state.root.dataset.visible = String(visible);
-		};
-
-		const frame = () => {
-			if (!state) return;
-			const snapshot = state;
-			let moving = false;
-			let px = snapshot.tx;
-			let py = snapshot.ty;
-
-			snapshot.points.forEach((point, index) => {
-				const ease = index === 0 ? 0.42 : 0.3;
-				point.x += (px - point.x) * ease;
-				point.y += (py - point.y) * ease;
-
-				if (Math.abs(px - point.x) + Math.abs(py - point.y) > 0.15) moving = true;
-				px = point.x;
-				py = point.y;
-
-				snapshot.nodes[index].style.transform = `translate3d(${point.x}px, ${point.y}px, 0) translate(-50%, -50%)`;
-			});
-
-			snapshot.raf = moving ? requestAnimationFrame(frame) : 0;
-		};
-
-		const move = (event: PointerEvent) => {
-			if (event.pointerType === "touch") return;
-			if (!finePointer.matches) return;
-			if (reducedMotion.matches) return;
-
-			if (!state) bind();
-			if (!state) return;
-
-			const snapshot = state;
-			if (!snapshot.seen) {
-				snapshot.points.forEach((point) => {
-					point.x = event.clientX;
-					point.y = event.clientY;
-				});
-				snapshot.seen = true;
-			}
-
-			snapshot.tx = event.clientX;
-			snapshot.ty = event.clientY;
-			if (!snapshot.visible) setVisible(true);
-			if (!snapshot.raf) snapshot.raf = requestAnimationFrame(frame);
-		};
-
 		if (!(window as Window & { __dotCursorWired?: boolean }).__dotCursorWired) {
 			(window as Window & { __dotCursorWired?: boolean }).__dotCursorWired = true;
+
+			const finePointer = matchMedia("(hover: hover) and (pointer: fine)");
+			const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+			let root: HTMLElement | null = null;
+			let dot: HTMLElement | null = null;
+			let x = innerWidth / 2;
+			let y = innerHeight / 2;
+			let targetX = x;
+			let targetY = y;
+			let raf = 0;
+			let visible = false;
+			let seen = false;
+
+			const bind = () => {
+				root = document.querySelector<HTMLElement>("[data-dot-cursor]");
+				dot = root?.querySelector<HTMLElement>("span") ?? null;
+				visible = false;
+				seen = false;
+				if (root) root.dataset.visible = "false";
+			};
+
+			const setVisible = (next: boolean) => {
+				visible = next;
+				if (root) root.dataset.visible = String(next);
+			};
+
+			const frame = () => {
+				raf = 0;
+				if (!dot) return;
+
+				x += (targetX - x) * 0.35;
+				y += (targetY - y) * 0.35;
+				dot.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
+
+				if (Math.abs(targetX - x) + Math.abs(targetY - y) > 0.1) {
+					raf = requestAnimationFrame(frame);
+				}
+			};
+
+			const move = (event: PointerEvent) => {
+				if (event.pointerType === "touch") return;
+				if (!finePointer.matches) return;
+				if (reducedMotion.matches) return;
+
+				if (!dot) bind();
+				if (!dot) return;
+
+				if (!seen) {
+					x = targetX = event.clientX;
+					y = targetY = event.clientY;
+					seen = true;
+				} else {
+					targetX = event.clientX;
+					targetY = event.clientY;
+				}
+
+				if (!visible) setVisible(true);
+				if (!raf) raf = requestAnimationFrame(frame);
+			};
+
 			window.addEventListener("pointermove", move, { passive: true });
 			document.documentElement.addEventListener("mouseleave", () => setVisible(false));
 			window.addEventListener("blur", () => setVisible(false));
-			document.addEventListener("astro:page-load", () => {
-				bind();
-				setVisible(false);
-			});
-		}
+			document.addEventListener("astro:page-load", bind);
 
-		bind();
+			bind();
+		}
 	})();
 </script>
