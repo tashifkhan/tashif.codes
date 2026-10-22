@@ -102,7 +102,7 @@ export default function ThemeToggle() {
 				title="Switch theme"
 			>
 				<Sun className="theme-icon-sun h-5 w-5" />
-				<span className="theme-icon-light" style={{ color: "#A47551" }}>
+				<span className="theme-icon-light">
 					<Moon className="h-5 w-5" />
 				</span>
 			</Button>
