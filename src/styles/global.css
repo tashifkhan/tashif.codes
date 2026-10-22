@@ -142,6 +142,14 @@ html:not(.dark) .theme-icon-light {
   display: block;
 }
 
+#reading-progress {
+  opacity: 0;
+}
+
+#reading-progress.is-visible {
+  opacity: 1;
+}
+
 /* Mobile-first responsive design */
 * {
   box-sizing: border-box;
@@ -840,11 +848,13 @@ html.dark { color-scheme: dark; }
 
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
-    display: none;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
   .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
   }
 }
 

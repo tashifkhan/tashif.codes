@@ -93,7 +93,7 @@ const totalComments = initialComments.reduce(
 	<div
 		id="reading-progress"
 		class="fixed top-0 left-0 h-[3px] bg-primary z-[60]"
-		style="width:0;transition:width 80ms linear"
+		style="width:0;transition:width 80ms linear,opacity 180ms ease"
 	></div>
 
 	<div data-page-surface class="relative min-h-screen bg-background">
@@ -477,6 +477,7 @@ const totalComments = initialComments.reduce(
 		let cleanupToC = null;
 
 		// ── Reading progress ───────────────────────────────────────────────────────
+		let progressHideTimer = null;
 		function updateProgress() {
 			const article = document.getElementById("article-content");
 			const bar = document.getElementById("reading-progress");
@@ -489,6 +490,17 @@ const totalComments = initialComments.reduce(
 				Math.max(0, (-rect.top / (articleH - windowH)) * 100)
 			);
 			bar.style.width = pct + "%";
+
+			if (progressHideTimer) clearTimeout(progressHideTimer);
+			if (pct > 0) {
+				bar.classList.add("is-visible");
+				progressHideTimer = setTimeout(
+					() => bar.classList.remove("is-visible"),
+					800
+				);
+			} else {
+				bar.classList.remove("is-visible");
+			}
 		}
 		window.addEventListener("scroll", updateProgress, { passive: true });
 

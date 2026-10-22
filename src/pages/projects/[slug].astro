@@ -154,7 +154,7 @@ export async function getStaticPaths() {
 		}
 
 		<div
-			class="flex flex-row items-center gap-2 sm:gap-3 flex-nowrap overflow-x-auto sm:flex-wrap sm:overflow-visible -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+			class="flex flex-row items-center gap-2 sm:gap-3 flex-nowrap overflow-x-auto sm:flex-wrap sm:overflow-visible -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
 		>
 			{
 				project.live_website_url && (
@@ -239,7 +239,7 @@ export async function getStaticPaths() {
 		slot="overlay"
 		id="reading-progress"
 		class="fixed top-0 left-0 h-[3px] bg-primary z-[60]"
-		style="width:0;transition:width 80ms linear"
+		style="width:0;transition:width 80ms linear,opacity 180ms ease"
 	>
 	</div>
 
@@ -788,11 +788,24 @@ export async function getStaticPaths() {
 		const article = document.getElementById("project-readme");
 		if (bar && article && !bar.dataset.wired) {
 			bar.dataset.wired = "true";
+			let hideTimer: number | undefined;
 			const updateProgress = () => {
 				const rect = article.getBoundingClientRect();
 				const denom = Math.max(1, article.offsetHeight - window.innerHeight);
 				const pct = Math.min(100, Math.max(0, (-rect.top / denom) * 100));
 				bar.style.width = pct + "%";
+
+				// Show the bar only while scrolling, then let it fade away.
+				if (hideTimer) clearTimeout(hideTimer);
+				if (pct > 0) {
+					bar.classList.add("is-visible");
+					hideTimer = window.setTimeout(
+						() => bar.classList.remove("is-visible"),
+						800,
+					);
+				} else {
+					bar.classList.remove("is-visible");
+				}
 			};
 			window.addEventListener("scroll", updateProgress, { passive: true });
 			window.addEventListener("resize", updateProgress, { passive: true });
