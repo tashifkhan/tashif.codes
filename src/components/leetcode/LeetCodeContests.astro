@@ -9,30 +9,28 @@ const { contests } = leetCodeData;
 <section
 	class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden h-fit"
 >
-	<div class="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
-		<Trophy className="w-3.5 h-3.5 text-muted-foreground" />
-		<span
-			class="text-[10px] font-bold tracking-[0.18em] text-muted-foreground"
-		>
-			Contest Performance
-		</span>
+	<div class="px-4 sm:px-5 py-3 border-b border-border/60 flex flex-wrap items-center gap-x-2 gap-y-1">
+		<Trophy className="w-4 h-4 text-muted-foreground" />
+		<h3 class="font-sans text-sm font-semibold tracking-tight text-foreground">
+			Contest performance
+		</h3>
 	</div>
 	{
 		contests.length > 0 ? (
 			<div class="divide-y divide-border/40">
 				{contests.slice(0, 5).map((contest) => (
-					<div class="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/30 transition-colors">
+					<div class="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-muted/30 transition-colors">
 						<div class="flex-1 min-w-0">
-							<p class="text-[13px] font-medium text-foreground truncate">
+							<p class="text-sm font-medium text-foreground line-clamp-2 break-words">
 								{contest.title}
 							</p>
-							<p class="mt-0.5 font-mono text-[11px] text-muted-foreground truncate">
+							<p class="mt-0.5 font-mono text-xs text-muted-foreground break-words">
 								{new Date(contest.startTime * 1000).toLocaleDateString()} · Rank
 								#{contest.rank.toLocaleString()} · {contest.problemsSolved}{" "}
 								solved
 							</p>
 						</div>
-						<div class="flex items-center gap-3 shrink-0">
+						<div class="flex items-center gap-2.5 shrink-0">
 							<span
 								class:list={[
 									"font-mono text-xs font-semibold tabular-nums px-2 py-0.5 rounded-full border",
@@ -48,7 +46,7 @@ const { contests } = leetCodeData;
 								<p class="font-mono text-sm font-bold text-foreground tabular-nums leading-tight">
 									{contest.score}
 								</p>
-								<p class="text-[10px] text-muted-foreground leading-tight">
+								<p class="text-xs text-muted-foreground leading-tight">
 									pts
 								</p>
 							</div>
