@@ -253,10 +253,24 @@ const showStudioChrome =
 								target="_blank"
 								rel="noopener noreferrer"
 								data-haptic-external
-								class="inline-flex items-center gap-2 pr-16 text-muted-foreground transition-colors hover:text-primary"
+								class="group inline-flex items-center gap-2 pr-16 text-muted-foreground transition-colors hover:text-primary"
 							>
-								Studio work at taf.sh
-								<span aria-hidden="true">↗</span>
+								<span>Studio work at</span>
+								<span class="font-medium text-primary">taf.sh</span>
+								<svg
+									class="h-3.5 w-3.5 text-primary transition-transform duration-300 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-focus-visible:-translate-y-0.5 group-focus-visible:translate-x-0.5"
+									viewBox="0 0 16 16"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="1.5"
+									aria-hidden="true"
+								>
+									<path
+										d="M4 12 12 4M6 4h6v6"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>
 							</a>
 						</div>
 					</footer>
