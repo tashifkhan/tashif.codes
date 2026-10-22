@@ -146,7 +146,7 @@ function formatDate(dateString: string): string {
 function formatDateRange(): string {
 	const fromDate = oneYearAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 	const toDate = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-	return `${fromDate} - ${toDate}`;
+	return `${fromDate} – ${toDate}`;
 }
 
 const starredLists = starLists || [];
@@ -154,64 +154,47 @@ const starredLists = starLists || [];
 
 <section
 	class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden"
+	data-contribution-card
 >
-	<div
-		class="px-5 py-3.5 border-b border-border/60 flex flex-wrap items-center gap-x-3 gap-y-2"
-	>
-		<Calendar className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-		<span
-			class="text-[10px] font-bold tracking-[0.18em] text-muted-foreground"
-		>
-			Contribution Activity
-		</span>
-		<span
-			data-contribution-range
-			class="font-mono text-[10px] text-muted-foreground/70 tabular-nums"
-		>
-			{formatDateRange()} • {totalContributions.toLocaleString()} contributions
-		</span>
+	<div class="px-4 sm:px-5 py-3.5 border-b border-border/60 flex flex-col gap-3 md:flex-row md:items-center">
+		<div class="min-w-0">
+			<h3 class="flex items-center gap-2 font-sans text-sm font-semibold tracking-tight text-foreground">
+				<Calendar className="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true" />
+				Contribution activity
+			</h3>
+			<p
+				data-contribution-range
+				class="mt-1 text-xs text-muted-foreground tabular-nums"
+			>
+				{totalContributions.toLocaleString()} contributions · {formatDateRange()}
+			</p>
+		</div>
 
-		<div class="ml-auto flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+		<div class="flex flex-wrap items-center gap-2 md:ml-auto">
 			<!-- Personal-only toggle (slotted from parent) -->
 			<slot name="toggle" />
-
-			<!-- Year Selector -->
-			<div class="relative">
-				<YearSelect client:visible availableYears={availableYears} defaultValue={String(availableYears[0])} />
-			</div>
-
-			<!-- Legend -->
-			<div class="hidden sm:flex items-center space-x-2 text-[10px] text-muted-foreground dark:text-muted-foreground">
-				<span class="tracking-wide">Less</span>
-				<div class="flex gap-[3px]">
-					<div class="legend-cell bg-muted/80 dark:bg-muted/40"></div>
-					<div class="legend-cell bg-primary/40 dark:bg-primary/40"></div>
-					<div class="legend-cell bg-primary/60 dark:bg-primary/60"></div>
-					<div class="legend-cell bg-primary/80 dark:bg-primary/80"></div>
-					<div class="legend-cell bg-primary dark:bg-primary"></div>
-				</div>
-				<span class="tracking-wide">More</span>
-			</div>
+			<YearSelect client:visible availableYears={availableYears} defaultValue="last-year" />
 		</div>
 	</div>
 
-	<div class="p-5">
+	<div class="px-4 pb-4 pt-4 sm:p-5">
 	{(fetchOk || gridWeeks.some(w => w.some(d => d.count > 0))) ? (
-		<div class="relative">
-			<!-- Custom Tooltip -->
+		<div class="relative" data-contribution-frame>
+			<!-- Tooltip: hover on desktop, tap on touch. Lives outside the scroller so it is never clipped. -->
 			<div
 				id="contribution-tooltip"
-				class="absolute z-50 whitespace-nowrap rounded-lg border border-border bg-foreground px-2.5 py-1.5 text-[11px] leading-5 text-white shadow-lg pointer-events-none opacity-0 transition-opacity duration-200 dark:bg-secondary"
+				role="status"
+				aria-live="polite"
+				class="absolute z-50 whitespace-nowrap rounded-lg border border-border bg-popover px-2.5 py-1.5 text-[11px] leading-5 text-popover-foreground shadow-lg pointer-events-none opacity-0 transition-opacity duration-150"
 			>
 				<div id="tooltip-content"></div>
-				<div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground dark:border-t-secondary"></div>
 			</div>
 
-			<div class="contribution-container">
+			<div class="contribution-container" tabindex="0" aria-label="Contribution heatmap, scroll sideways for earlier months">
 				<div class="contribution-grid-wrapper" style={`--weeks: ${gridWeeks.length}`}>
 					<!-- Month labels: same column tracks as the weeks grid, so they can't drift -->
 					<div
-						class="cal-months text-[10px] sm:text-[11px] text-muted-foreground dark:text-muted-foreground font-medium tracking-wide"
+						class="cal-months text-[10px] sm:text-[11px] text-muted-foreground font-medium"
 						id="month-labels-container"
 					>
 						{monthLabelsList.map((label) => (
@@ -221,7 +204,7 @@ const starredLists = starLists || [];
 
 					<!-- Day labels (sparse, GitHub-style) -->
 					<div
-						class="day-labels text-[9px] sm:text-[10px] text-muted-foreground dark:text-muted-foreground"
+						class="day-labels text-[9px] sm:text-[10px] text-muted-foreground"
 						aria-hidden="true"
 					>
 						<span style="grid-row: 2">Mon</span>
@@ -250,6 +233,25 @@ const starredLists = starLists || [];
 					</div>
 				</div>
 			</div>
+
+			<!-- Footer: swipe hint on phones, legend everywhere -->
+			<div class="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground">
+				<span class="contribution-hint inline-flex items-center gap-1 md:hidden" data-contribution-hint>
+					<span aria-hidden="true">←</span> Swipe for earlier months
+				</span>
+				<span class="hidden md:inline">Tap or hover a day for details</span>
+				<div class="ml-auto flex items-center gap-1.5" aria-hidden="true">
+					<span>Less</span>
+					<div class="flex gap-[3px]">
+						<div class="legend-cell bg-muted/80 dark:bg-muted/40"></div>
+						<div class="legend-cell bg-primary/40"></div>
+						<div class="legend-cell bg-primary/60"></div>
+						<div class="legend-cell bg-primary/80"></div>
+						<div class="legend-cell bg-primary"></div>
+					</div>
+					<span>More</span>
+				</div>
+			</div>
 		</div>
 	) : (
 		<div class="py-8">
@@ -270,27 +272,24 @@ const starredLists = starLists || [];
 		width: 100%;
 		overflow-x: auto;
 		overflow-y: hidden;
-		scroll-behavior: smooth;
+		overscroll-behavior-x: contain;
 		-webkit-overflow-scrolling: touch;
-		scrollbar-width: thin;
-		scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+		scrollbar-width: none;
+		border-radius: 6px;
 	}
 
 	.contribution-container::-webkit-scrollbar {
-		height: 8px;
+		display: none;
 	}
 
-	.contribution-container::-webkit-scrollbar-track {
-		background: transparent;
+	.contribution-container:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 4px;
 	}
 
-	.contribution-container::-webkit-scrollbar-thumb {
-		background: rgba(156, 163, 175, 0.35);
-		border-radius: 4px;
-	}
-
-	.contribution-container::-webkit-scrollbar-thumb:hover {
-		background: rgba(156, 163, 175, 0.6);
+	/* Fade the edge that has more weeks behind it, so the scroll is visible. */
+	.contribution-container[data-more-right] {
+		mask-image: linear-gradient(to left, transparent, black 28px);
 	}
 
 	/*
@@ -304,7 +303,27 @@ const starredLists = starLists || [];
 		grid-template-rows: auto 1fr;
 		column-gap: 8px;
 		row-gap: 6px;
-		min-width: 760px;
+		/* Phones scroll; ~10px cells stay readable without a 760px wall. */
+		min-width: 660px;
+	}
+
+	@media (min-width: 768px) {
+		.contribution-grid-wrapper {
+			min-width: 760px;
+		}
+	}
+
+	/* Phones scroll the weeks; pin the day names so rows stay labelled. */
+	@media (max-width: 767px) {
+		.day-labels {
+			position: sticky;
+			left: 0;
+			z-index: 2;
+			padding-right: 4px;
+			/* Same mix as the card's bg-card/60 over the page. */
+			background: color-mix(in oklab, var(--card) 60%, var(--background));
+			box-shadow: 6px 0 8px -6px color-mix(in oklab, var(--foreground) 30%, transparent);
+		}
 	}
 
 	.cal-months,
@@ -364,10 +383,17 @@ const starredLists = starLists || [];
 		cursor: pointer;
 	}
 
-	.contribution-day:not(.is-empty):hover {
-		transform: scale(1.3);
-		box-shadow: 0 0 0 1.5px var(--primary);
+	.contribution-day[data-active] {
+		box-shadow: 0 0 0 1.5px var(--foreground);
 		z-index: 10;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.contribution-day:not(.is-empty):hover {
+			transform: scale(1.3);
+			box-shadow: 0 0 0 1.5px var(--primary);
+			z-index: 10;
+		}
 	}
 
 	.legend-cell {
@@ -404,97 +430,115 @@ const starredLists = starLists || [];
 		}
 
 		function initializeTooltip() {
-			if (!tooltip || !tooltipContent) return;
+			const frame = document.querySelector<HTMLElement>('[data-contribution-frame]');
+			const container = frame?.querySelector<HTMLElement>('.contribution-container');
+			if (!frame || !container || !tooltip || !tooltipContent || frame.dataset.tooltipWired) return;
+			frame.dataset.tooltipWired = 'true';
+			const tip: HTMLElement = tooltip;
+			const tipBody: HTMLElement = tooltipContent;
 
-			const contributionDays = document.querySelectorAll('.contribution-day');
+			let active: HTMLElement | null = null;
 
-			contributionDays.forEach(day => {
-				day.addEventListener('mouseenter', handleMouseEnter);
-				day.addEventListener('mouseleave', handleMouseLeave);
-				day.addEventListener('mousemove', handleMouseMove);
-				day.addEventListener('click', (event) => {
-					handleMouseEnter(event);
-					trigger('selection');
-				});
+			const dayFrom = (target: EventTarget | null) =>
+				target instanceof Element
+					? target.closest<HTMLElement>('.contribution-day[data-date]')
+					: null;
+
+			const hide = () => {
+				tip.style.opacity = '0';
+				active?.removeAttribute('data-active');
+				active = null;
+			};
+
+			const show = (day: HTMLElement) => {
+				const date = day.dataset.date;
+				const count = day.dataset.count;
+				if (!date || count == null) return;
+				active?.removeAttribute('data-active');
+				active = day;
+				day.setAttribute('data-active', '');
+				const noun = count === '1' ? 'contribution' : 'contributions';
+				tipBody.innerHTML = `<div class="font-semibold">${count} ${noun}</div><div class="text-muted-foreground">${formatDate(date)}</div>`;
+				tip.style.opacity = '1';
+				position(day);
+			};
+
+			// Position against the frame (not the scroller) and keep it inside the card.
+			const position = (day: HTMLElement) => {
+				const frameRect = frame.getBoundingClientRect();
+				const cell = day.getBoundingClientRect();
+				const row = Array.from(day.parentElement?.children ?? []).indexOf(day);
+				const below = row <= 2;
+				const center = cell.left - frameRect.left + cell.width / 2;
+				tip.style.top = below
+					? `${cell.bottom - frameRect.top + 8}px`
+					: `${cell.top - frameRect.top - 8}px`;
+				tip.style.transform = below ? 'translate(-50%, 0)' : 'translate(-50%, -100%)';
+				tip.style.left = `${center}px`;
+				const half = tip.getBoundingClientRect().width / 2;
+				const min = half + 4;
+				const max = Math.max(min, frameRect.width - half - 4);
+				tip.style.left = `${Math.min(Math.max(center, min), max)}px`;
+			};
+
+			// Mouse: hover. Touch and pen: tap to show, tap again or elsewhere to hide.
+			frame.addEventListener('pointerover', (event) => {
+				if (event.pointerType !== 'mouse') return;
+				const day = dayFrom(event.target);
+				if (day) show(day);
 			});
+			container.addEventListener('pointerleave', (event) => {
+				if (event.pointerType === 'mouse') hide();
+			});
+			frame.addEventListener('click', (event) => {
+				const day = dayFrom(event.target);
+				if (!day) return;
+				if (day === active && (event as PointerEvent).pointerType !== 'mouse') {
+					hide();
+					return;
+				}
+				show(day);
+				trigger('selection');
+			});
+			document.addEventListener('pointerdown', (event) => {
+				if (active && !dayFrom(event.target)) hide();
+			});
+			document.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape') hide();
+			});
+			container.addEventListener('scroll', () => {
+				hide();
+				syncEdges();
+			}, { passive: true });
+			// The section is display:none on other tabs. Jump to the newest
+			// weeks the first time it gets a width, then only refresh the fades.
+			let lastWidth = 0;
+			new ResizeObserver(() => {
+				const width = container.clientWidth;
+				if (lastWidth === 0 && width > 0) scrollToLatest();
+				else syncEdges();
+				lastWidth = width;
+			}).observe(container);
 		}
 
-		function handleMouseEnter(event: Event) {
-			const target = event.target as HTMLElement;
-			const date = target.getAttribute('data-date');
-			const count = target.getAttribute('data-count');
-
-			if (!date || !count || !tooltip || !tooltipContent) return;
-
-			const formattedDate = formatDate(date);
-			const contributionText = count === '1' ? 'contribution' : 'contributions';
-
-			tooltipContent.innerHTML = `
-				<div class="font-medium">${count} ${contributionText}</div>
-				<div class="text-white/60">${formattedDate}</div>
-			`;
-
-			tooltip.style.opacity = '1';
-			positionTooltip(event as MouseEvent);
-		}
-
-		function handleMouseLeave() {
-			if (!tooltip) return;
-			tooltip.style.opacity = '0';
-		}
-
-		function handleMouseMove(event: Event) {
-			positionTooltip(event as MouseEvent);
-		}
-
-		function positionTooltip(event: MouseEvent) {
-			if (!tooltip) return;
-
-			const container = document.querySelector('.contribution-container');
+		// Mark which edges have more weeks behind them (drives the fade mask).
+		function syncEdges() {
+			const container = document.querySelector<HTMLElement>('.contribution-container');
 			if (!container) return;
+			const max = container.scrollWidth - container.clientWidth;
+			container.toggleAttribute('data-more-left', container.scrollLeft > 2);
+			container.toggleAttribute('data-more-right', max - container.scrollLeft > 2);
+			document
+				.querySelector<HTMLElement>('[data-contribution-hint]')
+				?.toggleAttribute('hidden', max <= 2);
+		}
 
-			const containerRect = container.getBoundingClientRect();
-			const targetRect = (event.target as HTMLElement).getBoundingClientRect();
-
-			const target = event.target as HTMLElement;
-			const weekColumn = target.closest('.contribution-week');
-			if (!weekColumn) return;
-
-			const dayElements = weekColumn.querySelectorAll('.contribution-day');
-			const dayIndex = Array.from(dayElements).indexOf(target);
-
-			const showBelow = dayIndex <= 2;
-
-			const left = targetRect.left - containerRect.left + (targetRect.width / 2);
-
-			if (showBelow) {
-				const top = targetRect.bottom - containerRect.top + 8;
-				tooltip.style.top = `${top}px`;
-				tooltip.style.transform = 'translate(-50%, 0)';
-
-				const arrow = tooltip.querySelector('.absolute.top-full');
-				if (arrow) {
-					arrow.className = 'absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-foreground dark:border-b-secondary';
-				}
-			} else {
-				const top = targetRect.top - containerRect.top;
-				tooltip.style.top = `${top}px`;
-				tooltip.style.transform = 'translate(-50%, -100%)';
-				tooltip.style.marginTop = '-8px';
-
-				const arrow = tooltip.querySelector('.absolute.bottom-full, .absolute.top-full');
-				if (arrow) {
-					arrow.className = 'absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground dark:border-t-secondary';
-				}
-			}
-
-			tooltip.style.left = `${left}px`;
-
-			const tooltipRect = tooltip.getBoundingClientRect();
-			const half = tooltipRect.width / 2;
-			const minLeft = half + 8;
-			const maxLeft = Math.max(minLeft, containerRect.width - half - 8);
-			tooltip.style.left = `${Math.min(Math.max(left, minLeft), maxLeft)}px`;
+		// The newest weeks are the interesting ones; start the scroller there.
+		function scrollToLatest() {
+			const container = document.querySelector<HTMLElement>('.contribution-container');
+			if (!container) return;
+			container.scrollLeft = container.scrollWidth;
+			syncEdges();
 		}
 
 		async function loadContributions() {
@@ -560,7 +604,7 @@ const starredLists = starLists || [];
 				updateMonthLabels(gridWeeks);
 				updateHeaderInfo(countMap, rangeStart, rangeEnd, fromDate, toDate);
 
-				setTimeout(initializeTooltip, 100);
+				scrollToLatest();
 
 			} catch (error) {
 				console.error('Error fetching contribution data:', error);
@@ -668,9 +712,9 @@ const starredLists = starLists || [];
 			const total = Array.from(countMap.entries())
 				.filter(([d]) => d >= rangeStart && d <= rangeEnd)
 				.reduce((s, [, c]) => s + c, 0);
-			const dateRange = `${fromDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${toDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+			const dateRange = `${fromDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} – ${toDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
 			const headerInfo = document.querySelector('[data-contribution-range]');
-			if (headerInfo) headerInfo.textContent = `${dateRange} • ${total.toLocaleString()} contributions`;
+			if (headerInfo) headerInfo.textContent = `${total.toLocaleString()} contributions · ${dateRange}`;
 		}
 	});
 </script>

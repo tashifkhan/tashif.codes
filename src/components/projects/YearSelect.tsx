@@ -45,8 +45,9 @@ export default function YearSelect({ availableYears, defaultValue }: Props) {
 			<Select onOpenChange={() => trigger("light")} value={value} onValueChange={handleChange}>
 				<SelectTrigger
 					data-haptic="manual"
+					aria-label="Contribution year"
 					id="year-select-trigger"
-					className="text-xs sm:text-sm font-medium"
+					className="h-9 rounded-full px-3.5 text-[13px] font-medium"
 				>
 					<SelectValue />
 				</SelectTrigger>
@@ -61,7 +62,7 @@ export default function YearSelect({ availableYears, defaultValue }: Props) {
 			</Select>
 
 			{/* Hidden native select kept for legacy scripts that expect #year-selector */}
-			<select id="year-selector" aria-hidden style={{ display: "none" }}>
+			<select id="year-selector" aria-hidden tabIndex={-1} style={{ display: "none" }}>
 				<option value="last-year">Last 365 days</option>
 				{availableYears.map((y) => (
 					<option key={y} value={String(y)}>

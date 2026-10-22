@@ -1,65 +1,156 @@
 ---
-import { ArrowUpRight } from "lucide-react";
 import { owner, socials } from "../../data/profile";
 import { leetCodeData } from "../../data/leetcode";
 
 // The LeetCode profile supplies the tagline when it loaded; otherwise fall
 // back to the statically configured one.
 const { profile } = leetCodeData;
+const role = profile.realName || owner.fallbackTitle;
 ---
 
-<header
-	class="relative z-50 border-b border-border/60 bg-card/80 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:border-border/60 dark:bg-card/70 dark:supports-[backdrop-filter]:bg-card/60"
->
-	<div class="relative mx-auto max-w-7xl px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
-		<div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-5">
-			<div
-				class="inline-flex w-fit max-w-full items-center gap-3 rounded-[1.75rem] border border-border/60 bg-background/70 p-1.5 pr-4 shadow-sm backdrop-blur"
-			>
-				<span class="shrink-0 rounded-full bg-primary/80 p-[2px]">
-					<img
-						src={owner.avatar}
-						alt={owner.name}
-						class="block h-12 w-12 rounded-full object-cover object-top ring-2 ring-card sm:h-[52px] sm:w-[52px]"
-					/>
-				</span>
-				<div class="flex min-w-0 flex-col">
-					<h1
-						class="truncate text-lg font-bold leading-tight tracking-tight text-foreground sm:text-xl"
-						style="letter-spacing: -0.02em;"
-					>
-						{owner.name}
-					</h1>
-					<div class="mt-0.5 flex items-center gap-1.5">
-						<span class="block h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span>
-						<p class="truncate text-xs font-medium text-muted-foreground sm:text-sm">
-							{profile.realName || owner.fallbackTitle}
-						</p>
-					</div>
-				</div>
+<header data-site-header class="relative z-50">
+	<div
+		class="mx-auto flex max-w-7xl flex-col items-start gap-2.5 px-4 pb-3 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-6 md:py-4 lg:px-8"
+	>
+		<!-- Contact bubble: avatar, name and role in one glass capsule -->
+		<div class="header-glass header-bubble flex max-w-full items-center gap-3 rounded-full p-1.5 pr-5">
+			<span class="relative shrink-0">
+				<img
+					src={owner.avatar}
+					alt=""
+					width="44"
+					height="44"
+					class="block h-11 w-11 rounded-full object-cover object-top"
+				/>
+				<span
+					class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-primary ring-2 ring-card"
+					aria-hidden="true"
+				></span>
+			</span>
+			<div class="min-w-0">
+				<p class="header-name truncate text-[1.0625rem] font-semibold leading-tight text-foreground">
+					{owner.name}
+				</p>
+				<p class="truncate text-[0.8125rem] leading-snug text-muted-foreground">
+					{role}
+				</p>
 			</div>
+		</div>
 
-			<nav
-				aria-label="Social links"
-				class="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-x-5 sm:border-l sm:border-border/60 sm:pl-5"
-			>
-				{
-					socials.map((social) => (
+		<!-- Social links: icon buttons on the right, one circle each -->
+		<nav
+			aria-label="Social links"
+			class="header-socials flex w-fit items-center gap-2 self-end sm:self-auto"
+		>
+			{
+				socials.map((social, i) => {
+					const isMail = social.link.startsWith("mailto:");
+					return (
 						<a
 							href={social.link}
-							target="_blank"
-							rel="noopener noreferrer"
-							aria-label={social.label}
+							target={isMail ? undefined : "_blank"}
+							rel={isMail ? undefined : "noopener noreferrer"}
 							data-haptic-social
-							class="group inline-flex items-center gap-1 rounded-sm font-mono text-[11px] font-medium tracking-wide text-muted-foreground transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+							aria-label={social.label}
+							title={social.label}
+							style={`--i:${i}`}
+							class="header-glass header-link inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 						>
-							{social.label}
-							<ArrowUpRight className="h-3 w-3 text-muted-foreground/60 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" />
+							<social.icon className="h-4 w-4" aria-hidden="true" />
 						</a>
-					))
-				}
-			</nav>
-		</div>
+					);
+				})
+			}
+		</nav>
 	</div>
 </header>
 
+<style>
+	/* Liquid-glass capsules built from the skin tokens, so both skins and both
+	   modes get the right tint without per-skin colours. */
+	.header-glass {
+		background: color-mix(in oklab, var(--card) 66%, transparent);
+		border: 1px solid color-mix(in oklab, var(--foreground) 9%, transparent);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.6),
+			0 10px 30px -18px rgb(0 0 0 / 0.35);
+		backdrop-filter: blur(20px) saturate(160%);
+		-webkit-backdrop-filter: blur(20px) saturate(160%);
+	}
+
+	:global(.dark) .header-glass {
+		background: color-mix(in oklab, var(--card) 58%, transparent);
+		border-color: color-mix(in oklab, var(--foreground) 11%, transparent);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.07),
+			0 14px 34px -18px rgb(0 0 0 / 0.8);
+	}
+
+	/* Simple headings are mono by default; the name reads as a contact card,
+	   so it takes the body face. Studio's display rule still wins there. */
+	.header-name {
+		font-family: var(--font-sans);
+		letter-spacing: -0.015em;
+	}
+
+	:global(html[data-skin="studio"]) .header-name {
+		font-family: var(--font-display);
+		font-weight: 650;
+		letter-spacing: -0.035em;
+	}
+
+	.header-link {
+		transition:
+			background-color var(--motion-fast) var(--motion-ease),
+			color var(--motion-fast) var(--motion-ease);
+	}
+
+	/* The old global nav rule stretches every nav to 100% on phones. The
+	   social row is a cluster of circles, not a scrolling tab bar. */
+	.header-socials {
+		width: fit-content;
+		overflow: visible;
+	}
+
+	.header-link:hover,
+	.header-link:focus-visible {
+		background: color-mix(in oklab, var(--primary) 12%, transparent);
+		color: var(--foreground);
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.header-bubble {
+			animation: header-pop 520ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+		}
+
+		.header-link {
+			animation: header-fade 420ms var(--motion-ease) both;
+			animation-delay: calc(140ms + var(--i, 0) * 50ms);
+		}
+	}
+
+	@keyframes header-pop {
+		from {
+			opacity: 0;
+			transform: scale(0.94);
+		}
+	}
+
+	@keyframes header-fade {
+		from {
+			opacity: 0;
+			transform: translateX(-6px);
+		}
+	}
+</style>
+
+<style is:global>
+	/* The header floats on the page field; only the capsules carry glass.
+	   Beats the studio skin's header bar rule. */
+	html[data-skin] [data-site-header] {
+		background: transparent;
+		border: 0;
+		box-shadow: none;
+		backdrop-filter: none;
+	}
+</style>

@@ -3,6 +3,7 @@ import "../styles/global.css";
 import PostHog from "../components/common/posthog.astro";
 import Haptics from "../components/common/Haptics.astro";
 import SettingsDock from "../components/common/SettingsDock.tsx";
+import SiteHeader from "../components/sections/SiteHeader.astro";
 import DotCursor from "../components/common/DotCursor.astro";
 import StudioField from "../components/common/StudioField.astro";
 import { ClientRouter } from "astro:transitions";
@@ -51,7 +52,7 @@ const showAmbientChrome =
 		<meta charset="UTF-8" />
 		<meta name="description" content={description} />
 		<meta name="viewport" content="width=device-width" />
-		<script is:inline>
+		<script is:inline data-astro-rerun>
 			// Resolve the design skin before the first paint so the studio palette
 			// never flashes on top of the simple one.
 			(() => {
@@ -64,7 +65,7 @@ const showAmbientChrome =
 				}
 			})();
 		</script>
-		<script is:inline>
+		<script is:inline data-astro-rerun>
 			// Light, dark, or system. Paint the resolved palette before CSS.
 			(() => {
 				try {
@@ -250,6 +251,7 @@ const showAmbientChrome =
 	<body>
 		{showAmbientChrome && <StudioField class="opacity-70" geometry={true} />}
 		<div class="relative z-10">
+			{showAmbientChrome && <SiteHeader />}
 			<slot />
 			{
 				showAmbientChrome && (

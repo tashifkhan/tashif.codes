@@ -83,7 +83,7 @@ function runViewTransition(
 		typeof CSS !== "undefined" &&
 		CSS.supports(`selector(:active-view-transition-type(${kind}))`);
 
-	if (!document.startViewTransition || reduced || !supportsTypes) {
+	if (!document.startViewTransition || reduced) {
 		update();
 		return;
 	}
@@ -103,10 +103,14 @@ function runViewTransition(
 	root.dataset[attribute] = "";
 
 	try {
-		const transition = document.startViewTransition({
-			update,
-			types: [kind],
-		} as unknown as () => void);
+		// Older view-transition implementations do not understand types.
+		// They still get the same reveal through the data-attribute
+		// fallback selectors in studio-skin.css.
+		const transition = document.startViewTransition(
+			supportsTypes
+				? ({ update, types: [kind] } as unknown as () => void)
+				: update,
+		);
 		transition.finished.finally(() => {
 			delete root.dataset[attribute];
 		});
@@ -437,10 +441,10 @@ export default function SettingsDock() {
 										>
 											<span
 												className={cn(
-													"absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm ring-1 ring-black/10 transition-transform",
+													"absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm ring-1 ring-black/10 transition-transform",
 													hapticsOn
 														? "translate-x-4"
-														: "translate-x-0.5",
+														: "translate-x-0",
 												)}
 											/>
 										</span>
