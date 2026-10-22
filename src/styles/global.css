@@ -142,10 +142,6 @@ html:not(.dark) .theme-icon-light {
   display: block;
 }
 
-html[data-skin="studio"]:not(.dark) .theme-icon-light {
-  color: #A47551;
-}
-
 /* Mobile-first responsive design */
 * {
   box-sizing: border-box;
