@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 import {
 	Github,
@@ -206,6 +207,25 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, []);
 
+	useEffect(() => {
+		if (!isMenuOpen) return;
+
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key !== "Escape") return;
+			trigger("light");
+			setIsMenuOpen(false);
+		};
+
+		const previousOverflow = document.body.style.overflow;
+		document.body.style.overflow = "hidden";
+		window.addEventListener("keydown", onKeyDown);
+
+		return () => {
+			document.body.style.overflow = previousOverflow;
+			window.removeEventListener("keydown", onKeyDown);
+		};
+	}, [isMenuOpen]);
+
 	const scrollTo = (id: string) => {
 		trigger("selection");
 		const el = document.getElementById(id);
@@ -292,20 +312,23 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 
 	return (
 		<div className="min-h-screen bg-transparent text-foreground font-sans w-full">
-			{/* Mobile Nav */}
-			<div className="fixed top-20 right-4 z-50 lg:hidden">
-				<Button
-					variant="outline"
-					size="icon"
-					onClick={() => {
-						trigger("light");
-						setIsMenuOpen(!isMenuOpen);
-					}}
-					className="rounded-full shadow-xl bg-background/80 backdrop-blur-md"
-				>
-					{isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-				</Button>
-			</div>
+			{/* Mobile Nav trigger. Hidden while the overlay is open so there is only one close control. */}
+			{!isMenuOpen && (
+				<div className="fixed top-20 right-4 z-50 lg:hidden">
+					<Button
+						variant="outline"
+						size="icon"
+						onClick={() => {
+							trigger("light");
+							setIsMenuOpen(true);
+						}}
+						aria-label="Open resume navigation"
+						className="rounded-full shadow-xl bg-background/80 backdrop-blur-md"
+					>
+						<Menu size={20} />
+					</Button>
+				</div>
+			)}
 
 			{/* Main Layout - Use max-w-7xl like rest of site */}
 			<div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -699,39 +722,69 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 			</div>
 
 			{/* Mobile Menu Overlay */}
-			{isMenuOpen && (
-				<div className="fixed inset-0 z-40 bg-background/95 backdrop-blur-xl p-8 flex flex-col justify-center animate-in fade-in duration-200 lg:hidden">
-					<Button
-						variant="ghost"
-						size="icon"
-						className="absolute top-4 right-4"
-						onClick={() => { trigger("light"); setIsMenuOpen(false); }}
+			{isMenuOpen &&
+				typeof document !== "undefined" &&
+				createPortal(
+					<div
+						role="dialog"
+						aria-modal="true"
+						aria-label="Resume navigation"
+						className="animate-in fade-in fixed inset-0 z-[9999] overflow-y-auto bg-background duration-200 lg:hidden"
 					>
-						<X size={24} />
-					</Button>
-					<nav className="mx-auto w-full max-w-xs space-y-1">
-						{tocMain.map((item) => {
-							const isActive = activeSection === item.id;
-							const Icon = item.icon;
-							return (
-								<button
-									key={item.id}
-									onClick={() => scrollTo(item.id)}
-									className={cn(
-										"w-full flex items-center gap-3 rounded-lg px-4 py-3 font-mono text-base transition-colors",
-										isActive
-											? "bg-primary/10 text-primary font-semibold"
-											: "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
-									)}
+						<div className="mx-auto flex min-h-full w-full max-w-md flex-col px-6 py-6">
+							<div className="flex items-center justify-between">
+								<span className="font-mono text-[11px] tracking-[0.08em] text-muted-foreground">
+									resume / navigate
+								</span>
+								<Button
+									variant="ghost"
+									size="icon"
+									className="rounded-full"
+									aria-label="Close menu"
+									onClick={() => {
+										trigger("light");
+										setIsMenuOpen(false);
+									}}
 								>
-									<Icon size={16} className="shrink-0" />
-									./{item.label}
-								</button>
-							);
-						})}
-					</nav>
-				</div>
-			)}
+									<X size={22} />
+								</Button>
+							</div>
+
+							<div className="flex flex-1 flex-col justify-center">
+								<nav
+									className="space-y-1"
+									aria-label="Resume sections"
+								>
+									{tocMain.map((item) => {
+										const isActive = activeSection === item.id;
+										const Icon = item.icon;
+										return (
+											<button
+												key={item.id}
+												onClick={() => scrollTo(item.id)}
+												className={cn(
+													"flex w-full items-center gap-3 rounded-xl px-4 py-3 font-mono text-base transition-colors",
+													isActive
+														? "bg-primary/10 text-primary font-semibold"
+														: "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+												)}
+											>
+												<Icon size={16} className="shrink-0" />
+												./{item.label}
+											</button>
+										);
+									})}
+								</nav>
+							</div>
+
+							<div className="flex items-center justify-between border-t border-border/60 pt-4 font-mono text-[11px] text-muted-foreground">
+								<span>tashif.codes / resume</span>
+								<span className="tabular-nums">{scrollPct}%</span>
+							</div>
+						</div>
+					</div>,
+					document.body,
+				)}
 		</div>
 	);
 };
