@@ -126,6 +126,12 @@ export default function SettingsDock() {
 	const idleTimer = useRef<number | null>(null);
 	const prefersReduced = useReducedMotion();
 
+	const pageScrollTop = () =>
+		window.scrollY ||
+		document.documentElement.scrollTop ||
+		document.body.scrollTop ||
+		0;
+
 	useEffect(() => {
 		const sync = () => {
 			setMode(readMode());
@@ -134,6 +140,7 @@ export default function SettingsDock() {
 		};
 
 		sync();
+		setExpanded(pageScrollTop() < 96);
 		setMounted(true);
 
 		const onHaptics = () => setHapticsOn(hapticsEnabled());
@@ -146,15 +153,55 @@ export default function SettingsDock() {
 				sync();
 			}
 		};
+		const onPageLoad = () => {
+			setExpanded(pageScrollTop() < 96);
+			setVisible(true);
+		};
 
 		window.addEventListener("haptics-preference-change", onHaptics);
 		window.addEventListener("storage", onStorage);
+		document.addEventListener("astro:page-load", onPageLoad);
 
 		return () => {
 			window.removeEventListener("haptics-preference-change", onHaptics);
 			window.removeEventListener("storage", onStorage);
+			document.removeEventListener("astro:page-load", onPageLoad);
 		};
 	}, []);
+
+	useEffect(() => {
+		if (!expanded) return;
+
+		const closeOnOutsidePress = (event: PointerEvent) => {
+			const target = event.target;
+			if (target instanceof Element && target.closest("[data-settings-dock]")) {
+				return;
+			}
+			setExpanded(false);
+		};
+
+		document.addEventListener("pointerdown", closeOnOutsidePress, true);
+		return () => {
+			document.removeEventListener("pointerdown", closeOnOutsidePress, true);
+		};
+	}, [expanded]);
+
+	useEffect(() => {
+		if (!expanded || pageScrollTop() < 96) return;
+
+		const timer = window.setTimeout(() => {
+			const dock = document.querySelector("[data-settings-dock]");
+			if (
+				dock instanceof HTMLElement &&
+				(dock.matches(":hover") || dock.contains(document.activeElement))
+			) {
+				return;
+			}
+			setExpanded(false);
+		}, 5000);
+
+		return () => window.clearTimeout(timer);
+	}, [expanded]);
 
 	useEffect(() => {
 		let wasScrolling = false;
@@ -168,14 +215,25 @@ export default function SettingsDock() {
 			if (idleTimer.current) window.clearTimeout(idleTimer.current);
 			idleTimer.current = window.setTimeout(() => {
 				wasScrolling = false;
-				setExpanded(window.scrollY < 96);
+				setExpanded(pageScrollTop() < 96);
 				setVisible(true);
 			}, 220);
 		};
 
 		window.addEventListener("scroll", onScroll, { passive: true });
+		// Capture scrolls inside nested scrollers too, not just window scroll.
+		document.addEventListener("scroll", onScroll, {
+			passive: true,
+			capture: true,
+		});
+		window.addEventListener("touchmove", onScroll, { passive: true });
+		window.addEventListener("wheel", onScroll, { passive: true });
+
 		return () => {
 			window.removeEventListener("scroll", onScroll);
+			document.removeEventListener("scroll", onScroll, true);
+			window.removeEventListener("touchmove", onScroll);
+			window.removeEventListener("wheel", onScroll);
 			if (idleTimer.current) window.clearTimeout(idleTimer.current);
 		};
 	}, []);
@@ -268,7 +326,7 @@ export default function SettingsDock() {
 									trigger("selection");
 									setExpanded(false);
 								}}
-								className="h-7 w-7 rounded-full text-muted-foreground"
+								className="-mr-1 h-9 w-9 rounded-full text-muted-foreground"
 							>
 								<ChevronDown className="h-3.5 w-3.5" />
 							</Button>
@@ -354,7 +412,7 @@ export default function SettingsDock() {
 								</p>
 								<div className="mt-2 flex items-center justify-between gap-2">
 									{hapticsOn ? (
-										<Vibrate className="h-3.5 w-3.5 text-muted-foreground" />
+										<Vibrate className="h-3.5 w-3.5 text-primary" />
 									) : (
 										<VibrateOff className="h-3.5 w-3.5 text-muted-foreground" />
 									)}
@@ -379,7 +437,7 @@ export default function SettingsDock() {
 										>
 											<span
 												className={cn(
-													"absolute top-0.5 h-4 w-4 rounded-full bg-background shadow-sm transition-transform",
+													"absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm ring-1 ring-black/10 transition-transform",
 													hapticsOn
 														? "translate-x-4"
 														: "translate-x-0.5",
