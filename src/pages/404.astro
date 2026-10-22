@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import StudioField from "../components/common/StudioField.astro";
 import {
 	Home,
 	ArrowLeft,
@@ -22,6 +23,10 @@ const quickLinks = [
 	<main
 		class="relative min-h-screen bg-background text-foreground font-sans overflow-hidden"
 	>
+		<StudioField
+			class="studio-only inset-x-0 top-0 h-[30rem] opacity-60"
+			mask="linear-gradient(to bottom, black 0%, black 45%, transparent 100%)"
+		/>
 		<!-- Grid + glow backdrop -->
 		<div
 			class="pointer-events-none absolute inset-0 [mask-image:radial-gradient(80%_60%_at_50%_25%,black,transparent)]"

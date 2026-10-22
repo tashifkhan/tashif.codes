@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import StudioField from "../../components/common/StudioField.astro";
 import GitHubStats from "../../components/github/GitHubStats.astro";
 import DataFreshness from "../../components/common/DataFreshness";
 import { starLists } from "../../data/starLists";
@@ -29,6 +30,10 @@ const starredLists = starLists || [];
 	<div
 		class="relative min-h-screen bg-gradient-to-b from-muted to-background dark:from-background dark:to-card py-8 text-foreground dark:text-foreground"
 	>
+		<StudioField
+			class="studio-only inset-x-0 top-0 h-[26rem] opacity-70"
+			mask="linear-gradient(to bottom, black 0%, black 45%, transparent 100%)"
+		/>
 		<div
 			class="pointer-events-none absolute inset-0 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]"
 		>

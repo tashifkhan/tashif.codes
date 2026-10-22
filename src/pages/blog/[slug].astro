@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import StudioField from "../../components/common/StudioField.astro";
 import MarkdownRenderer from "../../components/common/markdown/MarkdownRenderer.astro";
 import { ArrowLeft, ExternalLink, Eye, Heart, MessageCircle, Clock, Calendar, User, Send } from "lucide-react";
 import { blogPosts, fetchFullPost, estimateReadingStats, resolveCoverImage, BLOG_API_BASE, BLOG_REPO_URL } from "../../data/blog";
@@ -96,7 +97,11 @@ const totalComments = initialComments.reduce(
 		style="width:0;transition:width 80ms linear"
 	></div>
 
-	<div class="min-h-screen bg-background">
+	<div class="relative min-h-screen bg-background">
+		<StudioField
+			class="studio-only inset-x-0 top-0 h-[26rem] opacity-70"
+			mask="linear-gradient(to bottom, black 0%, black 45%, transparent 100%)"
+		/>
 		<!-- Sticky Top Nav (matches dashboard pattern) -->
 		<header
 			class="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/70"

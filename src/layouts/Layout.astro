@@ -3,6 +3,7 @@ import "../styles/global.css";
 import PostHog from "../components/common/posthog.astro";
 import Haptics from "../components/common/Haptics.astro";
 import SkinSwitcher from "../components/common/SkinSwitcher.astro";
+import DotCursor from "../components/common/DotCursor.astro";
 import { ClientRouter } from "astro:transitions";
 import Analytics from "@vercel/analytics/astro";
 import {
@@ -209,6 +210,7 @@ const social = resolveSocialImageMeta({
 	</head>
 	<body>
 		<slot />
+		<DotCursor />
 		<!-- Studio skin film grain. Hidden unless html[data-skin="studio"]. -->
 		<div
 			class="studio-grain pointer-events-none fixed inset-0 z-[80] overflow-hidden opacity-[0.045] mix-blend-overlay"

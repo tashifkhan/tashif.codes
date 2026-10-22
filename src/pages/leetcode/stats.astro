@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import StudioField from "../../components/common/StudioField.astro";
 import LeetCodeStats from "../../components/leetcode/LeetCodeStats.astro";
 import LeetCodeContests from "../../components/leetcode/LeetCodeContests.astro";
 import LeetCodeBadges from "../../components/leetcode/LeetCodeBadges.astro";
@@ -14,6 +15,10 @@ import { Button } from "@/components/ui/button";
 	<div
 		class="relative min-h-screen bg-gradient-to-b from-muted to-background dark:from-background dark:to-card py-8 text-foreground dark:text-foreground transition-colors duration-300"
 	>
+		<StudioField
+			class="studio-only inset-x-0 top-0 h-[26rem] opacity-70"
+			mask="linear-gradient(to bottom, black 0%, black 45%, transparent 100%)"
+		/>
 		<div
 			class="pointer-events-none absolute inset-0 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]"
 		>
