@@ -162,6 +162,25 @@ code, pre, .font-mono {
   font-family: var(--font-mono);
 }
 
+/* Theme toggle icon follows the class on <html>, not React state. */
+.theme-icon-sun,
+.theme-icon-moon,
+.theme-icon-cream {
+  display: none;
+}
+
+html.dark .theme-icon-sun {
+  display: block;
+}
+
+html:not(.dark):not(.cream) .theme-icon-moon {
+  display: block;
+}
+
+html.cream .theme-icon-cream {
+  display: block;
+}
+
 /* Mobile-first responsive design */
 * {
   box-sizing: border-box;

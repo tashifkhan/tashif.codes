@@ -48,7 +48,6 @@ const breadcrumbMargin = !hasHeaderContent
 		? "mb-2 sm:mb-3"
 		: "mb-4 sm:mb-6";
 const mainPadding = compact ? "py-6 sm:py-8" : "py-8 sm:py-12";
-const isDocs = /^\/docs(\/|$)/.test(Astro.url.pathname);
 
 const tintClass = {
 	orange:
@@ -67,7 +66,6 @@ const tintClass = {
 >
 	<div
 		data-page-shell
-		data-docs-page={isDocs ? "" : undefined}
 		class="relative min-h-screen bg-gradient-to-b from-muted to-background dark:from-background dark:to-card text-foreground transition-colors duration-300 font-sans"
 	>
 		<StudioField

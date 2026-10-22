@@ -190,22 +190,32 @@ const {
 			// loop warning when the backing store changes size.
 			new ResizeObserver(() => requestAnimationFrame(resize)).observe(canvas);
 
-			const refresh = () => {
-				if (!host.isConnected) {
-					observer?.disconnect();
-					return;
-				}
-				readColors();
-				resize();
+			let observer: MutationObserver | undefined;
+			let refreshRaf = 0;
+
+			// Coalesce attribute changes into one paint. Theme switches set three
+			// custom properties plus a class, and resizing the backing store on
+			// every one of them made the reveal stutter.
+			const scheduleRefresh = () => {
+				if (refreshRaf) return;
+				refreshRaf = requestAnimationFrame(() => {
+					refreshRaf = 0;
+					if (!host.isConnected) {
+						observer?.disconnect();
+						return;
+					}
+					readColors();
+					resize();
+				});
 			};
 
-			let observer: MutationObserver | undefined = new MutationObserver(refresh);
+			observer = new MutationObserver(scheduleRefresh);
 			observer.observe(document.documentElement, {
 				attributes: true,
-				attributeFilter: ["data-skin", "data-theme", "class", "style"],
+				attributeFilter: ["data-skin", "data-theme", "class"],
 			});
 
-			matchMedia("(prefers-color-scheme: light)").addEventListener("change", refresh);
+			matchMedia("(prefers-color-scheme: light)").addEventListener("change", scheduleRefresh);
 			readColors();
 			resize();
 

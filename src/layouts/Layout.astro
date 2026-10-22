@@ -64,7 +64,7 @@ const social = resolveSocialImageMeta({
 				const root = document.documentElement;
 				let traversalHandled = false;
 				const set = (direction) => {
-					root.dataset.navDirection = direction;
+					root.dataset.astroNavDirection = direction;
 				};
 
 				document.addEventListener(
@@ -125,6 +125,23 @@ const social = resolveSocialImageMeta({
 					} else {
 						set("back");
 					}
+				});
+
+				// Astro knows both ends of every ClientRouter navigation. Use that
+				// to tell an entry into docs (slide) from a move inside docs (fade).
+				const isDocsPath = (path) =>
+					path === "/docs" || path.startsWith("/docs/");
+				document.addEventListener("astro:before-preparation", (event) => {
+					const fromDocs = isDocsPath(event.from.pathname);
+					const toDocs = isDocsPath(event.to.pathname);
+					root.dataset.astroNavSection =
+						toDocs && !fromDocs
+							? "docs-in"
+							: fromDocs && toDocs
+								? "docs"
+								: fromDocs && !toDocs
+									? "docs-out"
+									: "other";
 				});
 
 				set("forward");
