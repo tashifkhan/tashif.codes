@@ -332,6 +332,12 @@ html[data-skin="simple"].dark .studio-field {
 	opacity: 0.4;
 }
 
+/* The studio light paper should read cream first. The dot lattice stays, but
+   softer, so it stops tinting the whole page grey. */
+html[data-skin="studio"]:not(.dark) .studio-field {
+	opacity: 0.45;
+}
+
 /* Keep the footer content above the floating design switcher. On pages with
    the inline switcher the floating one is hidden, so the footer can stay tight. */
 [data-site-footer] > div {
