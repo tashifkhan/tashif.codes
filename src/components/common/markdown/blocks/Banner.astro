@@ -1,0 +1,9 @@
+---
+/** The verdict box a post opens on, so a skimmer who reads nothing else still gets the point. */
+import type { BlockProps } from "./shared";
+const { attrs, theme } = Astro.props as BlockProps;
+---
+<div class:list={["md-banner", `md-banner--${attrs.tone ?? "danger"}`, theme.banner]} role="note">
+  {attrs.title && <div class="md-banner-title">{attrs.title}</div>}
+  <div class="md-banner-body"><slot /></div>
+</div>

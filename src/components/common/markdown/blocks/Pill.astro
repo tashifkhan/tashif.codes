@@ -1,0 +1,5 @@
+---
+import type { BlockProps } from "./shared";
+const { attrs, theme } = Astro.props as BlockProps;
+---
+<span class:list={["md-pill", `md-pill--${attrs.kind ?? "info"}`, theme.pill]}><slot /></span>

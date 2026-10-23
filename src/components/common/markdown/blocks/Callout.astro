@@ -1,5 +1,8 @@
 ---
-/** All six callout flavours; `name` picks the icon, label and modifier. */
+/**
+ * All six callout flavours; `name` picks the icon, label and modifier. A `fold`
+ * attribute (or `> [!NOTE]-` / `+`) turns the box into a native <details>.
+ */
 import { CALLOUT_ICONS } from "../pipeline/icons";
 import { CALLOUT_LABELS } from "../pipeline/registry";
 import type { BlockProps } from "./shared";
@@ -9,9 +12,28 @@ const { attrs, theme, name } = Astro.props as Props;
 
 const label = String(attrs.title || CALLOUT_LABELS[name] || name);
 const icon = CALLOUT_ICONS[name] ?? CALLOUT_ICONS.note;
+const fold = attrs.fold === "open" || attrs.fold === "closed" ? attrs.fold : null;
+const classes = [
+  "md-callout",
+  `md-callout--${name}`,
+  attrs.variant && `md-callout--${attrs.variant}`,
+  fold && "md-callout--fold",
+  theme.callout,
+];
 ---
 {/* Two wrappers: the title must not inherit the body's typography. */}
-<div class:list={["md-callout", `md-callout--${name}`, theme.callout]}>
-  <div class:list={["md-callout-title", theme.calloutTitle]}><Fragment set:html={icon} /><span>{label}</span></div>
-  <div class="md-callout-body"><slot /></div>
-</div>
+{
+  fold ? (
+    <details class:list={classes} open={fold === "open"}>
+      <summary class:list={["md-callout-title", theme.calloutTitle]}>
+        <Fragment set:html={icon} /><span>{label}</span>
+      </summary>
+      <div class="md-callout-body"><slot /></div>
+    </details>
+  ) : (
+    <div class:list={classes}>
+      <div class:list={["md-callout-title", theme.calloutTitle]}><Fragment set:html={icon} /><span>{label}</span></div>
+      <div class="md-callout-body"><slot /></div>
+    </div>
+  )
+}

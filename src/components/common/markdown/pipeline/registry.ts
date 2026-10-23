@@ -151,8 +151,47 @@ export const CALLOUT_LABELS: Record<string, string> = {
   danger: 'Danger',
 }
 
+/**
+ * Obsidian / dump.taf.sh callout aliases for the `> [!TYPE]` spelling. Each maps
+ * to one of the six colour families above plus the label it shows when the
+ * author gives no title. `quote` keeps its own muted look via `variant`.
+ */
+export const CALLOUT_ALIASES: Record<
+  string,
+  { family: CalloutName; label: string; variant?: string }
+> = {
+  info: { family: 'note', label: 'Info' },
+  todo: { family: 'note', label: 'To do' },
+  abstract: { family: 'note', label: 'Summary' },
+  summary: { family: 'note', label: 'Summary' },
+  tldr: { family: 'note', label: 'TL;DR' },
+  quote: { family: 'note', label: 'Quote', variant: 'quote' },
+  cite: { family: 'note', label: 'Quote', variant: 'quote' },
+  hint: { family: 'tip', label: 'Hint' },
+  success: { family: 'tip', label: 'Success' },
+  check: { family: 'tip', label: 'Check' },
+  done: { family: 'tip', label: 'Done' },
+  question: { family: 'important', label: 'Question' },
+  faq: { family: 'important', label: 'FAQ' },
+  help: { family: 'important', label: 'Help' },
+  example: { family: 'important', label: 'Example' },
+  attention: { family: 'warning', label: 'Attention' },
+  error: { family: 'danger', label: 'Error' },
+  failure: { family: 'danger', label: 'Failure' },
+  fail: { family: 'danger', label: 'Fail' },
+  missing: { family: 'danger', label: 'Missing' },
+  bug: { family: 'danger', label: 'Bug' },
+}
+
 const TITLE_ATTR: Record<string, AttrSpec> = {
   title: { type: 'string', describe: 'Heading shown in the callout bar' },
+  fold: {
+    type: 'enum',
+    values: ['open', 'closed'],
+    describe: 'Make the callout collapsible, starting open or closed',
+  },
+  // Set by the `> [!TYPE]` parser for aliases, not by hand.
+  variant: { type: 'string', describe: 'Alias styling, e.g. quote' },
 }
 
 /** Accent names components may tint themselves with, from the site's tokens. */
@@ -203,7 +242,13 @@ export const COMPONENTS: readonly ComponentSpec[] = [
     name: 'Col',
     directive: 'col',
     body: 'block',
-    attrs: {},
+    attrs: {
+      card: { type: 'boolean', describe: 'Frame the column as a dashed card' },
+      pick: {
+        type: 'boolean',
+        describe: 'The recommended option: a card with an accent edge',
+      },
+    },
     parents: ['Cols'],
     describe: 'One column inside Cols',
   },
@@ -342,6 +387,47 @@ export const COMPONENTS: readonly ComponentSpec[] = [
     attrs: {},
     describe: 'Opening paragraph, set larger than body text',
   },
+  {
+    name: 'Banner',
+    directive: 'banner',
+    aliases: ['risk-banner'],
+    body: 'block',
+    attrs: {
+      title: { type: 'string', describe: 'Bold lead-in, e.g. "Read this first"' },
+      tone: {
+        type: 'enum',
+        values: TONES,
+        default: 'danger',
+        describe: 'Accent colour',
+      },
+    },
+    positional: 'title',
+    describe: 'Centred verdict box for the top of a post',
+  },
+  {
+    name: 'Quote',
+    directive: 'quote',
+    aliases: ['pull-quote'],
+    body: 'block',
+    attrs: {
+      cite: { type: 'string', describe: 'Source line, e.g. "Docs, 2026"' },
+      tone: { type: 'enum', values: TONES, describe: 'Rule colour' },
+      pull: {
+        type: 'boolean',
+        describe: 'Framed pull quote, for the one line a section hangs on',
+      },
+    },
+    positional: 'cite',
+    describe: 'Quote with a coloured rule and an optional source',
+  },
+  {
+    name: 'Ticks',
+    directive: 'ticks',
+    aliases: ['list-check'],
+    body: 'block',
+    attrs: {},
+    describe: 'A list with check-mark bullets, for wins and features',
+  },
 
   // ---- data ---------------------------------------------------------------
   {
@@ -462,6 +548,78 @@ export const COMPONENTS: readonly ComponentSpec[] = [
       rotate: { type: 'number', describe: 'Rotation in degrees, -15 to 15' },
     },
     describe: 'Decorative strip of masking tape',
+  },
+  {
+    name: 'Pill',
+    directive: 'pill',
+    body: 'block',
+    placement: 'inline',
+    attrs: {
+      kind: {
+        type: 'enum',
+        values: ['yes', 'no', 'partial', 'info'],
+        default: 'info',
+        describe: 'Verdict colour: green, red, amber or neutral',
+      },
+    },
+    positional: 'kind',
+    describe: 'Small verdict chip, for table cells',
+  },
+  {
+    name: 'Stamp',
+    directive: 'stamp',
+    body: 'block',
+    placement: 'both',
+    attrs: {
+      tone: {
+        type: 'enum',
+        values: ['ink', 'bad', 'ok'],
+        default: 'ink',
+        describe: 'Ink, red or green',
+      },
+      rotate: { type: 'number', describe: 'Rotation in degrees, -15 to 15' },
+    },
+    positional: 'tone',
+    describe: 'Big rotated verdict stamp, once per post at most',
+  },
+  {
+    name: 'Kbd',
+    directive: 'kbd',
+    body: 'block',
+    placement: 'inline',
+    attrs: {
+      k: { type: 'string', describe: 'Key name: cmd, shift, enter, a, …' },
+      platform: {
+        type: 'enum',
+        values: ['mac', 'win'],
+        default: 'mac',
+        describe: 'Glyphs on mac, text caps on win',
+      },
+    },
+    positional: 'k',
+    describe: 'One keyboard key as a keycap',
+  },
+  {
+    name: 'Keys',
+    directive: 'keys',
+    body: 'none',
+    placement: 'inline',
+    attrs: {
+      keys: {
+        type: 'string',
+        required: true,
+        describe: 'Space-separated key names, e.g. "cmd shift p"',
+      },
+      platform: {
+        type: 'enum',
+        values: ['mac', 'win'],
+        default: 'mac',
+        describe: 'Glyphs on mac, text caps on win',
+      },
+      sep: { type: 'string', default: '+', describe: 'Joiner between caps' },
+    },
+    positional: 'keys',
+    describe: 'A shortcut: keycaps joined by +',
   },
   {
     name: 'Mark',

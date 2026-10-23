@@ -1,0 +1,16 @@
+---
+/** A coloured-rule quote, or with `pull` the framed quote a section hangs on. */
+import type { BlockProps } from "./shared";
+const { attrs, theme } = Astro.props as BlockProps;
+---
+<figure
+  class:list={[
+    "md-quote-block",
+    attrs.pull && "md-quote-block--pull",
+    attrs.tone && `md-quote-block--${attrs.tone}`,
+    theme.quoteBlock,
+  ]}
+>
+  <blockquote class="md-quote-block-body"><slot /></blockquote>
+  {attrs.cite && <figcaption class="md-quote-block-cite">{attrs.cite}</figcaption>}
+</figure>
