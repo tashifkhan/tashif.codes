@@ -135,7 +135,8 @@ const role = profile.realName || owner.fallbackTitle;
 	   cluster reads as one object instead of three crowded pills. */
 	@media (max-width: 639px) {
 		.header-socials {
-			border-radius: 1.25rem;
+			/* A pill, like the name bubble beside it. */
+			border-radius: 999px;
 			background: color-mix(in oklab, var(--card) 66%, transparent);
 			border: 1px solid color-mix(in oklab, var(--foreground) 9%, transparent);
 			box-shadow:
@@ -161,9 +162,21 @@ const role = profile.realName || owner.fallbackTitle;
 			-webkit-backdrop-filter: none;
 		}
 
+		/* The hairline between the rows is inset so it clears the pill's
+		   curves; the link itself stays a pill for its hover fill. */
 		.header-socials .header-studio {
-			border-radius: 0 0 1rem 1rem;
-			border-top-color: color-mix(in oklab, var(--foreground) 10%, transparent);
+			position: relative;
+			border-radius: 999px;
+		}
+
+		.header-socials .header-studio::before {
+			content: "";
+			position: absolute;
+			top: 0;
+			right: 0.625rem;
+			left: 0.625rem;
+			height: 1px;
+			background: color-mix(in oklab, var(--foreground) 10%, transparent);
 		}
 
 		.header-socials .header-link:hover,
