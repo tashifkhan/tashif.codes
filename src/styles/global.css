@@ -571,6 +571,11 @@ nav::-webkit-scrollbar-thumb:hover {
     width: max-content;
   }
 
+  /* The section tabs fill the row and only overflow when they must */
+  nav[data-tabs] > div {
+    width: auto;
+  }
+
   nav .flex {
     flex-shrink: 0;
     min-width: max-content;

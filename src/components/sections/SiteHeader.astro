@@ -1,6 +1,7 @@
 ---
 import { owner, socials } from "../../data/profile";
 import { leetCodeData } from "../../data/leetcode";
+import { ArrowRight } from "lucide-react";
 
 // The LeetCode profile supplies the tagline when it loaded; otherwise fall
 // back to the statically configured one.
@@ -37,13 +38,26 @@ const role = profile.realName || owner.fallbackTitle;
 			</div>
 		</div>
 
-		<!-- Social links: icon buttons on the right, one circle each. Phones
-		     keep the row beside the bubble; the last two links wait until the
-		     capsule and four circles fit on one line. -->
+		<!-- Social links plus the taf.sh studio link. Phones stack them beside
+		     the bubble: GitHub and LinkedIn on top, taf.sh underneath. From sm
+		     up they sit in one row with all four circles. -->
 		<nav
 			aria-label="Social links"
-			class="header-socials ml-auto flex w-fit shrink-0 items-center gap-2"
+			class="header-socials ml-auto grid w-fit shrink-0 grid-cols-2 gap-1.5 sm:flex sm:items-center sm:gap-2"
 		>
+			<a
+				href="https://taf.sh"
+				target="_blank"
+				rel="noopener noreferrer"
+				style="--i:0"
+				class="header-glass header-link header-studio group order-last col-span-2 inline-flex h-7 items-center justify-center gap-1.5 rounded-full px-3 font-mono text-xs text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:order-first sm:h-10 sm:px-4 sm:text-[0.8125rem]"
+			>
+				taf.sh
+				<ArrowRight
+					className="h-3.5 w-3.5 text-primary transition-transform duration-200 group-hover:translate-x-0.5"
+					aria-hidden="true"
+				/>
+			</a>
 			{
 				socials.map((social, i) => {
 					const isMail = social.link.startsWith("mailto:");
@@ -55,13 +69,13 @@ const role = profile.realName || owner.fallbackTitle;
 							data-haptic-social
 							aria-label={social.label}
 							title={social.label}
-							style={`--i:${i}`}
+							style={`--i:${i + 1}`}
 							class:list={[
-								"header-glass header-link h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-								i > 1 ? "hidden min-[500px]:inline-flex" : "inline-flex",
+								"header-glass header-link h-7 w-full shrink-0 items-center justify-center rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:h-10 sm:w-10",
+								i > 1 ? "hidden sm:inline-flex" : "inline-flex",
 							]}
 						>
-							<social.icon className="h-4 w-4" aria-hidden="true" />
+							<social.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
 						</a>
 					);
 				})
@@ -111,7 +125,7 @@ const role = profile.realName || owner.fallbackTitle;
 	}
 
 	/* The old global nav rule stretches every nav to 100% on phones. The
-	   social row is a cluster of circles, not a scrolling tab bar. */
+	   social links are a small cluster, not a scrolling tab bar. */
 	.header-socials {
 		width: fit-content;
 		overflow: visible;
