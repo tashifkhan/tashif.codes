@@ -32,25 +32,44 @@ const role = profile.realName || owner.fallbackTitle;
 				<p class="header-name truncate text-[1.0625rem] font-semibold leading-tight text-foreground">
 					{owner.name}
 				</p>
-				<p class="truncate text-[0.8125rem] leading-snug text-muted-foreground">
+				<p class="hidden truncate text-[0.8125rem] leading-snug text-muted-foreground sm:block">
 					{role}
+				</p>
+				<!-- Phones: a short fixed role plus the studio link, so the right
+				     side only has to hold two round buttons. -->
+				<p class="flex items-center gap-1.5 whitespace-nowrap text-[0.8125rem] leading-snug text-muted-foreground sm:hidden">
+					<span>Developer</span>
+					<span aria-hidden="true" class="opacity-50">·</span>
+					<a
+						href="https://taf.sh"
+						target="_blank"
+						rel="noopener noreferrer"
+						data-haptic-external
+						class="header-studio-inline group -my-2 inline-flex items-center gap-0.5 py-2 font-mono text-xs text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+					>
+						taf.sh
+						<ArrowUpRight
+							className="h-3 w-3 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+							aria-hidden="true"
+						/>
+					</a>
 				</p>
 			</div>
 		</div>
 
-		<!-- Social links plus the taf.sh studio link. Phones fold them into one
-		     glass card beside the bubble: GitHub and LinkedIn on top, taf.sh
-		     under a hairline. From sm up they sit in one row of capsules. -->
+		<!-- Social links plus the taf.sh studio link. Phones keep GitHub and
+		     LinkedIn as round buttons (taf.sh lives in the bubble there); from
+		     sm up the taf.sh pill and all four circles sit in one row. -->
 		<nav
 			aria-label="Social links"
-			class="header-socials ml-auto grid w-fit min-w-[6.5rem] shrink-0 grid-cols-2 p-1 sm:flex sm:min-w-0 sm:items-center sm:gap-2 sm:p-0"
+			class="header-socials ml-auto flex w-fit shrink-0 items-center gap-2"
 		>
 			<a
 				href="https://taf.sh"
 				target="_blank"
 				rel="noopener noreferrer"
 				style="--i:0"
-				class="header-glass header-link header-studio group order-last col-span-2 inline-flex h-[1.625rem] items-center justify-center gap-1.5 rounded-full px-3 font-mono text-xs text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:order-first sm:h-10 sm:px-4 sm:text-[0.8125rem]"
+				class="header-glass header-link group hidden h-10 items-center justify-center gap-1.5 rounded-full px-4 font-mono text-[0.8125rem] text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:inline-flex"
 			>
 				taf.sh
 				<ArrowUpRight
@@ -71,11 +90,11 @@ const role = profile.realName || owner.fallbackTitle;
 							title={social.label}
 							style={`--i:${i + 1}`}
 							class:list={[
-								"header-glass header-link h-[1.625rem] w-full shrink-0 items-center justify-center rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:h-10 sm:w-10",
+								"header-glass header-link h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
 								i > 1 ? "hidden sm:inline-flex" : "inline-flex",
 							]}
 						>
-							<social.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
+							<social.icon className="h-4 w-4" aria-hidden="true" />
 						</a>
 					);
 				})
@@ -129,60 +148,6 @@ const role = profile.realName || owner.fallbackTitle;
 	.header-socials {
 		width: fit-content;
 		overflow: visible;
-	}
-
-	/* Phones: the nav is the glass card and the links inside go flat, so the
-	   cluster reads as one object instead of three crowded pills. */
-	@media (max-width: 639px) {
-		.header-socials {
-			/* A pill, like the name bubble beside it. */
-			border-radius: 999px;
-			background: color-mix(in oklab, var(--card) 66%, transparent);
-			border: 1px solid color-mix(in oklab, var(--foreground) 9%, transparent);
-			box-shadow:
-				inset 0 1px 0 rgb(255 255 255 / 0.6),
-				var(--shadow-sm);
-			backdrop-filter: blur(20px) saturate(160%);
-			-webkit-backdrop-filter: blur(20px) saturate(160%);
-		}
-
-		:global(.dark) .header-socials {
-			background: color-mix(in oklab, var(--card) 58%, transparent);
-			border-color: color-mix(in oklab, var(--foreground) 11%, transparent);
-			box-shadow:
-				inset 0 1px 0 rgb(255 255 255 / 0.07),
-				0 14px 34px -18px rgb(0 0 0 / 0.8);
-		}
-
-		.header-socials .header-link {
-			background: transparent;
-			border-color: transparent;
-			box-shadow: none;
-			backdrop-filter: none;
-			-webkit-backdrop-filter: none;
-		}
-
-		/* The hairline between the rows is inset so it clears the pill's
-		   curves; the link itself stays a pill for its hover fill. */
-		.header-socials .header-studio {
-			position: relative;
-			border-radius: 999px;
-		}
-
-		.header-socials .header-studio::before {
-			content: "";
-			position: absolute;
-			top: 0;
-			right: 0.625rem;
-			left: 0.625rem;
-			height: 1px;
-			background: color-mix(in oklab, var(--foreground) 10%, transparent);
-		}
-
-		.header-socials .header-link:hover,
-		.header-socials .header-link:focus-visible {
-			background: color-mix(in oklab, var(--primary) 12%, transparent);
-		}
 	}
 
 	.header-link:hover,
