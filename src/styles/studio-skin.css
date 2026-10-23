@@ -310,7 +310,7 @@ html[data-skin="studio"] [data-page-surface] {
 	background: transparent !important;
 }
 
-/* The simple skin keeps its own palette but gets the same ambient field: the
+/* The simple skin keeps its own palette but gets the same ambient field. The
    drafting grid, dot lattice and blueprint geometry all read this skin's
    --primary and --border, so the dots stay orange instead of turning teal. */
 html[data-skin="simple"] [data-page-surface] {
