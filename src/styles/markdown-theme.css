@@ -46,7 +46,8 @@
   --md-rotate: 0;
   --md-panel-shadow: var(--shadow-sm, 0 1px 2px 0 rgb(0 0 0 / 0.05));
   --md-hand-font: inherit;
-  --md-display-font: var(--font-sans);
+  --md-display-font: var(--font-display, var(--font-sans));
+  --md-mono-font: var(--font-mono);
 
   /*
    * markdown.css leaves text colour to inheritance, and what these blocks
@@ -156,14 +157,14 @@
 }
 
 /*
- * Quote rail — same pill accent as heading bars / phase rails, not a filled
- * card. Body is upright so multi-sentence mission notes stay readable; emphasis
- * still arrives via `.md-em`.
+ * Quote rail: a straight 2px line the full height of the quote, matching
+ * `.md-quote-block`. Body is upright so multi-sentence mission notes stay
+ * readable; emphasis still arrives via `.md-em`.
  */
 .markdown-body .md-quote {
   position: relative;
   margin: 1.75rem 0;
-  padding: 0.15rem 0 0.15rem 1.15rem;
+  padding: 0.125rem 0 0.125rem 1.25rem;
   color: color-mix(in oklab, var(--foreground) 88%, transparent);
   font-style: normal;
   font-size: 1.02em;
@@ -174,11 +175,10 @@
   content: "";
   position: absolute;
   left: 0;
-  top: 0.35em;
-  bottom: 0.35em;
-  width: 3px;
-  border-radius: 999px;
-  background: color-mix(in oklab, var(--primary) 55%, transparent);
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--primary);
 }
 
 .markdown-body .md-quote > :first-child {
@@ -221,8 +221,8 @@
 
 .markdown-body .md-callout {
   padding: 0.95rem 1.125rem 1rem;
-  border: 1px solid color-mix(in oklab, var(--md-callout-color) 30%, var(--md-border));
-  background: color-mix(in oklab, var(--md-callout-color) 7%, var(--card));
+  border: 1px solid color-mix(in oklab, var(--md-callout-color) 26%, var(--md-border));
+  background: color-mix(in oklab, var(--md-callout-color) 5%, var(--card));
 }
 
 .markdown-body .md-panel {
@@ -248,8 +248,8 @@
 }
 
 .markdown-body .md-callout-title {
-  gap: 0.6rem;
-  color: color-mix(in oklab, var(--md-callout-color) 55%, var(--foreground));
+  gap: 0.5rem;
+  color: color-mix(in oklab, var(--md-callout-color) 75%, var(--foreground));
 }
 
 .markdown-body .md-panel-title {
