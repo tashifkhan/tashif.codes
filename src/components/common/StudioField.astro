@@ -91,6 +91,10 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 			let raf = 0;
 			let visible = true;
 			let accentColor = "#0f7a6c";
+			// Resting dot strength and size; a skin can raise them with
+			// --field-dot-alpha / --field-dot-size where its page is pale.
+			let restAlpha = 0.4;
+			let restRadius = 0.8;
 
 			// Resolve the tokens in this subtree, not on :root: pages may pin
 			// their own theme colors and the field must follow.
@@ -100,6 +104,9 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 					"position:absolute;visibility:hidden;pointer-events:none;background:var(--primary)";
 				host.append(probe);
 				accentColor = getComputedStyle(probe).backgroundColor;
+				const hostStyle = getComputedStyle(host);
+				restAlpha = Number.parseFloat(hostStyle.getPropertyValue("--field-dot-alpha")) || 0.4;
+				restRadius = Number.parseFloat(hostStyle.getPropertyValue("--field-dot-size")) || 0.8;
 				probe.remove();
 			};
 
@@ -118,8 +125,8 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 						const py = y + (distance ? (dy / distance) * push : 0);
 						// Round teal dots, like the accent dot from taf.sh.
 						ctx.fillStyle = accentColor;
-						ctx.globalAlpha = 0.4 + near * 0.6;
-						const radius = 0.8 + near * 1.4;
+						ctx.globalAlpha = restAlpha + near * (1 - restAlpha);
+						const radius = restRadius + near * 1.4;
 						ctx.beginPath();
 						ctx.arc(px, py, radius, 0, Math.PI * 2);
 						ctx.fill();

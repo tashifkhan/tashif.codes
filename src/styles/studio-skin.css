@@ -323,6 +323,25 @@ html[data-skin]:not(.dark) .studio-field {
 	opacity: 0.45;
 }
 
+/* The simple skin's light page is near-white, not cream, so the same 45%
+   washes the field out. It runs at full strength, with firmer grid lines and
+   heavier resting dots (read by StudioField's canvas). */
+html[data-skin="simple"]:not(.dark) .studio-field {
+	--field-dot-alpha: 0.6;
+	--field-dot-size: 1;
+	opacity: 1;
+}
+
+html[data-skin="simple"]:not(.dark) .studio-field [data-studio-grid] {
+	opacity: 0.9;
+}
+
+/* Orange dots read darker than teal ones on the near-black page, so the dark
+   simple skin rests them a step heavier to match studio's field. */
+html[data-skin="simple"].dark .studio-field {
+	--field-dot-alpha: 0.55;
+}
+
 /* Keep the footer content above the floating design switcher. On pages with
    the inline switcher the floating one is hidden, so the footer can stay tight. */
 [data-site-footer] > div {
