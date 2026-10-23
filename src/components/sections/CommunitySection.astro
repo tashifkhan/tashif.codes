@@ -4,11 +4,50 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Github, Twitter, Linkedin, Mail, ArrowUpRight } from "lucide-react";
+import {
+	Github,
+	Twitter,
+	Linkedin,
+	Mail,
+	ArrowUpRight,
+} from "lucide-react";
 import { socials, githubProfiles } from "../../data/profile";
 
 const socialLink = (label: string) =>
 	socials.find((s) => s.label === label)?.link ?? "#";
+
+const emailAddress = socialLink("Email").replace(/^mailto:/, "");
+
+const socialCards = [
+	{
+		label: "GitHub",
+		href: socialLink("GitHub"),
+		icon: Github,
+		detail: `@${githubProfiles[0].handle}`,
+		markClass: "text-foreground",
+	},
+	{
+		label: "Twitter",
+		href: socialLink("Twitter"),
+		icon: Twitter,
+		detail: "Tech insights & updates",
+		markClass: "text-sky-500",
+	},
+	{
+		label: "LinkedIn",
+		href: socialLink("LinkedIn"),
+		icon: Linkedin,
+		detail: "Professional network",
+		markClass: "text-blue-500",
+	},
+	{
+		label: "Email",
+		href: socialLink("Email"),
+		icon: Mail,
+		detail: emailAddress,
+		markClass: "text-primary",
+	},
+];
 
 interface Props {
 	active?: boolean;
@@ -17,176 +56,130 @@ interface Props {
 const { active = false } = Astro.props;
 ---
 
-<div id="community-section" class:list={["rise-in", !active && "hidden"]}>
-	<div class="mb-10">
+<div
+	id="community-section"
+	class:list={[
+		"rise-in pb-16 sm:pb-20",
+		!active && "hidden",
+	]}
+>
+	<div class="mb-8 sm:mb-10">
 		<h2
-			class="font-sans text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent mb-4 pb-1"
+			class="font-sans text-4xl font-bold tracking-tight text-foreground pb-1 sm:text-5xl"
 		>
-			Let's Connect
+			Let's <span class="text-primary">connect.</span>
 		</h2>
-		<p class="text-lg text-muted-foreground max-w-2xl">
-			Got a project, an idea, or a question? Send it over.
+		<p class="mt-3 max-w-2xl text-lg text-muted-foreground">
+			Got a project, an idea, or a question? Send it over. I usually reply
+			within a day.
 		</p>
 	</div>
 
-	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
-		<!-- GitHub -->
-		<a
-			href={socialLink("GitHub")}
-			data-haptic-social
-			target="_blank"
-			rel="noopener noreferrer"
-			class="group relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 backdrop-blur p-6 sm:p-8 motion-card hover:border-primary/40 hover:shadow-lg lg:col-span-2"
-		>
-			<div
-				class="absolute -right-6 -bottom-8 opacity-[0.04] group-hover:opacity-[0.09] transition-opacity duration-300 rotate-12 pointer-events-none"
-			>
-				<Github className="w-40 h-40 text-foreground" />
-			</div>
-			<div class="relative z-10">
-				<div class="flex items-start justify-between">
-					<div
-						class="h-11 w-11 rounded-xl bg-foreground text-background flex items-center justify-center"
+	<p class="mb-2.5 text-xs font-medium tracking-wide text-muted-foreground">
+		Find me online
+	</p>
+	<div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+		{
+			socialCards.map(
+				({ label, href, icon: Icon, detail, markClass }) => (
+					<a
+						href={href}
+						data-haptic-social
+						data-social-card
+						target="_blank"
+						rel="noopener noreferrer"
+						class="group relative flex min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur motion-card hover:border-primary/40 hover:bg-card/80"
 					>
-						<Github className="w-5 h-5" />
-					</div>
-					<ArrowUpRight
-						className="motion-card-arrow w-5 h-5 text-muted-foreground opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-[opacity,translate] duration-200"
-					/>
-				</div>
-				<h3 class="mt-6 font-sans text-xl font-semibold text-foreground">
-					GitHub
-				</h3>
-				<p class="mt-1 text-sm text-muted-foreground">
-					Check out my open source contributions and latest code.
-				</p>
-				<p class="mt-3 font-mono text-xs text-muted-foreground">
-					@{githubProfiles[0].handle}
-				</p>
-			</div>
-		</a>
-
-		<!-- Twitter -->
-		<a
-			href={socialLink("Twitter")}
-			data-haptic-social
-			target="_blank"
-			rel="noopener noreferrer"
-			class="group relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 backdrop-blur p-6 sm:p-8 motion-card hover:border-sky-500/40 hover:shadow-lg lg:col-span-1"
-		>
-			<div
-				class="absolute -right-6 -bottom-8 opacity-[0.05] group-hover:opacity-[0.1] transition-opacity duration-300 rotate-12 pointer-events-none"
-			>
-				<Twitter className="w-32 h-32 text-sky-500" />
-			</div>
-			<div class="relative z-10">
-				<div class="flex items-start justify-between">
-					<div
-						class="h-11 w-11 rounded-xl bg-sky-500/15 text-sky-500 border border-sky-500/20 flex items-center justify-center"
-					>
-						<Twitter className="w-5 h-5" />
-					</div>
-					<ArrowUpRight
-						className="motion-card-arrow w-5 h-5 text-muted-foreground opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-[opacity,translate] duration-200"
-					/>
-				</div>
-				<h3 class="mt-6 font-sans text-xl font-semibold text-foreground">
-					Twitter
-				</h3>
-				<p class="mt-1 text-sm text-muted-foreground">
-					Tech insights & updates
-				</p>
-			</div>
-		</a>
-
-		<!-- LinkedIn -->
-		<a
-			href={socialLink("LinkedIn")}
-			data-haptic-social
-			target="_blank"
-			rel="noopener noreferrer"
-			class="group relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 backdrop-blur p-6 sm:p-8 motion-card hover:border-blue-500/40 hover:shadow-lg lg:col-span-1"
-		>
-			<div
-				class="absolute -right-6 -bottom-8 opacity-[0.05] group-hover:opacity-[0.1] transition-opacity duration-300 rotate-12 pointer-events-none"
-			>
-				<Linkedin className="w-32 h-32 text-blue-500" />
-			</div>
-			<div class="relative z-10">
-				<div class="flex items-start justify-between">
-					<div
-						class="h-11 w-11 rounded-xl bg-blue-500/15 text-blue-500 border border-blue-500/20 flex items-center justify-center"
-					>
-						<Linkedin className="w-5 h-5" />
-					</div>
-					<ArrowUpRight
-						className="motion-card-arrow w-5 h-5 text-muted-foreground opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-[opacity,translate] duration-200"
-					/>
-				</div>
-				<h3 class="mt-6 font-sans text-xl font-semibold text-foreground">
-					LinkedIn
-				</h3>
-				<p class="mt-1 text-sm text-muted-foreground">
-					Professional network
-				</p>
-			</div>
-		</a>
+						<span
+							data-social-mark
+							aria-hidden="true"
+							class:list={[
+								"pointer-events-none absolute -right-5 -bottom-6 select-none opacity-[0.04] transition-all duration-300 group-hover:scale-110 group-hover:opacity-[0.09]",
+								markClass,
+							]}
+						>
+							<Icon className="h-28 w-28" />
+						</span>
+						<span class="relative z-10 min-w-0 flex-1">
+							<span class="block truncate text-sm font-semibold text-foreground">
+								{label}
+							</span>
+							<span class="mt-0.5 hidden truncate text-xs text-muted-foreground sm:block">
+								{detail}
+							</span>
+						</span>
+						<ArrowUpRight className="relative z-10 hidden h-4 w-4 shrink-0 text-muted-foreground/70 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 sm:block" />
+					</a>
+				),
+			)
+		}
 	</div>
 
-	<!-- Contact Me Form & Email CTA -->
-	<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-		<!-- Email Card -->
+	<!-- taf.sh studio banner -->
+	<a
+		href="https://taf.sh/contact"
+		target="_blank"
+		rel="noopener noreferrer"
+		data-haptic-external
+		class="group relative mt-4 block overflow-hidden rounded-2xl border border-primary/25 bg-primary/5 p-6 motion-card hover:border-primary/50 sm:p-8"
+	>
 		<div
-			class="relative overflow-hidden rounded-2xl border border-primary/25 bg-primary/5 p-8 lg:col-span-1 hidden md:flex flex-col justify-center"
+			class="pointer-events-none absolute -right-6 -bottom-10 select-none font-mono text-[10rem] leading-none text-primary opacity-[0.06] transition-opacity duration-300 group-hover:opacity-[0.1]"
+			aria-hidden="true"
 		>
-			<div
-				class="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none"
-			>
-			</div>
-			<div class="relative z-10">
-				<div
-					class="h-12 w-12 rounded-xl bg-primary/15 text-primary border border-primary/20 flex items-center justify-center mb-6"
-				>
-					<Mail className="w-6 h-6" />
-				</div>
-				<h3
-					class="font-sans text-2xl font-bold text-foreground mb-3 tracking-tight"
-				>
-					Email Me
-				</h3>
-				<p class="text-muted-foreground mb-8 leading-relaxed text-sm">
-					Prefer email? Send me a direct message and I'll get back to you
-					as soon as possible.
-				</p>
-				<a
-					href={socialLink("Email")}
-					data-haptic-external
-					class="inline-flex items-center justify-center w-full px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 shadow-lg shadow-primary/20 transition-colors"
-				>
-					Send Email
-				</a>
-			</div>
+			&gt;
 		</div>
-
-		<!-- Form -->
-		<Card
-			className="lg:col-span-2 border border-border/60 shadow-lg bg-card/60 backdrop-blur-xl rounded-2xl"
+		<div
+			class="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"
 		>
-			<CardContent className="p-8">
-				<div class="mb-6">
+			<div class="min-w-0">
+				<p class="font-mono text-[11px] tracking-[0.06em] text-primary">
+					taf.sh / independent studio
+				</p>
+				<h3
+					class="mt-1 font-sans text-xl font-semibold tracking-tight text-foreground"
+				>
+					Want to build something together?
+				</h3>
+				<p class="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+					I take on client work and product builds through taf.sh, the
+					studio behind TalentSync, rah.clinic and select client
+					projects.
+				</p>
+			</div>
+			<span
+				class="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-transform group-hover:-translate-y-0.5 sm:self-auto"
+			>
+				Start a project
+				<ArrowUpRight className="h-4 w-4" />
+			</span>
+		</div>
+	</a>
+
+	<div
+		class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(16rem,0.9fr)] lg:items-start"
+	>
+		<Card
+			className="rounded-2xl border border-border/60 bg-card/80 shadow-sm backdrop-blur-xl"
+		>
+			<CardContent className="p-5 sm:p-7">
+				<div class="border-b border-border/60 pb-6">
 					<h3
-						class="font-sans text-2xl font-bold text-foreground mb-2 tracking-tight"
+						class="font-sans text-xl font-bold tracking-tight text-foreground sm:text-2xl"
 					>
-						Send a Message
+						Send a message
 					</h3>
-					<p class="text-muted-foreground">Drop a quick note below.</p>
+					<p class="mt-1 text-sm leading-6 text-muted-foreground">
+						Drop a quick note and I'll get back to you.
+					</p>
 				</div>
-				<form id="contact-form" class="space-y-6" autocomplete="on">
-					<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+				<form id="contact-form" data-contact-email={emailAddress} class="mt-5 space-y-5" autocomplete="on">
+					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div class="space-y-2">
 							<Label
 								htmlFor="contact-name"
-								className="text-sm font-medium text-muted-foreground dark:text-muted-foreground"
+								className="text-sm font-medium text-foreground"
 								>Name</Label
 							>
 							<Input
@@ -194,13 +187,13 @@ const { active = false } = Astro.props;
 								name="name"
 								type="text"
 								placeholder="Your name"
-								className="h-11 rounded-xl bg-muted dark:bg-secondary/50 border-border dark:border-border focus:ring-2 focus:ring-primary/20"
+								className="h-11 rounded-xl border-border/70 bg-background/60 focus:ring-2 focus:ring-primary/20"
 							/>
 						</div>
 						<div class="space-y-2">
 							<Label
 								htmlFor="contact-email"
-								className="text-sm font-medium text-muted-foreground dark:text-muted-foreground"
+								className="text-sm font-medium text-foreground"
 								>Email</Label
 							>
 							<Input
@@ -209,14 +202,14 @@ const { active = false } = Astro.props;
 								type="email"
 								required
 								placeholder="you@example.com"
-								className="h-11 rounded-xl bg-muted dark:bg-secondary/50 border-border dark:border-border focus:ring-2 focus:ring-primary/20"
+								className="h-11 rounded-xl border-border/70 bg-background/60 focus:ring-2 focus:ring-primary/20"
 							/>
 						</div>
 					</div>
 					<div class="space-y-2">
 						<Label
 							htmlFor="contact-subject"
-							className="text-sm font-medium text-muted-foreground dark:text-muted-foreground"
+							className="text-sm font-medium text-foreground"
 							>Subject</Label
 						>
 						<Input
@@ -224,13 +217,13 @@ const { active = false } = Astro.props;
 							name="subject"
 							type="text"
 							placeholder="What's this about?"
-							className="h-11 rounded-xl bg-muted dark:bg-secondary/50 border-border dark:border-border focus:ring-2 focus:ring-primary/20"
+							className="h-11 rounded-xl border-border/70 bg-background/60 focus:ring-2 focus:ring-primary/20"
 						/>
 					</div>
 					<div class="space-y-2">
 						<Label
 							htmlFor="contact-message"
-							className="text-sm font-medium text-muted-foreground dark:text-muted-foreground"
+							className="text-sm font-medium text-foreground"
 							>Message</Label
 						>
 						<Textarea
@@ -239,20 +232,57 @@ const { active = false } = Astro.props;
 							required
 							rows={5}
 							placeholder="Write your message here..."
-							className="resize-y rounded-xl bg-muted dark:bg-secondary/50 border-border dark:border-border focus:ring-2 focus:ring-primary/20 p-4"
+							className="resize-y rounded-xl border-border/70 bg-background/60 p-4 focus:ring-2 focus:ring-primary/20"
 						/>
 					</div>
-					<div class="flex justify-end">
+					<div
+						class="flex flex-col gap-4 border-t border-border/60 pt-5 sm:flex-row sm:items-center sm:justify-between"
+					>
+						<p
+							id="contact-status"
+							aria-live="polite"
+							class="text-xs leading-5 text-muted-foreground sm:max-w-sm"
+						>
+							For project inquiries, include what you're building and
+							your timeline.
+						</p>
 						<Button
 							type="submit"
 							size="lg"
-							className="rounded-xl px-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25"
+							className="w-full rounded-xl bg-primary px-6 text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 sm:w-auto"
 						>
-							Send Message
+							Send message
 						</Button>
 					</div>
 				</form>
 			</CardContent>
 		</Card>
+
+		<div class="flex flex-col gap-4">
+			<div
+				class="rounded-2xl border border-border/60 bg-card/80 p-5 backdrop-blur"
+			>
+				<div
+					class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"
+				>
+					<Mail className="h-5 w-5" />
+				</div>
+				<h3
+					class="mt-4 font-sans text-lg font-semibold tracking-tight text-foreground"
+				>
+					Prefer email?
+				</h3>
+				<p class="mt-1.5 text-sm leading-6 text-muted-foreground">
+					Send a direct message and I'll get back to you within a day.
+				</p>
+				<a
+					href={socialLink("Email")}
+					data-haptic-external
+					class="mt-3 inline-flex font-mono text-sm text-primary hover:underline"
+				>
+					{emailAddress}
+				</a>
+			</div>
+		</div>
 	</div>
 </div>

@@ -1,0 +1,13 @@
+---
+/** One keycap. `<Kbd k="cmd" />` draws a glyph; `<Kbd>|</Kbd>` prints its body verbatim. */
+import { resolveKey, type Platform } from "../pipeline/keycaps";
+import type { BlockProps } from "./shared";
+
+const { attrs, theme } = Astro.props as BlockProps;
+const platform = (attrs.platform === "win" ? "win" : "mac") as Platform;
+const { glyph, title, mod } = resolveKey(String(attrs.k ?? ""), platform);
+const hasBody = Astro.slots.has("default") && !attrs.k;
+---
+<kbd class:list={["md-kbd", mod && "md-kbd--mod", theme.kbd]} title={hasBody ? undefined : title}>
+  {hasBody ? <slot /> : glyph}
+</kbd>

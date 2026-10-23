@@ -32,7 +32,7 @@ const { activeTab = "projects", description = DEFAULT_DESCRIPTION } =
 const { titleLabel } = getTab(activeTab);
 const title = titleLabel
 	? `${titleLabel} | ${owner.name}`
-	: `${owner.name} | Dashboard & Portfolio`;
+	: `${owner.name} | Dashboard`;
 
 const tabImageMap: Record<TabId, string> = {
 	projects: "/og/home.jpg",
@@ -52,6 +52,7 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 	url={Astro.url.pathname}
 >
 	<div
+		data-page-surface
 		class="relative min-h-screen bg-background text-foreground dark:text-foreground transition-colors duration-300 font-sans scroll-smooth"
 	>
 		<div
@@ -65,6 +66,7 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 
 		<SiteHeader />
 		<SectionTabs activeTab={activeTab} />
+		<h1 class="sr-only">{titleLabel ?? owner.name}</h1>
 
 		<!-- Main Content -->
 		<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -436,8 +438,19 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 
 	// Initialize filters and handle link clicks
 	document.addEventListener("astro:page-load", () => {
-		const theme = localStorage.getItem("theme") || "dark";
-		document.documentElement.classList.toggle("dark", theme === "dark");
+		const storedTheme = localStorage.getItem("theme");
+		const mode =
+			storedTheme === "dark" ||
+			storedTheme === "light" ||
+			storedTheme === "system"
+				? storedTheme
+				: "system";
+		const dark =
+			mode === "dark" ||
+			(mode === "system" &&
+				window.matchMedia("(prefers-color-scheme: dark)").matches);
+		document.documentElement.classList.toggle("dark", dark);
+		document.documentElement.style.colorScheme = dark ? "dark" : "light";
 
 		// Apply initial filter state (show all projects by default)
 		document.dispatchEvent(
@@ -607,7 +620,8 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 					"Sent via dashboard contact form",
 				];
 				const body = encodeURIComponent(bodyLines.join("\n"));
-				const mailto = `mailto:tashif@duck.com?subject=${encodeURIComponent(subject)}&body=${body}`;
+				const contactEmail = contactForm.dataset.contactEmail || "me@taf.sh";
+				const mailto = `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${body}`;
 
 				if (statusEl) statusEl.textContent = "Opening your email client...";
 				trigger("light");
@@ -618,11 +632,11 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 </script>
 
 <script>
+	import { motionReduced } from "../lib/motion";
+
 	// Welcome statusline: typewriter prompt, count-up stats
 	document.addEventListener("DOMContentLoaded", () => {
-		const reducedMotion = window.matchMedia(
-			"(prefers-reduced-motion: reduce)"
-		).matches;
+		const reducedMotion = motionReduced();
 
 		const typer = document.getElementById("welcome-typer");
 		if (typer) {

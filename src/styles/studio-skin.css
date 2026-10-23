@@ -1,0 +1,821 @@
+/*
+ * ---------------------------------------------------------------------------
+ * Studio skin — the taf.sh v2 design language
+ * ---------------------------------------------------------------------------
+ * Selected from the Design dropdown, pinned on <html data-skin="studio">.
+ * The original skin is the absence of that attribute (well, "simple"), so
+ * every rule here is scoped and the old site is untouched.
+ *
+ * The palette is taf.sh's warm grayscale + one teal. Light is the default;
+ * `.dark` swaps to the warm near-black set, exactly like the studio site.
+ * The tokens below are the same names the shadcn utilities already consume,
+ * which is why one block re-skins every page, card and control at once.
+ */
+
+html[data-skin="studio"] {
+	/* ---- taf.sh v2 tokens, light / paper ---- */
+	--background: #f6f1e9;
+	--foreground: #171615;
+	--card: #fdfaf4;
+	--card-foreground: #171615;
+	--popover: #fdfaf4;
+	--popover-foreground: #171615;
+
+	--primary: #0f7a6c;
+	--primary-foreground: #ffffff;
+
+	--secondary: #eee7dc;
+	--secondary-foreground: #3d3836;
+	--muted: #eee7dc;
+	--muted-foreground: #5f5956;
+
+	--accent: rgba(15, 122, 108, 0.1);
+	--accent-foreground: #0b5b50;
+
+	--destructive: #b3261e;
+	--destructive-foreground: #ffffff;
+
+	--border: #ded4c5;
+	--input: #e7ded1;
+	--ring: #0f7a6c;
+
+	--chart-1: #0f7a6c;
+	--chart-2: #171615;
+	--chart-3: #857f7b;
+	--chart-4: #0b5b50;
+	--chart-5: #c7b9a6;
+
+	--sidebar: #fdfaf4;
+	--sidebar-foreground: #171615;
+	--sidebar-primary: #0f7a6c;
+	--sidebar-primary-foreground: #ffffff;
+	--sidebar-accent: #eee7dc;
+	--sidebar-accent-foreground: #3d3836;
+	--sidebar-border: #ded4c5;
+	--sidebar-ring: #0f7a6c;
+
+	/* Legacy variables still read by the older chrome. */
+	--bg-color: var(--background);
+	--text-color: var(--foreground);
+	--card-bg: var(--card);
+	--primary-color: var(--primary);
+	--label-color: var(--muted-foreground);
+
+	--radius: 1rem;
+
+	--font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+	--font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+	--font-serif: "Newsreader", ui-serif, Georgia, serif;
+	--font-lexend: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+	--font-geist-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+	--font-geist-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+	--font-display: "Inter Tight Variable", "Inter Tight", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+
+	--motion-press: 80ms;
+	--motion-fast: 140ms;
+	--motion-normal: 200ms;
+	--motion-ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+	/* Studio surfaces are flat; depth comes from hairlines instead of blur. */
+	--shadow-2xs: 0 1px 0 rgb(23 22 21 / 0.03);
+	--shadow-xs: 0 1px 1px rgb(23 22 21 / 0.04);
+	--shadow-sm: 0 1px 2px rgb(23 22 21 / 0.05);
+	--shadow: 0 1px 3px rgb(23 22 21 / 0.06);
+	--shadow-md: 0 4px 12px rgb(23 22 21 / 0.07);
+	--shadow-lg: 0 12px 32px rgb(23 22 21 / 0.1);
+	--shadow-xl: 0 20px 48px rgb(23 22 21 / 0.12);
+	--shadow-2xl: 0 28px 64px rgb(23 22 21 / 0.16);
+
+	/* taf.sh teal replaces the orange family everywhere it was hardcoded. */
+	--color-orange-200: #b9e3dd;
+	--color-orange-300: #7fcfc4;
+	--color-orange-400: #4fd1c5;
+	--color-orange-500: #16a394;
+	--color-orange-600: #0f7a6c;
+	--color-orange-700: #0b5b50;
+	--color-orange-800: #08443c;
+	--color-orange-900: #062f29;
+	--color-orange-950: #041f1b;
+}
+
+html[data-skin="studio"].dark {
+	--background: #0e0d0d;
+	--foreground: #f2f1f0;
+	--card: #151313;
+	--card-foreground: #f2f1f0;
+	--popover: #1c1a1a;
+	--popover-foreground: #f2f1f0;
+
+	--primary: #4fd1c5;
+	--primary-foreground: #04211f;
+
+	--secondary: #1c1a1a;
+	--secondary-foreground: #c4bfbe;
+	--muted: #1c1a1a;
+	--muted-foreground: #a19c9b;
+
+	--accent: rgba(79, 209, 197, 0.14);
+	--accent-foreground: #7ce3d9;
+
+	--destructive: #ff8a80;
+	--destructive-foreground: #210604;
+
+	--border: #2c2828;
+	--input: #221f1f;
+	--ring: #4fd1c5;
+
+	--chart-1: #4fd1c5;
+	--chart-2: #f2f1f0;
+	--chart-3: #a19c9b;
+	--chart-4: #7ce3d9;
+	--chart-5: #77716f;
+
+	--sidebar: #151313;
+	--sidebar-foreground: #f2f1f0;
+	--sidebar-primary: #4fd1c5;
+	--sidebar-primary-foreground: #04211f;
+	--sidebar-accent: #1c1a1a;
+	--sidebar-accent-foreground: #c4bfbe;
+	--sidebar-border: #2c2828;
+	--sidebar-ring: #4fd1c5;
+
+	--shadow-2xs: 0 1px 0 rgb(0 0 0 / 0.2);
+	--shadow-xs: 0 1px 1px rgb(0 0 0 / 0.25);
+	--shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+	--shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+	--shadow-md: 0 4px 12px rgb(0 0 0 / 0.4);
+	--shadow-lg: 0 12px 32px rgb(0 0 0 / 0.5);
+	--shadow-xl: 0 20px 48px rgb(0 0 0 / 0.55);
+	--shadow-2xl: 0 28px 64px rgb(0 0 0 / 0.6);
+
+	--color-orange-200: #0b3f39;
+	--color-orange-300: #0f5a51;
+	--color-orange-400: #7ce3d9;
+	--color-orange-500: #4fd1c5;
+	--color-orange-600: #4fd1c5;
+	--color-orange-700: #7ce3d9;
+	--color-orange-800: #a3efe7;
+	--color-orange-900: #0b3f39;
+	--color-orange-950: #072a26;
+}
+
+/* ---------------------------------------------------------------- base */
+
+html[data-skin="studio"] {
+	background-color: var(--background);
+}
+
+html[data-skin="studio"] body {
+	background-color: var(--background);
+	color: var(--foreground);
+	font-family: var(--font-sans);
+	letter-spacing: -0.006em;
+}
+
+html[data-skin="studio"] .font-sans {
+	font-family: var(--font-sans);
+}
+
+html[data-skin="studio"] .font-display {
+	font-family: var(--font-display);
+}
+
+html[data-skin="studio"] .font-mono,
+html[data-skin="studio"] code,
+html[data-skin="studio"] pre,
+html[data-skin="studio"] kbd,
+html[data-skin="studio"] samp {
+	font-family: var(--font-mono);
+}
+
+html[data-skin="studio"] :is(h1, h2, h3, h4, h5, h6) {
+	font-family: var(--font-display);
+	font-weight: 650;
+	letter-spacing: -0.035em;
+}
+
+html[data-skin="studio"] .font-mono :is(h1, h2, h3, h4, h5, h6),
+html[data-skin="studio"] :is(h1, h2, h3, h4, h5, h6).font-mono {
+	font-family: var(--font-mono);
+	letter-spacing: inherit;
+}
+
+html[data-skin="studio"] button,
+html[data-skin="studio"] [role="tab"] {
+	font-family: inherit;
+}
+
+html[data-skin="studio"] ::selection {
+	background: color-mix(in oklab, var(--primary) 28%, transparent);
+	color: inherit;
+}
+
+html[data-skin="studio"] :focus-visible {
+	outline-color: var(--primary);
+}
+
+html[data-skin="studio"] strong,
+html[data-skin="studio"] b {
+	font-weight: 600;
+}
+
+html[data-skin="studio"] .code-block-wrapper {
+	border-color: var(--border);
+	background: #0b0f0f;
+	box-shadow: none;
+}
+
+html[data-skin="studio"] .code-block-wrapper:hover {
+	border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+	box-shadow: none;
+	transform: none;
+}
+
+html[data-skin="studio"] .language-label {
+	background: var(--primary);
+	color: var(--primary-foreground);
+	font-family: var(--font-mono);
+}
+
+/* ------------------------------------------------ ambient chrome */
+
+.studio-grain {
+	display: none;
+}
+
+/* --------------------------------------------------- dot cursor trail */
+
+.dot-cursor {
+	display: none;
+	position: fixed;
+	inset: 0;
+	z-index: 90;
+	pointer-events: none;
+	overflow: hidden;
+}
+
+.dot-cursor span {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 8px;
+	height: 8px;
+	border-radius: 999px;
+	background: var(--primary);
+	opacity: 0;
+	transition: opacity 160ms ease;
+	will-change: transform;
+}
+
+.dot-cursor[data-visible="true"] span {
+	opacity: 0.95;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	html[data-skin="studio"] .dot-cursor,
+	html[data-skin="simple"] .dot-cursor {
+		display: block;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html[data-skin="studio"] .dot-cursor,
+	html[data-skin="simple"] .dot-cursor {
+		display: none;
+	}
+}
+
+@keyframes studio-grain {
+	0% { translate: 0 0; }
+	20% { translate: -5% -8%; }
+	40% { translate: 7% 3%; }
+	60% { translate: -3% 9%; }
+	80% { translate: 8% -6%; }
+	100% { translate: 0 0; }
+}
+
+html[data-skin="studio"] .studio-grain,
+html[data-skin="simple"] .studio-grain {
+	display: block;
+}
+
+html[data-skin="studio"] .studio-grain > div,
+html[data-skin="simple"] .studio-grain > div {
+	animation: studio-grain 0.9s steps(6) infinite;
+}
+
+/* The global field is fixed behind the content wrapper. Page roots drop their
+   own opaque surface so the dots show through; cards keep theirs. */
+html[data-skin="studio"] [data-page-surface] {
+	background: transparent !important;
+}
+
+/* The simple skin keeps its own palette but gets the same ambient field. The
+   drafting grid, dot lattice and blueprint geometry all read this skin's
+   --primary and --border, so the dots stay orange instead of turning teal. */
+html[data-skin="simple"] [data-page-surface] {
+	background: transparent !important;
+}
+
+/* The light papers should read as paper first. The dot lattice stays, but
+   softer, so it stops tinting the whole page. */
+html[data-skin]:not(.dark) .studio-field {
+	opacity: 0.45;
+}
+
+/* The simple skin's light page is near-white, not cream, so the same 45%
+   washes the field out. It runs at full strength, with firmer grid lines and
+   heavier resting dots (read by StudioField's canvas). */
+html[data-skin="simple"]:not(.dark) .studio-field {
+	--field-dot-alpha: 0.6;
+	--field-dot-size: 1;
+	opacity: 1;
+}
+
+html[data-skin="simple"]:not(.dark) .studio-field [data-studio-grid] {
+	opacity: 0.9;
+}
+
+/* Orange dots read darker than teal ones on the near-black page, so the dark
+   simple skin rests them a step heavier to match studio's field. */
+html[data-skin="simple"].dark .studio-field {
+	--field-dot-alpha: 0.55;
+}
+
+/* Keep the footer content above the floating design switcher. On pages with
+   the inline switcher the floating one is hidden, so the footer can stay tight. */
+[data-site-footer] > div {
+	padding-bottom: 6rem;
+}
+
+@media (min-width: 1024px) {
+	body:has([data-skin-switcher-inline]) [data-site-footer] > div {
+		padding-bottom: 1.5rem;
+	}
+}
+
+/* ------------------------------------------------------ header + tabs */
+
+html[data-skin="studio"] header {
+	background-color: color-mix(in oklab, var(--card) 76%, transparent);
+	border-color: var(--border);
+	backdrop-filter: blur(18px) saturate(115%);
+}
+
+html[data-skin="studio"] [data-tabs] {
+	background-color: color-mix(in oklab, var(--background) 82%, transparent);
+	border-bottom: 1px solid var(--border);
+}
+
+/* Mono labels read as a nav when they sit together. The simple skin's
+   equal-width cells left them floating in big gaps here. */
+html[data-skin="studio"] [data-tabs-inner] {
+	height: 2.5rem;
+	background: transparent !important;
+	justify-content: flex-start;
+	gap: 0.75rem;
+	padding: 0 0.25rem;
+}
+
+@media (min-width: 640px) {
+	html[data-skin="studio"] [data-tabs-inner] {
+		gap: 2.25rem;
+	}
+}
+
+html[data-skin="studio"] [data-tab] {
+	flex: none;
+	position: relative;
+	height: 2.5rem;
+	border: 0;
+	border-radius: 0;
+	padding: 0;
+	background: transparent;
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	font-weight: 400;
+	letter-spacing: 0.02em;
+	color: var(--muted-foreground);
+	box-shadow: none;
+}
+
+html[data-skin="studio"] [data-tab] > svg {
+	display: none;
+}
+
+html[data-skin="studio"] [data-tab]:hover {
+	border: 0;
+	background: transparent;
+	color: var(--foreground);
+}
+
+html[data-skin="studio"] [data-tab][data-state="active"] {
+	background: transparent;
+	color: var(--foreground);
+	border: 0;
+	box-shadow: none;
+}
+
+/* The taf.sh section nav: a mono label with a teal hairline that wipes in
+   from the left on hover and stays under the active item. */
+html[data-skin="studio"] [data-tab-label] {
+	position: relative;
+	display: inline-block;
+}
+
+html[data-skin="studio"] [data-tab-label]::after {
+	content: "";
+	position: absolute;
+	right: 0;
+	bottom: -0.35rem;
+	left: 0;
+	height: 1px;
+	background: var(--primary);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 400ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+html[data-skin="studio"] [data-tab]:hover [data-tab-label]::after,
+html[data-skin="studio"] [data-tab][data-state="active"] [data-tab-label]::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+html[data-skin="studio"] [data-tabs] nav,
+html[data-skin="studio"] [data-tabs-inner] {
+	scrollbar-width: none;
+}
+
+/* The page header used by PageShell (projects, docs, archive, stats). */
+html[data-skin="studio"] [data-page-shell] {
+	background: var(--background);
+}
+
+html[data-skin="studio"] [data-page-tint] {
+	display: none;
+}
+
+html[data-skin="studio"] [data-page-header] {
+	background: color-mix(in oklab, var(--card) 68%, transparent);
+	border-color: var(--border);
+	backdrop-filter: blur(18px);
+}
+
+html[data-skin="studio"] [data-page-header] h1 {
+	font-family: var(--font-display);
+	font-weight: 650;
+	letter-spacing: -0.04em;
+}
+
+html[data-skin="studio"] [data-page-pill],
+html[data-skin="studio"] .rounded-full.border {
+	border-color: var(--border);
+}
+
+/* Cards in the feed: slightly rounder, hairline first, no heavy shadow. */
+html[data-skin="studio"] [data-project-card] article,
+html[data-skin="studio"] [data-blog-card] > div {
+	border-radius: 1.5rem;
+	border-color: var(--border);
+}
+
+/* Social cards keep their brand motifs in the simple skin; studio turns
+   them into one teal family so the contact page reads as one system. */
+html[data-skin="studio"] [data-social-card] {
+	border-color: var(--border);
+	background: color-mix(in oklab, var(--card) 78%, transparent);
+}
+
+html[data-skin="studio"] [data-social-card]:hover {
+	border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+}
+
+html[data-skin="studio"] [data-social-icon] {
+	border: 1px solid color-mix(in oklab, var(--primary) 25%, transparent);
+	background: color-mix(in oklab, var(--primary) 12%, transparent);
+	color: var(--primary);
+}
+
+html[data-skin="studio"] [data-social-mark] svg {
+	color: var(--primary);
+}
+
+/* The two places that pinned a cool near-black surface by hand. */
+html[data-skin="studio"] [data-project-card] article,
+html[data-skin="studio"] [class~="dark:bg-[#101119]"] {
+	background-color: var(--card);
+}
+
+html[data-skin="studio"] [data-project-card] article:hover {
+	border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+}
+
+html[data-skin="studio"] [data-project-card] h3 {
+	font-family: var(--font-display);
+	letter-spacing: -0.025em;
+}
+
+html[data-skin="studio"] #welcome-banner {
+	border-radius: 1.25rem;
+	border-color: var(--border);
+	background: color-mix(in oklab, var(--card) 78%, transparent);
+}
+
+html[data-skin="studio"] #welcome-banner .font-mono {
+	font-family: var(--font-mono);
+}
+
+/* Section headings + stats keep the display face. */
+html[data-skin="studio"] .font-sans.text-lg,
+html[data-skin="studio"] .font-sans.text-xl {
+	font-family: var(--font-display);
+	letter-spacing: -0.02em;
+}
+
+/* ------------------------------------------------------- switcher menu */
+
+.skin-menu:not([hidden]) {
+	animation: skin-menu-in 180ms var(--motion-ease);
+	transform-origin: top right;
+}
+
+/* The site's mobile reset caps every element at its containing block; a
+   dropdown has to be allowed to grow past the trigger. */
+.skin-menu {
+	max-width: calc(100vw - 2rem);
+}
+
+[data-skin-switcher-float] .skin-menu:not([hidden]) {
+	transform-origin: bottom left;
+}
+
+@keyframes skin-menu-in {
+	from {
+		opacity: 0;
+		scale: 0.97;
+		translate: 0 -4px;
+	}
+}
+
+[data-skin-switcher-float] {
+	display: block;
+}
+
+[data-skin-switcher-inline] {
+	display: none;
+}
+
+@media (min-width: 1024px) {
+	[data-skin-switcher-inline] {
+		display: block;
+	}
+
+	body:has([data-skin-switcher-inline]) [data-skin-switcher-float] {
+		display: none;
+	}
+}
+
+@media print {
+	[data-skin-switcher-float],
+	[data-skin-switcher-inline],
+	.studio-field,
+	.studio-grain,
+	.dot-cursor {
+		display: none !important;
+	}
+}
+
+/* -------------------------------------------------- view transitions */
+
+@keyframes studio-reveal {
+	from {
+		clip-path: circle(0 at var(--vt-x, 50%) var(--vt-y, 0));
+	}
+	to {
+		clip-path: circle(var(--vt-r, 150vmax) at var(--vt-x, 50%) var(--vt-y, 0));
+	}
+}
+
+/* Every named element gives its name up during the reveal so the whole page
+   is wiped, not cross-faded piece by piece. */
+:root[data-skin-switch] *,
+:root[data-theme-switch] * {
+	view-transition-name: none !important;
+}
+
+/* The site has lots of `transition-colors` wrappers. Kill those during the
+   reveal so the new snapshot is the final palette, not a half-finished fade. */
+:root[data-theme-switch] *,
+:root[data-theme-switch] *::before,
+:root[data-theme-switch] *::after {
+	transition: none !important;
+}
+
+:root:active-view-transition-type(skin)::view-transition-old(root),
+:root:active-view-transition-type(theme)::view-transition-old(root) {
+	animation: none !important;
+}
+
+:root:active-view-transition-type(skin)::view-transition-new(root) {
+	animation: studio-reveal 700ms cubic-bezier(0.7, 0, 0.2, 1) both !important;
+}
+
+:root:active-view-transition-type(theme)::view-transition-new(root) {
+	animation: studio-reveal 480ms cubic-bezier(0.2, 0.8, 0.2, 1) both !important;
+}
+
+/* View-transition types shipped after view transitions themselves. Older
+   Chromium builds still get the reveal from the switch marker. */
+:root[data-skin-switch]::view-transition-old(root),
+:root[data-theme-switch]::view-transition-old(root) {
+	animation: none !important;
+}
+
+:root[data-skin-switch]::view-transition-new(root) {
+	animation: studio-reveal 700ms cubic-bezier(0.7, 0, 0.2, 1) both !important;
+}
+
+:root[data-theme-switch]::view-transition-new(root) {
+	animation: studio-reveal 480ms cubic-bezier(0.2, 0.8, 0.2, 1) both !important;
+}
+
+/* Page navigation in both skins: the old page recedes, the new sheet slides
+   over it. */
+@keyframes studio-panel-in {
+	from {
+		transform: translateX(100%);
+	}
+}
+
+@keyframes studio-page-back {
+	to {
+		opacity: 0.55;
+		transform: translateX(-6%) scale(0.96);
+	}
+}
+
+@keyframes studio-page-out-back {
+	to {
+		transform: translateX(-100%);
+	}
+}
+
+:root[data-skin]::view-transition-old(root) {
+	animation: 650ms cubic-bezier(0.7, 0, 0.2, 1) both studio-page-back;
+}
+
+:root[data-skin]::view-transition-new(root) {
+	animation: 650ms cubic-bezier(0.7, 0, 0.2, 1) both studio-panel-in;
+}
+
+/*
+ * Back navigation, breadcrumbs and browser history: the current page pops
+ * away to the left (up on phones), revealing the page underneath instead of
+ * dragging a new page in from the left.
+ */
+:root[data-skin][data-astro-nav-direction="back"]::view-transition-old(root) {
+	animation: 500ms cubic-bezier(0.7, 0, 0.2, 1) both studio-page-out-back;
+}
+
+:root[data-skin][data-astro-nav-direction="back"]::view-transition-new(root) {
+	animation: none;
+}
+
+/*
+ * Docs: leave the sidebar in place and lift the reading pane. The root only
+ * fades, so the previous slide does not drag the whole documentation shell
+ * across the screen.
+ */
+@keyframes docs-fade-out {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes docs-fade-in {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes docs-main-out {
+	to {
+		opacity: 0;
+		transform: translateY(-6px);
+	}
+}
+
+@keyframes docs-main-in {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+}
+
+@keyframes docs-main-out-back {
+	to {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+}
+
+@keyframes docs-main-in-back {
+	from {
+		opacity: 0;
+		transform: translateY(-14px);
+	}
+}
+
+:root[data-skin][data-astro-nav-section="docs"] [data-docs-main] {
+	view-transition-name: docs-main;
+}
+
+@media (min-width: 1024px) {
+	:root[data-skin][data-astro-nav-section="docs"] [data-docs-sidebar] {
+		view-transition-name: docs-sidebar;
+	}
+}
+
+:root[data-skin][data-astro-nav-section="docs"]::view-transition-old(root) {
+	animation: docs-fade-out 160ms ease-in both;
+}
+
+:root[data-skin][data-astro-nav-section="docs"]::view-transition-new(root) {
+	animation: docs-fade-in 240ms var(--motion-ease) both;
+}
+
+:root[data-skin][data-astro-nav-section="docs"]::view-transition-old(docs-sidebar) {
+	animation: docs-fade-out 160ms ease-in both;
+}
+
+:root[data-skin][data-astro-nav-section="docs"]::view-transition-new(docs-sidebar) {
+	animation: docs-fade-in 240ms var(--motion-ease) both;
+}
+
+:root[data-skin][data-astro-nav-section="docs"]::view-transition-old(docs-main) {
+	animation: docs-main-out 180ms ease-in both;
+}
+
+:root[data-skin][data-astro-nav-section="docs"]::view-transition-new(docs-main) {
+	animation: docs-main-in 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+:root[data-skin][data-astro-nav-section="docs"][data-astro-nav-direction="back"]::view-transition-old(docs-main) {
+	animation-name: docs-main-out-back;
+}
+
+:root[data-skin][data-astro-nav-section="docs"][data-astro-nav-direction="back"]::view-transition-new(docs-main) {
+	animation-name: docs-main-in-back;
+}
+
+::view-transition-group(docs-main) {
+	animation-duration: 380ms;
+}
+
+::view-transition-group(docs-sidebar) {
+	animation-duration: 240ms;
+}
+
+@media (max-width: 767px) {
+	@keyframes studio-panel-in {
+		from {
+			transform: translateY(100%);
+		}
+	}
+
+	@keyframes studio-page-back {
+		to {
+			opacity: 0.55;
+			transform: translateY(-3%) scale(0.97);
+		}
+	}
+
+	@keyframes studio-page-out-back {
+		to {
+			transform: translateY(100%);
+		}
+	}
+}
+
+/* Studio page-load rise, slightly slower and softer than the original. */
+html[data-skin="studio"] .rise-in,
+html[data-skin="simple"] .rise-in {
+	animation-duration: 720ms;
+	animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.studio-grain > div {
+		animation: none;
+	}
+
+	:root:active-view-transition-type(skin)::view-transition-new(root),
+	:root:active-view-transition-type(theme)::view-transition-new(root),
+	:root[data-skin-switch]::view-transition-new(root),
+	:root[data-theme-switch]::view-transition-new(root),
+	:root[data-skin]::view-transition-old(root),
+	:root[data-skin]::view-transition-new(root) {
+		animation: none !important;
+	}
+}

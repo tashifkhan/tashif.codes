@@ -593,7 +593,7 @@ async function generateCoreCards(fontFiles) {
 					{ title: "GitHub", subtitle: "@tashifkhan", color: "#60a5fa" },
 					{ title: "LinkedIn", subtitle: "in/tashifkhan", color: "#38bdf8" },
 					{ title: "Twitter / X", subtitle: "@tashifcodes", color: "#ffffff" },
-					{ title: "Email", subtitle: "tashif@duck.com", color: "#34d399" },
+					{ title: "Email", subtitle: "me@taf.sh", color: "#34d399" },
 				],
 				tags: [
 					{ label: "Open Source", color: "#60a5fa" },

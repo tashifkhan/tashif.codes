@@ -3,7 +3,18 @@
 @plugin "tailwindcss-animate";
 @import "@fontsource/geist-sans";
 @import "@fontsource/geist-mono";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/jetbrains-mono/700.css";
 @import "@fontsource/lexend";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-sans/700.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource-variable/inter-tight";
+@import "./studio-skin.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -86,53 +97,19 @@ body::-webkit-scrollbar-track,
 html::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-thumb,
 *::-webkit-scrollbar-thumb {
-  background: rgba(194, 85, 35, 0.5);
+  background: color-mix(in oklab, var(--primary) 50%, transparent);
   border-radius: 8px;
 }
 
 html::-webkit-scrollbar-thumb:hover,
 body::-webkit-scrollbar-thumb:hover,
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(194, 85, 35, 0.85);
+  background: color-mix(in oklab, var(--primary) 85%, transparent);
 }
 
 html, body, * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(194, 85, 35, 0.6) transparent;
-}
-
-html.dark,
-html.dark body,
-html.dark * {
-  scrollbar-color: oklch(0.6397 0.1720 36.4421 / 0.3) transparent;
-}
-
-html.dark::-webkit-scrollbar-track,
-html.dark body::-webkit-scrollbar-track,
-html.dark *::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-html.dark::-webkit-scrollbar-thumb,
-html.dark body::-webkit-scrollbar-thumb,
-html.dark *::-webkit-scrollbar-thumb {
-  background: oklch(0.6397 0.1720 36.4421 / 0.3);
-}
-
-html.dark::-webkit-scrollbar-thumb:hover,
-html.dark body::-webkit-scrollbar-thumb:hover,
-html.dark *::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.6397 0.1720 36.4421 / 0.6);
-}
-
-.cream {
-  --bg-color: #fdf6e3;
-  --primary-color: #f5e9da;
-  --accent-color: #A47551;
-  --text-color: #3b2f1e;
-  --card-bg: #f7f1e1;
-  --label-color: #555;
-  --radius: 8px;
+  scrollbar-color: color-mix(in oklab, var(--primary) 60%, transparent) transparent;
 }
 
 body {
@@ -152,6 +129,28 @@ html {
 
 code, pre, .font-mono {
   font-family: var(--font-mono);
+}
+
+/* Theme toggle icon follows the class on <html>, not React state. */
+.theme-icon-sun,
+.theme-icon-light {
+  display: none;
+}
+
+html.dark .theme-icon-sun {
+  display: block;
+}
+
+html:not(.dark) .theme-icon-light {
+  display: block;
+}
+
+#reading-progress {
+  opacity: 0;
+}
+
+#reading-progress.is-visible {
+  opacity: 1;
 }
 
 /* Mobile-first responsive design */
@@ -572,6 +571,11 @@ nav::-webkit-scrollbar-thumb:hover {
     width: max-content;
   }
 
+  /* The section tabs sit at the left edge and only overflow when they must */
+  nav[data-tabs] > div {
+    width: auto;
+  }
+
   nav .flex {
     flex-shrink: 0;
     min-width: max-content;
@@ -815,7 +819,6 @@ html {
   background-color: var(--background);
 }
 html.dark { color-scheme: dark; }
-html.cream { color-scheme: light; }
 
 @layer base {
   * {
@@ -853,11 +856,13 @@ html.cream { color-scheme: light; }
 
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
-    display: none;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
   .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
   }
 }
 
@@ -893,6 +898,11 @@ summary {
 
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .motion-card:hover { transform: translateY(-2px); }
+
+  [data-social-card]:hover [data-social-mark] {
+    transform: scale(1.08);
+    opacity: 0.09;
+  }
 }
 
 [data-blog-card]:focus-visible,
@@ -958,6 +968,26 @@ a.motion-card:focus-visible {
   [data-blog-cover], .motion-card-arrow { translate: none !important; scale: none !important; }
   ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 }
+
+/* The same, switched on from the settings dock instead of the OS. */
+:root[data-reduce-motion] *,
+:root[data-reduce-motion] *::before,
+:root[data-reduce-motion] *::after {
+  scroll-behavior: auto !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+  animation-duration: 0.01ms !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+}
+:root[data-reduce-motion] { scroll-behavior: auto !important; }
+:root[data-reduce-motion] :is(.motion-card, .motion-tooltip) { transform: none !important; }
+:root[data-reduce-motion] :is([data-blog-cover], .motion-card-arrow) { translate: none !important; scale: none !important; }
+:root[data-reduce-motion] :is(.motion-control, button, [role="tab"]):active { scale: none !important; }
+:root[data-reduce-motion] :is(.rise-in, .studio-grain > div) { animation: none !important; }
+:root[data-reduce-motion] .dot-cursor { display: none !important; }
+:root[data-reduce-motion]::view-transition-old(*),
+:root[data-reduce-motion]::view-transition-new(*) { animation: none !important; }
 
 /* ── TanStack Charts tooltips (project stats dashboard) ── */
 .stats-chart-tooltip {

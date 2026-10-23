@@ -2,12 +2,22 @@ import { useState, useEffect } from "react";
 import { Sun, Moon, Vibrate, VibrateOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { trigger, hapticsEnabled, setHapticsEnabled } from "@/lib/haptics";
+import { motionReduced } from "@/lib/motion";
 
-const themes = ["dark", "light", "cream"];
+const themes = ["dark", "light"] as const;
+type Theme = (typeof themes)[number];
+
+/** The class on <html> is the source of truth, not React state. */
+function readTheme(): Theme {
+	if (typeof document === "undefined") return "light";
+	const root = document.documentElement;
+	if (root.classList.contains("dark")) return "dark";
+	return "light";
+}
 
 export default function ThemeToggle() {
-	const [theme, setTheme] = useState("dark");
 	const [hapticsOn, setHapticsOn] = useState(false);
+
 	useEffect(() => {
 		const sync = () => setHapticsOn(hapticsEnabled());
 		const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -22,31 +32,64 @@ export default function ThemeToggle() {
 		};
 	}, []);
 
-	useEffect(() => {
-		const saved = localStorage.getItem("theme");
-		if (saved) {
-			setTheme(saved);
-		} else {
-			const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-				.matches
-				? "dark"
-				: "light";
-			setTheme(systemTheme);
-		}
-	}, []);
-
-	const toggleTheme = () => {
+	const toggleTheme = (event: React.MouseEvent<HTMLButtonElement>) => {
 		trigger("selection");
-		const idx = themes.indexOf(theme);
-		const next = themes[(idx + 1) % themes.length];
-		setTheme(next);
-		document.documentElement.classList.remove("dark", "cream");
-		if (next === "dark") {
-			document.documentElement.classList.add("dark");
-		} else if (next === "cream") {
-			document.documentElement.classList.add("cream");
+
+		const root = document.documentElement;
+		// One reveal at a time. Letting transitions overlap made the palette
+		// snap between intermediate states.
+		if (root.hasAttribute("data-theme-switch")) return;
+
+		const current = readTheme();
+		const next = themes[(themes.indexOf(current) + 1) % themes.length];
+
+		const apply = () => {
+			root.classList.remove("dark");
+			if (next === "dark") root.classList.add("dark");
+			root.style.colorScheme = next === "dark" ? "dark" : "light";
+			try {
+				localStorage.setItem("theme", next);
+			} catch {}
+		};
+
+		const reduced = motionReduced();
+		const supportsTypes =
+			typeof CSS !== "undefined" &&
+			CSS.supports("selector(:active-view-transition-type(theme))");
+
+		// The new palette is revealed as a circle growing from the button, in
+		// both the original and studio skins. Browsers without the API repaint
+		// instantly. The class change is synchronous, and the CSS transition
+		// kill switch keeps the new snapshot from catching half-animated colors.
+		if (document.startViewTransition && !reduced && supportsTypes) {
+			const box = event.currentTarget.getBoundingClientRect();
+			const x = box.left + box.width / 2;
+			const y = box.top + box.height / 2;
+			const radius = Math.hypot(
+				Math.max(x, window.innerWidth - x),
+				Math.max(y, window.innerHeight - y),
+			);
+			root.style.setProperty("--vt-x", `${x}px`);
+			root.style.setProperty("--vt-y", `${y}px`);
+			root.style.setProperty("--vt-r", `${radius}px`);
+			root.dataset.themeSwitch = "";
+
+			try {
+				const transition = document.startViewTransition({
+					update: apply,
+					types: ["theme"],
+				} as unknown as () => void);
+				transition.finished.finally(() => {
+					delete root.dataset.themeSwitch;
+				});
+			} catch {
+				delete root.dataset.themeSwitch;
+				apply();
+			}
+			return;
 		}
-		localStorage.setItem("theme", next);
+
+		apply();
 	};
 
 	return (
@@ -57,17 +100,12 @@ export default function ThemeToggle() {
 				onClick={toggleTheme}
 				className="rounded-full hover:bg-muted"
 				aria-label="Toggle theme"
-				title={`Switch theme (current: ${theme})`}
+				title="Switch theme"
 			>
-				{theme === "dark" ? (
-					<Sun className="h-5 w-5" />
-				) : theme === "cream" ? (
-					<span style={{ color: "#A47551" }}>
-						<Moon className="h-5 w-5" />
-					</span>
-				) : (
+				<Sun className="theme-icon-sun h-5 w-5" />
+				<span className="theme-icon-light">
 					<Moon className="h-5 w-5" />
-				)}
+				</span>
 			</Button>
 			<Button
 				variant="ghost"

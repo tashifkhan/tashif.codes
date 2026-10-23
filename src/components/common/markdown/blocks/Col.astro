@@ -1,5 +1,12 @@
 ---
 import type { BlockProps } from "./shared";
-const { theme } = Astro.props as BlockProps;
+const { attrs, theme } = Astro.props as BlockProps;
 ---
-<div class:list={["md-col", theme.col]}><slot /></div>
+<div
+  class:list={[
+    "md-col",
+    (attrs.card || attrs.pick) && "md-col--card",
+    attrs.pick && "md-col--pick",
+    theme.col,
+  ]}
+><slot /></div>

@@ -1,0 +1,6 @@
+---
+/** Wraps a Markdown list so its bullets become check marks. */
+import type { BlockProps } from "./shared";
+const { theme } = Astro.props as BlockProps;
+---
+<div class:list={["md-ticks", theme.ticks]}><slot /></div>

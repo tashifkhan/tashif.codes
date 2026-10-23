@@ -12,6 +12,7 @@
  */
 
 import Ascii from "./Ascii.astro";
+import Banner from "./Banner.astro";
 import Bar from "./Bar.astro";
 import Bars from "./Bars.astro";
 import Callout from "./Callout.astro";
@@ -24,6 +25,8 @@ import Figure from "./Figure.astro";
 import Hand from "./Hand.astro";
 import Icon from "./Icon.astro";
 import InkBand from "./InkBand.astro";
+import Kbd from "./Kbd.astro";
+import Keys from "./Keys.astro";
 import Kpi from "./Kpi.astro";
 import Lede from "./Lede.astro";
 import Legend from "./Legend.astro";
@@ -33,6 +36,9 @@ import Meters from "./Meters.astro";
 import Panel from "./Panel.astro";
 import Phase from "./Phase.astro";
 import Phases from "./Phases.astro";
+import Pill from "./Pill.astro";
+import Quote from "./Quote.astro";
+import Stamp from "./Stamp.astro";
 import Stat from "./Stat.astro";
 import Step from "./Step.astro";
 import Steps from "./Steps.astro";
@@ -41,6 +47,7 @@ import Strips from "./Strips.astro";
 import Tab from "./Tab.astro";
 import Tabs from "./Tabs.astro";
 import Tape from "./Tape.astro";
+import Ticks from "./Ticks.astro";
 import Toc from "./Toc.astro";
 
 import { CALLOUT_NAMES } from "../pipeline/registry";
@@ -60,6 +67,9 @@ export const BLOCKS: Record<string, any> = {
 	Phase,
 	Checklist,
 	Lede,
+	Banner,
+	Quote,
+	Ticks,
 	Meters,
 	Meter,
 	Kpi,
@@ -70,6 +80,10 @@ export const BLOCKS: Record<string, any> = {
 	Sticker,
 	Hand,
 	Tape,
+	Pill,
+	Stamp,
+	Kbd,
+	Keys,
 	Mark,
 	Figure,
 	Ascii,

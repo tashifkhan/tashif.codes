@@ -7,7 +7,7 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { ExternalLink, Github } from "lucide-react";
+import { ChevronDown, ExternalLink, Github } from "lucide-react";
 import { githubProfiles } from "../../data/profile";
 
 interface ProfileDropdownProps {
@@ -20,16 +20,16 @@ export default function ProfileDropdown({ isMobile }: ProfileDropdownProps) {
 		<DropdownMenu onOpenChange={() => trigger("light")}>
 			<DropdownMenuTrigger
 				data-haptic="manual"
-				aria-label="External GitHub profiles"
+				aria-label="GitHub profiles"
 				className={
 					isMobile
-						? "inline-flex items-center justify-center h-7 w-7 rounded-lg text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors focus:outline-none shrink-0"
-						: "inline-flex items-center justify-center sm:justify-start gap-0 sm:gap-1.5 h-7 w-7 sm:w-auto sm:px-2.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors focus:outline-none shrink-0"
+						? "inline-flex items-center justify-center h-9 w-9 rounded-full text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+						: "inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-border/60 text-[13px] font-medium bg-card/70 text-foreground/90 hover:border-primary/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
 				}
 			>
-				{/* Icon-only on mobile; label from sm up */}
-				<ExternalLink className="w-3.5 h-3.5 sm:w-3 sm:h-3 shrink-0" />
-				<span className="hidden sm:inline">External Profile</span>
+				<Github className="w-3.5 h-3.5 shrink-0" />
+				<span className={isMobile ? "sr-only" : undefined}>Profiles</span>
+				{!isMobile && <ChevronDown className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />}
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				align="end"

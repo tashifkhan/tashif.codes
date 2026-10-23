@@ -1,0 +1,347 @@
+---
+/**
+ * Design-skin dropdown: the original tashif.codes skin, or the taf.sh v2
+ * studio skin. The choice lives on <html data-skin> and in localStorage, so
+ * it survives ClientRouter swaps and full reloads.
+ *
+ * `inline` sits in the dashboard header. `floating` is the fallback for pages
+ * with their own chrome (blog posts, docs, 404); CSS hides it whenever an
+ * inline instance exists on the page.
+ */
+interface Props {
+	variant?: "inline" | "floating";
+}
+
+const { variant = "inline" } = Astro.props;
+const isFloating = variant === "floating";
+---
+
+<div
+	class:list={[
+		"skin-switcher",
+		!isFloating && "relative",
+		isFloating && "fixed bottom-4 left-4 z-50 transition-[transform,opacity] duration-300 ease-out sm:bottom-6 sm:left-6",
+	]}
+	data-skin-switcher
+	data-skin-switcher-inline={!isFloating ? "" : undefined}
+	data-skin-switcher-float={isFloating ? "" : undefined}
+>
+	<button
+		type="button"
+		class="inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-full border border-border/70 bg-card/70 px-3 font-mono text-[0.6875rem] tracking-wide text-muted-foreground shadow-sm backdrop-blur transition-colors hover:border-primary/40 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:h-10 sm:px-4"
+		data-skin-trigger
+		aria-haspopup="menu"
+		aria-expanded="false"
+		aria-label="Design theme"
+		title="Design theme"
+	>
+		<svg
+			width="14"
+			height="14"
+			viewBox="0 0 16 16"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="1.4"
+			aria-hidden="true"
+		>
+			<path d="M2 4.5h12M2 8h12M2 11.5h12" />
+			<circle cx="5.5" cy="4.5" r="1.4" fill="var(--background)" />
+			<circle cx="10.5" cy="8" r="1.4" fill="var(--background)" />
+			<circle cx="7" cy="11.5" r="1.4" fill="var(--background)" />
+		</svg>
+		<span class="hidden lg:inline">Design</span>
+		<span class="text-foreground" data-skin-label>Simple</span>
+		<svg
+			class="size-3 opacity-60 transition-transform duration-200 [[data-open]_&]:rotate-180"
+			width="12"
+			height="12"
+			viewBox="0 0 12 12"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="1.4"
+			aria-hidden="true"
+		>
+			<path d="m2.5 4.5 3.5 3.5 3.5-3.5" />
+		</svg>
+	</button>
+
+	<div
+		class:list={[
+			"skin-menu absolute z-50 w-72 rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-xl",
+			isFloating ? "bottom-full left-0 mb-2" : "right-0 top-full mt-2",
+		]}
+		data-skin-menu
+		role="menu"
+		aria-label="Design theme"
+		hidden
+	>
+		<p class="px-2 pb-1.5 pt-1 font-mono text-[0.625rem] tracking-widest text-muted-foreground">
+			Design theme
+		</p>
+
+		<button
+			type="button"
+			class="group flex w-full items-start gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary aria-checked:bg-accent"
+			role="menuitemradio"
+			aria-checked="true"
+			data-skin-set="simple"
+		>
+			<span
+				class="mt-0.5 grid size-7 shrink-0 place-items-center rounded-md border border-[#f97316]/30 bg-[#f97316]/10 font-mono text-[0.625rem] text-[#ea580c] dark:text-[#fb923c]"
+				aria-hidden="true">01</span
+			>
+			<span class="min-w-0 flex-1">
+				<span class="flex items-center gap-2 text-sm font-medium text-foreground">
+					Simple
+					<span class="rounded-full border border-border px-1.5 py-px font-mono text-[0.5625rem] tracking-wider text-muted-foreground">original</span>
+				</span>
+				<span class="mt-0.5 block text-xs leading-5 text-muted-foreground">
+					The original tashif.codes dashboard.
+				</span>
+			</span>
+			<svg
+				class="mt-1 size-3.5 shrink-0 text-primary opacity-0 group-aria-checked:opacity-100"
+				width="14"
+				height="14"
+				viewBox="0 0 14 14"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="1.7"
+				aria-hidden="true"
+				data-skin-check
+			>
+				<path d="m2.5 7.5 3 3 6-7" />
+			</svg>
+		</button>
+
+		<button
+			type="button"
+			class="group mt-0.5 flex w-full items-start gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary aria-checked:bg-accent"
+			role="menuitemradio"
+			aria-checked="false"
+			data-skin-set="studio"
+		>
+			<span
+				class="mt-0.5 grid size-7 shrink-0 place-items-center rounded-md border border-[#0f7a6c]/30 bg-[#0f7a6c]/10 font-mono text-[0.625rem] text-[#0f7a6c] dark:border-[#4fd1c5]/30 dark:bg-[#4fd1c5]/10 dark:text-[#4fd1c5]"
+				aria-hidden="true">02</span
+			>
+			<span class="min-w-0 flex-1">
+				<span class="flex items-center gap-2 text-sm font-medium text-foreground">
+					Studio
+					<span class="rounded-full border border-[#0f7a6c]/30 bg-[#0f7a6c]/10 px-1.5 py-px font-mono text-[0.5625rem] tracking-wider text-[#0f7a6c] dark:border-[#4fd1c5]/30 dark:bg-[#4fd1c5]/10 dark:text-[#4fd1c5]">taf.sh v2</span>
+				</span>
+				<span class="mt-0.5 block text-xs leading-5 text-muted-foreground">
+					Warm paper, teal ink, drafting canvas.
+				</span>
+			</span>
+			<svg
+				class="mt-1 size-3.5 shrink-0 text-primary opacity-0 group-aria-checked:opacity-100"
+				width="14"
+				height="14"
+				viewBox="0 0 14 14"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="1.7"
+				aria-hidden="true"
+				data-skin-check
+			>
+				<path d="m2.5 7.5 3 3 6-7" />
+			</svg>
+		</button>
+	</div>
+</div>
+
+<script is:inline>
+	(() => {
+		const KEY = "tashif-skin";
+		const root = document.documentElement;
+		const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+
+		const read = () => (localStorage.getItem(KEY) === "studio" ? "studio" : "simple");
+
+		const apply = (skin) => {
+			root.dataset.skin = skin;
+			try {
+				localStorage.setItem(KEY, skin);
+			} catch {}
+		};
+
+		const sync = () => {
+			const skin = read();
+			root.dataset.skin = skin;
+
+			document.querySelectorAll("[data-skin-switcher]").forEach((switcher) => {
+				const label = switcher.querySelector("[data-skin-label]");
+				if (label) label.textContent = skin === "studio" ? "Studio" : "Simple";
+
+				const trigger = switcher.querySelector("[data-skin-trigger]");
+				trigger?.setAttribute(
+					"aria-label",
+					`Design theme: ${skin === "studio" ? "Studio" : "Simple"}`,
+				);
+
+				switcher.querySelectorAll("[data-skin-set]").forEach((option) => {
+					const active = option.dataset.skinSet === skin;
+					option.setAttribute("aria-checked", String(active));
+					const check = option.querySelector("[data-skin-check]");
+					if (check) check.style.opacity = active ? "1" : "";
+				});
+			});
+		};
+
+		const closeAll = (except) => {
+			document.querySelectorAll("[data-skin-switcher]").forEach((switcher) => {
+				if (switcher === except) return;
+				const menu = switcher.querySelector("[data-skin-menu]");
+				const trigger = switcher.querySelector("[data-skin-trigger]");
+				switcher.removeAttribute("data-open");
+				if (menu) menu.hidden = true;
+				if (trigger) trigger.setAttribute("aria-expanded", "false");
+			});
+		};
+
+		const animateTo = (skin, origin) => {
+			if (skin === read()) return;
+			const supportsTypes =
+				typeof CSS !== "undefined" &&
+				CSS.supports("selector(:active-view-transition-type(skin))");
+
+			if (
+				!document.startViewTransition ||
+				reduced.matches ||
+				root.hasAttribute("data-reduce-motion") ||
+				!supportsTypes
+			) {
+				apply(skin);
+				sync();
+				return;
+			}
+
+			const box = origin.getBoundingClientRect();
+			const x = box.left + box.width / 2;
+			const y = box.top + box.height / 2;
+			const radius = Math.hypot(
+				Math.max(x, innerWidth - x),
+				Math.max(y, innerHeight - y),
+			);
+			root.style.setProperty("--vt-x", `${x}px`);
+			root.style.setProperty("--vt-y", `${y}px`);
+			root.style.setProperty("--vt-r", `${radius}px`);
+			root.dataset.skinSwitch = "";
+
+			const transition = document.startViewTransition({
+				update: () => {
+					apply(skin);
+					sync();
+				},
+				types: ["skin"],
+			});
+			transition.finished.finally(() => delete root.dataset.skinSwitch);
+		};
+
+		// One delegated listener survives ClientRouter body swaps.
+		if (!window.__skinSwitcherWired) {
+			window.__skinSwitcherWired = true;
+
+			document.addEventListener("click", (event) => {
+				const target = event.target instanceof Element ? event.target : null;
+				if (!target) return;
+
+				const option = target.closest("[data-skin-set]");
+				if (option) {
+					event.preventDefault();
+					const switcher = option.closest("[data-skin-switcher]");
+					animateTo(option.dataset.skinSet === "studio" ? "studio" : "simple", option);
+					closeAll();
+					switcher?.querySelector("[data-skin-trigger]")?.focus();
+					return;
+				}
+
+				const trigger = target.closest("[data-skin-trigger]");
+				if (trigger) {
+					event.preventDefault();
+					const switcher = trigger.closest("[data-skin-switcher]");
+					const menu = switcher?.querySelector("[data-skin-menu]");
+					if (!switcher || !menu) return;
+					const open = menu.hidden;
+					closeAll(switcher);
+					menu.hidden = !open;
+					trigger.setAttribute("aria-expanded", String(open));
+					if (open) {
+						switcher.setAttribute("data-open", "");
+						(
+							menu.querySelector('[data-skin-set][aria-checked="true"]') ??
+							menu.querySelector("[data-skin-set]")
+						)?.focus();
+					} else {
+						switcher.removeAttribute("data-open");
+					}
+					return;
+				}
+
+				if (!target.closest("[data-skin-switcher]")) closeAll();
+			});
+
+			document.addEventListener("keydown", (event) => {
+				if (event.key !== "Escape") return;
+				const open = document.querySelector("[data-skin-switcher][data-open]");
+				if (!open) return;
+				const trigger = open.querySelector("[data-skin-trigger]");
+				closeAll();
+				trigger?.focus();
+			});
+
+			document.addEventListener("astro:page-load", sync);
+			document.addEventListener("astro:after-swap", sync);
+			addEventListener("storage", (event) => {
+				if (event.key === KEY) sync();
+			});
+		}
+
+		// Keep the floating switcher out of the way while the page is moving
+		// down; it comes back as soon as you scroll up.
+		if (!window.__skinSwitcherScrollWired) {
+			window.__skinSwitcherScrollWired = true;
+			let lastY = window.scrollY;
+			let ticking = false;
+
+			const updateFloating = () => {
+				const switcher = document.querySelector("[data-skin-switcher-float]");
+				if (switcher) {
+					const y = window.scrollY;
+					const hide = y > 120 && y > lastY + 4;
+					switcher.classList.toggle("translate-y-24", hide);
+					switcher.classList.toggle("opacity-0", hide);
+					switcher.classList.toggle("pointer-events-none", hide);
+
+					if (hide) {
+						const menu = switcher.querySelector("[data-skin-menu]");
+						const trigger = switcher.querySelector("[data-skin-trigger]");
+						if (menu && !menu.hidden) {
+							menu.hidden = true;
+							switcher.removeAttribute("data-open");
+							trigger?.setAttribute("aria-expanded", "false");
+						}
+					}
+
+					lastY = y;
+				}
+				ticking = false;
+			};
+
+			const requestFloatingUpdate = () => {
+				if (ticking) return;
+				ticking = true;
+				requestAnimationFrame(updateFloating);
+			};
+
+			addEventListener("scroll", requestFloatingUpdate, { passive: true });
+			document.addEventListener("astro:page-load", () => {
+				lastY = window.scrollY;
+				requestFloatingUpdate();
+			});
+		}
+
+		sync();
+	})();
+</script>

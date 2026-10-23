@@ -1,0 +1,12 @@
+---
+import { rotateStyle } from "./shared";
+import type { BlockProps } from "./shared";
+const { attrs, theme, inline } = Astro.props as BlockProps;
+// Tilted by default; `rotate={0}` straightens it.
+const rotate = typeof attrs.rotate === "number" ? attrs.rotate : -4;
+const Tag = inline ? "span" : "div";
+---
+<Tag
+  class:list={["md-stamp", `md-stamp--${attrs.tone ?? "ink"}`, !inline && "md-stamp--block", theme.stamp]}
+  style={rotate ? `--md-stamp-rotate: ${Math.max(-15, Math.min(15, rotate))}deg` : undefined}
+><span class="md-stamp-ink"><slot /></span></Tag>

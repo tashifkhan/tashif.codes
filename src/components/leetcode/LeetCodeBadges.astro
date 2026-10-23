@@ -8,16 +8,14 @@ const { badges } = leetCodeData;
 <section
 	class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden h-fit"
 >
-	<div class="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
-		<Medal className="w-3.5 h-3.5 text-muted-foreground" />
-		<span
-			class="text-[10px] font-bold tracking-[0.18em] text-muted-foreground"
-		>
-			Achievement Badges
-		</span>
+	<div class="px-4 sm:px-5 py-3 border-b border-border/60 flex flex-wrap items-center gap-x-2 gap-y-1">
+		<Medal className="w-4 h-4 text-muted-foreground" />
+		<h3 class="font-sans text-sm font-semibold tracking-tight text-foreground">
+			Achievement badges
+		</h3>
 		{
 			badges.length > 0 && (
-				<span class="ml-auto font-mono text-[10px] text-muted-foreground bg-muted/50 border border-border/40 px-2 py-0.5 rounded-full tabular-nums">
+				<span class="ml-auto font-mono text-xs text-muted-foreground bg-muted/50 border border-border/40 px-2 py-0.5 rounded-full tabular-nums">
 					{badges.length}
 				</span>
 			)
@@ -32,10 +30,10 @@ const { badges } = leetCodeData;
 							<Award className="w-4 h-4 text-amber-500" />
 						</div>
 						<div class="flex-1 min-w-0">
-							<p class="text-[13px] font-medium text-foreground truncate">
+							<p class="text-sm font-medium text-foreground line-clamp-2 break-words">
 								{badge.displayName}
 							</p>
-							<p class="mt-0.5 font-mono text-[11px] text-muted-foreground truncate">
+							<p class="mt-0.5 font-mono text-xs text-muted-foreground truncate">
 								{new Date(badge.createdDate).toLocaleDateString()}
 							</p>
 						</div>

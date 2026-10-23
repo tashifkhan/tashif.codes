@@ -1,4 +1,5 @@
 import type { Education, Position, ResumeAction, ResumeProject, SkillCategory } from "@/types";
+import { contactEmail } from "./profile";
 
 
 
@@ -19,7 +20,7 @@ export const resumeAbout = {
 			url: "https://linkedin.com/in/tashifkhan",
 			icon: "linkedin",
 		},
-		{ label: "Email", url: "mailto:me@tashif.codes", icon: "mail" },
+		{ label: "Email", url: `mailto:${contactEmail}`, icon: "mail" },
 		{
 			label: "Resume",
 			url: "https://tashif.codes/resume:pdf",

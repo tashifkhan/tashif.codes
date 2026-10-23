@@ -2,6 +2,9 @@
 import "../styles/global.css";
 import PostHog from "../components/common/posthog.astro";
 import Haptics from "../components/common/Haptics.astro";
+import SettingsDock from "../components/common/SettingsDock.tsx";
+import DotCursor from "../components/common/DotCursor.astro";
+import StudioField from "../components/common/StudioField.astro";
 import { ClientRouter } from "astro:transitions";
 import Analytics from "@vercel/analytics/astro";
 import {
@@ -34,6 +37,12 @@ const social = resolveSocialImageMeta({
 	pathname: url ?? Astro.url.pathname,
 	alt: title,
 });
+
+// The docs reader and the printable resume keep a solid surface. Everything
+// else gets the viewport-wide ambient field and the shared footer.
+const isDocsReader = /^\/docs\/[^/]+/.test(Astro.url.pathname);
+const showAmbientChrome =
+	!isDocsReader && Astro.url.pathname !== "/print-resume";
 ---
 
 <!doctype html>
@@ -42,6 +51,164 @@ const social = resolveSocialImageMeta({
 		<meta charset="UTF-8" />
 		<meta name="description" content={description} />
 		<meta name="viewport" content="width=device-width" />
+		<script is:inline data-astro-rerun>
+			// Resolve the design skin before the first paint so the studio palette
+			// never flashes on top of the simple one.
+			(() => {
+				try {
+					const stored = localStorage.getItem("tashif-skin");
+					document.documentElement.dataset.skin =
+						stored === "studio" ? "studio" : "simple";
+				} catch {
+					document.documentElement.dataset.skin = "simple";
+				}
+			})();
+		</script>
+		<script is:inline data-astro-rerun>
+			// The dock's reduce motion switch. Restored before first paint so the
+			// page load rise and field draw-in never start.
+			(() => {
+				try {
+					document.documentElement.toggleAttribute(
+						"data-reduce-motion",
+						localStorage.getItem("site-reduce-motion") === "true",
+					);
+				} catch {}
+			})();
+		</script>
+		<script is:inline>
+			// Carry the switch onto the incoming page so the navigation slide
+			// itself respects it.
+			document.addEventListener("astro:before-swap", (event) => {
+				event.newDocument.documentElement.toggleAttribute(
+					"data-reduce-motion",
+					document.documentElement.hasAttribute("data-reduce-motion"),
+				);
+			});
+		</script>
+		<script is:inline data-astro-rerun>
+			// Light, dark, or system. Paint the resolved palette before CSS.
+			(() => {
+				try {
+					const stored = localStorage.getItem("theme");
+					const mode =
+						stored === "dark" || stored === "light" || stored === "system"
+							? stored
+							: stored === "cream"
+								? "light"
+								: "system";
+					const root = document.documentElement;
+					const dark =
+						mode === "dark" ||
+						(mode === "system" &&
+							matchMedia("(prefers-color-scheme: dark)").matches);
+
+					root.classList.toggle("dark", dark);
+					root.classList.remove("cream");
+					root.style.colorScheme = dark ? "dark" : "light";
+					root.dataset.themeMode = mode;
+
+					if (mode !== stored) {
+						try {
+							localStorage.setItem("theme", mode);
+						} catch {}
+					}
+				} catch {
+					document.documentElement.classList.remove("dark", "cream");
+				}
+			})();
+		</script>
+		<script is:inline>
+			// Direction-aware page transitions. Breadcrumbs and back links mark
+			// themselves `data-nav-back`; browser traversal falls through to the
+			// popstate / Navigation API handlers below.
+			(() => {
+				const root = document.documentElement;
+				let traversalHandled = false;
+				const set = (direction) => {
+					root.dataset.astroNavDirection = direction;
+				};
+
+				document.addEventListener(
+					"click",
+					(event) => {
+						if (
+							event.defaultPrevented ||
+							event.button !== 0 ||
+							event.metaKey ||
+							event.ctrlKey ||
+							event.shiftKey ||
+							event.altKey
+						) {
+							return;
+						}
+						const target = event.target instanceof Element ? event.target : null;
+						const link = target?.closest("a[href]");
+						if (
+							!link ||
+							link.hasAttribute("download") ||
+							(link.target && link.target !== "_self")
+						) {
+							return;
+						}
+						const url = new URL(link.href, location.href);
+						if (url.origin !== location.origin) return;
+						if (
+							url.pathname === location.pathname &&
+							url.search === location.search
+						) {
+							return;
+						}
+						traversalHandled = false;
+						set(
+							link.closest("[data-nav-back], [data-haptic-back]")
+								? "back"
+								: "forward",
+						);
+					},
+					true,
+				);
+
+				addEventListener("popstate", () => {
+					if (!traversalHandled) set("back");
+					traversalHandled = false;
+				});
+
+				// Chrome exposes indexes for history traversal; use them to tell
+				// back from forward. Other browsers fall back to `back` on popstate.
+				const navigation = "navigation" in window ? window.navigation : null;
+				navigation?.addEventListener?.("navigate", (event) => {
+					if (event.navigationType !== "traverse") return;
+					traversalHandled = true;
+					const to = event.destination?.index;
+					const from = navigation.currentEntry?.index;
+					if (typeof to === "number" && typeof from === "number" && to !== from) {
+						set(to < from ? "back" : "forward");
+					} else {
+						set("back");
+					}
+				});
+
+				// Astro knows both ends of every ClientRouter navigation. Use that
+				// to tell an entry into docs (slide) from a move inside docs (fade).
+				const isDocsPath = (path) =>
+					path === "/docs" || path.startsWith("/docs/");
+				document.addEventListener("astro:before-preparation", (event) => {
+					const fromDocs = isDocsPath(event.from.pathname);
+					const toDocs = isDocsPath(event.to.pathname);
+					root.dataset.astroNavSection =
+						toDocs && !fromDocs
+							? "docs-in"
+							: fromDocs && toDocs
+								? "docs"
+								: fromDocs && !toDocs
+									? "docs-out"
+									: "other";
+				});
+
+				set("forward");
+			})();
+		</script>
 		<meta name="author" content={siteAuthor()} />
 		<meta name="robots" content="index, follow, max-image-preview:large" />
 		<link rel="icon" type="image/png" href="/favicon.png" />
@@ -103,38 +270,99 @@ const social = resolveSocialImageMeta({
 		<ClientRouter />
 	</head>
 	<body>
-		<slot />
+		{showAmbientChrome && <StudioField class="opacity-70" geometry={true} />}
+		<div class="relative z-10">
+			<slot />
+			{
+				showAmbientChrome && (
+					<footer
+						data-site-footer
+						class="border-t border-border/60 bg-background/70 backdrop-blur-sm"
+					>
+						<div class="mx-auto flex w-full max-w-7xl flex-col gap-2 px-4 py-6 font-mono text-[0.6875rem] tracking-wide text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+							<span>tashif.codes</span>
+							<a
+								href="https://taf.sh"
+								target="_blank"
+								rel="noopener noreferrer"
+								data-haptic-external
+								class="group inline-flex items-center gap-2 pr-16 text-muted-foreground transition-colors hover:text-primary"
+							>
+								<span>Studio work at</span>
+								<span class="font-medium text-primary">taf.sh</span>
+								<svg
+									class="h-3.5 w-3.5 text-primary transition-transform duration-300 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-focus-visible:-translate-y-0.5 group-focus-visible:translate-x-0.5"
+									viewBox="0 0 16 16"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="1.5"
+									aria-hidden="true"
+								>
+									<path
+										d="M4 12 12 4M6 4h6v6"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>
+							</a>
+						</div>
+					</footer>
+				)
+			}
+		</div>
+		<DotCursor />
+		<!-- Studio skin film grain. Hidden unless html[data-skin="studio"]. -->
+		<div
+			class="studio-grain pointer-events-none fixed inset-0 z-[80] overflow-hidden opacity-[0.045] mix-blend-overlay"
+			aria-hidden="true"
+		>
+			<div
+				class="absolute -inset-1/2"
+				style={`background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`}
+			>
+			</div>
+		</div>
+		<SettingsDock client:load />
 		<Haptics />
 		<PostHog />
 		<Analytics />
 		<script is:inline>
-			// Apply theme before paint to avoid flash — runs on initial load and after every swap
+			// Keep the chosen palette on the root across ClientRouter swaps. The
+			// mode is light, dark, or system; a stored "cream" becomes light.
 			function applyTheme() {
-				const storedTheme = localStorage.getItem("theme");
-				const theme =
-					storedTheme ||
-					(window.matchMedia("(prefers-color-scheme: dark)").matches
-						? "dark"
-						: "light");
+				const stored = localStorage.getItem("theme");
+				const mode =
+					stored === "dark" || stored === "light" || stored === "system"
+						? stored
+						: stored === "cream"
+							? "light"
+							: "system";
+				const root = document.documentElement;
+				const dark =
+					mode === "dark" ||
+					(mode === "system" &&
+						window.matchMedia("(prefers-color-scheme: dark)").matches);
 
-				if (theme === "cream") {
-					document.documentElement.classList.remove("dark");
-					document.documentElement.classList.add("cream");
-				} else if (theme === "dark") {
-					document.documentElement.classList.add("dark");
-					document.documentElement.classList.remove("cream");
-				} else {
-					document.documentElement.classList.remove("dark");
-					document.documentElement.classList.remove("cream");
-				}
+				root.classList.toggle("dark", dark);
+				root.classList.remove("cream");
+				root.style.colorScheme = dark ? "dark" : "light";
+				root.dataset.themeMode = mode;
 
-				if (!storedTheme) {
-					localStorage.setItem("theme", theme);
+				if (stored !== mode) {
+					try {
+						localStorage.setItem("theme", mode);
+					} catch {}
 				}
 			}
 
 			applyTheme();
 			document.addEventListener("astro:after-swap", applyTheme);
+
+			const themeMedia = window.matchMedia("(prefers-color-scheme: dark)");
+			themeMedia.addEventListener("change", () => {
+				const stored = localStorage.getItem("theme");
+				if (stored === "system" || stored === null) applyTheme();
+			});
 		</script>
 	</body>
 </html>

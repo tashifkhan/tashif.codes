@@ -52,12 +52,12 @@ export default function PersonalOnlyToggle({ className }: Props) {
 			aria-label="Show only personal GitHub contributions"
 			title={
 				enabled
-					? "Showing personal account only — click to include work accounts"
-					: "Showing all accounts — click to show personal only"
+					? "Showing the personal account only. Click to include work accounts."
+					: "Showing all accounts. Click to show the personal account only."
 			}
 			onClick={onToggle}
 			className={cn(
-				"group inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/50 px-2.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+				"group inline-flex h-9 items-center gap-2 rounded-full border border-border/60 bg-background/50 px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
 				enabled && "border-primary/40 bg-primary/5 text-foreground",
 				className
 			)}

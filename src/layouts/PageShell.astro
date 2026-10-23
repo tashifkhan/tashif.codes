@@ -64,17 +64,23 @@ const tintClass = {
 	url={url ?? Astro.url.pathname}
 >
 	<div
+		data-page-shell
+		data-page-surface
 		class="relative min-h-screen bg-gradient-to-b from-muted to-background dark:from-background dark:to-card text-foreground transition-colors duration-300 font-sans"
 	>
 		{
 			tint !== "none" && (
-				<div class="pointer-events-none absolute inset-0 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]">
+				<div
+					data-page-tint
+					class="pointer-events-none absolute inset-0 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]"
+				>
 					<div class={tintClass} />
 				</div>
 			)
 		}
 
 		<header
+			data-page-header
 			class="relative bg-card/80 backdrop-blur border-b border-border/60 transition-colors duration-300"
 		>
 			<div
@@ -96,6 +102,7 @@ const tintClass = {
 											<a
 												href={crumb.href}
 												data-haptic-nav
+												data-nav-back
 												class="text-muted-foreground hover:text-primary transition-colors"
 											>
 												{crumb.label}

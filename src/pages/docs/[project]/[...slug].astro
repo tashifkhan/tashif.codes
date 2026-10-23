@@ -74,6 +74,7 @@ const breadcrumbs = [
 	>
 		<!-- Desktop sidebar -->
 		<aside
+			data-docs-sidebar
 			class="hidden lg:block w-72 shrink-0 h-full border-r border-border/60 bg-card/60 backdrop-blur-xl"
 		>
 			<DocsSidebar
@@ -127,7 +128,7 @@ const breadcrumbs = [
 			/>
 		</div>
 
-		<main class="relative flex-1 min-w-0 h-full overflow-y-auto">
+		<main data-docs-main class="relative flex-1 min-w-0 h-full overflow-y-auto">
 			<!-- Atmospheric wash behind the header, matching PageShell's orange tint -->
 			<div
 				class="pointer-events-none absolute inset-x-0 top-0 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]"
@@ -163,6 +164,7 @@ const breadcrumbs = [
 												<a
 													href={crumb.href}
 													data-haptic-nav
+													data-nav-back
 													class="text-muted-foreground hover:text-primary transition-colors"
 												>
 													{crumb.label}
@@ -232,6 +234,7 @@ const breadcrumbs = [
 									<a
 										href={`/docs/${prev.slug}`}
 										data-haptic-nav
+										data-nav-back
 										class="group flex-1 min-w-0 rounded-2xl border border-border/50 bg-card/70 backdrop-blur-sm p-4 transition-all duration-200 hover:border-primary/30 hover:shadow-md"
 									>
 										<span class="flex items-center gap-1 text-[10px] font-bold tracking-[0.18em] text-muted-foreground">

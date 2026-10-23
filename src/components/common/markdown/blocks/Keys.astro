@@ -1,0 +1,20 @@
+---
+/** A shortcut: keycaps joined by `sep`. `prefix` renders as a named PREFIX cap. */
+import { resolveKey, splitKeys, type Platform } from "../pipeline/keycaps";
+import type { BlockProps } from "./shared";
+
+const { attrs, theme } = Astro.props as BlockProps;
+const platform = (attrs.platform === "win" ? "win" : "mac") as Platform;
+const sep = typeof attrs.sep === "string" ? attrs.sep : "+";
+const caps = splitKeys(String(attrs.keys ?? "")).map((key) => resolveKey(key, platform));
+---
+<span class:list={["md-keys", theme.keys]}>
+  {
+    caps.map((cap, index) => (
+      <>
+        {index > 0 && sep && <span class="md-keys-sep" aria-hidden="true">{sep}</span>}
+        <kbd class:list={["md-kbd", cap.mod && "md-kbd--mod", theme.kbd]} title={cap.title}>{cap.glyph}</kbd>
+      </>
+    ))
+  }
+</span>

@@ -29,18 +29,20 @@ const ICONS: Record<TabId, any> = {
 const titleFor = (titleLabel: string) =>
 	titleLabel
 		? `${titleLabel} | ${owner.name}`
-		: `${owner.name} | Dashboard & Portfolio`;
+		: `${owner.name} | Dashboard`;
 
 const tabClass =
-	"inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background motion-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:text-foreground shrink-0";
+	"inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 py-1.5 text-xs font-medium ring-offset-background motion-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:text-foreground shrink-0 grow sm:grow-0 sm:px-3 sm:text-sm";
 ---
 
 <nav
+	data-tabs
 	class="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-card/70 dark:supports-[backdrop-filter]:bg-card/60 bg-card/80 dark:bg-card/70 border-b border-border/60 dark:border-border/60 transition-colors duration-300 overflow-x-auto font-sans no-scrollbar"
 >
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
 		<div
-			class="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground w-full sm:w-auto overflow-x-auto no-scrollbar"
+			data-tabs-inner
+			class="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground w-full overflow-x-auto no-scrollbar sm:w-auto"
 			style="overflow-x: auto !important;"
 		>
 			{
@@ -57,8 +59,8 @@ const tabClass =
 							aria-current={isActive ? "page" : undefined}
 							class={tabClass}
 						>
-							<Icon size={16} className="mr-2" />
-							{tab.label}
+							<Icon size={16} className="mr-2 hidden sm:block" />
+							<span data-tab-label data-scramble={tab.label}>{tab.label}</span>
 						</a>
 					);
 				})
@@ -66,3 +68,97 @@ const tabClass =
 		</div>
 	</div>
 </nav>
+
+<script is:inline>
+	(() => {
+		if (window.__tabScrambleWired) return;
+		window.__tabScrambleWired = true;
+
+		const glyphs = "!<>-_\\/[]{}=+*^?#%&$abcdefxyz0123456789";
+		const running = new WeakMap();
+		const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+
+		const scramble = (element) => {
+			if (
+				reduced.matches ||
+				document.documentElement.hasAttribute("data-reduce-motion")
+			) {
+				return;
+			}
+			const text = element.dataset.scramble || "";
+			if (!text) return;
+
+			const token = (running.get(element) || 0) + 1;
+			running.set(element, token);
+			const start = performance.now();
+			const length = text.length;
+
+			const frame = (now) => {
+				if (running.get(element) !== token) return;
+				const progress = Math.min(1, (now - start) / 380);
+				const settled = Math.floor(progress * length);
+				let output = text.slice(0, settled);
+				for (let i = settled; i < length; i++) {
+					output +=
+						text[i] === " "
+							? " "
+							: glyphs[(Math.random() * glyphs.length) | 0];
+				}
+				element.textContent = output;
+				if (progress < 1) requestAnimationFrame(frame);
+				else element.textContent = text;
+			};
+
+			requestAnimationFrame(frame);
+		};
+
+		document.addEventListener("pointerover", (event) => {
+			const target =
+				event.target instanceof Element
+					? event.target.closest("[data-scramble]")
+					: null;
+			if (
+				!target ||
+				(event.relatedTarget instanceof Node && target.contains(event.relatedTarget))
+			) {
+				return;
+			}
+			scramble(target);
+		});
+
+		document.addEventListener("focusin", (event) => {
+			const tab =
+				event.target instanceof Element
+					? event.target.closest("[data-tab]")
+					: null;
+			const label = tab?.querySelector("[data-scramble]");
+			if (label instanceof HTMLElement) scramble(label);
+		});
+	})();
+</script>
+
+<script is:inline>
+	(() => {
+		const centerActiveTab = () => {
+			const nav = document.querySelector("[data-tabs]");
+			const active = nav?.querySelector('[data-tab][aria-current="page"]');
+			if (!(nav instanceof HTMLElement) || !(active instanceof HTMLElement)) {
+				return;
+			}
+
+			const navRect = nav.getBoundingClientRect();
+			const activeRect = active.getBoundingClientRect();
+			if (activeRect.left < navRect.left || activeRect.right > navRect.right) {
+				active.scrollIntoView({ block: "nearest", inline: "center" });
+			}
+		};
+
+		const run = () => requestAnimationFrame(centerActiveTab);
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", run, { once: true });
+		} else {
+			run();
+		}
+		document.addEventListener("astro:page-load", run);
+	})();
+</script>

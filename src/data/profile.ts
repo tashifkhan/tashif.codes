@@ -1,4 +1,4 @@
-import { Github, Globe, Linkedin, Mail, Twitter } from "lucide-react";
+import { Github, Linkedin, Mail, Twitter } from "lucide-react";
 import type { SocialLink } from "@/types";
 
 
@@ -7,6 +7,9 @@ export const owner = {
 	avatar: "https://avatars.githubusercontent.com/u/75897907?v=4",
 	fallbackTitle: "Software Developer",
 };
+
+/** Default contact address used by the header, contact cards, resume and print sheet. */
+export const contactEmail = "me@taf.sh";
 
 /** Personal account used when "Personal only" is toggled on. */
 export const personalGithubUsername = "tashifkhan";
@@ -57,7 +60,6 @@ export function githubAttributedStatsUrl(
 
 export const socials: SocialLink[] = [
 	{ icon: Github, link: "https://github.com/tashifkhan", label: "GitHub" },
-	{ icon: Globe, link: "https://portfolio.tashif.codes", label: "Portfolio" },
 	{
 		icon: Linkedin,
 		link: "https://www.linkedin.com/in/tashifkhan/",
@@ -68,5 +70,5 @@ export const socials: SocialLink[] = [
 		link: "https://tashif.codes/twitter",
 		label: "Twitter",
 	},
-	{ icon: Mail, link: "mailto:tashif@duck.com", label: "Email" },
+	{ icon: Mail, link: `mailto:${contactEmail}`, label: "Email" },
 ];
