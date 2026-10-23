@@ -571,8 +571,8 @@ nav::-webkit-scrollbar-thumb:hover {
     width: max-content;
   }
 
-  /* Studio's tab row fills the width and only overflows when it must */
-  html[data-skin="studio"] nav[data-tabs] > div {
+  /* The section tabs sit at the left edge and only overflow when they must */
+  nav[data-tabs] > div {
     width: auto;
   }
 
