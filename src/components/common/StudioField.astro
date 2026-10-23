@@ -67,11 +67,11 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 </div>
 
 <script>
+	import { motionReduced } from "../../lib/motion";
+
 	const FIELD_SELECTOR = "[data-studio-field-host]";
 
 	function initStudioFields() {
-		const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
 		document.querySelectorAll<HTMLElement>(FIELD_SELECTOR).forEach((host) => {
 			if (host.dataset.ready === "true") return;
 			host.dataset.ready = "true";
@@ -147,9 +147,10 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 
 			const onPointerMove = (event: PointerEvent) => {
 				const rect = canvas.getBoundingClientRect();
+				if (motionReduced()) return;
 				mx = event.clientX - rect.left;
 				my = event.clientY - rect.top;
-				if (!reduced) schedule();
+				schedule();
 			};
 
 			const onPointerLeave = () => {
@@ -160,19 +161,25 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 			parent.addEventListener("pointermove", onPointerMove, { passive: true });
 			parent.addEventListener("pointerleave", onPointerLeave);
 
-			let onGeoMove: ((event: PointerEvent) => void) | undefined;
-			if (!reduced) {
-				// A little parallax on the drafting sheet; the dots follow the pointer.
-				onGeoMove = (event: PointerEvent) => {
-					const geo = host.querySelector<HTMLElement>("[data-studio-geo]");
-					if (!geo) return;
-					const rect = parent.getBoundingClientRect();
-					const nx = (event.clientX - rect.left) / rect.width - 0.5;
-					const ny = (event.clientY - rect.top) / rect.height - 0.5;
-					geo.style.transform = `translate3d(${(nx * -18).toFixed(1)}px,${(ny * -12).toFixed(1)}px,0)`;
-				};
-				parent.addEventListener("pointermove", onGeoMove, { passive: true });
-			}
+			// A little parallax on the drafting sheet; the dots follow the pointer.
+			const geo = host.querySelector<HTMLElement>("[data-studio-geo]");
+			const onGeoMove = (event: PointerEvent) => {
+				if (!geo || motionReduced()) return;
+				const rect = parent.getBoundingClientRect();
+				const nx = (event.clientX - rect.left) / rect.width - 0.5;
+				const ny = (event.clientY - rect.top) / rect.height - 0.5;
+				geo.style.transform = `translate3d(${(nx * -18).toFixed(1)}px,${(ny * -12).toFixed(1)}px,0)`;
+			};
+			parent.addEventListener("pointermove", onGeoMove, { passive: true });
+
+			// Turning motion down mid-visit settles the dots and the sheet.
+			const onMotionChange = () => {
+				if (!motionReduced()) return;
+				mx = my = -9999;
+				if (geo) geo.style.transform = "";
+				schedule();
+			};
+			window.addEventListener("motion-preference-change", onMotionChange);
 
 			new IntersectionObserver(([entry]) => {
 				visible = entry.isIntersecting;
@@ -216,7 +223,8 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 			document.addEventListener("astro:before-swap", () => {
 				parent.removeEventListener("pointermove", onPointerMove);
 				parent.removeEventListener("pointerleave", onPointerLeave);
-				if (onGeoMove) parent.removeEventListener("pointermove", onGeoMove);
+				parent.removeEventListener("pointermove", onGeoMove);
+				window.removeEventListener("motion-preference-change", onMotionChange);
 				lightMedia.removeEventListener("change", scheduleRefresh);
 				observer?.disconnect();
 			}, { once: true });
@@ -226,7 +234,7 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 
 			// Draw the blueprint strokes in on first paint.
 			host.querySelectorAll<SVGGeometryElement>("[data-studio-draw]").forEach((shape, index) => {
-				if (reduced) return;
+				if (motionReduced()) return;
 				let length = 0;
 				try {
 					length = shape.getTotalLength();

@@ -65,6 +65,28 @@ const showAmbientChrome =
 			})();
 		</script>
 		<script is:inline data-astro-rerun>
+			// The dock's reduce motion switch. Restored before first paint so the
+			// page load rise and field draw-in never start.
+			(() => {
+				try {
+					document.documentElement.toggleAttribute(
+						"data-reduce-motion",
+						localStorage.getItem("site-reduce-motion") === "true",
+					);
+				} catch {}
+			})();
+		</script>
+		<script is:inline>
+			// Carry the switch onto the incoming page so the navigation slide
+			// itself respects it.
+			document.addEventListener("astro:before-swap", (event) => {
+				event.newDocument.documentElement.toggleAttribute(
+					"data-reduce-motion",
+					document.documentElement.hasAttribute("data-reduce-motion"),
+				);
+			});
+		</script>
+		<script is:inline data-astro-rerun>
 			// Light, dark, or system. Paint the resolved palette before CSS.
 			(() => {
 				try {

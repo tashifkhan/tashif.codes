@@ -14,12 +14,13 @@
 </div>
 
 <script>
+	import { motionReduced } from "../../lib/motion";
+
 	(() => {
 		if (!(window as Window & { __dotCursorWired?: boolean }).__dotCursorWired) {
 			(window as Window & { __dotCursorWired?: boolean }).__dotCursorWired = true;
 
 			const finePointer = matchMedia("(hover: hover) and (pointer: fine)");
-			const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
 			let root: HTMLElement | null = null;
 			let dot: HTMLElement | null = null;
@@ -60,7 +61,7 @@
 			const move = (event: PointerEvent) => {
 				if (event.pointerType === "touch") return;
 				if (!finePointer.matches) return;
-				if (reducedMotion.matches) return;
+				if (motionReduced()) return;
 
 				if (!dot) bind();
 				if (!dot) return;

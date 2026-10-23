@@ -206,7 +206,12 @@ const isFloating = variant === "floating";
 				typeof CSS !== "undefined" &&
 				CSS.supports("selector(:active-view-transition-type(skin))");
 
-			if (!document.startViewTransition || reduced.matches || !supportsTypes) {
+			if (
+				!document.startViewTransition ||
+				reduced.matches ||
+				root.hasAttribute("data-reduce-motion") ||
+				!supportsTypes
+			) {
 				apply(skin);
 				sync();
 				return;

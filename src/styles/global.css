@@ -969,6 +969,26 @@ a.motion-card:focus-visible {
   ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 }
 
+/* The same, switched on from the settings dock instead of the OS. */
+:root[data-reduce-motion] *,
+:root[data-reduce-motion] *::before,
+:root[data-reduce-motion] *::after {
+  scroll-behavior: auto !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+  animation-duration: 0.01ms !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+}
+:root[data-reduce-motion] { scroll-behavior: auto !important; }
+:root[data-reduce-motion] :is(.motion-card, .motion-tooltip) { transform: none !important; }
+:root[data-reduce-motion] :is([data-blog-cover], .motion-card-arrow) { translate: none !important; scale: none !important; }
+:root[data-reduce-motion] :is(.motion-control, button, [role="tab"]):active { scale: none !important; }
+:root[data-reduce-motion] :is(.rise-in, .studio-grain > div) { animation: none !important; }
+:root[data-reduce-motion] .dot-cursor { display: none !important; }
+:root[data-reduce-motion]::view-transition-old(*),
+:root[data-reduce-motion]::view-transition-new(*) { animation: none !important; }
+
 /* ── TanStack Charts tooltips (project stats dashboard) ── */
 .stats-chart-tooltip {
   background-color: var(--color-popover) !important;

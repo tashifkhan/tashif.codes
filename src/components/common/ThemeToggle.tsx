@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Sun, Moon, Vibrate, VibrateOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { trigger, hapticsEnabled, setHapticsEnabled } from "@/lib/haptics";
+import { motionReduced } from "@/lib/motion";
 
 const themes = ["dark", "light"] as const;
 type Theme = (typeof themes)[number];
@@ -51,7 +52,7 @@ export default function ThemeToggle() {
 			} catch {}
 		};
 
-		const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		const reduced = motionReduced();
 		const supportsTypes =
 			typeof CSS !== "undefined" &&
 			CSS.supports("selector(:active-view-transition-type(theme))");

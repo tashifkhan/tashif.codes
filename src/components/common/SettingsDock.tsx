@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState, type MouseEvent } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import {
+	AnimatePresence,
+	MotionGlobalConfig,
+	motion,
+	useReducedMotion,
+} from "motion/react";
 import {
 	ChevronDown,
 	Monitor,
 	Moon,
-	SlidersHorizontal,
 	Sun,
+	Turtle,
 	Vibrate,
 	VibrateOff,
 } from "lucide-react";
@@ -17,6 +22,12 @@ import {
 	setHapticsEnabled,
 	trigger,
 } from "@/lib/haptics";
+import {
+	motionReduced,
+	reduceMotionKey,
+	setReduceMotion,
+	systemReducesMotion,
+} from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 type ThemeMode = "light" | "dark" | "system";
@@ -78,7 +89,7 @@ function runViewTransition(
 	update: () => void,
 ) {
 	const root = document.documentElement;
-	const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+	const reduced = motionReduced();
 	const supportsTypes =
 		typeof CSS !== "undefined" &&
 		CSS.supports(`selector(:active-view-transition-type(${kind}))`);
@@ -125,10 +136,12 @@ export default function SettingsDock() {
 	const [mode, setMode] = useState<ThemeMode>("system");
 	const [skin, setSkin] = useState<Skin>("simple");
 	const [hapticsOn, setHapticsOn] = useState(false);
+	const [reduceOn, setReduceOn] = useState(false);
+	const [systemReduce, setSystemReduce] = useState(false);
 	const [expanded, setExpanded] = useState(true);
 	const [visible, setVisible] = useState(true);
 	const idleTimer = useRef<number | null>(null);
-	const prefersReduced = useReducedMotion();
+	const prefersReduced = useReducedMotion() || reduceOn;
 
 	const pageScrollTop = () =>
 		window.scrollY ||
@@ -141,6 +154,8 @@ export default function SettingsDock() {
 			setMode(readMode());
 			setSkin(readSkin());
 			setHapticsOn(hapticsEnabled());
+			setReduceOn(motionReduced());
+			setSystemReduce(systemReducesMotion());
 		};
 
 		sync();
@@ -148,12 +163,20 @@ export default function SettingsDock() {
 		setMounted(true);
 
 		const onHaptics = () => setHapticsOn(hapticsEnabled());
+		const motionQuery = matchMedia("(prefers-reduced-motion: reduce)");
 		const onStorage = (event: StorageEvent) => {
 			if (
 				event.key === "theme" ||
 				event.key === "tashif-skin" ||
-				event.key === "site-haptics-enabled"
+				event.key === "site-haptics-enabled" ||
+				event.key === reduceMotionKey
 			) {
+				if (event.key === reduceMotionKey) {
+					document.documentElement.toggleAttribute(
+						"data-reduce-motion",
+						event.newValue === "true",
+					);
+				}
 				sync();
 			}
 		};
@@ -164,14 +187,23 @@ export default function SettingsDock() {
 
 		window.addEventListener("haptics-preference-change", onHaptics);
 		window.addEventListener("storage", onStorage);
+		window.addEventListener("motion-preference-change", sync);
+		motionQuery.addEventListener("change", sync);
 		document.addEventListener("astro:page-load", onPageLoad);
 
 		return () => {
 			window.removeEventListener("haptics-preference-change", onHaptics);
 			window.removeEventListener("storage", onStorage);
+			window.removeEventListener("motion-preference-change", sync);
+			motionQuery.removeEventListener("change", sync);
 			document.removeEventListener("astro:page-load", onPageLoad);
 		};
 	}, []);
+
+	// Motion-driven islands (charts, tooltips) skip their animations too.
+	useEffect(() => {
+		MotionGlobalConfig.skipAnimations = reduceOn;
+	}, [reduceOn]);
 
 	useEffect(() => {
 		if (!expanded) return;
@@ -281,7 +313,11 @@ export default function SettingsDock() {
 		if (next) trigger("selection");
 	};
 
-	const accentColor = skin === "studio" ? "#0f7a6c" : "#f97316";
+	const toggleReduceMotion = () => {
+		trigger("selection");
+		setReduceMotion(!document.documentElement.hasAttribute("data-reduce-motion"));
+	};
+
 	const transition = prefersReduced
 		? { duration: 0 }
 		: { type: "spring" as const, stiffness: 380, damping: 30 };
@@ -311,10 +347,7 @@ export default function SettingsDock() {
 					>
 						<div className="flex items-center justify-between px-1.5">
 							<div className="flex items-center gap-1.5">
-								<SlidersHorizontal
-									size={12}
-									className="text-muted-foreground"
-								/>
+								<ThemeMark className="h-3 w-3 text-muted-foreground" />
 								<span className="text-[10px] font-medium tracking-wide text-muted-foreground">
 									Appearance
 								</span>
@@ -369,7 +402,7 @@ export default function SettingsDock() {
 							})}
 						</div>
 
-						<div className="mt-2 grid grid-cols-2 gap-2">
+						<div className="mt-2 grid grid-cols-[auto_1fr_1fr] gap-2">
 							<div className="rounded-[1.35rem] border border-border/50 bg-background/40 p-2.5">
 								<p className="text-[10px] font-medium tracking-wide text-muted-foreground">
 									Accent
@@ -416,39 +449,41 @@ export default function SettingsDock() {
 								</p>
 								<div className="mt-2 flex items-center justify-between gap-2">
 									{hapticsOn ? (
-										<Vibrate className="h-3.5 w-3.5 text-primary" />
+										<Vibrate className="h-3.5 w-3.5 shrink-0 text-primary" />
 									) : (
-										<VibrateOff className="h-3.5 w-3.5 text-muted-foreground" />
+										<VibrateOff className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
 									)}
-									<Button
-										type="button"
-										role="switch"
-										aria-checked={hapticsOn}
-										aria-label="Haptic feedback"
+									<Switch
+										on={hapticsOn}
+										label="Haptic feedback"
 										title={`Haptic feedback ${hapticsOn ? "on" : "off"}`}
-										data-haptic="manual"
-										variant="ghost"
-										onClick={toggleHaptics}
-										className="h-8 rounded-full px-1.5"
-									>
-										<span
-											className={cn(
-												"relative h-5 w-9 rounded-full transition-colors",
-												hapticsOn
-													? "bg-primary"
-													: "bg-muted-foreground/25",
-											)}
-										>
-											<span
-												className={cn(
-													"absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm ring-1 ring-black/10 transition-transform",
-													hapticsOn
-														? "translate-x-4"
-														: "translate-x-0",
-												)}
-											/>
-										</span>
-									</Button>
+										onToggle={toggleHaptics}
+									/>
+								</div>
+							</div>
+
+							<div className="rounded-[1.35rem] border border-border/50 bg-background/40 p-2.5">
+								<p className="truncate text-[10px] font-medium tracking-wide text-muted-foreground">
+									Reduce motion
+								</p>
+								<div className="mt-2 flex items-center justify-between gap-2">
+									<Turtle
+										className={cn(
+											"h-3.5 w-3.5 shrink-0",
+											reduceOn ? "text-primary" : "text-muted-foreground",
+										)}
+									/>
+									<Switch
+										on={reduceOn}
+										label="Reduce motion"
+										title={
+											systemReduce
+												? "Reduced by your system setting"
+												: `Reduce motion ${reduceOn ? "on" : "off"}`
+										}
+										disabled={systemReduce}
+										onToggle={toggleReduceMotion}
+									/>
 								</div>
 							</div>
 						</div>
@@ -475,17 +510,70 @@ export default function SettingsDock() {
 								trigger("selection");
 								setExpanded(true);
 							}}
-							className="relative h-[52px] w-[52px] rounded-full border border-border/60 bg-card/70 text-foreground shadow-xl ring-1 ring-white/10 backdrop-blur-2xl hover:bg-card/90"
+							className="group h-[52px] w-[52px] rounded-full border border-border/60 bg-card/70 text-foreground shadow-xl ring-1 ring-white/10 backdrop-blur-2xl hover:bg-card/90"
 						>
-							<SlidersHorizontal className="h-5 w-5" />
-							<span
-								className="absolute bottom-2 right-2 h-2.5 w-2.5 rounded-full ring-2 ring-card"
-								style={{ backgroundColor: accentColor }}
+							<ThemeMark
+								className="h-6 w-6 transition-transform duration-500 ease-out group-hover:rotate-180"
 							/>
 						</Button>
 					</motion.div>
 				)}
 			</AnimatePresence>
 		</div>
+	);
+}
+
+function Switch({
+	on,
+	label,
+	title,
+	disabled = false,
+	onToggle,
+}: {
+	on: boolean;
+	label: string;
+	title: string;
+	disabled?: boolean;
+	onToggle: () => void;
+}) {
+	return (
+		<Button
+			type="button"
+			role="switch"
+			aria-checked={on}
+			aria-label={label}
+			title={title}
+			data-haptic="manual"
+			variant="ghost"
+			disabled={disabled}
+			onClick={onToggle}
+			className="h-8 rounded-full px-1.5"
+		>
+			<span
+				className={cn(
+					"relative h-5 w-9 rounded-full transition-colors",
+					on ? "bg-primary" : "bg-muted-foreground/25",
+				)}
+			>
+				<span
+					className={cn(
+						"absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm ring-1 ring-black/10 transition-transform",
+						on ? "translate-x-4" : "translate-x-0",
+					)}
+				/>
+			</span>
+		</Button>
+	);
+}
+
+/** A split swatch: the light/dark half in the text colour, the other half in
+    the skin's accent. Stands for the whole dock without a separate dot. */
+function ThemeMark({ className }: { className?: string }) {
+	return (
+		<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
+			<path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor" />
+			<path d="M12 3a9 9 0 0 1 0 18Z" fill="var(--primary)" />
+			<circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
+		</svg>
 	);
 }

@@ -632,11 +632,11 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 </script>
 
 <script>
+	import { motionReduced } from "../lib/motion";
+
 	// Welcome statusline: typewriter prompt, count-up stats
 	document.addEventListener("DOMContentLoaded", () => {
-		const reducedMotion = window.matchMedia(
-			"(prefers-reduced-motion: reduce)"
-		).matches;
+		const reducedMotion = motionReduced();
 
 		const typer = document.getElementById("welcome-typer");
 		if (typer) {

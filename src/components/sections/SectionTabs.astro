@@ -79,7 +79,12 @@ const tabClass =
 		const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 
 		const scramble = (element) => {
-			if (reduced.matches) return;
+			if (
+				reduced.matches ||
+				document.documentElement.hasAttribute("data-reduce-motion")
+			) {
+				return;
+			}
 			const text = element.dataset.scramble || "";
 			if (!text) return;
 
