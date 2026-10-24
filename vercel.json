@@ -34,6 +34,10 @@
 			"destination": "https://u.tashif.codes/static/:path*"
 		},
 		{
+			"source": "/(resume:pdf)",
+			"destination": "/resume-pdf"
+		},
+		{
 			"source": "/projects/stats/api",
 			"destination": "/api/index.py"
 		},
@@ -70,7 +74,7 @@
 			"destination": "https://eu.i.posthog.com/:path*"
 		},
 		{
-			"source": "/:slug((?!(?:api|static|projects|docs|download|blog|blogs|github|leetcode|connect|print-resume|resume|fdroid|ph|u|proxy|_astro|404)(?:/|$))(?:[A-Za-z0-9_:;-]|%3[AaBb])+)",
+			"source": "/:slug((?!(?:api|static|projects|docs|download|blog|blogs|github|leetcode|connect|resume|fdroid|ph|u|proxy|_astro|404)(?:/|$))(?:[A-Za-z0-9_:;-]|%3[AaBb])+)",
 			"destination": "https://u.tashif.codes/:slug"
 		}
 	],
@@ -102,6 +106,23 @@
 		}
 	],
 	"headers": [
+		{
+			"source": "/(resume:pdf)",
+			"headers": [
+				{
+					"key": "Content-Type",
+					"value": "application/pdf"
+				},
+				{
+					"key": "Content-Disposition",
+					"value": "attachment; filename=\"Tashif-Ahmad-Khan-Resume.pdf\""
+				},
+				{
+					"key": "Cache-Control",
+					"value": "public, max-age=0, must-revalidate"
+				}
+			]
+		},
 		{
 			"source": "/rss.xml",
 			"headers": [

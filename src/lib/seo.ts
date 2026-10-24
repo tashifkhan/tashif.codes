@@ -63,7 +63,7 @@ export function resolveRouteOgImage(pathname?: string | null): string | null {
 	const clean = pathname.replace(/\/+$/, "").toLowerCase() || "/";
 
 	if (clean === "/" || clean === "") return "/og/home.jpg";
-	if (clean === "/resume" || clean === "/print-resume") return "/og/resume.jpg";
+	if (clean === "/resume") return "/og/resume.jpg";
 	if (clean === "/github") return "/og/github.jpg";
 	if (clean === "/github/stats") return "/og/github-stats.jpg";
 	if (clean === "/leetcode") return "/og/leetcode.jpg";

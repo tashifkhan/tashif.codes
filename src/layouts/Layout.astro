@@ -38,11 +38,10 @@ const social = resolveSocialImageMeta({
 	alt: title,
 });
 
-// The docs reader and the printable resume keep a solid surface. Everything
-// else gets the viewport-wide ambient field and the shared footer.
+// The docs reader keeps a solid surface. Everything else gets the
+// viewport-wide ambient field and the shared footer.
 const isDocsReader = /^\/docs\/[^/]+/.test(Astro.url.pathname);
-const showAmbientChrome =
-	!isDocsReader && Astro.url.pathname !== "/print-resume";
+const showAmbientChrome = !isDocsReader;
 ---
 
 <!doctype html>
