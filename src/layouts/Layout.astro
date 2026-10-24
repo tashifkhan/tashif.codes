@@ -77,12 +77,20 @@ const showAmbientChrome =
 			})();
 		</script>
 		<script is:inline>
-			// Carry the switch onto the incoming page so the navigation slide
-			// itself respects it.
+			// Astro replaces the root attributes before rerunning inline scripts.
+			// Carry appearance onto the incoming document so the transition never
+			// captures the default palette or starts a color transition from it.
 			document.addEventListener("astro:before-swap", (event) => {
-				event.newDocument.documentElement.toggleAttribute(
+				const current = document.documentElement;
+				const incoming = event.newDocument.documentElement;
+				incoming.dataset.skin = current.dataset.skin;
+				incoming.dataset.themeMode = current.dataset.themeMode;
+				incoming.classList.toggle("dark", current.classList.contains("dark"));
+				incoming.classList.remove("cream");
+				incoming.style.colorScheme = current.style.colorScheme;
+				incoming.toggleAttribute(
 					"data-reduce-motion",
-					document.documentElement.hasAttribute("data-reduce-motion"),
+					current.hasAttribute("data-reduce-motion"),
 				);
 			});
 		</script>
