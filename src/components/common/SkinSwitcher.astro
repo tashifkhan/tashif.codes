@@ -50,7 +50,7 @@ const isFloating = variant === "floating";
 			<circle cx="7" cy="11.5" r="1.4" fill="var(--background)" />
 		</svg>
 		<span class="hidden lg:inline">Design</span>
-		<span class="text-foreground" data-skin-label>Simple</span>
+		<span class="text-foreground" data-skin-label>Studio</span>
 		<svg
 			class="size-3 opacity-60 transition-transform duration-200 [[data-open]_&]:rotate-180"
 			width="12"
@@ -83,7 +83,7 @@ const isFloating = variant === "floating";
 			type="button"
 			class="group flex w-full items-start gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary aria-checked:bg-accent"
 			role="menuitemradio"
-			aria-checked="true"
+			aria-checked="false"
 			data-skin-set="simple"
 		>
 			<span
@@ -118,7 +118,7 @@ const isFloating = variant === "floating";
 			type="button"
 			class="group mt-0.5 flex w-full items-start gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary aria-checked:bg-accent"
 			role="menuitemradio"
-			aria-checked="false"
+			aria-checked="true"
 			data-skin-set="studio"
 		>
 			<span
@@ -157,7 +157,7 @@ const isFloating = variant === "floating";
 		const root = document.documentElement;
 		const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 
-		const read = () => (localStorage.getItem(KEY) === "studio" ? "studio" : "simple");
+		const read = () => (localStorage.getItem(KEY) === "simple" ? "simple" : "studio");
 
 		const apply = (skin) => {
 			root.dataset.skin = skin;

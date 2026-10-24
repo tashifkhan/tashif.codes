@@ -52,15 +52,15 @@ const showAmbientChrome =
 		<meta name="description" content={description} />
 		<meta name="viewport" content="width=device-width" />
 		<script is:inline data-astro-rerun>
-			// Resolve the design skin before the first paint so the studio palette
-			// never flashes on top of the simple one.
+			// Resolve the design skin before the first paint. Studio (green) is
+			// the default; the simple palette only wins when picked explicitly.
 			(() => {
 				try {
 					const stored = localStorage.getItem("tashif-skin");
 					document.documentElement.dataset.skin =
-						stored === "studio" ? "studio" : "simple";
+						stored === "simple" ? "simple" : "studio";
 				} catch {
-					document.documentElement.dataset.skin = "simple";
+					document.documentElement.dataset.skin = "studio";
 				}
 			})();
 		</script>

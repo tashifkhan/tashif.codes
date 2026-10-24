@@ -53,8 +53,8 @@ function readMode(): ThemeMode {
 }
 
 function readSkin(): Skin {
-	if (typeof document === "undefined") return "simple";
-	return document.documentElement.dataset.skin === "studio" ? "studio" : "simple";
+	if (typeof document === "undefined") return "studio";
+	return document.documentElement.dataset.skin === "simple" ? "simple" : "studio";
 }
 
 function systemIsDark(): boolean {
@@ -134,7 +134,7 @@ function runViewTransition(
 export default function SettingsDock() {
 	const [mounted, setMounted] = useState(false);
 	const [mode, setMode] = useState<ThemeMode>("system");
-	const [skin, setSkin] = useState<Skin>("simple");
+	const [skin, setSkin] = useState<Skin>("studio");
 	const [hapticsOn, setHapticsOn] = useState(false);
 	const [reduceOn, setReduceOn] = useState(false);
 	const [systemReduce, setSystemReduce] = useState(false);
