@@ -74,7 +74,7 @@
 			"destination": "https://eu.i.posthog.com/:path*"
 		},
 		{
-			"source": "/:slug((?!(?:api|static|projects|docs|download|blog|blogs|github|leetcode|connect|resume|fdroid|ph|u|proxy|_astro|404|llms\\.txt|webmcp-catalog\\.json)(?:/|$))(?:[A-Za-z0-9_:;-]|%3[AaBb])+)",
+			"source": "/:slug((?!(?:api|static|projects|docs|download|blog|blogs|github|leetcode|connect|resume|fdroid|ph|u|proxy|_astro|404|\\.well-known|llms\\.txt|webmcp\\.json|webmcp-catalog\\.json)(?:/|$))(?:[A-Za-z0-9_:;-]|%3[AaBb])+)",
 			"destination": "https://u.tashif.codes/:slug"
 		}
 	],
@@ -130,6 +130,32 @@
 		},
 		{
 			"source": "/webmcp-catalog.json",
+			"headers": [
+				{
+					"key": "Content-Type",
+					"value": "application/json; charset=utf-8"
+				},
+				{
+					"key": "Cache-Control",
+					"value": "public, max-age=3600"
+				}
+			]
+		},
+		{
+			"source": "/webmcp.json",
+			"headers": [
+				{
+					"key": "Content-Type",
+					"value": "application/json; charset=utf-8"
+				},
+				{
+					"key": "Cache-Control",
+					"value": "public, max-age=3600"
+				}
+			]
+		},
+		{
+			"source": "/.well-known/webmcp.json",
 			"headers": [
 				{
 					"key": "Content-Type",

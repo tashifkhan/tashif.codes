@@ -28,7 +28,7 @@ The site currently lists ${catalog.projects.length} projects, ${catalog.posts.le
 
 ## In-browser tools (WebMCP)
 
-When an agent is visiting this site in a live tab, the page registers tools on document.modelContext. They are not HTTP APIs. Crawlers that never run JavaScript should keep using this file and the public HTML pages.
+When an agent is visiting this site in a live tab, the page registers tools on document.modelContext. They are not HTTP APIs. Crawlers that never run JavaScript should keep using this file and the public HTML pages. The static tool list is at /.well-known/webmcp.json (also /webmcp.json). Site content used by those tools is at /webmcp-catalog.json.
 
 Tools: get_site_overview, list_projects, search_projects, get_project, list_blog_posts, get_blog_post, list_docs, search_docs, get_doc_page, get_resume, list_downloads, open_tab, get_contact, copy_email, start_contact.
 
@@ -36,6 +36,7 @@ start_contact drafts a message to ${contactEmail}, fills the connect form when i
 
 ## Optional
 
+- [WebMCP tool list](${SITE_ORIGIN}/.well-known/webmcp.json)
 - [Studio site](https://taf.sh/): Independent software studio and consultancy.
 - [Studio crawler guide](https://taf.sh/llms.txt)
 - [GitHub](https://github.com/tashifkhan)
