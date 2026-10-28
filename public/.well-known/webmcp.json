@@ -1,0 +1,166 @@
+{
+	"version": "1.0",
+	"name": "tashif.codes",
+	"origin": "https://tashif.codes",
+	"description": "Personal dashboard, blog, project directory and developer tools of Tashif Ahmad Khan. Tools register on document.modelContext in a live tab. They are not HTTP APIs.",
+	"registration": "document.modelContext.registerTool",
+	"contact": "me@taf.sh",
+	"llms": "https://tashif.codes/llms.txt",
+	"catalog": "https://tashif.codes/webmcp-catalog.json",
+	"tools": [
+		{
+			"name": "get_site_overview",
+			"description": "Overview of tashif.codes, Tashif Ahmad Khan, and the public sections of this site.",
+			"inputSchema": { "type": "object", "properties": {} },
+			"annotations": { "readOnlyHint": true }
+		},
+		{
+			"name": "list_projects",
+			"description": "List public projects. Optional query filters by name, slug, language, or topic.",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"query": { "type": "string", "description": "Optional search text" },
+					"limit": { "type": "number", "description": "Max results, default 20" }
+				}
+			},
+			"annotations": { "readOnlyHint": true }
+		},
+		{
+			"name": "search_projects",
+			"description": "Search projects and, when the dashboard is on screen, apply the same filter to the visible cards.",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"query": { "type": "string", "description": "Search text" }
+				},
+				"required": ["query"]
+			},
+			"annotations": { "readOnlyHint": true }
+		},
+		{
+			"name": "get_project",
+			"description": "Get one project by name or slug.",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"query": { "type": "string", "description": "Project name or slug" }
+				},
+				"required": ["query"]
+			},
+			"annotations": { "readOnlyHint": true }
+		},
+		{
+			"name": "list_blog_posts",
+			"description": "List blog posts, newest first. Optional tag filter.",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"tag": { "type": "string", "description": "Optional tag" },
+					"limit": { "type": "number", "description": "Max results, default 15" }
+				}
+			},
+			"annotations": { "readOnlyHint": true }
+		},
+		{
+			"name": "get_blog_post",
+			"description": "Get one blog post by slug or title.",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"query": { "type": "string", "description": "Post slug or title" }
+				},
+				"required": ["query"]
+			},
+			"annotations": { "readOnlyHint": true }
+		},
+		{
+			"name": "search_docs",
+			"description": "Search project documentation titles and snippets.",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"query": { "type": "string", "description": "Search text" }
+				},
+				"required": ["query"]
+			},
+			"annotations": { "readOnlyHint": true }
+		},
+		{
+			"name": "get_doc_page",
+			"description": "Get one docs page by project, slug, or title.",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"query": { "type": "string", "description": "Project, slug, or page title" }
+				},
+				"required": ["query"]
+			},
+			"annotations": { "readOnlyHint": true }
+		},
+		{
+			"name": "list_docs",
+			"description": "List documentation trees on this site.",
+			"inputSchema": { "type": "object", "properties": {} },
+			"annotations": { "readOnlyHint": true }
+		},
+		{
+			"name": "get_resume",
+			"description": "Resume facts: experience, selected projects, education, skills. Not the PDF bytes.",
+			"inputSchema": { "type": "object", "properties": {} },
+			"annotations": { "readOnlyHint": true }
+		},
+		{
+			"name": "list_downloads",
+			"description": "List software download redirects.",
+			"inputSchema": { "type": "object", "properties": {} },
+			"annotations": { "readOnlyHint": true }
+		},
+		{
+			"name": "open_tab",
+			"description": "Open a dashboard section: projects, resume, blog, github, leetcode, or community.",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"tab": {
+						"type": "string",
+						"enum": ["projects", "resume", "blog", "github", "leetcode", "community"],
+						"description": "Dashboard tab id"
+					}
+				},
+				"required": ["tab"]
+			},
+			"annotations": { "readOnlyHint": false, "consequentialHint": true }
+		},
+		{
+			"name": "get_contact",
+			"description": "How to reach Tashif. Does not send mail.",
+			"inputSchema": { "type": "object", "properties": {} },
+			"annotations": { "readOnlyHint": true }
+		},
+		{
+			"name": "copy_email",
+			"description": "Copy me@taf.sh to the clipboard. Does not send mail.",
+			"inputSchema": { "type": "object", "properties": {} },
+			"annotations": { "readOnlyHint": false, "consequentialHint": true }
+		},
+		{
+			"name": "start_contact",
+			"description": "Draft a message to me@taf.sh. Fills the connect form when present, opens the visitor's mail app, and returns the full draft. Does not send until a human hits Send or the agent sends from the user's mailbox after they confirm.",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"name": { "type": "string", "description": "Visitor's name" },
+					"email": { "type": "string", "description": "Visitor's reply-to email" },
+					"subject": { "type": "string", "description": "Optional subject line" },
+					"message": {
+						"type": "string",
+						"description": "Message body. At least 20 characters."
+					}
+				},
+				"required": ["name", "email", "message"]
+			},
+			"annotations": { "readOnlyHint": false, "consequentialHint": true }
+		}
+	]
+}
