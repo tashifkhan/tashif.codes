@@ -220,6 +220,7 @@ const showAmbientChrome = !isDocsReader;
 		<meta name="robots" content="index, follow, max-image-preview:large" />
 		<link rel="icon" type="image/png" href="/favicon.png" />
 		<link rel="canonical" href={canonical} />
+		<link rel="describedby" type="text/plain" href="/llms.txt" />
 		<link
 			rel="alternate"
 			type="application/rss+xml"
@@ -333,6 +334,46 @@ const showAmbientChrome = !isDocsReader;
 		<Haptics />
 		<PostHog />
 		<Analytics />
+		<script>
+			import {
+				abortPortfolioWebmcp,
+				registerPortfolioWebmcp,
+			} from "../scripts/webmcp";
+			import type { WebmcpCatalog } from "../lib/webmcp-types";
+
+			const wired = window as Window & {
+				__webmcpWired?: boolean;
+				__webmcpCatalog?: Promise<WebmcpCatalog>;
+			};
+
+			function loadCatalog() {
+				wired.__webmcpCatalog ??= fetch("/webmcp-catalog.json")
+					.then((response) => {
+						if (!response.ok) throw new Error("webmcp catalog");
+						return response.json() as Promise<WebmcpCatalog>;
+					})
+					.catch((error) => {
+						wired.__webmcpCatalog = undefined;
+						throw error;
+					});
+				return wired.__webmcpCatalog;
+			}
+
+			async function bootWebmcp() {
+				if (!document.modelContext) return;
+				try {
+					await registerPortfolioWebmcp(await loadCatalog());
+				} catch {
+					// Missing catalog or an older polyfill. The page still works.
+				}
+			}
+
+			if (!wired.__webmcpWired) {
+				wired.__webmcpWired = true;
+				document.addEventListener("astro:before-swap", abortPortfolioWebmcp);
+				document.addEventListener("astro:page-load", bootWebmcp);
+			}
+		</script>
 		<script is:inline>
 			// Keep the chosen palette on the root across ClientRouter swaps. The
 			// mode is light, dark, or system; a stored "cream" becomes light.

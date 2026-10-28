@@ -28,3 +28,6 @@ User-agent: LinkedInBot
 Allow: /
 
 Sitemap: https://tashif.codes/sitemap-index.xml
+
+# Crawler guide for LLMs. In-browser tools are WebMCP on a live tab, not HTTP APIs.
+# https://tashif.codes/llms.txt
