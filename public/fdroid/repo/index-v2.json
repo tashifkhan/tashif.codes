@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/repo",
-    "timestamp": 1794051970000,
+    "timestamp": 1794070566000,
     "categories": {
       "Development": {
         "name": {
@@ -62,11 +62,11 @@
           "Development",
           "Internet"
         ],
-        "changelog": "https://github.com/tashifkhan/caldav-todo/releases",
-        "issueTracker": "https://github.com/tashifkhan/caldav-todo/issues",
-        "lastUpdated": 1794051954000,
+        "changelog": "https://github.com/tashifkhan/Patchwork/releases",
+        "issueTracker": "https://github.com/tashifkhan/Patchwork/issues",
+        "lastUpdated": 1794070551000,
         "license": "MIT",
-        "sourceCode": "https://github.com/tashifkhan/caldav-todo",
+        "sourceCode": "https://github.com/tashifkhan/Patchwork",
         "webSite": "https://tashif.codes",
         "authorEmail": "tashifkhan010@gmail.com",
         "authorName": "Tashif Ahmad Khan",
@@ -74,10 +74,10 @@
           "en-US": "Patchwork"
         },
         "summary": {
-          "en-US": "Developer-focused tasks with CalDAV, Deck, AI, and GitHub"
+          "en-US": "One task app for CalDAV, Nextcloud Deck, Jira and GitHub Issues"
         },
         "description": {
-          "en-US": "Patchwork is a developer-focused task manager built with Expo and React Native.\n\nFeatures:\n\n* CalDAV task sync (Nextcloud and other CalDAV servers)\n* Nextcloud Deck boards\n* AI-assisted task drafting and import from photos or notes\n* Custom AI model providers (OpenAI-compatible endpoints)\n* GitHub issue tracking\n* Android home-screen widgets\n\nReleases are built with EAS, published on GitHub Releases, and mirrored into\nthis F-Droid-compatible repository.\n"
+          "en-US": "Patchwork pulls your tasks out of the places they're scattered across and\nputs them in one app.\n\nWhat it connects to:\n\n* CalDAV tasks from Nextcloud or any CalDAV server, with subtasks, tags,\n  priorities, due dates, reminders and Markdown notes\n* Nextcloud Deck boards, with drag and drop for cards and columns\n* Jira boards with sprints, a backlog and a full issue editor\n* GitHub issues across repositories\n* More than one GitHub or Jira account at a time\n\nOther features:\n\n* AI import that drafts tasks from a photo of handwritten notes or a\n  description. You review every task before it's saved\n* Bring your own model: OpenAI, Anthropic, Google, DeepSeek, OpenRouter,\n  NVIDIA, OpenCode Zen, RelayRoom or any OpenAI-compatible endpoint\n* Voice dictation\n* Home screen widgets for today and upcoming tasks\n* Material You colours, fixed palettes, high contrast and a pure black\n  AMOLED mode\n* Layouts for tablets and foldables\n\nCredentials and API keys stay on the device in secure storage, and the app\ntalks to your servers directly.\n\nSlack and Linear integrations are planned.\n"
         },
         "donate": [
           "https://tashif.codes"
@@ -92,6 +92,145 @@
         "preferredSigner": "40d44ae28eb4751de2f3195185677ba128d767941e0776cdeac109e34bae769b"
       },
       "versions": {
+        "cfa5adac555bb9e073b7fd19d8fb08c43c3e7847752fc6117fc8691eeb1a84a7": {
+          "added": 1794070551000,
+          "file": {
+            "name": "/codes.tashhif.patchwork_13.apk",
+            "sha256": "cfa5adac555bb9e073b7fd19d8fb08c43c3e7847752fc6117fc8691eeb1a84a7",
+            "size": 43549609
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a"
+            ],
+            "versionName": "1.8.0",
+            "versionCode": 13,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "40d44ae28eb4751de2f3195185677ba128d767941e0776cdeac109e34bae769b"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.FOREGROUND_SERVICE"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+              },
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.MODIFY_AUDIO_SETTINGS"
+              },
+              {
+                "name": "android.permission.POST_NOTIFICATIONS"
+              },
+              {
+                "name": "android.permission.READ_CALENDAR"
+              },
+              {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.RECORD_AUDIO"
+              },
+              {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW"
+              },
+              {
+                "name": "android.permission.VIBRATE"
+              },
+              {
+                "name": "android.permission.WRITE_CALENDAR"
+              },
+              {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "android.permission.CAMERA"
+              },
+              {
+                "name": "android.permission.RECEIVE_BOOT_COMPLETED"
+              },
+              {
+                "name": "android.permission.USE_BIOMETRIC"
+              },
+              {
+                "name": "android.permission.USE_FINGERPRINT"
+              },
+              {
+                "name": "android.permission.WAKE_LOCK"
+              },
+              {
+                "name": "com.google.android.c2dm.permission.RECEIVE"
+              },
+              {
+                "name": "codes.tashhif.patchwork.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              },
+              {
+                "name": "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE"
+              },
+              {
+                "name": "com.sec.android.provider.badge.permission.READ"
+              },
+              {
+                "name": "com.sec.android.provider.badge.permission.WRITE"
+              },
+              {
+                "name": "com.htc.launcher.permission.READ_SETTINGS"
+              },
+              {
+                "name": "com.htc.launcher.permission.UPDATE_SHORTCUT"
+              },
+              {
+                "name": "com.sonyericsson.home.permission.BROADCAST_BADGE"
+              },
+              {
+                "name": "com.sonymobile.home.permission.PROVIDER_INSERT_BADGE"
+              },
+              {
+                "name": "com.anddoes.launcher.permission.UPDATE_COUNT"
+              },
+              {
+                "name": "com.majeur.launcher.permission.UPDATE_BADGE"
+              },
+              {
+                "name": "com.huawei.android.launcher.permission.CHANGE_BADGE"
+              },
+              {
+                "name": "com.huawei.android.launcher.permission.READ_SETTINGS"
+              },
+              {
+                "name": "com.huawei.android.launcher.permission.WRITE_SETTINGS"
+              },
+              {
+                "name": "android.permission.READ_APP_BADGE"
+              },
+              {
+                "name": "com.oppo.launcher.permission.READ_SETTINGS"
+              },
+              {
+                "name": "com.oppo.launcher.permission.WRITE_SETTINGS"
+              },
+              {
+                "name": "me.everything.badger.permission.BADGE_COUNT_READ"
+              },
+              {
+                "name": "me.everything.badger.permission.BADGE_COUNT_WRITE"
+              }
+            ]
+          }
+        },
         "e046e750b68408f8cd24570e346492b9271ea8a7c1ee8f491ea86e328b77b2d0": {
           "added": 1794051954000,
           "file": {
@@ -244,145 +383,6 @@
             ],
             "versionName": "1.7.0",
             "versionCode": 11,
-            "usesSdk": {
-              "minSdkVersion": 24,
-              "targetSdkVersion": 36
-            },
-            "signer": {
-              "sha256": [
-                "40d44ae28eb4751de2f3195185677ba128d767941e0776cdeac109e34bae769b"
-              ]
-            },
-            "usesPermission": [
-              {
-                "name": "android.permission.FOREGROUND_SERVICE"
-              },
-              {
-                "name": "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
-              },
-              {
-                "name": "android.permission.INTERNET"
-              },
-              {
-                "name": "android.permission.MODIFY_AUDIO_SETTINGS"
-              },
-              {
-                "name": "android.permission.POST_NOTIFICATIONS"
-              },
-              {
-                "name": "android.permission.READ_CALENDAR"
-              },
-              {
-                "name": "android.permission.READ_EXTERNAL_STORAGE",
-                "maxSdkVersion": 32
-              },
-              {
-                "name": "android.permission.RECORD_AUDIO"
-              },
-              {
-                "name": "android.permission.SYSTEM_ALERT_WINDOW"
-              },
-              {
-                "name": "android.permission.VIBRATE"
-              },
-              {
-                "name": "android.permission.WRITE_CALENDAR"
-              },
-              {
-                "name": "android.permission.WRITE_EXTERNAL_STORAGE",
-                "maxSdkVersion": 32
-              },
-              {
-                "name": "android.permission.ACCESS_NETWORK_STATE"
-              },
-              {
-                "name": "android.permission.CAMERA"
-              },
-              {
-                "name": "android.permission.RECEIVE_BOOT_COMPLETED"
-              },
-              {
-                "name": "android.permission.USE_BIOMETRIC"
-              },
-              {
-                "name": "android.permission.USE_FINGERPRINT"
-              },
-              {
-                "name": "android.permission.WAKE_LOCK"
-              },
-              {
-                "name": "com.google.android.c2dm.permission.RECEIVE"
-              },
-              {
-                "name": "codes.tashhif.patchwork.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-              },
-              {
-                "name": "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE"
-              },
-              {
-                "name": "com.sec.android.provider.badge.permission.READ"
-              },
-              {
-                "name": "com.sec.android.provider.badge.permission.WRITE"
-              },
-              {
-                "name": "com.htc.launcher.permission.READ_SETTINGS"
-              },
-              {
-                "name": "com.htc.launcher.permission.UPDATE_SHORTCUT"
-              },
-              {
-                "name": "com.sonyericsson.home.permission.BROADCAST_BADGE"
-              },
-              {
-                "name": "com.sonymobile.home.permission.PROVIDER_INSERT_BADGE"
-              },
-              {
-                "name": "com.anddoes.launcher.permission.UPDATE_COUNT"
-              },
-              {
-                "name": "com.majeur.launcher.permission.UPDATE_BADGE"
-              },
-              {
-                "name": "com.huawei.android.launcher.permission.CHANGE_BADGE"
-              },
-              {
-                "name": "com.huawei.android.launcher.permission.READ_SETTINGS"
-              },
-              {
-                "name": "com.huawei.android.launcher.permission.WRITE_SETTINGS"
-              },
-              {
-                "name": "android.permission.READ_APP_BADGE"
-              },
-              {
-                "name": "com.oppo.launcher.permission.READ_SETTINGS"
-              },
-              {
-                "name": "com.oppo.launcher.permission.WRITE_SETTINGS"
-              },
-              {
-                "name": "me.everything.badger.permission.BADGE_COUNT_READ"
-              },
-              {
-                "name": "me.everything.badger.permission.BADGE_COUNT_WRITE"
-              }
-            ]
-          }
-        },
-        "b2ca4eac4275798df908512d2cc8fe226bf6469b7a911e3a7636db4eccf043d1": {
-          "added": 1793927607000,
-          "file": {
-            "name": "/codes.tashhif.patchwork_10.apk",
-            "sha256": "b2ca4eac4275798df908512d2cc8fe226bf6469b7a911e3a7636db4eccf043d1",
-            "size": 43453205
-          },
-          "manifest": {
-            "nativecode": [
-              "arm64-v8a"
-            ],
-            "versionName": "1.6.0",
-            "versionCode": 10,
             "usesSdk": {
               "minSdkVersion": 24,
               "targetSdkVersion": 36
