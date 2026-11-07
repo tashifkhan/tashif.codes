@@ -643,6 +643,18 @@
   border-radius: 0.5rem;
 }
 
+/*
+ * Raw HTML images from READMEs (`<p align="center"><img width="200"> …</p>`)
+ * never become Markdown tokens, so they skip `.md-image`. Tailwind's preflight
+ * makes every <img> a block, which stacks a row of screenshots one per line.
+ * GitHub lays them out inline, so a row of phone screenshots or badges wraps
+ * side by side and the paragraph's `align` still centres them.
+ */
+.markdown-body img:not(.md-image) {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 /* An image inside a sentence: no frame, no centring, sits on the text baseline. */
 .md-image--inline {
   display: inline-block;
