@@ -6,29 +6,44 @@ License: MIT
 AuthorName: Tashif Ahmad Khan
 AuthorEmail: tashifkhan010@gmail.com
 WebSite: https://tashif.codes
-SourceCode: https://github.com/tashifkhan/caldav-todo
-IssueTracker: https://github.com/tashifkhan/caldav-todo/issues
-Changelog: https://github.com/tashifkhan/caldav-todo/releases
+SourceCode: https://github.com/tashifkhan/Patchwork
+IssueTracker: https://github.com/tashifkhan/Patchwork/issues
+Changelog: https://github.com/tashifkhan/Patchwork/releases
 Donate: https://tashif.codes
 
 Name: Patchwork
 
-Summary: Developer-focused tasks with CalDAV, Deck, AI, and GitHub
+Summary: One task app for CalDAV, Nextcloud Deck, Jira and GitHub Issues
 
 Description: |
-  Patchwork is a developer-focused task manager built with Expo and React Native.
+  Patchwork pulls your tasks out of the places they're scattered across and
+  puts them in one app.
 
-  Features:
+  What it connects to:
 
-  * CalDAV task sync (Nextcloud and other CalDAV servers)
-  * Nextcloud Deck boards
-  * AI-assisted task drafting and import from photos or notes
-  * Custom AI model providers (OpenAI-compatible endpoints)
-  * GitHub issue tracking
-  * Android home-screen widgets
+  * CalDAV tasks from Nextcloud or any CalDAV server, with subtasks, tags,
+    priorities, due dates, reminders and Markdown notes
+  * Nextcloud Deck boards, with drag and drop for cards and columns
+  * Jira boards with sprints, a backlog and a full issue editor
+  * GitHub issues across repositories
+  * More than one GitHub or Jira account at a time
 
-  Releases are built with EAS, published on GitHub Releases, and mirrored into
-  this F-Droid-compatible repository.
+  Other features:
+
+  * AI import that drafts tasks from a photo of handwritten notes or a
+    description. You review every task before it's saved
+  * Bring your own model: OpenAI, Anthropic, Google, DeepSeek, OpenRouter,
+    NVIDIA, OpenCode Zen, RelayRoom or any OpenAI-compatible endpoint
+  * Voice dictation
+  * Home screen widgets for today and upcoming tasks
+  * Material You colours, fixed palettes, high contrast and a pure black
+    AMOLED mode
+  * Layouts for tablets and foldables
+
+  Credentials and API keys stay on the device in secure storage, and the app
+  talks to your servers directly.
+
+  Slack and Linear integrations are planned.
 
 RepoType: git
-Repo: https://github.com/tashifkhan/caldav-todo.git
+Repo: https://github.com/tashifkhan/Patchwork.git

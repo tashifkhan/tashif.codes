@@ -59,7 +59,7 @@ the analytics api has its own readme in [`api/README.md`](api/README.md).
 
 ## f-droid, for the curious
 
-paste `https://tashif.codes/fdroid/repo` into f-droid and you get [Paisa](https://github.com/tashifkhan/Paisa), [Patchwork](https://github.com/tashifkhan/caldav-todo) and [Delhi Metro](https://github.com/tashifkhan/delhi-metro). each app's release workflow pokes `publish-fdroid.yml` here, which grabs the apk, signs the index and commits it.
+paste `https://tashif.codes/fdroid/repo?fingerprint=568557c435bdf555725de95de596a90d6fa964d4bf0b71874f254cd0be7e94c9` into f-droid (the fingerprint makes f-droid check the repo is really mine) and you get [Paisa](https://github.com/tashifkhan/Paisa), [Patchwork](https://github.com/tashifkhan/Patchwork) and [Delhi Metro](https://github.com/tashifkhan/delhi-metro). each app's release workflow pokes `publish-fdroid.yml` here, which grabs the apk, signs the index and commits it.
 
 secrets, keystore setup and manual re-imports live in [`public/fdroid/README.md`](public/fdroid/README.md). don't lose the keystore. i will cry.
 

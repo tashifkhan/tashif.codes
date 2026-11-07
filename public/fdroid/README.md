@@ -6,6 +6,12 @@ Static F-Droid-compatible binary repository served at:
 https://tashif.codes/fdroid/repo
 ```
 
+Add it with the signing key fingerprint so F-Droid verifies the repo on first sync:
+
+```text
+https://tashif.codes/fdroid/repo?fingerprint=568557c435bdf555725de95de596a90d6fa964d4bf0b71874f254cd0be7e94c9
+```
+
 Install / instructions page: `https://tashif.codes/fdroid`
 
 ## Apps
@@ -13,7 +19,7 @@ Install / instructions page: `https://tashif.codes/fdroid`
 | App | Source repo | Package | Release asset pattern |
 | --- | --- | --- | --- |
 | **Paisa** | [tashifkhan/Paisa](https://github.com/tashifkhan/Paisa) | `codes.tashif.paisa` | `Paisa-v*.apk` |
-| **Patchwork** | [tashifkhan/caldav-todo](https://github.com/tashifkhan/caldav-todo) | `codes.tashhif.patchwork` | `*.apk` |
+| **Patchwork** | [tashifkhan/Patchwork](https://github.com/tashifkhan/Patchwork) | `codes.tashhif.patchwork` | `*.apk` |
 | **Delhi Metro** | [tashifkhan/delhi-metro](https://github.com/tashifkhan/delhi-metro) | `codes.tashif.delhimetro` | `DelhiMetro-v*.apk` |
 
 ## How publishing works
@@ -39,7 +45,7 @@ gh workflow run publish-fdroid.yml \
 # Patchwork
 gh workflow run publish-fdroid.yml \
   --repo tashifkhan/tashif.codes \
-  --field source_repository=tashifkhan/caldav-todo \
+  --field source_repository=tashifkhan/Patchwork \
   --field release_tag=v1.0.0 \
   --field apk_pattern='*.apk'
 
@@ -85,7 +91,7 @@ In **`tashifkhan/Paisa`**:
 | `KEYSTORE_PASSWORD` / `KEY_ALIAS` / `KEY_PASSWORD` | APK signing |
 | `TASHIF_CODES_WORKFLOW_TOKEN` | fine-grained PAT with **Actions: Read and write** on `tashifkhan/tashif.codes` |
 
-In **`tashifkhan/caldav-todo`** (Patchwork) and **`tashifkhan/delhi-metro`**:
+In **`tashifkhan/Patchwork`** (Patchwork) and **`tashifkhan/delhi-metro`**:
 
 | Secret | Purpose |
 |---|---|

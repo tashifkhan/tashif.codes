@@ -18,9 +18,9 @@ on:
   workflow_dispatch:
     inputs:
       source_repository:
-        description: 'GitHub repository that owns the release (owner/repo), e.g. tashifkhan/caldav-todo or tashifkhan/Paisa'
+        description: 'GitHub repository that owns the release (owner/repo), e.g. tashifkhan/Patchwork or tashifkhan/Paisa'
         required: true
-        default: 'tashifkhan/caldav-todo'
+        default: 'tashifkhan/Patchwork'
         type: string
       release_tag:
         description: 'Release tag to import (e.g. v1.0.0)'
