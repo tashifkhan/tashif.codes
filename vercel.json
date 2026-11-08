@@ -34,10 +34,6 @@
 			"destination": "https://u.tashif.codes/static/:path*"
 		},
 		{
-			"source": "/(resume:pdf)",
-			"destination": "/resume-pdf"
-		},
-		{
 			"source": "/projects/stats/api",
 			"destination": "/api/index.py"
 		},
@@ -164,23 +160,6 @@
 				{
 					"key": "Cache-Control",
 					"value": "public, max-age=3600"
-				}
-			]
-		},
-		{
-			"source": "/(resume:pdf)",
-			"headers": [
-				{
-					"key": "Content-Type",
-					"value": "application/pdf"
-				},
-				{
-					"key": "Content-Disposition",
-					"value": "attachment; filename=\"Tashif-Ahmad-Khan-Resume.pdf\""
-				},
-				{
-					"key": "Cache-Control",
-					"value": "public, max-age=0, must-revalidate"
 				}
 			]
 		},
