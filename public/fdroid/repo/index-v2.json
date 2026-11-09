@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/repo",
-    "timestamp": 1794201400000,
+    "timestamp": 1794222647000,
     "categories": {
       "Development": {
         "name": {
@@ -719,7 +719,7 @@
         ],
         "changelog": "https://github.com/tashifkhan/Paisa/releases",
         "issueTracker": "https://github.com/tashifkhan/Paisa/issues",
-        "lastUpdated": 1794201383000,
+        "lastUpdated": 1794222630000,
         "license": "AGPL-3.0-or-later",
         "sourceCode": "https://github.com/tashifkhan/Paisa",
         "webSite": "https://tashif.codes",
@@ -744,6 +744,71 @@
         "preferredSigner": "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be"
       },
       "versions": {
+        "98f7a65b1c2b365a9dd885fb69697762a3d944297a266e0f1ad3786feadc06d6": {
+          "added": 1794222630000,
+          "file": {
+            "name": "/codes.tashif.paisa_6.apk",
+            "sha256": "98f7a65b1c2b365a9dd885fb69697762a3d944297a266e0f1ad3786feadc06d6",
+            "size": 27091546
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a",
+              "armeabi-v7a",
+              "x86",
+              "x86_64"
+            ],
+            "versionName": "1.5.0",
+            "versionCode": 6,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 35
+            },
+            "signer": {
+              "sha256": [
+                "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.READ_SMS"
+              },
+              {
+                "name": "android.permission.RECEIVE_SMS"
+              },
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.POST_NOTIFICATIONS"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+              },
+              {
+                "name": "android.permission.USE_BIOMETRIC"
+              },
+              {
+                "name": "android.permission.USE_FINGERPRINT"
+              },
+              {
+                "name": "android.permission.WAKE_LOCK"
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "android.permission.RECEIVE_BOOT_COMPLETED"
+              },
+              {
+                "name": "codes.tashif.paisa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              }
+            ]
+          }
+        },
         "38aa32f1b11b0b7bf7ef038dd0e77d2f09e87da1103d8f00a0a3383587422f7b": {
           "added": 1794201383000,
           "file": {
@@ -825,71 +890,6 @@
             ],
             "versionName": "1.3.0",
             "versionCode": 4,
-            "usesSdk": {
-              "minSdkVersion": 24,
-              "targetSdkVersion": 35
-            },
-            "signer": {
-              "sha256": [
-                "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be"
-              ]
-            },
-            "usesPermission": [
-              {
-                "name": "android.permission.READ_SMS"
-              },
-              {
-                "name": "android.permission.RECEIVE_SMS"
-              },
-              {
-                "name": "android.permission.INTERNET"
-              },
-              {
-                "name": "android.permission.POST_NOTIFICATIONS"
-              },
-              {
-                "name": "android.permission.FOREGROUND_SERVICE"
-              },
-              {
-                "name": "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
-              },
-              {
-                "name": "android.permission.USE_BIOMETRIC"
-              },
-              {
-                "name": "android.permission.USE_FINGERPRINT"
-              },
-              {
-                "name": "android.permission.WAKE_LOCK"
-              },
-              {
-                "name": "android.permission.ACCESS_NETWORK_STATE"
-              },
-              {
-                "name": "android.permission.RECEIVE_BOOT_COMPLETED"
-              },
-              {
-                "name": "codes.tashif.paisa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-              }
-            ]
-          }
-        },
-        "c2bb3168f5b4b3afd8fb56650e6c4f97e680e1e388991c3fc8e4fd735472debb": {
-          "added": 1794164048000,
-          "file": {
-            "name": "/codes.tashif.paisa_3.apk",
-            "sha256": "c2bb3168f5b4b3afd8fb56650e6c4f97e680e1e388991c3fc8e4fd735472debb",
-            "size": 26532170
-          },
-          "manifest": {
-            "nativecode": [
-              "arm64-v8a",
-              "armeabi-v7a",
-              "x86",
-              "x86_64"
-            ],
-            "versionName": "1.2.0",
-            "versionCode": 3,
             "usesSdk": {
               "minSdkVersion": 24,
               "targetSdkVersion": 35

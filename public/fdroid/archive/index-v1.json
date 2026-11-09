@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1794201397000,
+    "timestamp": 1794222642000,
     "version": 20002,
     "name": "My First F-Droid Archive Demo",
     "icon": "icon.png",
@@ -41,7 +41,7 @@
         "Offline"
       ],
       "changelog": "https://github.com/tashifkhan/Paisa/releases",
-      "suggestedVersionCode": "2",
+      "suggestedVersionCode": "3",
       "description": "Paisa keeps your money ledger on your phone.\n\nBank SMS is parsed on-device (100+ Indian banks via an AGPL parser\ncore). Optional BYOK statement import for PDF/CSV/images \u2014 your API\nkey, your endpoint; SMS never leaves the device.\n\nFeatures:\n* Home balance, filters, and recent transactions\n* Analytics charts with date ranges\n* Monthly budgets by category\n* Multiple accounts / wallets\n* SMS bulk scan + live receiver with hash dedup\n* App lock via biometrics or device credential\n* Export to CSV / PDF\n\nPackage ID: codes.tashif.paisa\n",
       "issueTracker": "https://github.com/tashifkhan/Paisa/issues",
       "license": "AGPL-3.0-or-later",
@@ -51,7 +51,7 @@
       "webSite": "https://tashif.codes",
       "added": 1785006084000,
       "packageName": "codes.tashif.paisa",
-      "lastUpdated": 1794201383000
+      "lastUpdated": 1794222630000
     },
     {
       "authorEmail": "tashifkhan010@gmail.com",
@@ -1912,6 +1912,76 @@
       }
     ],
     "codes.tashif.paisa": [
+      {
+        "added": 1794164048000,
+        "apkName": "codes.tashif.paisa_3.apk",
+        "hash": "c2bb3168f5b4b3afd8fb56650e6c4f97e680e1e388991c3fc8e4fd735472debb",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "packageName": "codes.tashif.paisa",
+        "sig": "acb86eb55a28f6e0e08dad36111ce604",
+        "signer": "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be",
+        "size": 26532170,
+        "targetSdkVersion": 35,
+        "uses-permission": [
+          [
+            "android.permission.READ_SMS",
+            null
+          ],
+          [
+            "android.permission.RECEIVE_SMS",
+            null
+          ],
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.POST_NOTIFICATIONS",
+            null
+          ],
+          [
+            "android.permission.FOREGROUND_SERVICE",
+            null
+          ],
+          [
+            "android.permission.FOREGROUND_SERVICE_DATA_SYNC",
+            null
+          ],
+          [
+            "android.permission.USE_BIOMETRIC",
+            null
+          ],
+          [
+            "android.permission.USE_FINGERPRINT",
+            null
+          ],
+          [
+            "android.permission.WAKE_LOCK",
+            null
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "android.permission.RECEIVE_BOOT_COMPLETED",
+            null
+          ],
+          [
+            "codes.tashif.paisa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 3,
+        "versionName": "1.2.0"
+      },
       {
         "added": 1794159067000,
         "apkName": "codes.tashif.paisa_2.apk",
