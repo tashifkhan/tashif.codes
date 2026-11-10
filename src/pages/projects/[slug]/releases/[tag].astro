@@ -75,7 +75,6 @@ const mixParts = [
 		<!-- Git log rail: one dot per release, sized by how much it shipped -->
 		<nav
 			aria-label={`${project.title} releases`}
-			transition:name={`release-rail-${project.slug}`}
 			class="lg:sticky lg:top-6 min-w-0"
 		>
 			<div class="hidden lg:flex items-center justify-between mb-3 px-2">
@@ -166,7 +165,7 @@ const mixParts = [
 		</nav>
 
 		<article
-			transition:name={`release-panel-${project.slug}`}
+			data-release-article
 			class="min-w-0 rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl shadow-sm overflow-hidden"
 		>
 			<header class="relative px-5 sm:px-8 pt-6 sm:pt-8 pb-5 border-b border-border/60">
@@ -175,7 +174,6 @@ const mixParts = [
 					<div class="flex-1 min-w-0">
 						<div class="flex flex-wrap items-center gap-1.5 mb-2.5">
 							<span
-								transition:name={`release-tag-${release.id}`}
 								class="inline-flex items-center gap-1 font-mono text-xs font-semibold text-emerald-500 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-md"
 							>
 								<TagIcon className="w-3 h-3" />
@@ -320,9 +318,24 @@ const mixParts = [
 <script>
 	import { navigate } from "astro:transitions/client";
 
-	// One listener for the whole session; it reads the current page's links.
+	const isReleasePath = (path: string) => /^\/projects\/[^/]+\/releases\/[^/]+\/?$/.test(path);
+
+	// One set of listeners for the whole session; they read the current page.
 	if (!(window as any).__releaseKeys) {
 		(window as any).__releaseKeys = true;
+
+		// Mark version-to-version moves so CSS can skip the rise-in. Entering
+		// from the project page, or leaving, keeps the site's usual motion.
+		// The data-astro- prefix makes the router keep it through the swap.
+		document.addEventListener("astro:before-preparation", (event) => {
+			const root = document.documentElement;
+			if (isReleasePath(event.from.pathname) && isReleasePath(event.to.pathname)) {
+				root.dataset.astroReleaseStep = "";
+			} else {
+				delete root.dataset.astroReleaseStep;
+			}
+		});
+
 		document.addEventListener("keydown", (e) => {
 			const page = document.querySelector<HTMLElement>("[data-release-page]");
 			if (!page || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
@@ -352,9 +365,36 @@ const mixParts = [
 </script>
 
 <style is:global>
-	/* The morph does the entrance here, so skip the shell's rise-in. */
-	body:has([data-release-page]) .rise-in {
+	/* Stepping between versions only swaps the notes, so treat it like a
+	   move inside docs: the page holds still, the rail stays, and only the
+	   article lifts in. Entering or leaving keeps the site's usual motion. */
+	:root[data-astro-release-step] .rise-in {
 		animation: none;
+	}
+
+	:root[data-astro-release-step] [data-release-article] {
+		view-transition-name: release-article;
+	}
+
+	/* Doubled attribute outranks the skin's directional page slide. */
+	:root[data-astro-release-step][data-astro-release-step]::view-transition-old(root) {
+		animation: docs-fade-out 160ms ease-in both;
+	}
+
+	:root[data-astro-release-step][data-astro-release-step]::view-transition-new(root) {
+		animation: docs-fade-in 240ms var(--motion-ease) both;
+	}
+
+	:root[data-astro-release-step]::view-transition-old(release-article) {
+		animation: docs-main-out 180ms ease-in both;
+	}
+
+	:root[data-astro-release-step]::view-transition-new(release-article) {
+		animation: docs-main-in 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+	}
+
+	::view-transition-group(release-article) {
+		animation-duration: 380ms;
 	}
 
 	/* The shared markdown theme is sized for READMEs. Release notes are
