@@ -10,7 +10,7 @@ Public repos with README, languages, topics, and optional attribution fields.
 - **Query.** `attributed` (default `true`), `full` (default `false`)
 - **Response.** `RepoDetail[]`
 
-Default is the lite path: README, languages, contributors. That finishes inside a serverless time budget and can warm Redis. `full=true` adds release notes, assets, and commit counts.
+Default is the lite path: README, languages, contributors, and the first page of releases with notes and assets. That finishes inside a serverless time budget and can warm Redis. `full=true` adds commit counts.
 
 README for a conventional `README.md` comes from GitHub's raw CDN. The rate-limited Contents API is the fallback for other names and casing. The field is decoded Markdown, not base64.
 
@@ -60,12 +60,84 @@ curl -s "https://github-stats.tashif.codes/tashifkhan/repos?full=true"
           }
         ]
       }
-    ]
+    ],
+    "releases_page": {
+      "total_count": 12,
+      "page": 1,
+      "per_page": 10,
+      "has_more": true,
+      "next": "/tashifkhan/repos/RepoName/releases?page=2&per_page=10"
+    }
   }
 ]
 ```
 
 Missing user is `404`. Other GitHub failures from this handler can be `500`.
+
+### Releases are paginated
+
+`releases` holds the newest 10 releases of each repo, not all of them. A repo with 12 releases returns 10 here, and the other 2 are on page 2. Check `releases_page` before you assume you have the full list:
+
+| Field | Meaning |
+| --- | --- |
+| `total_count` | Every release the repo has. `null` if GitHub's count lookup failed. |
+| `page` | Always `1` in `/repos`. |
+| `per_page` | Releases per page. `10` in `/repos`. |
+| `has_more` | `true` when a later page exists. |
+| `next` | Path of the next page on this API, or `null` on the last page. |
+
+`releases_page` is `null` when release data was unavailable, for example on a skeleton row from a timed-out request.
+
+To get every release, request `next` against the API host and keep following each response's `releases_page.next` until it is `null`:
+
+```ts
+async function allReleases(repo) {
+  const releases = [...repo.releases];
+  let next = repo.releases_page?.next;
+  while (next) {
+    const page = await fetch(`https://github-stats.tashif.codes${next}`).then((r) => r.json());
+    releases.push(...page.releases);
+    next = page.releases_page.next;
+  }
+  return releases;
+}
+```
+
+Keep the `per_page` that `next` carries. Changing the page size halfway shifts the page boundaries and you skip or repeat releases.
+
+## Repository releases
+
+One page of a repo's releases, newest first. Use it for the pages `/repos` does not embed.
+
+- **Method and path.** `GET /{owner}/repos/{repo}/releases`
+- **Query.** `page` (default `1`), `per_page` (default `10`, max `100`)
+- **Response.** `RepoReleases`: `owner`, `repo`, `releases`, and the same `releases_page` object as above.
+
+```bash
+curl -s "https://github-stats.tashif.codes/tashifkhan/repos/Patchwork/releases?page=2&per_page=10"
+```
+
+```json
+{
+  "owner": "tashifkhan",
+  "repo": "Patchwork",
+  "releases": [
+    { "tag_name": "v1.1.0", "body": "...", "assets": [] },
+    { "tag_name": "v1.0.0", "body": "...", "assets": [] }
+  ],
+  "releases_page": {
+    "total_count": 12,
+    "page": 2,
+    "per_page": 10,
+    "has_more": false,
+    "next": null
+  }
+}
+```
+
+If you want everything in one request and the repo has 100 releases or fewer, ask for `?per_page=100`. `has_more` tells you whether that was enough.
+
+A missing repo is `404`. A failed GitHub request is `502`. `per_page` above 100 is `422`. Pages are cached in Redis like `/repos`.
 
 ## Stars
 

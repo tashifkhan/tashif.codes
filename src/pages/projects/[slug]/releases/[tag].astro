@@ -1,0 +1,423 @@
+---
+import PageShell from "../../../../layouts/PageShell.astro";
+import MarkdownRenderer from "../../../../components/common/markdown/MarkdownRenderer.astro";
+import { allProjects } from "../../../../data/projects";
+import { ArrowLeft, ArrowRight, Calendar, Download, Github, Tag as TagIcon } from "lucide-react";
+import {
+	formatBytes,
+	formatReleaseDate,
+	releaseDownloads,
+	releaseHref,
+	releaseMix,
+	releaseNotesBody,
+	releaseSlug,
+	releaseSummary,
+} from "@/lib/releases";
+import type { Project, RepoRelease } from "@/types";
+
+export function getStaticPaths() {
+	return allProjects.flatMap((project: Project) =>
+		(project.releases ?? []).map((release, index) => ({
+			params: { slug: project.slug, tag: releaseSlug(release.tag_name) },
+			props: { project, index },
+		})),
+	);
+}
+
+const { project, index } = Astro.props as { project: Project; index: number };
+const releases: RepoRelease[] = project.releases ?? [];
+const release = releases[index];
+const newer = releases[index - 1];
+const older = releases[index + 1];
+const isLatest = index === 0 && !release.draft && !release.prerelease;
+
+const notes = release.body ? releaseNotesBody(release.body, release.name, release.tag_name) : "";
+const downloads = releaseDownloads(release);
+const mix = releaseMix(release.body);
+const title = release.name?.trim() || `${project.title} ${release.tag_name}`;
+const summary = releaseSummary(notes) || `${project.title} ${release.tag_name} release notes.`;
+
+const rail = releases.map((r, i) => {
+	const m = releaseMix(r.body);
+	// sqrt keeps a 40-bullet release from dwarfing everything else.
+	const size = m.total === 0 ? 8 : Math.round(Math.min(22, 8 + Math.sqrt(m.total) * 3));
+	return { release: r, mix: m, size, current: i === index };
+});
+
+const mixParts = [
+	{ n: mix.features, one: "change", many: "changes" },
+	{ n: mix.fixes, one: "fix", many: "fixes" },
+	{ n: mix.internal, one: "internal", many: "internal" },
+].filter((p) => p.n > 0);
+---
+
+<PageShell
+	title={`${title} | ${project.title} | Tashif Ahmad Khan`}
+	description={summary}
+	url={releaseHref(project.slug, release.tag_name)}
+	image={`/og/projects/${project.slug}.jpg`}
+	tint="orange"
+	compact
+	containerClass="max-w-6xl"
+	breadcrumbs={[
+		{ label: "Home", href: "/" },
+		{ label: "Projects", href: "/projects" },
+		{ label: project.title, href: `/projects/${project.slug}` },
+		{ label: release.tag_name },
+	]}
+>
+	<div
+		data-release-page
+		data-newer={newer ? releaseHref(project.slug, newer.tag_name) : undefined}
+		data-older={older ? releaseHref(project.slug, older.tag_name) : undefined}
+		class="grid gap-6 lg:gap-10 lg:grid-cols-[220px_minmax(0,1fr)] items-start"
+	>
+		<!-- Git log rail: one dot per release, sized by how much it shipped -->
+		<nav
+			aria-label={`${project.title} releases`}
+			transition:name={`release-rail-${project.slug}`}
+			class="lg:sticky lg:top-6 min-w-0"
+		>
+			<div class="hidden lg:flex items-center justify-between mb-3 px-2">
+				<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+					Releases
+				</h2>
+				<span class="font-mono text-[10px] text-muted-foreground tabular-nums">
+					{releases.length}
+				</span>
+			</div>
+			<ol
+				data-release-rail
+				class="relative flex lg:flex-col gap-1.5 lg:gap-0.5 overflow-x-auto lg:overflow-visible -mx-4 px-4 lg:mx-0 lg:px-0 pb-1 lg:pb-0 [scrollbar-width:none] snap-x"
+			>
+				<span
+					aria-hidden="true"
+					class="hidden lg:block absolute left-[19px] top-4 bottom-4 w-0.5 rounded-full bg-border/70"
+				/>
+				{rail.map(({ release: r, mix: m, size, current }) => (
+					<li class="relative shrink-0 snap-start">
+						<a
+							href={releaseHref(project.slug, r.tag_name)}
+							data-astro-history="replace"
+							data-haptic-nav
+							aria-current={current ? "page" : undefined}
+							class:list={[
+								"group flex items-center gap-2 lg:gap-3 rounded-full lg:rounded-xl border lg:border-0 px-3 lg:px-2 py-1.5 lg:py-2 transition-colors",
+								current
+									? "border-emerald-500/40 bg-emerald-500/10 lg:bg-emerald-500/[0.07]"
+									: "border-border/60 bg-card/60 lg:bg-transparent hover:bg-muted/50",
+							]}
+						>
+							<span class="relative z-10 hidden lg:flex w-6 shrink-0 justify-center">
+								<span
+									class:list={[
+										"block rounded-full ring-4 ring-background transition-transform group-hover:scale-110",
+										current ? "bg-emerald-500 shadow-[0_0_0_6px_rgb(16_185_129_/_0.18)]" : "bg-emerald-500/55",
+									]}
+									style={`width:${size}px;height:${size}px`}
+								/>
+							</span>
+							<span class="lg:hidden block h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+							<span class="min-w-0 flex-1">
+								<span class="flex items-center gap-1.5">
+									<span
+										class:list={[
+											"font-mono text-xs lg:text-[13px] font-semibold whitespace-nowrap",
+											current ? "text-foreground" : "text-muted-foreground group-hover:text-foreground",
+										]}
+									>
+										{r.tag_name}
+									</span>
+									{r.prerelease && (
+										<span class="text-[9px] font-semibold uppercase tracking-wide text-orange-500">pre</span>
+									)}
+									{r.draft && (
+										<span class="text-[9px] font-semibold uppercase tracking-wide text-yellow-500">draft</span>
+									)}
+								</span>
+								{r.published_at && (
+									<span class="hidden lg:block text-[11px] text-muted-foreground/80 mt-0.5">
+										{formatReleaseDate(r.published_at)}
+									</span>
+								)}
+								{m.total > 0 && (
+									<span
+										class="hidden lg:flex h-1 w-16 gap-px rounded-full overflow-hidden mt-1.5"
+										title={`${m.features} changes, ${m.fixes} fixes, ${m.internal} internal`}
+									>
+										{m.features > 0 && <span class="bg-emerald-500" style={`flex:${m.features}`} />}
+										{m.fixes > 0 && <span class="bg-amber-500" style={`flex:${m.fixes}`} />}
+										{m.internal > 0 && <span class="bg-muted-foreground/40" style={`flex:${m.internal}`} />}
+									</span>
+								)}
+							</span>
+						</a>
+					</li>
+				))}
+			</ol>
+			<div class="hidden lg:flex flex-wrap gap-x-3 gap-y-1 mt-4 px-2 text-[10.5px] text-muted-foreground">
+				<span class="inline-flex items-center gap-1.5"><i class="h-2 w-2 rounded-sm bg-emerald-500" />Changes</span>
+				<span class="inline-flex items-center gap-1.5"><i class="h-2 w-2 rounded-sm bg-amber-500" />Fixes</span>
+				<span class="inline-flex items-center gap-1.5"><i class="h-2 w-2 rounded-sm bg-muted-foreground/40" />Internal</span>
+			</div>
+			<p class="hidden lg:block mt-3 px-2 text-[10.5px] text-muted-foreground/70">
+				<kbd class="font-mono">←</kbd> <kbd class="font-mono">→</kbd> to step through versions
+			</p>
+		</nav>
+
+		<article
+			transition:name={`release-panel-${project.slug}`}
+			class="min-w-0 rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl shadow-sm overflow-hidden"
+		>
+			<header class="relative px-5 sm:px-8 pt-6 sm:pt-8 pb-5 border-b border-border/60">
+				<div class="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-emerald-500/[0.07] to-transparent" />
+				<div class="relative flex flex-col sm:flex-row sm:items-start gap-4">
+					<div class="flex-1 min-w-0">
+						<div class="flex flex-wrap items-center gap-1.5 mb-2.5">
+							<span
+								transition:name={`release-tag-${release.id}`}
+								class="inline-flex items-center gap-1 font-mono text-xs font-semibold text-emerald-500 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-md"
+							>
+								<TagIcon className="w-3 h-3" />
+								{release.tag_name}
+							</span>
+							{isLatest && (
+								<span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md bg-foreground/[0.06] text-foreground/80 border border-border/60">
+									Latest
+								</span>
+							)}
+							{release.draft && (
+								<span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md bg-yellow-500/15 text-yellow-500 border border-yellow-500/20">
+									Draft
+								</span>
+							)}
+							{release.prerelease && (
+								<span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md bg-orange-500/15 text-orange-500 border border-orange-500/20">
+									Pre-release
+								</span>
+							)}
+						</div>
+						<h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-tight">
+							{title}
+						</h1>
+						<div class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+							{release.published_at && (
+								<span class="inline-flex items-center gap-1.5">
+									<Calendar className="w-3.5 h-3.5" />
+									<time datetime={release.published_at}>{formatReleaseDate(release.published_at)}</time>
+								</span>
+							)}
+							{release.assets.length > 0 && (
+								<span class="inline-flex items-center gap-1.5">
+									<Download className="w-3.5 h-3.5" />
+									{downloads.toLocaleString()} {downloads === 1 ? "download" : "downloads"}
+								</span>
+							)}
+							{mixParts.length > 0 && (
+								<span class="inline-flex items-center gap-2">
+									{mixParts.map((p) => (
+										<span>
+											<span class="font-semibold text-foreground/80 tabular-nums">{p.n}</span> {p.n === 1 ? p.one : p.many}
+										</span>
+									))}
+								</span>
+							)}
+						</div>
+					</div>
+					<a
+						href={release.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						data-haptic-external
+						class="self-start h-8 px-3 inline-flex items-center gap-1.5 rounded-lg text-xs font-medium border border-border bg-background/60 hover:bg-muted/60 transition-colors shrink-0"
+					>
+						<Github className="w-3.5 h-3.5" />
+						View on GitHub
+					</a>
+				</div>
+			</header>
+
+			<div class="px-5 sm:px-8 py-6 sm:py-8 space-y-8">
+				{notes ? (
+					<div class="release-notes">
+						<MarkdownRenderer content={notes} githubBaseUrl={project.github_link} />
+					</div>
+				) : (
+					<p class="text-sm text-muted-foreground italic">No release notes provided.</p>
+				)}
+
+				{release.assets.length > 0 && (
+					<section class="pt-6 border-t border-border/50">
+						<h2 class="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+							Assets
+							<span class="font-mono font-medium normal-case tracking-normal text-muted-foreground/70">
+								{release.assets.length}
+							</span>
+						</h2>
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+							{release.assets.map((asset) => (
+								<a
+									href={asset.download_url}
+									target="_blank"
+									rel="noopener noreferrer"
+									data-haptic-external
+									class="group/asset flex items-center gap-3 px-3 py-2.5 rounded-xl border border-border/50 bg-background/40 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-colors duration-200"
+								>
+									<span class="h-8 w-8 rounded-lg bg-muted/70 flex items-center justify-center shrink-0 group-hover/asset:bg-emerald-500/10 transition-colors">
+										<Download className="w-3.5 h-3.5 text-muted-foreground group-hover/asset:text-emerald-500 transition-colors" />
+									</span>
+									<span class="flex-1 min-w-0">
+										<span class="block font-mono text-[13px] font-medium text-foreground truncate group-hover/asset:text-emerald-500 transition-colors">
+											{asset.name}
+										</span>
+										<span class="block text-[11px] text-muted-foreground mt-0.5">
+											{formatBytes(asset.size)} · {asset.download_count.toLocaleString()} downloads
+										</span>
+									</span>
+								</a>
+							))}
+						</div>
+					</section>
+				)}
+			</div>
+
+			{(older || newer) && (
+				<footer class="grid grid-cols-2 border-t border-border/60 text-sm">
+					{older ? (
+						<a
+							href={releaseHref(project.slug, older.tag_name)}
+							data-astro-history="replace"
+							data-haptic-nav
+							class="group flex flex-col gap-0.5 px-5 sm:px-8 py-4 hover:bg-muted/40 transition-colors"
+						>
+							<span class="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+								<ArrowLeft className="w-3 h-3 group-hover:-translate-x-0.5 transition-transform" />
+								Older
+							</span>
+							<span class="font-mono font-semibold text-foreground">{older.tag_name}</span>
+						</a>
+					) : <span />}
+					{newer ? (
+						<a
+							href={releaseHref(project.slug, newer.tag_name)}
+							data-astro-history="replace"
+							data-haptic-nav
+							class="group flex flex-col items-end gap-0.5 px-5 sm:px-8 py-4 border-l border-border/60 hover:bg-muted/40 transition-colors text-right"
+						>
+							<span class="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+								Newer
+								<ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+							</span>
+							<span class="font-mono font-semibold text-foreground">{newer.tag_name}</span>
+						</a>
+					) : <span class="border-l border-border/60" />}
+				</footer>
+			)}
+		</article>
+	</div>
+</PageShell>
+
+<script>
+	import { navigate } from "astro:transitions/client";
+
+	// One listener for the whole session; it reads the current page's links.
+	if (!(window as any).__releaseKeys) {
+		(window as any).__releaseKeys = true;
+		document.addEventListener("keydown", (e) => {
+			const page = document.querySelector<HTMLElement>("[data-release-page]");
+			if (!page || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+			const t = e.target as HTMLElement | null;
+			if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+			const href =
+				e.key === "ArrowLeft" || e.key === "j"
+					? page.dataset.older
+					: e.key === "ArrowRight" || e.key === "k"
+						? page.dataset.newer
+						: undefined;
+			if (!href) return;
+			e.preventDefault();
+			navigate(href, { history: "replace" });
+		});
+	}
+
+	// Keep the current version in view in the horizontal rail on phones.
+	function centerCurrent() {
+		const current = document.querySelector<HTMLElement>("[data-release-rail] [aria-current=page]");
+		const rail = current?.closest<HTMLElement>("[data-release-rail]");
+		if (!current || !rail || rail.scrollWidth <= rail.clientWidth) return;
+		rail.scrollLeft = current.offsetLeft - (rail.clientWidth - current.offsetWidth) / 2;
+	}
+	centerCurrent();
+	document.addEventListener("astro:page-load", centerCurrent);
+</script>
+
+<style is:global>
+	/* The morph does the entrance here, so skip the shell's rise-in. */
+	body:has([data-release-page]) .rise-in {
+		animation: none;
+	}
+
+	/* The shared markdown theme is sized for READMEs. Release notes are
+	   shorter and denser, so tone headings down and tighten lists. */
+	.release-notes .markdown-body {
+		--md-accent: rgb(16 185 129);
+		--md-gap: 0.875rem;
+		font-size: 0.9375rem;
+		line-height: 1.65;
+	}
+	.release-notes .markdown-body > p:first-child {
+		font-size: 1.0625rem;
+		color: var(--color-muted-foreground);
+		margin-bottom: 1.75rem;
+	}
+	.release-notes .markdown-body p {
+		line-height: 1.7;
+		margin-bottom: 0.875rem;
+	}
+	.release-notes .markdown-body :is(h1, h2) {
+		margin: 2rem 0 0.75rem;
+		padding: 0;
+		border: 0;
+		font-size: 1.125rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+	}
+	.release-notes .markdown-body :is(h3, h4, h5, h6) {
+		margin: 1.5rem 0 0.5rem;
+		font-size: 0.9375rem;
+		font-weight: 600;
+	}
+	.release-notes .markdown-body > :first-child,
+	.release-notes .markdown-body > .md-heading-wrap:first-child :is(h1, h2, h3) {
+		margin-top: 0;
+	}
+	.release-notes .markdown-body hr {
+		margin: 1.75rem 0;
+	}
+	.release-notes .md-heading-bar {
+		height: 0.9375rem;
+		width: 0.1875rem;
+	}
+	.release-notes .md-anchor {
+		display: none;
+	}
+	.release-notes .md-ul,
+	.release-notes .md-ol {
+		margin: 0.5rem 0 0.875rem;
+	}
+	.release-notes .md-li {
+		margin-bottom: 0.4rem;
+		line-height: 1.65;
+		color: color-mix(in oklab, var(--color-foreground) 82%, transparent);
+	}
+	.release-notes .md-li strong {
+		color: var(--color-foreground);
+		font-weight: 600;
+	}
+	.release-notes .md-li-bullet {
+		width: 0.3125rem;
+		height: 0.3125rem;
+		transform: translateY(-0.15em);
+		opacity: 0.85;
+	}
+</style>

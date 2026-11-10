@@ -6,7 +6,7 @@ import {
 	readCache as readCacheNS,
 	writeCache as writeCacheNS,
 } from "../lib/fetchCached";
-import type { Project } from "@/types";
+import type { Project, RepoRelease } from "@/types";
 
 
 /**
@@ -340,6 +340,68 @@ async function hasPublishedRelease(project: Project): Promise<boolean> {
 	}
 }
 
+/**
+ * Published releases, newest first, with assets. Falls back to the disk cache
+ * on failure and returns `null` when nothing is known, so a failed fetch is not
+ * mistaken for "no releases".
+ */
+async function fetchGithubReleases(project: Project): Promise<RepoRelease[] | null> {
+	const repo = project.github_link.match(/^https:\/\/github\.com\/([^/]+\/[^/]+)\/?$/)?.[1];
+	if (!repo) return null;
+	const data = await fetchJsonCached<any[]>(
+		`https://api.github.com/repos/${repo}/releases?per_page=100`,
+		`releases-${repo}`,
+		{ headers: GH_HEADERS },
+	);
+	if (!Array.isArray(data)) return null;
+	return data
+		.filter((r) => !r.draft)
+		.map((r) => ({
+			id: r.id,
+			tag_name: r.tag_name,
+			name: r.name ?? null,
+			body: r.body ?? null,
+			url: r.html_url,
+			draft: false,
+			prerelease: Boolean(r.prerelease),
+			created_at: r.created_at ?? null,
+			published_at: r.published_at ?? null,
+			assets: (r.assets ?? []).map((a: any) => ({
+				name: a.name,
+				download_url: a.browser_download_url,
+				size: a.size,
+				download_count: a.download_count,
+				content_type: a.content_type ?? null,
+				updated_at: a.updated_at ?? null,
+			})),
+		}));
+}
+
+const STATS_API = "https://github-stats.tashif.codes";
+// Stops a bad `next` loop. 50 pages of 10 is 500 releases.
+const MAX_RELEASE_PAGES = 50;
+
+/**
+ * `/repos` embeds only each repo's first page of releases. Follow
+ * `releases_page.next` until it runs out so project pages list every release.
+ * A failed page keeps whatever arrived before it.
+ */
+async function fillReleasePages(repos: any[]): Promise<void> {
+	const paged = repos.filter((repo) => repo?.releases_page?.has_more && repo.releases_page.next);
+	await inBatches(paged, 4, async (repo) => {
+		let next: string | null = repo.releases_page.next;
+		for (let i = 0; next && i < MAX_RELEASE_PAGES; i++) {
+			const page = await fetchJsonCached<any>(
+				`${STATS_API}${next}`,
+				`stats-releases-${next.replace(/[^A-Za-z0-9]+/g, "-")}`,
+			);
+			if (!Array.isArray(page?.releases)) break;
+			repo.releases = [...(repo.releases ?? []), ...page.releases];
+			next = page.releases_page?.next ?? null;
+		}
+	});
+}
+
 async function fetchAllProjects(): Promise<Project[]> {
 	let repos: any[] =
 		(await fetchJsonCached<any[]>(
@@ -359,6 +421,7 @@ async function fetchAllProjects(): Promise<Project[]> {
 	// GitHub so project pages never show the empty terminal shell when a
 	// README actually exists upstream.
 	await fillMissingReadmes(repos, "tashifkhan");
+	await fillReleasePages(repos);
 
 	// Fetch stars from multiple users to support parent repo star counts
 	const starMap = new Map<string, number>();
@@ -579,6 +642,18 @@ async function fetchAllProjects(): Promise<Project[]> {
     });
 	await inBatches(visibleProjects, 4, async (project) => {
 		project.hasReleases = await hasPublishedRelease(project);
+		// The stats API returns every release, but a cold or timed-out response
+		// can still ship `releases: []`. Fill those from GitHub, only for repos
+		// whose feed lists something.
+		if (project.hasReleases && !project.releases?.length) {
+			const releases = await fetchGithubReleases(project);
+			if (releases) {
+				project.releases = releases;
+				// releases.atom also lists bare tags, so a tag-only repo
+				// (bulk-messaging-system) would otherwise count as released.
+				project.hasReleases = releases.length > 0;
+			}
+		}
 	});
 	return visibleProjects;
 }
