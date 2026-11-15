@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1794690694000,
+    "timestamp": 1794747010000,
     "version": 20002,
     "name": "My First F-Droid Archive Demo",
     "icon": "icon.png",
@@ -31,7 +31,7 @@
       "webSite": "https://tashif.codes",
       "added": 1785013639000,
       "packageName": "codes.tashif.delhimetro",
-      "lastUpdated": 1794690679000
+      "lastUpdated": 1794746993000
     },
     {
       "authorEmail": "tashifkhan010@gmail.com",
@@ -1703,8 +1703,8 @@
     ],
     "codes.tashif.delhimetro": [
       {
-        "added": 1789073461000,
-        "apkName": "codes.tashif.delhimetro_27_e279fc0.apk",
+        "added": 1788931534000,
+        "apkName": "codes.tashif.delhimetro_27.apk",
         "hash": "29f072bac790f0458bd94bd47694805277843242f29b969fb490409172f8245a",
         "hashType": "sha256",
         "minSdkVersion": 24,
@@ -1755,6 +1755,60 @@
         ],
         "versionCode": 27,
         "versionName": "1.6.0"
+      },
+      {
+        "added": 1788931534000,
+        "apkName": "codes.tashif.delhimetro_27.apk",
+        "hash": "9d9b1c60f720566c1295a9bed6268a81143545dbe22dee8504b4c1bb159cf182",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "packageName": "codes.tashif.delhimetro",
+        "sig": "e279fc012c64a59157be7ad09db800a1",
+        "signer": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933",
+        "size": 97664881,
+        "targetSdkVersion": 36,
+        "uses-permission": [
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.READ_EXTERNAL_STORAGE",
+            32
+          ],
+          [
+            "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+            null
+          ],
+          [
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            null
+          ],
+          [
+            "android.permission.VIBRATE",
+            null
+          ],
+          [
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            null
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 27,
+        "versionName": "1.5.2"
       },
       {
         "added": 1788288693000,
