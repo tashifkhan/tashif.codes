@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/archive",
-    "timestamp": 1794747010000,
+    "timestamp": 1794786845000,
     "categories": {
       "Development": {
         "name": {
@@ -1469,60 +1469,6 @@
         "preferredSigner": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
       },
       "versions": {
-        "29f072bac790f0458bd94bd47694805277843242f29b969fb490409172f8245a": {
-          "added": 1788931534000,
-          "file": {
-            "name": "/codes.tashif.delhimetro_27.apk",
-            "sha256": "29f072bac790f0458bd94bd47694805277843242f29b969fb490409172f8245a",
-            "size": 97675849
-          },
-          "manifest": {
-            "nativecode": [
-              "arm64-v8a",
-              "armeabi-v7a",
-              "x86",
-              "x86_64"
-            ],
-            "versionName": "1.6.0",
-            "versionCode": 27,
-            "usesSdk": {
-              "minSdkVersion": 24,
-              "targetSdkVersion": 36
-            },
-            "signer": {
-              "sha256": [
-                "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
-              ]
-            },
-            "usesPermission": [
-              {
-                "name": "android.permission.INTERNET"
-              },
-              {
-                "name": "android.permission.READ_EXTERNAL_STORAGE",
-                "maxSdkVersion": 32
-              },
-              {
-                "name": "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
-              },
-              {
-                "name": "android.permission.SYSTEM_ALERT_WINDOW"
-              },
-              {
-                "name": "android.permission.VIBRATE"
-              },
-              {
-                "name": "android.permission.WRITE_EXTERNAL_STORAGE"
-              },
-              {
-                "name": "android.permission.ACCESS_NETWORK_STATE"
-              },
-              {
-                "name": "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-              }
-            ]
-          }
-        },
         "9d9b1c60f720566c1295a9bed6268a81143545dbe22dee8504b4c1bb159cf182": {
           "added": 1788931534000,
           "file": {
@@ -1797,7 +1743,7 @@
         ],
         "changelog": "https://github.com/tashifkhan/Paisa/releases",
         "issueTracker": "https://github.com/tashifkhan/Paisa/issues",
-        "lastUpdated": 1794469959000,
+        "lastUpdated": 1794786830000,
         "license": "AGPL-3.0-or-later",
         "sourceCode": "https://github.com/tashifkhan/Paisa",
         "webSite": "https://tashif.codes",
@@ -1815,6 +1761,71 @@
         "preferredSigner": "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be"
       },
       "versions": {
+        "e7eb84b27d460c7240f6fa2c110f9fd8dad70e1d947acef70fb55efb15e95c69": {
+          "added": 1794271837000,
+          "file": {
+            "name": "/codes.tashif.paisa_10.apk",
+            "sha256": "e7eb84b27d460c7240f6fa2c110f9fd8dad70e1d947acef70fb55efb15e95c69",
+            "size": 29425039
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a",
+              "armeabi-v7a",
+              "x86",
+              "x86_64"
+            ],
+            "versionName": "1.6.4",
+            "versionCode": 10,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 35
+            },
+            "signer": {
+              "sha256": [
+                "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.READ_SMS"
+              },
+              {
+                "name": "android.permission.RECEIVE_SMS"
+              },
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.POST_NOTIFICATIONS"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+              },
+              {
+                "name": "android.permission.USE_BIOMETRIC"
+              },
+              {
+                "name": "android.permission.USE_FINGERPRINT"
+              },
+              {
+                "name": "android.permission.WAKE_LOCK"
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "android.permission.RECEIVE_BOOT_COMPLETED"
+              },
+              {
+                "name": "codes.tashif.paisa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              }
+            ]
+          }
+        },
         "5fd0d47527170adc7bdaca5fed0e23a84c75965cf0bad40a2e650bb0b122e91e": {
           "added": 1794268508000,
           "file": {
