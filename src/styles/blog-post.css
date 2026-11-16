@@ -136,6 +136,7 @@
 
 :is(.post-act, .post-act-row, .post-bar-btn):focus-visible,
 .follow-link:focus-visible,
+.follow-icon:focus-visible,
 .adjacent-link:focus-visible {
 	outline: 2px solid var(--primary);
 	outline-offset: 2px;
@@ -158,6 +159,23 @@
 }
 
 .follow-link:hover {
+	border-color: var(--primary);
+	color: var(--primary);
+}
+
+.follow-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	color: var(--muted-foreground);
+	transition: color 150ms ease, border-color 150ms ease;
+}
+
+.follow-icon:hover {
 	border-color: var(--primary);
 	color: var(--primary);
 }

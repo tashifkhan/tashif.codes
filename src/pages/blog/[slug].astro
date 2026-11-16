@@ -493,6 +493,27 @@ const tocLinkClass = "toc-link";
 									<span data-share-label>Copy link</span>
 								</button>
 							</div>
+							<div class="mt-3 flex items-center justify-between gap-2 border-t border-border/60 pt-3">
+								<span class="text-xs text-muted-foreground">Follow</span>
+								<div class="flex gap-1">
+									{followLinks.map(({ label, href, Icon }) => (
+										<a
+											href={href}
+											target="_blank"
+											rel="noopener noreferrer"
+											data-haptic-external
+											class="follow-icon"
+											aria-label={label}
+											title={label}
+										>
+											<Icon size={14} />
+										</a>
+									))}
+									<a href="/rss.xml" data-haptic-nav class="follow-icon" aria-label="RSS feed" title="RSS feed">
+										<Rss size={14} />
+									</a>
+								</div>
+							</div>
 							<a
 								href={originalUrl}
 								target="_blank"
@@ -508,8 +529,12 @@ const tocLinkClass = "toc-link";
 			</div>
 		</div>
 
-		<!-- Left padding clears the collapsed settings dock in the bottom-left corner. -->
-		<div class="pointer-events-none sticky bottom-3 z-30 flex justify-center pb-3 pl-[4.25rem] pr-3 sm:px-3 lg:hidden" data-post-bar>
+		<!--
+			Left padding clears the collapsed settings dock in the bottom-left corner.
+			The bottom offsets put the bar's centre level with the dock button's,
+			which sits at bottom-4 on phones and bottom-6 from sm up.
+		-->
+		<div class="pointer-events-none sticky bottom-3 z-30 flex justify-center pl-[4.25rem] pr-3 sm:bottom-5 sm:px-3 lg:hidden" data-post-bar>
 			<div
 				class="pointer-events-auto flex gap-0.5 rounded-full border border-border/70 bg-card/90 p-1 shadow-lg backdrop-blur-md"
 				role="toolbar"
