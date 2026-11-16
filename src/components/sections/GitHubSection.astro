@@ -1,5 +1,6 @@
 ---
 import GitHubStats from "../github/GitHubStats.astro";
+import OrgContributions from "../github/OrgContributions.astro";
 import DataFreshness from "../common/DataFreshness";
 import ProfileDropdown from "../github/ProfileDropdown";
 import { Star, ChevronRight, ChevronDown } from "lucide-react";
@@ -174,6 +175,7 @@ const { active = false } = Astro.props;
 			)
 		}
 		</section>
+		<OrgContributions slot="after-graph" />
 	</GitHubStats>
 </div>
 

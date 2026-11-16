@@ -172,9 +172,15 @@ function aggregateUserResults(
 	const uniquePulls = Array.from(
 		new Map(aggPulls.map((p) => [p.url, p])).values()
 	);
-	const uniqueOrgs = Array.from(
-		new Map(aggOrgContributions.map((o) => [o.org_id, o])).values()
-	);
+	// Key by owner name: personal accounts all report org_id 0, so keying by id
+	// collapsed every person into one entry. Repos merge across accounts.
+	const orgsByName = new Map<string, OrgContribution>();
+	for (const o of aggOrgContributions) {
+		const key = o.org.toLowerCase();
+		const seen = orgsByName.get(key);
+		orgsByName.set(key, seen ? { ...seen, repos: [...new Set([...seen.repos, ...o.repos])] } : o);
+	}
+	const uniqueOrgs = [...orgsByName.values()];
 
 	return {
 		stats: aggStats,
