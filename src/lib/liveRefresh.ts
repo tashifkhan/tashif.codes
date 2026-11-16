@@ -10,6 +10,7 @@ import { githubAttributedStatsUrl, githubUsernames, personalGithubUsername } fro
 import { formatTitle } from "@/lib/formatTitle";
 import { slugify } from "@/lib/slugify";
 import { dispatchLiveRefreshed, writeStoredFetchedAt } from "@/lib/dataFreshness";
+import { formatPostDate, isListedPost } from "@/lib/blog-shared";
 import type { LiveDataSource } from "@/types";
 
 /** Pure sort — kept local so we don't pull `blog.ts` top-level fetches into the client bundle. */
@@ -543,15 +544,8 @@ function resolveBlogCoverUrl(
 	return `${BLOG_SITE_ORIGIN}${raw.startsWith("/") ? "" : "/"}${raw}`;
 }
 
-function formatBlogDate(iso: string): string {
-	const date = new Date(iso);
-	if (Number.isNaN(date.getTime())) return iso;
-	return date.toLocaleDateString("en-US", {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-	});
-}
+/** Same UTC-pinned format the build uses, so a refresh never shifts a day. */
+const formatBlogDate = (iso: string): string => formatPostDate(iso);
 
 function resolveListReadingMinutes(post: BlogListPost): number {
 	const fromApi =
@@ -664,7 +658,7 @@ export async function refreshBlog(): Promise<string> {
 		throw new Error("Could not refresh blog posts");
 	}
 
-	const sorted = sortBlogPostsNewestFirst(list);
+	const sorted = sortBlogPostsNewestFirst(list.filter(isListedPost));
 	applyBlogListMeta(sorted);
 
 	const fetchedAt = nowIso();
