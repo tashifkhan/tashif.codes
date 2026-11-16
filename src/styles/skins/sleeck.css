@@ -1,0 +1,91 @@
+/*
+ * Sleeck skin, from dump-lab's sleeck.dev theme: lavender paper, black ink,
+ * a lime highlight, mono headings and hard offset shadows.
+ * Loaded on demand. Layout.astro links this file only while the skin is on.
+ */
+@import "@fontsource/dm-sans/400.css";
+@import "@fontsource/dm-sans/700.css";
+@import "@fontsource/space-mono/400.css";
+@import "@fontsource/space-mono/700.css";
+
+html[data-skin="sleeck"] {
+	--sk-edge: var(--sk-ink);
+	--sk-paper: #e0d6ff;
+	--sk-card: #ffffff;
+	--sk-ink: #0a0714;
+	--sk-muted: #51446a;
+	--sk-line: #ad9bcf;
+	--sk-well: #cec1ed;
+	--sk-lime: #c4f042;
+	--sk-on-lime: #0a0714;
+	--sk-error: #b3261e;
+	--sk-on-error: #ffffff;
+
+	--primary: var(--sk-ink);
+	--primary-foreground: var(--sk-lime);
+	--accent: var(--sk-lime);
+	--accent-foreground: var(--sk-on-lime);
+	--sk-shadow: 4px 4px 0 var(--sk-edge);
+}
+html[data-skin="sleeck"].dark {
+	--sk-edge: #5d4a80;
+	--sk-paper: #1a1333;
+	--sk-card: #0f0c1a;
+	--sk-ink: #e8e0ff;
+	--sk-muted: #b9accf;
+	--sk-line: #45365f;
+	--sk-well: #241a40;
+	--sk-error: #ffb4ab;
+	--sk-on-error: #2b0b08;
+
+	--primary: var(--sk-lime);
+	--primary-foreground: var(--sk-on-lime);
+	--accent: var(--sk-well);
+	--accent-foreground: var(--sk-ink);
+}
+html[data-skin="sleeck"] {
+	--background: var(--sk-paper);
+	--foreground: var(--sk-ink);
+	--card: var(--sk-card);
+	--card-foreground: var(--sk-ink);
+	--popover: var(--sk-card);
+	--popover-foreground: var(--sk-ink);
+	--secondary: var(--sk-well);
+	--secondary-foreground: var(--sk-ink);
+	--muted: var(--sk-well);
+	--muted-foreground: var(--sk-muted);
+	--destructive: var(--sk-error);
+	--destructive-foreground: var(--sk-on-error);
+	--border: var(--sk-line);
+	--input: var(--sk-well);
+	--ring: var(--primary);
+	--sidebar: var(--sk-card);
+	--sidebar-foreground: var(--sk-ink);
+	--sidebar-primary: var(--primary);
+	--sidebar-primary-foreground: var(--primary-foreground);
+	--sidebar-accent: var(--sk-well);
+	--sidebar-accent-foreground: var(--sk-ink);
+	--sidebar-border: var(--sk-line);
+	--sidebar-ring: var(--primary);
+	--chart-1: var(--primary);
+	--primary-color: var(--primary);
+
+	--radius: 0.25rem;
+	--font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+	--font-display: "Space Mono", ui-monospace, monospace;
+	--font-mono: "Space Mono", ui-monospace, monospace;
+	--skin-heading-weight: 700;
+	--skin-heading-tracking: -0.04em;
+}
+
+/* Offset borders: an ink outline and a hard shadow with no blur. */
+html[data-skin="sleeck"] :is([data-project-card] article, [data-blog-card] > div, .ld-btn, .ld-shot-frame, #project-readme, aside > section) {
+	border: 2px solid var(--sk-edge);
+	box-shadow: var(--sk-shadow);
+}
+html[data-skin="sleeck"] .ld-btn:active {
+	box-shadow: 1px 1px 0 var(--sk-edge);
+}
+html[data-skin="sleeck"] :is([data-landing] .ld-display, [data-landing] h2) {
+	letter-spacing: -0.06em;
+}

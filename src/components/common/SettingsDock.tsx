@@ -31,7 +31,14 @@ import {
 import { cn } from "@/lib/utils";
 
 type ThemeMode = "light" | "dark" | "system";
-type Skin = "simple" | "studio";
+type Skin = "simple" | "studio" | "dump" | "sleeck" | "material";
+
+/** Stylesheets for the skins that load on demand, set by Layout.astro. */
+declare global {
+	interface Window {
+		__skinCss?: Record<string, string>;
+	}
+}
 
 const MODES = [
 	{ value: "light", label: "Light", icon: Sun },
@@ -42,7 +49,12 @@ const MODES = [
 const ACCENTS = [
 	{ value: "simple", label: "Orange accent", color: "#f97316" },
 	{ value: "studio", label: "Green accent", color: "#0f7a6c" },
+	{ value: "dump", label: "Dump, paper and marker ink", color: "#ff5d8f" },
+	{ value: "sleeck", label: "Sleeck, lavender and lime", color: "#c4f042" },
+	{ value: "material", label: "Material 3", color: "#65558f" },
 ] as const;
+
+const SKINS = ACCENTS.map((accent) => accent.value) as readonly Skin[];
 
 function readMode(): ThemeMode {
 	if (typeof window === "undefined") return "system";
@@ -54,7 +66,8 @@ function readMode(): ThemeMode {
 
 function readSkin(): Skin {
 	if (typeof document === "undefined") return "studio";
-	return document.documentElement.dataset.skin === "simple" ? "simple" : "studio";
+	const current = document.documentElement.dataset.skin as Skin;
+	return SKINS.includes(current) ? current : "studio";
 }
 
 function systemIsDark(): boolean {
@@ -76,8 +89,33 @@ function applyMode(mode: ThemeMode) {
 	} catch {}
 }
 
+/**
+ * Links a lazy skin's stylesheet and resolves once it has loaded, so the
+ * switch never shows a half-styled page. Simple and studio resolve at once.
+ */
+function loadSkin(skin: Skin): Promise<void> {
+	const href = window.__skinCss?.[skin];
+	if (!href || document.querySelector(`link[data-skin-css="${skin}"]`)) {
+		return Promise.resolve();
+	}
+	return new Promise((resolve) => {
+		const link = document.createElement("link");
+		link.rel = "stylesheet";
+		link.dataset.skinCss = skin;
+		link.href = href;
+		link.onload = () => resolve();
+		// A failed load still switches, to the base palette, instead of hanging.
+		link.onerror = () => resolve();
+		document.head.append(link);
+	});
+}
+
 function applySkin(skin: Skin) {
 	document.documentElement.dataset.skin = skin;
+	// Only the active skin's stylesheet stays linked.
+	document
+		.querySelectorAll(`link[data-skin-css]:not([data-skin-css="${skin}"])`)
+		.forEach((link) => link.remove());
 	try {
 		localStorage.setItem("tashif-skin", skin);
 	} catch {}
@@ -300,9 +338,13 @@ export default function SettingsDock() {
 		}
 
 		trigger("selection");
-		runViewTransition("skin", event.currentTarget, () => {
-			applySkin(next);
-			setSkin(next);
+		const origin = event.currentTarget;
+		// Fetch the stylesheet first, then reveal the new look in one wipe.
+		void loadSkin(next).then(() => {
+			runViewTransition("skin", origin, () => {
+				applySkin(next);
+				setSkin(next);
+			});
 		});
 	};
 
@@ -402,14 +444,14 @@ export default function SettingsDock() {
 							})}
 						</div>
 
-						<div className="mt-2 grid grid-cols-[auto_1fr_1fr] gap-2">
-							<div className="rounded-[1.35rem] border border-border/50 bg-background/40 p-2.5">
+						<div className="mt-2 grid grid-cols-2 gap-2">
+							<div className="col-span-2 rounded-[1.35rem] border border-border/50 bg-background/40 p-2.5">
 								<p className="text-[10px] font-medium tracking-wide text-muted-foreground">
-									Accent
+									Theme
 								</p>
 								<div
 									role="radiogroup"
-									aria-label="Accent colour"
+									aria-label="Theme"
 									className="mt-2 flex items-center gap-2"
 								>
 									{ACCENTS.map(({ value, label, color }) => {

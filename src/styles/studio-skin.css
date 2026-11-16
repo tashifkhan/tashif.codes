@@ -819,3 +819,52 @@ html[data-skin="simple"] .rise-in {
 		animation: none !important;
 	}
 }
+
+/* ---------------------------------------------------------------------------
+ * The lazy skins: dump, sleeck and material. Their palettes live in
+ * src/styles/skins/<name>.css and load on demand. These few rules are the
+ * plumbing every one of them needs, so they ship with the page.
+ * ------------------------------------------------------------------------ */
+
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) {
+	background-color: var(--background);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) body {
+	background-color: var(--background);
+	color: var(--foreground);
+	font-family: var(--font-sans);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) .font-sans {
+	font-family: var(--font-sans);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) :is(.font-mono, code, pre, kbd, samp) {
+	font-family: var(--font-mono);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) :is(h1, h2, h3, h4, h5, h6):not(.font-mono) {
+	font-family: var(--font-display);
+	font-weight: var(--skin-heading-weight);
+	letter-spacing: var(--skin-heading-tracking);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) [data-page-shell] {
+	background: var(--background);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) [data-page-tint] {
+	display: none;
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) [data-page-surface] {
+	background: transparent !important;
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) [data-page-header] {
+	background: color-mix(in oklab, var(--card) 68%, transparent);
+	border-color: var(--border);
+}
+@media (hover: hover) and (pointer: fine) {
+	html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) .dot-cursor {
+		display: block;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) .dot-cursor {
+		display: none;
+	}
+}
