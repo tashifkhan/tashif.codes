@@ -64,11 +64,16 @@ const collapsedCards = collapsed.map((b) => ({ block: b, cards: blockCards(b) })
 			{b.title} <span class="font-mono opacity-70">{b.projects.length}</span>
 		</a>
 	))}
-	{collapsed.length > 0 && (
-		<a href="#projects-collapsed" class="rounded-full border border-dashed border-border px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
-			{collapsed.map((b) => b.title).join(", ")}
+	{collapsed.map((b) => (
+		<a
+			href={`#projects-${b.id}`}
+			class="rounded-full border border-dashed border-border px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+			title="Collapsed section, opens on click"
+			data-project-jump
+		>
+			{b.title} <span class="font-mono opacity-70">{b.projects.length}</span>
 		</a>
-	)}
+	))}
 </nav>
 
 {featuredCards.length > 0 && (

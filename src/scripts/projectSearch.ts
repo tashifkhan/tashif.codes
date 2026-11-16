@@ -151,6 +151,11 @@ export function initProjectSearch(): void {
 		applyProjectSearch((e as CustomEvent<ProjectSearchDetail>).detail ?? {});
 	});
 	document.addEventListener("click", (e) => {
+		// Chips for collapsed sections open the section they point at.
+		const jump = (e.target as Element | null)?.closest<HTMLAnchorElement>("[data-project-jump]");
+		const target = jump && document.getElementById(jump.hash.slice(1));
+		if (target instanceof HTMLDetailsElement) target.open = true;
+
 		const button = (e.target as Element | null)?.closest<HTMLButtonElement>("[data-project-show-more]");
 		const section = button?.closest<HTMLElement>("[data-project-section]");
 		if (!button || !section) return;
