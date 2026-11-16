@@ -1,0 +1,99 @@
+---
+/**
+ * Chapters of features shown in real screens. On a wide screen a row of
+ * screens stays pinned while the chapters scroll past, and the row swaps to
+ * the screens for the chapter in view. On a phone, or without script, each
+ * chapter shows its own screens under it as a row you can swipe.
+ */
+import Shot from "./Shot.astro";
+
+export interface Chapter {
+	title: string;
+	features: { title: string; body: string }[];
+	/** Two or three screens, in the order the features mention them. */
+	shots: { src: string; alt: string }[];
+}
+
+interface Props {
+	chapters: Chapter[];
+	/** Intrinsic size shared by every screen. */
+	width: number;
+	height: number;
+}
+
+const { chapters, width, height } = Astro.props;
+---
+
+<div class="ld-pinned" data-ld-pinned>
+	<ol class="ld-pinned-panels">
+		{
+			chapters.map((chapter, i) => (
+				<li class="ld-pinned-panel" data-ld-panel={i} data-on={i === 0 ? "" : undefined}>
+					<h3>{chapter.title}</h3>
+					<dl class="ld-pinned-features">
+						{chapter.features.map((feature) => (
+							<div>
+								<dt>{feature.title}</dt>
+								<dd>{feature.body}</dd>
+							</div>
+						))}
+					</dl>
+					<div class="ld-pinned-strip">
+						{chapter.shots.map((shot) => (
+							<Shot src={shot.src} alt={shot.alt} width={width} height={height} />
+						))}
+					</div>
+				</li>
+			))
+		}
+	</ol>
+	<div class="ld-pinned-stage" aria-hidden="true">
+		{
+			chapters.map((chapter, i) => (
+				<div class="ld-pinned-set" data-ld-stage={i} data-on={i === 0 ? "" : undefined}>
+					{chapter.shots.map((shot) => (
+						<div class="ld-shot" data-portrait>
+							<div class="ld-shot-frame" style={`aspect-ratio:${width} / ${height}`}>
+								<img src={shot.src} alt="" width={width} height={height} loading="lazy" decoding="async" />
+							</div>
+						</div>
+					))}
+				</div>
+			))
+		}
+	</div>
+</div>
+
+<script>
+	function initPinned() {
+		document
+			.querySelectorAll<HTMLElement>("[data-ld-pinned]:not([data-wired])")
+			.forEach((root) => {
+				root.dataset.wired = "true";
+				const panels = [...root.querySelectorAll<HTMLElement>("[data-ld-panel]")];
+				const stages = [...root.querySelectorAll<HTMLElement>("[data-ld-stage]")];
+
+				const show = (index: number) => {
+					panels.forEach((p, i) => p.toggleAttribute("data-on", i === index));
+					stages.forEach((s, i) => s.toggleAttribute("data-on", i === index));
+				};
+
+				// The chapter crossing the middle of the screen picks the screens.
+				const io = new IntersectionObserver(
+					(entries) => {
+						for (const entry of entries) {
+							const index = Number((entry.target as HTMLElement).dataset.ldPanel);
+							if (entry.isIntersecting) show(index);
+							// Scrolled back above the first chapter: reset to it.
+							else if (index === 0 && entry.boundingClientRect.top > 0) show(0);
+						}
+					},
+					{ rootMargin: "-45% 0px -45% 0px" },
+				);
+				panels.forEach((p) => io.observe(p));
+			});
+	}
+
+	initPinned();
+	document.addEventListener("astro:page-load", initPinned);
+</script>

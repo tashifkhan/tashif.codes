@@ -1,66 +1,27 @@
 ---
 /**
- * One band of a landing. Gives every section the same vertical rhythm and
- * the same heading treatment, so custom content between them still lines up.
+ * One section: a head block, then whatever composition shows the content
+ * best. `layout="side"` puts the head on four columns beside the body, which
+ * suits rows and questions. `gap` varies the space above so sections do not
+ * all part the same way.
  */
 interface Props {
 	id?: string;
-	/** Small mono label above the title, e.g. "01 / Capture". */
-	eyebrow?: string;
-	title?: string;
+	/** Six words or fewer. Say what the visitor will see. */
+	title: string;
+	/** One line under the title. */
 	lead?: string;
-	align?: "left" | "center";
-	/** Drop the hairline above the section. */
-	flush?: boolean;
-	class?: string;
+	layout?: "stack" | "side";
+	gap?: "s" | "m" | "l";
 }
 
-const {
-	id,
-	eyebrow,
-	title,
-	lead,
-	align = "left",
-	flush = false,
-	class: className,
-} = Astro.props;
+const { id, title, lead, layout = "stack", gap = "m" } = Astro.props;
 ---
 
-<section
-	id={id}
-	data-landing-section
-	class:list={[
-		"scroll-mt-16 py-14 sm:py-20",
-		!flush && "border-t border-border/60",
-		className,
-	]}
->
-	{
-		(eyebrow || title || lead) && (
-			<div
-				data-landing-heading
-				class:list={[
-					"mb-8 sm:mb-12 max-w-3xl",
-					align === "center" && "mx-auto text-center",
-				]}
-			>
-				{eyebrow && (
-					<p class="font-mono text-[11px] uppercase tracking-[0.18em] text-primary mb-3">
-						{eyebrow}
-					</p>
-				)}
-				{title && (
-					<h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.05] text-balance text-foreground">
-						{title}
-					</h2>
-				)}
-				{lead && (
-					<p class="mt-4 text-base sm:text-lg text-muted-foreground leading-relaxed text-pretty">
-						{lead}
-					</p>
-				)}
-			</div>
-		)
-	}
-	<slot />
+<section id={id} class="ld-section" data-layout={layout} data-gap={gap}>
+	<div class="ld-head">
+		<h2>{title}</h2>
+		{lead && <p class="ld-lead">{lead}</p>}
+	</div>
+	<div class="ld-body"><slot /></div>
 </section>

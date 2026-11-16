@@ -1,15 +1,16 @@
 /**
- * The landing kit. A file in src/landings/ composes these and adds its own
- * markup where the kit stops. Every piece reads the theme tokens, so a landing
- * follows the active skin and the light or dark mode without extra work.
+ * The landing kit. A file in src/landings/ wraps its page in <Landing>,
+ * composes these, and adds its own markup where the kit stops. Every piece
+ * reads the `--ld-*` tokens in landing.css, which resolve from the site's
+ * theme, so a landing follows the active skin and the light or dark mode.
  */
-export { default as Section } from "./Section.astro";
+export { default as Landing } from "./Landing.astro";
 export { default as LandingHero } from "./LandingHero.astro";
-export { default as DeviceFrame } from "./DeviceFrame.astro";
+export { default as Section } from "./Section.astro";
+export { default as Shot } from "./Shot.astro";
 export { default as LandingVideo } from "./LandingVideo.astro";
-export { default as MediaTabs } from "./MediaTabs.astro";
-export { default as PanelCarousel } from "./PanelCarousel.astro";
-export { default as FeatureRow } from "./FeatureRow.astro";
-export { default as FeatureGrid } from "./FeatureGrid.astro";
+export { default as Pinned } from "./Pinned.astro";
+export { default as MediaSwitcher } from "./MediaSwitcher.astro";
+export { default as Rows } from "./Rows.astro";
+export { default as Rail } from "./Rail.astro";
 export { default as Faq } from "./Faq.astro";
-export { default as CtaBand } from "./CtaBand.astro";

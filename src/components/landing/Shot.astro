@@ -1,0 +1,41 @@
+---
+/**
+ * A real screen or clip in a plain rounded frame with a hairline. No drawn
+ * phone or browser around it: the capture is the picture. Pass `src` for an
+ * image, or put a LandingVideo in the slot.
+ */
+interface Props {
+	src?: string;
+	alt?: string;
+	/** Intrinsic size, used for the aspect ratio. */
+	width: number;
+	height: number;
+	caption?: string;
+	/** Set on the first image a visitor sees, so it is not lazy loaded. */
+	eager?: boolean;
+}
+
+const { src, alt = "", width, height, caption, eager = false } = Astro.props;
+const portrait = height > width;
+---
+
+<figure class="ld-shot" data-portrait={portrait ? "" : undefined}>
+	<div class="ld-shot-frame" style={`aspect-ratio:${width} / ${height}`}>
+		{
+			src ? (
+				<img
+					src={src}
+					alt={alt}
+					width={width}
+					height={height}
+					loading={eager ? "eager" : "lazy"}
+					fetchpriority={eager ? "high" : undefined}
+					decoding="async"
+				/>
+			) : (
+				<slot />
+			)
+		}
+	</div>
+	{caption && <figcaption>{caption}</figcaption>}
+</figure>

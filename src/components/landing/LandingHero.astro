@@ -1,83 +1,23 @@
 ---
 /**
- * Opening band: headline and buttons on one side, media on the other.
- * Slots: `actions` for buttons, `meta` for the small facts row, `media` for
- * a DeviceFrame or anything else. Use the `title` slot when the headline
- * needs markup.
+ * The first screen: a headline of seven words or fewer, one sentence, the
+ * actions, and a visual beside them. Slots: `actions` for the buttons,
+ * `terms` for one small line under them, `media` for a Shot.
  */
 interface Props {
-	eyebrow?: string;
-	title?: string;
-	lead?: string;
+	title: string;
+	lead: string;
 }
 
-const { eyebrow, title, lead } = Astro.props;
-const hasMedia = Astro.slots.has("media");
+const { title, lead } = Astro.props;
 ---
 
-<section
-	data-landing-hero
-	class:list={[
-		"grid items-center gap-10 lg:gap-14 pt-4 pb-14 sm:pt-8 sm:pb-20",
-		hasMedia && "lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]",
-	]}
->
-	<div class="min-w-0">
-		{
-			eyebrow && (
-				<p class="font-mono text-[11px] uppercase tracking-[0.18em] text-primary mb-4 sm:mb-5">
-					{eyebrow}
-				</p>
-			)
-		}
-		<h2
-			class="text-[2.6rem] sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[0.95] text-balance text-foreground"
-		>
-			<slot name="title">{title}</slot>
-		</h2>
-		{
-			lead && (
-				<p class="mt-5 sm:mt-6 max-w-xl text-base sm:text-xl text-muted-foreground leading-relaxed text-pretty">
-					{lead}
-				</p>
-			)
-		}
-		{
-			Astro.slots.has("actions") && (
-				<div class="mt-7 sm:mt-8 flex flex-wrap items-center gap-3">
-					<slot name="actions" />
-				</div>
-			)
-		}
-		{
-			Astro.slots.has("meta") && (
-				<div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-xs text-muted-foreground">
-					<slot name="meta" />
-				</div>
-			)
-		}
+<section class="ld-hero">
+	<div class="ld-hero-text">
+		<h2 class="ld-display">{title}</h2>
+		<p class="ld-lead">{lead}</p>
+		<div class="ld-actions"><slot name="actions" /></div>
+		{Astro.slots.has("terms") && <p class="ld-small"><slot name="terms" /></p>}
 	</div>
-	{
-		hasMedia && (
-			<div class="relative min-w-0 flex justify-center lg:justify-end">
-				<div aria-hidden="true" class="hero-glow" />
-				<slot name="media" />
-			</div>
-		)
-	}
+	<div class="ld-hero-media"><slot name="media" /></div>
 </section>
-
-<style>
-	.hero-glow {
-		position: absolute;
-		inset: 8% 0;
-		border-radius: 9999px;
-		background: radial-gradient(
-			closest-side,
-			color-mix(in oklab, var(--primary) 26%, transparent),
-			transparent
-		);
-		filter: blur(30px);
-		pointer-events: none;
-	}
-</style>

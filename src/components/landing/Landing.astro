@@ -1,0 +1,18 @@
+---
+/**
+ * Root of a project landing. It loads the kit's stylesheet and declares the
+ * `--ld-*` tokens that every kit piece and every landing's own CSS reads.
+ */
+import "./landing.css";
+
+interface Props {
+	/** The project slug, exposed as data-landing for landing-specific CSS. */
+	name: string;
+}
+
+const { name } = Astro.props;
+---
+
+<div data-landing={name}>
+	<slot />
+</div>
