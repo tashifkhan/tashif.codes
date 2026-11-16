@@ -1,0 +1,324 @@
+/*
+ * Material skin, from dump-lab's Material 3 theme: tonal surfaces and pill
+ * buttons. Each colour combo is a full tonal palette grown from one seed by
+ * scripts/generate-material-skins.mjs, with the role names Material uses.
+ * Loaded on demand. Layout.astro links this file only while the skin is on.
+ */
+@import "@fontsource-variable/google-sans-flex";
+
+/* generated:start */
+/* purple, seed #6750a4 */
+html[data-skin="material"] {
+	--md-primary: #65558f;
+	--md-on-primary: #ffffff;
+	--md-primary-container: #e9ddff;
+	--md-on-primary-container: #4d3d75;
+	--md-secondary-container: #e8def8;
+	--md-on-secondary-container: #4a4458;
+	--md-error: #ba1a1a;
+	--md-on-error: #ffffff;
+	--md-surface: #fdf7ff;
+	--md-surface-container-low: #f8f2fa;
+	--md-surface-container: #f2ecf4;
+	--md-surface-container-high: #ece6ee;
+	--md-surface-container-highest: #e6e0e9;
+	--md-on-surface: #1d1b20;
+	--md-on-surface-variant: #49454e;
+	--md-outline-variant: #cac4cf;
+}
+html[data-skin="material"].dark {
+	--md-primary: #cfbdfe;
+	--md-on-primary: #36275d;
+	--md-primary-container: #4d3d75;
+	--md-on-primary-container: #e9ddff;
+	--md-secondary-container: #4a4458;
+	--md-on-secondary-container: #e8def8;
+	--md-error: #ffb4ab;
+	--md-on-error: #690005;
+	--md-surface: #141218;
+	--md-surface-container-low: #1d1b20;
+	--md-surface-container: #211f24;
+	--md-surface-container-high: #2b292f;
+	--md-surface-container-highest: #36343a;
+	--md-on-surface: #e6e0e9;
+	--md-on-surface-variant: #cac4cf;
+	--md-outline-variant: #49454e;
+}
+/* blue, seed #0b57d0 */
+html[data-skin="material"][data-color="blue"] {
+	--md-primary: #495d92;
+	--md-on-primary: #ffffff;
+	--md-primary-container: #dae2ff;
+	--md-on-primary-container: #304578;
+	--md-secondary-container: #dce2f9;
+	--md-on-secondary-container: #404659;
+	--md-error: #ba1a1a;
+	--md-on-error: #ffffff;
+	--md-surface: #faf8ff;
+	--md-surface-container-low: #f4f3fa;
+	--md-surface-container: #eeedf4;
+	--md-surface-container-high: #e8e7ef;
+	--md-surface-container-highest: #e2e2e9;
+	--md-on-surface: #1a1b21;
+	--md-on-surface-variant: #45464f;
+	--md-outline-variant: #c5c6d0;
+}
+html[data-skin="material"][data-color="blue"].dark {
+	--md-primary: #b2c5ff;
+	--md-on-primary: #172e60;
+	--md-primary-container: #304578;
+	--md-on-primary-container: #dae2ff;
+	--md-secondary-container: #404659;
+	--md-on-secondary-container: #dce2f9;
+	--md-error: #ffb4ab;
+	--md-on-error: #690005;
+	--md-surface: #121318;
+	--md-surface-container-low: #1a1b21;
+	--md-surface-container: #1e1f25;
+	--md-surface-container-high: #282a2f;
+	--md-surface-container-highest: #33343a;
+	--md-on-surface: #e2e2e9;
+	--md-on-surface-variant: #c5c6d0;
+	--md-outline-variant: #45464f;
+}
+/* teal, seed #006a6a */
+html[data-skin="material"][data-color="teal"] {
+	--md-primary: #006a6a;
+	--md-on-primary: #ffffff;
+	--md-primary-container: #9cf1f0;
+	--md-on-primary-container: #004f4f;
+	--md-secondary-container: #cce8e7;
+	--md-on-secondary-container: #324b4b;
+	--md-error: #ba1a1a;
+	--md-on-error: #ffffff;
+	--md-surface: #f4fbfa;
+	--md-surface-container-low: #eff5f4;
+	--md-surface-container: #e9efee;
+	--md-surface-container-high: #e3e9e9;
+	--md-surface-container-highest: #dde4e3;
+	--md-on-surface: #161d1d;
+	--md-on-surface-variant: #3f4948;
+	--md-outline-variant: #bec9c8;
+}
+html[data-skin="material"][data-color="teal"].dark {
+	--md-primary: #80d5d4;
+	--md-on-primary: #003737;
+	--md-primary-container: #004f4f;
+	--md-on-primary-container: #9cf1f0;
+	--md-secondary-container: #324b4b;
+	--md-on-secondary-container: #cce8e7;
+	--md-error: #ffb4ab;
+	--md-on-error: #690005;
+	--md-surface: #0e1514;
+	--md-surface-container-low: #161d1d;
+	--md-surface-container: #1a2121;
+	--md-surface-container-high: #252b2b;
+	--md-surface-container-highest: #2f3636;
+	--md-on-surface: #dde4e3;
+	--md-on-surface-variant: #bec9c8;
+	--md-outline-variant: #3f4948;
+}
+/* green, seed #386a20 */
+html[data-skin="material"][data-color="green"] {
+	--md-primary: #446732;
+	--md-on-primary: #ffffff;
+	--md-primary-container: #c5efab;
+	--md-on-primary-container: #2d4f1c;
+	--md-secondary-container: #d8e7cb;
+	--md-on-secondary-container: #3e4a35;
+	--md-error: #ba1a1a;
+	--md-on-error: #ffffff;
+	--md-surface: #f8faf0;
+	--md-surface-container-low: #f2f5ea;
+	--md-surface-container: #edefe5;
+	--md-surface-container-high: #e7e9df;
+	--md-surface-container-highest: #e1e4d9;
+	--md-on-surface: #191d16;
+	--md-on-surface-variant: #43483e;
+	--md-outline-variant: #c3c8bb;
+}
+html[data-skin="material"][data-color="green"].dark {
+	--md-primary: #a9d291;
+	--md-on-primary: #173807;
+	--md-primary-container: #2d4f1c;
+	--md-on-primary-container: #c5efab;
+	--md-secondary-container: #3e4a35;
+	--md-on-secondary-container: #d8e7cb;
+	--md-error: #ffb4ab;
+	--md-on-error: #690005;
+	--md-surface: #11140f;
+	--md-surface-container-low: #191d16;
+	--md-surface-container: #1d211a;
+	--md-surface-container-high: #282b24;
+	--md-surface-container-highest: #32362f;
+	--md-on-surface: #e1e4d9;
+	--md-on-surface-variant: #c3c8bb;
+	--md-outline-variant: #43483e;
+}
+/* amber, seed #8b5000 */
+html[data-skin="material"][data-color="amber"] {
+	--md-primary: #865319;
+	--md-on-primary: #ffffff;
+	--md-primary-container: #ffdcbe;
+	--md-on-primary-container: #6a3c01;
+	--md-secondary-container: #ffdcbe;
+	--md-on-secondary-container: #59422d;
+	--md-error: #ba1a1a;
+	--md-on-error: #ffffff;
+	--md-surface: #fff8f5;
+	--md-surface-container-low: #fff1e7;
+	--md-surface-container: #faebe0;
+	--md-surface-container-high: #f4e5db;
+	--md-surface-container-highest: #efe0d5;
+	--md-on-surface: #211a14;
+	--md-on-surface-variant: #51453a;
+	--md-outline-variant: #d5c3b5;
+}
+html[data-skin="material"][data-color="amber"].dark {
+	--md-primary: #fdb975;
+	--md-on-primary: #4a2800;
+	--md-primary-container: #6a3c01;
+	--md-on-primary-container: #ffdcbe;
+	--md-secondary-container: #59422d;
+	--md-on-secondary-container: #ffdcbe;
+	--md-error: #ffb4ab;
+	--md-on-error: #690005;
+	--md-surface: #19120c;
+	--md-surface-container-low: #211a14;
+	--md-surface-container: #261e18;
+	--md-surface-container-high: #302822;
+	--md-surface-container-highest: #3c332c;
+	--md-on-surface: #efe0d5;
+	--md-on-surface-variant: #d5c3b5;
+	--md-outline-variant: #51453a;
+}
+/* red, seed #b3261e */
+html[data-skin="material"][data-color="red"] {
+	--md-primary: #904a42;
+	--md-on-primary: #ffffff;
+	--md-primary-container: #ffdad5;
+	--md-on-primary-container: #73342c;
+	--md-secondary-container: #ffdad5;
+	--md-on-secondary-container: #5d3f3b;
+	--md-error: #ba1a1a;
+	--md-on-error: #ffffff;
+	--md-surface: #fff8f7;
+	--md-surface-container-low: #fff0ee;
+	--md-surface-container: #fceae7;
+	--md-surface-container-high: #f7e4e1;
+	--md-surface-container-highest: #f1dedc;
+	--md-on-surface: #231918;
+	--md-on-surface-variant: #534341;
+	--md-outline-variant: #d8c2be;
+}
+html[data-skin="material"][data-color="red"].dark {
+	--md-primary: #ffb4aa;
+	--md-on-primary: #561e18;
+	--md-primary-container: #73342c;
+	--md-on-primary-container: #ffdad5;
+	--md-secondary-container: #5d3f3b;
+	--md-on-secondary-container: #ffdad5;
+	--md-error: #ffb4ab;
+	--md-on-error: #690005;
+	--md-surface: #1a1110;
+	--md-surface-container-low: #231918;
+	--md-surface-container: #271d1c;
+	--md-surface-container-high: #322826;
+	--md-surface-container-highest: #3d3231;
+	--md-on-surface: #f1dedc;
+	--md-on-surface-variant: #d8c2be;
+	--md-outline-variant: #534341;
+}
+/* rose, seed #984061 */
+html[data-skin="material"][data-color="rose"] {
+	--md-primary: #8c4a60;
+	--md-on-primary: #ffffff;
+	--md-primary-container: #ffd9e2;
+	--md-on-primary-container: #703349;
+	--md-secondary-container: #ffd9e2;
+	--md-on-secondary-container: #5a3f47;
+	--md-error: #ba1a1a;
+	--md-on-error: #ffffff;
+	--md-surface: #fff8f8;
+	--md-surface-container-low: #fff0f2;
+	--md-surface-container: #faeaed;
+	--md-surface-container-high: #f5e4e7;
+	--md-surface-container-highest: #efdfe1;
+	--md-on-surface: #22191c;
+	--md-on-surface-variant: #514347;
+	--md-outline-variant: #d5c2c6;
+}
+html[data-skin="material"][data-color="rose"].dark {
+	--md-primary: #ffb0c8;
+	--md-on-primary: #541d32;
+	--md-primary-container: #703349;
+	--md-on-primary-container: #ffd9e2;
+	--md-secondary-container: #5a3f47;
+	--md-on-secondary-container: #ffd9e2;
+	--md-error: #ffb4ab;
+	--md-on-error: #690005;
+	--md-surface: #191113;
+	--md-surface-container-low: #22191c;
+	--md-surface-container: #261d20;
+	--md-surface-container-high: #31282a;
+	--md-surface-container-highest: #3c3235;
+	--md-on-surface: #efdfe1;
+	--md-on-surface-variant: #d5c2c6;
+	--md-outline-variant: #514347;
+}
+/* generated:end */
+html[data-skin="material"] {
+	--background: var(--md-surface);
+	--foreground: var(--md-on-surface);
+	--card: var(--md-surface-container-low);
+	--card-foreground: var(--md-on-surface);
+	--popover: var(--md-surface-container);
+	--popover-foreground: var(--md-on-surface);
+	--primary: var(--md-primary);
+	--primary-foreground: var(--md-on-primary);
+	--secondary: var(--md-secondary-container);
+	--secondary-foreground: var(--md-on-secondary-container);
+	--muted: var(--md-surface-container-high);
+	--muted-foreground: var(--md-on-surface-variant);
+	--accent: var(--md-primary-container);
+	--accent-foreground: var(--md-on-primary-container);
+	--destructive: var(--md-error);
+	--destructive-foreground: var(--md-on-error);
+	--border: var(--md-outline-variant);
+	--input: var(--md-surface-container-highest);
+	--ring: var(--md-primary);
+	--sidebar: var(--md-surface-container);
+	--sidebar-foreground: var(--md-on-surface);
+	--sidebar-primary: var(--md-primary);
+	--sidebar-primary-foreground: var(--md-on-primary);
+	--sidebar-accent: var(--md-secondary-container);
+	--sidebar-accent-foreground: var(--md-on-secondary-container);
+	--sidebar-border: var(--md-outline-variant);
+	--sidebar-ring: var(--md-primary);
+	--chart-1: var(--md-primary);
+	--primary-color: var(--md-primary);
+
+	--radius: 1rem;
+	--font-sans: "Google Sans Flex Variable", "Roboto", ui-sans-serif, system-ui, sans-serif;
+	--font-display: var(--font-sans);
+	--font-mono: "JetBrains Mono", ui-monospace, monospace;
+	--skin-heading-weight: 500;
+	--skin-heading-tracking: -0.02em;
+}
+
+/* Pill buttons and tonal cards, the two things that read as Material. */
+html[data-skin="material"] :is(.ld-btn, :is(a, button).rounded-md, .ld-tab) {
+	border-radius: 999px;
+}
+html[data-skin="material"] .ld-tabs {
+	border-radius: 999px;
+}
+html[data-skin="material"] :is([data-project-card] article, [data-blog-card] > div, #project-readme, aside > section) {
+	border-color: transparent;
+	border-radius: 1.5rem;
+	box-shadow: none;
+}
+html[data-skin="material"] :is([data-landing] .ld-display, [data-landing] h2, [data-landing] h3) {
+	font-weight: 500;
+	letter-spacing: -0.02em;
+}
