@@ -35,6 +35,7 @@ const {
 	type = "website",
 	publishedTime,
 	tags,
+	noindex = false,
 } = Astro.props;
 
 const canonical = absoluteUrl(url ?? Astro.url.pathname);
@@ -255,7 +256,10 @@ const showAmbientChrome = !isDocsReader;
 			})();
 		</script>
 		<meta name="author" content={siteAuthor()} />
-		<meta name="robots" content="index, follow, max-image-preview:large" />
+		<meta
+			name="robots"
+			content={noindex ? "noindex, follow" : "index, follow, max-image-preview:large"}
+		/>
 		<link rel="icon" type="image/png" href="/favicon.png" />
 		<link rel="canonical" href={canonical} />
 		<link rel="describedby" type="text/plain" href="/llms.txt" />

@@ -7,9 +7,21 @@ import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
 
+const EXCLUDED_FROM_SITEMAP = [
+  /^\/download\//,
+  /^\/fdroid\/[^/]+\/?$/,
+  /^\/projects\/[^/]+\/releases\//,
+  /^\/404\/?$/,
+  /^\/shortlink\//,
+];
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://tashif.codes/', // <-- Top-level, not inside sitemap()
+  // One address per page: /blog/post, never /blog/post/. Vercel 308s the
+  // slashed form, and canonicals, internal links and the sitemap all use the
+  // slash-less one, so search engines never see two URLs for one page.
+  trailingSlash: 'never',
   vite: {
     plugins: [tailwindcss()],
     // Mirror production /proxy/* rewrites so live-refresh works in `astro dev`
@@ -40,7 +52,13 @@ export default defineConfig({
   },
   integrations: [
     react(),
-    sitemap()
+    sitemap({
+      // Only list pages that are meant to rank. These are left out:
+      // - /download/* and /fdroid/<app> only redirect elsewhere (noindex)
+      // - per-release pages are noindexed copies of GitHub release notes
+      // - /404 and the shortlink fallback are not real pages
+      filter: (page) => !EXCLUDED_FROM_SITEMAP.some((re) => re.test(new URL(page).pathname)),
+    })
   ],
   adapter: vercel({
     webAnalytics: {
