@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1794856120000,
+    "timestamp": 1794860529000,
     "version": 20002,
     "name": "Tashif Codes",
     "icon": "icon.png",
@@ -22,19 +22,32 @@
       ],
       "changelog": "https://github.com/tashifkhan/delhi-metro/releases",
       "suggestedVersionCode": "30",
-      "description": "Delhi NCR Metro is a Material 3 companion for the Delhi Metro and Noida Metro\nnetworks.\n\nSwitch operators, plan trips with least-distance or minimum-interchange\nstrategies, and follow cross-network journeys that transfer at Sector 52/51\nwith clear dual-ticket fares. Browse lines and stations, check first and last\ntrains, follow service alerts, and open the network map with zoom and save.\n\nFeatures:\n\n* Delhi Metro (DMRC) and Noida Metro (NMRC) catalogs\n* Network switcher with local persistence\n* Cross-network journey planning at Sector 52/51\n* Journey strategies, fares, and transfer walk legs\n* Station search with local cache\n* Line explorer and station detail\n* Network map view with save\n* Notifications / service alerts\n* Light, dark, and Material You theming\n\nReleases are built with Expo EAS, published on GitHub Releases, and\nmirrored into this F-Droid-compatible repository.\n\nPackage ID: codes.tashif.delhimetro\n",
+      "description": "Delhi NCR Metro plans trips across the Delhi Metro and the Noida Metro Aqua Line in one app. The two operators do not share tickets, so a trip that crosses between them shows the walk at Sector 52 and 51 and a separate fare for each.\n\nPlan a trip\n\n* Shortest route and fewest changes, side by side, with time, fare, every station and where to change\n* Weekday and weekend fares, and first and last train times\n* Cross-network trips with a walk leg and split fares\n* Book tickets on WhatsApp from a journey, one step per operator\n* Your planned journeys stay available offline\n\nStations and lines\n\n* Station search by name or code\n* Station pages with gates, lifts, platforms, facilities, parking and nearby places\n* Lines with ordered stations and interchange badges\n\nMap and alerts\n\n* A network map drawn from station coordinates, with pan, pinch zoom and station search\n* The official DMRC and NMRC maps, with save to gallery\n* Service alerts from both operators\n* Lines, stations and alerts stay readable when the network drops\n\nAppearance\n\n* Material You colours, fixed palettes, dark mode and AMOLED black\n* High contrast, haptics, and slide, fade or no page animations\n\nWhy it asks for permissions\n\n* Network, to fetch routes, fares and alerts\n* Photos, to save a network map to your gallery\n\nThe same app runs in a browser at https://ncr-metro.tashif.codes. It is not an official DMRC or NMRC app.\n",
       "issueTracker": "https://github.com/tashifkhan/delhi-metro/issues",
       "license": "MIT",
       "name": "Delhi NCR Metro",
       "sourceCode": "https://github.com/tashifkhan/delhi-metro",
-      "summary": "Plan Delhi and Noida Metro journeys with fares, maps, and alerts",
-      "webSite": "https://tashif.codes",
+      "summary": "Plan Delhi Metro and Noida Metro trips with fares, maps and alerts",
+      "webSite": "https://tashif.codes/projects/delhi-metro",
       "added": 1785013639000,
       "packageName": "codes.tashif.delhimetro",
       "lastUpdated": 1794746993000,
       "localized": {
         "en-US": {
-          "icon": "icon_IiA6vEuYZC_2reV-Bh2xkz8i-4TS8Sk9Va30U7iPyG0=.png"
+          "featureGraphic": "featureGraphic_Usax61-EewSI7eG5RsRdqqM3q-P56rsw-HTf_4QixyA=.jpg",
+          "icon": "icon_IiA6vEuYZC_2reV-Bh2xkz8i-4TS8Sk9Va30U7iPyG0=.png",
+          "phoneScreenshots": [
+            "01.jpg",
+            "02.jpg",
+            "03.jpg",
+            "04.jpg",
+            "05.jpg",
+            "06.jpg",
+            "07.jpg",
+            "08.jpg"
+          ],
+          "video": "https://tashif.codes/landings/delhi-metro/walkthrough.mp4",
+          "whatsNew": "* Station names on the network map sit beside the track instead of on it.\n* Details on the map's station sheet opens the station page with everything showing, so there's no second \"More details\" tap.\n* Near me picked a station from whatever position the browser answered with first, which on a laptop can be a Wi-Fi or IP guess kilometres off.\n* The whole From and To card opens the station picker.\n"
         }
       }
     },
@@ -47,19 +60,49 @@
       ],
       "changelog": "https://github.com/tashifkhan/Paisa/releases",
       "suggestedVersionCode": "14",
-      "description": "Paisa keeps your money ledger on your phone.\n\nBank SMS is parsed on-device (100+ Indian banks via an AGPL parser\ncore). Optional BYOK statement import for PDF/CSV/images \u2014 your API\nkey, your endpoint; SMS never leaves the device.\n\nFeatures:\n* Home balance, filters, and recent transactions\n* Analytics charts with date ranges\n* Monthly budgets by category\n* Multiple accounts / wallets\n* SMS bulk scan + live receiver with hash dedup\n* App lock via biometrics or device credential\n* Export to CSV / PDF\n\nPackage ID: codes.tashif.paisa\n",
+      "description": "Paisa is an expense manager that keeps your ledger on your phone. There is no account, no ads and no Paisa server.\n\nCapture\n\n* Bank SMS import. Parsers for about 140 Indian banks turn an alert into a transaction on the device. A bulk scan reads the inbox once and a live receiver catches new alerts\n* The original SMS stays attached to the transaction it made\n* Add with AI. Type or say what you spent, or attach a receipt, a screenshot or a PDF, then review the drafts before anything is saved\n* Statement import for PDF, CSV and image statements, several at once\n* Manual entry with Markdown descriptions\n\nReview\n\n* Merchant search, filters, and analytics by category and date range\n* Monthly budgets per category\n* Bank, cash, card and wallet accounts\n* Bill splitting equally, by percentage, by amount or by item, with debts tracked per person\n\nMake it yours\n\n* Material You wallpaper colours or 31 fixed palettes, dark mode and AMOLED black\n* High contrast, calmer motion and a floating navigation bar\n* Home screen widgets for your balance and quick add\n* Layouts for phones, foldables and tablets\n\nPrivacy\n\n* SMS never leave the phone\n* AI features stay off until you add your own key for an OpenAI compatible endpoint, Gemini or Anthropic\n* App lock with a fingerprint, your face or the screen lock, and one tap to hide amounts\n* Backups go to Google Drive, Nextcloud or a .paisa file, encrypted with AES-256-GCM when you set a password\n* Export to CSV or PDF\n\nWhy it asks for permissions\n\n* SMS, to read and receive bank alerts. SMS import is optional\n* Microphone, for voice notes in Add with AI\n* Network, for backup, sync and the AI endpoint you configure\n* Biometrics, for app lock\n\nThe same app runs in a browser at https://paisa.tashif.codes\n",
       "issueTracker": "https://github.com/tashifkhan/Paisa/issues",
       "license": "AGPL-3.0-or-later",
       "name": "Paisa",
       "sourceCode": "https://github.com/tashifkhan/Paisa",
-      "summary": "Offline-first personal finance for Android",
-      "webSite": "https://tashif.codes",
+      "summary": "Expense manager that reads bank SMS on your phone and keeps the ledger there",
+      "webSite": "https://tashif.codes/projects/paisa",
       "added": 1785006084000,
       "packageName": "codes.tashif.paisa",
       "lastUpdated": 1794856097000,
       "localized": {
         "en-US": {
-          "icon": "icon_86WgtVl8BQsv0XcPf48yMfMNgROT8F8fQuiYLLYKzxQ=.png"
+          "featureGraphic": "featureGraphic_8ePi8WVYyc8Bn95Uh9Lz9Jyky54FqRxesCs4ho_pmHU=.jpg",
+          "icon": "icon_86WgtVl8BQsv0XcPf48yMfMNgROT8F8fQuiYLLYKzxQ=.png",
+          "phoneScreenshots": [
+            "01.jpg",
+            "02.jpg",
+            "03.jpg",
+            "04.jpg",
+            "05.jpg",
+            "06.jpg",
+            "07.jpg",
+            "08.jpg",
+            "09.jpg",
+            "10.jpg",
+            "11.jpg",
+            "12.jpg",
+            "13.jpg",
+            "14.jpg",
+            "15.jpg",
+            "16.jpg",
+            "17.jpg",
+            "18.jpg",
+            "19.jpg"
+          ],
+          "tenInchScreenshots": [
+            "01.jpg",
+            "02.jpg",
+            "03.jpg",
+            "04.jpg"
+          ],
+          "video": "https://tashif.codes/landings/paisa/walkthrough.mp4",
+          "whatsNew": "Markdown descriptions, more ways to split a bill, category fixes, and support for more bank messages.\n\n* Write descriptions with Markdown when adding or editing a transaction.\n* Editable fields come first on the transaction page.\n* Formatting a description now moves typing into that field, so the transaction title stays unchanged.\n* Split by percentage as well as equally or by custom amounts.\n* Split by item and assign each line to one person or several.\n"
         }
       }
     },
@@ -73,20 +116,32 @@
       ],
       "changelog": "https://github.com/tashifkhan/Patchwork/releases",
       "suggestedVersionCode": "16",
-      "description": "Patchwork pulls your tasks out of the places they're scattered across and\nputs them in one app.\n\nWhat it connects to:\n\n* CalDAV tasks from Nextcloud or any CalDAV server, with subtasks, tags,\n  priorities, due dates, reminders and Markdown notes\n* Nextcloud Deck boards, with drag and drop for cards and columns\n* Jira boards with sprints, a backlog and a full issue editor\n* GitHub issues across repositories\n* More than one GitHub or Jira account at a time\n\nOther features:\n\n* AI import that drafts tasks from a photo of handwritten notes or a\n  description. You review every task before it's saved\n* Bring your own model: OpenAI, Anthropic, Google, DeepSeek, OpenRouter,\n  NVIDIA, OpenCode Zen, RelayRoom or any OpenAI-compatible endpoint\n* Voice dictation\n* Home screen widgets for today and upcoming tasks\n* Material You colours, fixed palettes, high contrast and a pure black\n  AMOLED mode\n* Layouts for tablets and foldables\n\nCredentials and API keys stay on the device in secure storage, and the app\ntalks to your servers directly.\n\nSlack and Linear integrations are planned.\n",
-      "donate": "https://tashif.codes",
+      "description": "Patchwork pulls your tasks out of the places they are scattered across and puts them in one app. It signs in to each service and edits your work where it already lives.\n\nWhat it connects to\n\n* CalDAV tasks from Nextcloud or any CalDAV server, with subtasks, tags, priorities, due dates, reminders and Markdown notes. Edits use ETags, so two devices do not overwrite each other\n* Nextcloud Deck boards. Drag cards, reorder columns, and create or edit everything from the app\n* Jira boards with sprints, a backlog, drag and drop that updates the rank, and a full issue editor\n* GitHub issues across repositories. Sign in with device flow or a token, then create, close and reopen issues\n* More than one GitHub or Jira account at a time\n\nOther features\n\n* AI import that drafts tasks from a photo of handwritten notes or a description. You review every task before it is saved\n* Bring your own model. OpenAI, Anthropic, Google, DeepSeek, OpenRouter, NVIDIA, OpenCode Zen, RelayRoom or any OpenAI compatible endpoint\n* Voice dictation\n* Add a task to a calendar on the device\n* Home screen widgets for today and upcoming tasks\n* Material You colours, fixed palettes, high contrast and a pure black AMOLED mode\n* Layouts for tablets and foldables\n\nPrivacy\n\nCredentials and API keys stay on the device in secure storage, and the app talks to your servers directly. There is no Patchwork server in between.\n\nWhy it asks for permissions\n\n* Camera and photos, to import tasks from a photo of your notes\n* Microphone, for voice dictation\n* Calendar, to add a task to a calendar you pick\n* Notifications, for task reminders\n\nSlack and Linear integrations are planned.\n",
       "issueTracker": "https://github.com/tashifkhan/Patchwork/issues",
       "license": "MIT",
       "name": "Patchwork",
       "sourceCode": "https://github.com/tashifkhan/Patchwork",
       "summary": "One task app for CalDAV, Nextcloud Deck, Jira and GitHub Issues",
-      "webSite": "https://tashif.codes",
+      "webSite": "https://tashif.codes/projects/patchwork",
       "added": 1785008008000,
       "packageName": "codes.tashhif.patchwork",
       "lastUpdated": 1794788824000,
       "localized": {
         "en-US": {
-          "icon": "icon_JG4D_DwTtAryO9u-XuswkxlhYf-56yvsdZBcqou9cDI=.png"
+          "featureGraphic": "featureGraphic_qpPKUN22XLZ7iblX26NOQYefeD5PeNZ2D3jKlstiCC0=.jpg",
+          "icon": "icon_JG4D_DwTtAryO9u-XuswkxlhYf-56yvsdZBcqou9cDI=.png",
+          "phoneScreenshots": [
+            "01-tasks.jpg",
+            "02-detail.jpg",
+            "03-boards.jpg",
+            "04-search.jpg",
+            "05-appearance.jpg",
+            "06-ai.jpg",
+            "07-filters.jpg",
+            "08-drag.jpg"
+          ],
+          "video": "https://tashif.codes/landings/patchwork/walkthrough.mp4",
+          "whatsNew": "Motion for the Android floating navbar, section counts that roll, and empty states that ease in.\n\n* The floating navbar's selection pill slides between tabs instead of switching on and off.\n* The floating navbar gives under your finger and leans toward it, then springs back.\n* Each tab's icon makes a small move when you tap it.\n* The count in a task section header rolls up or down when it changes.\n* Empty states on Android fade in with a small rise.\n"
         }
       }
     }

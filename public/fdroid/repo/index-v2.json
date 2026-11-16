@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/repo",
-    "timestamp": 1794856120000,
+    "timestamp": 1794860529000,
     "categories": {
       "Development": {
         "name": {
@@ -67,7 +67,60 @@
         "lastUpdated": 1794788824000,
         "license": "MIT",
         "sourceCode": "https://github.com/tashifkhan/Patchwork",
-        "webSite": "https://tashif.codes",
+        "webSite": "https://tashif.codes/projects/patchwork",
+        "featureGraphic": {
+          "en-US": {
+            "name": "/codes.tashhif.patchwork/en-US/featureGraphic_qpPKUN22XLZ7iblX26NOQYefeD5PeNZ2D3jKlstiCC0=.jpg",
+            "sha256": "aa93ca50ddb65cb67b89b957dba34e41879f783e4f78d6760f78ca96cb62082d",
+            "size": 49347
+          }
+        },
+        "screenshots": {
+          "phone": {
+            "en-US": [
+              {
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/01-tasks.jpg",
+                "sha256": "a878457890d0db09291451d9ecbec85aa2cd24a20184e1084db5924f1c4f40e1",
+                "size": 140337
+              },
+              {
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/02-detail.jpg",
+                "sha256": "733c8730a7c38c676c00315ea293cdfcecdac7a500288857739638f94900049d",
+                "size": 114952
+              },
+              {
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/03-boards.jpg",
+                "sha256": "2519ad7fa6bcaf7fd9d274d341da3fa78c51c235f1bd5a0334d5d1d3ecb8f850",
+                "size": 131557
+              },
+              {
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/04-search.jpg",
+                "sha256": "a984d756cf4b5360632ca9a875725e5a6362fb67107b32767860b41178c731e9",
+                "size": 125692
+              },
+              {
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/05-appearance.jpg",
+                "sha256": "cbc44ff522f13bf8f8d1454a9c6c850cf4589ccc12e7a66d20317055c85ca74f",
+                "size": 109441
+              },
+              {
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/06-ai.jpg",
+                "sha256": "b7431f46148e4c044329fdbe6187860745ad4bb39856d27f7b5f98c60bac4c53",
+                "size": 115074
+              },
+              {
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/07-filters.jpg",
+                "sha256": "3c96db2c5db688466652b2fdedf673be663b22cfdcef101ba09581e7b7ba0df6",
+                "size": 114299
+              },
+              {
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/08-drag.jpg",
+                "sha256": "5f787b95070f1bbaf25627e4fbe0e45e5f00d86245afc4a72e3b8375fe6c882d",
+                "size": 109267
+              }
+            ]
+          }
+        },
         "authorEmail": "tashifkhan010@gmail.com",
         "authorName": "Tashif Ahmad Khan",
         "name": {
@@ -77,11 +130,11 @@
           "en-US": "One task app for CalDAV, Nextcloud Deck, Jira and GitHub Issues"
         },
         "description": {
-          "en-US": "Patchwork pulls your tasks out of the places they're scattered across and\nputs them in one app.\n\nWhat it connects to:\n\n* CalDAV tasks from Nextcloud or any CalDAV server, with subtasks, tags,\n  priorities, due dates, reminders and Markdown notes\n* Nextcloud Deck boards, with drag and drop for cards and columns\n* Jira boards with sprints, a backlog and a full issue editor\n* GitHub issues across repositories\n* More than one GitHub or Jira account at a time\n\nOther features:\n\n* AI import that drafts tasks from a photo of handwritten notes or a\n  description. You review every task before it's saved\n* Bring your own model: OpenAI, Anthropic, Google, DeepSeek, OpenRouter,\n  NVIDIA, OpenCode Zen, RelayRoom or any OpenAI-compatible endpoint\n* Voice dictation\n* Home screen widgets for today and upcoming tasks\n* Material You colours, fixed palettes, high contrast and a pure black\n  AMOLED mode\n* Layouts for tablets and foldables\n\nCredentials and API keys stay on the device in secure storage, and the app\ntalks to your servers directly.\n\nSlack and Linear integrations are planned.\n"
+          "en-US": "Patchwork pulls your tasks out of the places they are scattered across and puts them in one app. It signs in to each service and edits your work where it already lives.\n\nWhat it connects to\n\n* CalDAV tasks from Nextcloud or any CalDAV server, with subtasks, tags, priorities, due dates, reminders and Markdown notes. Edits use ETags, so two devices do not overwrite each other\n* Nextcloud Deck boards. Drag cards, reorder columns, and create or edit everything from the app\n* Jira boards with sprints, a backlog, drag and drop that updates the rank, and a full issue editor\n* GitHub issues across repositories. Sign in with device flow or a token, then create, close and reopen issues\n* More than one GitHub or Jira account at a time\n\nOther features\n\n* AI import that drafts tasks from a photo of handwritten notes or a description. You review every task before it is saved\n* Bring your own model. OpenAI, Anthropic, Google, DeepSeek, OpenRouter, NVIDIA, OpenCode Zen, RelayRoom or any OpenAI compatible endpoint\n* Voice dictation\n* Add a task to a calendar on the device\n* Home screen widgets for today and upcoming tasks\n* Material You colours, fixed palettes, high contrast and a pure black AMOLED mode\n* Layouts for tablets and foldables\n\nPrivacy\n\nCredentials and API keys stay on the device in secure storage, and the app talks to your servers directly. There is no Patchwork server in between.\n\nWhy it asks for permissions\n\n* Camera and photos, to import tasks from a photo of your notes\n* Microphone, for voice dictation\n* Calendar, to add a task to a calendar you pick\n* Notifications, for task reminders\n\nSlack and Linear integrations are planned.\n"
         },
-        "donate": [
-          "https://tashif.codes"
-        ],
+        "video": {
+          "en-US": "https://tashif.codes/landings/patchwork/walkthrough.mp4"
+        },
         "icon": {
           "en-US": {
             "name": "/codes.tashhif.patchwork/en-US/icon_JG4D_DwTtAryO9u-XuswkxlhYf-56yvsdZBcqou9cDI=.png",
@@ -524,17 +577,73 @@
         "lastUpdated": 1794746993000,
         "license": "MIT",
         "sourceCode": "https://github.com/tashifkhan/delhi-metro",
-        "webSite": "https://tashif.codes",
+        "webSite": "https://tashif.codes/projects/delhi-metro",
+        "featureGraphic": {
+          "en-US": {
+            "name": "/codes.tashif.delhimetro/en-US/featureGraphic_Usax61-EewSI7eG5RsRdqqM3q-P56rsw-HTf_4QixyA=.jpg",
+            "sha256": "52c6b1eb5f847b0488ede1b946c45daaa337abe3f9eabb30f874dfff8422c720",
+            "size": 30579
+          }
+        },
+        "screenshots": {
+          "phone": {
+            "en-US": [
+              {
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/01.jpg",
+                "sha256": "9acec16254ce339c5cc0e7235cbd958629eeebb8273d315d3451c527ed9e3a2a",
+                "size": 140258
+              },
+              {
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/02.jpg",
+                "sha256": "6eb091c817e32f85732b3b0a1c14ab49385f48da125538b084f070cb9a8215f0",
+                "size": 138397
+              },
+              {
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/03.jpg",
+                "sha256": "62b369a5cbedb61edd12cbf80f938f7e5177be8f14d762a20181ad6f5137478b",
+                "size": 129212
+              },
+              {
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/04.jpg",
+                "sha256": "f7678828dfbc34f54901688862872ecab3b0e7bcfb447b97eb062578f7325429",
+                "size": 132826
+              },
+              {
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/05.jpg",
+                "sha256": "66e9b503df53791e25fcbf63edd32099cedecddc05b3e76626b97eb5d4bdb1ea",
+                "size": 125346
+              },
+              {
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/06.jpg",
+                "sha256": "2d040060af43b0e83bbfaed6a4ccab0cbf40a40bc95fb419b2530cf295fe3905",
+                "size": 131290
+              },
+              {
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/07.jpg",
+                "sha256": "1240bd2a0ce2b619452e906a74aecdc6cc9f69590aa8d5fe199c6e96e6e53d22",
+                "size": 148115
+              },
+              {
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/08.jpg",
+                "sha256": "bea63350ab4ac3d9d7ad4014e9fcc901f4b0eb2174d56f90a626dde8e18bd1eb",
+                "size": 126877
+              }
+            ]
+          }
+        },
         "authorEmail": "tashifkhan010@gmail.com",
         "authorName": "Tashif Ahmad Khan",
         "name": {
           "en-US": "Delhi NCR Metro"
         },
         "summary": {
-          "en-US": "Plan Delhi and Noida Metro journeys with fares, maps, and alerts"
+          "en-US": "Plan Delhi Metro and Noida Metro trips with fares, maps and alerts"
         },
         "description": {
-          "en-US": "Delhi NCR Metro is a Material 3 companion for the Delhi Metro and Noida Metro\nnetworks.\n\nSwitch operators, plan trips with least-distance or minimum-interchange\nstrategies, and follow cross-network journeys that transfer at Sector 52/51\nwith clear dual-ticket fares. Browse lines and stations, check first and last\ntrains, follow service alerts, and open the network map with zoom and save.\n\nFeatures:\n\n* Delhi Metro (DMRC) and Noida Metro (NMRC) catalogs\n* Network switcher with local persistence\n* Cross-network journey planning at Sector 52/51\n* Journey strategies, fares, and transfer walk legs\n* Station search with local cache\n* Line explorer and station detail\n* Network map view with save\n* Notifications / service alerts\n* Light, dark, and Material You theming\n\nReleases are built with Expo EAS, published on GitHub Releases, and\nmirrored into this F-Droid-compatible repository.\n\nPackage ID: codes.tashif.delhimetro\n"
+          "en-US": "Delhi NCR Metro plans trips across the Delhi Metro and the Noida Metro Aqua Line in one app. The two operators do not share tickets, so a trip that crosses between them shows the walk at Sector 52 and 51 and a separate fare for each.\n\nPlan a trip\n\n* Shortest route and fewest changes, side by side, with time, fare, every station and where to change\n* Weekday and weekend fares, and first and last train times\n* Cross-network trips with a walk leg and split fares\n* Book tickets on WhatsApp from a journey, one step per operator\n* Your planned journeys stay available offline\n\nStations and lines\n\n* Station search by name or code\n* Station pages with gates, lifts, platforms, facilities, parking and nearby places\n* Lines with ordered stations and interchange badges\n\nMap and alerts\n\n* A network map drawn from station coordinates, with pan, pinch zoom and station search\n* The official DMRC and NMRC maps, with save to gallery\n* Service alerts from both operators\n* Lines, stations and alerts stay readable when the network drops\n\nAppearance\n\n* Material You colours, fixed palettes, dark mode and AMOLED black\n* High contrast, haptics, and slide, fade or no page animations\n\nWhy it asks for permissions\n\n* Network, to fetch routes, fares and alerts\n* Photos, to save a network map to your gallery\n\nThe same app runs in a browser at https://ncr-metro.tashif.codes. It is not an official DMRC or NMRC app.\n"
+        },
+        "video": {
+          "en-US": "https://tashif.codes/landings/delhi-metro/walkthrough.mp4"
         },
         "icon": {
           "en-US": {
@@ -722,17 +831,152 @@
         "lastUpdated": 1794856097000,
         "license": "AGPL-3.0-or-later",
         "sourceCode": "https://github.com/tashifkhan/Paisa",
-        "webSite": "https://tashif.codes",
+        "webSite": "https://tashif.codes/projects/paisa",
+        "featureGraphic": {
+          "en-US": {
+            "name": "/codes.tashif.paisa/en-US/featureGraphic_8ePi8WVYyc8Bn95Uh9Lz9Jyky54FqRxesCs4ho_pmHU=.jpg",
+            "sha256": "f1e3e2f16558c9cf019fde5487d2f3f49ca4cb9e05a91c5eb02b38868fe99875",
+            "size": 45037
+          }
+        },
+        "screenshots": {
+          "phone": {
+            "en-US": [
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/01.jpg",
+                "sha256": "0cc42071116c211264238cb52bd51a3b387ab3e837f52dd7c898653b375ffcf0",
+                "size": 121864
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/02.jpg",
+                "sha256": "521ccf5d257aa5143f282cd8b92f626acef853975a1dcca75fc0539f5627feff",
+                "size": 105886
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/03.jpg",
+                "sha256": "852241437fb90dca65485d0e04cfc23ce76e5237891ce58343c67ae50193ce5a",
+                "size": 110805
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/04.jpg",
+                "sha256": "e8a23314bdcf853fa650bbb2e5a101034cdbba4296e22fa188fd892bd32d1700",
+                "size": 103052
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/05.jpg",
+                "sha256": "ec07db230639eba6d8f1c9cfca92a384878aa820c763e9006c8845be548e963a",
+                "size": 111441
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/06.jpg",
+                "sha256": "426e39cf2ac13471106f7e31b9dd3183438d85bbbd586b31bd642ef1d80944b0",
+                "size": 96073
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/07.jpg",
+                "sha256": "0af3145d06f646735ba069446f6acaf0d97791b8868fca4d76a2455a4225f4a3",
+                "size": 100991
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/08.jpg",
+                "sha256": "e2768ea33debeafe58421e5c3e4095bf512058e41d6ad336e20238004b8d3df7",
+                "size": 97076
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/09.jpg",
+                "sha256": "e85f40e948cde99e2ce97fadd74d411ca216419465b701ce839531f00409a216",
+                "size": 96254
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/10.jpg",
+                "sha256": "b894d059006aefe54e0ca1df22e842ddf8ad9fb56beb4cfd454feb0917742163",
+                "size": 111526
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/11.jpg",
+                "sha256": "8e88edab6cbb7a930e7de1613c5ea61f6d257ff67ac4adee99a2cda8d019f4ef",
+                "size": 109033
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/12.jpg",
+                "sha256": "2e7ccbfa53bc46575bbdea0d977698dc048bf6b3b5a7baa187cdf9ad241ac6ed",
+                "size": 112789
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/13.jpg",
+                "sha256": "9d72e6ccaefe52c0ce9595801b6988236a3079bf99a0f4c76fd29a7eeddae195",
+                "size": 109666
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/14.jpg",
+                "sha256": "158c0d3e17b09505ff2044b0cf58f7b76856f2131dafe78cb7721dbd24f31731",
+                "size": 73204
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/15.jpg",
+                "sha256": "8770660f424bd96f39375e5fb6c927217458b22f8868f9bfbb1e3aa4fb1022fe",
+                "size": 115310
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/16.jpg",
+                "sha256": "0167e09b44945b83e036507c7d69f525140f5f4ae93b80d5d5b0395e3806b270",
+                "size": 91530
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/17.jpg",
+                "sha256": "bfc4a971cea5b35988ffa19cb8c70aa6236056f0672b543f248a74f3ba496882",
+                "size": 93324
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/18.jpg",
+                "sha256": "028a19e1c8ca9b31dbb55265ae3290d67d92dab587d8b89fd099447ca49039c9",
+                "size": 108650
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/19.jpg",
+                "sha256": "fd3c35d41044815848632e1d71013110a16e811ee63ea3d173a3d5a00b68d3de",
+                "size": 137060
+              }
+            ]
+          },
+          "tenInch": {
+            "en-US": [
+              {
+                "name": "/codes.tashif.paisa/en-US/tenInchScreenshots/01.jpg",
+                "sha256": "57bff90f89dbc46aaccc960e5729819de109a6a536545204deb3d483dd987ad0",
+                "size": 112419
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/tenInchScreenshots/02.jpg",
+                "sha256": "5bcbc227a6296d2f71e4395f5581ba772c89e85848d14554c58c41502cb323e4",
+                "size": 92362
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/tenInchScreenshots/03.jpg",
+                "sha256": "7ba06dd891331a201b2e5de9c92c5f1abc5aa3774aee6343d98dbcfa8d283ab2",
+                "size": 94205
+              },
+              {
+                "name": "/codes.tashif.paisa/en-US/tenInchScreenshots/04.jpg",
+                "sha256": "116f786e82b390fc55a2116874a77e0db31b9c2f399b9e7fb1990336f7fa4665",
+                "size": 118396
+              }
+            ]
+          }
+        },
         "authorEmail": "tashifkhan010@gmail.com",
         "authorName": "Tashif Ahmad Khan",
         "name": {
           "en-US": "Paisa"
         },
         "summary": {
-          "en-US": "Offline-first personal finance for Android"
+          "en-US": "Expense manager that reads bank SMS on your phone and keeps the ledger there"
         },
         "description": {
-          "en-US": "Paisa keeps your money ledger on your phone.\n\nBank SMS is parsed on-device (100+ Indian banks via an AGPL parser\ncore). Optional BYOK statement import for PDF/CSV/images — your API\nkey, your endpoint; SMS never leaves the device.\n\nFeatures:\n* Home balance, filters, and recent transactions\n* Analytics charts with date ranges\n* Monthly budgets by category\n* Multiple accounts / wallets\n* SMS bulk scan + live receiver with hash dedup\n* App lock via biometrics or device credential\n* Export to CSV / PDF\n\nPackage ID: codes.tashif.paisa\n"
+          "en-US": "Paisa is an expense manager that keeps your ledger on your phone. There is no account, no ads and no Paisa server.\n\nCapture\n\n* Bank SMS import. Parsers for about 140 Indian banks turn an alert into a transaction on the device. A bulk scan reads the inbox once and a live receiver catches new alerts\n* The original SMS stays attached to the transaction it made\n* Add with AI. Type or say what you spent, or attach a receipt, a screenshot or a PDF, then review the drafts before anything is saved\n* Statement import for PDF, CSV and image statements, several at once\n* Manual entry with Markdown descriptions\n\nReview\n\n* Merchant search, filters, and analytics by category and date range\n* Monthly budgets per category\n* Bank, cash, card and wallet accounts\n* Bill splitting equally, by percentage, by amount or by item, with debts tracked per person\n\nMake it yours\n\n* Material You wallpaper colours or 31 fixed palettes, dark mode and AMOLED black\n* High contrast, calmer motion and a floating navigation bar\n* Home screen widgets for your balance and quick add\n* Layouts for phones, foldables and tablets\n\nPrivacy\n\n* SMS never leave the phone\n* AI features stay off until you add your own key for an OpenAI compatible endpoint, Gemini or Anthropic\n* App lock with a fingerprint, your face or the screen lock, and one tap to hide amounts\n* Backups go to Google Drive, Nextcloud or a .paisa file, encrypted with AES-256-GCM when you set a password\n* Export to CSV or PDF\n\nWhy it asks for permissions\n\n* SMS, to read and receive bank alerts. SMS import is optional\n* Microphone, for voice notes in Add with AI\n* Network, for backup, sync and the AI endpoint you configure\n* Biometrics, for app lock\n\nThe same app runs in a browser at https://paisa.tashif.codes\n"
+        },
+        "video": {
+          "en-US": "https://tashif.codes/landings/paisa/walkthrough.mp4"
         },
         "icon": {
           "en-US": {
