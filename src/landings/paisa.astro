@@ -1,0 +1,714 @@
+---
+/**
+ * Paisa. The file name is the project slug, so this page replaces the README
+ * at /projects/paisa. Media lives in public/landings/paisa.
+ */
+import {
+	Download,
+	Globe,
+	Github,
+	PiggyBank,
+	Wallet,
+	CloudUpload,
+	FileDown,
+	LayoutGrid,
+	Palette,
+	Tags,
+	Keyboard,
+	Search,
+	Smartphone,
+	ArrowUpRight,
+	Copy,
+} from "lucide-react";
+import {
+	Section,
+	LandingHero,
+	DeviceFrame,
+	LandingVideo,
+	MediaTabs,
+	PanelCarousel,
+	FeatureRow,
+	FeatureGrid,
+	Faq,
+	CtaBand,
+} from "@/components/landing";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { formatBytes, formatReleaseDate, releaseHref } from "@/lib/releases";
+import type { LandingMeta } from "@/lib/landings";
+import type { Project } from "@/types";
+
+export const landing: LandingMeta = {
+	tagline:
+		"An expense manager that reads your bank SMS on the phone and keeps the ledger there.",
+	accent: { light: "#0b6e4f", dark: "#5fd6a6" },
+	cta: { label: "Get Paisa", href: "#get" },
+};
+
+interface Props {
+	project: Project;
+}
+
+const { project } = Astro.props;
+
+const media = "/landings/paisa";
+const webApp = "https://paisa.tashif.codes";
+const fdroidRepo =
+	"https://tashif.codes/fdroid/repo?fingerprint=568557c435bdf555725de95de596a90d6fa964d4bf0b71874f254cd0be7e94c9";
+
+// Download buttons follow the newest GitHub release, so a new version needs
+// no edit here.
+const release = (project.releases ?? []).find((r) => !r.draft && !r.prerelease);
+const apk = release?.assets.find((a) => a.name.toLowerCase().endsWith(".apk"));
+const apkHref = apk?.download_url ?? `${project.github_link}/releases/latest`;
+
+const screenAspect = "650 / 1462";
+
+const tabs = [
+	{
+		id: "walkthrough",
+		label: "Walkthrough",
+		note: "Two minutes, with sound. SMS capture, AI drafts, budgets, themes and app lock, then the larger screens.",
+		src: `${media}/walkthrough.mp4`,
+		poster: `${media}/walkthrough-poster.webp`,
+		frame: "browser" as const,
+		url: "paisa walkthrough",
+		controls: true,
+	},
+	{
+		id: "foldable",
+		label: "Foldable",
+		note: "Unfold the phone and a transaction opens beside the list.",
+		src: `${media}/foldable.mp4`,
+		poster: `${media}/foldable-poster.webp`,
+		frame: "tablet" as const,
+	},
+	{
+		id: "tablet",
+		label: "Tablet",
+		note: "From 840dp wide, analytics goes to two columns and budgets and accounts become grids.",
+		src: `${media}/tablet.mp4`,
+		poster: `${media}/tablet-poster.webp`,
+		frame: "tablet" as const,
+	},
+	{
+		id: "web",
+		label: "Web",
+		note: "The same Kotlin compiled to WebAssembly. The database is SQLite in a web worker, stored in the browser.",
+		src: `${media}/web.mp4`,
+		poster: `${media}/web-poster.webp`,
+		frame: "browser" as const,
+		url: "paisa.tashif.codes",
+	},
+];
+
+const features = [
+	{
+		icon: PiggyBank,
+		title: "Budgets",
+		body: "Monthly caps per category, with the spend so far beside each one.",
+	},
+	{
+		icon: Wallet,
+		title: "Accounts",
+		body: "Wallets, bank accounts and cards. Reorder them, merge two, or correct a balance by hand when the bank disagrees.",
+	},
+	{
+		icon: Tags,
+		title: "Categories that learn",
+		body: "Your own merchant rules run first, then a keyword map. Fix a merchant once and the fix sticks.",
+	},
+	{
+		icon: Search,
+		title: "Search and analytics",
+		body: "Find any merchant, filter by type or date, and chart spending over a range you pick.",
+	},
+	{
+		icon: CloudUpload,
+		title: "Backups you choose",
+		body: "Google Drive, Nextcloud or a .paisa file. Set a password and the file is AES-256-GCM encrypted before it goes anywhere.",
+	},
+	{
+		icon: FileDown,
+		title: "Export",
+		body: "CSV for a spreadsheet, PDF for a person.",
+	},
+	{
+		icon: Palette,
+		title: "Material 3 themes",
+		body: "Wallpaper colours on Android 12 and up, 31 fixed palettes, dark mode and AMOLED black.",
+	},
+	{
+		icon: LayoutGrid,
+		title: "Home screen widgets",
+		body: "Your balance and quick add, without opening the app.",
+	},
+	{
+		icon: Keyboard,
+		title: "Keyboard on the web",
+		body: "n adds, / searches, 1 to 6 switch tabs, and ? lists the rest.",
+	},
+];
+
+const panelAlt = [
+	"Paisa overview. Your money, your business.",
+	"A bank SMS recorded as a transaction",
+	"The original bank message beside the parsed transaction",
+	"Add with AI turns a sentence into two drafts",
+	"Manual entry for a coffee",
+	"Analytics by category",
+	"Monthly budgets per category",
+	"All account balances in one list",
+	"Merchant search results",
+	"Material You colours from the wallpaper",
+	"Appearance settings with fixed palettes",
+	"Dark mode with AMOLED black",
+	"Amounts hidden behind dots",
+	"App lock screen",
+	"Unfolded foldable with list and detail",
+	"Tablet layout",
+	"Web app on a wide screen",
+	"Backup destinations",
+	"Paisa on phone, foldable, tablet and web",
+];
+const panels = panelAlt.map((alt, i) => ({
+	src: `${media}/panels/${String(i + 1).padStart(2, "0")}.webp`,
+	alt,
+}));
+
+const faq = [
+	{
+		q: "Do I need an account?",
+		a: "No. There is no sign up and no Paisa server. The app opens to a setup screen that asks for a currency and a theme.",
+	},
+	{
+		q: "Which banks does the SMS import cover?",
+		a: 'About 140 Indian banks. The parsers come from <a href="https://github.com/sarim2000/pennywiseai-tracker" target="_blank" rel="noopener noreferrer">PennyWise</a>. A message that looks financial but that no parser claims goes to an "unrecognized" list instead of vanishing.',
+	},
+	{
+		q: "Is the AI required?",
+		a: "No. SMS parsing uses on-device parsers and no model. Add with AI and statement import are separate and off until you add your own key for an OpenAI compatible endpoint, Gemini or Anthropic.",
+	},
+	{
+		q: "Is there an iPhone app?",
+		a: `Not yet. Paisa runs on Android 7.0 and up, and in a recent Chrome, Edge, Firefox or Safari at <a href="${webApp}" target="_blank" rel="noopener noreferrer">paisa.tashif.codes</a>. The web build can't read SMS, because browsers can't.`,
+	},
+	{
+		q: "What does it cost?",
+		a: `Nothing. Paisa is free and licensed under AGPL-3.0. The source is on <a href="${project.github_link}" target="_blank" rel="noopener noreferrer">GitHub</a>.`,
+	},
+];
+
+const stays = [
+	{ what: "Your SMS", how: "Parsed on the device. Never uploaded." },
+	{ what: "The ledger", how: "Room and SQLite on the phone." },
+	{ what: "AI keys", how: "EncryptedSharedPreferences." },
+];
+const leaves = [
+	{
+		what: "A statement",
+		how: "Only to the AI endpoint you configured, when you import one.",
+	},
+	{
+		what: "A backup",
+		how: "Only to the Drive, Nextcloud or file you picked.",
+	},
+];
+
+const primary = cn(
+	buttonVariants({ variant: "default", size: "lg" }),
+	"h-11 px-5 gap-2 text-sm shadow-sm",
+);
+const secondary = cn(
+	buttonVariants({ variant: "outline", size: "lg" }),
+	"h-11 px-5 gap-2 text-sm bg-background/60",
+);
+---
+
+<div data-landing="paisa">
+	<LandingHero
+		eyebrow="Android and web / open source"
+		lead="Paisa turns bank alerts into transactions without sending them anywhere. No account, no ads, and no premium popup every third tap."
+	>
+		<Fragment slot="title">
+			Your money.<br />
+			<span class="text-primary">Your phone.</span>
+		</Fragment>
+
+		<Fragment slot="actions">
+			<a href={apkHref} data-haptic-external class={primary}>
+				<Download className="w-4 h-4" />
+				Download APK
+			</a>
+			<a
+				href={`${webApp}/?demo`}
+				target="_blank"
+				rel="noopener noreferrer"
+				data-haptic-external
+				class={secondary}
+			>
+				<Globe className="w-4 h-4" />
+				Try it in the browser
+			</a>
+		</Fragment>
+
+		<Fragment slot="meta">
+			{
+				release && (
+					<a
+						href={releaseHref(project.slug, release.tag_name)}
+						class="text-foreground hover:text-primary transition-colors"
+					>
+						{release.tag_name}
+					</a>
+				)
+			}
+			{apk && <span>{formatBytes(apk.size)}</span>}
+			<span>Android 7.0+</span>
+			<span>AGPL-3.0</span>
+		</Fragment>
+
+		<DeviceFrame slot="media" kind="card">
+			<LandingVideo
+				src={`${media}/phone.mp4`}
+				poster={`${media}/phone-poster.webp`}
+				label="Paisa on a phone: an SMS becomes a transaction, then AI drafts, budgets and themes"
+				autoplay
+			/>
+		</DeviceFrame>
+	</LandingHero>
+
+	<Section
+		id="capture"
+		eyebrow="01 / Capture"
+		title="Three ways in. None of them is typing every purchase."
+	>
+		<FeatureRow eyebrow="Bank SMS" title="A bank alert becomes a transaction.">
+			<p>
+				Parsers for about <strong>140 Indian banks</strong> run on the phone. A
+				bulk scan reads the inbox once, and a live receiver catches new alerts as
+				they land.
+			</p>
+			<p>
+				Paisa hashes every message, so a rescan never double counts and a
+				transaction you deleted stays deleted.
+			</p>
+			<DeviceFrame slot="media" kind="phone" aspect={screenAspect}>
+				<img
+					src={`${media}/screens/sms.webp`}
+					alt="A UPI transfer of 460 rupees, parsed from a Standard Chartered SMS"
+					width="650"
+					height="1462"
+					loading="lazy"
+					decoding="async"
+				/>
+			</DeviceFrame>
+		</FeatureRow>
+
+		<FeatureRow eyebrow="Add with AI" title="Type it the way you'd say it." flip>
+			<p>
+				Write <code>lunch 240 yesterday, uber 180 today</code>, or attach a
+				receipt, a screenshot or a PDF. You get drafts to edit before anything is
+				saved, and you can ask for changes in plain words.
+			</p>
+			<p>
+				It runs on <strong>your own key</strong> for an OpenAI compatible
+				endpoint, Gemini or Anthropic. Without a key the feature stays off.
+			</p>
+			<DeviceFrame slot="media" kind="phone" aspect={screenAspect}>
+				<img
+					src={`${media}/screens/ai.webp`}
+					alt="Two draft transactions, Chaayos and Uber, ready to save"
+					width="650"
+					height="1462"
+					loading="lazy"
+					decoding="async"
+				/>
+			</DeviceFrame>
+		</FeatureRow>
+
+		<FeatureRow eyebrow="Privacy on screen" title="Hide the numbers. Lock the app.">
+			<p>
+				One tap swaps every amount for dots, which helps when someone is reading
+				over your shoulder. App lock asks for a fingerprint, face or the screen
+				lock each time you come back.
+			</p>
+			<div slot="media" class="screen-pair">
+				<DeviceFrame kind="phone" aspect={screenAspect}>
+					<img
+						src={`${media}/screens/hide.webp`}
+						alt="Home screen with balances replaced by dots"
+						width="650"
+						height="1462"
+						loading="lazy"
+						decoding="async"
+					/>
+				</DeviceFrame>
+				<DeviceFrame kind="phone" aspect={screenAspect}>
+					<img
+						src={`${media}/screens/lock.webp`}
+						alt="Paisa is locked. Unlock with fingerprint, face or device credentials"
+						width="650"
+						height="1462"
+						loading="lazy"
+						decoding="async"
+					/>
+				</DeviceFrame>
+			</div>
+		</FeatureRow>
+	</Section>
+
+	<Section
+		id="screens"
+		eyebrow="02 / Screens"
+		title="One codebase, four sizes of screen."
+		lead="The layout follows the window, so a tablet and a browser at the same width get the same thing."
+	>
+		<MediaTabs tabs={tabs} label="Paisa on different screens" />
+	</Section>
+
+	<Section
+		id="privacy"
+		eyebrow="03 / Privacy"
+		title="What stays, and the two things that can leave."
+	>
+		<div class="ledger">
+			<div class="ledger-col">
+				<h3 class="ledger-head">
+					<Smartphone className="w-4 h-4" />
+					Stays on the phone
+				</h3>
+				<dl>
+					{
+						stays.map((row) => (
+							<div class="ledger-row">
+								<dt>{row.what}</dt>
+								<dd>{row.how}</dd>
+							</div>
+						))
+					}
+				</dl>
+			</div>
+			<div class="ledger-col ledger-out">
+				<h3 class="ledger-head">
+					<ArrowUpRight className="w-4 h-4" />
+					Leaves only when you send it
+				</h3>
+				<dl>
+					{
+						leaves.map((row) => (
+							<div class="ledger-row">
+								<dt>{row.what}</dt>
+								<dd>{row.how}</dd>
+							</div>
+						))
+					}
+				</dl>
+			</div>
+		</div>
+	</Section>
+
+	<Section
+		id="features"
+		eyebrow="04 / The rest"
+		title="The parts you expect from an expense manager."
+	>
+		<FeatureGrid features={features} />
+	</Section>
+
+	<Section
+		id="gallery"
+		eyebrow="05 / Gallery"
+		title="Nineteen screens."
+		lead="Scroll sideways, or use the arrows."
+	>
+		<PanelCarousel
+			panels={panels}
+			label="Paisa screenshots"
+			width={720}
+			height={1558}
+		/>
+	</Section>
+
+	<Section id="get" eyebrow="06 / Get it" title="Three ways to install.">
+		<div class="grid gap-4 lg:grid-cols-3">
+			<article class="get-card">
+				<h3>APK</h3>
+				<p>
+					{
+						release
+							? `${release.tag_name}, published ${formatReleaseDate(release.published_at)}. A .sha256 file ships beside every APK.`
+							: "The newest build from GitHub releases. A .sha256 file ships beside every APK."
+					}
+				</p>
+				<a href={apkHref} data-haptic-external class={cn(primary, "mt-auto w-fit")}>
+					<Download className="w-4 h-4" />
+					Download{apk ? ` ${formatBytes(apk.size)}` : ""}
+				</a>
+			</article>
+
+			<article class="get-card">
+				<h3>F-Droid</h3>
+				<p>
+					Add this repo in Settings, Repositories, then refresh and install
+					Paisa. The fingerprint lets F-Droid check the repo is mine.
+				</p>
+				<div class="repo">
+					<code>{fdroidRepo}</code>
+					<button
+						type="button"
+						data-copy={fdroidRepo}
+						data-haptic-nav
+						aria-label="Copy the F-Droid repo address"
+						class="repo-copy"
+					>
+						<Copy className="w-3.5 h-3.5" />
+						<span data-copy-label>Copy</span>
+					</button>
+				</div>
+				<a href="/fdroid" data-haptic-nav class={cn(secondary, "mt-auto w-fit")}>
+					F-Droid setup
+				</a>
+			</article>
+
+			<article class="get-card">
+				<h3>Browser</h3>
+				<p>
+					Nothing to install. Open it with <code>?demo</code> for three months
+					of sample data, or without it for a fresh setup.
+				</p>
+				<div class="mt-auto flex flex-wrap gap-2">
+					<a
+						href={`${webApp}/?demo`}
+						target="_blank"
+						rel="noopener noreferrer"
+						data-haptic-external
+						class={secondary}
+					>
+						<Globe className="w-4 h-4" />
+						Open the demo
+					</a>
+				</div>
+			</article>
+		</div>
+	</Section>
+
+	<Section id="faq" eyebrow="07 / Questions" title="Fair questions.">
+		<Faq items={faq} />
+	</Section>
+
+	<CtaBand
+		title="Keep the ledger on your phone."
+		lead="Free, open source, and no account to make."
+	>
+		<a href={apkHref} data-haptic-external class="cta-btn cta-btn-solid">
+			<Download className="w-4 h-4" />
+			Download APK
+		</a>
+		<a
+			href={project.github_link}
+			target="_blank"
+			rel="noopener noreferrer"
+			data-haptic-external
+			class="cta-btn"
+		>
+			<Github className="w-4 h-4" />
+			Read the source
+		</a>
+	</CtaBand>
+</div>
+
+<style>
+	/* Everything below is specific to this landing. The kit covers the rest. */
+	.screen-pair {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem;
+		width: min(100%, 30rem);
+		align-items: start;
+	}
+	.screen-pair > :global(:last-child) {
+		margin-top: 2.5rem;
+	}
+
+	.ledger {
+		display: grid;
+		gap: 1px;
+		border: 1px solid var(--border);
+		border-radius: 1rem;
+		overflow: hidden;
+		background: var(--border);
+	}
+	@media (min-width: 1024px) {
+		.ledger {
+			grid-template-columns: 3fr 2fr;
+		}
+	}
+	.ledger-col {
+		background: var(--card);
+		padding: 1.5rem;
+	}
+	@media (min-width: 640px) {
+		.ledger-col {
+			padding: 2rem;
+		}
+	}
+	.ledger-out {
+		background: color-mix(in oklab, var(--primary) 7%, var(--card));
+	}
+	.ledger-head {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		font-weight: 500;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--primary);
+		margin-bottom: 0.5rem;
+	}
+	.ledger-row {
+		display: grid;
+		gap: 0.15rem;
+		padding: 1rem 0;
+		border-top: 1px solid var(--border);
+	}
+	.ledger-row:first-child {
+		border-top: 0;
+	}
+	@media (min-width: 640px) {
+		.ledger-row {
+			grid-template-columns: 9rem 1fr;
+			gap: 1rem;
+			align-items: baseline;
+		}
+	}
+	.ledger-row dt {
+		font-size: 1.05rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		color: var(--foreground);
+	}
+	.ledger-row dd {
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: 1.55;
+		color: var(--muted-foreground);
+	}
+
+	.get-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.85rem;
+		min-width: 0;
+		padding: 1.75rem;
+		border: 1px solid var(--border);
+		border-radius: 1rem;
+		background: var(--card);
+	}
+	.get-card h3 {
+		font-size: 1.35rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		color: var(--foreground);
+	}
+	.get-card p {
+		font-size: 0.95rem;
+		line-height: 1.6;
+		color: var(--muted-foreground);
+	}
+	.get-card :is(p, .repo) code {
+		font-family: var(--font-mono);
+		font-size: 0.82em;
+		color: var(--foreground);
+	}
+	.repo {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+		border: 1px solid var(--border);
+		border-radius: 0.6rem;
+		background: var(--muted);
+		min-width: 0;
+		margin-bottom: 0.5rem;
+	}
+	.repo code {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.repo-copy {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.3rem 0.6rem;
+		border-radius: 0.4rem;
+		border: 1px solid var(--border);
+		background: var(--card);
+		font-size: 0.72rem;
+		font-weight: 500;
+		color: var(--foreground);
+		transition: border-color 160ms ease;
+	}
+	.repo-copy:hover {
+		border-color: var(--primary);
+	}
+
+	.cta-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		height: 2.75rem;
+		padding: 0 1.25rem;
+		border-radius: 0.6rem;
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--primary-foreground);
+		border: 1px solid
+			color-mix(in oklab, var(--primary-foreground) 40%, transparent);
+		transition:
+			background-color 160ms ease,
+			transform 160ms ease;
+	}
+	.cta-btn:hover {
+		background: color-mix(in oklab, var(--primary-foreground) 12%, transparent);
+	}
+	.cta-btn-solid {
+		background: var(--primary-foreground);
+		color: var(--primary);
+		border-color: transparent;
+	}
+	.cta-btn-solid:hover {
+		background: var(--primary-foreground);
+		transform: translateY(-1px);
+	}
+</style>
+
+<script>
+	function initCopy() {
+		document
+			.querySelectorAll<HTMLButtonElement>("[data-copy]:not([data-wired])")
+			.forEach((button) => {
+				button.dataset.wired = "true";
+				button.addEventListener("click", async () => {
+					const label = button.querySelector("[data-copy-label]");
+					try {
+						await navigator.clipboard.writeText(button.dataset.copy ?? "");
+						if (label) label.textContent = "Copied";
+					} catch {
+						if (label) label.textContent = "Press ctrl c";
+					}
+					setTimeout(() => {
+						if (label) label.textContent = "Copy";
+					}, 1600);
+				});
+			});
+	}
+
+	initCopy();
+	document.addEventListener("astro:page-load", initCopy);
+</script>
