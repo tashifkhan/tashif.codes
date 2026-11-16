@@ -148,6 +148,28 @@ async function fetchRepoLanguages(fullName: string): Promise<string[] | null> {
 		.map(([lang]) => lang);
 }
 
+/**
+ * The repo a fork was made from. The stats API leaves `original_repo` empty,
+ * so read `parent` from GitHub. Cached to disk because the parent never
+ * changes; skipped without a token to save the anonymous rate limit.
+ */
+async function fetchForkParent(name: string): Promise<Project["originalRepo"]> {
+	const key = `gh-parent-${OWNER}__${name}`.toLowerCase();
+	const toRepo = (p: any): Project["originalRepo"] =>
+		p?.full_name
+			? { name: p.name, full_name: p.full_name, owner: p.owner?.login ?? p.full_name.split("/")[0], url: p.html_url }
+			: null;
+	const cached = readCache<{ parent: any }>(key);
+	if (cached) return toRepo(cached.parent);
+	if (!GH_TOKEN) return null;
+	const data = await fetchJsonCached<any>(`https://api.github.com/repos/${OWNER}/${name}`, `gh-repo-${OWNER}__${name}`.toLowerCase(), {
+		headers: GH_HEADERS,
+	});
+	if (!data || typeof data !== "object" || !("fork" in data)) return null;
+	writeCache(key, { parent: data.parent ?? null });
+	return toRepo(data.parent);
+}
+
 /** Resolve promises in batches so we never open 100 sockets at once. */
 async function inBatches<T, R>(
 	items: T[],
@@ -517,6 +539,17 @@ async function fetchAllProjects(): Promise<Project[]> {
 		}
 	});
 
+	// Parents for forks the stats API didn't resolve.
+	const forkParents = new Map<string, Project["originalRepo"]>();
+	await inBatches(
+		repos.filter((r: any) => (r.is_fork ?? r.fork) && !r.original_repo && typeof r.title === "string"),
+		6,
+		async (r: any) => {
+			const parent = await fetchForkParent(r.title);
+			if (parent) forkParents.set(r.title.toLowerCase(), parent);
+		}
+	);
+
 	// Map repos -> Project objects
     const FORK_MAPPINGS: Record<string, string> = {
         "jsjiit": "codeblech/jsjiit",
@@ -570,7 +603,7 @@ async function fetchAllProjects(): Promise<Project[]> {
 		const isPinned = pinnedNames.has(titleFormatted.toLowerCase());
         const projectSlug = slugify(project.title);
         
-        const originalRepo = project.original_repo ?? null;
+        const originalRepo = project.original_repo ?? forkParents.get(project.title.toLowerCase()) ?? null;
         const parentRepo = originalRepo?.full_name || FORK_MAPPINGS[projectSlug] || FORK_MAPPINGS[project.title.toLowerCase()] || undefined;
 
 		// Priority: Star map (parent if exists, else self) -> project.stars -> project.stargazers -> 0
