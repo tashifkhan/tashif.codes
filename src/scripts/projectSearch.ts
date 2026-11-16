@@ -12,7 +12,6 @@ export interface ProjectSearchDetail {
 	term?: string;
 	showLiveOnly?: boolean;
 	showReleasesOnly?: boolean;
-	list?: string;
 }
 
 const CARD = "[data-project-item-card]";
@@ -25,27 +24,6 @@ function fuzzyMatch(text: string, query: string): boolean {
 		if (text[i] === query[qi]) qi++;
 	}
 	return qi === query.length;
-}
-
-function normalizeRepoName(value?: string | null): string {
-	if (!value) return "";
-	const cleaned = value
-		.toLowerCase()
-		.trim()
-		.replace(/[?#].*$/, "")
-		.replace(/\.git$/, "")
-		.replace(/\/+$/, "");
-	const parts = cleaned.split("/").filter(Boolean);
-	return parts[parts.length - 1] || "";
-}
-
-function starListRepos(list?: string): Set<string> | null {
-	if (!list || list === "all-projects") return null;
-	const starLists = (window as any).__STAR_LISTS__ as
-		| { name: string; repositories?: string[] }[]
-		| undefined;
-	const selected = starLists?.find((l) => l.name === list);
-	return new Set((selected?.repositories || []).map((r) => normalizeRepoName(r)).filter(Boolean));
 }
 
 /** Remember each card's grid and page position the first time it's seen. */
@@ -78,9 +56,7 @@ export function applyProjectSearch(detail: ProjectSearchDetail): void {
 	register(cards);
 
 	const query = (detail.term || "").trim().toLowerCase();
-	const listRepos = starListRepos(detail.list);
-	const filtering =
-		Boolean(query) || Boolean(detail.showLiveOnly) || Boolean(detail.showReleasesOnly) || listRepos !== null;
+	const filtering = Boolean(query) || Boolean(detail.showLiveOnly) || Boolean(detail.showReleasesOnly);
 
 	const results = document.querySelector<HTMLElement>("[data-project-results]");
 	const resultsGrid = document.querySelector<HTMLElement>("[data-project-results-grid]");
@@ -112,17 +88,13 @@ export function applyProjectSearch(detail: ProjectSearchDetail): void {
 		const hasLiveLink = card.querySelector("[data-live-link]") !== null || card.dataset.hasLiveLink === "true";
 		const hasReleases =
 			card.querySelector("[data-has-releases='true']") !== null || card.dataset.hasReleases === "true";
-		const inList =
-			listRepos === null ||
-			listRepos.has(normalizeRepoName(card.querySelector("[data-github-link]")?.getAttribute("data-url")));
 
 		const isExact = !query || fields.some((f) => f.includes(query));
 		const isFuzzy = !isExact && fields.some((f) => fuzzyMatch(f, query));
 		const matches =
 			(isExact || isFuzzy) &&
 			(!detail.showLiveOnly || hasLiveLink) &&
-			(!detail.showReleasesOnly || hasReleases) &&
-			inList;
+			(!detail.showReleasesOnly || hasReleases);
 
 		card.style.display = matches ? "" : "none";
 		if (!matches) misses.push(card);

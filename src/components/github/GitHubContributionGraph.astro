@@ -1,7 +1,6 @@
 ---
 import { Calendar } from "lucide-react";
 import EmptyState from "../common/EmptyState.astro";
-import { starLists } from "../../data/starLists";
 import { githubUsernames, githubStatsApiBase, personalGithubUsername } from "../../data/profile";
 import YearSelect from "../projects/YearSelect";
 
@@ -149,7 +148,6 @@ function formatDateRange(): string {
 	return `${fromDate} – ${toDate}`;
 }
 
-const starredLists = starLists || [];
 ---
 
 <section
@@ -719,20 +717,3 @@ const starredLists = starLists || [];
 	});
 </script>
 
-<script>
-// Star list buttons -> switch to Projects tab & apply list filter
-import { trigger } from "@/lib/haptics";
-
-document.addEventListener('astro:page-load', () => {
-	const buttons = document.querySelectorAll('[data-star-list-select]');
-	buttons.forEach(btn => {
-		btn.addEventListener('click', () => {
-			trigger('selection');
-			const name = (btn as HTMLElement).getAttribute('data-star-list-select');
-			if (!name) return;
-			localStorage.setItem('pending_star_list_select', name);
-			document.dispatchEvent(new CustomEvent('open-star-list', { detail: { name } }));
-		});
-	});
-});
-</script>

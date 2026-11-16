@@ -508,27 +508,6 @@ export async function refreshProjects(): Promise<string> {
 		}
 	});
 
-	const lists = await fetchJson<
-		{
-			name: string;
-			url: string;
-			repositories?: string[];
-			description?: string;
-			num_repos?: number;
-		}[]
-	>(`${GH_STATS}/tashifkhan/star-lists?include_repos=true`);
-	if (Array.isArray(lists)) {
-		// @ts-expect-error global bridge used by ProjectFilters
-		window.__STAR_LISTS__ = lists.map((l) => ({
-			name: l.name,
-			url: l.url,
-			repositories: l.repositories || [],
-			description: l.description,
-			num_repos: l.num_repos,
-		}));
-		document.dispatchEvent(new CustomEvent("star-lists-refreshed"));
-	}
-
 	const fetchedAt = nowIso();
 	writeStoredFetchedAt("projects", fetchedAt);
 	dispatchLiveRefreshed("projects", fetchedAt);

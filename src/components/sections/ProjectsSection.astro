@@ -4,7 +4,6 @@ import ProjectGrid from "../projects/ProjectGrid.astro";
 import DataFreshness from "../common/DataFreshness";
 import { ChartPie } from "lucide-react";
 import { allProjects, projectsFetchedAt } from "../../data/projects";
-import { starLists } from "../../data/starLists";
 import { fetchAnalyticsProjects } from "../../data/analyticsProjects";
 import type { Project } from "@/types";
 
@@ -71,7 +70,7 @@ const { active = false } = Astro.props;
 		</div>
 	</div>
 
-	<ProjectFilters client:visible starLists={starLists} />
+	<ProjectFilters client:visible />
 	<ProjectGrid projects={projects} analyticsProjects={analyticsProjects} />
 	<p data-project-empty role="status" hidden class="py-8 text-center text-sm text-muted-foreground">No projects match these filters. Try clearing a filter or changing your search.</p>
 </div>

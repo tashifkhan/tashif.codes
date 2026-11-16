@@ -277,21 +277,6 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 	// Project search and filter functionality lives in src/scripts/projectSearch.ts
 	initProjectSearch();
 
-	// When a starred list is requested from GitHub section
-	document.addEventListener("open-star-list", (e: Event) => {
-		const name = (e as CustomEvent).detail?.name as string | undefined;
-		if (!name) return;
-		navigateToTab("projects");
-		// store temporarily in case ProjectFilters hasn't mounted yet
-		localStorage.setItem("pending_star_list_select", name);
-		// Dispatch project-list-select for already-mounted ProjectFilters
-		setTimeout(() => {
-			document.dispatchEvent(
-				new CustomEvent("project-list-select", { detail: { list: name } })
-			);
-		}, 80);
-	});
-
 	// Blog search and tag filters combine: a card shows only if it matches both.
 	const blogFilter = { term: "", categories: ["all"] as string[] };
 
@@ -401,40 +386,6 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 			trigger("light");
 			localStorage.removeItem(WELCOME_KEY);
 			applyWelcomeState(false);
-		});
-
-		// Star list chips: toggle a panel of the list's repos (accordion — one open at a time)
-		{
-			const root = document.querySelector<HTMLElement>('[data-star-lists]');
-			const chips = Array.from(
-				root?.querySelectorAll<HTMLElement>('[data-star-list]') ?? []
-			);
-			const panelFor = (chip: HTMLElement) =>
-				root?.querySelector<HTMLElement>(
-					`#${CSS.escape(chip.getAttribute('aria-controls') || '')}`
-				) ?? null;
-
-			chips.forEach((chip) =>
-				chip.addEventListener('click', () => {
-					trigger('light');
-					const willOpen = chip.getAttribute('aria-expanded') !== 'true';
-					chips.forEach((other) => {
-						other.setAttribute('aria-expanded', 'false');
-						panelFor(other)?.setAttribute('hidden', '');
-					});
-					if (willOpen) {
-						chip.setAttribute('aria-expanded', 'true');
-						panelFor(chip)?.removeAttribute('hidden');
-					}
-				})
-			);
-		}
-
-		// Open Projects button (in GitHub Star Lists callout)
-		document.querySelector('[data-open-projects]')?.addEventListener('click', () => {
-			trigger('light');
-			navigateToTab('projects');
-			window.scrollTo({ top: 0, behavior: 'smooth' });
 		});
 
 		// data-haptic-* elements are wired globally by the shared Haptics component.
