@@ -1,9 +1,10 @@
 ---
 /**
- * The single accent dot that follows the pointer. It stays out of the
- * accessibility tree, never blocks clicks, and only runs on fine pointers in
- * either skin when motion is allowed. The color comes from the active skin's
- * primary token.
+ * The ring that follows the pointer, ported from taf.sh. At rest it's a hollow
+ * ring that inverts what's under it; over anything clickable it grows into an
+ * accent-colored ring, and it tightens while the button is held. It stays out
+ * of the accessibility tree, never blocks clicks, and only runs on fine
+ * pointers when motion is allowed. Styles live in studio-skin.css.
  *
  * The native cursor stays visible. This is an accent, not a replacement.
  */
@@ -31,13 +32,20 @@
 			let raf = 0;
 			let visible = false;
 			let seen = false;
+			let hovering = false;
+			const INTERACTIVE = "a[href], button, input, textarea, select, label, summary, [role='button'], [role='tab'], [data-cursor-hover]";
 
 			const bind = () => {
 				root = document.querySelector<HTMLElement>("[data-dot-cursor]");
 				dot = root?.querySelector<HTMLElement>("span") ?? null;
 				visible = false;
 				seen = false;
-				if (root) root.dataset.visible = "false";
+				hovering = false;
+				if (root) {
+					root.dataset.visible = "false";
+					root.dataset.hover = "false";
+					root.dataset.pressed = "false";
+				}
 			};
 
 			const setVisible = (next: boolean) => {
@@ -75,11 +83,23 @@
 					targetY = event.clientY;
 				}
 
+				const over = event.target instanceof Element && event.target.closest(INTERACTIVE) !== null;
+				if (over !== hovering && root) {
+					hovering = over;
+					root.dataset.hover = String(over);
+				}
+
 				if (!visible) setVisible(true);
 				if (!raf) raf = requestAnimationFrame(frame);
 			};
 
 			window.addEventListener("pointermove", move, { passive: true });
+			const press = (down: boolean) => (event: PointerEvent) => {
+				if (event.pointerType === "touch" || !root) return;
+				root.dataset.pressed = String(down);
+			};
+			window.addEventListener("pointerdown", press(true), { passive: true });
+			window.addEventListener("pointerup", press(false), { passive: true });
 			document.documentElement.addEventListener("mouseleave", () => setVisible(false));
 			window.addEventListener("blur", () => setVisible(false));
 			document.addEventListener("astro:page-load", bind);

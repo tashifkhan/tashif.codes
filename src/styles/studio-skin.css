@@ -254,21 +254,53 @@ html[data-skin="studio"] .language-label {
 	overflow: hidden;
 }
 
+/* A hollow ring that inverts what's under it, and grows into an accent ring
+   over anything clickable. Ported from taf.sh's studio cursor. The blend
+   mode sits on the fixed container, because that is the layer that blends
+   with the page; the ring inside it would only blend with the container. */
+.dot-cursor {
+	mix-blend-mode: difference;
+	--cursor-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dot-cursor[data-hover="true"] {
+	mix-blend-mode: normal;
+}
+
 .dot-cursor span {
 	position: absolute;
 	top: 0;
 	left: 0;
-	width: 8px;
-	height: 8px;
+	box-sizing: border-box;
+	width: 12px;
+	height: 12px;
 	border-radius: 999px;
-	background: var(--primary);
+	border: 1.5px solid var(--foreground);
+	background: transparent;
 	opacity: 0;
-	transition: opacity 160ms ease;
+	transition:
+		opacity 160ms ease,
+		width 350ms var(--cursor-ease),
+		height 350ms var(--cursor-ease),
+		border-color 350ms var(--cursor-ease),
+		background-color 350ms var(--cursor-ease);
 	will-change: transform;
 }
 
 .dot-cursor[data-visible="true"] span {
-	opacity: 0.95;
+	opacity: 1;
+}
+
+.dot-cursor[data-hover="true"] span {
+	width: 36px;
+	height: 36px;
+	border-color: var(--primary);
+	background: color-mix(in oklab, var(--primary) 12%, transparent);
+}
+
+.dot-cursor[data-pressed="true"] span {
+	width: 28px;
+	height: 28px;
 }
 
 @media (hover: hover) and (pointer: fine) {
