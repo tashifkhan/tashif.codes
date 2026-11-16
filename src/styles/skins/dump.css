@@ -95,3 +95,31 @@ html[data-skin="dump"] ::selection {
 	background: var(--sk-yellow);
 	color: var(--sk-on-yellow);
 }
+
+/* Colour combos. Pink is the default; these swap the stamp colour. */
+html[data-skin="dump"][data-color="blue"] {
+	--sk-pink: #1d4ed8;
+	--sk-on-pink: #fffef8;
+}
+html[data-skin="dump"][data-color="blue"].dark {
+	--sk-pink: #7aa2ff;
+	--sk-on-pink: #0c0e11;
+}
+html[data-skin="dump"][data-color="moss"] {
+	--sk-pink: #1f7a4c;
+	--sk-on-pink: #fffef8;
+	--sk-yellow: #ffd6e2;
+}
+html[data-skin="dump"][data-color="moss"].dark {
+	--sk-pink: #34d399;
+	--sk-on-pink: #0c0e11;
+	--sk-yellow: #ff8fb1;
+}
+html[data-skin="dump"][data-color="rust"] {
+	--sk-pink: #c2410c;
+	--sk-on-pink: #fffef8;
+}
+html[data-skin="dump"][data-color="rust"].dark {
+	--sk-pink: #fb923c;
+	--sk-on-pink: #0c0e11;
+}

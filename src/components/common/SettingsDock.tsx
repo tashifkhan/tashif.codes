@@ -29,11 +29,18 @@ import {
 	systemReducesMotion,
 } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import {
+	DEFAULT_SKIN,
+	SKIN_COLORS_KEY,
+	SKIN_KEY,
+	SKIN_STYLES,
+	type SkinId,
+} from "@/lib/skins";
 
 type ThemeMode = "light" | "dark" | "system";
-type Skin = "simple" | "studio" | "dump" | "sleeck" | "material";
+type Skin = SkinId;
 
-/** Stylesheets for the skins that load on demand, set by Layout.astro. */
+/** Stylesheets for the styles that load on demand, set by Layout.astro. */
 declare global {
 	interface Window {
 		__skinCss?: Record<string, string>;
@@ -46,15 +53,8 @@ const MODES = [
 	{ value: "system", label: "System", icon: Monitor },
 ] as const;
 
-const ACCENTS = [
-	{ value: "simple", label: "Orange accent", color: "#f97316" },
-	{ value: "studio", label: "Green accent", color: "#0f7a6c" },
-	{ value: "dump", label: "Dump, paper and marker ink", color: "#ff5d8f" },
-	{ value: "sleeck", label: "Sleeck, lavender and lime", color: "#c4f042" },
-	{ value: "material", label: "Material 3", color: "#65558f" },
-] as const;
-
-const SKINS = ACCENTS.map((accent) => accent.value) as readonly Skin[];
+const styleOf = (skin: Skin) =>
+	SKIN_STYLES.find((style) => style.id === skin) ?? SKIN_STYLES[0];
 
 function readMode(): ThemeMode {
 	if (typeof window === "undefined") return "system";
@@ -66,8 +66,25 @@ function readMode(): ThemeMode {
 
 function readSkin(): Skin {
 	if (typeof document === "undefined") return "studio";
-	const current = document.documentElement.dataset.skin as Skin;
-	return SKINS.includes(current) ? current : "studio";
+	const current = document.documentElement.dataset.skin;
+	return SKIN_STYLES.some((style) => style.id === current)
+		? (current as Skin)
+		: DEFAULT_SKIN;
+}
+
+function readSavedColors(): Record<string, string> {
+	try {
+		return JSON.parse(localStorage.getItem(SKIN_COLORS_KEY) || "{}") ?? {};
+	} catch {
+		return {};
+	}
+}
+
+/** The colour combo a style is showing: its saved one, or its first. */
+function colorFor(skin: Skin): string {
+	const style = styleOf(skin);
+	const saved = readSavedColors()[skin];
+	return style.colors.some((c) => c.id === saved) ? saved : style.colors[0].id;
 }
 
 function systemIsDark(): boolean {
@@ -110,14 +127,29 @@ function loadSkin(skin: Skin): Promise<void> {
 	});
 }
 
+/** Sets a style's colour combo. The first combo is the default: no attribute. */
+function applyColor(skin: Skin, color: string, save = true) {
+	const root = document.documentElement;
+	if (color === styleOf(skin).colors[0].id) delete root.dataset.color;
+	else root.dataset.color = color;
+	if (!save) return;
+	try {
+		localStorage.setItem(
+			SKIN_COLORS_KEY,
+			JSON.stringify({ ...readSavedColors(), [skin]: color }),
+		);
+	} catch {}
+}
+
 function applySkin(skin: Skin) {
 	document.documentElement.dataset.skin = skin;
 	// Only the active skin's stylesheet stays linked.
 	document
 		.querySelectorAll(`link[data-skin-css]:not([data-skin-css="${skin}"])`)
 		.forEach((link) => link.remove());
+	applyColor(skin, colorFor(skin), false);
 	try {
-		localStorage.setItem("tashif-skin", skin);
+		localStorage.setItem(SKIN_KEY, skin);
 	} catch {}
 }
 
@@ -172,7 +204,8 @@ function runViewTransition(
 export default function SettingsDock() {
 	const [mounted, setMounted] = useState(false);
 	const [mode, setMode] = useState<ThemeMode>("system");
-	const [skin, setSkin] = useState<Skin>("studio");
+	const [skin, setSkin] = useState<Skin>(DEFAULT_SKIN);
+	const [color, setColor] = useState<string>(SKIN_STYLES[0].colors[0].id);
 	const [hapticsOn, setHapticsOn] = useState(false);
 	const [reduceOn, setReduceOn] = useState(false);
 	const [systemReduce, setSystemReduce] = useState(false);
@@ -191,6 +224,7 @@ export default function SettingsDock() {
 		const sync = () => {
 			setMode(readMode());
 			setSkin(readSkin());
+			setColor(colorFor(readSkin()));
 			setHapticsOn(hapticsEnabled());
 			setReduceOn(motionReduced());
 			setSystemReduce(systemReducesMotion());
@@ -205,7 +239,8 @@ export default function SettingsDock() {
 		const onStorage = (event: StorageEvent) => {
 			if (
 				event.key === "theme" ||
-				event.key === "tashif-skin" ||
+				event.key === SKIN_KEY ||
+				event.key === SKIN_COLORS_KEY ||
 				event.key === "site-haptics-enabled" ||
 				event.key === reduceMotionKey
 			) {
@@ -344,7 +379,20 @@ export default function SettingsDock() {
 			runViewTransition("skin", origin, () => {
 				applySkin(next);
 				setSkin(next);
+				setColor(colorFor(next));
 			});
+		});
+	};
+
+	const chooseColor = (
+		next: string,
+		event: MouseEvent<HTMLButtonElement>,
+	) => {
+		trigger("selection");
+		if (next === color) return;
+		runViewTransition("skin", event.currentTarget, () => {
+			applyColor(skin, next);
+			setColor(next);
 		});
 	};
 
@@ -446,40 +494,127 @@ export default function SettingsDock() {
 
 						<div className="mt-2 grid grid-cols-2 gap-2">
 							<div className="col-span-2 rounded-[1.35rem] border border-border/50 bg-background/40 p-2.5">
-								<p className="text-[10px] font-medium tracking-wide text-muted-foreground">
-									Theme
+								<p
+									id="dock-style-label"
+									className="text-xs font-medium text-muted-foreground"
+								>
+									Style
 								</p>
 								<div
 									role="radiogroup"
-									aria-label="Theme"
-									className="mt-2 flex items-center gap-2"
+									aria-labelledby="dock-style-label"
+									className="mt-2 grid grid-cols-5 gap-1.5"
 								>
-									{ACCENTS.map(({ value, label, color }) => {
-										const active = skin === value;
+									{SKIN_STYLES.map((style) => {
+										const active = skin === style.id;
+										// Each tile previews the combo that style would open with.
+										const shown =
+											style.colors.find(
+												(c) => c.id === (active ? color : colorFor(style.id)),
+											) ?? style.colors[0];
+										const ink = "#191713";
 										return (
-											<Button
-												key={value}
+											<button
+												key={style.id}
 												type="button"
 												role="radio"
 												aria-checked={active}
-												aria-label={label}
-												title={label}
 												data-haptic="manual"
-												variant="ghost"
-												size="icon"
-												onClick={(event) => chooseSkin(value, event)}
+												onClick={(event) => chooseSkin(style.id, event)}
 												className={cn(
-													"h-8 w-8 rounded-full p-0 transition-transform hover:scale-105",
-													active
-														? "ring-2 ring-foreground/60 ring-offset-2 ring-offset-card"
-														: "",
+													"group/style flex flex-col items-stretch gap-1.5 rounded-xl p-1 text-center outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+													active ? "bg-foreground/10" : "hover:bg-foreground/5",
 												)}
 											>
 												<span
-													className="h-5 w-5 rounded-full ring-1 ring-black/10"
-													style={{ backgroundColor: color }}
+													aria-hidden="true"
+													className="relative block h-11 overflow-hidden rounded-lg ring-1 ring-black/10"
+													style={{ backgroundColor: shown.paper }}
+												>
+													{/* A sample card in the style's own corners, edge and shadow. */}
+													<span
+														className="absolute inset-x-1.5 top-2 bottom-[-6px] block bg-white/90 px-1.5 pt-1.5"
+														style={{
+															borderRadius: style.radius,
+															border:
+																style.edge === "ink"
+																	? `1.5px solid ${ink}`
+																	: style.edge === "hair"
+																		? "1px solid rgb(0 0 0 / 0.14)"
+																		: "none",
+															boxShadow: style.stamp ? `2px 2px 0 ${ink}` : "none",
+														}}
+													>
+														<span
+															className="block h-1.5 w-6"
+															style={{
+																backgroundColor: shown.accent,
+																borderRadius: style.radius > 8 ? 999 : style.radius / 3,
+															}}
+														/>
+														<span
+															className="mt-1 block h-1 w-full rounded-full"
+															style={{ backgroundColor: "rgb(0 0 0 / 0.16)" }}
+														/>
+													</span>
+												</span>
+												<span
+													className={cn(
+														"text-[11px] leading-none",
+														active
+															? "font-semibold text-foreground"
+															: "text-muted-foreground group-hover/style:text-foreground",
+													)}
+												>
+													{style.name}
+												</span>
+											</button>
+										);
+									})}
+								</div>
+
+								<div className="mt-3 flex items-baseline justify-between gap-3">
+									<p
+										id="dock-color-label"
+										className="text-xs font-medium text-muted-foreground"
+									>
+										Colour
+									</p>
+									<p className="truncate text-xs text-foreground">
+										{styleOf(skin).colors.find((c) => c.id === color)?.name}
+									</p>
+								</div>
+								<div
+									role="radiogroup"
+									aria-labelledby="dock-color-label"
+									className="mt-2 flex flex-wrap items-center gap-2"
+								>
+									{styleOf(skin).colors.map((option) => {
+										const active = color === option.id;
+										return (
+											<button
+												key={option.id}
+												type="button"
+												role="radio"
+												aria-checked={active}
+												aria-label={option.name}
+												title={option.name}
+												data-haptic="manual"
+												onClick={(event) => chooseColor(option.id, event)}
+												className={cn(
+													"h-8 w-8 rounded-full p-0.5 outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring",
+													active &&
+														"ring-2 ring-foreground/70 ring-offset-2 ring-offset-card",
+												)}
+											>
+												{/* Paper on one half, accent on the other: the combo at a glance. */}
+												<span
+													className="block h-full w-full rounded-full ring-1 ring-black/15"
+													style={{
+														background: `linear-gradient(135deg, ${option.paper} 0 50%, ${option.accent} 50% 100%)`,
+													}}
 												/>
-											</Button>
+											</button>
 										);
 									})}
 								</div>

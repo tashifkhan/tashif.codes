@@ -868,3 +868,73 @@ html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) [data-
 		display: none;
 	}
 }
+
+/* ---------------------------------------------------------------------------
+ * Colour combos for the two built-in styles. Each style's first combo is its
+ * own palette and sets no attribute. The names match src/lib/skins.ts.
+ * ------------------------------------------------------------------------ */
+
+html[data-skin="studio"][data-color="amber"] {
+	--primary: #b45309;
+	--primary-foreground: #ffffff;
+	--accent: color-mix(in oklab, var(--primary) 12%, transparent);
+	--accent-foreground: var(--primary);
+}
+html[data-skin="studio"][data-color="amber"].dark {
+	--primary: #fbbf24;
+	--primary-foreground: #241a02;
+}
+html[data-skin="studio"][data-color="indigo"] {
+	--primary: #4338ca;
+	--primary-foreground: #ffffff;
+	--accent: color-mix(in oklab, var(--primary) 12%, transparent);
+	--accent-foreground: var(--primary);
+}
+html[data-skin="studio"][data-color="indigo"].dark {
+	--primary: #a5b4fc;
+	--primary-foreground: #12143a;
+}
+html[data-skin="studio"][data-color="rose"] {
+	--primary: #be123c;
+	--primary-foreground: #ffffff;
+	--accent: color-mix(in oklab, var(--primary) 12%, transparent);
+	--accent-foreground: var(--primary);
+}
+html[data-skin="studio"][data-color="rose"].dark {
+	--primary: #fda4af;
+	--primary-foreground: #3a0a16;
+}
+html[data-skin="simple"][data-color="blue"] {
+	--primary: #2563eb;
+	--primary-foreground: #ffffff;
+}
+html[data-skin="simple"][data-color="blue"].dark {
+	--primary: #60a5fa;
+	--primary-foreground: #0b1220;
+}
+html[data-skin="simple"][data-color="violet"] {
+	--primary: #7c3aed;
+	--primary-foreground: #ffffff;
+}
+html[data-skin="simple"][data-color="violet"].dark {
+	--primary: #a78bfa;
+	--primary-foreground: #160b33;
+}
+html[data-skin="simple"][data-color="rose"] {
+	--primary: #e11d48;
+	--primary-foreground: #ffffff;
+}
+html[data-skin="simple"][data-color="rose"].dark {
+	--primary: #fb7185;
+	--primary-foreground: #33070f;
+}
+
+/* Whatever combo is on, the tokens that follow the accent follow it. */
+html[data-color]:is([data-skin="simple"], [data-skin="studio"]) {
+	--ring: var(--primary);
+	--sidebar-primary: var(--primary);
+	--sidebar-primary-foreground: var(--primary-foreground);
+	--sidebar-ring: var(--primary);
+	--chart-1: var(--primary);
+	--primary-color: var(--primary);
+}

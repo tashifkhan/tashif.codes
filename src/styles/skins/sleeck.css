@@ -89,3 +89,56 @@ html[data-skin="sleeck"] .ld-btn:active {
 html[data-skin="sleeck"] :is([data-landing] .ld-display, [data-landing] h2) {
 	letter-spacing: -0.06em;
 }
+
+/* Colour combos: a paper and a highlight. Lavender and lime is the default. */
+html[data-skin="sleeck"][data-color="mint"] {
+	--sk-paper: #d6f5e6;
+	--sk-well: #bfe6d2;
+	--sk-line: #8fc4aa;
+	--sk-muted: #3f5e50;
+	--sk-lime: #ff7ac6;
+	--sk-on-lime: #0a0714;
+}
+html[data-skin="sleeck"][data-color="mint"].dark {
+	--sk-edge: #3d7a61;
+	--sk-paper: #0f231b;
+	--sk-card: #0a1712;
+	--sk-well: #173428;
+	--sk-line: #2c5a47;
+	--sk-muted: #a9cdbd;
+	--sk-ink: #e0fff0;
+}
+html[data-skin="sleeck"][data-color="peach"] {
+	--sk-paper: #ffe2d1;
+	--sk-well: #f5cdb8;
+	--sk-line: #d6a68c;
+	--sk-muted: #6b4a3a;
+	--sk-lime: #3d5afe;
+	--sk-on-lime: #ffffff;
+}
+html[data-skin="sleeck"][data-color="peach"].dark {
+	--sk-edge: #7d4f3b;
+	--sk-paper: #2a1710;
+	--sk-card: #1c0f0a;
+	--sk-well: #3a2218;
+	--sk-line: #5e3a2b;
+	--sk-muted: #d9b8a8;
+	--sk-ink: #ffeadf;
+}
+html[data-skin="sleeck"][data-color="sky"] {
+	--sk-paper: #d6ecff;
+	--sk-well: #bfdcf5;
+	--sk-line: #8fb6d9;
+	--sk-muted: #3d566b;
+	--sk-lime: #ffd60a;
+	--sk-on-lime: #0a0714;
+}
+html[data-skin="sleeck"][data-color="sky"].dark {
+	--sk-edge: #3d658a;
+	--sk-paper: #0e1c2b;
+	--sk-card: #091420;
+	--sk-well: #16293c;
+	--sk-line: #2c4a66;
+	--sk-muted: #a9c4dc;
+	--sk-ink: #e0f1ff;
+}
