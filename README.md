@@ -63,7 +63,7 @@ every project page is its github readme by default. to replace one, add `src/lan
 
 the header, tabs and sticky bar stay the same on every project. the part below them is yours. `src/components/landing` has the pieces most pages want (hero, framed screenshots, lazy videos, pinned feature chapters, a clip switcher, rows, a sideways rail, faq), and plain markup works wherever those run out. they read the `--ld-*` tokens in `landing.css`, which come from the site theme, so a landing follows the accent and light or dark mode on its own.
 
-a landing can also `export const landing` to set a tagline, an accent colour and the header button. [`src/landings/paisa.astro`](src/landings/paisa.astro) is the one to copy. its media lives in `public/landings/paisa`.
+a landing can also `export const landing` to set a tagline and the header button. colours always come from the visitor's theme and accent. [`src/landings/paisa.astro`](src/landings/paisa.astro) is the one to copy. its media lives in `public/landings/paisa`.
 
 ## f-droid, for the curious
 
