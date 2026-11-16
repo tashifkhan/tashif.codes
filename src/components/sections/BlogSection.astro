@@ -1,11 +1,9 @@
 ---
 import BlogFilters from "../blog/BlogFilters";
-import BlogCard from "../blog/BlogCard.astro";
+import BlogList from "../blog/BlogList.astro";
 import EmptyState from "../common/EmptyState.astro";
 import DataFreshness from "../common/DataFreshness";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowUpRight, ExternalLink, Rss } from "lucide-react";
+import { ArrowUpRight, Rss } from "lucide-react";
 import { blogPosts, blogFetchedAt, blogTags, avgReadingMinutes, numBlogPosts } from "../../data/blog";
 
 interface Props {
@@ -82,68 +80,23 @@ const { active = false } = Astro.props;
 			</a>
 		</div>
 	</div>
-	<BlogFilters client:visible tags={blogTags} />
+	<BlogFilters client:visible tags={blogTags} listId="blog-list-dashboard" />
 	{
 		blogPosts.length > 0 ? (
-			<div class="space-y-10">
-				<section class="mb-4">
-					<BlogCard post={blogPosts[0]} variant="featured" index={0} />
-				</section>
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-					{blogPosts.slice(1).map((post, idx) => (
-						<BlogCard post={post} variant="default" index={idx + 1} />
-					))}
+			<>
+				<BlogList id="blog-list-dashboard" posts={blogPosts} eager={active} />
+				<div class="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-5 text-sm text-muted-foreground">
+					<span>New posts reach the RSS feed first.</span>
+					<a
+						href="/rss.xml"
+						data-haptic-nav
+						class="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3.5 py-2 text-sm font-semibold text-primary hover:bg-primary/15"
+					>
+						<Rss size={14} />
+						Subscribe
+					</a>
 				</div>
-				<div class="pt-10">
-					<Card className="w-full text-center border-0 shadow-lg bg-gradient-to-br from-primary/5 via-transparent to-primary/5 dark:from-primary/10 dark:via-transparent dark:to-primary/10">
-						<CardContent className="p-8 sm:p-10 space-y-6 relative overflow-hidden">
-							<div class="absolute inset-0 bg-grid-slate-200/50 dark:bg-grid-slate-800/50 [mask-image:linear-gradient(to_bottom,transparent,black,transparent)] pointer-events-none" />
-							<div class="space-y-3 relative z-10">
-								<h3 class="text-2xl font-bold text-foreground dark:text-white tracking-tight">
-									Want to read more?
-								</h3>
-								<p class="text-muted-foreground dark:text-muted-foreground max-w-lg mx-auto leading-relaxed">
-									Browse the full post list on this site, or open the
-									standalone blog archive.
-								</p>
-							</div>
-							<div class="flex flex-wrap justify-center gap-3 relative z-10">
-								<Button
-									size="lg"
-									className="rounded-full px-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md motion-control"
-									asChild
-								>
-									<a
-										href="/blog/archive"
-										data-haptic-nav
-										class="flex items-center gap-2"
-									>
-										Browse the archive
-										<ArrowUpRight size={16} />
-									</a>
-								</Button>
-								<Button
-									size="lg"
-									variant="outline"
-									className="rounded-full px-8"
-									asChild
-								>
-									<a
-										href="https://blog.tashif.codes"
-										data-haptic-external
-										target="_blank"
-										rel="noopener noreferrer"
-										class="flex items-center gap-2"
-									>
-										blog.tashif.codes
-										<ExternalLink size={16} />
-									</a>
-								</Button>
-							</div>
-						</CardContent>
-					</Card>
-				</div>
-			</div>
+			</>
 		) : (
 			<div class="py-14">
 				<EmptyState

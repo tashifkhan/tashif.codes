@@ -1,7 +1,7 @@
 ---
 import PageShell from "../../layouts/PageShell.astro";
 import BlogFilters from "../../components/blog/BlogFilters";
-import BlogCard from "../../components/blog/BlogCard.astro";
+import BlogList from "../../components/blog/BlogList.astro";
 import EmptyState from "../../components/common/EmptyState.astro";
 import DataFreshness from "../../components/common/DataFreshness";
 import { ExternalLink, Rss } from "lucide-react";
@@ -99,20 +99,11 @@ import { blogPosts, blogFetchedAt, blogTags, avgReadingMinutes, numBlogPosts, to
 		</div>
 	</Fragment>
 
-	<BlogFilters client:load tags={blogTags} />
+	<BlogFilters client:load tags={blogTags} listId="blog-list-archive" />
 
 	{
 		blogPosts.length > 0 ? (
-			<div class="space-y-10">
-				<section class="mb-2">
-					<BlogCard post={blogPosts[0]} variant="featured" index={0} />
-				</section>
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-					{blogPosts.slice(1).map((post, idx) => (
-						<BlogCard post={post} variant="default" index={idx + 1} />
-					))}
-				</div>
-			</div>
+			<BlogList id="blog-list-archive" posts={blogPosts} eager />
 		) : (
 			<div class="py-14">
 				<EmptyState
@@ -127,77 +118,3 @@ import { blogPosts, blogFetchedAt, blogTags, avgReadingMinutes, numBlogPosts, to
 		)
 	}
 </PageShell>
-
-<script>
-	function fuzzySearch(text: string, query: string): boolean {
-		if (!query.trim()) return true;
-		const textLower = text.toLowerCase();
-		const queryLower = query.toLowerCase();
-		if (textLower.includes(queryLower)) return true;
-		let queryIndex = 0;
-		for (
-			let i = 0;
-			i < textLower.length && queryIndex < queryLower.length;
-			i++
-		) {
-			if (textLower[i] === queryLower[queryIndex]) queryIndex++;
-		}
-		return queryIndex === queryLower.length;
-	}
-
-	function applyBlogVisibility() {
-		const term = (window as any).__blogSearchTerm || "";
-		const categories: string[] = (window as any).__blogCategories || ["all"];
-		const cards = document.querySelectorAll<HTMLElement>("[data-blog-card]");
-
-		let visibleCount = 0;
-		cards.forEach((card) => {
-			const title = card.querySelector("[data-blog-title]")?.textContent || "";
-			const excerpt =
-				card.querySelector("[data-blog-excerpt]")?.textContent || "";
-			const tags = (card.getAttribute("data-blog-tags") || "")
-				.split(",")
-				.map((t) => t.trim().toLowerCase())
-				.filter(Boolean);
-
-			const matchesSearch =
-				!term.trim() ||
-				fuzzySearch(title, term) ||
-				fuzzySearch(excerpt, term) ||
-				tags.some((tag) => fuzzySearch(tag, term));
-
-			const matchesCategory =
-				categories.includes("all") ||
-				categories.some((c) => tags.includes(c.toLowerCase()));
-
-			const visible = matchesSearch && matchesCategory;
-			card.style.display = visible ? "" : "none";
-			if (visible) visibleCount++;
-			const parent = card.parentElement;
-			if (parent && parent !== document.body) {
-				// Keep grid cells tidy when a card is hidden
-				if (parent.childElementCount === 1) {
-					parent.style.display = visible ? "" : "none";
-				}
-			}
-		});
-
-		document.dispatchEvent(
-			new CustomEvent("blog-filter-result", {
-				detail: { visible: visibleCount, total: cards.length },
-			})
-		);
-	}
-
-	document.addEventListener("blog-search", (e: Event) => {
-		const detail = (e as CustomEvent).detail || {};
-		(window as any).__blogSearchTerm = detail.term || "";
-		applyBlogVisibility();
-	});
-
-	document.addEventListener("blog-category", (e: Event) => {
-		const detail = (e as CustomEvent).detail || {};
-		(window as any).__blogCategories = detail.categories || ["all"];
-		applyBlogVisibility();
-	});
-</script>
