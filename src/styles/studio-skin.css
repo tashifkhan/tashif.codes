@@ -245,45 +245,37 @@ html[data-skin="studio"] .language-label {
 
 /* --------------------------------------------------- dot cursor trail */
 
+/* A hollow ring that inverts what's under it, and grows into an accent ring
+   over anything clickable. Ported from taf.sh's studio cursor.
+
+   The ring itself is the fixed layer and carries the blend mode, as on
+   taf.sh. The wrapper stays a plain box: if it were positioned it would form
+   its own stacking context, and the ring would blend with that instead of
+   with the page. */
 .dot-cursor {
 	display: none;
-	position: fixed;
-	inset: 0;
-	z-index: 90;
 	pointer-events: none;
-	overflow: hidden;
-}
-
-/* A hollow ring that inverts what's under it, and grows into an accent ring
-   over anything clickable. Ported from taf.sh's studio cursor. The blend
-   mode sits on the fixed container, because that is the layer that blends
-   with the page; the ring inside it would only blend with the container. */
-.dot-cursor {
-	mix-blend-mode: difference;
 	--cursor-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dot-cursor[data-hover="true"] {
-	mix-blend-mode: normal;
-}
-
 .dot-cursor span {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
+	z-index: 90;
 	box-sizing: border-box;
 	width: 12px;
 	height: 12px;
 	border-radius: 999px;
 	border: 1.5px solid var(--foreground);
-	background: transparent;
+	mix-blend-mode: difference;
+	pointer-events: none;
 	opacity: 0;
 	transition:
 		opacity 160ms ease,
 		width 350ms var(--cursor-ease),
 		height 350ms var(--cursor-ease),
-		border-color 350ms var(--cursor-ease),
-		background-color 350ms var(--cursor-ease);
+		border-color 350ms var(--cursor-ease);
 	will-change: transform;
 }
 
@@ -291,11 +283,13 @@ html[data-skin="studio"] .language-label {
 	opacity: 1;
 }
 
+/* Normal blending over controls, so the accent ring keeps its color and the
+   button under it is left alone. */
 .dot-cursor[data-hover="true"] span {
 	width: 36px;
 	height: 36px;
 	border-color: var(--primary);
-	background: color-mix(in oklab, var(--primary) 12%, transparent);
+	mix-blend-mode: normal;
 }
 
 .dot-cursor[data-pressed="true"] span {
