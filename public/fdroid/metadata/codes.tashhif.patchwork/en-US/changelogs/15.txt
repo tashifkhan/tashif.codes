@@ -1,0 +1,5 @@
+A patch for subtasks hidden under completed parents, drags inside Android sheets, sheet input padding, and button colours.
+
+* Open subtasks of a completed parent move to the top level instead of riding into the collapsed Completed section.
+* Drag-to-reorder inside an Android sheet receives touches.
+* Column, list, and board name fields keep their horizontal padding on Android.

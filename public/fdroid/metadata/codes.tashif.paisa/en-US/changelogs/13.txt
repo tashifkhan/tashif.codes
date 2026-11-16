@@ -1,0 +1,8 @@
+A floating navbar that sits over your list, a way to add a category without leaving the picker, and motion across the app.
+
+* The list shows behind the bar.
+* Tab titles. A new toggle in More → Appearance puts a title under every tab.
+* Frosted glass. A second toggle blurs and tints what scrolls behind the bar.
+* The bar picks up a little of your accent colour, and on light themes its shadow does too.
+* It moves. One pill slides between tabs.
+* Add a category from the picker.

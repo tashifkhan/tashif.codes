@@ -4,7 +4,7 @@ Categories:
 License: AGPL-3.0-or-later
 AuthorName: Tashif Ahmad Khan
 AuthorEmail: tashifkhan010@gmail.com
-WebSite: https://tashif.codes
+WebSite: https://tashif.codes/projects/paisa
 SourceCode: https://github.com/tashifkhan/Paisa
 IssueTracker: https://github.com/tashifkhan/Paisa/issues
 Changelog: https://github.com/tashifkhan/Paisa/releases
@@ -12,24 +12,48 @@ Changelog: https://github.com/tashifkhan/Paisa/releases
 AutoName: Paisa
 Name: Paisa
 
-Summary: Offline-first personal finance for Android
+Summary: Expense manager that reads bank SMS on your phone and keeps the ledger there
 Description: |
-    Paisa keeps your money ledger on your phone.
+  Paisa is an expense manager that keeps your ledger on your phone. There is no account, no ads and no Paisa server.
 
-    Bank SMS is parsed on-device (100+ Indian banks via an AGPL parser
-    core). Optional BYOK statement import for PDF/CSV/images — your API
-    key, your endpoint; SMS never leaves the device.
+  Capture
 
-    Features:
-    * Home balance, filters, and recent transactions
-    * Analytics charts with date ranges
-    * Monthly budgets by category
-    * Multiple accounts / wallets
-    * SMS bulk scan + live receiver with hash dedup
-    * App lock via biometrics or device credential
-    * Export to CSV / PDF
+  * Bank SMS import. Parsers for about 140 Indian banks turn an alert into a transaction on the device. A bulk scan reads the inbox once and a live receiver catches new alerts
+  * The original SMS stays attached to the transaction it made
+  * Add with AI. Type or say what you spent, or attach a receipt, a screenshot or a PDF, then review the drafts before anything is saved
+  * Statement import for PDF, CSV and image statements, several at once
+  * Manual entry with Markdown descriptions
 
-    Package ID: codes.tashif.paisa
+  Review
+
+  * Merchant search, filters, and analytics by category and date range
+  * Monthly budgets per category
+  * Bank, cash, card and wallet accounts
+  * Bill splitting equally, by percentage, by amount or by item, with debts tracked per person
+
+  Make it yours
+
+  * Material You wallpaper colours or 31 fixed palettes, dark mode and AMOLED black
+  * High contrast, calmer motion and a floating navigation bar
+  * Home screen widgets for your balance and quick add
+  * Layouts for phones, foldables and tablets
+
+  Privacy
+
+  * SMS never leave the phone
+  * AI features stay off until you add your own key for an OpenAI compatible endpoint, Gemini or Anthropic
+  * App lock with a fingerprint, your face or the screen lock, and one tap to hide amounts
+  * Backups go to Google Drive, Nextcloud or a .paisa file, encrypted with AES-256-GCM when you set a password
+  * Export to CSV or PDF
+
+  Why it asks for permissions
+
+  * SMS, to read and receive bank alerts. SMS import is optional
+  * Microphone, for voice notes in Add with AI
+  * Network, for backup, sync and the AI endpoint you configure
+  * Biometrics, for app lock
+
+  The same app runs in a browser at https://paisa.tashif.codes
 
 RepoType: git
 Repo: https://github.com/tashifkhan/Paisa.git

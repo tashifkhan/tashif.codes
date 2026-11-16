@@ -1,0 +1,5 @@
+* Lines, line station lists, station pages, alerts, and the journeys already planned stay available when the network fails.
+* The Delhi network map still opens with no signal.
+* The web build ships one icon font instead of nineteen, and the Delhi map is a WebP.
+* Station search keeps a prepared index and filters it on each keystroke.
+* Catalog JSON is cached at the edge for five minutes.
