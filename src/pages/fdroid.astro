@@ -1,610 +1,350 @@
 ---
-import fs from "node:fs";
-import path from "node:path";
 import PageShell from "../layouts/PageShell.astro";
 import EmptyState from "../components/common/EmptyState.astro";
-import { allProjects } from "../data/projects";
-import { slugify } from "../lib/slugify";
+import RepoAddress from "../components/fdroid/RepoAddress.astro";
+import { Landing, Section } from "@/components/landing";
+import { ArrowRight, Download } from "lucide-react";
 import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-	CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import {
-	Check,
-	Copy,
-	Download,
-	Github,
-	Globe,
-	HardDrive,
-	Package,
-	RefreshCw,
-	Scale,
-	ShieldCheck,
-	Smartphone,
-	Tag,
-} from "lucide-react";
+	fdroidRepo,
+	formatBytes,
+	formatDate,
+	androidVersion,
+	REPO_ADD_URL,
+} from "@/lib/fdroid";
 
-const fallbackRepoUrl = "https://tashif.codes/fdroid/repo";
+const { apps, updatedAt } = fdroidRepo;
 
-// SHA-256 of the repo signing certificate. F-Droid checks it when the repo is
-// added, so a hijacked or swapped index is rejected. It only changes if the
-// keystore is replaced, which would break every existing install anyway.
-const repoFingerprint =
-	"568557c435bdf555725de95de596a90d6fa964d4bf0b71874f254cd0be7e94c9";
-
-interface RepoApp {
-	name: string;
-	packageName: string;
-	summary?: string;
-	license?: string;
-	categories: string[];
-	sourceCode?: string;
-	changelog?: string;
-	versionName?: string;
-	sizeBytes?: number;
-	minSdk?: number;
-	apkUrl?: string;
-	updatedAt?: number;
-	icon?: string;
-	projectSlug?: string;
-}
-
-// The F-Droid index is generated and committed by the Publish F-Droid Repo
-// workflow, so it may not exist on fresh checkouts.
-let repoUrl = fallbackRepoUrl;
-let repoName = "Tashif Codes";
-let repoDescription = "Android apps published by Tashif Khan.";
-let indexUpdatedAt: number | undefined;
-let apps: RepoApp[] = [];
-
-try {
-	const indexPath = path.resolve("public/fdroid/repo/index-v1.json");
-	if (fs.existsSync(indexPath)) {
-		const index = JSON.parse(fs.readFileSync(indexPath, "utf-8"));
-		repoUrl = index.repo?.address ?? fallbackRepoUrl;
-		repoName = index.repo?.name ?? repoName;
-		repoDescription = index.repo?.description ?? repoDescription;
-		indexUpdatedAt = index.repo?.timestamp;
-		apps = (index.apps ?? [])
-			.map((app: any): RepoApp => {
-				const versions = index.packages?.[app.packageName] ?? [];
-				const suggested =
-					versions.find(
-						(p: any) =>
-							String(p.versionCode) === String(app.suggestedVersionCode)
-					) ?? versions[0];
-				return {
-					name: app.name ?? app.localized?.["en-US"]?.name ?? app.packageName,
-					packageName: app.packageName,
-					summary: app.summary ?? app.localized?.["en-US"]?.summary,
-					license: app.license,
-					categories: app.categories ?? [],
-					sourceCode: app.sourceCode,
-					changelog: app.changelog,
-					versionName: suggested?.versionName,
-					sizeBytes: suggested?.size,
-					minSdk: suggested?.minSdkVersion,
-					apkUrl: suggested?.apkName
-						? `/fdroid/repo/${suggested.apkName}`
-						: undefined,
-					updatedAt: app.lastUpdated,
-					icon: fs.existsSync(
-						path.resolve(
-							`public/fdroid/metadata/${app.packageName}/en-US/icon.png`
-						)
-					)
-						? `/fdroid/metadata/${app.packageName}/en-US/icon.png`
-						: undefined,
-					projectSlug: (() => {
-						if (!app.sourceCode) return undefined;
-						const repoName =
-							app.sourceCode.split("/").filter(Boolean).pop() ?? "";
-						return allProjects.find(
-							(p) => p.slug === slugify(repoName)
-						)?.slug;
-					})(),
-				};
-			})
-			.sort((a: RepoApp, b: RepoApp) => a.name.localeCompare(b.name));
-	}
-} catch {
-	apps = [];
-}
-
-const totalSize = apps.reduce((sum, app) => sum + (app.sizeBytes ?? 0), 0);
-
-function formatBytes(bytes: number): string {
-	if (bytes < 1024) return `${bytes} B`;
-	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function formatDate(ts: number): string {
-	return new Date(ts).toLocaleDateString("en-US", {
-		year: "numeric",
-		month: "short",
-		day: "numeric",
-	});
-}
-
-const sdkToAndroid: Record<number, string> = {
-	21: "5.0",
-	22: "5.1",
-	23: "6.0",
-	24: "7.0",
-	25: "7.1",
-	26: "8.0",
-	27: "8.1",
-	28: "9",
-	29: "10",
-	30: "11",
-	31: "12",
-	32: "12.1",
-	33: "13",
-	34: "14",
-	35: "15",
-	36: "16",
-};
-
-function androidLabel(sdk: number): string {
-	const version = sdkToAndroid[sdk];
-	return version ? `Android ${version}+` : `SDK ${sdk}+`;
-}
-
-const addRepoSteps = [
-	"Open F-Droid and go to Settings → Repositories",
-	"Tap + and paste the repo URL above",
-	"Refresh repositories to pull the signed index",
-	"Search for an app below and install it",
+const steps = [
+	{
+		title: "Open F-Droid",
+		body: "Go to Settings, then Repositories, and tap the plus button.",
+	},
+	{
+		title: "Add this repo",
+		body: "Paste the address, or scan it. F-Droid reads the fingerprint from it.",
+	},
+	{
+		title: "Refresh",
+		body: "F-Droid downloads the signed index and checks it against the fingerprint.",
+	},
+	{
+		title: "Install",
+		body: "The apps below appear in search. Updates arrive like any other F-Droid app.",
+	},
 ];
 
 const pipeline = [
 	{
-		icon: Github,
 		title: "Release",
-		description: "APK is published to GitHub Releases.",
+		body: "Each app's own repo builds a signed APK and attaches it to a GitHub release.",
 	},
 	{
-		icon: RefreshCw,
 		title: "Import",
-		description: "The website workflow pulls in the APK.",
+		body: "That release starts a workflow here, which downloads the APK and writes its “What's new” from the release notes.",
 	},
 	{
-		icon: ShieldCheck,
 		title: "Sign",
-		description: "fdroidserver signs and updates the index.",
+		body: "fdroidserver rebuilds the index and signs it with the repo key. The last three versions stay in the repo.",
 	},
 	{
-		icon: Globe,
 		title: "Serve",
-		description: "Vercel serves the repo from this site.",
+		body: "The index and APKs are static files on this site, so there is no server to trust beyond the signature.",
 	},
 ];
-const repoAddUrl = `${repoUrl}?fingerprint=${repoFingerprint}`;
+
+const countWord =
+	["No", "One", "Two", "Three", "Four", "Five", "Six"][apps.length] ??
+	String(apps.length);
 ---
 
 <PageShell
-	title="F-Droid Repo | Tashif Ahmad Khan"
+	title="F-Droid repo | Tashif Ahmad Khan"
+	description="A signed F-Droid repo for Paisa, Patchwork and Delhi NCR Metro. Add it once and F-Droid keeps the apps updated."
 	image="/og/fdroid.jpg"
 	tint="orange"
+	compact
 	breadcrumbs={[{ label: "Home", href: "/" }, { label: "F-Droid" }]}
 >
 	<Fragment slot="header">
-		<div class="mb-4">
-			<div class="flex items-center justify-between gap-4">
-				<h1
-					class="font-sans text-4xl sm:text-5xl font-semibold tracking-tight text-foreground"
-				>
-					F-Droid Repo
-				</h1>
-				<a
-					href={repoAddUrl}
-					data-haptic-external
-					class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-full bg-primary/10 text-primary ring-1 ring-primary/25 hover:bg-primary/20 hover:ring-primary/40 transition-colors shrink-0"
-				>
-					<Package className="w-4 h-4" />
-					Repo index
-				</a>
-			</div>
-			<p class="mt-2 sm:mt-3 max-w-xl text-sm sm:text-base text-muted-foreground">
-				{repoDescription} Add this self-hosted repo to your F-Droid client
-				once and get every update automatically.
-			</p>
-			<div
-				class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm text-muted-foreground"
-			>
-				<span>
-					<span class="font-semibold text-foreground tabular-nums"
-						>{apps.length}</span
-					> apps
-				</span>
-				{
-					totalSize > 0 && (
-						<span>
-							<span class="font-semibold text-foreground tabular-nums">
-								{formatBytes(totalSize)}
-							</span>{" "}
-							hosted
-						</span>
-					)
-				}
-				{
-					indexUpdatedAt && (
-						<span class="inline-flex items-center gap-1.5">
-							<span class="relative flex h-1.5 w-1.5">
-								<span class="motion-safe:animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-								<span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
-							</span>
-							index updated {formatDate(indexUpdatedAt)}
-						</span>
-					)
-				}
-			</div>
-		</div>
+		<h1
+			class="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-primary leading-none pb-0.5"
+		>
+			F-Droid repo
+		</h1>
+		<p class="mt-2 text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl">
+			My Android apps, in a repo your F-Droid client can verify.
+			{updatedAt && ` Index signed ${formatDate(updatedAt)}.`}
+		</p>
 	</Fragment>
 
-	<div class="space-y-8">
-		<!-- Add the repo -->
-		<Card
-			className="relative overflow-hidden bg-card/70 dark:bg-card/50 backdrop-blur border-border/60 shadow-lg"
-		>
-			<div
-				class="absolute -top-20 -right-16 h-48 w-48 sm:h-64 sm:w-64 rounded-full bg-primary/5 blur-3xl pointer-events-none"
-			>
-			</div>
-			<CardHeader className="relative z-10">
-				<div class="flex items-center space-x-3">
-					<div class="p-2 bg-primary/10 rounded-xl">
-						<Smartphone className="w-6 h-6 text-primary" />
-					</div>
-					<div>
-						<CardTitle className="text-2xl sm:text-3xl"
-							>Add to F-Droid</CardTitle
-						>
-						<CardDescription className="mt-1">
-							{repoName} · signed index, verified by your F-Droid client
-						</CardDescription>
-					</div>
+	<Landing name="fdroid">
+		<section class="ld-section fd-top" data-gap="s">
+			<div class="ld-split" data-ratio="7-5">
+				<div class="ld-split-text">
+					<h2>Add the repo once.</h2>
+					<p class="ld-lead">
+						F-Droid checks the signing fingerprint, then keeps every app
+						below updated.
+					</p>
+					<RepoAddress primary />
 				</div>
-			</CardHeader>
-			<CardContent className="relative z-10">
-				<div
-					class="flex items-center gap-2 rounded-xl border border-border/70 bg-background/80 pl-4 pr-2 py-2"
-				>
-					<span
-						class="flex-1 font-mono text-sm text-primary break-all select-all"
-						>{repoAddUrl}</span
-					>
-					<button
-						type="button"
-						data-copy-repo-url
-						data-haptic="manual"
-						data-url={repoAddUrl}
-						aria-label="Copy repo URL"
-						class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent transition-colors shrink-0"
-					>
-						<Copy className="w-4 h-4" data-copy-icon />
-						<Check
-							className="w-4 h-4 hidden text-emerald-500"
-							data-check-icon
-						/>
-					</button>
-				</div>
-				<p
-					data-copy-feedback
-					class="mt-2 text-xs text-primary opacity-0 transition-opacity"
-					aria-live="polite"
-				>
-					Copied to clipboard
-				</p>
-				<ol class="mt-3 grid gap-3 sm:grid-cols-2">
+				<ol class="fd-steps">
 					{
-						addRepoSteps.map((step, i) => (
-							<li class="flex items-start gap-3 rounded-xl border border-border/50 bg-background/50 px-3.5 py-3">
-								<span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
-									{i + 1}
-								</span>
-								<span class="pt-0.5 text-sm text-muted-foreground">
-									{step}
-								</span>
+						steps.map((step) => (
+							<li>
+								<h3>{step.title}</h3>
+								<p>{step.body}</p>
 							</li>
 						))
 					}
 				</ol>
-			</CardContent>
-		</Card>
-
-		<!-- Apps in the repo -->
-		<section>
-			<div
-				class="mb-4 sm:mb-5 flex items-center gap-x-2 sm:gap-x-3 min-w-0"
-			>
-				<h2
-					class="font-sans text-lg sm:text-xl font-bold tracking-tight text-foreground shrink-0"
-				>
-					Apps
-				</h2>
-				<span
-					class="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground truncate min-w-0"
-				>
-					<span class="font-bold text-foreground tabular-nums"
-						>{apps.length}</span
-					>
-					in repo
-				</span>
-				{
-					apps.length > 0 && (
-						<span class="ml-auto hidden sm:inline text-xs text-muted-foreground">
-							or grab the APKs directly — they're hosted right here
-						</span>
-					)
-				}
 			</div>
+		</section>
 
+		<Section
+			id="apps"
+			title={`${countWord} ${apps.length === 1 ? "app" : "apps"} in the repo.`}
+			lead="Each one links to its project page, with the full story and every release."
+		>
 			{
 				apps.length > 0 ? (
-					<div class="grid gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
+					<ul class="fd-apps">
 						{apps.map((app) => (
-							<article data-project-card={app.projectSlug ? `/projects/${app.projectSlug}` : ""} class="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/70 dark:bg-card/50 backdrop-blur p-5 transition-all duration-300 hover:shadow-lg hover:border-primary/30 cursor-pointer">
-								<div class="flex flex-1 flex-col">
-								<div class="flex items-start gap-4">
-									{app.icon ? (
-										<img
-											src={app.icon}
-											alt={`${app.name} icon`}
-											width="48"
-											height="48"
-											loading="lazy"
-											decoding="async"
-											class="h-12 w-12 shrink-0 rounded-xl object-cover ring-1 ring-border/50"
-										/>
-									) : (
-										<div
-											aria-hidden="true"
-											class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/25 to-orange-400/10 text-lg font-bold text-primary ring-1 ring-primary/20"
-										>
-											{app.name.charAt(0)}
-										</div>
-									)}
-									<div class="min-w-0 flex-1">
-										<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-											<h3 class="font-sans font-semibold tracking-tight text-foreground">
-												{app.projectSlug ? (
-													<a
-														href={`/projects/${app.projectSlug}`}
-														class="hover:text-primary transition-colors"
-													>
-														{app.name}
-													</a>
-												) : (
-													app.name
-												)}
-											</h3>
-											{app.versionName && (
-												<Badge
-													variant="secondary"
-													className="px-1.5 py-0 font-mono text-[10px] font-medium"
-												>
-													v{app.versionName}
-												</Badge>
+							<li class="fd-app">
+								<div class="fd-app-text">
+									<div class="fd-app-name">
+										{app.icon && (
+											<img
+												src={app.icon}
+												alt=""
+												width="56"
+												height="56"
+												loading="lazy"
+												decoding="async"
+											/>
+										)}
+										<h3>
+											<a href={app.links.project ?? app.links.sourceCode} data-haptic-nav>
+												{app.name}
+											</a>
+										</h3>
+									</div>
+									<p class="fd-app-summary">{app.summary}</p>
+									{app.latest && (
+										<dl class="fd-facts">
+											<div>
+												<dt>Version</dt>
+												<dd>{app.latest.name}</dd>
+											</div>
+											<div>
+												<dt>Size</dt>
+												<dd>{formatBytes(app.latest.sizeBytes)}</dd>
+											</div>
+											{app.latest.minSdk && (
+												<div>
+													<dt>Requires</dt>
+													<dd>{androidVersion(app.latest.minSdk)}</dd>
+												</div>
 											)}
-										</div>
-										<p class="mt-0.5 truncate font-mono text-[11px] text-muted-foreground/70">
-											{app.packageName}
-										</p>
+											{app.license && (
+												<div>
+													<dt>Licence</dt>
+													<dd>{app.license}</dd>
+												</div>
+											)}
+										</dl>
+									)}
+									<div class="ld-actions">
+										<a href={app.links.project ?? app.links.sourceCode} data-haptic-nav class="ld-btn">
+											Project page
+											<ArrowRight aria-hidden="true" />
+										</a>
+										{app.latest && (
+											<a
+												href={app.latest.apkUrl}
+												download
+												data-haptic
+												class="ld-btn"
+											>
+												<Download aria-hidden="true" />
+												APK
+											</a>
+										)}
 									</div>
 								</div>
-
-								{app.summary && (
-									<p class="mt-3 text-sm leading-relaxed text-muted-foreground">
-										{app.summary}
-									</p>
-								)}
-
-								<div class="mt-3 flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-[11px] text-muted-foreground">
-									{app.license && (
-										<span class="inline-flex items-center gap-1">
-											<Scale className="w-3 h-3 text-muted-foreground/70" />
-											{app.license}
-										</span>
-									)}
-									{app.sizeBytes && (
-										<span class="inline-flex items-center gap-1 tabular-nums">
-											<HardDrive className="w-3 h-3 text-muted-foreground/70" />
-											{formatBytes(app.sizeBytes)}
-										</span>
-									)}
-									{app.minSdk && (
-										<span class="inline-flex items-center gap-1">
-											<Smartphone className="w-3 h-3 text-muted-foreground/70" />
-											{androidLabel(app.minSdk)}
-										</span>
-									)}
-									{app.updatedAt && (
-										<span class="inline-flex items-center gap-1">
-											<RefreshCw className="w-3 h-3 text-muted-foreground/70" />
-											{formatDate(app.updatedAt)}
-										</span>
-									)}
-								</div>
-
-								{app.categories.length > 0 && (
-									<div class="mt-3 flex flex-wrap gap-1.5">
-										{app.categories.slice(0, 3).map((category) => (
-											<span class="rounded-full border border-border/50 bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-												{category}
-											</span>
+								{app.screenshots.length > 0 && (
+									<a
+										href={app.links.project ?? app.links.sourceCode}
+										class="fd-app-shots"
+										aria-label={`${app.name} screens`}
+										tabindex="-1"
+									>
+										{app.screenshots.slice(0, 3).map((src) => (
+											<img src={src} alt="" loading="lazy" decoding="async" />
 										))}
-									</div>
+									</a>
 								)}
-
-								</div>
-
-								<div class="mt-4 flex flex-wrap items-center gap-2 border-t border-border/50 pt-4">
-									{app.apkUrl && (
-										<a
-											href={app.apkUrl}
-											download
-											data-haptic
-											data-stop-nav
-											class={cn(
-												buttonVariants({ size: "sm" }),
-												"h-8 gap-1.5 text-xs shadow-sm"
-											)}
-										>
-											<Download className="w-3.5 h-3.5" />
-											APK
-										</a>
-									)}
-									{app.sourceCode && (
-										<a
-											href={app.sourceCode}
-											target="_blank"
-											rel="noopener noreferrer"
-											data-haptic-external
-											data-stop-nav
-											class={cn(
-												buttonVariants({ variant: "outline", size: "sm" }),
-												"h-8 gap-1.5 bg-background/50 text-xs"
-											)}
-										>
-											<Github className="w-3.5 h-3.5" />
-											Source
-										</a>
-									)}
-									{app.changelog && (
-										<a
-											href={app.changelog}
-											target="_blank"
-											rel="noopener noreferrer"
-											data-haptic-external
-											data-stop-nav
-											class={cn(
-												buttonVariants({ variant: "ghost", size: "sm" }),
-												"h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-											)}
-										>
-											<Tag className="w-3.5 h-3.5" />
-											Releases
-										</a>
-									)}
-								</div>
-							</article>
+							</li>
 						))}
-					</div>
+					</ul>
 				) : (
 					<EmptyState
 						command="fdroid update"
 						title="repo index not found"
-						description="The signed index is generated by CI and committed to this repo, so it's missing on fresh checkouts. The repository URL above still works."
+						description="The signed index is generated by CI and committed to this repo, so it's missing on fresh checkouts. The repository address above still works."
 						ctaLabel="open repo"
-						ctaHref={repoAddUrl}
+						ctaHref={REPO_ADD_URL}
 						ctaExternal
 					/>
 				)
 			}
-		</section>
+		</Section>
 
-		<!-- How updates work -->
-		<Card
-			className="relative overflow-hidden bg-card/70 dark:bg-card/50 backdrop-blur border-border/60 shadow-lg"
+		<Section
+			id="updates"
+			title="How an update reaches you."
+			layout="side"
+			gap="l"
 		>
-			<div
-				class="absolute -top-20 -right-16 h-48 w-48 sm:h-64 sm:w-64 rounded-full bg-primary/5 blur-3xl pointer-events-none"
-			>
-			</div>
-			<CardHeader className="relative z-10">
-				<div class="flex items-center space-x-3">
-					<div class="p-2 bg-primary/10 rounded-xl">
-						<RefreshCw className="w-6 h-6 text-primary" />
-					</div>
-					<div>
-						<CardTitle className="text-2xl sm:text-3xl"
-							>How updates work</CardTitle
-						>
-						<CardDescription className="mt-1">
-							Every app ships through the same automated pipeline.
-						</CardDescription>
-					</div>
-				</div>
-			</CardHeader>
-			<CardContent className="relative z-10">
-				<ol class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-					{
-						pipeline.map((step, i) => (
-							<li class="relative flex flex-col gap-3">
-								<div class="flex items-center gap-3">
-									<div class="p-2 bg-primary/10 rounded-xl text-primary">
-										<step.icon className="w-5 h-5" />
-									</div>
-									<span class="font-mono text-xs text-muted-foreground/70">
-										0{i + 1}
-									</span>
-								</div>
-								<div>
-									<h3 class="font-sans font-semibold">{step.title}</h3>
-									<p class="mt-1 text-sm text-muted-foreground">
-										{step.description}
-									</p>
-								</div>
-							</li>
-						))
-					}
-				</ol>
-			</CardContent>
-		</Card>
-	</div>
+			<ol class="fd-pipeline">
+				{
+					pipeline.map((step) => (
+						<li>
+							<h3>{step.title}</h3>
+							<p>{step.body}</p>
+						</li>
+					))
+				}
+			</ol>
+		</Section>
+	</Landing>
 </PageShell>
 
-<script>
-	import { trigger } from "@/lib/haptics";
-	document.addEventListener("astro:page-load", () => {
-		document.querySelectorAll<HTMLElement>("[data-project-card]").forEach((card) => {
-			card.addEventListener("click", (e) => {
-				if ((e.target as HTMLElement).closest("[data-stop-nav]")) return;
-				const href = card.dataset.projectCard;
-				if (href) {
-					trigger("light");
-					window.location.href = href;
-				}
-			});
-		});
+<style>
+	.fd-top {
+		padding-top: var(--ld-space-xl);
+	}
 
-		const button = document.querySelector<HTMLButtonElement>(
-			"[data-copy-repo-url]"
-		);
-		const feedback = document.querySelector<HTMLElement>(
-			"[data-copy-feedback]"
-		);
-		if (!button) return;
-		const copyIcon = button.querySelector<HTMLElement>("[data-copy-icon]");
-		const checkIcon = button.querySelector<HTMLElement>("[data-check-icon]");
-		let timer: ReturnType<typeof setTimeout>;
-		button.addEventListener("click", async () => {
-			const url = button.dataset.url;
-			if (!url) return;
-			try {
-				await navigator.clipboard.writeText(url);
-				trigger("success");
-				feedback?.classList.remove("opacity-0");
-				copyIcon?.classList.add("hidden");
-				checkIcon?.classList.remove("hidden");
-				clearTimeout(timer);
-				timer = setTimeout(() => {
-					feedback?.classList.add("opacity-0");
-					copyIcon?.classList.remove("hidden");
-					checkIcon?.classList.add("hidden");
-				}, 2000);
-			} catch {
-				trigger("error");
-				// Clipboard unavailable (insecure context); the URL stays selectable.
-			}
-		});
-	});
-</script>
+	/* Numbered steps. The numerals come from the list itself. */
+	.fd-steps,
+	.fd-pipeline {
+		display: grid;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		counter-reset: step;
+		border-top: 1px solid var(--ld-rule);
+	}
+	:is(.fd-steps, .fd-pipeline) > li {
+		position: relative;
+		display: grid;
+		gap: var(--ld-space-2xs);
+		padding: var(--ld-space-md) 0 var(--ld-space-md) var(--ld-space-xl);
+		border-bottom: 1px solid var(--ld-rule);
+		counter-increment: step;
+	}
+	:is(.fd-steps, .fd-pipeline) > li::before {
+		content: counter(step);
+		position: absolute;
+		left: 0;
+		top: var(--ld-space-md);
+		font-family: var(--ld-font-display);
+		font-size: var(--ld-text-title);
+		font-weight: 700;
+		line-height: 1.2;
+		color: var(--ld-accent);
+		font-variant-numeric: tabular-nums;
+	}
+	:is(.fd-steps, .fd-pipeline) p {
+		max-width: 56ch;
+		color: var(--ld-muted);
+	}
+
+	.fd-apps {
+		display: grid;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border-top: 1px solid var(--ld-rule);
+	}
+	.fd-app {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--ld-space-xl);
+		align-items: center;
+		padding-block: var(--ld-space-2xl);
+		border-bottom: 1px solid var(--ld-rule);
+	}
+	.fd-app-text {
+		display: grid;
+		gap: var(--ld-space-lg);
+		justify-items: start;
+		min-width: 0;
+	}
+	.fd-app-name {
+		display: flex;
+		align-items: center;
+		gap: var(--ld-space-md);
+	}
+	.fd-app-name img {
+		width: 56px;
+		height: 56px;
+		border-radius: var(--ld-radius);
+		box-shadow: 0 0 0 1px var(--ld-rule);
+	}
+	.fd-app-name h3 {
+		font-size: var(--ld-text-section);
+		line-height: 1.04;
+		letter-spacing: -0.03em;
+	}
+	.fd-app-name a:hover {
+		color: var(--ld-accent);
+	}
+	.fd-app-summary {
+		max-width: 44ch;
+		font-size: var(--ld-text-lead);
+		line-height: 1.45;
+		color: var(--ld-muted);
+	}
+	.fd-facts {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--ld-space-md) var(--ld-space-xl);
+		margin: 0;
+	}
+	.fd-facts dt {
+		font-size: var(--ld-text-sm);
+		color: var(--ld-muted);
+	}
+	.fd-facts dd {
+		margin: 0;
+		font-weight: 500;
+		font-variant-numeric: tabular-nums;
+	}
+	.fd-app-shots {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--ld-space-md);
+		align-items: start;
+		min-width: 0;
+	}
+	.fd-app-shots img {
+		display: block;
+		width: 100%;
+		height: auto;
+		border-radius: var(--ld-space-md);
+		box-shadow: 0 0 0 1px var(--ld-rule);
+	}
+	@media (min-width: 60rem) {
+		.fd-app {
+			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+			gap: var(--ld-space-2xl);
+		}
+		.fd-app-shots img:nth-child(2) {
+			margin-top: var(--ld-space-lg);
+		}
+		.fd-app-shots img:nth-child(3) {
+			margin-top: var(--ld-space-xl);
+		}
+	}
+</style>

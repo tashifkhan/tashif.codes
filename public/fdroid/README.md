@@ -79,7 +79,9 @@ public/fdroid/
 ## Editing a listing
 
 The listing text, screenshots and video live in `metadata/` and are edited by
-hand.
+hand. The page at `/fdroid` reads those files at build time, so a merged edit
+shows on the site straight away. `/fdroid/<app>` redirects to the app's project
+page.
 
 The F-Droid client reads the signed index instead. After merging a listing
 edit, re-sign the index without importing an APK:

@@ -1,0 +1,17 @@
+---
+/**
+ * /fdroid/<app> has no page of its own. It sends you to the app's project
+ * page, which has the landing or README, the releases and the downloads.
+ */
+import { fdroidRepo, type FdroidApp } from "@/lib/fdroid";
+
+export function getStaticPaths() {
+	return fdroidRepo.apps.map((app) => ({
+		params: { app: app.slug },
+		props: { app },
+	}));
+}
+
+const { app } = Astro.props as { app: FdroidApp };
+return Astro.redirect(app.links.project ?? "/fdroid", 301);
+---
