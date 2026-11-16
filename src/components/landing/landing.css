@@ -391,7 +391,7 @@ body {
 	display: none;
 }
 /* While it plays the bar steps aside, and returns on hover or keyboard focus. */
-.ld-player[data-state="playing"]:not(:hover):not(:focus-within) .ld-player-bar {
+.ld-player[data-state="playing"]:not(:hover):not(:focus-within):not([data-menu]) .ld-player-bar {
 	opacity: 0;
 }
 .ld-player-btn {
@@ -424,6 +424,101 @@ body {
 .ld-player:not([data-muted]) [data-when="muted"] {
 	display: none;
 }
+.ld-player-rate {
+	width: auto;
+	min-width: 40px;
+	padding: 0 var(--ld-space-xs);
+	font-size: var(--ld-text-sm);
+	font-weight: 500;
+	font-variant-numeric: tabular-nums;
+}
+.ld-player-speed {
+	position: relative;
+	flex-shrink: 0;
+}
+.ld-player-pop {
+	position: absolute;
+	right: 0;
+	bottom: calc(100% + var(--ld-space-sm));
+	display: grid;
+	gap: var(--ld-space-sm);
+	width: 15rem;
+	padding: var(--ld-space-md);
+	border: 1px solid var(--ld-rule);
+	border-radius: var(--ld-radius);
+	background: var(--ld-paper-2);
+	font-size: var(--ld-text-sm);
+}
+.ld-player-pop label {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: var(--ld-space-2xs) var(--ld-space-md);
+	color: var(--ld-muted);
+}
+.ld-player-pop output {
+	font-weight: 500;
+	font-variant-numeric: tabular-nums;
+	color: var(--ld-ink);
+}
+.ld-player-pop input {
+	grid-column: 1 / -1;
+	width: 100%;
+	height: 32px;
+	margin: 0;
+	accent-color: var(--ld-accent);
+	cursor: pointer;
+}
+.ld-player-presets {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	gap: var(--ld-space-2xs);
+}
+.ld-player-presets button {
+	min-height: 32px;
+	padding: 0;
+	border: 1px solid var(--ld-rule);
+	border-radius: var(--ld-space-xs);
+	background: transparent;
+	color: var(--ld-ink);
+	font-size: var(--ld-text-sm);
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+	transition: background-color var(--ld-dur-micro) var(--ld-ease-out);
+}
+.ld-player-presets button:hover {
+	background: var(--ld-paper-3);
+}
+.ld-player-presets button:active {
+	background: var(--ld-shade);
+}
+.ld-player-presets button[data-on] {
+	border-color: var(--ld-ink);
+	background: var(--ld-ink);
+	color: var(--ld-paper);
+}
+/* The frame says where the picture went while it floats. */
+.ld-player[data-pip]::after {
+	content: "Playing in picture in picture";
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	padding-bottom: var(--ld-space-2xl);
+	background: var(--ld-paper-3);
+	color: var(--ld-muted);
+	pointer-events: none;
+}
+.ld-player[data-pip] .ld-player-bar {
+	z-index: 1;
+}
+[data-ld-pip-holder] {
+	position: fixed;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	opacity: 0;
+	pointer-events: none;
+}
 .ld-player-time {
 	flex-shrink: 0;
 	min-width: 2.5em;
@@ -443,6 +538,12 @@ body {
 @media (max-width: 40rem) {
 	.ld-player-time[data-ld-duration] {
 		display: none;
+	}
+	.ld-player-bar {
+		gap: 0;
+	}
+	.ld-player-btn {
+		width: 36px;
 	}
 }
 

@@ -7,10 +7,19 @@
  * poster with the browser's own controls.
  *
  * With `controls` it gets the site's own player: a play button over the
- * poster, then a bar with seek, time, sound and full screen, drawn in the
- * theme's colours. Nothing downloads before the first press.
+ * poster, then a bar with seek, time, speed up to 3x, sound, picture in
+ * picture and full screen, drawn in the theme's colours. Nothing downloads
+ * before the first press. A clip in picture in picture keeps playing while
+ * you move to another page of the site.
  */
-import { Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
+import {
+	Play,
+	Pause,
+	Volume2,
+	VolumeX,
+	Maximize,
+	PictureInPicture2,
+} from "lucide-react";
 
 interface Props {
 	src: string;
@@ -58,9 +67,49 @@ const { src, poster, label, autoplay = false, controls = false } = Astro.props;
 					aria-label="Seek"
 				/>
 				<span class="ld-player-time" data-ld-duration>0:00</span>
+				<div class="ld-player-speed">
+					<button
+						type="button"
+						class="ld-player-btn ld-player-rate"
+						data-ld-speed-btn
+						aria-expanded="false"
+						aria-label="Playback speed, 1x"
+					>
+						1x
+					</button>
+					<div class="ld-player-pop" data-ld-speed-pop hidden>
+						<label>
+							<span>Speed</span>
+							<output data-ld-speed-out>1x</output>
+							<input
+								type="range"
+								data-ld-speed-range
+								min="0.25"
+								max="3"
+								step="0.25"
+								value="1"
+							/>
+						</label>
+						<div class="ld-player-presets">
+							{[0.5, 1, 1.5, 2, 3].map((rate) => (
+								<button type="button" data-ld-rate={rate}>
+									{rate}x
+								</button>
+							))}
+						</div>
+					</div>
+				</div>
 				<button type="button" class="ld-player-btn" data-ld-mute aria-label="Mute">
 					<Volume2 aria-hidden="true" data-when="sound" />
 					<VolumeX aria-hidden="true" data-when="muted" />
+				</button>
+				<button
+					type="button"
+					class="ld-player-btn"
+					data-ld-pip
+					aria-label="Picture in picture"
+				>
+					<PictureInPicture2 aria-hidden="true" />
 				</button>
 				<button type="button" class="ld-player-btn" data-ld-full aria-label="Full screen">
 					<Maximize aria-hidden="true" />
@@ -193,6 +242,70 @@ const { src, poster, label, autoplay = false, controls = false } = Astro.props;
 					video.muted = !video.muted;
 				});
 
+				// Speed: a slider from 0.25x to 3x, plus a few one-tap rates.
+				const speedBtn = player.querySelector<HTMLButtonElement>("[data-ld-speed-btn]");
+				const speedPop = player.querySelector<HTMLElement>("[data-ld-speed-pop]");
+				const speedRange = player.querySelector<HTMLInputElement>("[data-ld-speed-range]");
+				const speedOut = player.querySelector<HTMLElement>("[data-ld-speed-out]");
+				if (speedBtn && speedPop && speedRange && speedOut) {
+					const setRate = (rate: number) => {
+						video.playbackRate = rate;
+						speedRange.value = String(rate);
+						speedOut.textContent = speedBtn.textContent = `${rate}x`;
+						speedBtn.setAttribute("aria-label", `Playback speed, ${rate}x`);
+						speedPop
+							.querySelectorAll<HTMLElement>("[data-ld-rate]")
+							.forEach((b) =>
+								b.toggleAttribute("data-on", Number(b.dataset.ldRate) === rate),
+							);
+					};
+					const open = (on: boolean) => {
+						speedPop.hidden = !on;
+						speedBtn.setAttribute("aria-expanded", String(on));
+						// Keeps the bar on screen while the menu is open.
+						player.toggleAttribute("data-menu", on);
+					};
+					speedBtn.addEventListener("click", () => open(speedPop.hidden));
+					speedRange.addEventListener("input", () => setRate(Number(speedRange.value)));
+					speedPop.querySelectorAll<HTMLElement>("[data-ld-rate]").forEach((b) =>
+						b.addEventListener("click", () => setRate(Number(b.dataset.ldRate))),
+					);
+					document.addEventListener("click", (event) => {
+						if (!speedPop.hidden && !(event.target as Element).closest(".ld-player-speed")) {
+							open(false);
+						}
+					});
+					player.addEventListener("keydown", (event) => {
+						if (event.key === "Escape" && !speedPop.hidden) {
+							open(false);
+							speedBtn.focus();
+						}
+					});
+					setRate(1);
+				}
+
+				// Picture in picture: the browser floats the clip above the page and
+				// above other apps. Browsers without the API hide the button.
+				const pip = player.querySelector<HTMLButtonElement>("[data-ld-pip]");
+				if (pip) {
+					if (!document.pictureInPictureEnabled) pip.hidden = true;
+					pip.addEventListener("click", () => {
+						if (document.pictureInPictureElement === video) {
+							document.exitPictureInPicture().catch(() => {});
+						} else {
+							video.requestPictureInPicture().catch(() => {});
+						}
+					});
+					video.addEventListener("enterpictureinpicture", () => {
+						player.setAttribute("data-pip", "");
+						pip.setAttribute("aria-label", "Leave picture in picture");
+					});
+					video.addEventListener("leavepictureinpicture", () => {
+						player.removeAttribute("data-pip");
+						pip.setAttribute("aria-label", "Picture in picture");
+					});
+				}
+
 				// iPhones only let the video element itself go full screen.
 				const iosFull = (video as any).webkitEnterFullscreen as (() => void) | undefined;
 				if (!document.fullscreenEnabled && !iosFull) full.hidden = true;
@@ -210,6 +323,38 @@ const { src, poster, label, autoplay = false, controls = false } = Astro.props;
 		initAutoplay();
 		initPlayers();
 	}
+
+	// A clip floating in picture in picture should survive a move to another
+	// page. The router swaps the body, so carry the video element across the
+	// swap and park it out of sight until the floating window is closed.
+	let carried: { video: HTMLVideoElement; playing: boolean } | null = null;
+	document.addEventListener("astro:before-swap", () => {
+		const video = document.pictureInPictureElement;
+		if (video instanceof HTMLVideoElement && video.matches("[data-landing-video]")) {
+			carried = { video, playing: !video.paused };
+		}
+	});
+	document.addEventListener("astro:after-swap", () => {
+		if (!carried) return;
+		const { video, playing } = carried;
+		let holder = video.closest<HTMLElement>("[data-ld-pip-holder]");
+		if (!holder) {
+			holder = document.createElement("div");
+			holder.setAttribute("data-ld-pip-holder", "");
+			holder.append(video);
+			video.addEventListener(
+				"leavepictureinpicture",
+				() => {
+					video.pause();
+					video.closest("[data-ld-pip-holder]")?.remove();
+					carried = null;
+				},
+				{ once: true },
+			);
+		}
+		document.body.append(holder);
+		if (playing) video.play().catch(() => {});
+	});
 
 	init();
 	document.addEventListener("astro:page-load", init);
