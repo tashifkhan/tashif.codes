@@ -2,49 +2,40 @@
 import { leetCodeData } from "../../data/leetcode";
 import { Award, Medal } from "lucide-react";
 
+// Hidden until there is at least one badge.
 const { badges } = leetCodeData;
+const iconUrl = (icon: string) => (icon.startsWith("/") ? `https://leetcode.com${icon}` : icon);
 ---
 
-<section
-	class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden h-fit"
->
-	<div class="px-4 sm:px-5 py-3 border-b border-border/60 flex flex-wrap items-center gap-x-2 gap-y-1">
-		<Medal className="w-4 h-4 text-muted-foreground" />
-		<h3 class="font-sans text-sm font-semibold tracking-tight text-foreground">
-			Achievement badges
-		</h3>
-		{
-			badges.length > 0 && (
-				<span class="ml-auto font-mono text-xs text-muted-foreground bg-muted/50 border border-border/40 px-2 py-0.5 rounded-full tabular-nums">
-					{badges.length}
-				</span>
-			)
-		}
-	</div>
-	{
-		badges.length > 0 ? (
-			<div class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-border/40">
-				{badges.slice(0, 6).map((badge) => (
-					<div class="flex items-center gap-3 bg-card px-4 py-3.5 hover:bg-muted/30 transition-colors">
-						<div class="h-9 w-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-							<Award className="w-4 h-4 text-amber-500" />
+{
+	badges.length > 0 && (
+		<section class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden h-fit" data-lc-badges>
+			<div class="px-4 sm:px-5 py-3 border-b border-border/60 flex items-center gap-2">
+				<Medal className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+				<h3 class="font-sans text-sm font-semibold tracking-tight text-foreground">Badges</h3>
+				<span class="ml-auto font-mono text-xs text-muted-foreground tabular-nums">{badges.length}</span>
+			</div>
+			<ul class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-border/40">
+				{badges.map((badge) => (
+					<li class="flex items-center gap-3 bg-card px-4 py-3.5">
+						{badge.icon ? (
+							<img src={iconUrl(badge.icon)} alt="" width="36" height="36" loading="lazy" class="h-9 w-9 shrink-0 object-contain" />
+						) : (
+							<span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-500/20 bg-amber-500/10">
+								<Award className="w-4 h-4 text-amber-500" />
+							</span>
+						)}
+						<div class="min-w-0 flex-1">
+							<p class="truncate text-sm font-medium text-foreground">{badge.displayName}</p>
+							{badge.createdDate && (
+								<p class="mt-0.5 font-mono text-xs text-muted-foreground">
+									{new Date(badge.createdDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+								</p>
+							)}
 						</div>
-						<div class="flex-1 min-w-0">
-							<p class="text-sm font-medium text-foreground line-clamp-2 break-words">
-								{badge.displayName}
-							</p>
-							<p class="mt-0.5 font-mono text-xs text-muted-foreground truncate">
-								{new Date(badge.createdDate).toLocaleDateString()}
-							</p>
-						</div>
-					</div>
+					</li>
 				))}
-			</div>
-		) : (
-			<div class="flex flex-col items-center justify-center py-12 text-muted-foreground">
-				<Award className="w-6 h-6 mb-3 opacity-30" />
-				<p class="text-sm">No badges earned yet</p>
-			</div>
-		)
-	}
-</section>
+			</ul>
+		</section>
+	)
+}

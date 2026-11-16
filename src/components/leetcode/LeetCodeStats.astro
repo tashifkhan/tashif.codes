@@ -1,38 +1,42 @@
 ---
 import { leetCodeData } from "../../data/leetcode";
-import { Trophy, Target, Calendar, Award } from "lucide-react";
+import { Trophy, Target, CheckCircle2, Swords } from "lucide-react";
 
 const { stats } = leetCodeData;
+
+const { contestSummary } = leetCodeData;
+const acceptance = stats.acceptanceRate ?? 0;
 
 const metricCards = [
 	{
 		key: "totalSolved",
 		subKey: "totalQuestions",
-		label: "Total Solved",
+		label: "Solved",
 		value: stats.totalSolved.toString(),
 		sub: `of ${stats.totalQuestions} problems`,
 		icon: Trophy,
 	},
 	{
+		key: "acceptance",
+		label: "Acceptance",
+		value: acceptance ? `${acceptance.toFixed(1)}%` : "—",
+		sub: "of submissions accepted",
+		icon: CheckCircle2,
+	},
+	{
+		key: "rating",
+		subKey: "ratingTop",
+		label: "Contest rating",
+		value: contestSummary ? Math.round(contestSummary.rating).toString() : "—",
+		sub: contestSummary ? `top ${contestSummary.topPercentage}%` : "no rated contests yet",
+		icon: Swords,
+	},
+	{
 		key: "ranking",
-		label: "Global Ranking",
-		value: `#${stats.ranking.toLocaleString()}`,
-		sub: "out of millions",
+		label: "Global rank",
+		value: stats.ranking > 0 ? `#${stats.ranking.toLocaleString()}` : "—",
+		sub: "by problems solved",
 		icon: Target,
-	},
-	{
-		key: "reputation",
-		label: "Reputation",
-		value: stats.reputation.toString(),
-		sub: "contribution points",
-		icon: Award,
-	},
-	{
-		key: "contribution",
-		label: "Contribution",
-		value: stats.contributionPoints.toString(),
-		sub: "points earned",
-		icon: Calendar,
 	},
 ];
 
@@ -66,7 +70,8 @@ const difficulties = [
 ---
 
 <!-- Metric Grid -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6" data-lc-stats>
+<div class="space-y-3 sm:space-y-4">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4" data-lc-stats>
 	{
 		metricCards.map((card) => (
 			<div class="relative min-w-0 overflow-hidden rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm px-3 py-3 sm:p-4 hover:border-primary/30 transition-colors">
@@ -92,7 +97,7 @@ const difficulties = [
 </div>
 
 <!-- Difficulty Breakdown -->
-<div class="grid grid-cols-3 gap-2 sm:gap-4 mb-8">
+<div class="grid grid-cols-3 gap-2 sm:gap-4">
 	{
 		difficulties.map((diff) => {
 			const pct =
@@ -138,4 +143,5 @@ const difficulties = [
 			);
 		})
 	}
+</div>
 </div>

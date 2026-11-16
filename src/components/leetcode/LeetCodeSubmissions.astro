@@ -1,0 +1,53 @@
+---
+import { leetCodeData } from "../../data/leetcode";
+import { ListChecks } from "lucide-react";
+
+interface Props {
+	limit?: number;
+}
+
+// Latest problems attempted, one row per problem. Hidden when there are none.
+const { limit = 8 } = Astro.props;
+const submissions = leetCodeData.recentSubmissions.slice(0, limit);
+const LANG: Record<string, string> = { cpp: "C++", python3: "Python", python: "Python", java: "Java", javascript: "JS", typescript: "TS", golang: "Go", rust: "Rust", c: "C" };
+const when = (s: number) =>
+	new Date(s * 1000).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+---
+
+{
+	submissions.length > 0 && (
+		<section class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden h-fit" data-lc-submissions>
+			<div class="px-4 sm:px-5 py-3 border-b border-border/60 flex items-center gap-2">
+				<ListChecks className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+				<h3 class="font-sans text-sm font-semibold tracking-tight text-foreground">Recent submissions</h3>
+			</div>
+			<ul class="divide-y divide-border/40">
+				{submissions.map((s) => {
+					const accepted = s.status === "Accepted";
+					return (
+						<li>
+							<a
+								href={`https://leetcode.com/problems/${s.titleSlug}/`}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="flex items-center gap-3 px-4 sm:px-5 py-3 hover:bg-muted/30 transition-colors"
+							>
+								<span
+									class:list={["h-2 w-2 shrink-0 rounded-full", accepted ? "bg-emerald-500" : "bg-rose-500"]}
+									aria-hidden="true"
+								/>
+								<div class="min-w-0 flex-1">
+									<p class="truncate text-sm font-medium text-foreground">{s.title}</p>
+									<p class="mt-0.5 font-mono text-xs text-muted-foreground">
+										<span class={accepted ? "text-emerald-500" : "text-rose-500"}>{s.status}</span>
+										{s.lang && ` · ${LANG[s.lang] ?? s.lang}`} · {when(s.timestamp)}
+									</p>
+								</div>
+							</a>
+						</li>
+					);
+				})}
+			</ul>
+		</section>
+	)
+}
