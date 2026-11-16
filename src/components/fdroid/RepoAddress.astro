@@ -1,0 +1,84 @@
+---
+/**
+ * The repo address with its fingerprint, a copy button, and a link that opens
+ * F-Droid's "add repository" screen on a phone that has F-Droid installed.
+ */
+import { Copy, Smartphone } from "lucide-react";
+import { REPO_ADD_URL } from "@/lib/fdroid";
+
+interface Props {
+	/** Make "Open in F-Droid" the page's main button. */
+	primary?: boolean;
+}
+
+const { primary = false } = Astro.props;
+
+// F-Droid registers this scheme, so the link lands on its add-repo screen.
+const deepLink = REPO_ADD_URL.replace(/^https:\/\//, "fdroidrepos://");
+---
+
+<div class="fd-address">
+	<code>{REPO_ADD_URL}</code>
+	<div class="ld-actions">
+		<a
+			href={deepLink}
+			data-haptic-external
+			class:list={["ld-btn", primary && "ld-btn-primary"]}
+		>
+			<Smartphone aria-hidden="true" />
+			Open in F-Droid
+		</a>
+		<button
+			type="button"
+			class="ld-btn"
+			data-fd-copy={REPO_ADD_URL}
+			data-haptic-nav
+			aria-label="Copy the repo address"
+		>
+			<Copy aria-hidden="true" />
+			<span data-fd-copy-label>Copy address</span>
+		</button>
+	</div>
+</div>
+
+<style>
+	.fd-address {
+		display: grid;
+		gap: var(--ld-space-md);
+		min-width: 0;
+	}
+	.fd-address code {
+		padding: var(--ld-space-md);
+		border: 1px solid var(--ld-rule);
+		border-radius: var(--ld-radius);
+		background: var(--ld-paper-2);
+		overflow-wrap: anywhere;
+		line-height: 1.5;
+	}
+</style>
+
+<script>
+	function initRepoCopy() {
+		document
+			.querySelectorAll<HTMLButtonElement>("[data-fd-copy]:not([data-wired])")
+			.forEach((button) => {
+				button.dataset.wired = "true";
+				button.addEventListener("click", async () => {
+					const label = button.querySelector("[data-fd-copy-label]");
+					const rest = label?.textContent ?? "Copy address";
+					try {
+						await navigator.clipboard.writeText(button.dataset.fdCopy ?? "");
+						if (label) label.textContent = "Copied";
+					} catch {
+						if (label) label.textContent = "Copy failed";
+					}
+					setTimeout(() => {
+						if (label) label.textContent = rest;
+					}, 1600);
+				});
+			});
+	}
+
+	initRepoCopy();
+	document.addEventListener("astro:page-load", initRepoCopy);
+</script>

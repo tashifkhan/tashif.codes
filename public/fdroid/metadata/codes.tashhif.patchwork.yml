@@ -5,43 +5,45 @@ Categories:
 License: MIT
 AuthorName: Tashif Ahmad Khan
 AuthorEmail: tashifkhan010@gmail.com
-WebSite: https://tashif.codes
+WebSite: https://tashif.codes/projects/patchwork
 SourceCode: https://github.com/tashifkhan/Patchwork
 IssueTracker: https://github.com/tashifkhan/Patchwork/issues
 Changelog: https://github.com/tashifkhan/Patchwork/releases
-Donate: https://tashif.codes
 
 Name: Patchwork
 
 Summary: One task app for CalDAV, Nextcloud Deck, Jira and GitHub Issues
-
 Description: |
-  Patchwork pulls your tasks out of the places they're scattered across and
-  puts them in one app.
+  Patchwork pulls your tasks out of the places they are scattered across and puts them in one app. It signs in to each service and edits your work where it already lives.
 
-  What it connects to:
+  What it connects to
 
-  * CalDAV tasks from Nextcloud or any CalDAV server, with subtasks, tags,
-    priorities, due dates, reminders and Markdown notes
-  * Nextcloud Deck boards, with drag and drop for cards and columns
-  * Jira boards with sprints, a backlog and a full issue editor
-  * GitHub issues across repositories
+  * CalDAV tasks from Nextcloud or any CalDAV server, with subtasks, tags, priorities, due dates, reminders and Markdown notes. Edits use ETags, so two devices do not overwrite each other
+  * Nextcloud Deck boards. Drag cards, reorder columns, and create or edit everything from the app
+  * Jira boards with sprints, a backlog, drag and drop that updates the rank, and a full issue editor
+  * GitHub issues across repositories. Sign in with device flow or a token, then create, close and reopen issues
   * More than one GitHub or Jira account at a time
 
-  Other features:
+  Other features
 
-  * AI import that drafts tasks from a photo of handwritten notes or a
-    description. You review every task before it's saved
-  * Bring your own model: OpenAI, Anthropic, Google, DeepSeek, OpenRouter,
-    NVIDIA, OpenCode Zen, RelayRoom or any OpenAI-compatible endpoint
+  * AI import that drafts tasks from a photo of handwritten notes or a description. You review every task before it is saved
+  * Bring your own model. OpenAI, Anthropic, Google, DeepSeek, OpenRouter, NVIDIA, OpenCode Zen, RelayRoom or any OpenAI compatible endpoint
   * Voice dictation
+  * Add a task to a calendar on the device
   * Home screen widgets for today and upcoming tasks
-  * Material You colours, fixed palettes, high contrast and a pure black
-    AMOLED mode
+  * Material You colours, fixed palettes, high contrast and a pure black AMOLED mode
   * Layouts for tablets and foldables
 
-  Credentials and API keys stay on the device in secure storage, and the app
-  talks to your servers directly.
+  Privacy
+
+  Credentials and API keys stay on the device in secure storage, and the app talks to your servers directly. There is no Patchwork server in between.
+
+  Why it asks for permissions
+
+  * Camera and photos, to import tasks from a photo of your notes
+  * Microphone, for voice dictation
+  * Calendar, to add a task to a calendar you pick
+  * Notifications, for task reminders
 
   Slack and Linear integrations are planned.
 

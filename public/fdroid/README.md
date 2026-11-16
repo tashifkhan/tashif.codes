@@ -61,15 +61,46 @@ gh workflow run publish-fdroid.yml \
 
 ```text
 public/fdroid/
-  metadata/                       # per-app F-Droid metadata (committed)
-    codes.tashif.paisa.yml
-    codes.tashhif.patchwork.yml
-    codes.tashif.delhimetro.yml
+  metadata/
+    <package>.yml                 # name, summary, description, links, licence
+    <package>/en-US/
+      icon.png                    # taken from the APK by CI
+      featureGraphic.jpg          # 1024x500 banner
+      phoneScreenshots/           # shown in the F-Droid client and on the site
+      tenInchScreenshots/         # tablet screens, optional
+      video.txt                   # one URL to a walkthrough video
+      changelogs/<versionCode>.txt  # "What's new" per version, 500 chars max
   repo/                           # APKs + signed indexes (committed by CI)
   archive/                        # older APKs (created by fdroidserver)
   config.yml.example              # non-secret reference config
   .gitignore                      # blocks keystores / live config.yml
 ```
+
+## Editing a listing
+
+The listing text, screenshots and video live in `metadata/` and are edited by
+hand. The page at `/fdroid` reads those files at build time, so a merged edit
+shows on the site straight away. `/fdroid/<app>` redirects to the app's project
+page.
+
+The F-Droid client reads the signed index instead. After merging a listing
+edit, re-sign the index without importing an APK:
+
+```bash
+gh workflow run publish-fdroid.yml \
+  --repo tashifkhan/tashif.codes \
+  --field metadata_only=true
+```
+
+A normal release does this too, so an edit also goes out with the next version.
+
+`changelogs/<versionCode>.txt` is written by CI from the GitHub release notes
+(`.github/scripts/write-fdroid-changelog.py`). It keeps the opening line and as
+many bullets as fit in 500 characters. A file that already exists is left
+alone, so write one by hand before releasing if you want different wording.
+
+The walkthrough videos sit in `public/landings/<app>/` and `video.txt` points
+at them on `tashif.codes`.
 
 ## Required GitHub Secrets
 

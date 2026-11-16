@@ -1,0 +1,4 @@
+* Station names on the network map sit beside the track instead of on it.
+* Details on the map's station sheet opens the station page with everything showing, so there's no second "More details" tap.
+* Near me picked a station from whatever position the browser answered with first, which on a laptop can be a Wi-Fi or IP guess kilometres off.
+* The whole From and To card opens the station picker.

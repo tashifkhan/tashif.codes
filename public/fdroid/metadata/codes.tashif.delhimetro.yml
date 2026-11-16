@@ -5,7 +5,7 @@ Categories:
 License: MIT
 AuthorName: Tashif Ahmad Khan
 AuthorEmail: tashifkhan010@gmail.com
-WebSite: https://tashif.codes
+WebSite: https://tashif.codes/projects/delhi-metro
 SourceCode: https://github.com/tashifkhan/delhi-metro
 IssueTracker: https://github.com/tashifkhan/delhi-metro/issues
 Changelog: https://github.com/tashifkhan/delhi-metro/releases
@@ -13,33 +13,42 @@ Changelog: https://github.com/tashifkhan/delhi-metro/releases
 AutoName: Delhi NCR Metro
 Name: Delhi NCR Metro
 
-Summary: Plan Delhi and Noida Metro journeys with fares, maps, and alerts
+Summary: Plan Delhi Metro and Noida Metro trips with fares, maps and alerts
 Description: |
-  Delhi NCR Metro is a Material 3 companion for the Delhi Metro and Noida Metro
-  networks.
+  Delhi NCR Metro plans trips across the Delhi Metro and the Noida Metro Aqua Line in one app. The two operators do not share tickets, so a trip that crosses between them shows the walk at Sector 52 and 51 and a separate fare for each.
 
-  Switch operators, plan trips with least-distance or minimum-interchange
-  strategies, and follow cross-network journeys that transfer at Sector 52/51
-  with clear dual-ticket fares. Browse lines and stations, check first and last
-  trains, follow service alerts, and open the network map with zoom and save.
+  Plan a trip
 
-  Features:
+  * Shortest route and fewest changes, side by side, with time, fare, every station and where to change
+  * Weekday and weekend fares, and first and last train times
+  * Cross-network trips with a walk leg and split fares
+  * Book tickets on WhatsApp from a journey, one step per operator
+  * Your planned journeys stay available offline
 
-  * Delhi Metro (DMRC) and Noida Metro (NMRC) catalogs
-  * Network switcher with local persistence
-  * Cross-network journey planning at Sector 52/51
-  * Journey strategies, fares, and transfer walk legs
-  * Station search with local cache
-  * Line explorer and station detail
-  * Network map view with save
-  * Notifications / service alerts
-  * Light, dark, and Material You theming
+  Stations and lines
 
-  Releases are built with Expo EAS, published on GitHub Releases, and
-  mirrored into this F-Droid-compatible repository.
+  * Station search by name or code
+  * Station pages with gates, lifts, platforms, facilities, parking and nearby places
+  * Lines with ordered stations and interchange badges
 
-  Package ID: codes.tashif.delhimetro
+  Map and alerts
 
+  * A network map drawn from station coordinates, with pan, pinch zoom and station search
+  * The official DMRC and NMRC maps, with save to gallery
+  * Service alerts from both operators
+  * Lines, stations and alerts stay readable when the network drops
+
+  Appearance
+
+  * Material You colours, fixed palettes, dark mode and AMOLED black
+  * High contrast, haptics, and slide, fade or no page animations
+
+  Why it asks for permissions
+
+  * Network, to fetch routes, fares and alerts
+  * Photos, to save a network map to your gallery
+
+  The same app runs in a browser at https://ncr-metro.tashif.codes. It is not an official DMRC or NMRC app.
 
 RepoType: git
 Repo: https://github.com/tashifkhan/delhi-metro.git
