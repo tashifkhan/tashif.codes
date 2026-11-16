@@ -53,21 +53,25 @@ const openCards = open.map((b) => ({ block: b, cards: blockCards(b) }));
 const collapsedCards = collapsed.map((b) => ({ block: b, cards: blockCards(b) }));
 ---
 
-<nav class="mb-6 flex flex-wrap gap-1.5 border-b border-border/60 pb-4" aria-label="Project sections" data-project-sections-nav>
+<nav
+	class="no-scrollbar -mx-4 mb-6 flex snap-x scroll-px-4 gap-1.5 overflow-x-auto border-b border-border/60 px-4 pb-4 [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)] sm:mx-0 sm:scroll-px-0 sm:px-0"
+	aria-label="Project sections"
+	data-project-sections-nav
+>
 	{layout.featured.length > 0 && (
-		<a href="#projects-featured" class="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+		<a href="#projects-featured" class="shrink-0 snap-start whitespace-nowrap rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
 			Featured <span class="font-mono opacity-70">{layout.featured.length}</span>
 		</a>
 	)}
 	{open.map((b) => (
-		<a href={`#projects-${b.id}`} class="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+		<a href={`#projects-${b.id}`} class="shrink-0 snap-start whitespace-nowrap rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
 			{b.title} <span class="font-mono opacity-70">{b.projects.length}</span>
 		</a>
 	))}
 	{collapsed.map((b) => (
 		<a
 			href={`#projects-${b.id}`}
-			class="rounded-full border border-dashed border-border px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+			class="shrink-0 snap-start whitespace-nowrap rounded-full border border-dashed border-border px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
 			title="Collapsed section, opens on click"
 			data-project-jump
 		>
