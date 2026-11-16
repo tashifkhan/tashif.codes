@@ -1,12 +1,12 @@
 ---
 /**
  * Fallback for single-segment paths that aren't site pages (tashif.codes/<slug>).
- * vercel.json rewrites them here. Known short links still redirect through
+ * Static pages and files win; anything else lands here. Known short links redirect through
  * the shortener (u.tashif.codes); anything it doesn't know gets this site's
  * 404 page with a real 404 status. The shortener used to answer those with a
  * 302 to /404, which search engines treat as a soft 404.
  */
-import NotFound from "../404.astro";
+import NotFound from "./404.astro";
 
 export const prerender = false;
 
