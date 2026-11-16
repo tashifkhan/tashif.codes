@@ -1,0 +1,182 @@
+---
+/**
+ * Tabbed media: one clip per tab, each in the frame that fits it. Only the
+ * open tab's video is ever loaded or playing.
+ */
+import DeviceFrame from "./DeviceFrame.astro";
+import LandingVideo from "./LandingVideo.astro";
+
+export interface MediaTab {
+	id: string;
+	label: string;
+	/** One or two sentences shown beside the tabs for the open clip. */
+	note?: string;
+	src: string;
+	poster?: string;
+	frame?: "phone" | "tablet" | "browser";
+	url?: string;
+	aspect?: string;
+	/** Show native controls and sound instead of a silent loop. */
+	controls?: boolean;
+}
+
+interface Props {
+	tabs: MediaTab[];
+	/** Accessible name for the tab list. */
+	label: string;
+}
+
+const { tabs, label } = Astro.props;
+---
+
+<div data-media-tabs class="media-tabs">
+	<div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between mb-6">
+		<div
+			role="tablist"
+			aria-label={label}
+			class="inline-flex max-w-full gap-1 overflow-x-auto rounded-full border border-border bg-card/70 p-1"
+			style="scrollbar-width:none"
+		>
+			{
+				tabs.map((tab, i) => (
+					<button
+						type="button"
+						role="tab"
+						id={`mt-tab-${tab.id}`}
+						aria-controls={`mt-panel-${tab.id}`}
+						aria-selected={i === 0 ? "true" : "false"}
+						tabindex={i === 0 ? 0 : -1}
+						data-haptic-nav
+						class="media-tab rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors"
+					>
+						{tab.label}
+					</button>
+				))
+			}
+		</div>
+		<div class="lg:max-w-md lg:text-right min-h-[2.75rem]">
+			{
+				tabs.map((tab, i) => (
+					<p
+						data-media-note={tab.id}
+						hidden={i !== 0}
+						class="text-sm text-muted-foreground leading-relaxed text-pretty"
+					>
+						{tab.note}
+					</p>
+				))
+			}
+		</div>
+	</div>
+
+	{
+		tabs.map((tab, i) => (
+			<div
+				role="tabpanel"
+				id={`mt-panel-${tab.id}`}
+				aria-labelledby={`mt-tab-${tab.id}`}
+				hidden={i !== 0}
+				class:list={[
+					"media-panel",
+					tab.frame === "phone" && "flex justify-center",
+				]}
+			>
+				<DeviceFrame
+					kind={tab.frame ?? "browser"}
+					url={tab.url}
+					aspect={tab.aspect}
+				>
+					<LandingVideo
+						src={tab.src}
+						poster={tab.poster}
+						label={`${tab.label} demo`}
+						autoplay={!tab.controls}
+						controls={tab.controls}
+					/>
+				</DeviceFrame>
+			</div>
+		))
+	}
+</div>
+
+<style>
+	.media-tab {
+		color: var(--muted-foreground);
+	}
+	.media-tab:hover {
+		color: var(--foreground);
+	}
+	.media-tab[aria-selected="true"] {
+		background: var(--primary);
+		color: var(--primary-foreground);
+	}
+	.media-tab:focus-visible {
+		outline: 2px solid var(--ring);
+		outline-offset: 2px;
+	}
+	.media-panel:not([hidden]) {
+		animation: media-in 320ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+	@keyframes media-in {
+		from {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.media-panel:not([hidden]) {
+			animation: none;
+		}
+	}
+</style>
+
+<script>
+	function initMediaTabs() {
+		document
+			.querySelectorAll<HTMLElement>("[data-media-tabs]:not([data-wired])")
+			.forEach((root) => {
+				root.dataset.wired = "true";
+				const tabs = [...root.querySelectorAll<HTMLElement>('[role="tab"]')];
+
+				const select = (tab: HTMLElement, focus = false) => {
+					for (const t of tabs) {
+						const on = t === tab;
+						t.setAttribute("aria-selected", String(on));
+						t.tabIndex = on ? 0 : -1;
+						const panel = document.getElementById(
+							t.getAttribute("aria-controls")!,
+						);
+						const id = t.id.replace("mt-tab-", "");
+						const note = root.querySelector<HTMLElement>(
+							`[data-media-note="${id}"]`,
+						);
+						if (note) note.hidden = !on;
+						if (!panel) continue;
+						panel.hidden = !on;
+						const video = panel.querySelector("video");
+						if (!video) continue;
+						if (!on) video.pause();
+						else if (video.hasAttribute("data-autoplay") && !video.controls) {
+							video.muted = true;
+							video.play().catch(() => {});
+						}
+					}
+					if (focus) tab.focus();
+				};
+
+				tabs.forEach((tab, i) => {
+					tab.addEventListener("click", () => select(tab));
+					tab.addEventListener("keydown", (e) => {
+						const step =
+							e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+						if (!step) return;
+						e.preventDefault();
+						select(tabs[(i + step + tabs.length) % tabs.length], true);
+					});
+				});
+			});
+	}
+
+	initMediaTabs();
+	document.addEventListener("astro:page-load", initMediaTabs);
+</script>

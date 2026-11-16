@@ -1,0 +1,181 @@
+---
+/**
+ * A row of portrait panels that scrolls sideways and snaps. Works by touch,
+ * trackpad, the arrow buttons, or the arrow keys once the row has focus.
+ */
+import { ArrowLeft, ArrowRight } from "lucide-react";
+
+export interface Panel {
+	src: string;
+	alt: string;
+}
+
+interface Props {
+	panels: Panel[];
+	/** Accessible name for the row. */
+	label: string;
+	/** Intrinsic size of one panel, to reserve space before it loads. */
+	width: number;
+	height: number;
+}
+
+const { panels, label, width, height } = Astro.props;
+---
+
+<div data-panel-carousel class="panel-carousel">
+	<ul
+		data-panel-track
+		role="list"
+		tabindex="0"
+		aria-label={label}
+		class="panel-track"
+	>
+		{
+			panels.map((panel) => (
+				<li class="panel">
+					<img
+						src={panel.src}
+						alt={panel.alt}
+						width={width}
+						height={height}
+						loading="lazy"
+						decoding="async"
+						draggable="false"
+					/>
+				</li>
+			))
+		}
+	</ul>
+
+	<div class="mt-5 flex items-center justify-between gap-4">
+		<p class="font-mono text-xs text-muted-foreground tabular-nums">
+			<span data-panel-index>1</span> / {panels.length}
+		</p>
+		<div class="flex gap-2">
+			<button
+				type="button"
+				data-panel-prev
+				data-haptic-nav
+				aria-label="Previous panels"
+				class="panel-btn"
+			>
+				<ArrowLeft className="w-4 h-4" />
+			</button>
+			<button
+				type="button"
+				data-panel-next
+				data-haptic-nav
+				aria-label="Next panels"
+				class="panel-btn"
+			>
+				<ArrowRight className="w-4 h-4" />
+			</button>
+		</div>
+	</div>
+</div>
+
+<style>
+	.panel-track {
+		display: flex;
+		gap: 1rem;
+		margin: 0;
+		padding: 0 0 0.25rem;
+		list-style: none;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		scrollbar-width: none;
+		overscroll-behavior-x: contain;
+		border-radius: 1.25rem;
+	}
+	.panel-track::-webkit-scrollbar {
+		display: none;
+	}
+	.panel-track:focus-visible {
+		outline: 2px solid var(--ring);
+		outline-offset: 4px;
+	}
+	.panel {
+		flex: 0 0 clamp(210px, 23vw, 290px);
+		scroll-snap-align: start;
+		border-radius: 1.25rem;
+		overflow: hidden;
+		border: 1px solid var(--border);
+		background: var(--muted);
+	}
+	.panel img {
+		display: block;
+		width: 100%;
+		height: auto;
+		user-select: none;
+	}
+	.panel-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 9999px;
+		border: 1px solid var(--border);
+		background: var(--card);
+		color: var(--foreground);
+		transition:
+			background-color 160ms ease,
+			border-color 160ms ease,
+			opacity 160ms ease;
+	}
+	.panel-btn:hover:not(:disabled) {
+		border-color: var(--primary);
+		background: color-mix(in oklab, var(--primary) 12%, var(--card));
+	}
+	.panel-btn:disabled {
+		opacity: 0.35;
+	}
+</style>
+
+<script>
+	function initPanelCarousels() {
+		document
+			.querySelectorAll<HTMLElement>("[data-panel-carousel]:not([data-wired])")
+			.forEach((root) => {
+				root.dataset.wired = "true";
+				const track = root.querySelector<HTMLElement>("[data-panel-track]")!;
+				const prev = root.querySelector<HTMLButtonElement>("[data-panel-prev]")!;
+				const next = root.querySelector<HTMLButtonElement>("[data-panel-next]")!;
+				const index = root.querySelector<HTMLElement>("[data-panel-index]")!;
+
+				const step = () => {
+					const first = track.firstElementChild as HTMLElement | null;
+					if (!first) return track.clientWidth;
+					const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+					return first.offsetWidth + gap;
+				};
+				const page = () =>
+					Math.max(1, Math.floor(track.clientWidth / step())) * step();
+
+				const sync = () => {
+					const max = track.scrollWidth - track.clientWidth - 1;
+					prev.disabled = track.scrollLeft <= 0;
+					next.disabled = track.scrollLeft >= max;
+					index.textContent = String(
+						Math.min(
+							track.children.length,
+							Math.round(track.scrollLeft / step()) + 1,
+						),
+					);
+				};
+
+				prev.addEventListener("click", () =>
+					track.scrollBy({ left: -page(), behavior: "smooth" }),
+				);
+				next.addEventListener("click", () =>
+					track.scrollBy({ left: page(), behavior: "smooth" }),
+				);
+				track.addEventListener("scroll", sync, { passive: true });
+				window.addEventListener("resize", sync, { passive: true });
+				sync();
+			});
+	}
+
+	initPanelCarousels();
+	document.addEventListener("astro:page-load", initPanelCarousels);
+</script>

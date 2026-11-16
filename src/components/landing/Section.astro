@@ -1,0 +1,66 @@
+---
+/**
+ * One band of a landing. Gives every section the same vertical rhythm and
+ * the same heading treatment, so custom content between them still lines up.
+ */
+interface Props {
+	id?: string;
+	/** Small mono label above the title, e.g. "01 / Capture". */
+	eyebrow?: string;
+	title?: string;
+	lead?: string;
+	align?: "left" | "center";
+	/** Drop the hairline above the section. */
+	flush?: boolean;
+	class?: string;
+}
+
+const {
+	id,
+	eyebrow,
+	title,
+	lead,
+	align = "left",
+	flush = false,
+	class: className,
+} = Astro.props;
+---
+
+<section
+	id={id}
+	data-landing-section
+	class:list={[
+		"scroll-mt-16 py-14 sm:py-20",
+		!flush && "border-t border-border/60",
+		className,
+	]}
+>
+	{
+		(eyebrow || title || lead) && (
+			<div
+				data-landing-heading
+				class:list={[
+					"mb-8 sm:mb-12 max-w-3xl",
+					align === "center" && "mx-auto text-center",
+				]}
+			>
+				{eyebrow && (
+					<p class="font-mono text-[11px] uppercase tracking-[0.18em] text-primary mb-3">
+						{eyebrow}
+					</p>
+				)}
+				{title && (
+					<h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.05] text-balance text-foreground">
+						{title}
+					</h2>
+				)}
+				{lead && (
+					<p class="mt-4 text-base sm:text-lg text-muted-foreground leading-relaxed text-pretty">
+						{lead}
+					</p>
+				)}
+			</div>
+		)
+	}
+	<slot />
+</section>

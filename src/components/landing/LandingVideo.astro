@@ -1,0 +1,74 @@
+---
+/**
+ * A video that costs nothing until it is on screen. With `autoplay` it plays
+ * muted and looped while at least half of it is visible, and pauses when it
+ * scrolls away or its tab is hidden. Reduce motion turns autoplay into
+ * a poster with native controls.
+ */
+interface Props {
+	src: string;
+	poster?: string;
+	/** Describes the clip for screen readers. */
+	label: string;
+	autoplay?: boolean;
+	controls?: boolean;
+}
+
+const { src, poster, label, autoplay = false, controls = false } = Astro.props;
+---
+
+<video
+	data-landing-video
+	data-autoplay={autoplay ? "" : undefined}
+	src={src}
+	poster={poster}
+	aria-label={label}
+	preload="none"
+	playsinline
+	muted={autoplay}
+	loop={autoplay}
+	controls={controls}></video>
+
+<script>
+	const reduced = () =>
+		document.documentElement.hasAttribute("data-reduce-motion") ||
+		window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+	function initLandingVideos() {
+		const videos = document.querySelectorAll<HTMLVideoElement>(
+			"video[data-landing-video][data-autoplay]:not([data-wired])",
+		);
+		if (videos.length === 0) return;
+
+		if (reduced()) {
+			videos.forEach((v) => {
+				v.dataset.wired = "true";
+				v.controls = true;
+			});
+			return;
+		}
+
+		const io = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					const video = entry.target as HTMLVideoElement;
+					// A hidden tab panel reports as not intersecting, so it stays paused.
+					if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+						video.muted = true;
+						video.play().catch(() => {});
+					} else {
+						video.pause();
+					}
+				}
+			},
+			{ threshold: [0, 0.5] },
+		);
+		videos.forEach((v) => {
+			v.dataset.wired = "true";
+			io.observe(v);
+		});
+	}
+
+	initLandingVideos();
+	document.addEventListener("astro:page-load", initLandingVideos);
+</script>
