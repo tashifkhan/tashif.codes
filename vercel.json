@@ -72,6 +72,11 @@
 	],
 	"redirects": [
 		{
+			"source": "/:path((?!(?:ph|u|api|proxy|static|_vercel|_astro)(?:/|$)).+)/",
+			"destination": "/:path",
+			"permanent": true
+		},
+		{
 			"source": "/blogs",
 			"destination": "/blog",
 			"permanent": true
