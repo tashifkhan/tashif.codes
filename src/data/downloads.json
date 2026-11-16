@@ -39,6 +39,10 @@
 		{
 			"title": "patchwork",
 			"download_url": "https://github.com/tashifkhan/Patchwork/releases/latest"
+		},
+		{
+			"title": "PaisaSplit",
+			"download_url": "https://github.com/tashifkhan/PaisaSplit/releases"
 		}
 	]
 }
