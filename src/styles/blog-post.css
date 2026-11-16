@@ -1,19 +1,9 @@
 /*
  * Blog post page. Imported by src/pages/blog/[slug].astro only.
  *
- * The shared MarkdownRenderer sets 16px for READMEs and docs. Posts are read
- * start to finish, so they get 18px in a 46rem column, about 86 characters a
- * line. Unlayered rules here beat the renderer's Tailwind utilities.
+ * The article keeps the shared MarkdownRenderer's 16px type and fills the
+ * max-w-7xl frame beside a 14rem rail, the same measure the page had before.
  */
-
-.blog-article .markdown-body {
-	font-size: 1.125rem;
-}
-
-.blog-article .markdown-body p,
-.blog-article .markdown-body li {
-	line-height: 1.75;
-}
 
 /* Contents, in the rail and in the phone block. */
 .toc-link {
@@ -93,6 +83,19 @@
 	border-color: var(--border);
 	border-radius: 10px;
 	font-size: 11.5px;
+}
+
+.post-act-count {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-size: 12.5px;
+	font-weight: 600;
+	color: var(--foreground);
+}
+
+.post-act[aria-pressed="true"] .post-act-count {
+	color: inherit;
 }
 
 .post-act-row {

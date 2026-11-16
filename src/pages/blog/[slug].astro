@@ -228,7 +228,7 @@ const tocLinkClass = "toc-link";
 			</div>
 		</header>
 
-		<div class="mx-auto max-w-[calc(65rem+3rem)] px-4 py-8 sm:px-6 sm:py-12">
+		<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
 			<div
 				class:list={[
 					"rise-in grid items-center gap-6",
@@ -295,9 +295,9 @@ const tocLinkClass = "toc-link";
 			</div>
 
 			<div
-				class="mt-9 border-t border-border/60 pt-8 lg:grid lg:grid-cols-[minmax(0,46rem)_15.5rem] lg:justify-center lg:gap-14"
+				class="mt-9 border-t border-border/60 pt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-10 xl:gap-14"
 			>
-				<article id="article-content" class="blog-article mx-auto w-full min-w-0 max-w-[46rem]">
+				<article id="article-content" class="blog-article w-full min-w-0">
 					{
 						showMobileToc && (
 							<details class="mb-8 rounded-xl border border-border/60 bg-card/60 lg:hidden" data-post-toc-mobile>
@@ -475,11 +475,17 @@ const tocLinkClass = "toc-link";
 						<div class="rounded-xl border border-border/60 bg-card/60 p-3.5 backdrop-blur-sm">
 							<div class="grid grid-cols-3 gap-1.5">
 								<button type="button" class="post-act" data-post-like data-haptic="selection" aria-pressed="false">
-									<Heart size={15} />
+									<span class="post-act-count">
+										<Heart size={15} />
+										<span data-post-likes-count class="tabular-nums">{initialLikes}</span>
+									</span>
 									<span>Like</span>
 								</button>
 								<button type="button" class="post-act" data-post-discuss data-haptic>
-									<MessageCircle size={15} />
+									<span class="post-act-count">
+										<MessageCircle size={15} />
+										<span data-comment-count class="tabular-nums">{totalComments}</span>
+									</span>
 									<span>Discuss</span>
 								</button>
 								<button type="button" class="post-act" data-post-share data-haptic>
