@@ -35,7 +35,14 @@ export interface Project {
 	readme: string;
 	slug: string;
 	// Optional metadata
+	/** Featured: pinned on the GitHub profile or tagged `featured`. */
 	pinned?: boolean;
+	/** Position among the profile pins, as ordered on GitHub. */
+	pinRank?: number;
+	/** Archived on GitHub. */
+	archived?: boolean;
+	/** Tagged work-in-progress; the card shows a WIP badge. */
+	wip?: boolean;
 	stars?: number;
 	forks?: number;
 	/** Last push date (ISO), mirrored from GitHub when available. */

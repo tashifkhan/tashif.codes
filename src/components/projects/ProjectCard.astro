@@ -37,7 +37,8 @@ const releaseCount = project.releases?.length ?? 0;
 			"dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
 			"motion-card",
 			"shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/40",
-			"hover:border-primary/40"
+			"hover:border-primary/40",
+			project.wip && "border-dashed"
 		)}
 	>
 		<!-- Content zone -->
@@ -103,6 +104,31 @@ const releaseCount = project.releases?.length ?? 0;
 					}
 				</div>
 			</div>
+
+			{
+				(project.wip || project.archived) && (
+					<div class="relative z-10 mt-2 flex flex-wrap items-center gap-1.5 pointer-events-none">
+						{project.wip && (
+							<span
+								class="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-amber-500"
+								title="Work in progress: may be incomplete or broken"
+								data-project-wip
+							>
+								<span class="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
+								WIP
+							</span>
+						)}
+						{project.archived && (
+							<span
+								class="inline-flex items-center rounded-full border border-border px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+								title="Archived on GitHub: read-only, no longer maintained"
+							>
+								Archived
+							</span>
+						)}
+					</div>
+				)
+			}
 
 			{
 				project.isFork && project.parentRepo && (

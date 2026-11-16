@@ -1,0 +1,179 @@
+---
+import { ChevronRight, Pin } from "lucide-react";
+import ProjectCard from "./ProjectCard.astro";
+import { layoutProjects } from "../../data/projectGroups";
+import { starLists } from "../../data/starLists";
+import { hasAnalytics, getAnalyticsSlug } from "../../data/analyticsProjects";
+import type { AnalyticsProject, Project } from "@/types";
+
+interface Props {
+	projects: Project[];
+	analyticsProjects: AnalyticsProject[];
+	/** Gap classes; the column layout is shared. */
+	gap?: string;
+}
+
+const { projects, analyticsProjects, gap = "gap-4 sm:gap-6" } = Astro.props;
+const gridClass = `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 ${gap}`;
+const layout = layoutProjects(projects, starLists);
+
+interface Block {
+	id: string;
+	title: string;
+	projects: Project[];
+	/** Cards shown before "Show more"; Infinity shows all. */
+	cap: number;
+}
+
+// A section only hides cards when it would hide more than two.
+const capped = (n: number, cap: number) => (n > cap + 2 ? cap : Infinity);
+const open: Block[] = [
+	...layout.sections
+		.filter((s) => s.open)
+		.map((s) => ({ ...s, cap: capped(s.projects.length, 6) })),
+	{ id: "more", title: "More projects", projects: layout.more, cap: capped(layout.more.length, 9) },
+].filter((b) => b.projects.length > 0);
+const collapsed: Block[] = [
+	...layout.sections.filter((s) => !s.open).map((s) => ({ ...s, cap: Infinity })),
+	{ id: "forks", title: "Forks", projects: layout.forks, cap: Infinity },
+	{ id: "archive", title: "Archive", projects: layout.archive, cap: Infinity },
+].filter((b) => b.projects.length > 0);
+
+// The first card for a repo is its home during search; later copies are repeats
+// and hide while a filter is active, so results list each repo once.
+const rendered = new Set<string>();
+const card = (project: Project, extra = false) => {
+	const repeat = rendered.has(project.slug);
+	rendered.add(project.slug);
+	return { project, extra, repeat };
+};
+const featuredCards = layout.featured.map((p) => card(p));
+const blockCards = (b: Block) => b.projects.map((p, i) => card(p, i >= b.cap));
+const openCards = open.map((b) => ({ block: b, cards: blockCards(b) }));
+const collapsedCards = collapsed.map((b) => ({ block: b, cards: blockCards(b) }));
+---
+
+<nav class="mb-6 flex flex-wrap gap-1.5 border-b border-border/60 pb-4" aria-label="Project sections" data-project-sections-nav>
+	{layout.featured.length > 0 && (
+		<a href="#projects-featured" class="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+			Featured <span class="font-mono opacity-70">{layout.featured.length}</span>
+		</a>
+	)}
+	{open.map((b) => (
+		<a href={`#projects-${b.id}`} class="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+			{b.title} <span class="font-mono opacity-70">{b.projects.length}</span>
+		</a>
+	))}
+	{collapsed.length > 0 && (
+		<a href="#projects-collapsed" class="rounded-full border border-dashed border-border px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+			{collapsed.map((b) => b.title).join(", ")}
+		</a>
+	)}
+</nav>
+
+{featuredCards.length > 0 && (
+	<section id="projects-featured" class="mb-10 scroll-mt-24" data-project-section-block>
+		<h3 class="mb-4 flex items-center gap-2 font-sans text-base font-semibold tracking-tight text-foreground">
+			<Pin className="h-4 w-4 rotate-45 text-primary" aria-hidden="true" />
+			Featured
+			<span class="font-mono text-xs font-normal tabular-nums text-muted-foreground">{featuredCards.length}</span>
+		</h3>
+		<div class={gridClass} data-project-grid>
+			{featuredCards.map(({ project, extra, repeat }) => (
+				<div
+					class="h-full"
+					data-project-item-card
+					data-slug={project.slug}
+					data-repeat={repeat ? "true" : undefined}
+					data-extra={extra ? "true" : undefined}
+					data-has-live-link={Boolean(project.live_website_url)}
+					data-has-releases={Boolean(project.hasReleases || project.releases?.length)}
+				>
+					<ProjectCard project={project} hasAnalytics={hasAnalytics(project.slug, analyticsProjects)} analyticsSlug={getAnalyticsSlug(project.slug)} />
+				</div>
+			))}
+		</div>
+	</section>
+)}
+
+{openCards.map(({ block, cards }) => (
+	<details id={`projects-${block.id}`} class="group/section mb-10 scroll-mt-24" open data-project-section data-project-section-block>
+		<summary class="mb-4 flex cursor-pointer list-none items-center gap-2 select-none [&::-webkit-details-marker]:hidden">
+			<ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open/section:rotate-90" aria-hidden="true" />
+			<h3 class="font-sans text-base font-semibold tracking-tight text-foreground">{block.title}</h3>
+			<span class="font-mono text-xs tabular-nums text-muted-foreground" data-project-section-count>{block.projects.length}</span>
+		</summary>
+		<div class={gridClass} data-project-grid>
+			{cards.map(({ project, extra, repeat }) => (
+				<div
+					class="h-full"
+					data-project-item-card
+					data-slug={project.slug}
+					data-repeat={repeat ? "true" : undefined}
+					data-extra={extra ? "true" : undefined}
+					data-has-live-link={Boolean(project.live_website_url)}
+					data-has-releases={Boolean(project.hasReleases || project.releases?.length)}
+				>
+					<ProjectCard project={project} hasAnalytics={hasAnalytics(project.slug, analyticsProjects)} analyticsSlug={getAnalyticsSlug(project.slug)} />
+				</div>
+			))}
+		</div>
+		{cards.some((c) => c.extra) && (
+			<button
+				type="button"
+				class="mt-4 w-full rounded-xl border border-dashed border-border py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+				data-project-show-more={cards.filter((c) => c.extra).length}
+			>
+				Show {cards.filter((c) => c.extra).length} more
+			</button>
+		)}
+	</details>
+))}
+
+{collapsedCards.length > 0 && (
+	<div id="projects-collapsed" class="flex flex-col gap-1 border-t border-border/60 pt-4 scroll-mt-24" data-project-section-block>
+		{collapsedCards.map(({ block, cards }) => (
+			<details id={`projects-${block.id}`} class="group/section rounded-xl px-3 py-2 open:bg-muted/40" data-project-section>
+				<summary class="flex cursor-pointer list-none items-center gap-2 select-none [&::-webkit-details-marker]:hidden">
+					<ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open/section:rotate-90" aria-hidden="true" />
+					<h3 class="font-sans text-sm font-medium text-muted-foreground">{block.title}</h3>
+					<span class="font-mono text-xs tabular-nums text-muted-foreground" data-project-section-count>{block.projects.length}</span>
+				</summary>
+				<div class={`${gridClass} mt-4`} data-project-grid>
+					{cards.map(({ project, repeat }) => (
+						<div
+							class="h-full"
+							data-project-item-card
+							data-slug={project.slug}
+							data-repeat={repeat ? "true" : undefined}
+							data-has-live-link={Boolean(project.live_website_url)}
+							data-has-releases={Boolean(project.hasReleases || project.releases?.length)}
+						>
+							<ProjectCard project={project} hasAnalytics={hasAnalytics(project.slug, analyticsProjects)} analyticsSlug={getAnalyticsSlug(project.slug)} />
+						</div>
+					))}
+				</div>
+			</details>
+		))}
+	</div>
+)}
+
+<section hidden data-project-results>
+	<h3 class="mb-4 flex items-center gap-2 font-sans text-base font-semibold tracking-tight text-foreground">
+		Results
+		<span class="font-mono text-xs font-normal tabular-nums text-muted-foreground" data-project-results-count></span>
+	</h3>
+	<div class={gridClass} data-project-grid data-project-results-grid></div>
+</section>
+
+<style is:global>
+	/* Cards past a section's cap wait for "Show more". In search results they always show. */
+	[data-project-section]:not([data-expanded]) > [data-project-grid] > [data-extra] {
+		display: none;
+	}
+	/* While a search or filter is active, results replace the grouped layout. */
+	[data-projects-filtering] [data-project-section-block],
+	[data-projects-filtering] [data-project-sections-nav] {
+		display: none;
+	}
+</style>

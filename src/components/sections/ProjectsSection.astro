@@ -1,11 +1,11 @@
 ---
 import ProjectFilters from "../projects/ProjectFilters.tsx";
-import ProjectCard from "../projects/ProjectCard.astro";
+import ProjectGrid from "../projects/ProjectGrid.astro";
 import DataFreshness from "../common/DataFreshness";
 import { ChartPie } from "lucide-react";
 import { allProjects, projectsFetchedAt } from "../../data/projects";
 import { starLists } from "../../data/starLists";
-import { fetchAnalyticsProjects, hasAnalytics, getAnalyticsSlug } from "../../data/analyticsProjects";
+import { fetchAnalyticsProjects } from "../../data/analyticsProjects";
 import type { Project } from "@/types";
 
 const projects: Project[] = allProjects;
@@ -72,25 +72,7 @@ const { active = false } = Astro.props;
 	</div>
 
 	<ProjectFilters client:visible starLists={starLists} />
-	<div
-		class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
-	>
-		{
-			projects.map((project) => (
-				<div
-					class="h-full"
-					data-project-item-card
-					data-has-live-link={Boolean(project.live_website_url)}
-				>
-					<ProjectCard
-						project={project}
-						hasAnalytics={hasAnalytics(project.slug, analyticsProjects)}
-						analyticsSlug={getAnalyticsSlug(project.slug)}
-					/>
-				</div>
-			))
-		}
-	</div>
+	<ProjectGrid projects={projects} analyticsProjects={analyticsProjects} />
 	<p data-project-empty role="status" hidden class="py-8 text-center text-sm text-muted-foreground">No projects match these filters. Try clearing a filter or changing your search.</p>
 </div>
 
