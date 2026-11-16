@@ -1,0 +1,7 @@
+Motion for the Android floating navbar, section counts that roll, and empty states that ease in.
+
+* The floating navbar's selection pill slides between tabs instead of switching on and off.
+* The floating navbar gives under your finger and leans toward it, then springs back.
+* Each tab's icon makes a small move when you tap it.
+* The count in a task section header rolls up or down when it changes.
+* Empty states on Android fade in with a small rise.

@@ -8,6 +8,10 @@ name: Publish F-Droid Repo
 #   - workflow_dispatch (from UI or from Patchwork's release-apk.yml)
 #   - repository_dispatch with event_type=fdroid-publish
 #
+# Listing text, screenshots and changelogs live in public/fdroid/metadata. To
+# publish an edit to those without a new APK, run this workflow with
+# "metadata_only" ticked. It re-signs the index from what is already in the repo.
+#
 # Required secrets:
 #   FDROID_KEYSTORE_BASE64  — base64-encoded PKCS12 keystore
 #   FDROID_KEYSTORE_PASS    — keystore password
@@ -19,18 +23,23 @@ on:
     inputs:
       source_repository:
         description: 'GitHub repository that owns the release (owner/repo), e.g. tashifkhan/Patchwork or tashifkhan/Paisa'
-        required: true
+        required: false
         default: 'tashifkhan/Patchwork'
         type: string
       release_tag:
         description: 'Release tag to import (e.g. v1.0.0)'
-        required: true
+        required: false
         type: string
       apk_pattern:
         description: 'APK asset pattern (e.g. *.apk or Paisa-v*.apk)'
-        required: true
+        required: false
         default: '*.apk'
         type: string
+      metadata_only:
+        description: 'Skip the APK import and only re-sign the index, to publish listing edits'
+        required: false
+        default: false
+        type: boolean
   repository_dispatch:
     types: [fdroid-publish]
 
@@ -68,6 +77,7 @@ jobs:
       - name: Resolve inputs
         run: |
           set -euo pipefail
+          METADATA_ONLY='${{ inputs.metadata_only || false }}'
           if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
             SOURCE_REPOSITORY='${{ github.event.client_payload.source_repository }}'
             RELEASE_TAG='${{ github.event.client_payload.release_tag }}'
@@ -79,12 +89,14 @@ jobs:
             APK_PATTERN='${{ inputs.apk_pattern }}'
           fi
 
-          for var in SOURCE_REPOSITORY RELEASE_TAG APK_PATTERN; do
-            if [[ -z "${!var:-}" ]]; then
-              echo "::error::Missing required input: $var"
-              exit 1
-            fi
-          done
+          if [[ "$METADATA_ONLY" != "true" ]]; then
+            for var in SOURCE_REPOSITORY RELEASE_TAG APK_PATTERN; do
+              if [[ -z "${!var:-}" ]]; then
+                echo "::error::Missing required input: $var"
+                exit 1
+              fi
+            done
+          fi
           for var in FDROID_KEYSTORE_BASE64 FDROID_KEYSTORE_PASS FDROID_KEY_ALIAS FDROID_KEY_PASS; do
             if [[ -z "${!var:-}" ]]; then
               echo "::error::Missing required secret: $var"
@@ -96,9 +108,16 @@ jobs:
             echo "SOURCE_REPOSITORY=$SOURCE_REPOSITORY"
             echo "RELEASE_TAG=$RELEASE_TAG"
             echo "APK_PATTERN=$APK_PATTERN"
+            echo "METADATA_ONLY=$METADATA_ONLY"
           } >> "$GITHUB_ENV"
 
-          echo "Source: $SOURCE_REPOSITORY @ $RELEASE_TAG (pattern: $APK_PATTERN)"
+          if [[ "$METADATA_ONLY" == "true" ]]; then
+            echo "COMMIT_MESSAGE=chore: refresh F-Droid listings" >> "$GITHUB_ENV"
+            echo "Metadata only: re-signing the index from the committed repo"
+          else
+            echo "COMMIT_MESSAGE=chore: publish F-Droid $RELEASE_TAG from $SOURCE_REPOSITORY" >> "$GITHUB_ENV"
+            echo "Source: $SOURCE_REPOSITORY @ $RELEASE_TAG (pattern: $APK_PATTERN)"
+          fi
 
       - name: Install fdroidserver
         run: |
@@ -131,6 +150,7 @@ jobs:
 
       - name: Download APK from GitHub Release
         id: download
+        if: env.METADATA_ONLY != 'true'
         run: |
           set -euo pipefail
           mkdir -p fdroid-input public/fdroid/repo public/fdroid/metadata public/fdroid/srclibs
@@ -189,9 +209,24 @@ jobs:
           echo "apk_count=${#APKS[@]}" >> "$GITHUB_OUTPUT"
 
       - name: Extract app icons from APKs
+        if: env.METADATA_ONLY != 'true'
         run: |
           set -euo pipefail
           python .github/scripts/extract-apk-icons.py fdroid-input || true
+
+      # F-Droid shows changelogs/<versionCode>.txt as "What's new". Build it
+      # from the release notes, unless someone already wrote one by hand.
+      - name: Write What's new from the release notes
+        if: env.METADATA_ONLY != 'true'
+        run: |
+          set -uo pipefail
+          gh release view "$RELEASE_TAG" --repo "$SOURCE_REPOSITORY" \
+            --json body --jq .body > release-notes.md || exit 0
+          for apk in fdroid-input/*.apk; do
+            python .github/scripts/write-fdroid-changelog.py \
+              --apk "$apk" --body release-notes.md || true
+          done
+          rm -f release-notes.md
 
       - name: Generate signed F-Droid index
         working-directory: public/fdroid
@@ -274,7 +309,7 @@ jobs:
       - name: Commit F-Droid repo files
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'chore: publish F-Droid ${{ env.RELEASE_TAG }} from ${{ env.SOURCE_REPOSITORY }}'
+          commit_message: ${{ env.COMMIT_MESSAGE }}
           skip_dirty_check: false
           disable_globbing: true
           file_pattern: public/fdroid/**
@@ -287,8 +322,12 @@ jobs:
           {
             echo "## F-Droid publish"
             echo ""
-            echo "- Source: \`${SOURCE_REPOSITORY}@${RELEASE_TAG}\`"
-            echo "- APKs imported: ${{ steps.download.outputs.apk_count }} (\`${{ steps.download.outputs.apk_name }}\`)"
+            if [[ "$METADATA_ONLY" == "true" ]]; then
+              echo "- Listings refreshed, no APK imported"
+            else
+              echo "- Source: \`${SOURCE_REPOSITORY}@${RELEASE_TAG}\`"
+              echo "- APKs imported: ${{ steps.download.outputs.apk_count }} (\`${{ steps.download.outputs.apk_name }}\`)"
+            fi
             echo "- Repo URL: ${REPO_URL}"
             echo "- Install page: https://tashif.codes/fdroid"
           } >> "$GITHUB_STEP_SUMMARY"

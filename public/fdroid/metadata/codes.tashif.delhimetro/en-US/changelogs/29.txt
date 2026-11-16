@@ -1,0 +1,4 @@
+* Book tickets on WhatsApp from a journey.
+* A network map drawn from station coordinates, with pan and pinch zoom, station search, names at every zoom, and a sheet for the selected station with first and last train, facilities, and Route from here.
+* Journey results show the trip on the network map, the other lines faded, the walk between operators dotted.
+* Station pages open on the station's spot on the map, then a short summary.

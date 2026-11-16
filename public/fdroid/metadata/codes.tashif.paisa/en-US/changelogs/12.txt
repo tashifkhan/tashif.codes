@@ -1,0 +1,6 @@
+Add transactions by talking, and delete several accounts at once.
+
+* Tap the mic next to the photo and file buttons and say what you spent, like "Lunch 240 at Chaayos yesterday on my HDFC card, and an Uber 180 this morning".
+* A live waveform moves as you talk.
+* The recording goes to your AI model as audio, so it needs a model that listens, like Gemini.
+* The review page shows what the model heard, so a mishearing is easy to catch before you save.
