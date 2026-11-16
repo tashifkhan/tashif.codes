@@ -45,3 +45,6 @@ public/og/blog/
 # Browser test artifacts
 /test-results/
 /playwright-report/
+
+# hallmark records and screenshots
+.hallmark/

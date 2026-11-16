@@ -1,0 +1,94 @@
+---
+/**
+ * A sideways run of portrait panels that reaches past the container's edge
+ * and snaps. It scrolls by touch, trackpad, the two buttons, or the arrow
+ * keys once the row has focus.
+ */
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import Shot from "./Shot.astro";
+
+export interface Panel {
+	src: string;
+	alt: string;
+}
+
+interface Props {
+	panels: Panel[];
+	/** Accessible name for the row. */
+	label: string;
+	width: number;
+	height: number;
+}
+
+const { panels, label, width, height } = Astro.props;
+---
+
+<div data-ld-rail>
+	<ul class="ld-rail" data-ld-track tabindex="0" aria-label={label}>
+		{
+			panels.map((panel) => (
+				<li>
+					<Shot src={panel.src} alt={panel.alt} width={width} height={height} />
+				</li>
+			))
+		}
+	</ul>
+	<div class="ld-rail-foot">
+		<p class="ld-rail-count">
+			<span data-ld-index>1</span> of {panels.length}
+		</p>
+		<div class="ld-actions">
+			<button type="button" class="ld-btn ld-rail-btn" data-ld-prev data-haptic-nav aria-label="Previous screens">
+				<ArrowLeft aria-hidden="true" />
+			</button>
+			<button type="button" class="ld-btn ld-rail-btn" data-ld-next data-haptic-nav aria-label="Next screens">
+				<ArrowRight aria-hidden="true" />
+			</button>
+		</div>
+	</div>
+</div>
+
+<script>
+	function initRails() {
+		document
+			.querySelectorAll<HTMLElement>("[data-ld-rail]:not([data-wired])")
+			.forEach((root) => {
+				root.dataset.wired = "true";
+				const track = root.querySelector<HTMLElement>("[data-ld-track]")!;
+				const prev = root.querySelector<HTMLButtonElement>("[data-ld-prev]")!;
+				const next = root.querySelector<HTMLButtonElement>("[data-ld-next]")!;
+				const index = root.querySelector<HTMLElement>("[data-ld-index]")!;
+
+				const step = () => {
+					const first = track.firstElementChild as HTMLElement | null;
+					if (!first) return track.clientWidth;
+					const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+					return first.offsetWidth + gap;
+				};
+				const page = () =>
+					Math.max(1, Math.floor(track.clientWidth / step())) * step();
+
+				const sync = () => {
+					const max = track.scrollWidth - track.clientWidth - 1;
+					prev.disabled = track.scrollLeft <= 0;
+					next.disabled = track.scrollLeft >= max;
+					index.textContent = String(
+						Math.min(track.children.length, Math.round(track.scrollLeft / step()) + 1),
+					);
+				};
+
+				prev.addEventListener("click", () =>
+					track.scrollBy({ left: -page(), behavior: "smooth" }),
+				);
+				next.addEventListener("click", () =>
+					track.scrollBy({ left: page(), behavior: "smooth" }),
+				);
+				track.addEventListener("scroll", sync, { passive: true });
+				window.addEventListener("resize", sync, { passive: true });
+				sync();
+			});
+	}
+
+	initRails();
+	document.addEventListener("astro:page-load", initRails);
+</script>

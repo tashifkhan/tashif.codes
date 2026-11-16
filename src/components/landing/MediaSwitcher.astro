@@ -1,0 +1,126 @@
+---
+/**
+ * One area, several clips behind a segmented control. The first is visible
+ * without script. Only the open clip is ever loaded or playing.
+ */
+import Shot from "./Shot.astro";
+import LandingVideo from "./LandingVideo.astro";
+
+export interface Clip {
+	id: string;
+	label: string;
+	/** One line shown beside the control for the open clip. */
+	note: string;
+	src: string;
+	poster: string;
+	width: number;
+	height: number;
+	/** Native controls and sound, instead of a silent loop. */
+	controls?: boolean;
+}
+
+interface Props {
+	clips: Clip[];
+	/** Accessible name for the control. */
+	label: string;
+}
+
+const { clips, label } = Astro.props;
+---
+
+<div data-ld-switcher>
+	<div class="ld-switch-bar">
+		<div role="tablist" aria-label={label} class="ld-tabs">
+			{
+				clips.map((clip, i) => (
+					<button
+						type="button"
+						role="tab"
+						id={`ld-tab-${clip.id}`}
+						aria-controls={`ld-panel-${clip.id}`}
+						aria-selected={i === 0 ? "true" : "false"}
+						tabindex={i === 0 ? 0 : -1}
+						data-haptic-nav
+						class="ld-tab"
+					>
+						{clip.label}
+					</button>
+				))
+			}
+		</div>
+		{
+			clips.map((clip, i) => (
+				<p class="ld-switch-note" data-ld-note={clip.id} hidden={i !== 0}>
+					{clip.note}
+				</p>
+			))
+		}
+	</div>
+
+	{
+		clips.map((clip, i) => (
+			<div
+				role="tabpanel"
+				id={`ld-panel-${clip.id}`}
+				aria-labelledby={`ld-tab-${clip.id}`}
+				hidden={i !== 0}
+			>
+				<Shot width={clip.width} height={clip.height}>
+					<LandingVideo
+						src={clip.src}
+						poster={clip.poster}
+						label={`Paisa, ${clip.label.toLowerCase()}`}
+						autoplay={!clip.controls}
+						controls={clip.controls}
+					/>
+				</Shot>
+			</div>
+		))
+	}
+</div>
+
+<script>
+	function initSwitchers() {
+		document
+			.querySelectorAll<HTMLElement>("[data-ld-switcher]:not([data-wired])")
+			.forEach((root) => {
+				root.dataset.wired = "true";
+				const tabs = [...root.querySelectorAll<HTMLElement>('[role="tab"]')];
+
+				const select = (tab: HTMLElement, focus = false) => {
+					for (const t of tabs) {
+						const on = t === tab;
+						t.setAttribute("aria-selected", String(on));
+						t.tabIndex = on ? 0 : -1;
+						const id = t.id.replace("ld-tab-", "");
+						const note = root.querySelector<HTMLElement>(`[data-ld-note="${id}"]`);
+						if (note) note.hidden = !on;
+						const panel = document.getElementById(`ld-panel-${id}`);
+						if (!panel) continue;
+						panel.hidden = !on;
+						const video = panel.querySelector("video");
+						if (!video) continue;
+						if (!on) video.pause();
+						else if (video.hasAttribute("data-autoplay") && !video.controls) {
+							video.muted = true;
+							video.play().catch(() => {});
+						}
+					}
+					if (focus) tab.focus({ preventScroll: true });
+				};
+
+				tabs.forEach((tab, i) => {
+					tab.addEventListener("click", () => select(tab));
+					tab.addEventListener("keydown", (e) => {
+						const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+						if (!step) return;
+						e.preventDefault();
+						select(tabs[(i + step + tabs.length) % tabs.length], true);
+					});
+				});
+			});
+	}
+
+	initSwitchers();
+	document.addEventListener("astro:page-load", initSwitchers);
+</script>

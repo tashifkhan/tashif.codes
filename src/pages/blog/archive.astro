@@ -12,6 +12,7 @@ import { blogPosts, blogFetchedAt, blogTags, avgReadingMinutes, numBlogPosts, to
 	title="Blog Archive | Tashif Ahmad Khan"
 	image="/og/blog.jpg"
 	tint="orange"
+	compact
 	breadcrumbs={[
 		{ label: "Home", href: "/" },
 		{ label: "Blog", href: "/blog" },
@@ -19,10 +20,10 @@ import { blogPosts, blogFetchedAt, blogTags, avgReadingMinutes, numBlogPosts, to
 	]}
 >
 	<Fragment slot="header">
-		<div class="mb-4">
+		<div>
 			<div class="flex items-center justify-between gap-4">
 				<h1
-					class="font-sans text-4xl sm:text-5xl font-semibold tracking-tight text-foreground"
+					class="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-primary leading-none pb-0.5"
 				>
 					Blog
 				</h1>
@@ -49,11 +50,11 @@ import { blogPosts, blogFetchedAt, blogTags, avgReadingMinutes, numBlogPosts, to
 				</a>
 				</div>
 			</div>
-			<p class="mt-2 sm:mt-3 max-w-xl text-sm sm:text-base text-muted-foreground">
+			<p class="mt-2 max-w-2xl text-sm sm:text-base text-muted-foreground leading-relaxed">
 				Guides, deep dives, and notes on web systems, tooling, and low-level
 				internals.
 			</p>
-			<div class="mt-3">
+			<div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
 				<DataFreshness
 					client:load
 					source="blog"
@@ -61,9 +62,8 @@ import { blogPosts, blogFetchedAt, blogTags, avgReadingMinutes, numBlogPosts, to
 					label="Blog posts"
 					description="Re-fetch titles, excerpts, tags, and reading times from the live blog API. Engagement (views, likes, comments) is only loaded on individual post pages."
 				/>
-			</div>
 			<div
-				class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm text-muted-foreground"
+				class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm text-muted-foreground"
 			>
 				<span>
 					<span
@@ -94,6 +94,7 @@ import { blogPosts, blogFetchedAt, blogTags, avgReadingMinutes, numBlogPosts, to
 						</span>
 					)
 				}
+			</div>
 			</div>
 		</div>
 	</Fragment>

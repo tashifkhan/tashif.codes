@@ -1,0 +1,27 @@
+---
+/**
+ * One section: a head block, then whatever composition shows the content
+ * best. `layout="side"` puts the head on four columns beside the body, which
+ * suits rows and questions. `gap` varies the space above so sections do not
+ * all part the same way.
+ */
+interface Props {
+	id?: string;
+	/** Six words or fewer. Say what the visitor will see. */
+	title: string;
+	/** One line under the title. */
+	lead?: string;
+	layout?: "stack" | "side";
+	gap?: "s" | "m" | "l";
+}
+
+const { id, title, lead, layout = "stack", gap = "m" } = Astro.props;
+---
+
+<section id={id} class="ld-section" data-layout={layout} data-gap={gap}>
+	<div class="ld-head">
+		<h2>{title}</h2>
+		{lead && <p class="ld-lead">{lead}</p>}
+	</div>
+	<div class="ld-body"><slot /></div>
+</section>

@@ -1,0 +1,284 @@
+---
+/**
+ * The README view of a project: the rendered README beside a rail of
+ * releases, topics and languages. Used at /projects/<slug> for projects
+ * without a landing, and at /projects/<slug>/readme for those with one.
+ */
+import { Download } from "lucide-react";
+import MarkdownRenderer from "../common/markdown/MarkdownRenderer.astro";
+import EmptyState from "../common/EmptyState.astro";
+import { languageColor } from "../../lib/languageColors";
+import { formatTopic } from "../../lib/formatTopic";
+import {
+	formatBytes,
+	formatReleaseDate as formatDate,
+	releaseHref,
+	releaseSummary,
+} from "@/lib/releases";
+import type { Project } from "@/types";
+
+interface Props {
+	project: Project;
+}
+
+const { project } = Astro.props;
+
+// Readme is plain markdown. Graceful fallback: if the content looks like
+// Base64 (all base64 chars, no markdown markers), decode it.
+let readmeContent = project.readme || "";
+if (readmeContent) {
+	const trimmed = readmeContent.trim();
+	const looksLikeBase64 =
+		trimmed.length > 0 &&
+		!trimmed.startsWith("#") &&
+		!trimmed.startsWith("-") &&
+		!trimmed.startsWith("*") &&
+		!/\s/.test(trimmed.slice(0, 20)) &&
+		/^[A-Za-z0-9+/\r\n]+=*$/.test(trimmed);
+	if (looksLikeBase64) {
+		try {
+			readmeContent = Buffer.from(trimmed, "base64").toString("utf-8");
+		} catch {
+			// keep raw
+		}
+	}
+}
+
+const releases = project.releases ?? [];
+const latestRelease = releases[0];
+const latestSummary = latestRelease ? releaseSummary(latestRelease.body) : "";
+const older = releases.slice(1);
+const EARLIER_SHOWN = 5;
+
+// A checksum file sits beside the file it covers instead of taking its own row.
+const isChecksum = (name: string) => /\.(sha256|sha512|asc|sig)$/i.test(name);
+const assets = latestRelease?.assets ?? [];
+const downloads = assets
+	.filter((asset) => !isChecksum(asset.name))
+	.map((asset) => ({
+		asset,
+		checksum: assets.find((other) => other.name === `${asset.name}.sha256`),
+	}));
+---
+
+<div
+	class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6 lg:gap-8 items-start"
+>
+	<!-- README -->
+	<article
+		id="project-readme"
+		class="bg-card/80 backdrop-blur-xl p-4 sm:p-8 lg:p-10 rounded-2xl border border-border/50 shadow-lg min-w-0"
+	>
+		{
+			readmeContent ? (
+				<MarkdownRenderer
+					content={readmeContent}
+					githubBaseUrl={project.github_link}
+				/>
+			) : (
+				<div class="py-16">
+					<EmptyState
+						command="cat README.md"
+						title="no such file or directory"
+						description="No documentation is available for this project yet. Check the GitHub repository for more details."
+						ctaLabel="view on github"
+						ctaHref={project.github_link}
+						ctaExternal
+					/>
+				</div>
+			)
+		}
+	</article>
+
+	<!-- Metadata sidebar — sticks below the compact header, scrolls internally if tall -->
+	<aside
+		class="space-y-5 min-w-0 lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto"
+		style="scrollbar-width: none;"
+	>
+		{
+			latestRelease && (
+				<section
+					id="releases"
+					class="scroll-mt-8 rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5"
+				>
+					<div class="flex items-baseline justify-between gap-3">
+						<h2 class="text-sm font-medium text-muted-foreground">
+							Latest release
+						</h2>
+						{releases.length > 1 && (
+							<span class="text-xs text-muted-foreground tabular-nums">
+								{releases.length} in all
+							</span>
+						)}
+					</div>
+
+					<a
+						href={releaseHref(project.slug, latestRelease.tag_name)}
+						data-haptic-nav
+						class="group/rel mt-2 block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+					>
+						<span class="flex items-baseline gap-2.5">
+							<span class="text-3xl font-bold tracking-tight tabular-nums text-foreground transition-colors group-hover/rel:text-primary">
+								{latestRelease.tag_name}
+							</span>
+							{latestRelease.prerelease && (
+								<span class="text-xs text-muted-foreground">pre-release</span>
+							)}
+						</span>
+						{latestRelease.published_at && (
+							<span class="mt-1 block text-xs text-muted-foreground">
+								{formatDate(latestRelease.published_at)}
+							</span>
+						)}
+						{latestSummary && (
+							<span class="mt-3 block text-sm leading-relaxed text-foreground/80 line-clamp-3">
+								{latestSummary}
+							</span>
+						)}
+						<span class="mt-2 inline-block text-sm font-medium text-primary underline-offset-4 group-hover/rel:underline">
+							Read the release notes
+						</span>
+					</a>
+
+					{downloads.length > 0 && (
+						<ul class="mt-4 border-t border-border/60 divide-y divide-border/60">
+							{downloads.map(({ asset, checksum }) => (
+								<li class="flex items-center gap-3 py-2.5">
+									<a
+										href={asset.download_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										data-haptic-external
+										title={`${asset.download_count.toLocaleString()} downloads`}
+										class="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium text-foreground transition-colors hover:text-primary"
+									>
+										<Download className="w-4 h-4 shrink-0 text-muted-foreground" />
+										<span class="truncate">{asset.name}</span>
+									</a>
+									{checksum && (
+										<a
+											href={checksum.download_url}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="shrink-0 text-xs text-muted-foreground underline underline-offset-2 hover:text-primary"
+										>
+											sha256
+										</a>
+									)}
+									<span class="shrink-0 text-xs text-muted-foreground tabular-nums">
+										{formatBytes(asset.size)}
+									</span>
+								</li>
+							))}
+						</ul>
+					)}
+
+					{older.length > 0 && (
+						<div class="mt-5">
+							<h3 class="text-sm font-medium text-muted-foreground">Earlier</h3>
+							<ol class="mt-1">
+								{older.slice(0, EARLIER_SHOWN).map((release) => (
+									<li>
+										<a
+											href={releaseHref(project.slug, release.tag_name)}
+											data-haptic-nav
+											class="group/old flex items-baseline justify-between gap-3 py-1.5 text-sm"
+										>
+											<span class="font-medium tabular-nums text-foreground transition-colors group-hover/old:text-primary">
+												{release.tag_name}
+												{(release.prerelease || release.draft) && (
+													<span class="ml-2 text-xs font-normal text-muted-foreground">
+														{release.draft ? "draft" : "pre-release"}
+													</span>
+												)}
+											</span>
+											{release.published_at && (
+												<span class="text-xs text-muted-foreground tabular-nums">
+													{formatDate(release.published_at)}
+												</span>
+											)}
+										</a>
+									</li>
+								))}
+							</ol>
+							{older.length > EARLIER_SHOWN && (
+								<details class="group/more">
+									<summary class="cursor-pointer list-none py-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline [&::-webkit-details-marker]:hidden group-open/more:hidden">
+										Show {older.length - EARLIER_SHOWN} more
+									</summary>
+									<ol>
+										{older.slice(EARLIER_SHOWN).map((release) => (
+											<li>
+												<a
+													href={releaseHref(project.slug, release.tag_name)}
+													data-haptic-nav
+													class="group/old flex items-baseline justify-between gap-3 py-1.5 text-sm"
+												>
+													<span class="font-medium tabular-nums text-foreground transition-colors group-hover/old:text-primary">
+														{release.tag_name}
+													</span>
+													{release.published_at && (
+														<span class="text-xs text-muted-foreground tabular-nums">
+															{formatDate(release.published_at)}
+														</span>
+													)}
+												</a>
+											</li>
+										))}
+									</ol>
+								</details>
+							)}
+						</div>
+					)}
+				</section>
+			)
+		}
+
+		{
+			(project.topics?.length ?? 0) > 0 && (
+				<section class="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
+					<h2 class="text-sm font-medium text-muted-foreground mb-3.5">
+						GitHub Topics
+					</h2>
+					<div class="flex flex-wrap gap-1.5">
+						{project.topics!.map((topic: string) => (
+							<a
+								href={`https://github.com/topics/${encodeURIComponent(topic)}`}
+								target="_blank"
+								rel="noopener noreferrer"
+								title={`#${topic} on GitHub`}
+								class="inline-flex items-center rounded-full border border-border/60 bg-muted/40 px-2.5 py-1 text-[11px] font-medium leading-none text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+								data-haptic-external
+							>
+								{formatTopic(topic)}
+							</a>
+						))}
+					</div>
+				</section>
+			)
+		}
+
+
+		{
+			project.languages.length > 0 && (
+				<section class="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl p-5">
+					<h2 class="text-sm font-medium text-muted-foreground mb-3.5">
+						Built With
+					</h2>
+					<ul class="flex flex-col gap-2.5">
+						{project.languages.map((lang: string) => (
+							<li class="flex items-center gap-2.5 text-[13px] leading-none text-foreground/85">
+								<span
+									class="w-2.5 h-2.5 rounded-full shrink-0 ring-1 ring-inset ring-black/10 dark:ring-white/10"
+									style={`background-color: ${languageColor(lang)}`}
+									aria-hidden="true"
+								/>
+								{lang}
+							</li>
+						))}
+					</ul>
+				</section>
+			)
+		}
+	</aside>
+</div>

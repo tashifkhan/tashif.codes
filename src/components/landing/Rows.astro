@@ -1,0 +1,28 @@
+---
+/**
+ * Full-width rows parted by hairlines: a name on the left, its line on the
+ * right. `dense` is for longer lists such as a feature table.
+ */
+export interface Row {
+	title: string;
+	body: string;
+}
+
+interface Props {
+	rows: Row[];
+	dense?: boolean;
+}
+
+const { rows, dense = false } = Astro.props;
+---
+
+<dl class="ld-rows" data-dense={dense ? "" : undefined}>
+	{
+		rows.map((row) => (
+			<div class="ld-row">
+				<dt>{row.title}</dt>
+				<dd>{row.body}</dd>
+			</div>
+		))
+	}
+</dl>

@@ -1,0 +1,32 @@
+---
+/**
+ * Questions that open in place. Native <details>, so it works without script.
+ */
+import { Plus } from "lucide-react";
+
+export interface FaqItem {
+	q: string;
+	/** Plain text or trusted HTML. */
+	a: string;
+}
+
+interface Props {
+	items: FaqItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="ld-faq">
+	{
+		items.map((item) => (
+			<details>
+				<summary>
+					{item.q}
+					<Plus aria-hidden="true" />
+				</summary>
+				<div class="ld-faq-answer" set:html={item.a} />
+			</details>
+		))
+	}
+</div>

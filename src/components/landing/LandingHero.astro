@@ -1,0 +1,23 @@
+---
+/**
+ * The first screen: a headline of seven words or fewer, one sentence, the
+ * actions, and a visual beside them. Slots: `actions` for the buttons,
+ * `terms` for one small line under them, `media` for a Shot.
+ */
+interface Props {
+	title: string;
+	lead: string;
+}
+
+const { title, lead } = Astro.props;
+---
+
+<section class="ld-hero">
+	<div class="ld-hero-text">
+		<h2 class="ld-display">{title}</h2>
+		<p class="ld-lead">{lead}</p>
+		<div class="ld-actions"><slot name="actions" /></div>
+		{Astro.slots.has("terms") && <p class="ld-small"><slot name="terms" /></p>}
+	</div>
+	<div class="ld-hero-media"><slot name="media" /></div>
+</section>

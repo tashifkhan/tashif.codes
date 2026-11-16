@@ -1,0 +1,45 @@
+---
+/**
+ * README for projects whose /projects/<slug> is a custom landing. Projects
+ * without a landing already show the README there, so they get no page here.
+ */
+import ProjectPage from "../../../components/projects/ProjectPage.astro";
+import ProjectReadme from "../../../components/projects/ProjectReadme.astro";
+import { allProjects } from "../../../data/projects";
+import {
+	fetchAnalyticsProjects,
+	hasAnalytics,
+	getAnalyticsSlug,
+} from "../../../data/analyticsProjects";
+import { hasLanding } from "@/lib/landings";
+import type { Project } from "@/types";
+
+const { project, projectHasAnalytics, analyticsSlug } = Astro.props as {
+	project: Project;
+	projectHasAnalytics: boolean;
+	analyticsSlug: string;
+};
+
+export async function getStaticPaths() {
+	const analyticsProjects = await fetchAnalyticsProjects();
+	return allProjects
+		.filter((project: Project) => hasLanding(project.slug))
+		.map((project: Project) => ({
+			params: { slug: project.slug },
+			props: {
+				project,
+				projectHasAnalytics: hasAnalytics(project.slug, analyticsProjects),
+				analyticsSlug: getAnalyticsSlug(project.slug),
+			},
+		}));
+}
+---
+
+<ProjectPage
+	project={project}
+	projectHasAnalytics={projectHasAnalytics}
+	analyticsSlug={analyticsSlug}
+	view="readme"
+>
+	<ProjectReadme project={project} />
+</ProjectPage>
