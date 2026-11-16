@@ -25,6 +25,8 @@ import {
 
 interface Props extends Omit<SeoProps, "title"> {
 	title: string;
+	/** schema.org structured data, emitted as one JSON-LD block. */
+	jsonLd?: Record<string, unknown>;
 }
 
 const {
@@ -36,7 +38,11 @@ const {
 	publishedTime,
 	tags,
 	noindex = false,
+	jsonLd,
 } = Astro.props;
+
+// `<` is escaped so a title containing "</script>" cannot end the block early.
+const jsonLdText = jsonLd ? JSON.stringify(jsonLd).replace(/</g, "\\u003c") : null;
 
 const canonical = absoluteUrl(url ?? Astro.url.pathname);
 const social = resolveSocialImageMeta({
@@ -317,6 +323,7 @@ const showAmbientChrome = !isDocsReader;
 		<meta itemprop="name" content={title} />
 		<meta itemprop="description" content={description} />
 		<meta itemprop="image" content={social.url} />
+		{jsonLdText && <script type="application/ld+json" set:html={jsonLdText} />}
 
 		<ClientRouter />
 	</head>
