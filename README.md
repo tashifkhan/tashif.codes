@@ -57,6 +57,14 @@ bun run test:analytics   # playwright checks for the analytics wiring
 
 the analytics api has its own readme in [`api/README.md`](api/README.md).
 
+## giving a project its own landing page
+
+every project page is its github readme by default. to replace one, add `src/landings/<project-slug>.astro`. that file now renders at `/projects/<slug>`, and the readme moves to `/projects/<slug>/readme` with a tab linking the two. nothing to register, the file name is the switch.
+
+the header, tabs and sticky bar stay the same on every project. the part below them is yours. `src/components/landing` has the pieces most pages want (hero, device frames, lazy videos, media tabs, a panel carousel, feature rows, a feature grid, faq, a closing band), and plain markup works wherever those run out. they only read theme tokens, so a landing follows the accent and light or dark mode on its own.
+
+a landing can also `export const landing` to set a tagline, an accent colour and the header button. [`src/landings/paisa.astro`](src/landings/paisa.astro) is the one to copy. its media lives in `public/landings/paisa`.
+
 ## f-droid, for the curious
 
 paste `https://tashif.codes/fdroid/repo?fingerprint=568557c435bdf555725de95de596a90d6fa964d4bf0b71874f254cd0be7e94c9` into f-droid (the fingerprint makes f-droid check the repo is really mine) and you get [Paisa](https://github.com/tashifkhan/Paisa), [Patchwork](https://github.com/tashifkhan/Patchwork) and [Delhi Metro](https://github.com/tashifkhan/delhi-metro). each app's release workflow pokes `publish-fdroid.yml` here, which grabs the apk, signs the index and commits it.
