@@ -6,6 +6,12 @@ import SettingsDock from "../components/common/SettingsDock.tsx";
 import DotCursor from "../components/common/DotCursor.astro";
 import StudioField from "../components/common/StudioField.astro";
 import { ClientRouter } from "astro:transitions";
+// Each lazy skin builds to its own stylesheet. `?url` gives the built path
+// without adding the file to this page's CSS.
+import dumpSkinUrl from "../styles/skins/dump.css?url";
+import sleeckSkinUrl from "../styles/skins/sleeck.css?url";
+import materialSkinUrl from "../styles/skins/material.css?url";
+import { SKIN_COLOR_IDS } from "../lib/skins";
 import Analytics from "@vercel/analytics/astro";
 import {
 	DEFAULT_DESCRIPTION,
@@ -40,6 +46,12 @@ const social = resolveSocialImageMeta({
 
 // The docs reader keeps a solid surface. Everything else gets the
 // viewport-wide ambient field and the shared footer.
+const skinCss = {
+	dump: dumpSkinUrl,
+	sleeck: sleeckSkinUrl,
+	material: materialSkinUrl,
+};
+
 const isDocsReader = /^\/docs\/[^/]+/.test(Astro.url.pathname);
 const showAmbientChrome = !isDocsReader;
 ---
@@ -50,16 +62,37 @@ const showAmbientChrome = !isDocsReader;
 		<meta charset="UTF-8" />
 		<meta name="description" content={description} />
 		<meta name="viewport" content="width=device-width" />
-		<script is:inline data-astro-rerun>
+		<script is:inline data-astro-rerun define:vars={{ skinCss, skinColors: SKIN_COLOR_IDS }}>
 			// Resolve the design skin before the first paint. Studio (green) is
-			// the default; the simple palette only wins when picked explicitly.
+			// the default. Simple and studio ship in the main stylesheet. The
+			// others each have their own file, linked here only when chosen, so a
+			// visitor never downloads a skin they are not using.
 			(() => {
+				window.__skinCss = skinCss;
+				let skin = "studio";
 				try {
 					const stored = localStorage.getItem("tashif-skin");
-					document.documentElement.dataset.skin =
-						stored === "simple" ? "simple" : "studio";
-				} catch {
-					document.documentElement.dataset.skin = "studio";
+					if (stored === "simple" || skinCss[stored]) skin = stored;
+				} catch {}
+				document.documentElement.dataset.skin = skin;
+				// Each style remembers its own colour combo. The default combo
+				// sets no attribute.
+				let color = "";
+				try {
+					const saved = JSON.parse(
+						localStorage.getItem("tashif-skin-colors") || "{}",
+					)[skin];
+					if ((skinColors[skin] || []).includes(saved)) color = saved;
+				} catch {}
+				if (color) document.documentElement.dataset.color = color;
+				else delete document.documentElement.dataset.color;
+				const href = skinCss[skin];
+				if (href && !document.querySelector(`link[data-skin-css="${skin}"]`)) {
+					// document.write keeps the stylesheet render-blocking, so the
+					// page never paints in the default palette first.
+					const tag = `<link rel="stylesheet" data-skin-css="${skin}" href="${href}">`;
+					if (document.readyState === "loading") document.write(tag);
+					else document.head.insertAdjacentHTML("beforeend", tag);
 				}
 			})();
 		</script>
@@ -83,6 +116,11 @@ const showAmbientChrome = !isDocsReader;
 				const current = document.documentElement;
 				const incoming = event.newDocument.documentElement;
 				incoming.dataset.skin = current.dataset.skin;
+				if (current.dataset.color) incoming.dataset.color = current.dataset.color;
+				// Keep the active skin's stylesheet in the head across the swap.
+				// Without this the router drops it and the page flashes unstyled.
+				const skinLink = document.querySelector("link[data-skin-css]");
+				if (skinLink) event.newDocument.head.append(skinLink.cloneNode());
 				incoming.dataset.themeMode = current.dataset.themeMode;
 				incoming.classList.toggle("dark", current.classList.contains("dark"));
 				incoming.classList.remove("cream");

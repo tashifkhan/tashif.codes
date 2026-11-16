@@ -1,0 +1,125 @@
+/*
+ * Dump skin, from dump-lab's default zine theme: warm paper, marker ink, a
+ * yellow highlighter and a pink stamp, with Anton headings.
+ * Loaded on demand. Layout.astro links this file only while the skin is on.
+ */
+@import "@fontsource/anton/400.css";
+
+html[data-skin="dump"] {
+	--sk-edge: var(--sk-ink);
+	--sk-paper: #f6f3ea;
+	--sk-card: #fffef8;
+	--sk-ink: #191713;
+	--sk-muted: #5c564e;
+	--sk-line: #d9d2c3;
+	--sk-well: #ebe4d4;
+	--sk-yellow: #f2e14c;
+	--sk-on-yellow: #191713;
+	/* The zine's pink, darkened until it passes 4.5:1 as text on the paper. */
+	--sk-pink: #c2255c;
+	--sk-on-pink: #fffef8;
+	--sk-error: #c23b3b;
+	--sk-on-error: #fffef8;
+	--sk-shadow: 3px 3px 0 var(--sk-edge);
+}
+html[data-skin="dump"].dark {
+	--sk-edge: #3a424d;
+	--sk-paper: #0c0e11;
+	--sk-card: #15181d;
+	--sk-ink: #f0f3f6;
+	--sk-muted: #949ea8;
+	--sk-line: #282f38;
+	--sk-well: #191d23;
+	--sk-yellow: #f5d033;
+	--sk-on-yellow: #0c0e11;
+	--sk-pink: #ff578f;
+	--sk-on-pink: #0c0e11;
+	--sk-error: #f87171;
+	--sk-on-error: #0c0e11;
+}
+html[data-skin="dump"] {
+	--background: var(--sk-paper);
+	--foreground: var(--sk-ink);
+	--card: var(--sk-card);
+	--card-foreground: var(--sk-ink);
+	--popover: var(--sk-card);
+	--popover-foreground: var(--sk-ink);
+	--primary: var(--sk-pink);
+	--primary-foreground: var(--sk-on-pink);
+	--secondary: var(--sk-well);
+	--secondary-foreground: var(--sk-ink);
+	--muted: var(--sk-well);
+	--muted-foreground: var(--sk-muted);
+	--accent: var(--sk-yellow);
+	--accent-foreground: var(--sk-on-yellow);
+	--destructive: var(--sk-error);
+	--destructive-foreground: var(--sk-on-error);
+	--border: var(--sk-line);
+	--input: var(--sk-well);
+	--ring: var(--sk-pink);
+	--sidebar: var(--sk-card);
+	--sidebar-foreground: var(--sk-ink);
+	--sidebar-primary: var(--sk-pink);
+	--sidebar-primary-foreground: var(--sk-on-pink);
+	--sidebar-accent: var(--sk-well);
+	--sidebar-accent-foreground: var(--sk-ink);
+	--sidebar-border: var(--sk-line);
+	--sidebar-ring: var(--sk-pink);
+	--chart-1: var(--sk-pink);
+	--primary-color: var(--sk-pink);
+
+	--radius: 0.375rem;
+	--font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+	--font-display: "Anton", "IBM Plex Sans", sans-serif;
+	--font-mono: "IBM Plex Mono", ui-monospace, monospace;
+	/* Anton ships one weight and is already tight. */
+	--skin-heading-weight: 400;
+	--skin-heading-tracking: 0.005em;
+}
+
+/* Stamped cards: an ink outline and a hard shadow with no blur. */
+html[data-skin="dump"] :is([data-project-card] article, [data-blog-card] > div, .ld-shot-frame, #project-readme, aside > section) {
+	border: 2px solid var(--sk-edge);
+	box-shadow: var(--sk-shadow);
+}
+html[data-skin="dump"] .ld-btn {
+	border: 2px solid var(--sk-edge);
+}
+html[data-skin="dump"] :is([data-landing] .ld-display, [data-landing] h2, [data-landing] h3) {
+	letter-spacing: 0.005em;
+	font-weight: 400;
+	line-height: 1.08;
+}
+/* The yellow highlighter, on selected text. */
+html[data-skin="dump"] ::selection {
+	background: var(--sk-yellow);
+	color: var(--sk-on-yellow);
+}
+
+/* Colour combos. Pink is the default; these swap the stamp colour. */
+html[data-skin="dump"][data-color="blue"] {
+	--sk-pink: #1d4ed8;
+	--sk-on-pink: #fffef8;
+}
+html[data-skin="dump"][data-color="blue"].dark {
+	--sk-pink: #7aa2ff;
+	--sk-on-pink: #0c0e11;
+}
+html[data-skin="dump"][data-color="moss"] {
+	--sk-pink: #1f7a4c;
+	--sk-on-pink: #fffef8;
+	--sk-yellow: #ffd6e2;
+}
+html[data-skin="dump"][data-color="moss"].dark {
+	--sk-pink: #34d399;
+	--sk-on-pink: #0c0e11;
+	--sk-yellow: #ff8fb1;
+}
+html[data-skin="dump"][data-color="rust"] {
+	--sk-pink: #c2410c;
+	--sk-on-pink: #fffef8;
+}
+html[data-skin="dump"][data-color="rust"].dark {
+	--sk-pink: #fb923c;
+	--sk-on-pink: #0c0e11;
+}

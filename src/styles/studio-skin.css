@@ -819,3 +819,122 @@ html[data-skin="simple"] .rise-in {
 		animation: none !important;
 	}
 }
+
+/* ---------------------------------------------------------------------------
+ * The lazy skins: dump, sleeck and material. Their palettes live in
+ * src/styles/skins/<name>.css and load on demand. These few rules are the
+ * plumbing every one of them needs, so they ship with the page.
+ * ------------------------------------------------------------------------ */
+
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) {
+	background-color: var(--background);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) body {
+	background-color: var(--background);
+	color: var(--foreground);
+	font-family: var(--font-sans);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) .font-sans {
+	font-family: var(--font-sans);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) :is(.font-mono, code, pre, kbd, samp) {
+	font-family: var(--font-mono);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) :is(h1, h2, h3, h4, h5, h6):not(.font-mono) {
+	font-family: var(--font-display);
+	font-weight: var(--skin-heading-weight);
+	letter-spacing: var(--skin-heading-tracking);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) [data-page-shell] {
+	background: var(--background);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) [data-page-tint] {
+	display: none;
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) [data-page-surface] {
+	background: transparent !important;
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) [data-page-header] {
+	background: color-mix(in oklab, var(--card) 68%, transparent);
+	border-color: var(--border);
+}
+@media (hover: hover) and (pointer: fine) {
+	html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) .dot-cursor {
+		display: block;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) .dot-cursor {
+		display: none;
+	}
+}
+
+/* ---------------------------------------------------------------------------
+ * Colour combos for the two built-in styles. Each style's first combo is its
+ * own palette and sets no attribute. The names match src/lib/skins.ts.
+ * ------------------------------------------------------------------------ */
+
+html[data-skin="studio"][data-color="amber"] {
+	--primary: #b45309;
+	--primary-foreground: #ffffff;
+	--accent: color-mix(in oklab, var(--primary) 12%, transparent);
+	--accent-foreground: var(--primary);
+}
+html[data-skin="studio"][data-color="amber"].dark {
+	--primary: #fbbf24;
+	--primary-foreground: #241a02;
+}
+html[data-skin="studio"][data-color="indigo"] {
+	--primary: #4338ca;
+	--primary-foreground: #ffffff;
+	--accent: color-mix(in oklab, var(--primary) 12%, transparent);
+	--accent-foreground: var(--primary);
+}
+html[data-skin="studio"][data-color="indigo"].dark {
+	--primary: #a5b4fc;
+	--primary-foreground: #12143a;
+}
+html[data-skin="studio"][data-color="rose"] {
+	--primary: #be123c;
+	--primary-foreground: #ffffff;
+	--accent: color-mix(in oklab, var(--primary) 12%, transparent);
+	--accent-foreground: var(--primary);
+}
+html[data-skin="studio"][data-color="rose"].dark {
+	--primary: #fda4af;
+	--primary-foreground: #3a0a16;
+}
+html[data-skin="simple"][data-color="blue"] {
+	--primary: #2563eb;
+	--primary-foreground: #ffffff;
+}
+html[data-skin="simple"][data-color="blue"].dark {
+	--primary: #60a5fa;
+	--primary-foreground: #0b1220;
+}
+html[data-skin="simple"][data-color="violet"] {
+	--primary: #7c3aed;
+	--primary-foreground: #ffffff;
+}
+html[data-skin="simple"][data-color="violet"].dark {
+	--primary: #a78bfa;
+	--primary-foreground: #160b33;
+}
+html[data-skin="simple"][data-color="rose"] {
+	--primary: #e11d48;
+	--primary-foreground: #ffffff;
+}
+html[data-skin="simple"][data-color="rose"].dark {
+	--primary: #fb7185;
+	--primary-foreground: #33070f;
+}
+
+/* Whatever combo is on, the tokens that follow the accent follow it. */
+html[data-color]:is([data-skin="simple"], [data-skin="studio"]) {
+	--ring: var(--primary);
+	--sidebar-primary: var(--primary);
+	--sidebar-primary-foreground: var(--primary-foreground);
+	--sidebar-ring: var(--primary);
+	--chart-1: var(--primary);
+	--primary-color: var(--primary);
+}

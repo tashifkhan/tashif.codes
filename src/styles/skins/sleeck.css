@@ -1,0 +1,144 @@
+/*
+ * Sleeck skin, from dump-lab's sleeck.dev theme: lavender paper, black ink,
+ * a lime highlight, mono headings and hard offset shadows.
+ * Loaded on demand. Layout.astro links this file only while the skin is on.
+ */
+@import "@fontsource/dm-sans/400.css";
+@import "@fontsource/dm-sans/700.css";
+@import "@fontsource/space-mono/400.css";
+@import "@fontsource/space-mono/700.css";
+
+html[data-skin="sleeck"] {
+	--sk-edge: var(--sk-ink);
+	--sk-paper: #e0d6ff;
+	--sk-card: #ffffff;
+	--sk-ink: #0a0714;
+	--sk-muted: #51446a;
+	--sk-line: #ad9bcf;
+	--sk-well: #cec1ed;
+	--sk-lime: #c4f042;
+	--sk-on-lime: #0a0714;
+	--sk-error: #b3261e;
+	--sk-on-error: #ffffff;
+
+	--primary: var(--sk-ink);
+	--primary-foreground: var(--sk-lime);
+	--accent: var(--sk-lime);
+	--accent-foreground: var(--sk-on-lime);
+	--sk-shadow: 4px 4px 0 var(--sk-edge);
+}
+html[data-skin="sleeck"].dark {
+	--sk-edge: #5d4a80;
+	--sk-paper: #1a1333;
+	--sk-card: #0f0c1a;
+	--sk-ink: #e8e0ff;
+	--sk-muted: #b9accf;
+	--sk-line: #45365f;
+	--sk-well: #241a40;
+	--sk-error: #ffb4ab;
+	--sk-on-error: #2b0b08;
+
+	--primary: var(--sk-lime);
+	--primary-foreground: var(--sk-on-lime);
+	--accent: var(--sk-well);
+	--accent-foreground: var(--sk-ink);
+}
+html[data-skin="sleeck"] {
+	--background: var(--sk-paper);
+	--foreground: var(--sk-ink);
+	--card: var(--sk-card);
+	--card-foreground: var(--sk-ink);
+	--popover: var(--sk-card);
+	--popover-foreground: var(--sk-ink);
+	--secondary: var(--sk-well);
+	--secondary-foreground: var(--sk-ink);
+	--muted: var(--sk-well);
+	--muted-foreground: var(--sk-muted);
+	--destructive: var(--sk-error);
+	--destructive-foreground: var(--sk-on-error);
+	--border: var(--sk-line);
+	--input: var(--sk-well);
+	--ring: var(--primary);
+	--sidebar: var(--sk-card);
+	--sidebar-foreground: var(--sk-ink);
+	--sidebar-primary: var(--primary);
+	--sidebar-primary-foreground: var(--primary-foreground);
+	--sidebar-accent: var(--sk-well);
+	--sidebar-accent-foreground: var(--sk-ink);
+	--sidebar-border: var(--sk-line);
+	--sidebar-ring: var(--primary);
+	--chart-1: var(--primary);
+	--primary-color: var(--primary);
+
+	--radius: 0.25rem;
+	--font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+	--font-display: "Space Mono", ui-monospace, monospace;
+	--font-mono: "Space Mono", ui-monospace, monospace;
+	--skin-heading-weight: 700;
+	--skin-heading-tracking: -0.04em;
+}
+
+/* Offset borders: an ink outline and a hard shadow with no blur. */
+html[data-skin="sleeck"] :is([data-project-card] article, [data-blog-card] > div, .ld-btn, .ld-shot-frame, #project-readme, aside > section) {
+	border: 2px solid var(--sk-edge);
+	box-shadow: var(--sk-shadow);
+}
+html[data-skin="sleeck"] .ld-btn:active {
+	box-shadow: 1px 1px 0 var(--sk-edge);
+}
+html[data-skin="sleeck"] :is([data-landing] .ld-display, [data-landing] h2) {
+	letter-spacing: -0.06em;
+}
+
+/* Colour combos: a paper and a highlight. Lavender and lime is the default. */
+html[data-skin="sleeck"][data-color="mint"] {
+	--sk-paper: #d6f5e6;
+	--sk-well: #bfe6d2;
+	--sk-line: #8fc4aa;
+	--sk-muted: #3f5e50;
+	--sk-lime: #ff7ac6;
+	--sk-on-lime: #0a0714;
+}
+html[data-skin="sleeck"][data-color="mint"].dark {
+	--sk-edge: #3d7a61;
+	--sk-paper: #0f231b;
+	--sk-card: #0a1712;
+	--sk-well: #173428;
+	--sk-line: #2c5a47;
+	--sk-muted: #a9cdbd;
+	--sk-ink: #e0fff0;
+}
+html[data-skin="sleeck"][data-color="peach"] {
+	--sk-paper: #ffe2d1;
+	--sk-well: #f5cdb8;
+	--sk-line: #d6a68c;
+	--sk-muted: #6b4a3a;
+	--sk-lime: #3d5afe;
+	--sk-on-lime: #ffffff;
+}
+html[data-skin="sleeck"][data-color="peach"].dark {
+	--sk-edge: #7d4f3b;
+	--sk-paper: #2a1710;
+	--sk-card: #1c0f0a;
+	--sk-well: #3a2218;
+	--sk-line: #5e3a2b;
+	--sk-muted: #d9b8a8;
+	--sk-ink: #ffeadf;
+}
+html[data-skin="sleeck"][data-color="sky"] {
+	--sk-paper: #d6ecff;
+	--sk-well: #bfdcf5;
+	--sk-line: #8fb6d9;
+	--sk-muted: #3d566b;
+	--sk-lime: #ffd60a;
+	--sk-on-lime: #0a0714;
+}
+html[data-skin="sleeck"][data-color="sky"].dark {
+	--sk-edge: #3d658a;
+	--sk-paper: #0e1c2b;
+	--sk-card: #091420;
+	--sk-well: #16293c;
+	--sk-line: #2c4a66;
+	--sk-muted: #a9c4dc;
+	--sk-ink: #e0f1ff;
+}
