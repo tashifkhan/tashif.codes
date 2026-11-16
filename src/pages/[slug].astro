@@ -60,6 +60,9 @@ if (upstream) {
 Astro.response.status = 404;
 Astro.response.statusText = "Not Found";
 Astro.response.headers.set("X-Robots-Tag", "noindex");
+// Render the 404 page here instead of letting Astro refetch /404.html from
+// this deployment's origin, which fails behind preview protection.
+Astro.response.headers.set("X-Astro-Reroute", "no");
 Astro.response.headers.set("Cache-Control", "public, max-age=0, s-maxage=60");
 ---
 
