@@ -76,9 +76,9 @@ export const SKIN_STYLES: SkinStyle[] = [
 		stamp: true,
 		colors: [
 			{ id: "lavender", name: "Lavender and lime", paper: "#e0d6ff", accent: "#c4f042" },
-			{ id: "mint", name: "Mint and pink", paper: "#d6f5e6", accent: "#ff7ac6" },
-			{ id: "peach", name: "Peach and blue", paper: "#ffe2d1", accent: "#3d5afe" },
-			{ id: "sky", name: "Sky and yellow", paper: "#d6ecff", accent: "#ffd60a" },
+			{ id: "sand", name: "Sand and tangerine", paper: "#efe6d5", accent: "#ff6a1f" },
+			{ id: "fog", name: "Fog and coral", paper: "#e2e6ea", accent: "#ff4f6d" },
+			{ id: "sage", name: "Sage and lemon", paper: "#dfe6d6", accent: "#f2d93b" },
 		],
 	},
 	{

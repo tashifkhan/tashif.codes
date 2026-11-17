@@ -452,7 +452,7 @@ function getFallbackIcon(): string {
 
 			observer.observe(document.documentElement, {
 				attributes: true,
-				attributeFilter: ["class"],
+				attributeFilter: ["class", "data-skin", "data-color"],
 			});
 		});
 	});
