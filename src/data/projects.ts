@@ -7,6 +7,7 @@ import {
 	writeCache as writeCacheNS,
 } from "../lib/fetchCached";
 import type { Project, RepoRelease } from "@/types";
+import downloadsData from "./downloads.json";
 import { starLists } from "./starLists";
 import { FEATURED_TOPIC, HIDE_TOPICS, WIP_TOPICS, hasTopic, starListSlugs } from "./projectGroups";
 
@@ -735,7 +736,44 @@ async function fetchAllProjects(): Promise<Project[]> {
 }
 
 
-export const allProjects: Project[] = await fetchAllProjects();
+/**
+ * Some repos set their GitHub homepage to a tashif.codes page, e.g.
+ * /projects/Patchwork (wrong case) or /download/PaisaSplit (no release to
+ * download). Those turn into "Live" buttons that 404 on every page that shows
+ * the card. Point them at the real page, or drop them when there isn't one.
+ */
+function fixInternalLiveLinks(projects: Project[]): Project[] {
+	const slugs = new Set(projects.map((p) => p.slug));
+	const downloads = new Map(
+		downloadsData.projects.map((d: { title: string }) => [d.title.toLowerCase(), d.title]),
+	);
+	for (const project of projects) {
+		const raw = project.live_website_url;
+		if (!raw) continue;
+		let url: URL;
+		try {
+			url = new URL(raw);
+		} catch {
+			continue;
+		}
+		if (url.hostname !== "tashif.codes" && url.hostname !== "www.tashif.codes") continue;
+
+		const [section, name] = url.pathname.split("/").filter(Boolean);
+		let path: string | undefined = url.pathname.replace(/\/+$/, "") || "/";
+		if (section === "projects" && name) {
+			const slug = slugify(decodeURIComponent(name));
+			// A link back to the card's own project page adds nothing.
+			path = slugs.has(slug) && slug !== project.slug ? `/projects/${slug}` : undefined;
+		} else if (section === "download" && name) {
+			const title = downloads.get(decodeURIComponent(name).toLowerCase());
+			path = title ? `/download/${encodeURIComponent(title)}` : undefined;
+		}
+		project.live_website_url = path ? `https://tashif.codes${path}${url.search}` : undefined;
+	}
+	return projects;
+}
+
+export const allProjects: Project[] = fixInternalLiveLinks(await fetchAllProjects());
 
 /** ISO timestamp when projects data was last fetched (build / server). */
 export const projectsFetchedAt: string = new Date().toISOString();

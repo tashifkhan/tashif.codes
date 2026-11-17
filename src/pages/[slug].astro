@@ -1,0 +1,70 @@
+---
+/**
+ * Fallback for single-segment paths that aren't site pages (tashif.codes/<slug>).
+ * Static pages and files win; anything else lands here. Known short links redirect through
+ * the shortener (u.tashif.codes); anything it doesn't know gets this site's
+ * 404 page with a real 404 status. The shortener used to answer those with a
+ * 302 to /404, which search engines treat as a soft 404.
+ */
+import NotFound from "./404.astro";
+
+export const prerender = false;
+
+const SHORTENER_ORIGIN = "https://u.tashif.codes";
+
+function isOwn404(location: string): boolean {
+	try {
+		const url = new URL(location, SHORTENER_ORIGIN);
+		return (
+			(url.hostname === "tashif.codes" || url.hostname === "www.tashif.codes") &&
+			/^\/404\/?$/.test(url.pathname)
+		);
+	} catch {
+		return false;
+	}
+}
+
+const slug = Astro.params.slug ?? "";
+let upstream: Response | null = null;
+if (slug && !slug.includes("/")) {
+	try {
+		upstream = await fetch(`${SHORTENER_ORIGIN}/${encodeURI(slug)}`, {
+			redirect: "manual",
+			signal: AbortSignal.timeout(5000),
+		});
+	} catch {
+		upstream = null;
+	}
+}
+
+if (upstream) {
+	const location = upstream.headers.get("location");
+	if (upstream.status >= 300 && upstream.status < 400 && location && !isOwn404(location)) {
+		return new Response(null, {
+			status: upstream.status,
+			headers: {
+				Location: new URL(location, SHORTENER_ORIGIN).href,
+				"Cache-Control": "public, max-age=0, s-maxage=60",
+			},
+		});
+	}
+	if (upstream.ok) {
+		// Anything the shortener serves directly is passed through as before.
+		const headers = new Headers();
+		const type = upstream.headers.get("content-type");
+		if (type) headers.set("Content-Type", type);
+		return new Response(upstream.body, { status: upstream.status, headers });
+	}
+}
+
+Astro.response.status = 404;
+Astro.response.statusText = "Not Found";
+Astro.response.headers.set("Content-Type", "text/html; charset=utf-8");
+Astro.response.headers.set("X-Robots-Tag", "noindex");
+// Render the 404 page here instead of letting Astro refetch /404.html from
+// this deployment's origin, which fails behind preview protection.
+Astro.response.headers.set("X-Astro-Reroute", "no");
+Astro.response.headers.set("Cache-Control", "public, max-age=0, s-maxage=60");
+---
+
+<NotFound />

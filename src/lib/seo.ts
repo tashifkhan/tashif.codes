@@ -37,6 +37,8 @@ export type SeoProps = {
 	publishedTime?: string;
 	/** Comma-ish tags / article:tag */
 	tags?: string[];
+	/** Keep the page out of search results (robots noindex, links still followed) */
+	noindex?: boolean;
 };
 
 export type SocialImageMeta = {
@@ -52,7 +54,21 @@ export function absoluteUrl(pathOrUrl?: string | null): string {
 	if (!pathOrUrl) return SITE_ORIGIN;
 	if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
 	const path = pathOrUrl.startsWith("/") ? pathOrUrl : `/${pathOrUrl}`;
-	return `${SITE_ORIGIN}${path}`;
+	return `${SITE_ORIGIN}${withoutTrailingSlash(path)}`;
+}
+
+/**
+ * The site runs with `trailingSlash: "never"`: every page lives at its
+ * slash-less address and Vercel 308s the slashed form there. Canonicals,
+ * og:url and the sitemap must name that same address, so strip the slash
+ * from the path part (the root stays "/").
+ */
+export function withoutTrailingSlash(path: string): string {
+	const cut = path.search(/[?#]/);
+	const pathname = cut === -1 ? path : path.slice(0, cut);
+	const rest = cut === -1 ? "" : path.slice(cut);
+	const trimmed = pathname.replace(/\/+$/, "") || "/";
+	return `${trimmed}${rest}`;
 }
 
 /**

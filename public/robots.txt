@@ -1,6 +1,8 @@
 # Allow every link-preview crawler (WhatsApp, Telegram, iMessage, Signal, X, Discord, …)
 User-agent: *
 Allow: /
+# Cloudflare email-protection links are not pages
+Disallow: /cdn-cgi/
 
 # Explicit allow for common unfurl bots (some WAFs treat unknown UA poorly)
 User-agent: WhatsApp

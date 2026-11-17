@@ -8,7 +8,7 @@ export interface Breadcrumb {
 	href?: string;
 }
 
-interface Props extends Pick<SeoProps, "description" | "image" | "type" | "url"> {
+interface Props extends Pick<SeoProps, "description" | "image" | "type" | "url" | "noindex"> {
 	title: string;
 	/** Top-of-page atmospheric wash behind the header */
 	tint?: "orange" | "blue" | "none";
@@ -30,6 +30,7 @@ const {
 	image,
 	type,
 	url,
+	noindex,
 	tint = "none",
 	breadcrumbs,
 	backHref,
@@ -62,6 +63,7 @@ const tintClass = {
 	image={image}
 	type={type}
 	url={url ?? Astro.url.pathname}
+	noindex={noindex}
 >
 	<div
 		data-page-shell
