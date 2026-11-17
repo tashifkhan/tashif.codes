@@ -114,6 +114,14 @@ const features = [
 		lead="None of these platforms hands out this data in one shape, so I wrote an API for each. They are free to use on their own."
 		layout="side"
 	>
+		<Shot width={1280} height={800}>
+			<LandingVideo
+				src={`${reel}/stats-api-demo.mp4`}
+				poster={`${reel}/stats-api-poster.jpg`}
+				label="A walkthrough of the seven stats APIs and their playgrounds"
+				controls
+			/>
+		</Shot>
 		<ul class="ct-apis">
 			{
 				statsApis.map((api) => (
@@ -131,8 +139,8 @@ const features = [
 
 <style>
 	.ct-apis {
+		margin-top: var(--ld-space-xl);
 		display: grid;
-		margin: 0;
 		padding: 0;
 		list-style: none;
 		border-top: 1px solid var(--ld-rule);

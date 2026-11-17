@@ -1,8 +1,9 @@
 ---
 /**
  * The landing every stats API shares. Each API's file under src/landings is
- * one line that passes its entry from src/data/statsApis.ts. The lead API
- * also shows the walkthrough and screenshots, since one video covers all.
+ * one line that passes its entry from src/data/statsApis.ts. Every page
+ * streams the same walkthrough from taf.sh, since one video covers all
+ * seven. The lead API also shows the playground screenshots.
  */
 import { ExternalLink, Github } from "lucide-react";
 import Landing from "./Landing.astro";
@@ -16,7 +17,7 @@ import type { Project } from "@/types";
 interface Props {
 	project: Project;
 	api: StatsApi;
-	/** Show the shared walkthrough and screenshots. */
+	/** Also show the playground screenshots. */
 	lead?: boolean;
 }
 
@@ -29,7 +30,7 @@ const reel = "https://taf.sh/reel";
 
 <Landing name="stats-api">
 	<LandingHero
-		wide={lead}
+		wide
 		title={`${api.platform} stats as JSON.`}
 		lead={`A free REST API for public ${api.platform} profiles. No key, no sign up.`}
 	>
@@ -56,42 +57,28 @@ const reel = "https://taf.sh/reel";
 			</a>
 		</Fragment>
 		<Fragment slot="terms">{api.angle}</Fragment>
-		{
-			lead ? (
-				<Shot slot="media" width={1280} height={800}>
-					<LandingVideo
-						src={`${reel}/stats-api-demo.mp4`}
-						poster={`${reel}/stats-api-poster.jpg`}
-						label="A walkthrough of the stats APIs and their playgrounds"
-						controls
-					/>
-				</Shot>
-			) : (
-				<div slot="media" class="sa-call">
-					<p class="ld-small">Try it</p>
-					<code class="ld-code">{call}</code>
-				</div>
-			)
-		}
+		<Shot slot="media" width={1280} height={800}>
+			<LandingVideo
+				src={`${reel}/stats-api-demo.mp4`}
+				poster={`${reel}/stats-api-poster.jpg`}
+				label="A walkthrough of the seven stats APIs and their playgrounds"
+				controls
+			/>
+		</Shot>
 	</LandingHero>
 
-	{
-		lead && (
-			<section class="ld-section" data-gap="s">
-				<div class="sa-try">
-					<h2>One call, no key.</h2>
-					<code class="ld-code">{call}</code>
-				</div>
-			</section>
-		)
-	}
+	<section class="ld-section" data-gap="s">
+		<div class="sa-try">
+			<h2>One call, no key.</h2>
+			<code class="ld-code">{call}</code>
+		</div>
+	</section>
 
 	<Section
 		id="endpoints"
 		title={`${api.endpoints.length} endpoints.`}
 		lead={`Replace {${api.param}} with a public ${api.platform} handle.`}
 		layout="side"
-		gap={lead ? "m" : "s"}
 	>
 		<dl class="sa-endpoints">
 			{
@@ -157,12 +144,6 @@ const reel = "https://taf.sh/reel";
 </Landing>
 
 <style>
-	.sa-call {
-		display: grid;
-		gap: var(--ld-space-sm);
-		width: 100%;
-		min-width: 0;
-	}
 	.sa-try {
 		display: grid;
 		gap: var(--ld-space-lg);
