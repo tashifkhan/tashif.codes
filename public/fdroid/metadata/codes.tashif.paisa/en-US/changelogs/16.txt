@@ -1,0 +1,7 @@
+The split sheet is rebuilt on stock Material 3 components.
+
+* Split with others is one card.
+* People are chips. You is a filter chip, each added person is an input chip with an avatar and a remove icon, and the chips wrap onto new lines.
+* The search field is filled and pill shaped.
+* Equal, Amount, % and Items are a segmented button under a Divide by label.
+* Every mode shows one list of shares, with an avatar, the name and the amount at the end of the row.
