@@ -877,6 +877,55 @@ body {
 	max-width: 18rem;
 	scroll-snap-align: start;
 }
+.ld-rail[data-wide] > li {
+	flex-basis: min(86%, 46rem);
+	max-width: 46rem;
+}
+.ld-rail .ld-shot {
+	width: 100%;
+}
+/* A plain table of figures: sentence-case heads, rules between rows. */
+.ld-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-variant-numeric: tabular-nums;
+}
+.ld-table caption {
+	padding-bottom: var(--ld-space-sm);
+	text-align: left;
+	font-family: var(--ld-font-display);
+	font-size: var(--ld-text-title);
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	color: var(--ld-ink);
+}
+.ld-table :is(th, td) {
+	padding: var(--ld-space-sm) var(--ld-space-md) var(--ld-space-sm) 0;
+	border-bottom: 1px solid var(--ld-rule);
+	text-align: left;
+	vertical-align: baseline;
+}
+.ld-table thead th {
+	font-size: var(--ld-text-sm);
+	font-weight: 400;
+	color: var(--ld-muted);
+	white-space: nowrap;
+}
+.ld-table tbody th {
+	font-weight: 500;
+}
+.ld-table td {
+	color: var(--ld-muted);
+}
+.ld-table :is(th, td):last-child {
+	padding-right: 0;
+}
+.ld-table-wrap {
+	overflow-x: auto;
+}
+.ld-table-wrap + .ld-table-wrap {
+	margin-top: var(--ld-space-2xl);
+}
 .ld-rail .ld-shot[data-portrait] {
 	width: 100%;
 }

@@ -1,9 +1,13 @@
 ---
 /**
- * Agentic Browser. Replaces the README at /projects/agentic-browser. The
- * video streams from taf.sh.
+ * Agentic Browser. Replaces the README at /projects/agentic-browser.
+ *
+ * The figures, the memory design and the limits come from the project
+ * report and deck, which are public at tashif.codes/agentic-browser. The
+ * slides are in public/landings/agentic-browser/slides. The video streams
+ * from taf.sh.
  */
-import { Download, Github } from "lucide-react";
+import { FileText, Github } from "lucide-react";
 import {
 	Landing,
 	LandingHero,
@@ -11,7 +15,9 @@ import {
 	Shot,
 	LandingVideo,
 	Rows,
+	Rail,
 	Faq,
+	Routes,
 } from "@/components/landing";
 import type { LandingMeta } from "@/lib/landings";
 import type { Project } from "@/types";
@@ -19,7 +25,7 @@ import type { Project } from "@/types";
 export const landing: LandingMeta = {
 	tagline:
 		"A browser side panel whose agents plan, act and check their work on any page, with your own model keys.",
-	cta: { label: "Get the extension", href: "https://tashif.codes/agentic-browser", external: true },
+	cta: { label: "Report and deck", href: "#papers" },
 };
 
 interface Props {
@@ -28,7 +34,9 @@ interface Props {
 
 const { project } = Astro.props;
 const reel = "https://taf.sh/reel";
-const download = "https://tashif.codes/agentic-browser";
+const media = "/landings/agentic-browser";
+const files = "https://drive.tashif.codes/public.php/dav/files/9XPLTERoHiNdnBw";
+const report = `${files}/Report.pdf`;
 
 const loop = [
 	{
@@ -37,13 +45,79 @@ const loop = [
 	},
 	{
 		title: "Act",
-		body: "It clicks, types, scrolls and navigates. Each browser action waits for your approval first.",
+		body: "It clicks, types, scrolls and navigates through 27 browser tools. Each action waits for your approval.",
 	},
 	{
 		title: "Verify",
-		body: "It checks the page after every step and tries again when the result is not what it planned for.",
+		body: "It looks at the page after every step, and reasons again when the result is not what it planned for.",
 	},
 ];
+
+const stores = [
+	{
+		title: "PostgreSQL",
+		body: "The source of truth. Facts, entities, claims and events, written in transactions.",
+	},
+	{
+		title: "Neo4j",
+		body: "A knowledge graph of how those things relate, so a recall can follow a link two hops out.",
+	},
+	{
+		title: "OpenSearch",
+		body: "Meaning and keywords together: vector search and BM25 run side by side.",
+	},
+	{
+		title: "Fused, then trimmed",
+		body: "Reciprocal Rank Fusion merges the results, the graph expands the best of them, and the rest is cut to fit the model's context.",
+	},
+	{
+		title: "Memories fade",
+		body: "Each memory decays on a forgetting curve unless it is used again. Preferences last far longer than passing context.",
+	},
+];
+
+// Table 5.2 of the report.
+const memory = [
+	["Recall, hybrid retrieval", "85", "145"],
+	["Graph expansion, two hops", "45", "78"],
+	["Store a claim, three writes", "125", "210"],
+	["Assemble the context", "12", "25"],
+];
+
+// Table 5.1 of the report.
+const providers = [
+	["Ollama, local", "llama3", "180", "320"],
+	["Google", "gemini-3.1-pro", "340", "580"],
+	["Deepseek", "deepseek-chat", "480", "820"],
+	["OpenAI", "gpt-5.5", "520", "890"],
+	["OpenRouter", "mistral-7b-instruct", "550", "950"],
+	["Anthropic", "claude-4.6-sonnet", "610", "1050"],
+];
+
+const slideAlt = [
+	"Title slide",
+	"The problem: work scattered across too many tabs",
+	"Where existing solutions fall short",
+	"Literature review",
+	"Objectives in two phases",
+	"Complete system architecture",
+	"One interface, several model providers",
+	"The ReAct agent loop",
+	"The browser automation engine",
+	"Integrations",
+	"The triple-store memory",
+	"The context engine",
+	"Memory stores and retrieval",
+	"Memory decay formula",
+	"Implementation and technology stack",
+	"Results and system impact",
+	"Conclusion, limitations and future scope",
+	"Closing slide",
+];
+const slides = slideAlt.map((alt, i) => ({
+	src: `${media}/slides/${String(i + 1).padStart(2, "0")}.webp`,
+	alt: `Slide ${i + 1}: ${alt}`,
+}));
 
 const commands = [
 	{ title: "/browser-action", body: "Click, type, scroll and navigate on the open page." },
@@ -55,37 +129,58 @@ const commands = [
 	{ title: "/voice", body: "Talk to it instead of typing." },
 ];
 
-const parts = [
+const papers = [
 	{
-		title: "Side panel",
-		body: "A React extension built with WXT. It drives the page through the WebExtensions API.",
+		title: "Report",
+		body: "76 pages. Architecture, the memory algorithms, the security model, and the results above.",
+		action: { label: "Read the report", href: report, primary: true, external: true },
 	},
 	{
-		title: "Agents",
-		body: "LangGraph coordinates several agents, each with its own tools.",
+		title: "Deck",
+		body: "The 18 slides shown above, as a PDF.",
+		action: { label: "Open the deck", href: `${files}/PPT.pdf`, external: true },
 	},
 	{
-		title: "Server",
-		body: "One Python server answers REST calls and Model Context Protocol clients, so the same tools work from other apps.",
+		title: "Similarity report",
+		body: "The university's plagiarism check of the report: 8% overall similarity.",
+		action: {
+			label: "Open the similarity report",
+			href: `${files}/Plag%20Report%20-%2022102141_MODEL-AGNOSTIC%20AGENTIC%20RESEARCH%20BROWSER%20USING%20PYTHON%20MCP%20ARCHITECTURE.pdf`,
+			external: true,
+		},
+	},
+	{
+		title: "Full demo",
+		body: "The longer recording, 48 MB.",
+		action: { label: "Watch the full demo", href: `${files}/demo.mp4`, external: true },
+	},
+	{
+		title: "Source",
+		body: "The extension, the Python server and the debug dashboard, in one repository.",
+		action: { label: "Open on GitHub", href: project.github_link, external: true },
 	},
 ];
 
 const faq = [
 	{
 		q: "Which models work?",
-		a: "OpenAI, Anthropic and Gemini with your own key, or a local model through Ollama or LM Studio.",
+		a: "Six providers: Google Gemini, OpenAI, Anthropic, Deepseek, OpenRouter, and local models through Ollama. You bring the key.",
 	},
 	{
 		q: "Does it act without asking?",
 		a: "No. Browser actions are declared first and wait for your approval, and every action is logged.",
 	},
 	{
-		q: "Where do my keys go?",
-		a: "They stay on your machine. There is no account and no hosted service in between.",
+		q: "Where do my keys and memories go?",
+		a: "Keys stay on your machine. Stored memories are encrypted with AES-CBC.",
 	},
 	{
-		q: "What does it cost?",
-		a: `Nothing beyond what your model provider charges. The source is on <a href="${project.github_link}" target="_blank" rel="noopener noreferrer">GitHub</a>.`,
+		q: "What does it not do yet?",
+		a: "Safari is not supported. Local models through Ollama want a GPU, and the MLX setup needs macOS.",
+	},
+	{
+		q: "How do I install it?",
+		a: `Build it from <a href="${project.github_link}" target="_blank" rel="noopener noreferrer">the source</a>. It is not on a browser store.`,
 	},
 ];
 ---
@@ -98,14 +193,14 @@ const faq = [
 	>
 		<Fragment slot="actions">
 			<a
-				href={download}
+				href={report}
 				target="_blank"
 				rel="noopener noreferrer"
 				data-haptic-external
 				class="ld-btn ld-btn-primary"
 			>
-				<Download aria-hidden="true" />
-				Download the extension
+				<FileText aria-hidden="true" />
+				Read the report
 			</a>
 			<a
 				href={project.github_link}
@@ -118,7 +213,9 @@ const faq = [
 				Source
 			</a>
 		</Fragment>
-		<Fragment slot="terms">Open source. Bring your own keys.</Fragment>
+		<Fragment slot="terms">
+			My B.Tech major project at JIIT, May 2026. Open source.
+		</Fragment>
 		<Shot slot="media" width={1280} height={800}>
 			<LandingVideo
 				src={`${reel}/agentic-browser-demo.mp4`}
@@ -143,11 +240,80 @@ const faq = [
 	</Section>
 
 	<Section
+		id="memory"
+		title="It remembers, in three stores."
+		lead="Most agents forget everything between sessions. This one writes what it learns to three databases, each good at one kind of recall."
+		layout="side"
+		gap="l"
+	>
+		<Rows rows={stores} />
+	</Section>
+
+	<Section
+		id="results"
+		title="Measured."
+		lead="From chapter 5 of the report. Milliseconds, average and 95th percentile."
+		layout="side"
+	>
+		<div class="ld-table-wrap">
+			<table class="ld-table">
+				<caption>Memory</caption>
+				<thead>
+					<tr>
+						<th scope="col">Operation</th>
+						<th scope="col">Average</th>
+						<th scope="col">p95</th>
+					</tr>
+				</thead>
+				<tbody>
+					{
+						memory.map(([name, avg, p95]) => (
+							<tr>
+								<th scope="row">{name}</th>
+								<td>{avg}</td>
+								<td>{p95}</td>
+							</tr>
+						))
+					}
+				</tbody>
+			</table>
+		</div>
+		<div class="ld-table-wrap">
+			<table class="ld-table">
+				<caption>First response, by provider</caption>
+				<thead>
+					<tr>
+						<th scope="col">Provider</th>
+						<th scope="col">Model</th>
+						<th scope="col">Average</th>
+						<th scope="col">p95</th>
+					</tr>
+				</thead>
+				<tbody>
+					{
+						providers.map(([name, model, avg, p95]) => (
+							<tr>
+								<th scope="row">{name}</th>
+								<td>{model}</td>
+								<td>{avg}</td>
+								<td>{p95}</td>
+							</tr>
+						))
+					}
+				</tbody>
+			</table>
+		</div>
+	</Section>
+
+	<Section id="deck" title="The deck." lead="Eighteen slides, from the problem to the results." gap="l">
+		<Rail panels={slides} label="Project deck" width={1280} height={853} wide />
+	</Section>
+
+	<Section
 		id="commands"
 		title="Slash commands."
 		lead="Each one is a tool the agents can also call on their own."
 		layout="side"
-		gap="l"
 	>
 		<dl class="ab-commands">
 			{
@@ -163,12 +329,12 @@ const faq = [
 		</dl>
 	</Section>
 
-	<Section id="parts" title="Three parts." layout="side">
-		<Rows rows={parts} />
+	<Section id="faq" title="Questions." layout="side" gap="l">
+		<Faq items={faq} />
 	</Section>
 
-	<Section id="faq" title="Before you install." layout="side" gap="l">
-		<Faq items={faq} />
+	<Section id="papers" title="Report, deck and source." layout="side">
+		<Routes routes={papers} />
 	</Section>
 </Landing>
 
