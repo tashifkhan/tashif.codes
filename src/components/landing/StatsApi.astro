@@ -1,0 +1,202 @@
+---
+/**
+ * The landing every stats API shares. Each API's file under src/landings is
+ * one line that passes its entry from src/data/statsApis.ts. Every page
+ * streams the same walkthrough from taf.sh, since one video covers all
+ * seven. The lead API also shows the playground screenshots.
+ */
+import { ExternalLink, Github } from "lucide-react";
+import Landing from "./Landing.astro";
+import LandingHero from "./LandingHero.astro";
+import Section from "./Section.astro";
+import Shot from "./Shot.astro";
+import LandingVideo from "./LandingVideo.astro";
+import { statsApis, samplePath, type StatsApi } from "@/data/statsApis";
+import type { Project } from "@/types";
+
+interface Props {
+	project: Project;
+	api: StatsApi;
+	/** Also show the playground screenshots. */
+	lead?: boolean;
+}
+
+const { project, api, lead = false } = Astro.props;
+const base = `https://${api.host}`;
+const call = `curl ${base}${samplePath(api)}`;
+const siblings = statsApis.filter((other) => other.slug !== api.slug);
+const reel = "https://taf.sh/reel";
+---
+
+<Landing name="stats-api">
+	<LandingHero
+		wide
+		title={`${api.platform} stats as JSON.`}
+		lead={`A free REST API for public ${api.platform} profiles. No key, no sign up.`}
+	>
+		<Fragment slot="actions">
+			<a
+				href={base}
+				target="_blank"
+				rel="noopener noreferrer"
+				data-haptic-external
+				class="ld-btn ld-btn-primary"
+			>
+				<ExternalLink aria-hidden="true" />
+				Open the playground
+			</a>
+			<a
+				href={project.github_link}
+				target="_blank"
+				rel="noopener noreferrer"
+				data-haptic-external
+				class="ld-btn"
+			>
+				<Github aria-hidden="true" />
+				Source
+			</a>
+		</Fragment>
+		<Fragment slot="terms">{api.angle}</Fragment>
+		<Shot slot="media" width={1280} height={800}>
+			<LandingVideo
+				src={`${reel}/stats-api-demo.mp4`}
+				poster={`${reel}/stats-api-poster.jpg`}
+				label="A walkthrough of the seven stats APIs and their playgrounds"
+				controls
+			/>
+		</Shot>
+	</LandingHero>
+
+	<section class="ld-section" data-gap="s">
+		<div class="sa-try">
+			<h2>One call, no key.</h2>
+			<code class="ld-code">{call}</code>
+		</div>
+	</section>
+
+	<Section
+		id="endpoints"
+		title={`${api.endpoints.length} endpoints.`}
+		lead={`Replace {${api.param}} with a public ${api.platform} handle.`}
+		layout="side"
+	>
+		<dl class="sa-endpoints">
+			{
+				api.endpoints.map((endpoint) => (
+					<div>
+						<dt>
+							<code>{endpoint.path}</code>
+						</dt>
+						<dd>{endpoint.body}</dd>
+					</div>
+				))
+			}
+		</dl>
+	</Section>
+
+	{
+		lead && (
+			<Section id="screens" title="A playground on every API." gap="l">
+				<div class="ld-shots">
+					{[1, 2, 3, 4].map((n) => (
+						<Shot
+							src={`${reel}/stats-api-${n}.jpg`}
+							alt={`Stats API playground, screen ${n}`}
+							width={1440}
+							height={900}
+						/>
+					))}
+				</div>
+			</Section>
+		)
+	}
+
+	<Section
+		id="family"
+		title="Seven platforms, one shape."
+		lead="Each API returns profiles, stats and activity in the same JSON layout, so one client reads them all."
+		layout="side"
+		gap="l"
+	>
+		<ul class="sa-family">
+			{
+				siblings.map((other) => (
+					<li>
+						<a href={`/projects/${other.slug}`} data-haptic-nav>
+							{other.platform}
+						</a>
+						<span>{other.host}</span>
+					</li>
+				))
+			}
+			<li>
+				<a href="/projects/githost-stats-api" data-haptic-nav>
+					Forgejo, Gitea and Codeberg
+				</a>
+				<span>self-hosted</span>
+			</li>
+		</ul>
+		<p class="sa-note">
+			<a class="ld-link" href="/projects/codetrace" data-haptic-nav>CodeTrace</a>
+			is the dashboard built on all of them.
+		</p>
+	</Section>
+</Landing>
+
+<style>
+	.sa-try {
+		display: grid;
+		gap: var(--ld-space-lg);
+		min-width: 0;
+	}
+	.sa-endpoints,
+	.sa-family {
+		display: grid;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border-top: 1px solid var(--ld-rule);
+	}
+	.sa-endpoints > div,
+	.sa-family > li {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--ld-space-2xs);
+		padding-block: var(--ld-space-md);
+		border-bottom: 1px solid var(--ld-rule);
+	}
+	.sa-endpoints dt code {
+		font-weight: 500;
+		overflow-wrap: anywhere;
+	}
+	.sa-endpoints dd {
+		margin: 0;
+		color: var(--ld-muted);
+	}
+	.sa-family a {
+		font-family: var(--ld-font-display);
+		font-size: var(--ld-text-title);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1.2;
+	}
+	.sa-family a:hover {
+		color: var(--ld-accent);
+	}
+	.sa-family span {
+		font-size: var(--ld-text-sm);
+		color: var(--ld-muted);
+	}
+	.sa-note {
+		margin-top: var(--ld-space-lg);
+		color: var(--ld-muted);
+	}
+	@media (min-width: 40rem) {
+		.sa-endpoints > div,
+		.sa-family > li {
+			grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+			column-gap: var(--ld-gap-columns);
+			align-items: baseline;
+		}
+	}
+</style>

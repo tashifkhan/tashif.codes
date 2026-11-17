@@ -314,7 +314,7 @@ html[data-skin="material"] .ld-tabs {
 	border-radius: 999px;
 }
 html[data-skin="material"] :is([data-project-card] article, [data-blog-card] > div, #project-readme, aside > section) {
-	border-color: transparent;
+	border-color: var(--md-outline-variant);
 	border-radius: 1.5rem;
 	box-shadow: none;
 }

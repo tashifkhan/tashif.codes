@@ -1,0 +1,141 @@
+---
+/**
+ * Ways to get a thing, as rows: a name, a line about it, and either a button
+ * or an address to copy. Used at the close of a landing.
+ */
+import { Copy } from "lucide-react";
+
+export interface Route {
+	title: string;
+	/** Plain text or trusted HTML. */
+	body: string;
+	action?: {
+		label: string;
+		href: string;
+		primary?: boolean;
+		external?: boolean;
+	};
+	/** An address or command shown in full with a copy button. */
+	copy?: string;
+}
+
+interface Props {
+	routes: Route[];
+}
+
+const { routes } = Astro.props;
+---
+
+<dl class="ld-routes">
+	{
+		routes.map((route) => (
+			<div class="ld-route">
+				<dt>{route.title}</dt>
+				<dd>
+					<p set:html={route.body} />
+					{route.copy && (
+						<div class="ld-route-copy">
+							<code>{route.copy}</code>
+							<button
+								type="button"
+								class="ld-btn"
+								data-ld-copy={route.copy}
+								data-haptic-nav
+								aria-label={`Copy: ${route.title}`}
+							>
+								<Copy aria-hidden="true" />
+								<span data-ld-copy-label>Copy</span>
+							</button>
+						</div>
+					)}
+					{route.action && (
+						<a
+							href={route.action.href}
+							target={route.action.external ? "_blank" : undefined}
+							rel={route.action.external ? "noopener noreferrer" : undefined}
+							data-haptic-external
+							class:list={["ld-btn", route.action.primary && "ld-btn-primary"]}
+						>
+							{route.action.label}
+						</a>
+					)}
+				</dd>
+			</div>
+		))
+	}
+</dl>
+
+<style>
+	.ld-routes {
+		margin: 0;
+		border-top: 1px solid var(--ld-rule);
+	}
+	.ld-route {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--ld-space-sm);
+		padding-block: var(--ld-space-lg);
+		border-bottom: 1px solid var(--ld-rule);
+	}
+	.ld-route dt {
+		font-family: var(--ld-font-display);
+		font-size: var(--ld-text-title);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1.2;
+	}
+	.ld-route dd {
+		display: grid;
+		gap: var(--ld-space-md);
+		justify-items: start;
+		margin: 0;
+		min-width: 0;
+		color: var(--ld-muted);
+	}
+	.ld-route dd :global(a:not(.ld-btn)) {
+		color: var(--ld-ink);
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 0.16em;
+	}
+	.ld-route-copy {
+		display: grid;
+		gap: var(--ld-space-sm);
+		justify-items: start;
+		min-width: 0;
+	}
+	.ld-route-copy code {
+		overflow-wrap: anywhere;
+	}
+	@media (min-width: 40rem) {
+		.ld-route {
+			grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+			column-gap: var(--ld-gap-columns);
+		}
+	}
+</style>
+
+<script>
+	function initCopy() {
+		document
+			.querySelectorAll<HTMLButtonElement>("[data-ld-copy]:not([data-wired])")
+			.forEach((button) => {
+				button.dataset.wired = "true";
+				button.addEventListener("click", async () => {
+					const label = button.querySelector("[data-ld-copy-label]");
+					try {
+						await navigator.clipboard.writeText(button.dataset.ldCopy ?? "");
+						if (label) label.textContent = "Copied";
+					} catch {
+						if (label) label.textContent = "Copy failed";
+					}
+					setTimeout(() => {
+						if (label) label.textContent = "Copy";
+					}, 1600);
+				});
+			});
+	}
+
+	initCopy();
+	document.addEventListener("astro:page-load", initCopy);
+</script>

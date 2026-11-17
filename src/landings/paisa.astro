@@ -17,6 +17,7 @@ import {
 	Faq,
 } from "@/components/landing";
 import { formatBytes, releaseHref } from "@/lib/releases";
+import { playStoreRoute } from "@/data/profile";
 import type { LandingMeta } from "@/lib/landings";
 import type { Project } from "@/types";
 
@@ -31,6 +32,7 @@ interface Props {
 }
 
 const { project } = Astro.props;
+const play = playStoreRoute("paisa");
 
 const media = "/landings/paisa";
 const webApp = "https://paisa.tashif.codes";
@@ -434,6 +436,25 @@ const faq = [
 								<Globe aria-hidden="true" />
 								Open the web demo
 							</a>
+						</dd>
+					</div>
+				<div class="get-route">
+						<dt>{play.title}</dt>
+						<dd>
+							<p>{play.body}</p>
+							{
+								play.action && (
+									<a
+										href={play.action.href}
+										target="_blank"
+										rel="noopener noreferrer"
+										data-haptic-external
+										class="ld-btn"
+									>
+										{play.action.label}
+									</a>
+								)
+							}
 						</dd>
 					</div>
 				</dl>

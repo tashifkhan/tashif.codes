@@ -18,6 +18,8 @@ import {
 	BookOpen,
 	MapPin,
 	Download,
+	Heart,
+	Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +47,7 @@ const actionIcons = {
 	github: Github,
 	linkedin: Linkedin,
 	mail: Mail,
+	heart: Heart,
 	download: Download,
 } as const;
 
@@ -161,6 +164,25 @@ const CertificateLink = ({
 	>
 		<Award size={12} className="text-primary/70" />
 		certificate
+	</a>
+);
+
+const VideoLink = ({
+	video,
+	onNavigate,
+}: {
+	video: { label: string; url: string };
+	onNavigate: () => void;
+}) => (
+	<a
+		href={video.url}
+		target="_blank"
+		rel="noopener noreferrer"
+		onClick={onNavigate}
+		className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/50 px-2.5 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
+	>
+		<Play size={12} className="text-primary/70" />
+		{video.label}
 	</a>
 );
 
@@ -481,6 +503,12 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 														<span className="absolute -left-[29px] top-[7px] h-2.5 w-2.5 rounded-full bg-background border border-primary/50" />
 														<RoleHeading exp={exp} />
 														<BulletList points={exp.points} />
+														{exp.video && (
+															<VideoLink
+																video={exp.video}
+																onNavigate={() => trigger("light")}
+															/>
+														)}
 														{exp.certificate && (
 															<CertificateLink
 																href={exp.certificate}
@@ -495,6 +523,12 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 											<>
 												<RoleHeading exp={first} />
 												<BulletList points={first.points} />
+												{first.video && (
+													<VideoLink
+														video={first.video}
+														onNavigate={() => trigger("light")}
+													/>
+												)}
 												{first.certificate && (
 													<CertificateLink
 														href={first.certificate}
@@ -534,6 +568,18 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 											>
 												{project.stack}
 											</p>
+											{project.platforms && (
+												<ul className="mt-2 flex flex-wrap gap-1.5">
+													{project.platforms.map((platform) => (
+														<li
+															key={platform}
+															className="rounded-md border border-border/60 bg-background/50 px-1.5 py-0.5 text-[11px] leading-none text-muted-foreground"
+														>
+															{platform}
+														</li>
+													))}
+												</ul>
+											)}
 										</div>
 										<div className="flex gap-1 shrink-0">
 											{project.links.map((link) => (

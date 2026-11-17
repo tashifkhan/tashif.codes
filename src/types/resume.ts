@@ -8,6 +8,8 @@ export interface ResumeProject {
 	color: string;
 	links: { label: string; url: string }[];
 	points: string[];
+	/** Where it runs, shown as small tags: "Android", "iOS", "Web". */
+	platforms?: string[];
 }
 
 export interface Education {
@@ -35,7 +37,7 @@ export interface SkillCategory {
 export interface ResumeAction {
 	label: string;
 	url: string;
-	icon: "github" | "linkedin" | "mail" | "download";
+	icon: "github" | "linkedin" | "mail" | "download" | "heart";
 	primary?: boolean;
 }
 
@@ -48,4 +50,6 @@ export interface ExperienceEntry {
 	certificate?: string;
 	website?: string;
 	logo?: string;
+	/** A walkthrough of the work, opened in a new tab. */
+	video?: { label: string; url: string };
 }

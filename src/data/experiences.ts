@@ -22,6 +22,10 @@ export const experiences: ExperienceEntry[] = [
 		color: "purple",
 		website: "https://sitg.dev",
 		logo: "https://52.26.46.179:3000/icon.svg?icon.46fd8538.svg",
+		video: {
+			label: "product walkthrough",
+			url: "https://taf.sh/reel/systematic-reasoning-demo.mp4",
+		},
 		points: [
 			"Own the compliance AI pipeline end-to-end; extended it to new regulatory frameworks and certificate scopes.",
 			"Built a real-time notification system (<strong>SSE</strong> + <strong>SMTP</strong> + <strong>Slack</strong>) monitoring <strong>Bugzilla</strong>, <strong>Google Groups</strong>, <strong>CCADB</strong>, and <strong>Regulatory Ballots</strong> for same-day compliance surfacing.",

@@ -7,12 +7,14 @@
 interface Props {
 	title: string;
 	lead: string;
+	/** For a landscape visual: the text takes five columns, the media seven. */
+	wide?: boolean;
 }
 
-const { title, lead } = Astro.props;
+const { title, lead, wide = false } = Astro.props;
 ---
 
-<section class="ld-hero">
+<section class="ld-hero" data-wide={wide ? "" : undefined}>
 	<div class="ld-hero-text">
 		<h2 class="ld-display">{title}</h2>
 		<p class="ld-lead">{lead}</p>

@@ -194,147 +194,138 @@ async function collectFontFiles() {
 	return files;
 }
 
+// The card's palette is the site's studio skin in dark: warm near-black,
+// one teal accent.
+const OG = {
+	paper: "#0e0d0d",
+	panel: "#161514",
+	ink: "#f4f1ec",
+	muted: "#a39d96",
+	faint: "#6f6963",
+	rule: "#2a2725",
+	accent: "#4fd1c5",
+};
+const ART = { x: 700, y: 118, width: 436, height: 356, radius: 20 };
+
 function generateSiteOgSvg({
-	command = "cat profile.json",
 	badge = "Portfolio",
-	badgeColor = "#ea580c",
 	title = "Tashif Ahmad Khan",
 	description = "Personal dashboard, open source projects, engineering blog, and developer tools.",
 	featureBoxes = [],
 	tags = [],
 	footerRight = "https://tashif.codes",
+	// When set, the right side is left clear for a picture composited later.
+	art = false,
 }) {
-	const titleLines = wrapText(title, 32, 2);
-	const titleFontSize = titleLines.length > 1 || title.length > 24 ? 44 : 54;
-	const titleY = titleLines.length > 1 ? 168 : 180;
-	const descY = titleY + titleLines.length * (titleFontSize + 8) + 8;
-	const descLines = wrapText(description, 68, 2);
+	const textWidth = art ? 590 : 1068;
+	const titleSize = art ? (title.length > 14 ? 58 : 70) : title.length > 24 ? 62 : 76;
+	const titleLines = wrapText(title, Math.floor(textWidth / (titleSize * 0.56)), art ? 3 : 2);
+	const descSize = 27;
+	const descLines = wrapText(description, Math.floor(textWidth / (descSize * 0.5)), 3);
+	const titleY = 196;
+	const descY = titleY + (titleLines.length - 1) * (titleSize + 6) + 58;
 
-	const numBoxes = Math.min(4, featureBoxes.length);
-	let boxesSvg = "";
-	if (numBoxes > 0) {
-		const totalAvailableWidth = 1076;
-		const gap = 16;
-		const boxWidth = Math.floor(
-			(totalAvailableWidth - (numBoxes - 1) * gap) / numBoxes,
-		);
-		boxesSvg = featureBoxes
-			.slice(0, numBoxes)
-			.map((box, i) => {
-				const x = i * (boxWidth + gap);
-				return `
-      <g transform="translate(${x}, 0)">
-        <rect width="${boxWidth}" height="88" rx="14" fill="#131b2e" fill-opacity="0.85" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
-        <text x="20" y="38" fill="${box.color || "#ffffff"}" font-family="DM Sans" font-size="28" font-weight="bold">${escapeXml(box.title)}</text>
-        <text x="20" y="66" fill="#64748b" font-family="JetBrains Mono" font-size="12" font-weight="bold" letter-spacing="0.05em">${escapeXml(box.subtitle)}</text>
-      </g>`;
-			})
-			.join("");
-	}
-
-	let tagX = 0;
-	const tagsSvg = tags
-		.slice(0, 6)
-		.map((tag) => {
-			const label = escapeXml(tag.label);
-			const width = Math.max(70, Math.floor(label.length * 9.5 + 40));
-			if (tagX + width > 1076) return "";
-			const currentX = tagX;
-			tagX += width + 12;
-			const dotColor = tag.color || "#38bdf8";
-			return `
-      <g transform="translate(${currentX}, 0)">
-        <rect width="${width}" height="32" rx="8" fill="#1e293b" fill-opacity="0.9" stroke="#334155" stroke-width="1"/>
-        <circle cx="16" cy="16" r="4" fill="${dotColor}"/>
-        <text x="28" y="21" fill="#e2e8f0" font-family="JetBrains Mono" font-size="12" font-weight="bold">${label}</text>
-      </g>`;
-		})
+	// Facts sit on one baseline, parted by hairlines. No boxes.
+	const facts = featureBoxes.slice(0, art ? 3 : 4);
+	const factWidth = facts.length ? Math.min(250, Math.floor(textWidth / facts.length)) : 0;
+	const factsSvg = facts
+		.map(
+			(box, i) => `
+    <g transform="translate(${i * factWidth}, 0)">
+      ${i > 0 ? `<line x1="-24" y1="-34" x2="-24" y2="28" stroke="${OG.rule}" stroke-width="1.5"/>` : ""}
+      <text y="0" fill="${OG.ink}" font-family="Lexend" font-size="32" font-weight="bold">${escapeXml(box.title)}</text>
+      <text y="28" fill="${OG.faint}" font-family="DM Sans" font-size="17" font-weight="bold">${escapeXml(sentenceCase(box.subtitle))}</text>
+    </g>`,
+		)
 		.join("");
 
-	const badgeText = escapeXml(badge);
-	const badgeWidth = Math.max(120, Math.floor(badgeText.length * 9 + 48));
-	const badgeX = 1140 - badgeWidth;
+	const tagLine = !art && tags.length
+		? wrapText(tags.slice(0, 6).map((t) => t.label.replace(/^#/, "")).join(", "), 90, 1)[0]
+		: "";
+
+	const section = escapeXml(badge);
+	const url = escapeXml(footerRight.replace(/^https?:\/\//, ""));
 
 	return `
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0a0e17"/>
-      <stop offset="100%" stop-color="#06080d"/>
-    </linearGradient>
-    <radialGradient id="brandGlow" cx="82%" cy="15%" r="65%">
-      <stop offset="0%" stop-color="${badgeColor}" stop-opacity="0.22"/>
-      <stop offset="50%" stop-color="${badgeColor}" stop-opacity="0.04"/>
-      <stop offset="100%" stop-color="${badgeColor}" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="blueGlow" cx="12%" cy="88%" r="45%">
-      <stop offset="0%" stop-color="#0284c7" stop-opacity="0.10"/>
-      <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
-    </radialGradient>
-    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
-      <circle cx="2" cy="2" r="1.2" fill="#ffffff" fill-opacity="0.055"/>
+    <pattern id="dots" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.3" fill="${OG.ink}" fill-opacity="0.06"/>
     </pattern>
+    <radialGradient id="fade" cx="0%" cy="0%" r="90%">
+      <stop offset="0%" stop-color="${OG.paper}" stop-opacity="1"/>
+      <stop offset="100%" stop-color="${OG.paper}" stop-opacity="0"/>
+    </radialGradient>
   </defs>
 
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <rect width="1200" height="630" fill="url(#brandGlow)"/>
-  <rect width="1200" height="630" fill="url(#blueGlow)"/>
+  <rect width="1200" height="630" fill="${OG.paper}"/>
   <rect width="1200" height="630" fill="url(#dots)"/>
+  <rect width="1200" height="630" fill="url(#fade)"/>
+  <rect x="0" y="0" width="1200" height="8" fill="${OG.accent}"/>
 
-  <!-- Card Border -->
-  <rect x="28" y="28" width="1144" height="574" rx="20" fill="#0d131f" fill-opacity="0.6" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.5"/>
-
-  <!-- Top bar / Terminal window controls -->
-  <circle cx="66" cy="66" r="6" fill="#ef4444"/>
-  <circle cx="86" cy="66" r="6" fill="#f59e0b"/>
-  <circle cx="106" cy="66" r="6" fill="#10b981"/>
-
-  <text x="132" y="71" fill="#f97316" font-family="JetBrains Mono" font-size="14" font-weight="bold">taf@tashif.codes</text>
-  <text x="262" y="71" fill="#475569" font-family="JetBrains Mono" font-size="14">%</text>
-  <text x="280" y="71" fill="#94a3b8" font-family="JetBrains Mono" font-size="14">${escapeXml(command)}</text>
-
-  <!-- Route Badge -->
-  <g transform="translate(${badgeX}, 50)">
-    <rect width="${badgeWidth}" height="32" rx="16" fill="${badgeColor}" fill-opacity="0.14" stroke="${badgeColor}" stroke-opacity="0.45" stroke-width="1"/>
-    <circle cx="18" cy="16" r="4" fill="${badgeColor}"/>
-    <text x="30" y="21" fill="#ffffff" font-family="JetBrains Mono" font-size="12" font-weight="bold" letter-spacing="0.06em">${badgeText}</text>
-  </g>
-
-  <!-- Divider line -->
-  <line x1="28" y1="102" x2="1172" y2="102" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
-
-  <!-- Hero Content -->
-  <text x="66" y="${titleY}" fill="#ffffff" font-family="Lexend" font-size="${titleFontSize}" font-weight="bold" letter-spacing="-0.02em">
-    ${titleLines.map((line, idx) => `<tspan x="66" dy="${idx === 0 ? 0 : titleFontSize + 6}">${escapeXml(line)}</tspan>`).join("")}
+  <text x="66" y="84" font-family="Lexend" font-size="24" font-weight="bold">
+    <tspan fill="${OG.ink}">tashif.codes</tspan><tspan fill="${OG.faint}" dx="14">/</tspan><tspan fill="${OG.accent}" dx="14">${section}</tspan>
   </text>
 
-  <text x="66" y="${descY}" fill="#94a3b8" font-family="DM Sans" font-size="21" font-weight="500">
-    ${descLines.map((line, idx) => `<tspan x="66" dy="${idx === 0 ? 0 : 28}">${escapeXml(line)}</tspan>`).join("")}
+  <text x="66" y="${titleY}" fill="${OG.ink}" font-family="Lexend" font-size="${titleSize}" font-weight="bold" letter-spacing="-0.03em">
+    ${titleLines.map((line, idx) => `<tspan x="66" dy="${idx === 0 ? 0 : titleSize + 6}">${escapeXml(line)}</tspan>`).join("")}
   </text>
 
-  ${boxesSvg ? `<g transform="translate(66, 332)">${boxesSvg}</g>` : ""}
+  <text x="66" y="${descY}" fill="${OG.muted}" font-family="DM Sans" font-size="${descSize}" font-weight="bold">
+    ${descLines.map((line, idx) => `<tspan x="66" dy="${idx === 0 ? 0 : descSize + 9}">${escapeXml(line)}</tspan>`).join("")}
+  </text>
 
-  ${tagsSvg ? `<g transform="translate(66, ${boxesSvg ? 448 : 360})">${tagsSvg}</g>` : ""}
+  ${factsSvg ? `<g transform="translate(66, 478)">${factsSvg}</g>` : ""}
+  ${tagLine ? `<text x="66" y="${factsSvg ? 420 : 470}" fill="${OG.faint}" font-family="DM Sans" font-size="20" font-weight="bold">${escapeXml(tagLine)}</text>` : ""}
 
-  <!-- Bottom Divider line -->
-  <line x1="28" y1="528" x2="1172" y2="528" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
+  ${art ? `<rect x="${ART.x - 1}" y="${ART.y - 1}" width="${ART.width + 2}" height="${ART.height + 2}" rx="${ART.radius + 1}" fill="${OG.panel}" stroke="${OG.rule}" stroke-width="2"/>` : ""}
 
-  <!-- Footer -->
-  <g transform="translate(66, 564)">
-    <circle cx="14" cy="0" r="14" fill="#ea580c"/>
-    <text x="14" y="5" text-anchor="middle" fill="#ffffff" font-family="DM Sans" font-size="12" font-weight="bold">TK</text>
-    <text x="38" y="-1" fill="#ffffff" font-family="DM Sans" font-size="16" font-weight="bold">Tashif Ahmad Khan</text>
-    <text x="38" y="16" fill="#64748b" font-family="JetBrains Mono" font-size="12">@tashifkhan</text>
-  </g>
-
-  <g transform="translate(1144, 564)">
-    <text x="0" y="4" text-anchor="end" fill="#f97316" font-family="JetBrains Mono" font-size="15" font-weight="bold">${escapeXml(footerRight)}</text>
-  </g>
+  <line x1="66" y1="548" x2="1134" y2="548" stroke="${OG.rule}" stroke-width="1.5"/>
+  <text x="66" y="588" fill="${OG.ink}" font-family="DM Sans" font-size="20" font-weight="bold">Tashif Ahmad Khan</text>
+  <text x="1134" y="588" text-anchor="end" fill="${OG.accent}" font-family="JetBrains Mono" font-size="18" font-weight="bold">${url}</text>
 </svg>
 `;
 }
 
-async function rasterizeSvg(svgText, outPath, fontFiles, defaultFont = "DM Sans") {
+function sentenceCase(text) {
+	const lower = String(text ?? "").toLowerCase();
+	return (lower.charAt(0).toUpperCase() + lower.slice(1))
+		.replace(/\bgithub\b/gi, "GitHub")
+		.replace(/\b(cli|api|apis|rss|pdf)\b/gi, (word) => word.toUpperCase().replace("APIS", "APIs"));
+}
+
+/** A project's own picture for its card, when it has one in public/. */
+function projectArt(slug) {
+	const candidates = [
+		`public/landings/${slug}/poster.webp`,
+		`public/landings/${slug}/walkthrough-poster.webp`,
+	];
+	const hit = candidates.map((c) => join(ROOT, c)).find((c) => existsSync(c));
+	return hit ?? null;
+}
+
+/** The tagline a landing declares, so the card and the page say the same thing. */
+function landingTagline(slug) {
+	const file = join(ROOT, "src", "landings", `${slug}.astro`);
+	if (!existsSync(file)) return null;
+	const match = readFileSync(file, "utf8").match(/tagline:\s*\n?\s*"([^"]+)"/);
+	return match ? match[1] : null;
+}
+
+/** Rounds a picture into the card's art frame and returns it for compositing. */
+async function artLayer(file) {
+	const mask = Buffer.from(
+		`<svg width="${ART.width}" height="${ART.height}"><rect width="${ART.width}" height="${ART.height}" rx="${ART.radius}"/></svg>`,
+	);
+	const input = await sharp(file)
+		.resize(ART.width, ART.height, { fit: "cover", position: "top" })
+		.composite([{ input: mask, blend: "dest-in" }])
+		.png()
+		.toBuffer();
+	return { input, left: ART.x, top: ART.y };
+}
+
+async function rasterizeSvg(svgText, outPath, fontFiles, defaultFont = "DM Sans", layers = []) {
 	const svg = remapFonts(svgText);
 	const resvg = new Resvg(svg, {
 		fitTo: { mode: "width", value: 1200 },
@@ -349,6 +340,7 @@ async function rasterizeSvg(svgText, outPath, fontFiles, defaultFont = "DM Sans"
 	const png = rendered.asPng();
 	const jpeg = await sharp(png)
 		.resize(1200, 630, { fit: "fill" })
+		.composite(layers)
 		.flatten({ background: "#0a0e17" })
 		.jpeg({ quality: 92, mozjpeg: true, chromaSubsampling: "4:4:4" })
 		.toColorspace("srgb")
@@ -720,14 +712,14 @@ async function generateProjectCards(fontFiles) {
 		];
 		if (stars > 0) {
 			featureBoxes.push({
-				title: `★ ${stars}`,
+				title: `${stars}`,
 				subtitle: stars === 1 ? "GitHub Star" : "GitHub Stars",
 				color: "#f59e0b",
 			});
 		}
 		if (forks > 0) {
 			featureBoxes.push({
-				title: `⑂ ${forks}`,
+				title: `${forks}`,
 				subtitle: forks === 1 ? "Fork" : "Forks",
 				color: "#10b981",
 			});
@@ -747,26 +739,30 @@ async function generateProjectCards(fontFiles) {
 			});
 		}
 
-		const tags = topics.map((t) => ({
-			label: `#${t}`,
-			color: langColor,
-		}));
+		const tags = topics.map((t) => ({ label: t.replace(/-/g, " ") }));
+		const art = projectArt(slug);
 
 		const svg = generateSiteOgSvg({
-			command: `git info ${slug}`,
-			badge: "Project",
-			badgeColor: langColor !== "#94a3b8" ? langColor : "#3178c6",
+			badge: "Projects",
 			title: formatTitle(p.title),
 			description:
+				landingTagline(slug) ||
 				p.description ||
-				`Open source ${primaryLang} software repository by Tashif Ahmad Khan.`,
+				`Open source ${primaryLang} software by Tashif Ahmad Khan.`,
 			featureBoxes,
 			tags,
 			footerRight: `https://tashif.codes/projects/${slug}`,
+			art: Boolean(art),
 		});
 
 		try {
-			const bytes = await rasterizeSvg(svg, outPath, fontFiles);
+			const bytes = await rasterizeSvg(
+				svg,
+				outPath,
+				fontFiles,
+				"DM Sans",
+				art ? [await artLayer(art)] : [],
+			);
 			console.log(`[og] /projects/${slug}.jpg (${(bytes / 1024).toFixed(1)} KB)`);
 		} catch (err) {
 			console.warn(`[og] failed project card ${slug}: ${err.message}`);

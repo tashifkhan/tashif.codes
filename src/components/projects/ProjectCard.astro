@@ -20,8 +20,6 @@ const topics = project.topics ?? [];
 const topicsToShow = topics.slice(0, 3);
 const moreTopics = Math.max(0, topics.length - 3);
 const releaseCount = project.releases?.length ?? 0;
-// The dominant language tints the card's top edge — a quiet per-project identity
-const accent = project.languages[0] ? languageColor(project.languages[0]) : null;
 ---
 
 <div
@@ -42,16 +40,6 @@ const accent = project.languages[0] ? languageColor(project.languages[0]) : null
 			"hover:border-primary/40"
 		)}
 	>
-		{
-			accent && (
-				<span
-					class="absolute inset-x-0 top-0 h-[3px] opacity-50 transition-opacity duration-300 group-hover:opacity-100"
-					style={`background: linear-gradient(90deg, ${accent}, transparent 85%)`}
-					aria-hidden="true"
-				/>
-			)
-		}
-
 		<!-- Content zone -->
 		<div class="flex-1 p-5 pb-4 flex flex-col">
 			<div class="flex items-start justify-between gap-3">

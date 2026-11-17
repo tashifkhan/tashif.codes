@@ -1,0 +1,249 @@
+---
+/**
+ * Patchwork. Replaces the README at /projects/patchwork. Media lives in
+ * public/landings/patchwork.
+ */
+import { Download, Github } from "lucide-react";
+import {
+	Landing,
+	LandingHero,
+	Section,
+	Shot,
+	LandingVideo,
+	Pinned,
+	Rows,
+	Faq,
+	Routes,
+} from "@/components/landing";
+import { REPO_ADD_URL } from "@/lib/fdroid";
+import { playStoreRoute } from "@/data/profile";
+import type { LandingMeta } from "@/lib/landings";
+import type { Project } from "@/types";
+
+export const landing: LandingMeta = {
+	tagline:
+		"One task app for CalDAV, Nextcloud Deck, Jira and GitHub Issues, on Android and iOS.",
+	cta: { label: "Get Patchwork", href: "#get" },
+};
+
+interface Props {
+	project: Project;
+}
+
+const { project } = Astro.props;
+const media = "/landings/patchwork";
+
+const release = (project.releases ?? []).find((r) => !r.draft && !r.prerelease);
+const apk = release?.assets.find((a) => a.name.toLowerCase().endsWith(".apk"));
+const apkHref = apk?.download_url ?? `${project.github_link}/releases/latest`;
+
+const screen = { width: 600, height: 1333 };
+const shot = (name: string, alt: string) => ({
+	src: `${media}/screens/${name}.webp`,
+	alt,
+});
+
+const chapters = [
+	{
+		title: "Tasks",
+		features: [
+			{
+				title: "CalDAV, from any server",
+				body: "Nextcloud or anything else that speaks CalDAV. Subtasks, tags, priorities, due dates, reminders and Markdown notes.",
+			},
+			{
+				title: "Two devices, no lost edits",
+				body: "Every save checks the server's ETag first, so a phone and a tablet can't quietly overwrite each other.",
+			},
+			{
+				title: "A full editor",
+				body: "Notes render as Markdown, with a checklist you can tick from the task.",
+			},
+		],
+		shots: [
+			shot("tasks", "Task list grouped by today, tomorrow and upcoming"),
+			shot("detail", "A task with Markdown notes and a checklist"),
+			shot("editor", "The task editor"),
+		],
+	},
+	{
+		title: "Boards",
+		features: [
+			{
+				title: "Nextcloud Deck",
+				body: "Drag cards, reorder columns, and create or edit anything from the app.",
+			},
+			{
+				title: "Jira",
+				body: "Sprints, a backlog and a full issue editor. Dragging a card updates its rank on the server.",
+			},
+			{
+				title: "GitHub Issues",
+				body: "Across repositories. Sign in with device flow or a token, then create, close and reopen.",
+			},
+			{
+				title: "More than one account",
+				body: "Several Jira and GitHub logins at once.",
+			},
+		],
+		shots: [
+			shot("boards", "Boards from Jira and Nextcloud Deck"),
+			shot("jira-board", "A Jira sprint board"),
+			shot("jira-drag", "Dragging a card between Jira columns"),
+		],
+	},
+	{
+		title: "Find it",
+		features: [
+			{
+				title: "Search across everything",
+				body: "One search over tasks, lists and tags.",
+			},
+			{
+				title: "Jira filters",
+				body: "By sprint, by type, or only what is assigned to you.",
+			},
+		],
+		shots: [
+			shot("search", "Search with lists and tags"),
+			shot("jira-filter", "Jira filters by sprint and type"),
+			shot("jira-assigned", "Jira issues assigned to me"),
+		],
+	},
+	{
+		title: "Make it yours",
+		features: [
+			{
+				title: "AI import, with your own model",
+				body: "Photograph handwritten notes or describe what you need, and it drafts tasks. You review each one before it is saved.",
+			},
+			{
+				title: "Nine providers",
+				body: "OpenAI, Anthropic, Google, DeepSeek, OpenRouter, NVIDIA, OpenCode Zen, RelayRoom, or any OpenAI compatible endpoint.",
+			},
+			{
+				title: "Material You",
+				body: "Wallpaper colours on Android, a custom accent on iOS, high contrast, and pure black for OLED.",
+			},
+		],
+		shots: [
+			shot("ai", "AI import provider with a model list"),
+			shot("appearance", "Theme and colour palette settings"),
+			shot("settings", "Settings with integrations"),
+		],
+	},
+];
+
+const more = [
+	{ title: "Voice dictation", body: "Say a task instead of typing it." },
+	{
+		title: "Widgets",
+		body: "Today and upcoming tasks on the Android home screen.",
+	},
+	{
+		title: "Calendar",
+		body: "Add a task to a calendar on the device.",
+	},
+	{
+		title: "Tablets and foldables",
+		body: "Layouts that use the extra width.",
+	},
+	{
+		title: "No Patchwork server",
+		body: "Credentials and API keys sit in the device's secure storage, and the app talks to your servers directly.",
+	},
+];
+
+const routes = [
+	{
+		title: "F-Droid",
+		body: 'Add my repo under Settings, Repositories, then install Patchwork. <a href="/fdroid">Setup steps</a>',
+		copy: REPO_ADD_URL,
+	},
+	{
+		title: "APK",
+		body: release
+			? `${release.tag_name}, straight from GitHub releases.`
+			: "The newest build from GitHub releases.",
+		action: { label: "Download APK", href: apkHref, primary: true },
+	},
+	{
+		title: "iOS",
+		body: `Build it yourself from <a href="${project.github_link}#building-the-ios-app" target="_blank" rel="noopener noreferrer">the source</a>. It is not on the App Store.`,
+	},
+	playStoreRoute("patchwork"),
+];
+
+const faq = [
+	{
+		q: "Does it need Nextcloud?",
+		a: "No. Each integration works alone. Use only GitHub Issues, or only Jira, or any CalDAV server.",
+	},
+	{
+		q: "Where do my passwords go?",
+		a: "Into the device's secure storage. The app calls your servers directly, and nothing passes through a server of mine.",
+	},
+	{
+		q: "Is the AI required?",
+		a: "No. AI import is off until you add your own key.",
+	},
+	{
+		q: "Is there a web or Mac app?",
+		a: "Both are in progress and not shipped. Slack and Linear integrations are planned too.",
+	},
+	{
+		q: "What does it cost?",
+		a: `Nothing. Patchwork is MIT licensed, and the source is on <a href="${project.github_link}" target="_blank" rel="noopener noreferrer">GitHub</a>.`,
+	},
+];
+---
+
+<Landing name="patchwork">
+	<LandingHero
+		wide
+		title="Every task list, in one app."
+		lead="Patchwork signs in to CalDAV, Nextcloud Deck, Jira and GitHub, and edits your work where it lives."
+	>
+		<Fragment slot="actions">
+			<a href={apkHref} data-haptic-external class="ld-btn ld-btn-primary">
+				<Download aria-hidden="true" />
+				Download APK
+			</a>
+			<a
+				href={project.github_link}
+				target="_blank"
+				rel="noopener noreferrer"
+				data-haptic-external
+				class="ld-btn"
+			>
+				<Github aria-hidden="true" />
+				Source
+			</a>
+		</Fragment>
+		<Fragment slot="terms">Android 7.0 and up, and iOS. Free under MIT.</Fragment>
+		<Shot slot="media" width={1280} height={800}>
+			<LandingVideo
+				src={`${media}/walkthrough.mp4`}
+				poster={`${media}/walkthrough-poster.webp`}
+				label="Patchwork on iOS and Android: tasks, Jira boards, filters and dragging a card"
+				controls
+			/>
+		</Shot>
+	</LandingHero>
+
+	<Section id="features" title="Four services, one list." gap="s">
+		<Pinned chapters={chapters} {...screen} />
+	</Section>
+
+	<Section id="more" title="Also in the app." layout="side">
+		<Rows rows={more} dense />
+	</Section>
+
+	<Section id="faq" title="Before you install." layout="side" gap="l">
+		<Faq items={faq} />
+	</Section>
+
+	<Section id="get" title="Get Patchwork." layout="side">
+		<Routes routes={routes} />
+	</Section>
+</Landing>

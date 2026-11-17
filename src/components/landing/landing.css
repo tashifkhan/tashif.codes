@@ -238,6 +238,59 @@ body {
 		/* A portrait clip at about three quarters of the screen under the header. */
 		--ld-shot-height: min(36rem, 100dvh - 19rem);
 	}
+	.ld-hero[data-wide] {
+		grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+		gap: var(--ld-space-2xl);
+	}
+	.ld-hero[data-wide] .ld-display {
+		font-size: var(--ld-text-section);
+		max-width: 16ch;
+	}
+	.ld-hero[data-wide] .ld-hero-media > .ld-shot {
+		width: 100%;
+	}
+	/* A landscape clip keeps its own shape instead of the portrait height. */
+	.ld-hero[data-wide] .ld-hero-media .ld-shot-frame {
+		height: auto;
+	}
+}
+
+/* A line of code a visitor can copy, such as a curl call or an address. */
+.ld-code {
+	display: block;
+	max-width: 100%;
+	padding: var(--ld-space-md);
+	border: 1px solid var(--ld-rule);
+	border-radius: var(--ld-radius);
+	background: var(--ld-paper-2);
+	overflow-wrap: anywhere;
+	line-height: 1.5;
+}
+.ld-link {
+	color: var(--ld-ink);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.16em;
+}
+.ld-link:hover {
+	color: var(--ld-accent);
+}
+.ld-link:active {
+	color: var(--ld-press);
+}
+/* Two or three landscape shots side by side. */
+.ld-shots {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: var(--ld-space-lg);
+}
+@media (min-width: 40rem) {
+	.ld-shots {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.ld-shots > :first-child:nth-last-child(odd) {
+		grid-column: 1 / -1;
+	}
 }
 
 /* --------------------------------------------------------------- section */
@@ -308,6 +361,11 @@ body {
 		height: var(--ld-shot-height);
 		max-width: 100%;
 	}
+}
+/* A landscape clip in the hero fills the column at every width. Without
+   this it has no width of its own inside the centring flex row. */
+.ld-hero-media > .ld-shot:not([data-portrait]) {
+	width: 100%;
 }
 .ld-shot figcaption {
 	margin-top: var(--ld-space-sm);
@@ -408,8 +466,22 @@ body {
 	cursor: pointer;
 	transition: background-color var(--ld-dur-micro) var(--ld-ease-out);
 }
-.ld-player-btn:hover {
+/* Hover only where there is a pointer. On a phone a tapped button would
+   otherwise keep its hover colour until something else is tapped. */
+@media (hover: hover) {
+	.ld-player-btn:hover {
+		background: var(--ld-paper-3);
+	}
+}
+.ld-player-btn[aria-expanded="true"] {
 	background: var(--ld-paper-3);
+}
+.ld-player-bar,
+.ld-player-start {
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-tap-highlight-color: transparent;
+	touch-action: manipulation;
 }
 .ld-player-btn:active {
 	background: var(--ld-shade);
@@ -485,8 +557,10 @@ body {
 	cursor: pointer;
 	transition: background-color var(--ld-dur-micro) var(--ld-ease-out);
 }
-.ld-player-presets button:hover {
-	background: var(--ld-paper-3);
+@media (hover: hover) {
+	.ld-player-presets button:not([data-on]):hover {
+		background: var(--ld-paper-3);
+	}
 }
 .ld-player-presets button:active {
 	background: var(--ld-shade);
@@ -544,6 +618,17 @@ body {
 	}
 	.ld-player-btn {
 		width: 36px;
+	}
+	/* On a phone the speed menu spans the bar, so it can't run off the video. */
+	.ld-player-speed {
+		position: static;
+	}
+	.ld-player-pop {
+		left: 0;
+		right: 0;
+		width: auto;
+		gap: var(--ld-space-xs);
+		padding: var(--ld-space-sm);
 	}
 }
 
@@ -823,6 +908,55 @@ body {
 	flex: 0 0 clamp(13rem, 22vw, 18rem);
 	max-width: 18rem;
 	scroll-snap-align: start;
+}
+.ld-rail[data-wide] > li {
+	flex-basis: min(86%, 46rem);
+	max-width: 46rem;
+}
+.ld-rail .ld-shot {
+	width: 100%;
+}
+/* A plain table of figures: sentence-case heads, rules between rows. */
+.ld-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-variant-numeric: tabular-nums;
+}
+.ld-table caption {
+	padding-bottom: var(--ld-space-sm);
+	text-align: left;
+	font-family: var(--ld-font-display);
+	font-size: var(--ld-text-title);
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	color: var(--ld-ink);
+}
+.ld-table :is(th, td) {
+	padding: var(--ld-space-sm) var(--ld-space-md) var(--ld-space-sm) 0;
+	border-bottom: 1px solid var(--ld-rule);
+	text-align: left;
+	vertical-align: baseline;
+}
+.ld-table thead th {
+	font-size: var(--ld-text-sm);
+	font-weight: 400;
+	color: var(--ld-muted);
+	white-space: nowrap;
+}
+.ld-table tbody th {
+	font-weight: 500;
+}
+.ld-table td {
+	color: var(--ld-muted);
+}
+.ld-table :is(th, td):last-child {
+	padding-right: 0;
+}
+.ld-table-wrap {
+	overflow-x: auto;
+}
+.ld-table-wrap + .ld-table-wrap {
+	margin-top: var(--ld-space-2xl);
 }
 .ld-rail .ld-shot[data-portrait] {
 	width: 100%;

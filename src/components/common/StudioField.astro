@@ -219,7 +219,7 @@ const { class: className = "", geometry = false, gap = 28 } = Astro.props;
 			observer = new MutationObserver(scheduleRefresh);
 			observer.observe(document.documentElement, {
 				attributes: true,
-				attributeFilter: ["data-skin", "data-theme", "class"],
+				attributeFilter: ["data-skin", "data-color", "data-theme", "class"],
 			});
 
 			const lightMedia = matchMedia("(prefers-color-scheme: light)");

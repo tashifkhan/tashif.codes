@@ -606,9 +606,9 @@ html[data-skin="studio"] .font-sans.text-xl {
 
 /* The site has lots of `transition-colors` wrappers. Kill those during the
    reveal so the new snapshot is the final palette, not a half-finished fade. */
-:root[data-theme-switch] *,
-:root[data-theme-switch] *::before,
-:root[data-theme-switch] *::after {
+:root:is([data-theme-switch], [data-skin-switch]) *,
+:root:is([data-theme-switch], [data-skin-switch]) *::before,
+:root:is([data-theme-switch], [data-skin-switch]) *::after {
 	transition: none !important;
 }
 
@@ -937,4 +937,22 @@ html[data-color]:is([data-skin="simple"], [data-skin="studio"]) {
 	--sidebar-ring: var(--primary);
 	--chart-1: var(--primary);
 	--primary-color: var(--primary);
+}
+
+/* Cards and panels that pinned a near-black surface by hand take the skin's
+   card colour instead, so a lazy skin reaches them too. */
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) :is([data-project-card] article, [class~="dark:bg-[#101119]"]) {
+	background-color: var(--card);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) [data-project-card] article:hover {
+	border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) :is([data-social-card], #welcome-banner) {
+	border-color: var(--border);
+	background: var(--card);
+}
+html:is([data-skin="dump"], [data-skin="sleeck"], [data-skin="material"]) [data-social-icon] {
+	border: 1px solid color-mix(in oklab, var(--primary) 25%, transparent);
+	background: color-mix(in oklab, var(--primary) 12%, transparent);
+	color: var(--primary);
 }

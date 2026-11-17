@@ -18,13 +18,21 @@ interface Props {
 	label: string;
 	width: number;
 	height: number;
+	/** Landscape panels, such as slides: wider cards, one or two in view. */
+	wide?: boolean;
 }
 
-const { panels, label, width, height } = Astro.props;
+const { panels, label, width, height, wide = false } = Astro.props;
 ---
 
 <div data-ld-rail>
-	<ul class="ld-rail" data-ld-track tabindex="0" aria-label={label}>
+	<ul
+		class="ld-rail"
+		data-wide={wide ? "" : undefined}
+		data-ld-track
+		tabindex="0"
+		aria-label={label}
+	>
 		{
 			panels.map((panel) => (
 				<li>

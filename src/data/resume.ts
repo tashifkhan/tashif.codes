@@ -1,11 +1,11 @@
 import type { Education, Position, ResumeAction, ResumeProject, SkillCategory } from "@/types";
-import { contactEmail } from "./profile";
+import { contactEmail, sponsorUrl } from "./profile";
 
 
 
 export const resumeAbout = {
 	greeting: "Holaaaa! 👋",
-	introHtml: `I'm an engineer in <span class="text-foreground font-medium">Delhi, India</span>, building <span class="text-foreground font-medium">full-stack apps and generative AI</span>. I like the problems nobody else is bothering to fix. Off hours I'm poking at my <span class="text-foreground font-medium">home lab</span> or over-engineering something nobody asked for. I use code to solve real problems, mostly my own laziness.`,
+	introHtml: `I'm an engineer in <span class="text-foreground font-medium">Delhi, India</span>, building <span class="text-foreground font-medium">full-stack apps and generative AI</span>. I like the problems nobody else is bothering to fix. Right now I'm building <a href="https://rah.clinic/" target="_blank" rel="noopener noreferrer" class="text-foreground font-medium underline decoration-dotted underline-offset-4 hover:text-primary transition-colors">rah.clinic</a>, a clinic that runs over WhatsApp, through my studio <a href="https://taf.sh/products/rah-clinic" target="_blank" rel="noopener noreferrer" class="text-foreground font-medium underline decoration-dotted underline-offset-4 hover:text-primary transition-colors">taf.sh</a>. Off hours I'm poking at my <span class="text-foreground font-medium">home lab</span> or over-engineering something nobody asked for. I use code to solve real problems, mostly my own laziness.`,
 	location: "Delhi, India",
 	highlights: ["Full Stack Engineer", "Open Source"],
 	actions: [
@@ -26,8 +26,16 @@ export const resumeAbout = {
 			url: "https://tashif.codes/resume:pdf",
 			icon: "download",
 		},
+		// Shows once sponsorUrl is set in profile.ts.
+		...(sponsorUrl
+			? [{ label: "Sponsor", url: sponsorUrl, icon: "heart" as const }]
+			: []),
 	] as ResumeAction[],
 };
+
+/** An inline link in the resume's own style. */
+const a = (href: string, text: string) =>
+	`<a href="${href}" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">${text}</a>`;
 
 export const resumeProjects: ResumeProject[] = [
 	{
@@ -36,7 +44,7 @@ export const resumeProjects: ResumeProject[] = [
 			"FastAPI, LangChain, LangGraph, React, TypeScript, MCP, Docker, WebExtension APIs",
 		color: "green",
 		links: [
-			{ label: "Live", url: "https://tashif.codes/agentic-browser" },
+			{ label: "Live", url: "https://tashif.codes/projects/agentic-browser" },
 			{ label: "GitHub", url: "https://github.com/tashifkhan/agentic-browser" },
 		],
 		points: [
@@ -115,17 +123,18 @@ export const resumeProjects: ResumeProject[] = [
 	},
 	{
 		title: "F-Droid Apps",
-		stack: "React Native, Expo, EAS Build, Android, F-Droid",
+		stack: "Kotlin, Compose Multiplatform, React Native, Expo, FastAPI, F-Droid",
 		color: "orange",
+		platforms: ["Android", "iOS", "Web"],
 		links: [
 			{ label: "F-Droid", url: "https://tashif.codes/fdroid" },
 			{ label: "GitHub", url: "https://github.com/tashifkhan/Paisa" },
 		],
 		points: [
-			'Run a self-hosted <a href="https://tashif.codes/fdroid" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">F-Droid repo</a> at <strong>tashif.codes/fdroid</strong> with 3 signed apps. Add it once, get updates automatically.',
-			'<a href="https://tashif.codes/fdroid" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Paisa</strong></a> keeps the ledger on the phone. It parses bank SMS on device for 100+ Indian banks. SMS never leaves the device, and you can bring your own key for statement imports.',
-			'<a href="https://tashif.codes/fdroid" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Patchwork</strong></a> is the task manager I actually use. CalDAV and Nextcloud Deck boards, AI draft from a photo or note, GitHub issues, and widgets that stay quiet until you need them.',
-			'<a href="https://delhi-metro.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Delhi NCR Metro</strong></a> plans DMRC and NMRC trips. The app runs on a <a href="https://dmrc-rest-api.vercel.app/docs" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">FastAPI service</a> I built that wraps DMRC and NMRC endpoints and bridges the two networks for routes, fares and station search.',
+			`I run my own ${a("https://tashif.codes/fdroid", "F-Droid repo")} at <strong>tashif.codes/fdroid</strong> with 3 signed apps. Add it once and updates show up like any other F-Droid app.`,
+			`${a("/projects/paisa", "<strong>Paisa</strong>")} (Android, Web) keeps the ledger on the phone, because every expense app I tried wanted an account and then a subscription. Bank SMS turns into transactions on the device for about <strong>140 Indian banks</strong>, and the same Kotlin runs in a browser through WebAssembly.`,
+			`${a("/projects/patchwork", "<strong>Patchwork</strong>")} (Android, iOS) is the task manager I actually use. My tasks were spread across CalDAV, Nextcloud Deck, Jira and GitHub issues, so it signs in to all four and edits them where they live.`,
+			`${a("/projects/delhi-metro", "<strong>Delhi NCR Metro</strong>")} (Android, Web) plans trips across DMRC and NMRC, which don't share tickets. It runs on a ${a("https://ncr-metro.tashif.codes/api", "FastAPI service")} I wrote that wraps both operators into one contract.`,
 		],
 	},
 ];
@@ -190,31 +199,42 @@ export const skillCategories: SkillCategory[] = [
 	{
 		label: "Languages",
 		color: "orange",
-		items: ["Python", "JavaScript", "Go"],
+		items: ["Python", "TypeScript", "Kotlin", "Go", "SQL"],
 	},
 	{
 		label: "Frameworks",
 		color: "blue",
 		items: [
-			"Next.js",
-			"React.js",
-			"React Native",
-			"Node.js",
-			"Astro",
 			"FastAPI",
-			"Redux",
+			"Django",
+			"Next.js",
+			"React",
+			"React Native",
+			"Expo",
+			"Compose Multiplatform",
+			"Astro",
+			"TanStack Start",
+			"LangGraph",
 			"LangChain",
-			"Framer Motion",
 		],
 	},
 	{
-		label: "Databases",
+		label: "Data",
 		color: "green",
-		items: ["PostgreSQL", "MongoDB", "OpenSearch", "SQLite"],
+		items: ["PostgreSQL", "SQLite", "MongoDB", "Redis", "OpenSearch", "Kafka"],
 	},
 	{
 		label: "Tools",
 		color: "purple",
-		items: ["Git", "Docker", "Vercel", "Codeberg", "Tailscale", "Nginx", "AWS"],
+		items: [
+			"Docker",
+			"Git",
+			"GitHub Actions",
+			"Cloudflare Workers",
+			"Vercel",
+			"Celery",
+			"Tailscale",
+			"Nginx",
+		],
 	},
 ];
