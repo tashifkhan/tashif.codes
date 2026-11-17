@@ -48,8 +48,11 @@ const description = meta?.tagline || project.description;
 // The repo's homepage often points back at this page. A "Live demo" button
 // that reloads the page you are on is noise, so drop it.
 const selfLink = /^https?:\/\/(www\.)?tashif\.codes\/projects\//i;
+// A landing whose own button already leaves the site covers the live link.
 const liveUrl =
-	project.live_website_url && !selfLink.test(project.live_website_url)
+	project.live_website_url &&
+	!selfLink.test(project.live_website_url) &&
+	!meta?.cta?.external
 		? project.live_website_url
 		: undefined;
 

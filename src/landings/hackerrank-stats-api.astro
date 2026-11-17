@@ -1,0 +1,22 @@
+---
+/** Stats API landing. The content lives in src/data/statsApis.ts. */
+import { StatsApi } from "@/components/landing";
+import { statsApis } from "@/data/statsApis";
+import type { LandingMeta } from "@/lib/landings";
+import type { Project } from "@/types";
+
+// Astro hoists this export above the rest of the frontmatter, so it cannot
+// read a constant declared below it.
+export const landing: LandingMeta = {
+	cta: { label: "Playground", href: "https://hackerrank-stats.tashif.codes", external: true },
+};
+
+interface Props {
+	project: Project;
+}
+
+const { project } = Astro.props;
+const api = statsApis.find((entry) => entry.slug === "hackerrank-stats-api")!;
+---
+
+<StatsApi project={project} api={api} />

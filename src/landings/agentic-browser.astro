@@ -1,0 +1,229 @@
+---
+/**
+ * Agentic Browser. Replaces the README at /projects/agentic-browser. The
+ * video streams from taf.sh.
+ */
+import { Download, Github } from "lucide-react";
+import {
+	Landing,
+	LandingHero,
+	Section,
+	Shot,
+	LandingVideo,
+	Rows,
+	Faq,
+} from "@/components/landing";
+import type { LandingMeta } from "@/lib/landings";
+import type { Project } from "@/types";
+
+export const landing: LandingMeta = {
+	tagline:
+		"A browser side panel whose agents plan, act and check their work on any page, with your own model keys.",
+	cta: { label: "Get the extension", href: "https://tashif.codes/agentic-browser", external: true },
+};
+
+interface Props {
+	project: Project;
+}
+
+const { project } = Astro.props;
+const reel = "https://taf.sh/reel";
+const download = "https://tashif.codes/agentic-browser";
+
+const loop = [
+	{
+		title: "Plan",
+		body: "It reads the page's DOM as it is right now, then writes the steps it means to take.",
+	},
+	{
+		title: "Act",
+		body: "It clicks, types, scrolls and navigates. Each browser action waits for your approval first.",
+	},
+	{
+		title: "Verify",
+		body: "It checks the page after every step and tries again when the result is not what it planned for.",
+	},
+];
+
+const commands = [
+	{ title: "/browser-action", body: "Click, type, scroll and navigate on the open page." },
+	{ title: "/react-ask", body: "Reason through a question step by step, calling tools as it goes." },
+	{ title: "/google-search", body: "Search the web through more than one provider." },
+	{ title: "/gmail-unread", body: "Read and summarise unread email." },
+	{ title: "/calendar-events", body: "List what is coming up on your calendar." },
+	{ title: "/youtube-ask", body: "Ask questions about a video from its transcript." },
+	{ title: "/voice", body: "Talk to it instead of typing." },
+];
+
+const parts = [
+	{
+		title: "Side panel",
+		body: "A React extension built with WXT. It drives the page through the WebExtensions API.",
+	},
+	{
+		title: "Agents",
+		body: "LangGraph coordinates several agents, each with its own tools.",
+	},
+	{
+		title: "Server",
+		body: "One Python server answers REST calls and Model Context Protocol clients, so the same tools work from other apps.",
+	},
+];
+
+const faq = [
+	{
+		q: "Which models work?",
+		a: "OpenAI, Anthropic and Gemini with your own key, or a local model through Ollama or LM Studio.",
+	},
+	{
+		q: "Does it act without asking?",
+		a: "No. Browser actions are declared first and wait for your approval, and every action is logged.",
+	},
+	{
+		q: "Where do my keys go?",
+		a: "They stay on your machine. There is no account and no hosted service in between.",
+	},
+	{
+		q: "What does it cost?",
+		a: `Nothing beyond what your model provider charges. The source is on <a href="${project.github_link}" target="_blank" rel="noopener noreferrer">GitHub</a>.`,
+	},
+];
+---
+
+<Landing name="agentic-browser">
+	<LandingHero
+		wide
+		title="An agent that acts on the page."
+		lead="It plans, clicks and checks its own work in your browser, on the model you choose."
+	>
+		<Fragment slot="actions">
+			<a
+				href={download}
+				target="_blank"
+				rel="noopener noreferrer"
+				data-haptic-external
+				class="ld-btn ld-btn-primary"
+			>
+				<Download aria-hidden="true" />
+				Download the extension
+			</a>
+			<a
+				href={project.github_link}
+				target="_blank"
+				rel="noopener noreferrer"
+				data-haptic-external
+				class="ld-btn"
+			>
+				<Github aria-hidden="true" />
+				Source
+			</a>
+		</Fragment>
+		<Fragment slot="terms">Open source. Bring your own keys.</Fragment>
+		<Shot slot="media" width={1280} height={800}>
+			<LandingVideo
+				src={`${reel}/agentic-browser-demo.mp4`}
+				poster={`${reel}/agentic-browser-poster.jpg`}
+				label="Agentic Browser walkthrough: the side panel planning and acting on a page"
+				controls
+			/>
+		</Shot>
+	</LandingHero>
+
+	<Section id="loop" title="Plan, act, verify." layout="side" gap="s">
+		<ol class="ab-loop">
+			{
+				loop.map((step) => (
+					<li>
+						<h3>{step.title}</h3>
+						<p>{step.body}</p>
+					</li>
+				))
+			}
+		</ol>
+	</Section>
+
+	<Section
+		id="commands"
+		title="Slash commands."
+		lead="Each one is a tool the agents can also call on their own."
+		layout="side"
+		gap="l"
+	>
+		<dl class="ab-commands">
+			{
+				commands.map((command) => (
+					<div>
+						<dt>
+							<code>{command.title}</code>
+						</dt>
+						<dd>{command.body}</dd>
+					</div>
+				))
+			}
+		</dl>
+	</Section>
+
+	<Section id="parts" title="Three parts." layout="side">
+		<Rows rows={parts} />
+	</Section>
+
+	<Section id="faq" title="Before you install." layout="side" gap="l">
+		<Faq items={faq} />
+	</Section>
+</Landing>
+
+<style>
+	.ab-loop,
+	.ab-commands {
+		display: grid;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border-top: 1px solid var(--ld-rule);
+	}
+	.ab-loop {
+		counter-reset: step;
+	}
+	.ab-loop > li {
+		position: relative;
+		display: grid;
+		gap: var(--ld-space-2xs);
+		padding: var(--ld-space-lg) 0 var(--ld-space-lg) var(--ld-space-2xl);
+		border-bottom: 1px solid var(--ld-rule);
+		counter-increment: step;
+	}
+	.ab-loop > li::before {
+		content: counter(step);
+		position: absolute;
+		left: 0;
+		top: var(--ld-space-lg);
+		font-family: var(--ld-font-display);
+		font-size: var(--ld-text-section);
+		font-weight: 700;
+		line-height: 0.9;
+		color: var(--ld-accent);
+	}
+	.ab-loop p,
+	.ab-commands dd {
+		margin: 0;
+		max-width: 56ch;
+		color: var(--ld-muted);
+	}
+	.ab-commands > div {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--ld-space-2xs);
+		padding-block: var(--ld-space-md);
+		border-bottom: 1px solid var(--ld-rule);
+	}
+	.ab-commands dt code {
+		font-weight: 500;
+	}
+	@media (min-width: 40rem) {
+		.ab-commands > div {
+			grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+			column-gap: var(--ld-gap-columns);
+			align-items: baseline;
+		}
+	}
+</style>

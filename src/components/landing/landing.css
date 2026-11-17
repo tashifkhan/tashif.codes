@@ -238,6 +238,59 @@ body {
 		/* A portrait clip at about three quarters of the screen under the header. */
 		--ld-shot-height: min(36rem, 100dvh - 19rem);
 	}
+	.ld-hero[data-wide] {
+		grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+		gap: var(--ld-space-2xl);
+	}
+	.ld-hero[data-wide] .ld-display {
+		font-size: var(--ld-text-section);
+		max-width: 16ch;
+	}
+	.ld-hero[data-wide] .ld-hero-media > .ld-shot {
+		width: 100%;
+	}
+	/* A landscape clip keeps its own shape instead of the portrait height. */
+	.ld-hero[data-wide] .ld-hero-media .ld-shot-frame {
+		height: auto;
+	}
+}
+
+/* A line of code a visitor can copy, such as a curl call or an address. */
+.ld-code {
+	display: block;
+	max-width: 100%;
+	padding: var(--ld-space-md);
+	border: 1px solid var(--ld-rule);
+	border-radius: var(--ld-radius);
+	background: var(--ld-paper-2);
+	overflow-wrap: anywhere;
+	line-height: 1.5;
+}
+.ld-link {
+	color: var(--ld-ink);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.16em;
+}
+.ld-link:hover {
+	color: var(--ld-accent);
+}
+.ld-link:active {
+	color: var(--ld-press);
+}
+/* Two or three landscape shots side by side. */
+.ld-shots {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: var(--ld-space-lg);
+}
+@media (min-width: 40rem) {
+	.ld-shots {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.ld-shots > :first-child:nth-last-child(odd) {
+		grid-column: 1 / -1;
+	}
 }
 
 /* --------------------------------------------------------------- section */

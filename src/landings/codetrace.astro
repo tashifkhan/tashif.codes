@@ -1,0 +1,163 @@
+---
+/**
+ * CodeTrace. Replaces the README at /projects/codetrace. The video and
+ * screenshots stream from taf.sh.
+ */
+import { ExternalLink, Github } from "lucide-react";
+import {
+	Landing,
+	LandingHero,
+	Section,
+	Shot,
+	LandingVideo,
+	Rows,
+} from "@/components/landing";
+import { statsApis } from "@/data/statsApis";
+import type { LandingMeta } from "@/lib/landings";
+import type { Project } from "@/types";
+
+export const landing: LandingMeta = {
+	tagline:
+		"One page for your coding profiles on GitHub, LeetCode, Codeforces and four more.",
+	cta: { label: "Open CodeTrace", href: "https://codetrace.xyz", external: true },
+};
+
+interface Props {
+	project: Project;
+}
+
+const { project } = Astro.props;
+const reel = "https://taf.sh/reel";
+const sample = "https://codetrace.xyz/app?github=tashifkhan&leetcode=khan-tashif";
+
+const features = [
+	{
+		title: "One dashboard",
+		body: "Type the usernames you have, on all seven platforms or any few, and get one summary.",
+	},
+	{
+		title: "One heatmap",
+		body: "Daily commits and submissions from every platform land on a single calendar.",
+	},
+	{
+		title: "A page per platform",
+		body: "Rating history, solved counts by difficulty and top languages, each with its own charts.",
+	},
+	{
+		title: "A link you can share",
+		body: "The usernames live in the URL, so the address is the profile. Sign in with Google to claim a short one.",
+	},
+];
+---
+
+<Landing name="codetrace">
+	<LandingHero
+		wide
+		title="Your coding profiles, on one page."
+		lead="CodeTrace reads seven platforms and draws them as one dashboard."
+	>
+		<Fragment slot="actions">
+			<a
+				href={sample}
+				target="_blank"
+				rel="noopener noreferrer"
+				data-haptic-external
+				class="ld-btn ld-btn-primary"
+			>
+				<ExternalLink aria-hidden="true" />
+				See a live profile
+			</a>
+			<a
+				href={project.github_link}
+				target="_blank"
+				rel="noopener noreferrer"
+				data-haptic-external
+				class="ld-btn"
+			>
+				<Github aria-hidden="true" />
+				Source
+			</a>
+		</Fragment>
+		<Fragment slot="terms">Free. No account needed to look someone up.</Fragment>
+		<Shot slot="media" width={1280} height={800}>
+			<LandingVideo
+				src={`${reel}/codetrace-demo.mp4`}
+				poster={`${reel}/codetrace-poster.jpg`}
+				label="CodeTrace walkthrough: a combined dashboard, then one page per platform"
+				controls
+			/>
+		</Shot>
+	</LandingHero>
+
+	<Section id="features" title="What it shows." layout="side" gap="s">
+		<Rows rows={features} />
+	</Section>
+
+	<Section id="screens" title="The dashboard." gap="l">
+		<div class="ld-shots">
+			{
+				[1, 2, 3].map((n) => (
+					<Shot
+						src={`${reel}/codetrace-${n}.jpg`}
+						alt={`CodeTrace, screen ${n}`}
+						width={1200}
+						height={750}
+					/>
+				))
+			}
+		</div>
+	</Section>
+
+	<Section
+		id="apis"
+		title="Seven APIs under it."
+		lead="None of these platforms hands out this data in one shape, so I wrote an API for each. They are free to use on their own."
+		layout="side"
+	>
+		<ul class="ct-apis">
+			{
+				statsApis.map((api) => (
+					<li>
+						<a href={`/projects/${api.slug}`} data-haptic-nav>
+							{api.platform}
+						</a>
+						<span>{api.endpoints.length} endpoints</span>
+					</li>
+				))
+			}
+		</ul>
+	</Section>
+</Landing>
+
+<style>
+	.ct-apis {
+		display: grid;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border-top: 1px solid var(--ld-rule);
+	}
+	.ct-apis li {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--ld-space-lg);
+		padding-block: var(--ld-space-md);
+		border-bottom: 1px solid var(--ld-rule);
+	}
+	.ct-apis a {
+		font-family: var(--ld-font-display);
+		font-size: var(--ld-text-title);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1.2;
+	}
+	.ct-apis a:hover {
+		color: var(--ld-accent);
+	}
+	.ct-apis span {
+		font-size: var(--ld-text-sm);
+		font-variant-numeric: tabular-nums;
+		color: var(--ld-muted);
+	}
+</style>

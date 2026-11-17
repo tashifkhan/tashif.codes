@@ -14,3 +14,5 @@ export { default as MediaSwitcher } from "./MediaSwitcher.astro";
 export { default as Rows } from "./Rows.astro";
 export { default as Rail } from "./Rail.astro";
 export { default as Faq } from "./Faq.astro";
+export { default as Routes } from "./Routes.astro";
+export { default as StatsApi } from "./StatsApi.astro";
