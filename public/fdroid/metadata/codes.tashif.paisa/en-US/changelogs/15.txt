@@ -1,0 +1,3 @@
+* On an item split, take a photo of the bill or choose one you already have.
+* Take photo and Choose photo sit in the same cards as the rest of the sheet.
+* Add an item no longer runs into the Save button.

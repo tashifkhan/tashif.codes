@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1794878738000,
+    "timestamp": 1794879038000,
     "version": 20002,
     "name": "Tashif Codes",
     "icon": "icon.png",
@@ -59,7 +59,7 @@
         "Offline"
       ],
       "changelog": "https://github.com/tashifkhan/Paisa/releases",
-      "suggestedVersionCode": "14",
+      "suggestedVersionCode": "15",
       "description": "Paisa is an expense manager that keeps your ledger on your phone. There is no account, no ads and no Paisa server.\n\nCapture\n\n* Bank SMS import. Parsers for about 140 Indian banks turn an alert into a transaction on the device. A bulk scan reads the inbox once and a live receiver catches new alerts\n* The original SMS stays attached to the transaction it made\n* Add with AI. Type or say what you spent, or attach a receipt, a screenshot or a PDF, then review the drafts before anything is saved\n* Statement import for PDF, CSV and image statements, several at once\n* Manual entry with Markdown descriptions\n\nReview\n\n* Merchant search, filters, and analytics by category and date range\n* Monthly budgets per category\n* Bank, cash, card and wallet accounts\n* Bill splitting equally, by percentage, by amount or by item, with debts tracked per person\n\nMake it yours\n\n* Material You wallpaper colours or 31 fixed palettes, dark mode and AMOLED black\n* High contrast, calmer motion and a floating navigation bar\n* Home screen widgets for your balance and quick add\n* Layouts for phones, foldables and tablets\n\nPrivacy\n\n* SMS never leave the phone\n* AI features stay off until you add your own key for an OpenAI compatible endpoint, Gemini or Anthropic\n* App lock with a fingerprint, your face or the screen lock, and one tap to hide amounts\n* Backups go to Google Drive, Nextcloud or a .paisa file, encrypted with AES-256-GCM when you set a password\n* Export to CSV or PDF\n\nWhy it asks for permissions\n\n* SMS, to read and receive bank alerts. SMS import is optional\n* Microphone, for voice notes in Add with AI\n* Network, for backup, sync and the AI endpoint you configure\n* Biometrics, for app lock\n\nThe same app runs in a browser at https://paisa.tashif.codes\n",
       "issueTracker": "https://github.com/tashifkhan/Paisa/issues",
       "license": "AGPL-3.0-or-later",
@@ -69,7 +69,7 @@
       "webSite": "https://tashif.codes/projects/paisa",
       "added": 1785006084000,
       "packageName": "codes.tashif.paisa",
-      "lastUpdated": 1794856097000,
+      "lastUpdated": 1794879018000,
       "localized": {
         "en-US": {
           "featureGraphic": "featureGraphic_8ePi8WVYyc8Bn95Uh9Lz9Jyky54FqRxesCs4ho_pmHU=.jpg",
@@ -102,7 +102,7 @@
             "04.jpg"
           ],
           "video": "https://taf.sh/reel/paisa-demo.mp4",
-          "whatsNew": "Markdown descriptions, more ways to split a bill, category fixes, and support for more bank messages.\n\n* Write descriptions with Markdown when adding or editing a transaction.\n* Editable fields come first on the transaction page.\n* Formatting a description now moves typing into that field, so the transaction title stays unchanged.\n* Split by percentage as well as equally or by custom amounts.\n* Split by item and assign each line to one person or several.\n"
+          "whatsNew": "* On an item split, take a photo of the bill or choose one you already have.\n* Take photo and Choose photo sit in the same cards as the rest of the sheet.\n* Add an item no longer runs into the Save button.\n"
         }
       }
     },
@@ -816,6 +816,84 @@
     ],
     "codes.tashif.paisa": [
       {
+        "added": 1794879018000,
+        "apkName": "codes.tashif.paisa_15.apk",
+        "hash": "6a66da9c38b53de8a2a767b9b3bc33660bc088dafbbb1982383959a309c9231f",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "packageName": "codes.tashif.paisa",
+        "sig": "acb86eb55a28f6e0e08dad36111ce604",
+        "signer": "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be",
+        "size": 32807625,
+        "targetSdkVersion": 35,
+        "uses-permission": [
+          [
+            "android.permission.READ_SMS",
+            null
+          ],
+          [
+            "android.permission.RECEIVE_SMS",
+            null
+          ],
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.POST_NOTIFICATIONS",
+            null
+          ],
+          [
+            "android.permission.FOREGROUND_SERVICE",
+            null
+          ],
+          [
+            "android.permission.FOREGROUND_SERVICE_DATA_SYNC",
+            null
+          ],
+          [
+            "android.permission.USE_BIOMETRIC",
+            null
+          ],
+          [
+            "android.permission.RECORD_AUDIO",
+            null
+          ],
+          [
+            "android.permission.CAMERA",
+            null
+          ],
+          [
+            "android.permission.USE_FINGERPRINT",
+            null
+          ],
+          [
+            "android.permission.WAKE_LOCK",
+            null
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "android.permission.RECEIVE_BOOT_COMPLETED",
+            null
+          ],
+          [
+            "codes.tashif.paisa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 15,
+        "versionName": "1.7.4"
+      },
+      {
         "added": 1794856097000,
         "apkName": "codes.tashif.paisa_14.apk",
         "hash": "22ade72d9477ec308a32f3f3a3dccc6498f5bd9819b8fb5bec3436554df54ea1",
@@ -962,80 +1040,6 @@
         ],
         "versionCode": 13,
         "versionName": "1.7.2"
-      },
-      {
-        "added": 1794469959000,
-        "apkName": "codes.tashif.paisa_12.apk",
-        "hash": "06caa49c76431593a5610930ae25548815b93b66acdf8af57143285bbab62db6",
-        "hashType": "sha256",
-        "minSdkVersion": 24,
-        "nativecode": [
-          "arm64-v8a",
-          "armeabi-v7a",
-          "x86",
-          "x86_64"
-        ],
-        "packageName": "codes.tashif.paisa",
-        "sig": "acb86eb55a28f6e0e08dad36111ce604",
-        "signer": "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be",
-        "size": 29588939,
-        "targetSdkVersion": 35,
-        "uses-permission": [
-          [
-            "android.permission.READ_SMS",
-            null
-          ],
-          [
-            "android.permission.RECEIVE_SMS",
-            null
-          ],
-          [
-            "android.permission.INTERNET",
-            null
-          ],
-          [
-            "android.permission.POST_NOTIFICATIONS",
-            null
-          ],
-          [
-            "android.permission.FOREGROUND_SERVICE",
-            null
-          ],
-          [
-            "android.permission.FOREGROUND_SERVICE_DATA_SYNC",
-            null
-          ],
-          [
-            "android.permission.USE_BIOMETRIC",
-            null
-          ],
-          [
-            "android.permission.RECORD_AUDIO",
-            null
-          ],
-          [
-            "android.permission.USE_FINGERPRINT",
-            null
-          ],
-          [
-            "android.permission.WAKE_LOCK",
-            null
-          ],
-          [
-            "android.permission.ACCESS_NETWORK_STATE",
-            null
-          ],
-          [
-            "android.permission.RECEIVE_BOOT_COMPLETED",
-            null
-          ],
-          [
-            "codes.tashif.paisa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
-            null
-          ]
-        ],
-        "versionCode": 12,
-        "versionName": "1.7.1"
       }
     ]
   }
