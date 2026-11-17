@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1794860515000,
+    "timestamp": 1794878734000,
     "version": 20002,
     "name": "My First F-Droid Archive Demo",
     "icon": "icon.png",
@@ -13,7 +13,7 @@
   },
   "apps": [
     {
-      "authorEmail": "tashifkhan010@gmail.com",
+      "authorEmail": "me@taf.sh",
       "authorName": "Tashif Ahmad Khan",
       "categories": [
         "Navigation",
@@ -34,7 +34,7 @@
       "lastUpdated": 1794746993000
     },
     {
-      "authorEmail": "tashifkhan010@gmail.com",
+      "authorEmail": "me@taf.sh",
       "authorName": "Tashif Ahmad Khan",
       "categories": [
         "Money",
@@ -54,7 +54,7 @@
       "lastUpdated": 1794856097000
     },
     {
-      "authorEmail": "tashifkhan010@gmail.com",
+      "authorEmail": "me@taf.sh",
       "authorName": "Tashif Ahmad Khan",
       "categories": [
         "Productivity",

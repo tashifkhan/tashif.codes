@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1794860529000,
+    "timestamp": 1794878738000,
     "version": 20002,
     "name": "Tashif Codes",
     "icon": "icon.png",
@@ -13,7 +13,7 @@
   },
   "apps": [
     {
-      "authorEmail": "tashifkhan010@gmail.com",
+      "authorEmail": "me@taf.sh",
       "authorName": "Tashif Ahmad Khan",
       "categories": [
         "Navigation",
@@ -46,13 +46,13 @@
             "07.jpg",
             "08.jpg"
           ],
-          "video": "https://tashif.codes/landings/delhi-metro/walkthrough.mp4",
+          "video": "https://taf.sh/reel/ncr-metro-phone-demo.mp4",
           "whatsNew": "* Station names on the network map sit beside the track instead of on it.\n* Details on the map's station sheet opens the station page with everything showing, so there's no second \"More details\" tap.\n* Near me picked a station from whatever position the browser answered with first, which on a laptop can be a Wi-Fi or IP guess kilometres off.\n* The whole From and To card opens the station picker.\n"
         }
       }
     },
     {
-      "authorEmail": "tashifkhan010@gmail.com",
+      "authorEmail": "me@taf.sh",
       "authorName": "Tashif Ahmad Khan",
       "categories": [
         "Money",
@@ -101,13 +101,13 @@
             "03.jpg",
             "04.jpg"
           ],
-          "video": "https://tashif.codes/landings/paisa/walkthrough.mp4",
+          "video": "https://taf.sh/reel/paisa-demo.mp4",
           "whatsNew": "Markdown descriptions, more ways to split a bill, category fixes, and support for more bank messages.\n\n* Write descriptions with Markdown when adding or editing a transaction.\n* Editable fields come first on the transaction page.\n* Formatting a description now moves typing into that field, so the transaction title stays unchanged.\n* Split by percentage as well as equally or by custom amounts.\n* Split by item and assign each line to one person or several.\n"
         }
       }
     },
     {
-      "authorEmail": "tashifkhan010@gmail.com",
+      "authorEmail": "me@taf.sh",
       "authorName": "Tashif Ahmad Khan",
       "categories": [
         "Productivity",
@@ -140,7 +140,7 @@
             "07-filters.jpg",
             "08-drag.jpg"
           ],
-          "video": "https://tashif.codes/landings/patchwork/walkthrough.mp4",
+          "video": "https://taf.sh/reel/patchwork-native-demo.mp4",
           "whatsNew": "Motion for the Android floating navbar, section counts that roll, and empty states that ease in.\n\n* The floating navbar's selection pill slides between tabs instead of switching on and off.\n* The floating navbar gives under your finger and leans toward it, then springs back.\n* Each tab's icon makes a small move when you tap it.\n* The count in a task section header rolls up or down when it changes.\n* Empty states on Android fade in with a small rise.\n"
         }
       }

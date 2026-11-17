@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/archive",
-    "timestamp": 1794860515000,
+    "timestamp": 1794878734000,
     "categories": {
       "Development": {
         "name": {
@@ -68,7 +68,7 @@
         "license": "MIT",
         "sourceCode": "https://github.com/tashifkhan/Patchwork",
         "webSite": "https://tashif.codes/projects/patchwork",
-        "authorEmail": "tashifkhan010@gmail.com",
+        "authorEmail": "me@taf.sh",
         "authorName": "Tashif Ahmad Khan",
         "name": {
           "en-US": "Patchwork"
@@ -1591,7 +1591,7 @@
         "license": "MIT",
         "sourceCode": "https://github.com/tashifkhan/delhi-metro",
         "webSite": "https://tashif.codes/projects/delhi-metro",
-        "authorEmail": "tashifkhan010@gmail.com",
+        "authorEmail": "me@taf.sh",
         "authorName": "Tashif Ahmad Khan",
         "name": {
           "en-US": "Delhi NCR Metro"
@@ -1883,7 +1883,7 @@
         "license": "AGPL-3.0-or-later",
         "sourceCode": "https://github.com/tashifkhan/Paisa",
         "webSite": "https://tashif.codes/projects/paisa",
-        "authorEmail": "tashifkhan010@gmail.com",
+        "authorEmail": "me@taf.sh",
         "authorName": "Tashif Ahmad Khan",
         "name": {
           "en-US": "Paisa"
