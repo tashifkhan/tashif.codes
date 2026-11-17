@@ -16,6 +16,7 @@ import {
 	Routes,
 } from "@/components/landing";
 import { REPO_ADD_URL } from "@/lib/fdroid";
+import { playStoreRoute } from "@/data/profile";
 import type { LandingMeta } from "@/lib/landings";
 import type { Project } from "@/types";
 
@@ -159,6 +160,7 @@ const routes = [
 		body: "The same app at ncr-metro.tashif.codes. Nothing to install.",
 		action: { label: "Open the web app", href: webApp, external: true },
 	},
+	playStoreRoute("delhi-metro"),
 ];
 
 const faq = [

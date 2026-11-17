@@ -1,11 +1,11 @@
 import type { Education, Position, ResumeAction, ResumeProject, SkillCategory } from "@/types";
-import { contactEmail } from "./profile";
+import { contactEmail, sponsorUrl } from "./profile";
 
 
 
 export const resumeAbout = {
 	greeting: "Holaaaa! 👋",
-	introHtml: `I'm an engineer in <span class="text-foreground font-medium">Delhi, India</span>, building <span class="text-foreground font-medium">full-stack apps and generative AI</span>. I like the problems nobody else is bothering to fix. Off hours I'm poking at my <span class="text-foreground font-medium">home lab</span> or over-engineering something nobody asked for. I use code to solve real problems, mostly my own laziness.`,
+	introHtml: `I'm an engineer in <span class="text-foreground font-medium">Delhi, India</span>, building <span class="text-foreground font-medium">full-stack apps and generative AI</span>. I like the problems nobody else is bothering to fix. Right now I'm building <a href="https://rah.clinic/" target="_blank" rel="noopener noreferrer" class="text-foreground font-medium underline decoration-dotted underline-offset-4 hover:text-primary transition-colors">rah.clinic</a>, a clinic that runs over WhatsApp, through my studio <a href="https://taf.sh/products/rah-clinic" target="_blank" rel="noopener noreferrer" class="text-foreground font-medium underline decoration-dotted underline-offset-4 hover:text-primary transition-colors">taf.sh</a>. Off hours I'm poking at my <span class="text-foreground font-medium">home lab</span> or over-engineering something nobody asked for. I use code to solve real problems, mostly my own laziness.`,
 	location: "Delhi, India",
 	highlights: ["Full Stack Engineer", "Open Source"],
 	actions: [
@@ -26,25 +26,85 @@ export const resumeAbout = {
 			url: "https://tashif.codes/resume:pdf",
 			icon: "download",
 		},
+		// Shows once sponsorUrl is set in profile.ts.
+		...(sponsorUrl
+			? [{ label: "Sponsor", url: sponsorUrl, icon: "heart" as const }]
+			: []),
 	] as ResumeAction[],
 };
 
+/** An inline link in the resume's own style. */
+const a = (href: string, text: string) =>
+	`<a href="${href}" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">${text}</a>`;
+
 export const resumeProjects: ResumeProject[] = [
+	{
+		title: "Paisa",
+		stack: "Kotlin, Compose Multiplatform, Room, SQLite, WebAssembly",
+		color: "green",
+		platforms: ["Android", "Web"],
+		links: [
+			{ label: "Live", url: "https://tashif.codes/projects/paisa" },
+			{ label: "GitHub", url: "https://github.com/tashifkhan/Paisa" },
+		],
+		points: [
+			"Every expense app I tried wanted an account, then a subscription. So I wrote one that keeps the ledger on the phone and has no server at all.",
+			"Bank SMS becomes a transaction <strong>on the device</strong>, for about <strong>140 Indian banks</strong>. The message never leaves the phone.",
+			"Add with AI takes a sentence, a voice note or a receipt and hands back drafts to review. It runs on <strong>your own key</strong>, and stays off without one.",
+			"The same <strong>Kotlin</strong> compiles to <strong>WebAssembly</strong>, so the whole app also runs in a browser with SQLite in a web worker.",
+			"Bill splitting by item, budgets, widgets, app lock, and encrypted backups to Drive or Nextcloud.",
+		],
+	},
+	{
+		title: "Patchwork",
+		stack: "Expo, React Native, TypeScript, CalDAV, FastAPI",
+		color: "orange",
+		platforms: ["Android", "iOS"],
+		links: [
+			{ label: "Live", url: "https://tashif.codes/projects/patchwork" },
+			{ label: "GitHub", url: "https://github.com/tashifkhan/Patchwork" },
+		],
+		points: [
+			"My tasks were spread across Nextcloud, GitHub issues, Jira and a Deck board I forgot existed. Patchwork puts them in one app. It's the task manager I actually use.",
+			"<strong>CalDAV</strong> tasks from any server, with ETag checks so two devices can't overwrite each other.",
+			"<strong>Jira</strong> boards with sprints and drag and drop that updates the rank, <strong>Nextcloud Deck</strong> boards, and <strong>GitHub Issues</strong> across repos.",
+			"AI import drafts tasks from a photo of handwritten notes, on any of nine model providers. You review every task before it's saved.",
+			"Credentials stay in the device's secure storage and the app talks to your servers directly.",
+		],
+	},
+	{
+		title: "Delhi NCR Metro",
+		stack: "Expo, React Native, FastAPI, Cloudflare Workers, SQLite",
+		color: "blue",
+		platforms: ["Android", "Web", "API"],
+		links: [
+			{ label: "Live", url: "https://ncr-metro.tashif.codes" },
+			{ label: "GitHub", url: "https://github.com/tashifkhan/delhi-metro" },
+		],
+		points: [
+			"Delhi Metro and Noida Metro don't share tickets, and three apps each tell you something different. This plans a trip across both and shows the fare for each.",
+			`A ${a("https://ncr-metro.tashif.codes/api", "FastAPI service")} wraps the DMRC services and scrapes the NMRC pages into <strong>one contract</strong>, with no key needed.`,
+			"The planner tries the newer Sarthi API first and falls back to the old one on a timeout. The response says which one answered.",
+			"A network map drawn from station coordinates, station pages with gates and lifts, and service alerts from both operators.",
+			"Lines, stations and planned journeys stay readable with no signal.",
+		],
+	},
 	{
 		title: "Agentic Browser",
 		stack:
 			"FastAPI, LangChain, LangGraph, React, TypeScript, MCP, Docker, WebExtension APIs",
 		color: "green",
+		platforms: ["Browser extension"],
 		links: [
-			{ label: "Live", url: "https://tashif.codes/agentic-browser" },
+			{ label: "Live", url: "https://tashif.codes/projects/agentic-browser" },
 			{ label: "GitHub", url: "https://github.com/tashifkhan/agentic-browser" },
 		],
 		points: [
-			"Built a <strong>model-agnostic automation platform</strong> where AI agents plan, execute, and verify actions on any website, through <strong>FastAPI</strong> and <strong>MCP</strong>.",
-			"<strong>LangGraph</strong> coordinates multiple agents with tools for web search, content extraction, and Google Workspace tasks.",
-			"One dual-mode server serves both REST endpoints and <strong>Model Context Protocol</strong> clients.",
-			"A <strong>TypeScript extension</strong> drives the DOM directly and executes AI-generated script plans, backed by the Python server.",
-			"Bring Your Own Keys: works with Gemini, OpenAI, and Anthropic models.",
+			"A browser side panel whose agents <strong>plan, act and verify</strong> on whatever page you have open. Most AI assistants read the web. This one clicks.",
+			"<strong>LangGraph</strong> coordinates several agents with tools for web search, Gmail, Calendar and YouTube transcripts.",
+			"One Python server answers both REST calls and <strong>Model Context Protocol</strong> clients, so the same tools work from other apps.",
+			"A <strong>TypeScript extension</strong> drives the DOM, and every browser action waits for your approval.",
+			"Bring your own keys for Gemini, OpenAI or Anthropic, or point it at a local model.",
 		],
 	},
 	{
@@ -52,21 +112,23 @@ export const resumeProjects: ResumeProject[] = [
 		stack:
 			"Next.js, TypeScript, FastAPI, LangChain, LangGraph, PostgreSQL, FastStream, Kafka, Redis, Docker",
 		color: "orange",
+		platforms: ["Web"],
 		links: [
 			{ label: "Live", url: "https://talentsync.tashif.codes" },
 			{ label: "GitHub", url: "https://github.com/tashifkhan/TalentSync" },
 		],
 		points: [
-			"Resume analysis, job category prediction, and a pre-vetted talent dashboard for employers.",
-			"<strong>LangChain</strong> + <strong>RAG</strong> + <strong>LangGraph</strong> generate personalised cold emails, interview questions, and answer frameworks.",
-			"Parsing layer extracts structured data from raw resumes to drive job-category prediction.",
-			"<strong>FastAPI</strong> backend with <strong>PostgreSQL</strong>, containerized with <strong>Docker</strong>; users can plug in their own model keys (<strong>BYOK</strong>).",
+			"Resume analysis and ATS checks for job seekers, and a pre-vetted talent dashboard for employers.",
+			"<strong>LangChain</strong>, <strong>RAG</strong> and <strong>LangGraph</strong> write cold emails, interview questions and answer frameworks from your own resume.",
+			"A parsing layer pulls structured data out of raw resumes and predicts the job category.",
+			"<strong>FastAPI</strong> on <strong>PostgreSQL</strong>, with slow jobs on <strong>Kafka</strong>. Users can plug in their own model keys.",
 		],
 	},
 	{
 		title: "CodeTrace & Stats APIs",
 		stack: "React, TypeScript, TanStack Start, Supabase, Python, FastAPI, Redis, Docker",
 		color: "blue",
+		platforms: ["Web", "API"],
 		links: [
 			{ label: "Live", url: "https://codetrace.xyz" },
 			{
@@ -75,28 +137,29 @@ export const resumeProjects: ResumeProject[] = [
 			},
 		],
 		points: [
-			"<strong>Coding-profile dashboard</strong> pulling stats from GitHub, LeetCode, Codeforces, GeeksForGeeks, CodeChef, HackerRank, and takeUforward into one shareable page.",
-			"Per-platform deep-dive pages with <strong>charts</strong> for rating history, difficulty breakdowns, and language profiles. Daily submissions from every platform land in one <strong>activity heatmap</strong>.",
-			'Built <strong>REST APIs</strong> for each platform (<a href="https://leetcode-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">LeetCode</a>, <a href="https://github-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">GitHub</a>, <a href="https://gfg-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">GFG</a>, <a href="https://tuf-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">TakeUForward</a>, <a href="https://hackerrank-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">HackerRank</a>, <a href="https://codechef-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">CodeChef</a>, <a href="https://codeforces-stats.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">CodeForces</a>).',
-			'Plus a <strong>Self-Hostable Git Platform API</strong> (<a href="https://github.com/tashifkhan/GitHost-Stats-API" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">Forgejo, Gitea, Codeberg</a>).',
-			'Basis of <a href="https://rcee.ac.in" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">RCEE</a>\'s <strong>placement portal</strong> <a href="https://sptracker1.vercel.app/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">here</a> — detailed blog <a href="https://tashif.codes/blog/Ramachandra-College-CodeTrace-Copy" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">here</a>.',
+			`${a("/projects/codetrace", "<strong>CodeTrace</strong>")} puts GitHub, LeetCode, Codeforces, GeeksforGeeks, CodeChef, HackerRank and takeUforward on one shareable page.`,
+			"Each platform gets its own page with rating history, difficulty breakdowns and languages. Daily submissions from all seven land in one <strong>heatmap</strong>.",
+			`None of them hands this data out in one shape, so I wrote a <strong>REST API</strong> for each (${a("/projects/leetcode-stats-api", "LeetCode")}, ${a("/projects/github-stats-api", "GitHub")}, ${a("/projects/gfg-stats-api", "GFG")}, ${a("/projects/tuf-stats-api", "takeUforward")}, ${a("/projects/hackerrank-stats-api", "HackerRank")}, ${a("/projects/codechef-stats-api", "CodeChef")}, ${a("/projects/codeforces-api", "Codeforces")}).`,
+			`Plus one for ${a("https://github.com/tashifkhan/GitHost-Stats-API", "Forgejo, Gitea and Codeberg")}, for people who host their own git.`,
+			`${a("https://rcee.ac.in", "RCEE")} built their ${a("https://sptracker1.vercel.app/", "placement portal")} on it. I ${a("https://tashif.codes/blog/Ramachandra-College-CodeTrace-Copy", "wrote about that")}.`,
 		],
 	},
 	{
 		title: "JIIT Tool Suite",
 		stack: "React, Next.js, Python, Flask, Pyodide, MongoDB",
 		color: "purple",
+		platforms: ["Web"],
 		links: [
 			{ label: "Live", url: "https://jiit-tools.tashif.codes/" },
 			{ label: "GitHub", url: "https://github.com/tashifkhan/JIIT-tools-docs" },
 		],
 		points: [
 			"JIIT doesn't really do tech. Timetables lived in random PDFs, attendance was invisible until it already mattered, and companies visited campus while eligible students found out through WhatsApp groups. This suite exists because nobody at the university was going to build it.",
-			'<a href="https://codeblech.github.io/jportal/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>JPortal</strong></a> (<strong>React</strong> PWA, <strong>18k+</strong> users) with <strong>Pyodide</strong> PDF parsing, so marks render on a phone.',
-			'<a href="https://jiit-timetable.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Timetable</strong></a> used by <strong>6.5k+</strong> students; <a href="https://jiit-timetable.tashif.codes/mess-menu" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Mess Menu</strong></a> with daily/weekly meal plans, <strong>5.2k+</strong> readers.',
-			'<a href="https://jiit-placement-updates.tashif.codes/?shh" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Placement & Campus Updates</strong></a> portal so opportunities reach students when they can still apply (<strong>4k+/2k+</strong> users).',
-			'<a href="https://sophos-autologin.tashif.codes/" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Sophos Auto-Login</strong></a> scripts because the hostel wifi kicks you off every ~45 minutes (~100 users).',
-			'<strong>Telegram</strong> <a href="https://tashif.codes/projects/jiit-placement-alerts" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Notification Bot</strong></a> pushing Superset placement activity.',
+			`${a("https://codeblech.github.io/jportal/", "<strong>JPortal</strong>")} (<strong>React</strong> PWA, <strong>18k+</strong> users) with <strong>Pyodide</strong> PDF parsing, so marks render on a phone.`,
+			`${a("https://jiit-timetable.tashif.codes/", "<strong>Timetable</strong>")} used by <strong>6.5k+</strong> students; ${a("https://jiit-timetable.tashif.codes/mess-menu", "<strong>Mess Menu</strong>")} with daily and weekly meal plans, <strong>5.2k+</strong> readers.`,
+			`${a("https://jiit-placement-updates.tashif.codes/?shh", "<strong>Placement & Campus Updates</strong>")} portal so opportunities reach students when they can still apply (<strong>4k+/2k+</strong> users).`,
+			`${a("https://sophos-autologin.tashif.codes/", "<strong>Sophos Auto-Login</strong>")} scripts because the hostel wifi kicks you off every ~45 minutes (~100 users).`,
+			`<strong>Telegram</strong> ${a("https://tashif.codes/projects/jiit-placement-alerts", "<strong>Notification Bot</strong>")} pushing Superset placement activity.`,
 			'<span class="text-muted-foreground text-sm italic">Built as a JIIT student, 2022–2026.</span>',
 		],
 	},
@@ -111,21 +174,6 @@ export const resumeProjects: ResumeProject[] = [
 			"A custom FastAPI dashboard tracks service health, container restarts and Tailscale devices, with uptime pings that catch a failed service early.",
 			"Remote access over Tailscale VPN with Nginx Proxy Manager in front for SSL and subdomains, tunneled through a VPS so it works without a static IP.",
 			"Nightly backups to local disk and an encrypted offsite copy, plus Watchtower for updates and health checks that alert if anything stays down.",
-		],
-	},
-	{
-		title: "F-Droid Apps",
-		stack: "React Native, Expo, EAS Build, Android, F-Droid",
-		color: "orange",
-		links: [
-			{ label: "F-Droid", url: "https://tashif.codes/fdroid" },
-			{ label: "GitHub", url: "https://github.com/tashifkhan/Paisa" },
-		],
-		points: [
-			'Run a self-hosted <a href="https://tashif.codes/fdroid" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">F-Droid repo</a> at <strong>tashif.codes/fdroid</strong> with 3 signed apps. Add it once, get updates automatically.',
-			'<a href="https://tashif.codes/fdroid" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Paisa</strong></a> keeps the ledger on the phone. It parses bank SMS on device for 100+ Indian banks. SMS never leaves the device, and you can bring your own key for statement imports.',
-			'<a href="https://tashif.codes/fdroid" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Patchwork</strong></a> is the task manager I actually use. CalDAV and Nextcloud Deck boards, AI draft from a photo or note, GitHub issues, and widgets that stay quiet until you need them.',
-			'<a href="https://delhi-metro.tashif.codes" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors"><strong>Delhi NCR Metro</strong></a> plans DMRC and NMRC trips. The app runs on a <a href="https://dmrc-rest-api.vercel.app/docs" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">FastAPI service</a> I built that wraps DMRC and NMRC endpoints and bridges the two networks for routes, fares and station search.',
 		],
 	},
 ];
@@ -190,31 +238,42 @@ export const skillCategories: SkillCategory[] = [
 	{
 		label: "Languages",
 		color: "orange",
-		items: ["Python", "JavaScript", "Go"],
+		items: ["Python", "TypeScript", "Kotlin", "Go", "SQL"],
 	},
 	{
 		label: "Frameworks",
 		color: "blue",
 		items: [
-			"Next.js",
-			"React.js",
-			"React Native",
-			"Node.js",
-			"Astro",
 			"FastAPI",
-			"Redux",
+			"Django",
+			"Next.js",
+			"React",
+			"React Native",
+			"Expo",
+			"Compose Multiplatform",
+			"Astro",
+			"TanStack Start",
+			"LangGraph",
 			"LangChain",
-			"Framer Motion",
 		],
 	},
 	{
-		label: "Databases",
+		label: "Data",
 		color: "green",
-		items: ["PostgreSQL", "MongoDB", "OpenSearch", "SQLite"],
+		items: ["PostgreSQL", "SQLite", "MongoDB", "Redis", "OpenSearch", "Kafka"],
 	},
 	{
 		label: "Tools",
 		color: "purple",
-		items: ["Git", "Docker", "Vercel", "Codeberg", "Tailscale", "Nginx", "AWS"],
+		items: [
+			"Docker",
+			"Git",
+			"GitHub Actions",
+			"Cloudflare Workers",
+			"Vercel",
+			"Celery",
+			"Tailscale",
+			"Nginx",
+		],
 	},
 ];

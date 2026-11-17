@@ -16,6 +16,7 @@ import {
 	Routes,
 } from "@/components/landing";
 import { REPO_ADD_URL } from "@/lib/fdroid";
+import { playStoreRoute } from "@/data/profile";
 import type { LandingMeta } from "@/lib/landings";
 import type { Project } from "@/types";
 
@@ -170,6 +171,7 @@ const routes = [
 		title: "iOS",
 		body: `Build it yourself from <a href="${project.github_link}#building-the-ios-app" target="_blank" rel="noopener noreferrer">the source</a>. It is not on the App Store.`,
 	},
+	playStoreRoute("patchwork"),
 ];
 
 const faq = [

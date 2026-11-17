@@ -17,12 +17,14 @@ import {
 	ChevronRight,
 	BookOpen,
 	LayoutPanelTop,
+	Heart,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
 import { cn } from "@/lib/utils";
 import { releaseHref } from "@/lib/releases";
 import { getLanding } from "@/lib/landings";
+import { sponsorUrl } from "@/data/profile";
 import type { Project } from "@/types";
 
 interface Props {
@@ -234,6 +236,23 @@ const title =
 					<Github className="w-3.5 h-3.5" />
 					Source
 				</a>
+				{
+					sponsorUrl && (
+						<a
+							href={sponsorUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							data-haptic-external
+							class={cn(
+								buttonVariants({ variant: "outline", size: "sm" }),
+								"h-8 text-xs gap-1.5 shadow-sm shrink-0",
+							)}
+						>
+							<Heart className="w-3.5 h-3.5" />
+							Sponsor
+						</a>
+					)
+				}
 				{
 					project.docs_slug && (
 						<a
