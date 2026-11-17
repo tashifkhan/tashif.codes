@@ -99,8 +99,8 @@ A normal release does this too, so an edit also goes out with the next version.
 many bullets as fit in 500 characters. A file that already exists is left
 alone, so write one by hand before releasing if you want different wording.
 
-The walkthrough videos sit in `public/landings/<app>/` and `video.txt` points
-at them on `tashif.codes`.
+The walkthrough videos are served by taf.sh, and `video.txt` points at them
+under `https://taf.sh/reel/`.
 
 ## Required GitHub Secrets
 

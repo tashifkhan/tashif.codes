@@ -1,7 +1,7 @@
 ---
 /**
- * Delhi NCR Metro. Replaces the README at /projects/delhi-metro. Media lives
- * in public/landings/delhi-metro.
+ * Delhi NCR Metro. Replaces the README at /projects/delhi-metro. Screens
+ * live in public/landings/delhi-metro. The walkthroughs stream from taf.sh.
  */
 import { Download, Globe } from "lucide-react";
 import {
@@ -207,8 +207,8 @@ const faq = [
 		<Fragment slot="terms">Android 7.0 and up, and any browser. Free under MIT.</Fragment>
 		<Shot slot="media" width={720} height={1280}>
 			<LandingVideo
-				src={`${media}/walkthrough.mp4`}
-				poster={`${media}/walkthrough-poster.webp`}
+				src="https://taf.sh/reel/ncr-metro-phone-demo.mp4"
+				poster="https://taf.sh/reel/ncr-metro-phone-poster.jpg"
 				label="Delhi NCR Metro on a phone: planning a trip from AIIMS to Karkarduma Court"
 				controls
 			/>
@@ -227,8 +227,8 @@ const faq = [
 	>
 		<Shot width={1280} height={800}>
 			<LandingVideo
-				src={`${media}/web-walkthrough.mp4`}
-				poster={`${media}/web-walkthrough-poster.webp`}
+				src="https://taf.sh/reel/ncr-metro-web-demo.mp4"
+				poster="https://taf.sh/reel/ncr-metro-web-poster.jpg"
 				label="Delhi NCR Metro walkthrough on the web and on Android"
 				controls
 			/>

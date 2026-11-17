@@ -1,7 +1,7 @@
 ---
 /**
- * Patchwork. Replaces the README at /projects/patchwork. Media lives in
- * public/landings/patchwork.
+ * Patchwork. Replaces the README at /projects/patchwork. Screens live in
+ * public/landings/patchwork. The walkthrough streams from taf.sh.
  */
 import { Download, Github } from "lucide-react";
 import {
@@ -223,8 +223,8 @@ const faq = [
 		<Fragment slot="terms">Android 7.0 and up, and iOS. Free under MIT.</Fragment>
 		<Shot slot="media" width={1280} height={800}>
 			<LandingVideo
-				src={`${media}/walkthrough.mp4`}
-				poster={`${media}/walkthrough-poster.webp`}
+				src="https://taf.sh/reel/patchwork-native-demo.mp4"
+				poster="https://taf.sh/reel/patchwork-native-poster.jpg"
 				label="Patchwork on iOS and Android: tasks, Jira boards, filters and dragging a card"
 				controls
 			/>
