@@ -175,8 +175,9 @@ const clips = [
 		id: "walkthrough",
 		label: "Walkthrough",
 		note: "Two minutes, with sound.",
-		src: `${media}/walkthrough.mp4`,
-		poster: `${media}/walkthrough-poster.webp`,
+		// Played on request, so it streams from taf.sh at full quality.
+		src: "https://taf.sh/reel/paisa-demo.mp4",
+		poster: "https://taf.sh/reel/paisa-poster.jpg",
 		width: 1280,
 		height: 800,
 		controls: true,
