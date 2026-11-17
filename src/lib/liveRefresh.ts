@@ -362,8 +362,8 @@ type LcStats = {
 	hardSolved?: number;
 	totalHard?: number;
 	ranking?: number;
-	contributionPoints?: number;
-	reputation?: number;
+	acceptanceRate?: number;
+	data?: { currentRating?: number };
 };
 
 function setText(sel: string, value: string) {
@@ -376,8 +376,8 @@ function applyLeetCode(stats: LcStats) {
 	const totalSolved = stats.totalSolved ?? 0;
 	const totalQuestions = stats.totalQuestions ?? 0;
 	const ranking = stats.ranking ?? 0;
-	const reputation = stats.reputation ?? 0;
-	const contribution = stats.contributionPoints ?? 0;
+	const acceptance = stats.acceptanceRate ?? 0;
+	const rating = stats.data?.currentRating ?? 0;
 
 	setText("[data-lc-metric='totalSolved']", totalSolved.toString());
 	setText("[data-lc-metric='totalQuestions']", `of ${totalQuestions} problems`);
@@ -385,8 +385,8 @@ function applyLeetCode(stats: LcStats) {
 		"[data-lc-metric='ranking']",
 		ranking > 0 ? `#${ranking.toLocaleString()}` : "#—",
 	);
-	setText("[data-lc-metric='reputation']", reputation.toString());
-	setText("[data-lc-metric='contribution']", contribution.toString());
+	if (acceptance) setText("[data-lc-metric='acceptance']", `${acceptance.toFixed(1)}%`);
+	if (rating) setText("[data-lc-metric='rating']", Math.round(rating).toString());
 	setText("[data-lc-heading-solved]", totalSolved.toString());
 
 	const diffs: { key: string; solved: number; total: number }[] = [
@@ -507,27 +507,6 @@ export async function refreshProjects(): Promise<string> {
 			if (wrap) wrap.hidden = fresh.forks <= 0;
 		}
 	});
-
-	const lists = await fetchJson<
-		{
-			name: string;
-			url: string;
-			repositories?: string[];
-			description?: string;
-			num_repos?: number;
-		}[]
-	>(`${GH_STATS}/tashifkhan/star-lists?include_repos=true`);
-	if (Array.isArray(lists)) {
-		// @ts-expect-error global bridge used by ProjectFilters
-		window.__STAR_LISTS__ = lists.map((l) => ({
-			name: l.name,
-			url: l.url,
-			repositories: l.repositories || [],
-			description: l.description,
-			num_repos: l.num_repos,
-		}));
-		document.dispatchEvent(new CustomEvent("star-lists-refreshed"));
-	}
 
 	const fetchedAt = nowIso();
 	writeStoredFetchedAt("projects", fetchedAt);

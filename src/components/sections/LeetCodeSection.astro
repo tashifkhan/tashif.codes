@@ -2,9 +2,15 @@
 import LeetCodeStats from "../leetcode/LeetCodeStats.astro";
 import LeetCodeContests from "../leetcode/LeetCodeContests.astro";
 import LeetCodeBadges from "../leetcode/LeetCodeBadges.astro";
+import LeetCodeSubmissions from "../leetcode/LeetCodeSubmissions.astro";
 import DataFreshness from "../common/DataFreshness";
 import { ExternalLink, ChevronRight } from "lucide-react";
 import { leetCodeData, leetCodeFetchedAt } from "../../data/leetcode";
+
+// Contests and submissions share a row; skip it when both are empty.
+const hasPanels =
+	(leetCodeData.contestSummary !== null && leetCodeData.contests.length > 0) ||
+	leetCodeData.recentSubmissions.length > 0;
 
 const totalSolved = leetCodeData?.stats?.totalSolved ?? 0;
 
@@ -66,12 +72,12 @@ const { active = false } = Astro.props;
 	<!-- Core Stats -->
 	<LeetCodeStats />
 
-	<!-- Secondary Panels -->
-	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-		<!-- Contests Panel -->
-		<LeetCodeContests />
-
-		<!-- Badges Panel -->
-		<LeetCodeBadges />
-	</div>
+	<!-- Secondary panels: each renders nothing when it has no data -->
+	{hasPanels && (
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+			<LeetCodeContests />
+			<LeetCodeSubmissions />
+		</div>
+	)}
+	<LeetCodeBadges />
 </div>

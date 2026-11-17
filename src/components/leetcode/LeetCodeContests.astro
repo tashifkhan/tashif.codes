@@ -1,67 +1,68 @@
 ---
 import { leetCodeData } from "../../data/leetcode";
-import { Trophy } from "lucide-react";
-import EmptyState from "../common/EmptyState.astro";
+import { Swords, TrendingUp, TrendingDown } from "lucide-react";
 
-const { contests } = leetCodeData;
+interface Props {
+	limit?: number;
+}
+
+// Renders nothing until there is a rated contest to show.
+const { limit = 6 } = Astro.props;
+const { contests, contestSummary } = leetCodeData;
+const date = (s: number) =>
+	new Date(s * 1000).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 ---
 
-<section
-	class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden h-fit"
->
-	<div class="px-4 sm:px-5 py-3 border-b border-border/60 flex flex-wrap items-center gap-x-2 gap-y-1">
-		<Trophy className="w-4 h-4 text-muted-foreground" />
-		<h3 class="font-sans text-sm font-semibold tracking-tight text-foreground">
-			Contest performance
-		</h3>
-	</div>
-	{
-		contests.length > 0 ? (
-			<div class="divide-y divide-border/40">
-				{contests.slice(0, 5).map((contest) => (
-					<div class="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-muted/30 transition-colors">
-						<div class="flex-1 min-w-0">
-							<p class="text-sm font-medium text-foreground line-clamp-2 break-words">
-								{contest.title}
-							</p>
-							<p class="mt-0.5 font-mono text-xs text-muted-foreground break-words">
-								{new Date(contest.startTime * 1000).toLocaleDateString()} · Rank
-								#{contest.rank.toLocaleString()} · {contest.problemsSolved}{" "}
-								solved
+{
+	contestSummary && contests.length > 0 && (
+		<section class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden h-fit" data-lc-contests>
+			<div class="px-4 sm:px-5 py-3 border-b border-border/60 flex flex-wrap items-center gap-x-2 gap-y-1">
+				<Swords className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+				<h3 class="font-sans text-sm font-semibold tracking-tight text-foreground">Contests</h3>
+				<span class="ml-auto font-mono text-xs text-muted-foreground tabular-nums">
+					{contestSummary.attended} rated · top {contestSummary.topPercentage}%
+				</span>
+			</div>
+			<dl class="grid grid-cols-3 divide-x divide-border/40 border-b border-border/40">
+				<div class="px-4 sm:px-5 py-3">
+					<dt class="text-[11px] text-muted-foreground">Rating</dt>
+					<dd class="mt-1 font-mono text-lg font-bold tabular-nums text-foreground">{Math.round(contestSummary.rating)}</dd>
+				</div>
+				<div class="px-4 sm:px-5 py-3">
+					<dt class="text-[11px] text-muted-foreground">Best</dt>
+					<dd class="mt-1 font-mono text-lg font-bold tabular-nums text-foreground">{Math.round(contestSummary.maxRating)}</dd>
+				</div>
+				<div class="px-4 sm:px-5 py-3 min-w-0">
+					<dt class="text-[11px] text-muted-foreground">Global</dt>
+					<dd class="mt-1 truncate font-mono text-lg font-bold tabular-nums text-foreground">
+						#{contestSummary.globalRanking.toLocaleString()}
+					</dd>
+				</div>
+			</dl>
+			<ul class="divide-y divide-border/40">
+				{contests.slice(0, limit).map((c) => (
+					<li class="flex items-center gap-3 px-4 sm:px-5 py-3">
+						<div class="min-w-0 flex-1">
+							<p class="truncate text-sm font-medium text-foreground">{c.title}</p>
+							<p class="mt-0.5 font-mono text-xs text-muted-foreground">
+								{date(c.startTime)} · rank #{c.ranking.toLocaleString()} · {c.problemsSolved}/{c.totalProblems} solved
 							</p>
 						</div>
-						<div class="flex items-center gap-2.5 shrink-0">
-							<span
-								class:list={[
-									"font-mono text-xs font-semibold tabular-nums px-2 py-0.5 rounded-full border",
-									contest.ratingChange >= 0
-										? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20"
-										: "text-rose-500 bg-rose-500/10 border-rose-500/20",
-								]}
-							>
-								{contest.ratingChange > 0 ? "+" : ""}
-								{contest.ratingChange}
-							</span>
-							<div class="text-right">
-								<p class="font-mono text-sm font-bold text-foreground tabular-nums leading-tight">
-									{contest.score}
-								</p>
-								<p class="text-xs text-muted-foreground leading-tight">
-									pts
-								</p>
-							</div>
-						</div>
-					</div>
+						<span
+							class:list={[
+								"inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-xs font-semibold tabular-nums",
+								c.trend === "DOWN"
+									? "text-rose-500 bg-rose-500/10 border-rose-500/20"
+									: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
+							]}
+							title="Rating after this contest"
+						>
+							{c.trend === "DOWN" ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
+							{Math.round(c.rating)}
+						</span>
+					</li>
 				))}
-			</div>
-		) : (
-			<div class="p-4">
-				<EmptyState
-					size="sm"
-					command="leetcode contests --list"
-					title="no contest data available"
-				/>
-			</div>
-		)
-	}
-</section>
+			</ul>
+		</section>
+	)
+}

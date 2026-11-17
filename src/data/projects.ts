@@ -7,6 +7,48 @@ import {
 	writeCache as writeCacheNS,
 } from "../lib/fetchCached";
 import type { Project, RepoRelease } from "@/types";
+import { starLists } from "./starLists";
+import { FEATURED_TOPIC, HIDE_TOPICS, WIP_TOPICS, hasTopic, starListSlugs } from "./projectGroups";
+
+/**
+ * Apply the rules in src/data/projectGroups.ts that decide which repos exist
+ * on the site and in what order. Grouping into sections happens at render
+ * time; this only filters, flags and sorts.
+ *
+ * - Drops repos with a hide topic (configs, dotfiles, the profile README).
+ * - Drops rows the stats API still lists under a name the owner no longer has
+ *   on GitHub, such as a renamed repo. Pinned and star-listed repos are kept.
+ * - Keeps one row per slug, preferring the source repo over a fork.
+ * - Marks `featured`-topic repos as pinned and flags work in progress.
+ * - Sorts pins in profile order, other featured repos next, then everything
+ *   else by stars and most recent push.
+ */
+function curate(projects: Project[], ownSlugs: Set<string> | null): Project[] {
+	const listed = new Set([...starListSlugs(starLists).values()].flatMap((s) => [...s]));
+	const bySlug = new Map<string, Project>();
+	for (const p of projects) {
+		if (hasTopic(p, HIDE_TOPICS)) continue;
+		if (ownSlugs && !ownSlugs.has(p.slug) && !p.pinned && !listed.has(p.slug)) {
+			console.warn(`projects: skipping "${p.title}", not in ${OWNER}'s GitHub repos (renamed or private?)`);
+			continue;
+		}
+		const seen = bySlug.get(p.slug);
+		if (seen && !(seen.isFork && !p.isFork)) continue;
+		bySlug.set(p.slug, p);
+	}
+	const kept = [...bySlug.values()];
+	for (const p of kept) {
+		if (hasTopic(p, [FEATURED_TOPIC])) p.pinned = true;
+		p.wip = hasTopic(p, WIP_TOPICS);
+	}
+	const rank = (p: Project) => (p.pinned ? (p.pinRank ?? 1000) : 2000);
+	return kept.sort(
+		(a, b) =>
+			rank(a) - rank(b) ||
+			(b.stars ?? 0) - (a.stars ?? 0) ||
+			(b.updated_at ?? "").localeCompare(a.updated_at ?? "")
+	);
+}
 
 
 /**
@@ -18,6 +60,7 @@ import type { Project, RepoRelease } from "@/types";
  * src/lib/fetchCached.ts are still found.
  */
 const CACHE_NS = "github";
+const OWNER = "tashifkhan";
 const { fetchJson: fetchJsonCached } = createCachedFetch(CACHE_NS);
 
 /**
@@ -47,7 +90,7 @@ async function fetchPinnedProjects(first = 6): Promise<Project[]> {
 			"stats-pinned-tashifkhan"
 		);
 		if (!Array.isArray(data)) return [];
-		return (data as any[]).map((p) => ({
+		return (data as any[]).map((p, i) => ({
 			title: formatTitle(p.name),
 			description: p.description || "No description available.",
 			languages: p.primary_language ? [p.primary_language] : [],
@@ -56,6 +99,7 @@ async function fetchPinnedProjects(first = 6): Promise<Project[]> {
 			readme: "", // Not provided by pinned endpoint
 			slug: slugify(p.name),
 			pinned: true,
+			pinRank: i,
 			stars: p.stars,
 			forks: p.forks,
 			docs_slug: getProjectEntry(slugify(p.name))
@@ -74,6 +118,13 @@ interface RepoMeta {
 	languageMap: Map<string, string[]>;
 	/** repo name (lowercase) / full_name → last push date (ISO), used for RSS ordering */
 	updatedMap: Map<string, string>;
+	/** "owner/name" (lowercase) of archived repos */
+	archived: Set<string>;
+	/**
+	 * Slugs of every repo the owner has on GitHub, or null when the list may be
+	 * incomplete (fetch failed, or 100+ repos on a single page).
+	 */
+	ownSlugs: Set<string> | null;
 }
 
 /**
@@ -97,6 +148,28 @@ async function fetchRepoLanguages(fullName: string): Promise<string[] | null> {
 		.map(([lang]) => lang);
 }
 
+/**
+ * The repo a fork was made from. The stats API leaves `original_repo` empty,
+ * so read `parent` from GitHub. Cached to disk because the parent never
+ * changes; skipped without a token to save the anonymous rate limit.
+ */
+async function fetchForkParent(name: string): Promise<Project["originalRepo"]> {
+	const key = `gh-parent-${OWNER}__${name}`.toLowerCase();
+	const toRepo = (p: any): Project["originalRepo"] =>
+		p?.full_name
+			? { name: p.name, full_name: p.full_name, owner: p.owner?.login ?? p.full_name.split("/")[0], url: p.html_url }
+			: null;
+	const cached = readCache<{ parent: any }>(key);
+	if (cached) return toRepo(cached.parent);
+	if (!GH_TOKEN) return null;
+	const data = await fetchJsonCached<any>(`https://api.github.com/repos/${OWNER}/${name}`, `gh-repo-${OWNER}__${name}`.toLowerCase(), {
+		headers: GH_HEADERS,
+	});
+	if (!data || typeof data !== "object" || !("fork" in data)) return null;
+	writeCache(key, { parent: data.parent ?? null });
+	return toRepo(data.parent);
+}
+
 /** Resolve promises in batches so we never open 100 sockets at once. */
 async function inBatches<T, R>(
 	items: T[],
@@ -115,6 +188,8 @@ async function fetchRepoMeta(users: string[]): Promise<RepoMeta> {
 	const topicsMap = new Map<string, string[]>();
 	const languageMap = new Map<string, string[]>();
 	const updatedMap = new Map<string, string>();
+	const archived = new Set<string>();
+	let ownSlugs: Set<string> | null = null;
 
 	await Promise.all(users.map(async (user) => {
 		try {
@@ -124,8 +199,14 @@ async function fetchRepoMeta(users: string[]): Promise<RepoMeta> {
 				{ headers: GH_HEADERS }
 			);
 			if (!Array.isArray(repos)) return;
+			if (user === OWNER && repos.length < 100) {
+				ownSlugs = new Set(repos.map((repo: any) => slugify(String(repo.name ?? ""))));
+			}
 
 			repos.forEach((repo: any) => {
+				if (repo.archived && repo.name) {
+					archived.add(`${user}/${repo.name}`.toLowerCase());
+				}
 				const forks = repo.forks_count ?? repo.forks;
 				const topics: string[] = Array.isArray(repo.topics)
 					? repo.topics.filter((t: unknown): t is string => typeof t === "string")
@@ -188,7 +269,7 @@ async function fetchRepoMeta(users: string[]): Promise<RepoMeta> {
 		}
 	}));
 
-	return { forkMap, topicsMap, languageMap, updatedMap };
+	return { forkMap, topicsMap, languageMap, updatedMap, archived, ownSlugs };
 }
 
 /**
@@ -445,17 +526,29 @@ async function fetchAllProjects(): Promise<Project[]> {
     }));
 
 	// Fetch pinned in parallel / earlier
-	const [pinnedProjects, { forkMap, topicsMap, languageMap, updatedMap }] =
+	const [pinnedProjects, { forkMap, topicsMap, languageMap, updatedMap, archived, ownSlugs }] =
 		await Promise.all([fetchPinnedProjects(), repoMetaPromise]);
 	const pinnedNames = new Set(
 		pinnedProjects.map((p) => p.title.toLowerCase().trim())
 	);
+	const pinRanks = new Map(pinnedProjects.map((p) => [p.slug, p.pinRank]));
 	// The pinned endpoint still carries primary_language when /repos does not.
 	pinnedProjects.forEach((p) => {
 		if (p.languages.length && !languageMap.has(p.slug.toLowerCase())) {
 			languageMap.set(p.slug.toLowerCase(), p.languages);
 		}
 	});
+
+	// Parents for forks the stats API didn't resolve.
+	const forkParents = new Map<string, Project["originalRepo"]>();
+	await inBatches(
+		repos.filter((r: any) => (r.is_fork ?? r.fork) && !r.original_repo && typeof r.title === "string"),
+		6,
+		async (r: any) => {
+			const parent = await fetchForkParent(r.title);
+			if (parent) forkParents.set(r.title.toLowerCase(), parent);
+		}
+	);
 
 	// Map repos -> Project objects
     const FORK_MAPPINGS: Record<string, string> = {
@@ -492,11 +585,14 @@ async function fetchAllProjects(): Promise<Project[]> {
 		titleKey: string,
 		parentRepo?: string
 	): string[] => {
-		const fromApi = Array.isArray(project.topics) ? project.topics : [];
-		if (fromApi.length > 0) return fromApi;
+		// Topics drive grouping (src/data/projectGroups.ts), so merge the stats
+		// API's copy with GitHub's: either one can lag behind a fresh edit.
+		const fromApi: string[] = Array.isArray(project.topics) ? project.topics : [];
+		const own = topicsMap.get(`${OWNER}/${titleKey}`.toLowerCase()) ?? [];
+		const merged = [...new Set([...fromApi, ...own])];
+		if (merged.length > 0) return merged;
 		return (
 			(parentRepo ? topicsMap.get(parentRepo.toLowerCase()) : undefined) ??
-			topicsMap.get(`tashifkhan/${titleKey}`.toLowerCase()) ??
 			topicsMap.get(titleKey.toLowerCase()) ??
 			[]
 		);
@@ -507,7 +603,7 @@ async function fetchAllProjects(): Promise<Project[]> {
 		const isPinned = pinnedNames.has(titleFormatted.toLowerCase());
         const projectSlug = slugify(project.title);
         
-        const originalRepo = project.original_repo ?? null;
+        const originalRepo = project.original_repo ?? forkParents.get(project.title.toLowerCase()) ?? null;
         const parentRepo = originalRepo?.full_name || FORK_MAPPINGS[projectSlug] || FORK_MAPPINGS[project.title.toLowerCase()] || undefined;
 
 		// Priority: Star map (parent if exists, else self) -> project.stars -> project.stargazers -> 0
@@ -550,6 +646,8 @@ async function fetchAllProjects(): Promise<Project[]> {
 			readme: project.readme,
 			slug: projectSlug,
 			pinned: isPinned,
+			pinRank: isPinned ? pinRanks.get(projectSlug) : undefined,
+			archived: archived.has(`${OWNER}/${project.title}`.toLowerCase()),
 			stars,
 			forks,
 			updated_at: updatedAt,
@@ -617,29 +715,7 @@ async function fetchAllProjects(): Promise<Project[]> {
 		}
 	);
 
-	// Sort: pinned first, then by stars desc within pinned; preserve original order otherwise
-	repoProjects.sort((a, b) => {
-		const aPinned = a.pinned ? 1 : 0;
-		const bPinned = b.pinned ? 1 : 0;
-		if (aPinned !== bPinned) return bPinned - aPinned;
-		// If both pinned or both not pinned, sort by stars descending
-        const starsA = a.stars ?? 0;
-        const starsB = b.stars ?? 0;
-        if (starsA !== starsB) return starsB - starsA;
-
-		return 0; 
-	});
-
-	const visibleProjects = repoProjects.filter((p) => {
-        // Always show pinned projects
-        if (p.pinned) return true;
-        
-        // Show if it's one of the special mapped forks
-        if (FORK_MAPPINGS[p.slug] || FORK_MAPPINGS[p.title.toLowerCase()]) return true;
-        
-        // Show if it is NOT a fork (source repo)
-        return !p.isFork;
-    });
+	const visibleProjects = curate(repoProjects, ownSlugs);
 	await inBatches(visibleProjects, 4, async (project) => {
 		project.hasReleases = await hasPublishedRelease(project);
 		// The stats API returns every release, but a cold or timed-out response

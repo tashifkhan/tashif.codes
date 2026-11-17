@@ -2,11 +2,10 @@
 import PageShell from "../../layouts/PageShell.astro";
 import ProjectFilters from "../../components/projects/ProjectFilters.tsx";
 import DataFreshness from "../../components/common/DataFreshness";
-import { starLists } from "../../data/starLists";
 import { ChartPie } from "lucide-react";
-import ProjectCard from "../../components/projects/ProjectCard.astro";
+import ProjectGrid from "../../components/projects/ProjectGrid.astro";
 import { allProjects, projectsFetchedAt } from "../../data/projects";
-import { fetchAnalyticsProjects, hasAnalytics, getAnalyticsSlug } from "../../data/analyticsProjects";
+import { fetchAnalyticsProjects } from "../../data/analyticsProjects";
 import type { Project } from "@/types";
 
 const projects: Project[] = allProjects;
@@ -76,155 +75,21 @@ const liveCount = projects.filter((p) => Boolean(p.live_website_url)).length;
 	</Fragment>
 
 	<div class="mb-10">
-		<ProjectFilters client:load starLists={starLists} />
+		<ProjectFilters client:load />
 	</div>
 
-	<div
-		class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
-	>
-		{
-			projects.map((project) => (
-				<div
-					class="h-full"
-					data-project-item-card
-					data-has-live-link={Boolean(project.live_website_url)}
-					data-has-releases={Boolean(project.hasReleases || project.releases?.length)}
-				>
-					<ProjectCard
-						project={project}
-						hasAnalytics={hasAnalytics(project.slug, analyticsProjects)}
-						analyticsSlug={getAnalyticsSlug(project.slug)}
-					/>
-				</div>
-			))
-		}
-	</div>
+	<ProjectGrid projects={projects} analyticsProjects={analyticsProjects} gap="gap-6 sm:gap-8" />
 	<p data-project-empty role="status" hidden class="py-8 text-center text-sm text-muted-foreground">No projects match these filters. Try clearing a filter or changing your search.</p>
 </PageShell>
 
 <script>
-	function fuzzySearch(text: string, query: string): boolean {
-		if (!query.trim()) return true;
-		const textLower = text.toLowerCase();
-		const queryLower = query.toLowerCase();
-		if (textLower.includes(queryLower)) return true;
-		let queryIndex = 0;
-		for (
-			let i = 0;
-			i < textLower.length && queryIndex < queryLower.length;
-			i++
-		) {
-			if (textLower[i] === queryLower[queryIndex]) queryIndex++;
-		}
-		return queryIndex === queryLower.length;
-	}
+	import { initProjectSearch } from "../../scripts/projectSearch";
 
-	function normalizeRepoName(value?: string | null): string {
-		if (!value) return "";
-		const cleaned = value
-			.toLowerCase()
-			.trim()
-			.replace(/[?#].*$/, "")
-			.replace(/\.git$/, "")
-			.replace(/\/+$/, "");
-		const parts = cleaned.split("/").filter(Boolean);
-		return parts[parts.length - 1] || "";
-	}
-
-	document.addEventListener("project-search", (e: Event) => {
-		const { term: searchTerm, showLiveOnly, showReleasesOnly, list } = (e as CustomEvent).detail;
-		const query = (searchTerm || "").trim().toLowerCase();
-		const projectCards = Array.from(
-			document.querySelectorAll("[data-project-item-card]")
-		);
-		const exactMatches: HTMLElement[] = [];
-		const fuzzyMatches: HTMLElement[] = [];
-
-		projectCards.forEach((el) => {
-			const card = el as HTMLElement;
-			const title =
-				card.querySelector("[data-project-title]")?.textContent || "";
-			const description =
-				card.querySelector("[data-project-description]")?.textContent || "";
-			const languages = Array.from(
-				card.querySelectorAll("[data-project-language]")
-			).map((n) => n.textContent || "");
-			const topics = Array.from(
-				card.querySelectorAll("[data-project-topic]")
-			).flatMap((n) => [
-				n.getAttribute("data-project-topic") || "",
-				n.textContent || "",
-			]);
-			const fields = [title, description, ...languages, ...topics].map((f) =>
-				f.toLowerCase()
-			);
-			const hasLiveLink =
-				card.querySelector("[data-live-link]") !== null ||
-				card.getAttribute("data-has-live-link") === "true";
-			const hasReleases =
-				card.querySelector("[data-has-releases='true']") !== null ||
-				card.getAttribute("data-has-releases") === "true";
-
-			let listFilter = true;
-			if (list && list !== "all-projects") {
-				const repoName = normalizeRepoName(
-					card
-					.querySelector("[data-github-link]")
-					?.getAttribute("data-url")
-				);
-				// @ts-ignore
-				const starLists = window.__STAR_LISTS__ as
-					| { name: string; repositories?: string[] }[]
-					| undefined;
-				const selected = starLists?.find((l) => l.name === list);
-				const repoNames = new Set(
-					(selected?.repositories || [])
-						.map((r) => normalizeRepoName(r))
-						.filter(Boolean)
-				);
-				listFilter = repoName ? repoNames.has(repoName) : false;
-			}
-
-			let isExact = false;
-			let isFuzzy = false;
-			if (!query) {
-				isExact = true;
-			} else {
-				isExact = fields.some((f) => f.includes(query));
-				if (!isExact) {
-					isFuzzy = fields.some((f) => fuzzySearch(f, query));
-				}
-			}
-
-			const liveFilter = !showLiveOnly || hasLiveLink;
-			const releasesFilter = !showReleasesOnly || hasReleases;
-			const matches = (isExact || isFuzzy) && liveFilter && releasesFilter && listFilter;
-			card.style.display = matches ? "" : "none";
-			if (matches) {
-				if (isExact) exactMatches.push(card);
-				else if (isFuzzy) fuzzyMatches.push(card);
-			}
-		});
-
-		document.querySelectorAll<HTMLElement>("[data-project-empty]").forEach((message) => {
-			message.hidden = exactMatches.length + fuzzyMatches.length > 0;
-		});
-
-		if (query && projectCards.length) {
-			const gridContainer = (projectCards[0] as HTMLElement).parentElement;
-			if (gridContainer) {
-				const frag = document.createDocumentFragment();
-				exactMatches.forEach((c) => frag.appendChild(c));
-				fuzzyMatches.forEach((c) => frag.appendChild(c));
-				gridContainer.appendChild(frag);
-			}
-		}
-	});
+	initProjectSearch();
 
 	document.addEventListener("astro:page-load", () => {
-		const initialSearchEvent = new CustomEvent("project-search", {
-			detail: { term: "", showLiveOnly: false },
-		});
-		document.dispatchEvent(initialSearchEvent);
+		document.dispatchEvent(
+			new CustomEvent("project-search", { detail: { term: "", showLiveOnly: false } })
+		);
 	});
 </script>

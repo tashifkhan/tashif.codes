@@ -1,135 +1,49 @@
 import { useState, useEffect } from "react";
 import { Search, ExternalLink, Tag } from "lucide-react";
-import {
-	Select,
-	SelectTrigger,
-	SelectValue,
-	SelectContent,
-	SelectItem,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 import { trigger } from "@/lib/haptics";
-import type { StarList } from "@/types";
 
-interface StarListOption {
-	key: string; // identifier
-	label: string; // display label
-	repos?: string[]; // owner/repo slugs
-}
-
-interface ProjectFiltersProps {
-	starLists: StarList[];
-}
-
-export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
+/**
+ * Search box plus the Live and Releases toggles. Grouping by star list moved
+ * into the sections of ProjectGrid, so there is no list picker here.
+ */
+export default function ProjectFilters() {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [showLiveOnly, setShowLiveOnly] = useState(false);
 	const [showReleasesOnly, setShowReleasesOnly] = useState(false);
-	const [selectedList, setSelectedList] = useState<string>("all-projects");
-	const [lists, setLists] = useState<StarListOption[]>([]);
 
-	// Initialize from pre-fetched build-time starLists module
+	const emit = (term: string, live: boolean, releases: boolean) =>
+		document.dispatchEvent(
+			new CustomEvent("project-search", {
+				detail: { term, showLiveOnly: live, showReleasesOnly: releases },
+			})
+		);
+
+	// Dispatch the initial filter state once the island has hydrated.
 	useEffect(() => {
-		const mapped: StarListOption[] = [
-			{ key: "all-projects", label: "All Projects" },
-			...starLists.map((l) => ({
-				key: l.name,
-				label: l.name,
-				repos: (l.repositories || []).map((r) => r.split("/").pop() || r),
-			})),
-		];
-		setLists(mapped);
-		// Expose globally for existing filter handler referencing window.__STAR_LISTS__
-		// @ts-ignore
-		window.__STAR_LISTS__ = starLists;
-	}, []);
-
-	// External star list selection (triggered from GitHub contribution section)
-	useEffect(() => {
-		function applyList(listName: string) {
-			if (!listName) return;
-			if (!lists.some((l) => l.key === listName)) return; // ensure exists
-			setSelectedList(listName);
-			const searchEvent = new CustomEvent("project-search", {
-				detail: { term: searchTerm, showLiveOnly, showReleasesOnly, list: listName },
-			});
-			document.dispatchEvent(searchEvent);
-		}
-		function handleIncoming(e: Event) {
-			const name = (e as CustomEvent).detail?.list as string | undefined;
-			if (name) applyList(name);
-		}
-		document.addEventListener("project-list-select", handleIncoming);
-		// Pending selection from navigation (set before component mounted)
-		const pending = localStorage.getItem("pending_star_list_select");
-		if (pending) {
-			applyList(pending);
-			localStorage.removeItem("pending_star_list_select");
-		}
-		return () =>
-			document.removeEventListener("project-list-select", handleIncoming);
-	}, [lists, searchTerm, showLiveOnly, showReleasesOnly]);
-
-	// Dispatch initial filter state when component mounts
-	useEffect(() => {
-		// Small delay to ensure component is fully hydrated
-		const timer = setTimeout(() => {
-			const searchEvent = new CustomEvent("project-search", {
-				detail: { term: searchTerm, showLiveOnly, showReleasesOnly, list: selectedList },
-			});
-			document.dispatchEvent(searchEvent);
-		}, 100);
-
+		const timer = setTimeout(() => emit(searchTerm, showLiveOnly, showReleasesOnly), 100);
 		return () => clearTimeout(timer);
 	}, []); // run once
 
 	const handleSearch = (value: string) => {
 		setSearchTerm(value);
-		const searchEvent = new CustomEvent("project-search", {
-			detail: { term: value, showLiveOnly, showReleasesOnly, list: selectedList },
-		});
-		document.dispatchEvent(searchEvent);
+		emit(value, showLiveOnly, showReleasesOnly);
 	};
 
 	const handleLiveFilter = () => {
 		trigger("selection");
-		const newShowLiveOnly = !showLiveOnly;
-		setShowLiveOnly(newShowLiveOnly);
-		const searchEvent = new CustomEvent("project-search", {
-			detail: {
-				term: searchTerm,
-				showLiveOnly: newShowLiveOnly,
-				showReleasesOnly,
-				list: selectedList,
-			},
-		});
-		document.dispatchEvent(searchEvent);
+		const next = !showLiveOnly;
+		setShowLiveOnly(next);
+		emit(searchTerm, next, showReleasesOnly);
 	};
 
 	const handleReleasesFilter = () => {
 		trigger("selection");
-		const newShowReleasesOnly = !showReleasesOnly;
-		setShowReleasesOnly(newShowReleasesOnly);
-		const searchEvent = new CustomEvent("project-search", {
-			detail: {
-				term: searchTerm,
-				showLiveOnly,
-				showReleasesOnly: newShowReleasesOnly,
-				list: selectedList,
-			},
-		});
-		document.dispatchEvent(searchEvent);
-	};
-
-	const handleListChange = (value: string) => {
-		trigger("selection");
-		setSelectedList(value);
-		const searchEvent = new CustomEvent("project-search", {
-			detail: { term: searchTerm, showLiveOnly, showReleasesOnly, list: value },
-		});
-		document.dispatchEvent(searchEvent);
+		const next = !showReleasesOnly;
+		setShowReleasesOnly(next);
+		emit(searchTerm, showLiveOnly, next);
 	};
 
 	return (
@@ -147,25 +61,6 @@ export default function ProjectFilters({ starLists }: ProjectFiltersProps) {
 				</div>
 
 				<div className="flex flex-wrap gap-2 w-full md:flex-nowrap md:w-auto">
-					{/* Star list selector */}
-					<div className="relative w-full min-w-0 md:w-auto md:flex-1">
-						<Select onOpenChange={() => trigger("light")} value={selectedList} onValueChange={handleListChange}>
-							<SelectTrigger
-								data-haptic="manual"
-								data-project-list-select
-								className="w-full bg-background/50 backdrop-blur-sm"
-							>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{lists.map((l) => (
-									<SelectItem key={l.key} value={l.key}>
-										{l.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
 					<Button
 						variant={showLiveOnly ? "default" : "outline"}
 						onClick={handleLiveFilter}

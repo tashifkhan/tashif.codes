@@ -1,0 +1,76 @@
+---
+import { Building2, Users } from "lucide-react";
+import { githubStats } from "../../data/github";
+import { githubUsernames } from "../../data/profile";
+import type { OrgContribution } from "@/types";
+
+// Owners of repos I've committed to, from the stats API's /org-contributions.
+// org_id is 0 for personal accounts, so it splits organizations from people.
+const mine = new Set(githubUsernames.map((u) => u.toLowerCase()));
+const owners = githubStats.orgContributions
+	.filter((o) => o.org && !mine.has(o.org.toLowerCase()) && o.repos?.length)
+	.sort((a, b) => b.repos.length - a.repos.length || a.org.localeCompare(b.org));
+const orgs = owners.filter((o) => o.org_id > 0);
+const people = owners.filter((o) => !(o.org_id > 0));
+
+const avatar = (o: OrgContribution) => o.org_avatar_url || `https://github.com/${o.org}.png?size=48`;
+// One repo links straight to it; several link to the owner.
+const href = (o: OrgContribution) =>
+	o.repos.length === 1 ? `https://github.com/${o.org}/${o.repos[0]}` : o.org_url || `https://github.com/${o.org}`;
+const groups = [
+	{ label: "Organizations", icon: Building2, items: orgs },
+	{ label: "People", icon: Users, items: people },
+].filter((g) => g.items.length > 0);
+---
+
+{
+	groups.length > 0 && (
+		<section class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden" data-org-contributions>
+			<div class="px-4 sm:px-5 pt-3 pb-1">
+				<h3 class="flex items-center gap-2 font-sans text-sm font-semibold tracking-tight text-foreground">
+					<Building2 className="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true" />
+					Contributed to
+					<span class="font-mono text-xs font-normal tabular-nums text-muted-foreground">{owners.length}</span>
+				</h3>
+				<p class="mt-0.5 text-xs text-muted-foreground">Organizations and people whose repos I've committed to</p>
+			</div>
+			<div class="p-4 sm:p-5 flex flex-col gap-4">
+				{groups.map((group) => (
+					<div>
+						<p class="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/80">
+							<group.icon className="w-3 h-3" aria-hidden="true" />
+							{group.label}
+						</p>
+						<ul class="flex flex-wrap gap-2">
+							{group.items.map((o) => (
+								<li class="max-w-full">
+									<a
+										href={href(o)}
+										target="_blank"
+										rel="noopener noreferrer"
+										title={`${o.org}: ${o.repos.join(", ")}`}
+										class="group inline-flex min-h-10 max-w-full items-center gap-2 rounded-full border border-border/60 bg-background/50 py-1.5 pl-1.5 pr-3.5 text-[13px] text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-colors"
+									>
+										<img
+											src={avatar(o)}
+											alt=""
+											width="24"
+											height="24"
+											loading="lazy"
+											decoding="async"
+											class:list={["h-6 w-6 shrink-0 bg-muted object-cover", o.org_id > 0 ? "rounded-md" : "rounded-full"]}
+										/>
+										<span class="shrink-0 font-medium text-foreground/90">{o.org}</span>
+										<span class="min-w-0 truncate font-mono text-[11px] text-muted-foreground/80">
+											{o.repos.join(", ")}
+										</span>
+									</a>
+								</li>
+							))}
+						</ul>
+					</div>
+				))}
+			</div>
+		</section>
+	)
+}

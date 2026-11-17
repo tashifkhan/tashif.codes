@@ -31,6 +31,8 @@ export type {
 	LeetCodeStats,
 	Contest,
 	Badge,
+	ContestSummary,
+	RecentSubmission,
 	LeetCodeProfile,
 	LeetCodeData,
 } from "./leetcode";
