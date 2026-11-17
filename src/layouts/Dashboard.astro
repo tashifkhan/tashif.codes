@@ -218,107 +218,10 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 		});
 	}
 
-	// Enhanced search functions
-	function fuzzySearch(text: string, query: string): boolean {
-		if (!query.trim()) return true;
-
-		const textLower = text.toLowerCase();
-		const queryLower = query.toLowerCase();
-
-		// Exact match check
-		if (textLower.includes(queryLower)) return true;
-
-		// Fuzzy match using character sequence
-		let queryIndex = 0;
-		for (
-			let i = 0;
-			i < textLower.length && queryIndex < queryLower.length;
-			i++
-		) {
-			if (textLower[i] === queryLower[queryIndex]) {
-				queryIndex++;
-			}
-		}
-
-		// If we found all characters in sequence, it's a fuzzy match
-		return queryIndex === queryLower.length;
-	}
-
-	function enhancedSearch(
-		text: string,
-		query: string,
-		exactOnly: boolean
-	): boolean {
-		if (!query.trim()) return true;
-
-		const textLower = text.toLowerCase();
-		const queryLower = query.toLowerCase();
-
-		// 1. Exact substring match (highest priority)
-		if (textLower.includes(queryLower)) return true;
-
-		// If exactOnly flag, skip deeper fuzzy logic
-		if (exactOnly) return false;
-
-		// 2. Word boundary match (matches whole words)
-		const words = textLower.split(/\s+/);
-		const queryWords = queryLower.split(/\s+/);
-
-		// Check if all query words are found in text words
-		const allWordsFound = queryWords.every((queryWord) =>
-			words.some((word) => word.includes(queryWord))
-		);
-		if (allWordsFound) return true;
-
-		// 3. Fuzzy match (for typos and partial matches)
-		return fuzzySearch(textLower, queryLower);
-	}
-
 	// Project search and filter functionality lives in src/scripts/projectSearch.ts
 	initProjectSearch();
 
-	// Blog search and tag filters combine: a card shows only if it matches both.
-	const blogFilter = { term: "", categories: ["all"] as string[] };
-
-	function applyBlogFilters() {
-		const blogCards = document.querySelectorAll<HTMLElement>("[data-blog-card]");
-		const { term, categories } = blogFilter;
-		let visible = 0;
-
-		blogCards.forEach((card) => {
-			const title = card.querySelector("[data-blog-title]")?.textContent || "";
-			const tags = (card.getAttribute("data-blog-tags") || "")
-				.split(",")
-				.filter(Boolean);
-
-			const searchMatch =
-				enhancedSearch(title, term, false) ||
-				tags.some((t) => enhancedSearch(t, term, false));
-			const tagMatch =
-				categories.includes("all") ||
-				categories.some((cat) => tags.includes(cat));
-
-			const matches = searchMatch && tagMatch;
-			card.style.display = matches ? "" : "none";
-			if (matches) visible++;
-		});
-
-		document.dispatchEvent(
-			new CustomEvent("blog-filter-result", {
-				detail: { visible, total: blogCards.length },
-			})
-		);
-	}
-
-	document.addEventListener("blog-search", (e: Event) => {
-		blogFilter.term = (e as CustomEvent).detail.term;
-		applyBlogFilters();
-	});
-
-	document.addEventListener("blog-category", (e: Event) => {
-		blogFilter.categories = (e as CustomEvent).detail.categories as string[];
-		applyBlogFilters();
-	});
+	// Blog search, topics and layout live in BlogFilters.tsx.
 
 	// Initialize filters and handle link clicks
 	document.addEventListener("astro:page-load", () => {

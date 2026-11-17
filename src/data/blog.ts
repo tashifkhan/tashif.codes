@@ -11,6 +11,7 @@ export const BLOG_API_BASE =
 	import.meta.env.BLOG_API_BASE ?? "https://blog.tashif.codes/api";
 
 import { readCache, writeCache } from "../lib/fetchCached";
+import { isListedPost, pickRelatedPosts } from "../lib/blog-shared";
 import type { BlogComment, BlogPost, FullBlogPost } from "@/types";
 
 const BLOG_CACHE_NS = "blog";
@@ -259,8 +260,21 @@ async function loadBlogPosts(): Promise<BlogPost[]> {
 	}
 }
 
-/** Fetch a single post's full content, metrics, and comments. */
+/**
+ * Fetch a single post's full content, metrics, and comments.
+ *
+ * Reads from the bulk `/posts/full` request first: the build already makes it
+ * for reading stats and the RSS feed, and it carries the same shape per post.
+ * Falls back to the per-post endpoint if the bulk call failed or the post is
+ * missing from it.
+ */
 export async function fetchFullPost(slug: string): Promise<FullBlogPost> {
+	try {
+		const hit = (await fetchAllPostsFull()).find((post) => post.slug === slug);
+		if (hit) return hit;
+	} catch {
+		// fall through to the single-post endpoint
+	}
 	const res = await fetch(`${BLOG_API_BASE}/posts/${slug}/full`);
 	if (!res.ok) throw new Error(`Failed to fetch post "${slug}": ${res.status}`);
 	const data = await res.json();
@@ -371,8 +385,32 @@ export async function postComment(
 
 // ── Build-time / module-load exports (same pattern as github / leetcode) ────
 
-/** All blog posts, newest first. Empty array if the API is unreachable. */
-export const blogPosts: BlogPost[] = await loadBlogPosts();
+/**
+ * Every post, newest first, including ones marked `unlisted`. Used to build
+ * post pages so a direct link to an unlisted post still works.
+ */
+export const allBlogPosts: BlogPost[] = await loadBlogPosts();
+
+/** Posts shown in lists, feeds, tag counts and site tools. */
+export const blogPosts: BlogPost[] = allBlogPosts.filter(isListedPost);
+
+/** The listed posts either side of `slug` in date order. */
+export function getAdjacentPosts(slug: string): {
+	newer?: BlogPost;
+	older?: BlogPost;
+} {
+	const index = blogPosts.findIndex((post) => post.slug === slug);
+	if (index === -1) return {};
+	return { newer: blogPosts[index - 1], older: blogPosts[index + 1] };
+}
+
+/** Related posts: frontmatter `related` first, then shared tags. */
+export function getRelatedPosts(
+	post: BlogPost,
+	options?: { limit?: number; exclude?: string[] },
+): BlogPost[] {
+	return pickRelatedPosts(post, blogPosts, options);
+}
 
 /** ISO timestamp when blog list data was last fetched (build / server). */
 export const blogFetchedAt: string = new Date().toISOString();

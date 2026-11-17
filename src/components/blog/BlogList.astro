@@ -1,0 +1,63 @@
+---
+/**
+ * The post list used by the dashboard Blog tab and /blog/archive.
+ *
+ * Renders two views of the same posts. Grid: newest post featured, the rest
+ * as cards. List: rows grouped by year. BlogFilters shows one at a time and
+ * filters both, so switching views keeps the current search and topic.
+ */
+import BlogCard from "./BlogCard.astro";
+import { postYear } from "../../lib/blog-shared";
+import type { BlogPost } from "@/types";
+
+interface Props {
+	id: string;
+	posts: BlogPost[];
+	/** Load the featured cover eagerly; only when the list is above the fold. */
+	eager?: boolean;
+}
+
+const { id, posts, eager = false } = Astro.props;
+const [first, ...rest] = posts;
+
+const years = new Map<string, BlogPost[]>();
+for (const post of posts) {
+	const year = postYear(post.date) || "Undated";
+	if (!years.has(year)) years.set(year, []);
+	years.get(year)!.push(post);
+}
+const plural = (n: number) => `${n} post${n === 1 ? "" : "s"}`;
+---
+
+<div id={id} data-blog-list>
+	<div data-blog-view="grid" class="space-y-6">
+		{first && <BlogCard post={first} variant="featured" eager={eager} />}
+		{
+			rest.length > 0 && (
+				<div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+					{rest.map((post) => (
+						<BlogCard post={post} />
+					))}
+				</div>
+			)
+		}
+	</div>
+
+	<div data-blog-view="list" hidden>
+		{
+			[...years].map(([year, group]) => (
+				<section data-blog-year-group class="mb-6">
+					<h3 class="flex items-center gap-3 font-mono text-[13px] font-semibold text-muted-foreground after:h-px after:flex-1 after:bg-border/70">
+						{year}
+						<span class="font-normal" data-blog-year-count>
+							{plural(group.length)}
+						</span>
+					</h3>
+					{group.map((post) => (
+						<BlogCard post={post} variant="row" headingLevel={4} />
+					))}
+				</section>
+			))
+		}
+	</div>
+</div>

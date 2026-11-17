@@ -1,14 +1,57 @@
 ---
+/**
+ * One blog post.
+ *
+ * Layout: the title and cover share a 65rem frame; below it the article
+ * (46rem) and the contents rail (15.5rem) sit as one centered pair. Phones get
+ * a collapsible contents block and a bar pinned to the bottom with Like,
+ * Discuss, Share and Contents.
+ *
+ * Everything interactive lives in src/scripts/blogPost.ts, which wires the
+ * page once per visit and tears down on navigation. The page only renders
+ * markup and hands the build-time engagement snapshot to the script.
+ */
 import Layout from "../../layouts/Layout.astro";
 import MarkdownRenderer from "../../components/common/markdown/MarkdownRenderer.astro";
-import { ArrowLeft, ExternalLink, Eye, Heart, MessageCircle, Clock, Calendar, User, Send } from "lucide-react";
-import { blogPosts, fetchFullPost, estimateReadingStats, resolveCoverImage, BLOG_API_BASE, BLOG_REPO_URL } from "../../data/blog";
+import BlogCard from "../../components/blog/BlogCard.astro";
+import {
+	ArrowLeft,
+	Calendar,
+	Clock,
+	ExternalLink,
+	Eye,
+	Github,
+	Heart,
+	Link2,
+	Linkedin,
+	ListTree,
+	MessageCircle,
+	Rss,
+	Send,
+	Twitter,
+} from "lucide-react";
+import {
+	allBlogPosts,
+	fetchFullPost,
+	estimateReadingStats,
+	getAdjacentPosts,
+	getRelatedPosts,
+	resolveCoverImage,
+	resolveReadingTimeMinutes,
+	BLOG_API_BASE,
+	BLOG_REPO_URL,
+	BLOG_SITE_ORIGIN,
+} from "../../data/blog";
 import { RENDERER_VERSION } from "../../components/common/markdown/index";
+import { countComments, formatPostDate, topicSlug } from "../../lib/blog-shared";
+import { owner, socials } from "../../data/profile";
+import { absoluteUrl, resolveSocialImage } from "../../lib/seo";
 import type { BlogComment, BlogHeading, BlogPost } from "@/types";
-import { resolveSocialImage } from "../../lib/seo";
+import "../../styles/blog-post.css";
 
 export async function getStaticPaths() {
-	return blogPosts.map((post) => ({
+	// Unlisted posts still get a page; they are only left out of lists.
+	return allBlogPosts.map((post) => ({
 		params: { slug: post.slug },
 		props: { post },
 	}));
@@ -22,110 +65,154 @@ let initialLikes = 0;
 let initialComments: BlogComment[] = [];
 let fullMetadata: Record<string, unknown> = {};
 let tocHeadings: BlogHeading[] = [];
+let outlineMinutes = 0;
+let outlineWords = 0;
+let bodyHasToc = false;
 
 try {
 	const fullPost = await fetchFullPost(post.slug);
 	markdown = fullPost.markdown;
 	initialViews = fullPost.metrics.views;
 	initialLikes = fullPost.metrics.likes;
-	initialComments = fullPost.comments;
+	initialComments = fullPost.comments ?? [];
 	fullMetadata = fullPost.metadata ?? {};
+	outlineMinutes = fullPost.outline?.readingTimeMinutes ?? 0;
+	outlineWords = fullPost.outline?.wordCount ?? 0;
+	// Most posts place their own <Toc /> in the body; phones use that one.
+	bodyHasToc = (fullPost.outline?.components ?? []).includes("Toc");
 
-	// The API derives these from the same rules the renderer uses, so the
-	// contents list is known at build time instead of being scraped out of the
-	// DOM after paint. h2 and h3 only, which is what the sidebar has room for.
+	// The API derives headings with the renderer's own rules, so the contents
+	// list is known at build time. h2 and h3 only.
 	tocHeadings = (fullPost.outline?.headings ?? []).filter(
-		(heading) => heading.depth === 2 || heading.depth === 3
+		(heading) => heading.depth === 2 || heading.depth === 3,
 	);
 
-	// This site owns its renderer outright — there is no sync from the Blog
-	// repo anymore — so a post authored against a newer component vocabulary
-	// will render unknown tags as raw HTML. Nothing repairs that automatically;
-	// the fix is to add the component under markdown/blocks/ here. Worth a loud
-	// build log rather than a silent oddity on the page.
+	// A post written against a newer component vocabulary renders unknown
+	// tags as raw HTML. The fix is to port the component under
+	// markdown/blocks/, so make it loud in the build log.
 	const postRenderer = fullPost.outline?.renderer ?? fullPost.renderer;
 	if (postRenderer && postRenderer !== RENDERER_VERSION) {
 		console.warn(
 			`[blog] "${post.slug}" was written for renderer ${postRenderer}, ` +
 				`but this site's renderer is ${RENDERER_VERSION}. ` +
 				`Any component added since then needs porting to ` +
-				`src/components/common/markdown/blocks/.`
+				`src/components/common/markdown/blocks/.`,
 		);
 	}
 } catch (err) {
 	console.error("Error fetching full post:", err);
 }
 
-const { wordCount, readingTimeMinutes: readingTime } =
-	estimateReadingStats(markdown);
-const dateText = new Date(post.date).toLocaleDateString("en-US", {
-	year: "numeric",
-	month: "long",
-	day: "numeric",
-});
-const originalUrl = `https://blog.tashif.codes/blog/${post.slug}`;
-// List payload first; full frontmatter as fallback for posts published with a
-// cover before the list field was widely available.
+// Same number the list card shows: the API outline skips code and component
+// tags. The raw-markdown estimate is only a last resort.
+const readingTime =
+	outlineMinutes > 0
+		? outlineMinutes
+		: post.readingTimeMinutes
+			? resolveReadingTimeMinutes(post)
+			: estimateReadingStats(markdown).readingTimeMinutes;
+
+const tags = Array.isArray(post.tags) ? post.tags : [];
+const authorName = post.author || owner.name;
+const dateText = formatPostDate(post.date, "long");
+const postUrl = absoluteUrl(`/blog/${post.slug}`);
+const originalUrl = `${BLOG_SITE_ORIGIN}/blog/${post.slug}`;
 const coverUrl = resolveCoverImage({
 	coverImage: post.coverImage,
 	metadata: { ...fullMetadata, ...post.metadata },
 });
-const socialImage = resolveSocialImage({
-	image: coverUrl,
-	blogSlug: post.slug,
-});
-const totalComments = initialComments.reduce(
-	(acc: number, c: BlogComment) => acc + 1 + (c.replies?.length ?? 0),
-	0
+const socialImage = resolveSocialImage({ image: coverUrl, blogSlug: post.slug });
+const totalComments = countComments(initialComments);
+const hasToc = tocHeadings.length >= 2;
+// The phone contents block only appears when the post has no <Toc /> of its own.
+const showMobileToc = hasToc && !bodyHasToc;
+
+const { newer, older } = getAdjacentPosts(post.slug);
+const related = getRelatedPosts(
+	{ ...post, metadata: { ...fullMetadata, ...post.metadata } },
+	{ exclude: [newer?.slug, older?.slug].filter((s): s is string => !!s) },
 );
+
+const followLinks = [
+	{ label: "Follow on X", match: "Twitter", Icon: Twitter },
+	{ label: "LinkedIn", match: "LinkedIn", Icon: Linkedin },
+	{ label: "GitHub", match: "GitHub", Icon: Github },
+].flatMap(({ label, match, Icon }) => {
+	const link = socials.find((s) => s.label === match)?.link;
+	return link ? [{ label, href: link, Icon }] : [];
+});
+
+const jsonLd = {
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	headline: post.title,
+	...(post.excerpt ? { description: post.excerpt } : {}),
+	datePublished: post.date,
+	image: socialImage,
+	url: postUrl,
+	mainEntityOfPage: postUrl,
+	...(tags.length ? { keywords: tags.join(", ") } : {}),
+	...(outlineWords > 0 ? { wordCount: outlineWords } : {}),
+	author: { "@type": "Person", name: authorName, url: absoluteUrl("/") },
+};
+
+// Build-time engagement, shown until the live values arrive.
+const initialData = JSON.stringify({
+	views: initialViews,
+	likes: initialLikes,
+	comments: initialComments,
+}).replace(/</g, "\\u003c");
+
+const tocLinkClass = "toc-link";
 ---
 
 <Layout
-	title={`${post.title} | Blog | Tashif Ahmad Khan`}
+	title={`${post.title} | Blog | ${owner.name}`}
 	description={post.excerpt || undefined}
 	image={socialImage}
 	url={`/blog/${post.slug}`}
 	type="article"
 	publishedTime={post.date}
-	tags={post.tags}
+	tags={tags}
+	jsonLd={jsonLd}
 >
-	<!-- Reading Progress Bar -->
 	<div
 		id="reading-progress"
 		class="fixed top-0 left-0 h-[3px] bg-primary z-[60]"
 		style="width:0;transition:width 80ms linear,opacity 180ms ease"
-	></div>
+	>
+	</div>
 
-	<div data-page-surface class="relative min-h-screen bg-background">
-		<!-- Sticky Top Nav (matches dashboard pattern) -->
+	<div
+		data-page-surface
+		data-blog-post
+		data-slug={post.slug}
+		data-api-base={BLOG_API_BASE}
+		class="relative min-h-screen bg-background"
+	>
+		<script type="application/json" data-blog-post-initial set:html={initialData} />
+
 		<header
 			class="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/70"
 		>
-			<div
-				class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4"
-			>
+			<div class="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
 				<a
 					href="/blog"
 					data-haptic-back
-					class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group shrink-0"
+					class="group inline-flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
 				>
-					<ArrowLeft
-						size={15}
-						className="group-hover:-translate-x-0.5 transition-transform duration-200"
-					/>
+					<ArrowLeft size={15} className="transition-transform duration-200 group-hover:-translate-x-0.5" />
 					<span class="font-medium">Blog</span>
 				</a>
-
 				<p
-					class="text-xs text-muted-foreground font-mono truncate hidden sm:block flex-1 text-center"
+					class="post-head-title hidden min-w-0 flex-1 truncate text-center font-mono text-xs text-muted-foreground sm:block"
+					data-post-head-title
+					aria-hidden="true"
 				>
 					{post.title}
 				</p>
-
-				<div class="flex items-center gap-2 shrink-0">
-					<span
-						class="text-xs text-muted-foreground font-mono hidden md:flex items-center gap-1.5"
-					>
+				<div class="ml-auto flex shrink-0 items-center gap-3">
+					<span class="hidden items-center gap-1.5 font-mono text-xs text-muted-foreground md:flex">
 						<Clock size={12} />{readingTime} min
 					</span>
 					<a
@@ -133,7 +220,7 @@ const totalComments = initialComments.reduce(
 						target="_blank"
 						rel="noopener noreferrer"
 						data-haptic-external
-						class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary/15 transition-all"
+						class="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary transition-all hover:bg-primary/15"
 					>
 						taf.sh <ExternalLink size={11} />
 					</a>
@@ -141,116 +228,94 @@ const totalComments = initialComments.reduce(
 			</div>
 		</header>
 
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-			<!-- Post Header -->
+		<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
 			<div
-				class="mb-10 max-w-4xl animate-in fade-in slide-in-from-bottom duration-500"
+				class:list={[
+					"rise-in grid items-center gap-6",
+					coverUrl && "md:grid-cols-[minmax(0,1fr)_minmax(0,19rem)] lg:grid-cols-[minmax(0,1fr)_21.25rem]",
+				]}
 			>
 				{
 					coverUrl && (
-						<div class="mb-8 overflow-hidden rounded-xl border border-border/60 bg-muted/20 shadow-sm">
+						<div class="aspect-[16/9] overflow-hidden rounded-xl border border-border/60 bg-muted/20 shadow-sm md:order-2">
 							<img
 								src={coverUrl}
 								alt=""
-								class="w-full max-h-[420px] object-cover"
+								width="1200"
+								height="675"
+								fetchpriority="high"
+								decoding="async"
+								class="h-full w-full object-cover"
 							/>
 						</div>
 					)
 				}
-
-				{
-					post.tags && post.tags.length > 0 && (
-						<div class="flex flex-wrap gap-2 mb-5">
-							{post.tags.map((tag) => (
-								<span class="px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-primary/10 text-primary border border-primary/20 font-mono tracking-wider">
-									{tag}
-								</span>
-							))}
-						</div>
-					)
-				}
-
-				<h1
-					class="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight leading-[1.15] mb-6 font-mono text-foreground"
-				>
-					{post.title}
-				</h1>
-
-				<div
-					class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground"
-				>
+				<div class="min-w-0">
 					{
-						post.author && (
-							<span class="flex items-center gap-1.5 font-medium text-foreground/80">
-								<User size={13} className="text-primary" />
-								{post.author}
-							</span>
+						tags.length > 0 && (
+							<div class="mb-4 flex flex-wrap gap-2">
+								{tags.map((tag) => (
+									<a
+										href={`/blog?topic=${topicSlug(tag)}`}
+										data-haptic-nav
+										class="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 font-mono text-[11px] font-semibold tracking-wider text-primary transition-colors hover:border-primary/50"
+									>
+										{tag}
+									</a>
+								))}
+							</div>
 						)
 					}
-					<span class="flex items-center gap-1.5">
-						<Calendar size={13} className="text-primary" />
-						{dateText}
-					</span>
-					<span class="flex items-center gap-1.5">
-						<Clock size={13} className="text-primary" />
-						{readingTime} min read
-					</span>
-					<span class="flex items-center gap-1.5">
-						<Eye size={13} className="text-primary" />
-						<span id="views-header" class="tabular-nums">{initialViews}</span>&thinsp;views
-					</span>
-					<span class="flex items-center gap-1.5">
-						<Heart size={13} className="text-primary" />
-						<span id="likes-header" class="tabular-nums">{initialLikes}</span>&thinsp;likes
-					</span>
-				</div>
-
-				<!-- Mobile engagement row -->
-				<div class="lg:hidden mt-5 flex items-center gap-2 flex-wrap">
-					<button
-						id="like-btn-mobile"
-						data-haptic="selection"
-						class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-border/60 bg-card/60 text-sm font-medium text-muted-foreground transition-all duration-200 hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+					<h1
+						class="font-display text-balance text-3xl font-bold leading-[1.12] tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem]"
+						data-post-title
 					>
-						<Heart size={14} id="like-icon-mobile" />
-						<span id="likes-mobile" class="tabular-nums font-mono"
-							>{initialLikes}</span
-						>
-					</button>
-					<button
-						id="scroll-comments-mobile"
-						data-haptic
-						class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-border/60 bg-card/60 text-sm text-muted-foreground transition-all hover:border-border hover:bg-muted/40"
-					>
-						<MessageCircle size={14} />
-						<span id="comments-mobile" class="tabular-nums font-mono"
-							>{totalComments}</span
-						>
-					</button>
-					<a
-						href={originalUrl}
-						target="_blank"
-						rel="noopener noreferrer"
-						data-haptic-external
-						class="ml-auto flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
-					>
-						Original <ExternalLink size={12} />
-					</a>
-				</div>
-
-				<div
-					class="mt-6 h-px bg-gradient-to-r from-primary/50 via-border/50 to-transparent"
-				>
+						{post.title}
+					</h1>
+					<div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
+						<span class="font-medium text-foreground/85">{authorName}</span>
+						<span class="flex items-center gap-1.5">
+							<Calendar size={13} className="text-primary" />
+							<time datetime={post.date}>{dateText}</time>
+						</span>
+						<span class="flex items-center gap-1.5">
+							<Clock size={13} className="text-primary" />
+							{readingTime} min read
+						</span>
+						<span class="flex items-center gap-1.5">
+							<Eye size={13} className="text-primary" />
+							<span data-post-views class="tabular-nums">{initialViews}</span>&thinsp;views
+						</span>
+						<span class="flex items-center gap-1.5">
+							<Heart size={13} className="text-primary" />
+							<span data-post-likes-count class="tabular-nums">{initialLikes}</span>&thinsp;likes
+						</span>
+					</div>
 				</div>
 			</div>
 
-			<!-- Two-column layout -->
-			<div class="flex gap-10 xl:gap-14 items-start">
-				<!-- Article — uses the shared MarkdownRenderer -->
-				<div
-					id="article-content"
-					class="flex-1 min-w-0 animate-in fade-in slide-in-from-bottom duration-700"
-				>
+			<div
+				class="mt-9 border-t border-border/60 pt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-10 xl:gap-14"
+			>
+				<article id="article-content" class="blog-article w-full min-w-0">
+					{
+						showMobileToc && (
+							<details class="mb-8 rounded-xl border border-border/60 bg-card/60 lg:hidden" data-post-toc-mobile>
+								<summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-mono text-[13px] font-semibold">
+									Contents
+									<span class="font-normal text-muted-foreground">{tocHeadings.length} sections</span>
+								</summary>
+								<nav aria-label="Contents" class="px-4 pb-4">
+									{tocHeadings.map((h) => (
+										<a href={`#${h.slug}`} class={tocLinkClass} data-toc-link data-depth={h.depth}>
+											{h.text}
+										</a>
+									))}
+								</nav>
+							</details>
+						)
+					}
+
 					{
 						markdown ? (
 							<MarkdownRenderer
@@ -258,785 +323,248 @@ const totalComments = initialComments.reduce(
 								githubBaseUrl={BLOG_REPO_URL}
 								githubProfileUrl="https://github.com/tashifkhan"
 								source="post"
-								assetBaseUrl={new URL(BLOG_API_BASE).origin}
+								assetBaseUrl={BLOG_SITE_ORIGIN}
 							/>
 						) : (
-							<div class="text-center py-20 text-muted-foreground rounded-xl border border-border/60 bg-card/50">
-								<MessageCircle
-									size={40}
-									className="mx-auto mb-4 opacity-20"
-								/>
-								<p class="text-base mb-3">Content couldn't be loaded.</p>
-								<a
-									href={originalUrl}
-									class="text-primary hover:underline text-sm"
-								>
-									View on blog.tashif.codes →
+							<div class="rounded-xl border border-border/60 bg-card/50 py-20 text-center text-muted-foreground">
+								<p class="mb-3 text-base">Content couldn't be loaded.</p>
+								<a href={originalUrl} class="text-sm text-primary hover:underline">
+									Read it on blog.tashif.codes
 								</a>
 							</div>
 						)
 					}
-				</div>
 
-				<!-- Desktop Fixed Sidebar -->
-				<aside
-					class="hidden lg:block w-52 xl:w-56 shrink-0"
-				>
-					<div
-						class="fixed top-20 z-30 w-52 xl:w-56 max-h-[calc(100vh-6rem)] overflow-y-auto"
-						style="scrollbar-width: none; right: max(2rem, calc((100vw - 80rem) / 2 + 2rem));"
-					>
-						<div class="flex flex-col gap-4 rise-in">
-						<!-- Engagement Card -->
-						<div
-							class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-4"
-						>
-							<p
-								class="text-[10px] font-mono font-bold text-muted-foreground tracking-widest mb-3.5"
-							>
-								Engagement
-							</p>
-
-							<div class="flex flex-col gap-3">
-								<div class="flex items-center justify-between text-sm">
-									<span
-										class="flex items-center gap-2 text-foreground/80 font-medium"
-									>
-										<Eye size={14} className="text-muted-foreground" />Views
-									</span>
-									<span
-										id="views-sidebar"
-										class="font-mono font-semibold tabular-nums text-foreground/90"
-										>{initialViews}</span
-									>
-								</div>
-								<div class="flex items-center justify-between text-sm">
-									<span
-										class="flex items-center gap-2 text-foreground/80 font-medium"
-									>
-										<Heart size={14} className="text-muted-foreground" />Likes
-									</span>
-									<span
-										id="likes-sidebar"
-										class="font-mono font-semibold tabular-nums text-foreground/90"
-										>{initialLikes}</span
-									>
-								</div>
-								<div class="flex items-center justify-between text-sm">
-									<span
-										class="flex items-center gap-2 text-foreground/80 font-medium"
-									>
-										<MessageCircle size={14} className="text-muted-foreground" />Comments
-									</span>
-									<span
-										id="comments-sidebar"
-										class="font-mono font-semibold tabular-nums text-foreground/90"
-										>{totalComments}</span
-									>
-								</div>
+					<section class="mt-14" aria-label="About the author">
+						<div class="flex flex-wrap items-center gap-4 border-y border-border/60 py-5">
+							<img
+								src={owner.avatar}
+								alt=""
+								width="48"
+								height="48"
+								loading="lazy"
+								class="h-12 w-12 rounded-full border border-border/60"
+							/>
+							<div class="min-w-0">
+								<p class="font-semibold text-foreground">{authorName}</p>
+								<p class="text-sm text-muted-foreground">More at tashif.codes and taf.sh.</p>
 							</div>
-
-							<div
-								class="mt-4 pt-3 border-t border-border/50 flex flex-col gap-2"
-							>
-								<button
-									id="like-btn"
-									data-haptic="selection"
-									class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-border/60 text-sm font-medium text-muted-foreground transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
-								>
-									<Heart size={14} id="like-icon" />
-									<span id="like-btn-label">Like</span>
-								</button>
-								<button
-									id="scroll-comments"
-									data-haptic
-									class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-border/60 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground"
-								>
-									<MessageCircle size={14} />
-									<span>Discussion</span>
-								</button>
-								<a
-									href={originalUrl}
-									target="_blank"
-									rel="noopener noreferrer"
-									data-haptic-external
-									class="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
-								>
-									Read Original <ExternalLink size={12} />
+							<div class="flex w-full flex-wrap gap-2 sm:ml-auto sm:w-auto">
+								{followLinks.map(({ label, href, Icon }) => (
+									<a
+										href={href}
+										target="_blank"
+										rel="noopener noreferrer"
+										data-haptic-external
+										class="follow-link"
+									>
+										<Icon size={14} />
+										{label}
+									</a>
+								))}
+								<a href="/rss.xml" data-haptic-nav class="follow-link">
+									<Rss size={14} />
+									RSS
 								</a>
 							</div>
 						</div>
-
-						<!-- Table of Contents (JS-populated) -->
-						<div
-							id="toc-widget"
-							class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-4 hidden"
-						>
-							<p
-								class="text-[10px] font-mono font-bold text-muted-foreground tracking-widest mb-3"
-							>
-								On this page
-							</p>
-							<nav id="toc-list" class="flex flex-col gap-0.5 overflow-y-auto max-h-96 pr-0.5" style="scrollbar-width:thin"></nav>
+						<div class="flex flex-wrap items-center gap-2.5 border-b border-border/60 py-4">
+							<p class="mr-auto w-full text-[15px] text-muted-foreground sm:w-auto">Found this useful?</p>
+							<button type="button" class="post-act-row" data-post-like data-haptic="selection" aria-pressed="false">
+								<Heart size={15} />
+								Like · <span data-post-likes-count class="tabular-nums">{initialLikes}</span>
+							</button>
+							<button type="button" class="post-act-row" data-post-share data-haptic>
+								<Link2 size={15} />
+								<span data-share-label>Share</span>
+							</button>
 						</div>
+
+						{
+							(newer || older) && (
+								<nav aria-label="More posts" class="mt-7 grid gap-3 sm:grid-cols-2">
+									{newer ? (
+										<a href={`/blog/${newer.slug}`} data-haptic-nav class="adjacent-link">
+											<span class="font-mono text-[11px] text-muted-foreground">← Newer</span>
+											<span class="adjacent-title">{newer.title}</span>
+										</a>
+									) : (
+										<span class="hidden sm:block" />
+									)}
+									{older && (
+										<a href={`/blog/${older.slug}`} data-haptic-nav class="adjacent-link sm:text-right">
+											<span class="font-mono text-[11px] text-muted-foreground">Older →</span>
+											<span class="adjacent-title">{older.title}</span>
+										</a>
+									)}
+								</nav>
+							)
+						}
+
+						{
+							related.length > 0 && (
+								<div class="mt-10">
+									<h2 class="mb-4 font-mono text-[13px] font-semibold text-muted-foreground">Read next</h2>
+									<div class="grid gap-4 sm:grid-cols-3">
+										{related.map((p) => (
+											<BlogCard post={p} variant="compact" />
+										))}
+									</div>
+								</div>
+							)
+						}
+					</section>
+
+					<section id="comments-section" class="mt-14 scroll-mt-20" aria-labelledby="comments-heading">
+						<div class="mb-1 flex items-center gap-2.5">
+							<h2 id="comments-heading" class="text-xl font-bold tracking-tight">Discussion</h2>
+							<span
+								class="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[11px] text-primary"
+								data-comment-count
+							>
+								{totalComments}
+							</span>
+						</div>
+						<p class="mb-5 flex items-center gap-2 font-mono text-[11.5px] text-muted-foreground" data-comments-status>
+							<span class="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" data-comments-dot></span>
+							<span data-comments-status-text>Loading the latest comments</span>
+						</p>
+
+						<form class="grid gap-3 rounded-xl border border-border/60 bg-card/60 p-5 backdrop-blur-sm" data-comment-form novalidate>
+							<label class="grid gap-1.5 text-sm font-medium">
+								Name
+								<input name="name" autocomplete="name" maxlength="120" required class="post-input" />
+							</label>
+							<label class="grid gap-1.5 text-sm font-medium">
+								Comment
+								<textarea name="text" rows="4" maxlength="5000" required class="post-input resize-y"></textarea>
+							</label>
+							<div class="flex items-center gap-3">
+								<p class="flex-1 text-xs text-destructive" data-comment-error role="alert"></p>
+								<button
+									type="submit"
+									data-haptic
+									class="ml-auto inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+								>
+									<Send size={13} />
+									<span data-comment-submit-label>Post comment</span>
+								</button>
+							</div>
+						</form>
+
+						<div class="mt-6 flex flex-col gap-4" data-comments-list></div>
+					</section>
+				</article>
+
+				<aside class="hidden lg:block" aria-label="Post tools">
+					<div class="rise-in sticky top-20 flex flex-col gap-4">
+						{
+							hasToc && (
+								<div class="rounded-xl border border-border/60 bg-card/60 p-4 backdrop-blur-sm">
+									<p class="mb-3 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">On this page</p>
+									<nav aria-label="On this page" class="toc-rail max-h-[calc(100vh-17rem)] overflow-y-auto pr-0.5" data-toc-rail>
+										{tocHeadings.map((h) => (
+											<a href={`#${h.slug}`} class={tocLinkClass} data-toc-link data-depth={h.depth}>
+												{h.text}
+											</a>
+										))}
+									</nav>
+								</div>
+							)
+						}
+						<div class="rounded-xl border border-border/60 bg-card/60 p-3.5 backdrop-blur-sm">
+							<div class="grid grid-cols-3 gap-1.5">
+								<button type="button" class="post-act" data-post-like data-haptic="selection" aria-pressed="false">
+									<span class="post-act-count">
+										<Heart size={15} />
+										<span data-post-likes-count class="tabular-nums">{initialLikes}</span>
+									</span>
+									<span>Like</span>
+								</button>
+								<button type="button" class="post-act" data-post-discuss data-haptic>
+									<span class="post-act-count">
+										<MessageCircle size={15} />
+										<span data-comment-count class="tabular-nums">{totalComments}</span>
+									</span>
+									<span>Discuss</span>
+								</button>
+								<button type="button" class="post-act" data-post-share data-haptic>
+									<Link2 size={15} />
+									<span data-share-label>Copy link</span>
+								</button>
+							</div>
+							<div class="mt-3 flex items-center justify-between gap-2 border-t border-border/60 pt-3">
+								<span class="text-xs text-muted-foreground">Follow</span>
+								<div class="flex gap-1">
+									{followLinks.map(({ label, href, Icon }) => (
+										<a
+											href={href}
+											target="_blank"
+											rel="noopener noreferrer"
+											data-haptic-external
+											class="follow-icon"
+											aria-label={label}
+											title={label}
+										>
+											<Icon size={14} />
+										</a>
+									))}
+									<a href="/rss.xml" data-haptic-nav class="follow-icon" aria-label="RSS feed" title="RSS feed">
+										<Rss size={14} />
+									</a>
+								</div>
+							</div>
+							<a
+								href={originalUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								data-haptic-external
+								class="mt-3 inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-primary"
+							>
+								Also on blog.tashif.codes <ExternalLink size={11} />
+							</a>
 						</div>
 					</div>
 				</aside>
 			</div>
+		</div>
 
-			<!-- Comments Section -->
-			<section
-				id="comments-section"
-				class="mt-16 lg:mt-20 max-w-3xl animate-in fade-in slide-in-from-bottom duration-700"
-				style="animation-delay:150ms"
+		<!--
+			Left padding clears the collapsed settings dock in the bottom-left corner.
+			The bottom offsets put the bar's centre level with the dock button's,
+			which sits at bottom-4 on phones and bottom-6 from sm up.
+		-->
+		<div class="pointer-events-none sticky bottom-3 z-30 flex justify-center pl-[4.25rem] pr-3 sm:bottom-5 sm:px-3 lg:hidden" data-post-bar>
+			<div
+				class="pointer-events-auto flex gap-0.5 rounded-full border border-border/70 bg-card/90 p-1 shadow-lg backdrop-blur-md"
+				role="toolbar"
+				aria-label="Post actions"
 			>
-				<div class="flex items-center gap-3 mb-8">
-					<div
-						class="h-px flex-1 bg-gradient-to-r from-transparent via-border/60 to-transparent"
-					>
-					</div>
-					<div class="flex items-center gap-2.5 px-2 shrink-0">
-						<MessageCircle size={17} className="text-primary" />
-						<h2 class="text-base font-bold font-mono tracking-tight">
-							Discussion
-						</h2>
-						<span
-							id="comments-badge"
-							class="px-2 py-0.5 text-[11px] font-mono rounded-full bg-primary/10 text-primary border border-primary/20"
-							>{totalComments}</span
-						>
-					</div>
-					<div
-						class="h-px flex-1 bg-gradient-to-r from-transparent via-border/60 to-transparent"
-					>
-					</div>
-				</div>
-
-				<!-- Comment Form -->
-				<div
-					class="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-5 mb-8"
-				>
-					<p class="text-sm font-mono font-semibold mb-4">Leave a comment</p>
-					<div class="flex flex-col gap-3">
-						<input
-							id="comment-name"
-							type="text"
-							placeholder="Your name"
-							maxlength="120"
-							class="w-full px-3 py-2.5 text-sm rounded-lg border border-border/60 bg-background/70 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/50 transition-all"
-						/>
-						<textarea
-							id="comment-text"
-							placeholder="What are your thoughts?"
-							maxlength="5000"
-							rows="4"
-							class="w-full px-3 py-2.5 text-sm rounded-lg border border-border/60 bg-background/70 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/50 transition-all resize-none"
-						></textarea>
-						<div class="flex items-center gap-3">
-							<p
-								id="comment-error"
-								class="text-xs text-destructive hidden flex-1"
-							>
-							</p>
-							<button
-								id="submit-comment-btn"
-								data-haptic
-								class="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-							>
-								<Send size={13} />
-								Post
-							</button>
-						</div>
-					</div>
-				</div>
-
-				<!-- Comments list (JS-rendered) -->
-				<div id="comments-list" class="flex flex-col gap-4"></div>
-			</section>
+				<button type="button" class="post-bar-btn" data-post-like data-haptic="selection" aria-pressed="false" aria-label="Like">
+					<Heart size={16} />
+					<span data-post-likes-count class="tabular-nums">{initialLikes}</span>
+				</button>
+				<button type="button" class="post-bar-btn" data-post-discuss data-haptic aria-label="Discussion">
+					<MessageCircle size={16} />
+					<span data-comment-count class="tabular-nums">{totalComments}</span>
+				</button>
+				<button type="button" class="post-bar-btn" data-post-share data-haptic>
+					<Link2 size={16} />
+					<span data-share-label>Share</span>
+				</button>
+				{
+					hasToc && (
+						<button type="button" class="post-bar-btn" data-post-contents data-haptic>
+							<ListTree size={16} />
+							Contents
+						</button>
+					)
+				}
+			</div>
 		</div>
 	</div>
-
-	<script
-		define:vars={{
-			slug: post.slug,
-			initialViews,
-			initialLikes,
-			initialComments,
-			totalComments,
-			apiBase: BLOG_API_BASE,
-			tocHeadings,
-		}}
-	>
-		const haptic = (kind) => document.dispatchEvent(new CustomEvent("site:haptic", { detail: kind }));
-		const LIKED_KEY = `liked-${slug}`;
-		let viewCount = initialViews;
-		let likeCount = initialLikes;
-		let commentList = initialComments;
-		let isLiked = false;
-		let isSubmitting = false;
-		let cleanupToC = null;
-
-		// ── Reading progress ───────────────────────────────────────────────────────
-		let progressHideTimer = null;
-		function updateProgress() {
-			const article = document.getElementById("article-content");
-			const bar = document.getElementById("reading-progress");
-			if (!article || !bar) return;
-			const rect = article.getBoundingClientRect();
-			const articleH = article.offsetHeight;
-			const windowH = window.innerHeight;
-			const pct = Math.min(
-				100,
-				Math.max(0, (-rect.top / (articleH - windowH)) * 100)
-			);
-			bar.style.width = pct + "%";
-
-			if (progressHideTimer) clearTimeout(progressHideTimer);
-			if (pct > 0) {
-				bar.classList.add("is-visible");
-				progressHideTimer = setTimeout(
-					() => bar.classList.remove("is-visible"),
-					800
-				);
-			} else {
-				bar.classList.remove("is-visible");
-			}
-		}
-		window.addEventListener("scroll", updateProgress, { passive: true });
-
-		// ── UI update helpers ──────────────────────────────────────────────────────
-		function setText(ids, value) {
-			ids.forEach((id) => {
-				const el = document.getElementById(id);
-				if (el) el.textContent = String(value);
-			});
-		}
-
-		function updateViewsUI() {
-			setText(["views-header", "views-sidebar"], viewCount.toLocaleString());
-		}
-
-		function updateLikesUI() {
-			setText(
-				["likes-header", "likes-sidebar", "likes-mobile"],
-				likeCount.toLocaleString()
-			);
-			const icons = ["like-icon", "like-icon-mobile"];
-			const btns = ["like-btn", "like-btn-mobile"];
-			icons.forEach((id) => {
-				const el = document.getElementById(id);
-				if (!el) return;
-				el.style.fill = isLiked ? "currentColor" : "none";
-				el.style.transform = isLiked ? "scale(1.2)" : "scale(1)";
-				el.style.transition = "all 0.2s ease";
-			});
-			btns.forEach((id) => {
-				const el = document.getElementById(id);
-				if (!el) return;
-				el.classList.toggle("border-primary/50", isLiked);
-				el.classList.toggle("bg-primary/10", isLiked);
-				el.classList.toggle("text-primary", isLiked);
-				el.classList.toggle("text-muted-foreground", !isLiked);
-			});
-			const label = document.getElementById("like-btn-label");
-			if (label) label.textContent = isLiked ? "Liked!" : "Like";
-		}
-
-		function countAllComments(list) {
-			return list.reduce(
-				(acc, c) => acc + 1 + (c.replies ? c.replies.length : 0),
-				0
-			);
-		}
-
-		function updateCommentsUI() {
-			const count = countAllComments(commentList);
-			setText(
-				["comments-sidebar", "comments-mobile", "comments-badge"],
-				count
-			);
-		}
-
-		// ── Table of Contents ──────────────────────────────────────────────────────
-		function getHeadingText(h) {
-			// Clone the heading and remove anchor links + decorative spans
-			// so we only get the plain label text
-			const clone = h.cloneNode(true);
-			clone.querySelectorAll("a").forEach((el) => el.remove());
-			clone.querySelectorAll("span.shrink-0").forEach((el) => el.remove());
-			return clone.textContent?.trim() || "";
-		}
-
-		/**
-		 * The headings to list, and the element each one points at.
-		 *
-		 * Preferred source is the API outline, which is derived from the same
-		 * rules the renderer uses, so the label is the heading's own text rather
-		 * than a DOM clone with the anchor and bar spans stripped back out.
-		 * Falls back to scraping when an older API serves no outline.
-		 */
-		function collectHeadings(article) {
-			if (Array.isArray(tocHeadings) && tocHeadings.length) {
-				const resolved = tocHeadings
-					.map((entry) => {
-						const el = document.getElementById(entry.slug);
-						return el ? { el, text: entry.text, depth: entry.depth } : null;
-					})
-					.filter(Boolean);
-				// Only trust it if the anchors actually line up with the document.
-				if (resolved.length === tocHeadings.length) return resolved;
-			}
-
-			return Array.from(article.querySelectorAll("h2, h3")).map((el, i) => {
-				if (!el.id) el.id = `h-${i}`;
-				return {
-					el,
-					text: getHeadingText(el),
-					depth: el.tagName === "H3" ? 3 : 2,
-				};
-			});
-		}
-
-		function buildToC() {
-			if (cleanupToC) cleanupToC();
-			cleanupToC = null;
-
-			const article = document.getElementById("article-content");
-			const widget = document.getElementById("toc-widget");
-			const list = document.getElementById("toc-list");
-			if (!article || !widget || !list) return;
-
-			const entries = collectHeadings(article);
-			if (entries.length < 2) return;
-
-			widget.classList.remove("hidden");
-			list.innerHTML = "";
-			list.scrollTop = 0;
-
-			const headings = entries.map((entry) => entry.el);
-
-			entries.forEach(({ el: h, text, depth }) => {
-				const a = document.createElement("a");
-				a.href = "#" + h.id;
-				a.textContent = text;
-				const isH3 = depth === 3;
-				a.className = [
-					"block py-1 transition-colors duration-150 leading-snug break-words no-underline",
-					"text-muted-foreground hover:text-foreground",
-					isH3 ? "pl-3 text-[11px]" : "text-xs font-medium",
-				].join(" ");
-				a.style.textDecoration = "none";
-				a.dataset.haptic = "selection";
-				a.addEventListener("click", (e) => {
-					e.preventDefault();
-					h.scrollIntoView({ behavior: "smooth", block: "start" });
-				});
-				list.appendChild(a);
-			});
-
-			// Track active heading and highlight the matching ToC link
-			const links = Array.from(list.querySelectorAll("a"));
-			let activeLink = null;
-			let rafId = 0;
-
-			function keepActiveLinkVisible(link) {
-				if (!link) return;
-				const listRect = list.getBoundingClientRect();
-				const linkRect = link.getBoundingClientRect();
-				const padding = 10;
-
-				const isAbove = linkRect.top < listRect.top + padding;
-				const isBelow = linkRect.bottom > listRect.bottom - padding;
-
-				if (isAbove || isBelow) {
-					link.scrollIntoView({ block: "nearest", inline: "nearest" });
-				}
-			}
-
-			function setActive(link) {
-				if (activeLink === link) return;
-				if (activeLink) {
-					activeLink.classList.remove("text-primary", "font-semibold");
-					activeLink.classList.add("text-muted-foreground");
-					activeLink.style.textDecoration = "none";
-				}
-				activeLink = link;
-				if (link) {
-					link.classList.add("text-primary", "font-semibold");
-					link.classList.remove("text-muted-foreground");
-					link.style.textDecoration = "none";
-					keepActiveLinkVisible(link);
-				}
-			}
-
-			function updateActiveHeading() {
-				const scrollTop = window.scrollY || document.documentElement.scrollTop;
-				if (scrollTop <= 8) {
-					setActive(links[0] || null);
-					return;
-				}
-
-				const offset = 140; // sticky header + top breathing room
-				let activeIndex = 0;
-
-				for (let i = 0; i < headings.length; i++) {
-					if (headings[i].getBoundingClientRect().top <= offset) {
-						activeIndex = i;
-					} else {
-						break;
-					}
-				}
-
-				const nearBottom =
-					window.innerHeight + scrollTop >=
-					document.documentElement.scrollHeight - 4;
-				if (nearBottom) activeIndex = headings.length - 1;
-
-				const targetId = headings[activeIndex]?.id;
-				const link = targetId
-					? links.find((a) => a.getAttribute("href") === `#${targetId}`) || null
-					: null;
-				setActive(link);
-			}
-
-			function onScrollOrResize() {
-				if (rafId) cancelAnimationFrame(rafId);
-				rafId = requestAnimationFrame(updateActiveHeading);
-			}
-
-			window.addEventListener("scroll", onScrollOrResize, { passive: true });
-			window.addEventListener("resize", onScrollOrResize);
-
-			setActive(links[0] || null);
-			list.scrollTop = 0;
-			onScrollOrResize();
-
-			cleanupToC = () => {
-				if (rafId) cancelAnimationFrame(rafId);
-				window.removeEventListener("scroll", onScrollOrResize);
-				window.removeEventListener("resize", onScrollOrResize);
-			};
-		}
-
-		// ── Views ─────────────────────────────────────────────────────────────────
-		// Recording a view is POST. GET /views/{slug} is read-only and does not
-		// increment, so a GET here would silently stop counting views.
-		async function loadViews() {
-			try {
-				const res = await fetch(`${apiBase}/views/${slug}`, {
-					method: "POST",
-				});
-				if (res.ok) {
-					const data = await res.json();
-					viewCount = data.views;
-					updateViewsUI();
-				}
-			} catch (_) {}
-		}
-
-		// ── Like toggle ───────────────────────────────────────────────────────────
-		async function toggleLike() {
-			const prevLiked = isLiked;
-			const prevCount = likeCount;
-			isLiked = !isLiked;
-			likeCount += isLiked ? 1 : -1;
-			updateLikesUI();
-			try {
-				const res = await fetch(`${apiBase}/likes/${slug}`, {
-					method: isLiked ? "POST" : "DELETE",
-				});
-				if (res.ok) {
-					const data = await res.json();
-					likeCount = data.likes;
-					isLiked
-						? localStorage.setItem(LIKED_KEY, "1")
-						: localStorage.removeItem(LIKED_KEY);
-					updateLikesUI();
-				} else {
-					haptic("error");
-				isLiked = prevLiked;
-					likeCount = prevCount;
-					updateLikesUI();
-				}
-			} catch (_) {
-				haptic("error");
-				isLiked = prevLiked;
-				likeCount = prevCount;
-				updateLikesUI();
-			}
-		}
-
-		// ── Comment rendering ─────────────────────────────────────────────────────
-		function fmtDate(str) {
-			return new Date(str).toLocaleDateString("en-US", {
-				year: "numeric",
-				month: "short",
-				day: "numeric",
-			});
-		}
-
-		function makeCommentEl(comment, depth) {
-			const wrap = document.createElement("div");
-			if (depth > 0)
-				wrap.className =
-					"pl-4 border-l-2 border-primary/20 ml-3 mt-3 flex flex-col gap-3";
-
-			const card = document.createElement("div");
-			card.id = "comment-" + comment.id;
-			card.className =
-				depth === 0
-					? "rounded-xl border border-border/60 bg-card/50 p-5"
-					: "rounded-lg border border-border/50 bg-background/60 p-4";
-
-			const header = document.createElement("div");
-			header.className = "flex items-center justify-between gap-2 mb-2";
-
-			const name = document.createElement("span");
-			name.className = "text-sm font-semibold font-mono";
-			name.textContent = comment.name;
-
-			const date = document.createElement("span");
-			date.className = "text-xs text-muted-foreground font-mono";
-			date.textContent = fmtDate(comment.date);
-
-			header.append(name, date);
-
-			const body = document.createElement("p");
-			body.className =
-				"text-sm text-foreground/85 leading-relaxed mt-1 mb-3 whitespace-pre-wrap";
-			body.textContent = comment.text;
-
-			const replyBtn = document.createElement("button");
-			replyBtn.dataset.haptic = "light";
-			replyBtn.className =
-				"text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-medium";
-			replyBtn.innerHTML =
-				'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg> Reply';
-
-			const replyForm = document.createElement("div");
-			replyForm.className = "mt-3 hidden";
-
-			const replyInner = document.createElement("div");
-			replyInner.className =
-				"flex flex-col gap-2 p-3 rounded-lg bg-muted/30 border border-border/40";
-
-			const rName = document.createElement("input");
-			rName.type = "text";
-			rName.placeholder = "Your name";
-			rName.maxLength = 120;
-			rName.className =
-				"w-full px-3 py-2 text-xs rounded-md border border-border/60 bg-background/80 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/50 transition-all";
-
-			const rText = document.createElement("textarea");
-			rText.placeholder = "Write a reply…";
-			rText.maxLength = 5000;
-			rText.rows = 2;
-			rText.className =
-				"w-full px-3 py-2 text-xs rounded-md border border-border/60 bg-background/80 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/50 transition-all resize-none";
-
-			const rActions = document.createElement("div");
-			rActions.className = "flex gap-2 justify-end";
-
-			const cancelBtn = document.createElement("button");
-			cancelBtn.textContent = "Cancel";
-			cancelBtn.className =
-				"text-xs px-3 py-1.5 rounded-md border border-border/60 text-muted-foreground hover:bg-muted/60 transition-all";
-
-			const submitReplyBtn = document.createElement("button");
-			submitReplyBtn.dataset.haptic = "light";
-			submitReplyBtn.className =
-				"text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all font-semibold flex items-center gap-1.5 disabled:opacity-50";
-			submitReplyBtn.innerHTML =
-				'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Reply';
-
-			rActions.append(cancelBtn, submitReplyBtn);
-			replyInner.append(rName, rText, rActions);
-			replyForm.appendChild(replyInner);
-
-			replyBtn.addEventListener("click", () => {
-				const hidden = replyForm.classList.toggle("hidden");
-				if (!hidden) rName.focus();
-			});
-			cancelBtn.addEventListener("click", () =>
-				replyForm.classList.add("hidden")
-			);
-			submitReplyBtn.addEventListener("click", async () => {
-				const n = rName.value.trim();
-				const t = rText.value.trim();
-				if (!n || !t) { haptic("error"); return; }
-				submitReplyBtn.disabled = true;
-				submitReplyBtn.textContent = "…";
-				try {
-					const res = await fetch(`${apiBase}/comments/${slug}`, {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ name: n, text: t, parentId: comment.id }),
-					});
-					if (!res.ok) throw new Error("Reply failed");
-					if (res.ok) {
-						rName.value = "";
-						rText.value = "";
-						replyForm.classList.add("hidden");
-						haptic("success");
-						await refreshComments();
-					}
-				} catch (_) {
-					haptic("error");
-					rText.setCustomValidity("Could not post your reply. Please try again.");
-					rText.reportValidity();
-					rText.setCustomValidity("");
-				} finally {
-					submitReplyBtn.disabled = false;
-					submitReplyBtn.innerHTML =
-						'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Reply';
-				}
-			});
-
-			card.append(header, body, replyBtn, replyForm);
-			wrap.appendChild(card);
-
-			if (comment.replies && comment.replies.length > 0) {
-				comment.replies.forEach((r) =>
-					wrap.appendChild(makeCommentEl(r, depth + 1))
-				);
-			}
-			return wrap;
-		}
-
-		function renderComments() {
-			const list = document.getElementById("comments-list");
-			if (!list) return;
-			list.innerHTML = "";
-			if (commentList.length === 0) {
-				list.innerHTML =
-					'<div class="text-center py-12 text-muted-foreground"><svg class="mx-auto mb-3 opacity-25" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><p class="text-sm">No comments yet — be the first!</p></div>';
-				return;
-			}
-			commentList.forEach((c) =>
-				list.appendChild(makeCommentEl(c, 0))
-			);
-		}
-
-		async function refreshComments() {
-			try {
-				const res = await fetch(`${apiBase}/comments/${slug}`);
-				if (res.ok) {
-					const data = await res.json();
-					commentList = data.comments;
-					updateCommentsUI();
-					renderComments();
-				}
-			} catch (_) {}
-		}
-
-		// ── Comment form ──────────────────────────────────────────────────────────
-		function setupCommentForm() {
-			const btn = document.getElementById("submit-comment-btn");
-			const errEl = document.getElementById("comment-error");
-			if (!btn) return;
-
-			btn.addEventListener("click", async () => {
-				if (isSubmitting) return;
-				const name = document.getElementById("comment-name")?.value?.trim();
-				const text = document.getElementById("comment-text")?.value?.trim();
-				if (errEl) errEl.classList.add("hidden");
-
-				if (!name) {
-					if (errEl) {
-						errEl.textContent = "Please enter your name.";
-						errEl.classList.remove("hidden");
-					}
-					haptic("error");
-					document.getElementById("comment-name")?.focus();
-					return;
-				}
-				if (!text) {
-					if (errEl) {
-						errEl.textContent = "Please write something.";
-						errEl.classList.remove("hidden");
-					}
-					haptic("error");
-					document.getElementById("comment-text")?.focus();
-					return;
-				}
-
-				isSubmitting = true;
-				btn.disabled = true;
-				btn.textContent = "Posting…";
-
-				try {
-					const res = await fetch(`${apiBase}/comments/${slug}`, {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ name, text }),
-					});
-					if (res.ok) {
-						document.getElementById("comment-name").value = "";
-						document.getElementById("comment-text").value = "";
-						haptic("success");
-						await refreshComments();
-						document
-							.getElementById("comments-list")
-							?.scrollIntoView({ behavior: "smooth", block: "start" });
-					} else {
-						if (errEl) {
-							haptic("error");
-							errEl.textContent = "Failed to post. Please try again.";
-							errEl.classList.remove("hidden");
-						}
-					}
-				} catch (_) {
-					if (errEl) {
-						haptic("error");
-						errEl.textContent = "Network error.";
-						errEl.classList.remove("hidden");
-					}
-				} finally {
-					isSubmitting = false;
-					btn.disabled = false;
-					btn.innerHTML =
-						'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Post';
-				}
-			});
-		}
-
-		// ── Init ──────────────────────────────────────────────────────────────────
-		function scrollToComments() {
-			document
-				.getElementById("comments-section")
-				?.scrollIntoView({ behavior: "smooth" });
-		}
-
-		function init() {
-			isLiked = localStorage.getItem(LIKED_KEY) === "1";
-			updateViewsUI();
-			updateLikesUI();
-			updateCommentsUI();
-			renderComments();
-			buildToC();
-			setupCommentForm();
-
-			document
-				.getElementById("like-btn")
-				?.addEventListener("click", toggleLike);
-			document
-				.getElementById("like-btn-mobile")
-				?.addEventListener("click", toggleLike);
-			document
-				.getElementById("scroll-comments")
-				?.addEventListener("click", scrollToComments);
-			document
-				.getElementById("scroll-comments-mobile")
-				?.addEventListener("click", scrollToComments);
-
-			loadViews();
-		}
-
-		if (document.readyState === "loading") {
-			document.addEventListener("DOMContentLoaded", init);
-		} else {
-			init();
-		}
-		document.addEventListener("astro:page-load", init);
-	</script>
 </Layout>
+
+<script>
+	import "../../scripts/blogPost";
+</script>
