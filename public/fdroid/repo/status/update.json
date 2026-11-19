@@ -11,37 +11,40 @@
     "--verbose"
   ],
   "disabled": [],
-  "endTimestamp": 1794953445286,
+  "endTimestamp": 1795128364377,
   "failedBuilds": {},
   "jarsigner": "/usr/bin/jarsigner",
   "keytool": "/usr/bin/keytool",
   "needsUpdate": [
     "codes.tashhif.patchwork",
+    "codes.tashif.blrmetro",
     "codes.tashif.delhimetro",
     "codes.tashif.paisa"
   ],
   "noPackages": [
     "codes.tashhif.patchwork",
+    "codes.tashif.blrmetro",
     "codes.tashif.delhimetro",
     "codes.tashif.paisa"
   ],
   "noUpdateCheck": [
     "codes.tashhif.patchwork",
+    "codes.tashif.blrmetro",
     "codes.tashif.delhimetro",
     "codes.tashif.paisa"
   ],
   "stages": {
-    "archive_old_apks archive": 1794953436215,
-    "delete_disabled_builds": 1794953408848,
-    "index.make archive": 1794953436217,
-    "index.make repo": 1794953441845,
-    "prepare_apps archive": 1794953436216,
-    "prepare_apps repo": 1794953441829,
-    "process_apks": 1794953408848,
-    "read_added_date_from_all_apks": 1794953436214,
-    "remove_apks": 1794953416658,
-    "scan_repo_files": 1794953416657
+    "archive_old_apks archive": 1795128359220,
+    "delete_disabled_builds": 1795128342782,
+    "index.make archive": 1795128359221,
+    "index.make repo": 1795128362353,
+    "prepare_apps archive": 1795128359220,
+    "prepare_apps repo": 1795128361966,
+    "process_apks": 1795128342785,
+    "read_added_date_from_all_apks": 1795128359219,
+    "remove_apks": 1795128347540,
+    "scan_repo_files": 1795128347539
   },
-  "startTimestamp": 1794953408000,
+  "startTimestamp": 1795128342000,
   "subcommand": "update"
 }

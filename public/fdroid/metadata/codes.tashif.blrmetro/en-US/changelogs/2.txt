@@ -1,0 +1,4 @@
+The first Android release. The same app has run at blr-metro.tashif.codes since November. This version ships it as a signed APK on GitHub Releases and in the F-Droid repo at tashif.codes/fdroid/repo.
+
+* Journey planning between any two Namma Metro stations, with least distance and minimum interchange routes.
+* Fares from BMRCL for each trip: token, smart card at peak and off-peak, and group ticket.

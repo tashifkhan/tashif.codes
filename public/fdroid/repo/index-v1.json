@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1794953441000,
+    "timestamp": 1795128362000,
     "version": 20002,
     "name": "Tashif Codes",
     "icon": "icon.png",
@@ -46,8 +46,35 @@
             "07.jpg",
             "08.jpg"
           ],
-          "video": "https://taf.sh/reel/ncr-metro-phone-demo.mp4",
+          "video": "https://taf.sh/media/delhi-metro/cuts/phone.mp4",
           "whatsNew": "* Station names on the network map sit beside the track instead of on it.\n* Details on the map's station sheet opens the station page with everything showing, so there's no second \"More details\" tap.\n* Near me picked a station from whatever position the browser answered with first, which on a laptop can be a Wi-Fi or IP guess kilometres off.\n* The whole From and To card opens the station picker.\n"
+        }
+      }
+    },
+    {
+      "authorEmail": "tashifkhan010@gmail.com",
+      "authorName": "Tashif Ahmad Khan",
+      "categories": [
+        "Navigation",
+        "Travel & Local",
+        "Internet"
+      ],
+      "changelog": "https://github.com/tashifkhan/blr-metro/releases",
+      "suggestedVersionCode": "2",
+      "description": "Namma Metro is a journey planner for the Bengaluru metro. Station names\nand fares come from the public BMRCL service.\n\nPlan a trip by least distance or fewest changes and see the token, smart\ncard peak, smart card off-peak and group ticket fares. Search stations in\nEnglish or Kannada, browse each line in order, follow BMRCL notices, and\npan around the network map. Stations and planned journeys stay available\noffline.\n\nBMRCL publishes no travel times, first or last trains, gates or platforms,\nso the app leaves those out.\n\nReleases are built with Expo EAS, published on GitHub Releases, and\nmirrored into this F-Droid repository.\n\nPackage ID: codes.tashif.blrmetro\n",
+      "issueTracker": "https://github.com/tashifkhan/blr-metro/issues",
+      "license": "MIT",
+      "name": "Namma Metro",
+      "sourceCode": "https://github.com/tashifkhan/blr-metro",
+      "summary": "Plan Bengaluru Namma Metro trips with BMRCL fares and Kannada names",
+      "webSite": "https://blr-metro.tashif.codes",
+      "added": 1795128343000,
+      "packageName": "codes.tashif.blrmetro",
+      "lastUpdated": 1795128343000,
+      "localized": {
+        "en-US": {
+          "icon": "icon_cMJtmGDYOwTnoGkuU2ZWBO2w4FxPAnoxPBHHYPM1KBM=.png",
+          "whatsNew": "The first Android release. The same app has run at blr-metro.tashif.codes since November. This version ships it as a signed APK on GitHub Releases and in the F-Droid repo at tashif.codes/fdroid/repo.\n\n* Journey planning between any two Namma Metro stations, with least distance and minimum interchange routes.\n* Fares from BMRCL for each trip: token, smart card at peak and off-peak, and group ticket.\n"
         }
       }
     },
@@ -101,7 +128,7 @@
             "03.jpg",
             "04.jpg"
           ],
-          "video": "https://taf.sh/reel/paisa-demo.mp4",
+          "video": "https://taf.sh/media/paisa/demo.mp4",
           "whatsNew": "Share files to Paisa, read Excel statements, and switch AI off entirely.\n\n* Share images, PDFs, CSVs, Excel files or text from another app to \"Add with AI\".\n* Long statements are read in parts instead of being cut off after the first 24k characters, so every row makes it in.\n* Excel .xlsx workbooks work in statement import and Add with AI.\n* Use AI, at the top of the AI page, turns off every AI feature.\n"
         }
       }
@@ -140,7 +167,7 @@
             "07-filters.jpg",
             "08-drag.jpg"
           ],
-          "video": "https://taf.sh/reel/patchwork-native-demo.mp4",
+          "video": "https://taf.sh/media/patchwork/demo.mp4",
           "whatsNew": "Motion for the Android floating navbar, section counts that roll, and empty states that ease in.\n\n* The floating navbar's selection pill slides between tabs instead of switching on and off.\n* The floating navbar gives under your finger and leans toward it, then springs back.\n* Each tab's icon makes a small move when you tap it.\n* The count in a task section header rolls up or down when it changes.\n* Empty states on Android fade in with a small rise.\n"
         }
       }
@@ -648,6 +675,62 @@
         ],
         "versionCode": 14,
         "versionName": "1.8.1"
+      }
+    ],
+    "codes.tashif.blrmetro": [
+      {
+        "added": 1795128343000,
+        "apkName": "codes.tashif.blrmetro_2.apk",
+        "hash": "1fb7427fbdfa36060dd73b71cae90e289874768579193d0048b0ff426349d849",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "packageName": "codes.tashif.blrmetro",
+        "sig": "da52fe91f6485a13a321e87443ade53a",
+        "signer": "d1225e4c010df5bb7fa288262aa210c591d24c02bbbdb664e9f2a69664aa7b20",
+        "size": 96496085,
+        "targetSdkVersion": 36,
+        "uses-permission": [
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.READ_EXTERNAL_STORAGE",
+            32
+          ],
+          [
+            "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+            null
+          ],
+          [
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            null
+          ],
+          [
+            "android.permission.VIBRATE",
+            null
+          ],
+          [
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            null
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "codes.tashif.blrmetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 2,
+        "versionName": "1.0.0"
       }
     ],
     "codes.tashif.delhimetro": [
