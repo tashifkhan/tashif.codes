@@ -109,6 +109,24 @@ Lightweight endpoint for time-based data only.
 
 4. **Add Vercel data** (optional): Place migration JSON in `data/my-new-project.json`
 
+## Stats APIs project
+
+`stats-apis` covers the seven `*-stats.tashif.codes` APIs. It has no live provider:
+their per-request telemetry goes to Honeycomb, and Honeycomb's query API is
+Enterprise-only. Its history is `data/stats-apis.json`, built from Vercel request
+metrics:
+
+```bash
+cd api
+uv run python scripts/export_stats_apis.py   # needs `vercel login`; last 30 days
+```
+
+Requests show as pageviews and distinct client IPs per day as visitors. The page
+labels them "Requests" and "Unique IPs" through the project's `labels` in
+`core/config.py`. Vercel's daily breakdowns fail for anything older than about 30
+days, so each run refreshes the last 30 and keeps any older days already in the
+file. Run it monthly to build up history.
+
 ## Environment Variables
 
 | Variable | Description |

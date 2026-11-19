@@ -64,6 +64,9 @@ class ProjectInfo(BaseModel):
 
     slug: str
     name: str
+    # Display labels for projects that aren't websites, e.g. "Requests" for
+    # pageviews. Omitted for websites, which use the defaults.
+    labels: dict[str, str | bool] | None = None
 
 
 class ProjectListResponse(BaseModel):
