@@ -21,11 +21,12 @@ Install / instructions page: `https://tashif.codes/fdroid`
 | **Paisa** | [tashifkhan/Paisa](https://github.com/tashifkhan/Paisa) | `codes.tashif.paisa` | `Paisa-v*.apk` |
 | **Patchwork** | [tashifkhan/Patchwork](https://github.com/tashifkhan/Patchwork) | `codes.tashhif.patchwork` | `*.apk` |
 | **Delhi Metro** | [tashifkhan/delhi-metro](https://github.com/tashifkhan/delhi-metro) | `codes.tashif.delhimetro` | `DelhiMetro-v*.apk` |
+| **Namma Metro** | [tashifkhan/blr-metro](https://github.com/tashifkhan/blr-metro) | `codes.tashif.blrmetro` | `NammaMetro-v*.apk` |
 
 ## How publishing works
 
 1. An app repo builds a release APK and attaches it to a GitHub Release
-   (Paisa: `Release`; Patchwork / Delhi Metro: EAS `github-release` + tag push).
+   (Paisa: `Release`; Patchwork / Delhi Metro / Namma Metro: EAS `github-release` + tag push).
 2. That workflow dispatches `.github/workflows/publish-fdroid.yml` in this repo
    (or you run it manually).
 3. The workflow downloads the APK, copies it into `public/fdroid/repo`, runs
@@ -55,6 +56,13 @@ gh workflow run publish-fdroid.yml \
   --field source_repository=tashifkhan/delhi-metro \
   --field release_tag=v1.1.0 \
   --field apk_pattern='DelhiMetro-v*.apk'
+
+# Namma Metro
+gh workflow run publish-fdroid.yml \
+  --repo tashifkhan/tashif.codes \
+  --field source_repository=tashifkhan/blr-metro \
+  --field release_tag=v1.0.0 \
+  --field apk_pattern='NammaMetro-v*.apk'
 ```
 
 ## Layout
@@ -122,7 +130,7 @@ In **`tashifkhan/Paisa`**:
 | `KEYSTORE_PASSWORD` / `KEY_ALIAS` / `KEY_PASSWORD` | APK signing |
 | `TASHIF_CODES_WORKFLOW_TOKEN` | fine-grained PAT with **Actions: Read and write** on `tashifkhan/tashif.codes` |
 
-In **`tashifkhan/Patchwork`** (Patchwork) and **`tashifkhan/delhi-metro`**:
+In **`tashifkhan/Patchwork`** (Patchwork), **`tashifkhan/delhi-metro`** and **`tashifkhan/blr-metro`**:
 
 | Secret | Purpose |
 |---|---|

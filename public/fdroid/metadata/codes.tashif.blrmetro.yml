@@ -1,0 +1,37 @@
+Categories:
+  - Navigation
+  - Travel & Local
+  - Internet
+License: MIT
+AuthorName: Tashif Ahmad Khan
+AuthorEmail: tashifkhan010@gmail.com
+WebSite: https://blr-metro.tashif.codes
+SourceCode: https://github.com/tashifkhan/blr-metro
+IssueTracker: https://github.com/tashifkhan/blr-metro/issues
+Changelog: https://github.com/tashifkhan/blr-metro/releases
+
+AutoName: Namma Metro
+Name: Namma Metro
+
+Summary: Plan Bengaluru Namma Metro trips with BMRCL fares and Kannada names
+Description: |
+  Namma Metro is a journey planner for the Bengaluru metro. Station names
+  and fares come from the public BMRCL service.
+
+  Plan a trip by least distance or fewest changes and see the token, smart
+  card peak, smart card off-peak and group ticket fares. Search stations in
+  English or Kannada, browse each line in order, follow BMRCL notices, and
+  pan around the network map. Stations and planned journeys stay available
+  offline.
+
+  BMRCL publishes no travel times, first or last trains, gates or platforms,
+  so the app leaves those out.
+
+  Releases are built with Expo EAS, published on GitHub Releases, and
+  mirrored into this F-Droid repository.
+
+  Package ID: codes.tashif.blrmetro
+
+
+RepoType: git
+Repo: https://github.com/tashifkhan/blr-metro.git
