@@ -27,8 +27,8 @@ export const experiences: ExperienceEntry[] = [
 			url: "https://taf.sh/products/systematic-reasoning",
 		},
 		video: {
-			label: "product walkthrough",
-			url: "https://taf.sh/media/systematic-reasoning/demo.mp4",
+			label: "visual demonstration",
+			url: "https://taf.sh/products/systematic-reasoning",
 		},
 		points: [
 			"Own the AI pipeline that audits certificate authorities' policy documents (<strong>CPS</strong>) against browser and <strong>CA/B Forum</strong> rules. It pulls out every compliance statement, matches it to the rule it has to meet, and reports the gaps. It covers <strong>23 governing documents</strong> from 10 standards bodies (CA/B Forum, Mozilla, Google, Apple, Microsoft, ETSI, IETF, NIST and others), and I extended it to new rule sets and certificate types.",

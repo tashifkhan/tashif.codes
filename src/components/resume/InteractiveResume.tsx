@@ -218,9 +218,9 @@ const ExtraLinks = ({ exp, extras }: { exp?: ExperienceEntry; extras?: ResumeExt
 		<div className="mt-3 flex flex-wrap gap-2">
 			{items.map((item) =>
 				item.kind === "video" ? (
-					<VideoLink key={item.url} video={item} onNavigate={() => trigger("light")} />
+					<VideoLink key={`${item.kind}:${item.url}`} video={item} onNavigate={() => trigger("light")} />
 				) : (
-					<PageLink key={item.url} page={item} onNavigate={() => trigger("light")} />
+					<PageLink key={`${item.kind}:${item.url}`} page={item} onNavigate={() => trigger("light")} />
 				),
 			)}
 			{exp?.certificate && (

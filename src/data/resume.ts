@@ -48,7 +48,8 @@ export const resumeProjects: ResumeProject[] = [
 			{ label: "GitHub", url: "https://github.com/tashifkhan/agentic-browser" },
 		],
 		extras: [
-			{ label: "demo reel", url: "https://taf.sh/media/agentic-browser/demo.mp4", kind: "video" },
+			{ label: "case study", url: "https://taf.sh/work/agentic-browser", kind: "page" },
+			{ label: "visual demonstration", url: "https://taf.sh/work/agentic-browser", kind: "video" },
 		],
 		points: [
 			"A browser agent that works on any website: a <strong>WXT</strong>/<strong>React</strong> side-panel extension talks to a <strong>FastAPI</strong> backend, which serves <strong>120+ REST endpoints</strong> and an <strong>MCP</strong> server from the same port.",
@@ -57,7 +58,7 @@ export const resumeProjects: ResumeProject[] = [
 			"Browser automation runs one step at a time. The extension sends a snapshot of the page (visible text and interactive elements), the planner picks one of 9 action types, and the extension executes it through the WebExtension scripting APIs and snapshots the page again.",
 			"Loop guards stop it on a captcha, a login wall, three steps with no change to the page, or the same action failing twice, so it doesn't click around forever.",
 			"Long-term memory: <strong>OpenSearch</strong> hybrid vector and BM25 search merged with reciprocal rank fusion, plus <strong>Neo4j</strong> graph traversal, kept tidy by hourly, nightly and weekly consolidation, decay and dedup jobs.",
-			"Bring your own keys for <strong>6 LLM providers</strong> (Gemini, OpenAI, Anthropic, Ollama, DeepSeek, OpenRouter), stored encrypted in <strong>PostgreSQL</strong>.",
+			"Bring your own keys for <strong>6 LLM providers</strong> (Gemini, OpenAI, Anthropic, Ollama, DeepSeek, OpenRouter) or any OpenAI-, Anthropic- or Gemini-compatible API, stored encrypted in <strong>PostgreSQL</strong>.",
 			"Voice in and out (faster-whisper, OpenAI or Groq for speech-to-text, four text-to-speech providers), streaming over SSE, and a Telegram bot on the same backend. 14 GitHub stars.",
 		],
 	},
@@ -73,7 +74,7 @@ export const resumeProjects: ResumeProject[] = [
 		extras: [
 			{ label: "product page", url: "https://taf.sh/products/talentsync", kind: "page" },
 			{ label: "HR dashboard", url: "https://taf.sh/products/talentsync-hr", kind: "page" },
-			{ label: "demo reel", url: "https://taf.sh/media/talentsync/demo.mp4", kind: "video" },
+			{ label: "visual demonstration", url: "https://taf.sh/products/talentsync", kind: "video" },
 		],
 		points: [
 			"AI career platform. Candidates get resume analysis, ATS scoring, tailored resume PDFs, cold emails, LinkedIn posts and interview prep. Employers get a dashboard of pre-vetted talent.",
@@ -98,9 +99,10 @@ export const resumeProjects: ResumeProject[] = [
 			},
 		],
 		extras: [
-			{ label: "case study", url: "https://taf.sh/work/stats-apis", kind: "page" },
-			{ label: "CodeTrace demo", url: "https://taf.sh/media/codetrace/demo.mp4", kind: "video" },
-			{ label: "APIs demo", url: "https://taf.sh/media/stats-apis/demo.mp4", kind: "video" },
+			{ label: "CodeTrace case study", url: "https://taf.sh/work/codetrace", kind: "page" },
+			{ label: "Stats APIs case study", url: "https://taf.sh/work/stats-apis", kind: "page" },
+			{ label: "CodeTrace visual demonstration", url: "https://taf.sh/work/codetrace", kind: "video" },
+			{ label: "Stats APIs visual demonstration", url: "https://taf.sh/work/stats-apis", kind: "video" },
 		],
 		points: [
 			"<strong>CodeTrace</strong> puts a developer's GitHub, LeetCode, Codeforces, GeeksForGeeks, CodeChef, HackerRank and takeUforward profiles on one page, with rating history, difficulty breakdowns and one merged <strong>activity heatmap</strong>. Sign in with Google and <code>/username</code> becomes a shareable profile, stored in <strong>PostgreSQL</strong> with row-level security.",
@@ -120,6 +122,10 @@ export const resumeProjects: ResumeProject[] = [
 		links: [
 			{ label: "Live", url: "https://jiit-tools.tashif.codes/" },
 			{ label: "GitHub", url: "https://github.com/tashifkhan/JIIT-tools-docs" },
+		],
+		extras: [
+			{ label: "case study", url: "https://taf.sh/work/jiit-tools", kind: "page" },
+			{ label: "visual demonstration", url: "https://taf.sh/work/jiit-tools", kind: "video" },
 		],
 		points: [
 			"JIIT doesn't really do tech. Timetables lived in random PDFs, attendance was invisible until it already mattered, and companies visited campus while eligible students found out through WhatsApp groups. This suite exists because nobody at the university was going to build it.",
@@ -158,9 +164,12 @@ export const resumeProjects: ResumeProject[] = [
 			{ label: "GitHub", url: "https://github.com/tashifkhan/Paisa" },
 		],
 		extras: [
-			{ label: "Paisa demo", url: "https://taf.sh/media/paisa/demo.mp4", kind: "video" },
-			{ label: "Patchwork demo", url: "https://taf.sh/media/patchwork/demo.mp4", kind: "video" },
-			{ label: "Metro demo", url: "https://taf.sh/media/delhi-metro/demo.mp4", kind: "video" },
+			{ label: "Paisa case study", url: "https://taf.sh/work/paisa", kind: "page" },
+			{ label: "Patchwork case study", url: "https://taf.sh/work/patchwork", kind: "page" },
+			{ label: "Metro case study", url: "https://taf.sh/work/delhi-metro", kind: "page" },
+			{ label: "Paisa visual demonstration", url: "https://taf.sh/work/paisa", kind: "video" },
+			{ label: "Patchwork visual demonstration", url: "https://taf.sh/work/patchwork", kind: "video" },
+			{ label: "Metro visual demonstration", url: "https://taf.sh/work/delhi-metro", kind: "video" },
 		],
 		points: [
 			`I run my own ${a("https://tashif.codes/fdroid", "F-Droid repo")} at <strong>tashif.codes/fdroid</strong> with 3 signed apps. Add it once and updates show up like any other F-Droid app.`,
