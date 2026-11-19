@@ -105,6 +105,24 @@ PROJECT_REGISTRY = {
         "ph_id": settings.ph_mooc_utils_id,
         "display_name": "MOOC Utils",
     },
+    # The seven *-stats.tashif.codes APIs together. History is Vercel request
+    # metrics (scripts/export_stats_apis.py): pageviews are requests, visitors
+    # are unique client IPs per day, path is the API, referrer is the calling
+    # site. Live per-request telemetry goes to Honeycomb, whose query API is
+    # Enterprise-only, so this view is a dated snapshot.
+    "stats-apis": {
+        "ph_id": "",
+        "vercel_file": DATA_DIR / "stats-apis.json",
+        "display_name": "Coding Stats APIs",
+        "labels": {
+            "pageviews": "Requests",
+            "visitors": "Unique IPs",
+            "visitors_note": "Distinct client IPs, summed per day",
+            "paths": "Top APIs",
+            "referrers": "Calling Sites",
+            "bounce": False,
+        },
+    },
 }
 
 
@@ -119,6 +137,7 @@ def list_available_projects() -> list[dict]:
         {
             "slug": slug,
             "name": config["display_name"],
+            "labels": config.get("labels"),
         }
         for slug, config in PROJECT_REGISTRY.items()
     ]

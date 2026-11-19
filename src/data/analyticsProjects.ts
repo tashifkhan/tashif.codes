@@ -39,6 +39,14 @@ const slugMapping: Record<string, string> = {
     "JIIT-Academic-Calender": "jiit-timetable-website",
     "JIIT-time-table-parser": "jiit-timetable-website",
     "TalentSync-HR-Dashboard": "talentsync",
+    // The seven stats APIs share one view of their request history.
+    "github-stats-api": "stats-apis",
+    "leetcode-stats-api": "stats-apis",
+    "codeforces-api": "stats-apis",
+    "gfg-stats-api": "stats-apis",
+    "codechef-stats-api": "stats-apis",
+    "hackerrank-stats-api": "stats-apis",
+    "tuf-stats-api": "stats-apis",
 };
 
 export function getAnalyticsSlug(slug: string): string {
