@@ -401,8 +401,31 @@
   background: var(--md-surface);
 }
 
+/*
+ * Pele (pipeline/client.ts) draws diagrams with these variables, so a theme
+ * flip recolors them without a redraw. Node fills and outlines follow the
+ * Mermaid fallback palettes in client.ts. Labels are Excalifont, measured by
+ * Pele before layout; pele-sketch.ts adds the Excalidraw strokes.
+ */
 .md-mermaid-render {
   line-height: 0;
+  --pele-bg: var(--md-surface);
+  --pele-fg: var(--md-fg);
+  --pele-muted: var(--md-fg-muted);
+  --pele-line: #475569;
+  --pele-surface: #f1f5f9;
+  --pele-surface-alt: #e2e8f0;
+  --pele-border: #475569;
+  --pele-accent: var(--md-accent);
+  --pele-font: 'Excalifont', var(--font-sans, 'Lexend'), cursive;
+  --pele-radius: 6px;
+}
+
+.dark .md-mermaid-render {
+  --pele-line: #9aa2b8;
+  --pele-surface: #11131c;
+  --pele-surface-alt: #1a1d2a;
+  --pele-border: #8b93ab;
 }
 
 /*

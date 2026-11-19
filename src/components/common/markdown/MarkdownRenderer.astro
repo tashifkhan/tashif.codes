@@ -156,12 +156,12 @@ const html = content
       "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
   }
 
-  // Diagrams are only pulled in when the page actually has one, which keeps the
-  // mermaid bundle off pages that are pure prose.
+  // Diagrams are only pulled in when the page actually has one. Pele draws
+  // them; the mermaid bundle loads only for a diagram Pele can't parse.
+  const loadMermaid = () => import("mermaid").then((m) => m.default);
   async function drawDiagrams(force = false) {
     if (!document.querySelector(".md-mermaid")) return;
-    const { default: mermaid } = await import("mermaid");
-    await renderMermaidBlocks(mermaid, { dark: isDarkTheme(), force });
+    await renderMermaidBlocks(loadMermaid, { dark: isDarkTheme(), force });
   }
 
   initCopyButtons();
