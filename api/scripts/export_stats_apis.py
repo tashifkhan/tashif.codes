@@ -12,6 +12,10 @@ other project's history:
 - path: requests per API (LeetCode, GitHub, ...), or per endpoint for the metro APIs
 - referrer: the site that made the call; "(no referrer)" for direct calls
 - country: the client's country
+- rows: requests per day for each (path, referrer, country) combination, so the
+  stats page can apply several filters at once and still fill every breakdown.
+  Visitors in rows are distinct IPs per combination, so summing them across
+  combinations overcounts people who hit several.
 
 Vercel buckets by UTC day, and daily breakdowns fail for anything older than
 about 30 days, so each run covers the last 30.
@@ -28,6 +32,7 @@ import json
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -65,10 +70,10 @@ def kinds(target: dict) -> dict:
     return {"total": None, "api": target["path"], "referrer": "referrerHostname", "country": "clientIpCountry"}
 
 
-def query(dimension: str | None, start: date, end: date, filter_: str) -> dict:
+def query(dimension: str | list[str] | None, start: date, end: date, filter_: str) -> dict:
     body = {"metrics": METRICS, "outputs": ["req", "ips"], "bucketSeconds": 86400, "filter": filter_}
     if dimension:
-        body["groupBy"] = [dimension]
+        body["groupBy"] = dimension if isinstance(dimension, list) else [dimension]
         body["seriesSelection"] = {"limit": 500, "rankBy": [{"metric": "req", "direction": "desc"}]}
     command = ["npx", "-y", "vercel@latest", "metrics", "--all", "--json", "--data", "-",
                "-s", f"{start}T00:00:00Z", "-u", f"{end}T00:00:00Z"]
@@ -95,7 +100,25 @@ def pull(days: int, target: dict) -> dict:
             stop = min(cursor + timedelta(days=7), end)  # longer windows time out
             raw[f"{kind}_{cursor}"] = query(dimension, cursor, stop, target_filter(target))
             cursor = stop
+    raw.update(pull_cube(start, end, target))
     return raw
+
+
+def pull_cube(start: date, end: date, target: dict) -> dict:
+    """One query per project per day: Vercel returns at most 500 combinations a query."""
+    dims = [target["path"], "referrerHostname", "clientIpCountry"]
+    jobs = [(project, start + timedelta(days=i)) for project in target["projects"] for i in range((end - start).days)]
+
+    def run(job):
+        project, day = job
+        only = f" AND {target['only']}" if target["only"] else ""
+        payload = query(dims, day, day + timedelta(days=1), f"environment:production AND projectName:{project}{only}")
+        if len(payload.get("summary", [])) >= 500:
+            print(f"warning: {project} {day} hit the 500 combination cap; rows are incomplete", file=sys.stderr)
+        return f"cube_{project}_{day}", payload
+
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        return dict(pool.map(run, jobs))
 
 
 def stamp(day: date) -> str:
@@ -105,7 +128,7 @@ def stamp(day: date) -> str:
 def rows(raw: dict, kind: str):
     seen = set()
     for key, payload in raw.items():
-        if key.rsplit("_", 1)[0] != kind:  # "api_referrer_..." is not "api"
+        if key.split("_", 1)[0] != kind:  # "api_referrer_..." is not "api"
             continue
         for row in payload["data"]:
             day = datetime.fromisoformat(row["timestamp"].replace("Z", "+00:00")).date()
@@ -134,6 +157,24 @@ def build(raw: dict, last_day: date, target: dict) -> dict:
                         "migration_date": day.isoformat()})
         return sorted(out, key=lambda e: (e["migration_date"], -e["pageviews"]))
 
+    def path_label(v):
+        return target["projects"].get(v, v)
+
+    def referrer_label(v):
+        return v.lower().removeprefix("www.") or "(no referrer)"
+
+    def country_label(v):
+        return v or "Unknown"
+
+    combos = [
+        {"date": day.isoformat(), "path": path_label(row.get(target["path"]) or ""),
+         "referrer": referrer_label(row.get("referrerHostname") or ""),
+         "country": country_label(row.get("clientIpCountry") or ""),
+         "pageviews": row["req"], "visitors": row["ips"]}
+        for day, row in rows(raw, "cube")
+        if day <= last_day and row["req"]
+    ]
+
     return {
         "metadata": {
             "export_date": datetime.now(timezone.utc).isoformat(),
@@ -141,12 +182,13 @@ def build(raw: dict, last_day: date, target: dict) -> dict:
         },
         "timeseries": timeseries,
         "stats": {
-            "path": entries("api", target["path"], lambda v: target["projects"].get(v, v)),
-            "referrer": entries("referrer", "referrerHostname", lambda v: v.lower().removeprefix("www.") or "(no referrer)"),
-            "country": entries("country", "clientIpCountry", lambda v: v or "Unknown"),
+            "path": entries("api", target["path"], path_label),
+            "referrer": entries("referrer", "referrerHostname", referrer_label),
+            "country": entries("country", "clientIpCountry", country_label),
             "device_type": [],
             "os_name": [],
         },
+        "rows": sorted(combos, key=lambda r: (r["date"], -r["pageviews"])),
     }
 
 
@@ -164,6 +206,7 @@ def keep_older_history(data: dict, out: Path) -> dict:
     for field, entries in data["stats"].items():
         older = [e for e in old["stats"].get(field, []) if (e.get("migration_date") or "") < first]
         data["stats"][field] = older + entries
+    data["rows"] = [r for r in old.get("rows", []) if r["date"] < first] + data["rows"]
     return data
 
 

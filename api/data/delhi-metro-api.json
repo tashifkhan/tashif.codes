@@ -1,6 +1,6 @@
 {
  "metadata": {
-  "export_date": "2026-11-19T18:44:00.557877+00:00",
+  "export_date": "2026-11-19T18:57:44.840103+00:00",
   "source": "vercel_request_metrics"
  },
  "timeseries": [
@@ -5749,5 +5749,7607 @@
   ],
   "device_type": [],
   "os_name": []
- }
+ },
+ "rows": [
+  {
+   "date": "2026-10-21",
+   "path": "/api/v1/dmrc/journeys/fare-route",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-21",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-21",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-21",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-21",
+   "path": "/api/v1/dmrc/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-21",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-21",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-21",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-21",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 23,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/dmrc/journeys/fare-route",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 14,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 4,
+   "visitors": 3
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/ai/config",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/aws/bedrock",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/bedrock",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/bedrock-runtime",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/invoke",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/aws/bedrock",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/bedrock",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/bedrock-runtime",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/dmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/dmrc/stations/AHNR",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/invoke",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-22",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 15,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v1/dmrc/journeys/fare-route",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 6,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v1/validate/code",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 6,
+   "visitors": 6
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/health",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/2.0/mlflow/experiments/list",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/2.0/mlflow/registered-models/list",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/alert-notifications",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/contents",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/datasources",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/org",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v1/auto_login",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v1/provisioning/contact-points",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/auth",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/config",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/config.json",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/keys",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/status",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/token",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v1",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v1/login",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v1/nmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v2",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-23",
+   "path": "/api/v2/login",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 45,
+   "visitors": 6
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 34,
+   "visitors": 10
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/journeys/fare-route",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 9,
+   "visitors": 4
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 4,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 4,
+   "visitors": 3
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/lines/LN2",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/journeys/fare-route",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/journeys/fare-route/v1/models",
+   "referrer": "(no referrer)",
+   "country": "FI",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/lines/LN2/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/stations/NDI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/dmrc/v1/models",
+   "referrer": "(no referrer)",
+   "country": "FI",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/health",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-24",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "GB",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-25",
+   "path": "/api/v1/dmrc/journeys/first-last-train",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 10,
+   "visitors": 10
+  },
+  {
+   "date": "2026-10-25",
+   "path": "/api/v1/dmrc/journeys/first-last-train/least-distance",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-10-25",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-10-25",
+   "path": "/api/v1/dmrc/first-last-train",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-25",
+   "path": "/api/v1/dmrc/journeys/first-last-train/minimum-interchange",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-25",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-25",
+   "path": "/api/v1/dmrc/lines/LN7/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-25",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 12,
+   "visitors": 10
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/journeys/fare-route",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 10,
+   "visitors": 9
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 9,
+   "visitors": 5
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 8,
+   "visitors": 8
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/journeys/fare-route/least-distance",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 6,
+   "visitors": 5
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 4,
+   "visitors": 3
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/docs",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/openapi.json",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/playground",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/fare",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/journeys/complete",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/journeys/fare-route/least-distance",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN1/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN10/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN11/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN12/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN2/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN3/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN4/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN5/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN6/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN7/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN7EXTN/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN8/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN8EXTN/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/lines/LN9/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/Station%20Name",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/stations/NDI",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/stations/SOEN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/dmrc/stations/SSTN",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/nmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/nmrc/maps/network/file",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/nmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-26",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 16,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 6,
+   "visitors": 5
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/CHTP",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/GNPK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 3,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN1/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/notifications/delhi-metro-rail-corporation-wins-prestigious-awar",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/RCK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/stations/NM01",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/journeys/fare-route/least-distance",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN10/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN11/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN12/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN2/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN2/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN3/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN4/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN4/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN5/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN6/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN7/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN7EXTN/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN8/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN8EXTN/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/lines/LN9/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/notifications/delhi-metro-augementing-train-tips-intensifying-dr",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/notifications/dmrc-hosts-uitp-policy-board-meeting-in-new-delhi",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/AHNR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/AHRM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/AIIMS",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/AIIMS",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/AIT",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/AJG",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/APMN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/APOT",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/ASDM",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/ASDM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/ATHA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/AVIT",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/AZU",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BACH",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BAPB",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BCGN",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BCGN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BEL",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BIMR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BJPU",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BKCP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BKMR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BLSW",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BRKR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BURI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BUSS",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/BVHM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/CDLI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/CHK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/CHTP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/CIPK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/CL",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/CTST",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/CWBR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DACY",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DBMR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DDSC",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DKV",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DL2",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DL3",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DLIC",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DLIG",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DNBT",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DPCK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DSE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DSET",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DSFN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DSG",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DSHP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DSN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DST",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DSTN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DSTO",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DSW",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/DW",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/EANR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/ECMJ",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/ESIH",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/GAT",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/GDPI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/GE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/GEC",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/GHEM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/GKEI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/GKPR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/GTBR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/GTNI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/HCC",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/HDNR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/HKS",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/HNOK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/IDPT",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/IFOC",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/IGDA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/IICC",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/IIT",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/ILOK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/INA",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/INA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/IPE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/ITO",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/IWNR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JAMD",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JANR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JB",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JFRB",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JGPA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JGPI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JIEE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JLA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JLA8",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JLML",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JLNS",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JNPH",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JPE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JPVE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JPW",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JRMR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/JW",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KB",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KG",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KHCY",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KHNA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KIKJ",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KJKS",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KJMD",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KKDA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KKDC",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KNR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KPEN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/KSHI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/LJPN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/LKM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/LLQA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/LN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MAL",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MAPR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MDHS",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MDTW",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/METE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MGRO",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MIAA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MIEE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MIRK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MKPR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MLCD",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MMJR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MNGM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MPK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MUDK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MUPR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MVE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MVNR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MVP1",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MVPO",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/MYPI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NAGR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NAVR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NBAA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NCAJ",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NCBC",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NCC",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NDI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NECC",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NFGH",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NHPC",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NIZM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NNGI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NNOI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NPPR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NRSN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NSET",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NSFT",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NSHP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NSST",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NUEE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NV",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/NWD",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/OFDB",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/OKBS",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/OKNS",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/OVA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PAGI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PALM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PBGA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PBGH",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PBGW",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PH1",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PHVR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PRA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PSPK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PTCK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PTMD",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PTMD",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PTP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PTVR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PVE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/PVW",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/QM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/RDPK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/RG",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/RHE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/RHW",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/RI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/RISE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/RJBH",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/RJNM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/RKAM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/RKPM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/RN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/RP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/S53",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/S55",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SABR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SAKP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SAKT",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SFNN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SFTN",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SFTN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SHD",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SHDN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SHPK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SHT",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SHVP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SJSU",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SKRP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SKVR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SLAP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SLTP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SMBG",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SMPK",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SMSM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SNVH",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SOEN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SOJI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SOOG",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SP",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SPBI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SRAI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SRSM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SSON",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SSTN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/STFN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/STTA",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/STVR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SUL",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SVMB",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/SVVR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/TG",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/TKBR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/TKDS",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/TKLM",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/TKPR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/TN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/TZI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/UDB",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/UNE",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/UNRG",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/UNW",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/VASI",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/VENT",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/VNNR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/VNPR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/VS",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/VTVR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/VW",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/WC",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/YB",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/dmrc/stations/YMVR",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/lines/AQUA/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/maps/network/file",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/stations/NM01",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/stations/NM02",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/stations/NM05",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/stations/NM07",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/stations/NM10",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/stations/NM11",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/stations/NM12",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/stations/NM14",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-27",
+   "path": "/api/v1/nmrc/stations/NM16",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/dmrc/maps/assets",
+   "referrer": "dmrc-rest-api.vercel.app",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/dmrc/stations/AIIMS",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/dmrc/stations/CHTP",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/health",
+   "referrer": "dmrc-rest-api.vercel.app",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-29",
+   "path": "/api/v1/dmrc",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-29",
+   "path": "/api/v1/dmrc/journeys/fare-route",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-29",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/gql",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 4,
+   "visitors": 4
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/graphql",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 4,
+   "visitors": 3
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/gql",
+   "referrer": "(no referrer)",
+   "country": "DE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/gql",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/graphql",
+   "referrer": "(no referrer)",
+   "country": "DE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/graphql",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "dmrc-rest-api.vercel.app",
+   "country": "BR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "BR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/.git/config",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/dev/.env",
+   "referrer": "(no referrer)",
+   "country": "BR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/staging/.env",
+   "referrer": "(no referrer)",
+   "country": "BR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v1/.env",
+   "referrer": "(no referrer)",
+   "country": "BR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v2/.env",
+   "referrer": "(no referrer)",
+   "country": "BR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/api/v3/.env",
+   "referrer": "(no referrer)",
+   "country": "BR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-01",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 4,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/api/v1/.env",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 4,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/api/v2/.env",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 4,
+   "visitors": 4
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/api/session/properties",
+   "referrer": "(no referrer)",
+   "country": "DE",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/api/.git/config",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-03",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-03",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-03",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-03",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-03",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-04",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-04",
+   "path": "/api/dev/.env",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-04",
+   "path": "/api/staging/.env",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-04",
+   "path": "/api/v1/.env",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-04",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-04",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-04",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-04",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-04",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-04",
+   "path": "/api/v2/.env",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-04",
+   "path": "/api/v3/.env",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-05",
+   "path": "/api/v1/dmrc/journeys/first-last-train/least-distance",
+   "referrer": "dmrc-rest-api.vercel.app",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-05",
+   "path": "/api/v1/dmrc/maps/assets",
+   "referrer": "dmrc-rest-api.vercel.app",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-05",
+   "path": "/api/v1/dmrc/maps/network/download",
+   "referrer": "dmrc-rest-api.vercel.app",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-05",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "dmrc-rest-api.vercel.app",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-05",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-05",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "dmrc-rest-api.vercel.app",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 7,
+   "visitors": 6
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/v1/dmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 3,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/config",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/env",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/keys",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/settings",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/v1/chatflows",
+   "referrer": "(no referrer)",
+   "country": "SE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/v1/dmrc/lines/YLW/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "CA",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/v1/dmrc/stations/NDLS",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/v1/dmrc/stations/RITH",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/v1/nodes",
+   "referrer": "(no referrer)",
+   "country": "SE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/v1/ping",
+   "referrer": "(no referrer)",
+   "country": "SE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-06",
+   "path": "/api/v1/version",
+   "referrer": "(no referrer)",
+   "country": "SE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/dmrc/journeys/complete",
+   "referrer": "(no referrer)",
+   "country": "FI",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/dmrc/stations",
+   "referrer": "(no referrer)",
+   "country": "FI",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "FI",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/ai/config",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/aws/bedrock",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/bedrock",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/bedrock-runtime",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/config/ai",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/foundation-models",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/inference-profiles",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/invoke",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/model/invoke",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/aws/bedrock",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/bedrock",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/bedrock-runtime",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/dmrc/journeys/first-last-train",
+   "referrer": "(no referrer)",
+   "country": "FI",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/dmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/dmrc/stations/RCK",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/foundation-models",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/health",
+   "referrer": "(no referrer)",
+   "country": "FI",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/invoke",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-07",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "FI",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/station/DSFN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 5,
+   "visitors": 5
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "DE",
+   "pageviews": 4,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/gql",
+   "referrer": "(no referrer)",
+   "country": "DE",
+   "pageviews": 4,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/graphql",
+   "referrer": "(no referrer)",
+   "country": "DE",
+   "pageviews": 4,
+   "visitors": 4
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/stations/DSFN",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 4,
+   "visitors": 4
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/station/DSFN",
+   "referrer": "(no referrer)",
+   "country": "BR",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/stations",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/lines/LN3",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/gql",
+   "referrer": "(no referrer)",
+   "country": "GB",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/gql",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/graphql",
+   "referrer": "(no referrer)",
+   "country": "GB",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/graphql",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/line/LN3",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/station/DSFN",
+   "referrer": "(no referrer)",
+   "country": "AR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/station/DSFN",
+   "referrer": "(no referrer)",
+   "country": "AT",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/station/DSFN",
+   "referrer": "(no referrer)",
+   "country": "GB",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/station/DSFN",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/station/DSFN",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/station/DSFN",
+   "referrer": "(no referrer)",
+   "country": "PT",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/stations",
+   "referrer": "(no referrer)",
+   "country": "AR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/stations",
+   "referrer": "(no referrer)",
+   "country": "BR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/stations",
+   "referrer": "(no referrer)",
+   "country": "RU",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/stations/DSTO",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/stations/DW",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-08",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/journeys/fare-route",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 42,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/journeys/first-last-train",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/.env",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "google.com",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "google.com",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/GNPK",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/HKS",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/KG",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/RCK",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v2/.env",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "GB",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/.git/config",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/dev/.env",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/staging/.env",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/lines/2/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/lines/8/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/lines/LN2/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/AHNR",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/AIIMS",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/AJG",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/AZU",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/BIMR",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/CHK",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/CHTP",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/CL",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/CTST",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/CWBR",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/GE",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/GTBR",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/GTNI",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/HCC",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/IFOC",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/INA",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/JB",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/JGPI",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/LKM",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/MDTW",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/MGRO",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/MVNR",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/NDI",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/PTCK",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/QM",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/RISE",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/SAKT",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/SKRP",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/SLTP",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/SPBI",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/UDB",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/VS",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v1/dmrc/stations/VW",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/api/v3/.env",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/dmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/dmrc/journeys/fare-route",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/.env",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/dmrc/journeys/first-last-train",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/dmrc/stations/VW",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/nmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/nmrc/maps/network/file",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/nmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/api/v2/.env",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 457,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN2/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/nmrc/lines/AQUA/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 4,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN1/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN10/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN11/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN3/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN4/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN5/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN6/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN7/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN7EXTN/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN8/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN8EXTN/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN9/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 3,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/lines/LN10/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/stations/DKV",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v2/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "SE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/dev/.env",
+   "referrer": "(no referrer)",
+   "country": "SE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/staging/.env",
+   "referrer": "(no referrer)",
+   "country": "SE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/.env",
+   "referrer": "(no referrer)",
+   "country": "SE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/maps/network/file",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/notifications/delhi-metro-extends-real-time-car-occupancy-status",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/notifications/last-metro-train-service-to-commence-at-1000-pm-4",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/stations/CHK",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/nmrc",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/nmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/nmrc/maps/network/file",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/nmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v1/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v2/.env",
+   "referrer": "(no referrer)",
+   "country": "SE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v2/station",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v2/stations/list",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/api/v3/.env",
+   "referrer": "(no referrer)",
+   "country": "SE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 12,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/api/v1/dmrc/journeys/fare-route",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/api/.git/config",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/api/v1/dmrc/journeys/fare-route",
+   "referrer": "dmrc-rest-api.vercel.app",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "dmrc-rest-api.vercel.app",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "dmrc-rest-api.vercel.app",
+   "country": "VN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 83,
+   "visitors": 9
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 80,
+   "visitors": 8
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 59,
+   "visitors": 10
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 51,
+   "visitors": 9
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 48,
+   "visitors": 9
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 43,
+   "visitors": 19
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 40,
+   "visitors": 18
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 37,
+   "visitors": 20
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 37,
+   "visitors": 22
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 31,
+   "visitors": 18
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 30,
+   "visitors": 8
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/maps/layout",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 23,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/booking",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 18,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/RCK",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 17,
+   "visitors": 13
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 15,
+   "visitors": 13
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/journeys/first-last-train",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 12,
+   "visitors": 5
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/RCK",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 11,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/booking",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 8,
+   "visitors": 5
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN2/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 7,
+   "visitors": 7
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 7,
+   "visitors": 5
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 7,
+   "visitors": 6
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN2/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/stations/NM09",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/notifications/last-metro-train-service-to-commence-at-1000-pm-4",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 4
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/notifications/last-metro-train-service-to-commence-at-1000-pm-4",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 4,
+   "visitors": 4
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/NM09",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/maps/layout",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 4,
+   "visitors": 4
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN3/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 3,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/AZU",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/NFGH",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/stations/NM09",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/journeys/first-last-train",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN1/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN10/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN11/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN4/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN5/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN6/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN7/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN7EXTN/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN8/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN8EXTN/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN9/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/MDHS",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/RG",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/booking",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/lines/AQUA/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "delhimetrorail.com",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN11/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN8/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/lines/LN9/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/maps/assets",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/maps/assets",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/maps/layout",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/maps/layout",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/maps/network/assets",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/maps/network/download",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/maps/network/file",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/notifications/delhi-metro-extends-real-time-car-occupancy-status",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/BCGN",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/HKS",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/ILOK",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/MAL",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/MYPI",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/NECC",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/S55",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/SABR",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/dmrc/stations/YB",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/maps/network/file",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/stations/NM04",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/stations/NM18",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v1/nmrc/stations/search/142",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-14",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "FR",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 25,
+   "visitors": 11
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 24,
+   "visitors": 11
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 23,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 19,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 19,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 19,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 17,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 16,
+   "visitors": 8
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 14,
+   "visitors": 7
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 11,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/nmrc/maps/layout",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 11,
+   "visitors": 8
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/nmrc/maps/layout",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 10,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/stations/RCK",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 8,
+   "visitors": 8
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 7,
+   "visitors": 6
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 5,
+   "visitors": 5
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/journeys/first-last-train",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/journeys/first-last-train",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 4,
+   "visitors": 4
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/lines/LN2/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/stations/RCK",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/nmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/ai/config",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/aws/bedrock",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/bedrock",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/bedrock-runtime",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/config/ai",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/foundation-models",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/inference-profiles",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/invoke",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/model/invoke",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/aws/bedrock",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/bedrock",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/bedrock-runtime",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/lines/LN1/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/lines/LN1/stations",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/notifications/delhi-metro-extends-real-time-car-occupancy-status",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/notifications/last-metro-train-service-to-commence-at-1000-pm-4",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/stations/DBMR",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/stations/HDNR",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/stations/NBAA",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/stations/RG",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "CA",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/dmrc/stations/WC",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/foundation-models",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/invoke",
+   "referrer": "(no referrer)",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/nmrc/lines/AQUA/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "CA",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 10,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 7,
+   "visitors": 5
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 6,
+   "visitors": 5
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 5
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 5
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 5
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/nmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/dmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/nmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/nmrc/maps/network/file",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/dmrc/journeys/first-last-train",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/dmrc/lines/LN1/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/dmrc/lines/LN6/stations",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/dmrc/maps/network/file",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/dmrc/stations/AJG",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/dmrc/stations/JGPA",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/dmrc/stations/RJBH",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/dmrc/stations/RJNM",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/nmrc/maps/layout",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 10,
+   "visitors": 6
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 8,
+   "visitors": 6
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 7,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/dmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 4
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/nmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 4
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/nmrc/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 4
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/.env",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 4,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "SG",
+   "pageviews": 4,
+   "visitors": 4
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/.%65nv",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/%252eenv",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/%2eenv",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/debug",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/health",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/nonexistent-debug-trigger-7x7",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/tables",
+   "referrer": "(no referrer)",
+   "country": "PL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/dmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/nmrc/maps/layout",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/nmrc/maps/network",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/nmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "dmrc-rest-api.vercel.app",
+   "country": "GB",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-18",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-18",
+   "path": "/api/v1/dmrc/lines",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-18",
+   "path": "/api/v1/dmrc/notifications",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-18",
+   "path": "/api/v2/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "CA",
+   "pageviews": 1,
+   "visitors": 1
+  }
+ ]
 }
