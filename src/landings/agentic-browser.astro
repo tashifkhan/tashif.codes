@@ -15,7 +15,8 @@ import {
 	Shot,
 	LandingVideo,
 	Rows,
-	Rail,
+	Deck,
+	DeckOpen,
 	Faq,
 	Routes,
 } from "@/components/landing";
@@ -133,6 +134,7 @@ const slideAlt = [
 ];
 const slides = slideAlt.map((alt, i) => ({
 	src: `${media}/slides/${String(i + 1).padStart(2, "0")}.webp`,
+	hd: `${media}/slides/hd/${String(i + 1).padStart(2, "0")}.webp`,
 	alt: `Slide ${i + 1}: ${alt}`,
 }));
 
@@ -338,7 +340,8 @@ const faq = [
 	</Section>
 
 	<Section id="deck" title="The deck." lead="Eighteen slides, from the problem to the results." gap="l">
-		<Rail panels={slides} label="Project deck" width={1280} height={853} wide />
+		<DeckOpen slot="action" />
+		<Deck slides={slides} title="Agentic Browser deck" width={1280} height={853} />
 	</Section>
 
 	<Section

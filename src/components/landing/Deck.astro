@@ -1,0 +1,516 @@
+---
+/**
+ * A slide deck: the sideways rail, plus a full-screen viewer for reading the
+ * slides at size. The viewer opens from a DeckOpen button in the section
+ * heading (`<DeckOpen slot="action" />`), from a click on any slide, or with Enter while the rail has focus.
+ *
+ * Each slide can carry an `hd` image. The viewer shows the rail's image
+ * first (already cached), then swaps in the `hd` one once it has decoded,
+ * and fetches only the slide in view and its two neighbours.
+ *
+ * Keys in the viewer: arrows, Page Up/Down and Space step through, Home and
+ * End jump, G shows every slide, F toggles full screen, Esc closes.
+ */
+import Rail, { type Panel } from "./Rail.astro";
+
+export interface DeckSlide extends Panel {
+	/** A sharper image for the viewer. Falls back to `src`. */
+	hd?: string;
+}
+
+interface Props {
+	slides: DeckSlide[];
+	/** Shown in the viewer's top bar, and the accessible name of both parts. */
+	title: string;
+	width: number;
+	height: number;
+}
+
+const { slides, title, width, height } = Astro.props;
+const total = slides.length;
+---
+
+<div class="ld-deck" data-ld-deck>
+	<Rail panels={slides} label={title} width={width} height={height} wide />
+
+	<dialog class="ld-dv" data-deck-view aria-label={`${title}, full screen`}>
+		<header class="ld-dv-bar">
+			<p class="ld-dv-title">{title}</p>
+			<div class="ld-dv-tools">
+				<button type="button" class="ld-dv-pill" data-deck-grid aria-pressed="false" title="All slides (G)">Grid</button>
+				<button type="button" class="ld-dv-pill" data-deck-full aria-pressed="false" title="Full screen (F)">Full</button>
+				<p class="ld-dv-count" aria-live="polite"><span data-deck-index>1</span>/{total}</p>
+				<button type="button" class="ld-dv-icon" data-deck-close aria-label="Close (Esc)" title="Close (Esc)">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+				</button>
+			</div>
+		</header>
+		<div class="ld-dv-progress" aria-hidden="true"><span data-deck-progress></span></div>
+
+		<div class="ld-dv-main">
+			<button type="button" class="ld-dv-side" data-deck-prev aria-label="Previous slide">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+			</button>
+			<div class="ld-dv-stage" data-deck-stage tabindex="-1" autofocus>
+				{
+					slides.map((slide, i) => (
+						<figure class="ld-dv-slide" data-deck-slide data-hd={slide.hd ?? slide.src} hidden={i !== 0}>
+							<img src={slide.src} alt={slide.alt} width={width} height={height} loading="lazy" decoding="async" />
+						</figure>
+					))
+				}
+			</div>
+			<button type="button" class="ld-dv-side" data-deck-next aria-label="Next slide">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+			</button>
+
+			<div class="ld-dv-grid" data-deck-sheet hidden>
+				{
+					slides.map((slide, i) => (
+						<button type="button" class="ld-dv-thumb" data-deck-go={i} aria-label={`Go to slide ${i + 1}`}>
+							<img src={slide.src} alt="" width={width} height={height} loading="lazy" decoding="async" />
+							<span>{String(i + 1).padStart(2, "0")}</span>
+						</button>
+					))
+				}
+			</div>
+		</div>
+
+		<footer class="ld-dv-bar ld-dv-foot">
+			<button type="button" class="ld-dv-pill" data-deck-prev>Prev</button>
+			<div class="ld-dv-dots">
+				{slides.map((_, i) => <button type="button" class="ld-dv-dot" data-deck-dot={i} aria-label={`Go to slide ${i + 1}`} />)}
+			</div>
+			<button type="button" class="ld-dv-pill" data-deck-next>Next</button>
+		</footer>
+	</dialog>
+</div>
+
+<script>
+	function initDecks() {
+		document.querySelectorAll<HTMLElement>("[data-ld-deck]:not([data-wired])").forEach((root) => {
+			root.dataset.wired = "true";
+			const view = root.querySelector<HTMLDialogElement>("[data-deck-view]")!;
+			const track = root.querySelector<HTMLElement>("[data-ld-track]")!;
+			const railIndex = root.querySelector<HTMLElement>("[data-ld-index]");
+			const slides = [...view.querySelectorAll<HTMLElement>("[data-deck-slide]")];
+			const dots = [...view.querySelectorAll<HTMLButtonElement>("[data-deck-dot]")];
+			const thumbs = [...view.querySelectorAll<HTMLButtonElement>("[data-deck-go]")];
+			const index = view.querySelector<HTMLElement>("[data-deck-index]")!;
+			const progress = view.querySelector<HTMLElement>("[data-deck-progress]")!;
+			const sheet = view.querySelector<HTMLElement>("[data-deck-sheet]")!;
+			const gridBtn = view.querySelector<HTMLButtonElement>("[data-deck-grid]")!;
+			const fullBtn = view.querySelector<HTMLButtonElement>("[data-deck-full]")!;
+			const prevs = view.querySelectorAll<HTMLButtonElement>("[data-deck-prev]");
+			const nexts = view.querySelectorAll<HTMLButtonElement>("[data-deck-next]");
+			const last = slides.length - 1;
+			let at = 0;
+
+			// Swap in the sharp image once it has decoded, so a slide never blanks.
+			const sharpen = (i: number) => {
+				const fig = slides[i];
+				if (!fig || fig.dataset.sharp) return;
+				fig.dataset.sharp = "true";
+				const img = fig.querySelector("img")!;
+				const hd = fig.dataset.hd!;
+				if (img.getAttribute("src") === hd) return;
+				const pre = new Image();
+				pre.src = hd;
+				pre.decode().then(() => (img.src = hd)).catch(() => {});
+			};
+
+			const show = (i: number) => {
+				at = Math.max(0, Math.min(last, i));
+				slides.forEach((fig, k) => (fig.hidden = k !== at));
+				dots.forEach((dot, k) => dot.toggleAttribute("aria-current", k === at));
+				thumbs.forEach((t, k) => t.toggleAttribute("aria-current", k === at));
+				index.textContent = String(at + 1);
+				progress.style.width = `${((at + 1) / slides.length) * 100}%`;
+				prevs.forEach((b) => (b.disabled = at === 0));
+				nexts.forEach((b) => (b.disabled = at === last));
+				[at, at + 1, at - 1].forEach(sharpen);
+			};
+
+			const grid = (on: boolean) => {
+				sheet.hidden = !on;
+				gridBtn.setAttribute("aria-pressed", String(on));
+				if (on) thumbs[at]?.scrollIntoView({ block: "nearest" });
+			};
+
+			const canFull = document.fullscreenEnabled && typeof view.requestFullscreen === "function";
+			fullBtn.hidden = !canFull;
+			const full = () => {
+				if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+				else view.requestFullscreen().catch(() => {});
+			};
+			document.addEventListener("fullscreenchange", () =>
+				fullBtn.setAttribute("aria-pressed", String(document.fullscreenElement === view)),
+			);
+
+			const open = (i: number) => {
+				grid(false);
+				show(i);
+				document.documentElement.dataset.deckOpen = "";
+				view.showModal();
+			};
+			const railAt = () => Math.max(0, Number(railIndex?.textContent ?? 1) - 1);
+
+			// The open button sits on the section heading (DeckOpen), outside this root.
+			(root.closest("section") ?? document)
+				.querySelectorAll("[data-deck-open]")
+				.forEach((b) => b.addEventListener("click", () => open(railAt())));
+			[...track.children].forEach((li, i) => li.addEventListener("click", () => open(i)));
+			track.addEventListener("keydown", (e) => {
+				if (e.key === "Enter") open(railAt());
+			});
+
+			view.addEventListener("close", () => {
+				delete document.documentElement.dataset.deckOpen;
+				if (document.fullscreenElement === view) document.exitFullscreen().catch(() => {});
+				// Leave the rail on the slide the reader stopped at.
+				const li = track.children[at] as HTMLElement | undefined;
+				const first = track.firstElementChild as HTMLElement | null;
+				if (li && first) track.scrollTo({ left: li.offsetLeft - first.offsetLeft });
+			});
+			// Esc closes the grid before it closes the viewer.
+			view.addEventListener("cancel", (e) => {
+				if (!sheet.hidden) {
+					e.preventDefault();
+					grid(false);
+				}
+			});
+
+			prevs.forEach((b) => b.addEventListener("click", () => show(at - 1)));
+			nexts.forEach((b) => b.addEventListener("click", () => show(at + 1)));
+			dots.forEach((d, i) => d.addEventListener("click", () => show(i)));
+			thumbs.forEach((t, i) =>
+				t.addEventListener("click", () => {
+					show(i);
+					grid(false);
+				}),
+			);
+			gridBtn.addEventListener("click", () => grid(sheet.hidden));
+			fullBtn.addEventListener("click", full);
+			view.querySelector("[data-deck-close]")!.addEventListener("click", () => view.close());
+
+			view.addEventListener("keydown", (e) => {
+				if (e.metaKey || e.ctrlKey || e.altKey) return;
+				const k = e.key;
+				if (k === "g" || k === "G" || k === "o" || k === "O") grid(sheet.hidden);
+				else if ((k === "f" || k === "F") && canFull) full();
+				else if (!sheet.hidden) return;
+				else if (k === "ArrowRight" || k === "PageDown" || k === " ") show(at + 1);
+				else if (k === "ArrowLeft" || k === "PageUp") show(at - 1);
+				else if (k === "Home") show(0);
+				else if (k === "End") show(last);
+				else return;
+				e.preventDefault();
+			});
+
+			// Swipe between slides on touch screens.
+			const stage = view.querySelector<HTMLElement>("[data-deck-stage]")!;
+			let x0: number | null = null;
+			stage.addEventListener("pointerdown", (e) => {
+				if (e.pointerType !== "mouse") x0 = e.clientX;
+			});
+			stage.addEventListener("pointerup", (e) => {
+				if (x0 === null) return;
+				const dx = e.clientX - x0;
+				x0 = null;
+				if (Math.abs(dx) > 48) show(at + (dx < 0 ? 1 : -1));
+			});
+			stage.addEventListener("pointercancel", () => (x0 = null));
+		});
+	}
+
+	initDecks();
+	document.addEventListener("astro:page-load", initDecks);
+</script>
+
+<style is:global>
+	html[data-deck-open] {
+		overflow: hidden;
+	}
+</style>
+
+<style>
+	.ld-deck :global(.ld-rail > li) {
+		cursor: zoom-in;
+	}
+
+	/* The viewer */
+	.ld-dv {
+		position: fixed;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		max-width: none;
+		max-height: none;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		background: var(--ld-paper);
+		color: var(--ld-ink);
+		font-family: var(--ld-font-body);
+	}
+	.ld-dv[open] {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: auto auto minmax(0, 1fr) auto;
+	}
+	.ld-dv::backdrop {
+		background: var(--ld-paper);
+	}
+	.ld-dv-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--ld-space-sm);
+		min-height: 52px;
+		padding-inline: var(--ld-space-md);
+		border-bottom: 1px solid var(--ld-rule);
+	}
+	.ld-dv-foot {
+		border-top: 1px solid var(--ld-rule);
+		border-bottom: 0;
+	}
+	.ld-dv-title {
+		flex: 1 1 auto;
+		margin: 0;
+		min-width: 0;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		font-size: var(--ld-text-sm);
+		color: var(--ld-muted);
+	}
+	.ld-dv-tools {
+		display: flex;
+		align-items: center;
+		gap: var(--ld-space-xs);
+		flex: none;
+	}
+	.ld-dv-pill,
+	.ld-dv-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 32px;
+		padding: 0 var(--ld-space-sm);
+		border: 1px solid var(--ld-rule);
+		border-radius: 8px;
+		background: transparent;
+		color: var(--ld-ink);
+		font-family: var(--ld-font-code);
+		font-size: 13px;
+		cursor: pointer;
+		transition:
+			border-color var(--ld-dur-micro),
+			background var(--ld-dur-micro);
+	}
+	.ld-dv-icon {
+		width: 32px;
+		padding: 0;
+	}
+	.ld-dv-pill:hover:not(:disabled),
+	.ld-dv-icon:hover {
+		border-color: var(--ld-ink);
+	}
+	.ld-dv-pill[aria-pressed="true"] {
+		border-color: var(--ld-accent);
+		background: var(--ld-accent);
+		color: var(--ld-accent-ink);
+	}
+	.ld-dv-pill:disabled {
+		opacity: 0.35;
+		cursor: default;
+	}
+	.ld-dv-count {
+		margin: 0 var(--ld-space-xs);
+		min-width: 3.5em;
+		text-align: right;
+		font-family: var(--ld-font-code);
+		font-size: 12px;
+		font-variant-numeric: tabular-nums;
+		color: var(--ld-muted);
+	}
+	.ld-dv-progress {
+		height: 3px;
+		background: var(--ld-shade);
+	}
+	.ld-dv-progress > span {
+		display: block;
+		height: 100%;
+		width: 0;
+		background: var(--ld-accent);
+		transition: width var(--ld-dur-long) var(--ld-ease-out);
+	}
+
+	.ld-dv-main {
+		position: relative;
+		display: grid;
+		grid-template-columns: 56px minmax(0, 1fr) 56px;
+		min-height: 0;
+	}
+	.ld-dv-side {
+		display: grid;
+		place-items: center;
+		border: 0;
+		background: transparent;
+		color: var(--ld-ink);
+		opacity: 0.45;
+		cursor: pointer;
+		transition: opacity var(--ld-dur-micro);
+	}
+	.ld-dv-side:first-child {
+		border-right: 1px solid var(--ld-rule);
+	}
+	.ld-dv-side:nth-child(3) {
+		border-left: 1px solid var(--ld-rule);
+	}
+	.ld-dv-side:hover:not(:disabled) {
+		opacity: 1;
+	}
+	.ld-dv-side:disabled {
+		opacity: 0.12;
+		cursor: default;
+	}
+	.ld-dv-stage {
+		position: relative;
+		min-height: 0;
+		outline: none;
+		touch-action: pan-y pinch-zoom;
+	}
+	.ld-dv-slide {
+		position: absolute;
+		inset: clamp(8px, 2vw, 28px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0;
+	}
+	.ld-dv-slide[hidden] {
+		display: none;
+	}
+	.ld-dv-slide img {
+		display: block;
+		width: auto;
+		height: auto;
+		max-width: 100%;
+		max-height: 100%;
+		border: 1px solid var(--ld-rule);
+		border-radius: 6px;
+		box-shadow: 0 12px 40px -16px var(--ld-shade);
+	}
+
+	.ld-dv-grid {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+		align-content: start;
+		gap: var(--ld-space-md);
+		padding: var(--ld-space-lg) var(--ld-space-md);
+		overflow-y: auto;
+		background: var(--ld-paper);
+	}
+	.ld-dv-grid[hidden] {
+		display: none;
+	}
+	.ld-dv-thumb {
+		position: relative;
+		padding: 0;
+		border: 1px solid var(--ld-rule);
+		border-radius: 6px;
+		overflow: hidden;
+		background: var(--ld-paper);
+		cursor: pointer;
+		transition: border-color var(--ld-dur-micro);
+	}
+	.ld-dv-thumb:hover {
+		border-color: var(--ld-ink);
+	}
+	.ld-dv-thumb[aria-current] {
+		border-color: var(--ld-accent);
+		box-shadow: 0 0 0 2px var(--ld-accent);
+	}
+	.ld-dv-thumb img {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+	.ld-dv-thumb span {
+		position: absolute;
+		left: 6px;
+		bottom: 6px;
+		padding: 2px 6px;
+		border-radius: 4px;
+		background: var(--ld-paper);
+		color: var(--ld-ink);
+		font-family: var(--ld-font-code);
+		font-size: 11px;
+	}
+
+	.ld-dv-dots {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		min-width: 0;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+	.ld-dv-dot {
+		flex: none;
+		width: 8px;
+		height: 8px;
+		padding: 0;
+		border: 1px solid var(--ld-muted);
+		border-radius: 999px;
+		background: transparent;
+		cursor: pointer;
+		transition:
+			width var(--ld-dur-short) var(--ld-ease-out),
+			background var(--ld-dur-short);
+	}
+	.ld-dv-dot[aria-current] {
+		width: 20px;
+		border-color: var(--ld-accent);
+		background: var(--ld-accent);
+	}
+
+	.ld-dv :is(button):focus-visible {
+		outline: 2px solid var(--ld-focus);
+		outline-offset: 2px;
+	}
+
+	@media (max-width: 40rem) {
+		.ld-dv-main {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.ld-dv-side {
+			display: none;
+		}
+		.ld-dv-dots {
+			display: none;
+		}
+		.ld-dv-bar {
+			padding-inline: var(--ld-space-sm);
+		}
+		.ld-dv-count {
+			min-width: 0;
+			margin: 0 4px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ld-dv-progress > span,
+		.ld-dv-dot {
+			transition: none;
+		}
+	}
+	:global(:root[data-reduce-motion]) .ld-dv-progress > span,
+	:global(:root[data-reduce-motion]) .ld-dv-dot {
+		transition: none;
+	}
+</style>

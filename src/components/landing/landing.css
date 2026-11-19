@@ -313,6 +313,13 @@ body {
 	gap: var(--ld-space-md);
 	margin-bottom: var(--ld-space-2xl);
 }
+.ld-head-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--ld-space-sm) var(--ld-space-md);
+}
 @media (min-width: 60rem) {
 	.ld-section[data-layout="side"] {
 		display: grid;

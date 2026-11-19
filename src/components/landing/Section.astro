@@ -11,6 +11,7 @@ interface Props {
 	title: string;
 	/** One line under the title. */
 	lead?: string;
+	/* A slot named "action" puts a control on the title's row. */
 	layout?: "stack" | "side";
 	gap?: "s" | "m" | "l";
 }
@@ -20,7 +21,16 @@ const { id, title, lead, layout = "stack", gap = "m" } = Astro.props;
 
 <section id={id} class="ld-section" data-layout={layout} data-gap={gap}>
 	<div class="ld-head">
-		<h2>{title}</h2>
+		{
+			Astro.slots.has("action") ? (
+				<div class="ld-head-row">
+					<h2>{title}</h2>
+					<slot name="action" />
+				</div>
+			) : (
+				<h2>{title}</h2>
+			)
+		}
 		{lead && <p class="ld-lead">{lead}</p>}
 	</div>
 	<div class="ld-body"><slot /></div>
