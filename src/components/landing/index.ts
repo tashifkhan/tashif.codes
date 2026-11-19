@@ -19,3 +19,4 @@ export { default as Faq } from "./Faq.astro";
 export { default as Routes } from "./Routes.astro";
 export { default as StatsApi } from "./StatsApi.astro";
 export { default as ApiUsage } from "./ApiUsage.astro";
+export { default as MetroApiUsage } from "./MetroApiUsage.astro";

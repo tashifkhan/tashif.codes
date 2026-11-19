@@ -127,6 +127,16 @@ labels them "Requests" and "Unique IPs" through the project's `labels` in
 days, so each run refreshes the last 30 and keeps any older days already in the
 file. Run it monthly to build up history.
 
+The same script exports the metro APIs, counting only `/api/*` calls:
+
+```bash
+uv run python scripts/export_stats_apis.py --target delhi-metro-api   # dmrc-rest-api
+uv run python scripts/export_stats_apis.py --target blr-metro-api     # blr-metro
+```
+
+They write `data/delhi-metro-api.json` and `data/blr-metro-api.json`, and their
+path breakdown is the endpoint instead of the API.
+
 ## Environment Variables
 
 | Variable | Description |

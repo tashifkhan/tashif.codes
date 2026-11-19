@@ -1,11 +1,15 @@
-"""Export request history for the seven *-stats.tashif.codes APIs into data/stats-apis.json.
+"""Export Vercel request history for my public APIs into data/<target>.json.
+
+Targets: stats-apis (the seven *-stats.tashif.codes APIs, the default),
+delhi-metro-api and blr-metro-api. The metro targets count only /api/* calls,
+since their Vercel projects also serve docs pages and, for Bangalore, the web app.
 
 Reads Vercel request metrics through the Vercel CLI (`vercel login` first) and writes
 the same shape as the other migration files, so the stats page treats it like any
 other project's history:
 
 - timeseries: pageviews are requests, visitors are distinct client IPs that day
-- path: requests per API (LeetCode, GitHub, ...)
+- path: requests per API (LeetCode, GitHub, ...), or per endpoint for the metro APIs
 - referrer: the site that made the call; "(no referrer)" for direct calls
 - country: the client's country
 
@@ -15,6 +19,7 @@ Each UTC day is stored under that calendar date, stamped at IST midnight like th
 other exports.
 
     uv run python scripts/export_stats_apis.py            # last 30 days
+    uv run python scripts/export_stats_apis.py --target delhi-metro-api
     uv run python scripts/export_stats_apis.py --raw raw.json  # reuse a saved pull
 """
 
@@ -26,7 +31,7 @@ import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-PROJECTS = {
+STATS_PROJECTS = {
     "leet-code-stats-api": "LeetCode",
     "git-hub-stats-api": "GitHub",
     "gfg-stats-api": "GFG",
@@ -35,18 +40,33 @@ PROJECTS = {
     "codechef-stats-api": "CodeChef",
     "code-forces-api": "Codeforces",
 }
-FILTER = "environment:production AND (" + " OR ".join(f"projectName:{p}" for p in PROJECTS) + ")"
+# projects: Vercel project names. path: the dimension behind the "path" breakdown.
+# only: an extra KQL filter.
+TARGETS = {
+    "stats-apis": {"projects": STATS_PROJECTS, "path": "projectName", "only": None},
+    "delhi-metro-api": {"projects": {"dmrc-rest-api": "Delhi NCR Metro API"}, "path": "requestPath", "only": "requestPath:/api/*"},
+    "blr-metro-api": {"projects": {"blr-metro": "Namma Metro API"}, "path": "requestPath", "only": "requestPath:/api/*"},
+}
 METRICS = {
     "req": {"metric": "vercel.request.count", "aggregation": "count"},
     "ips": {"metric": "vercel.request.count", "aggregation": "unique", "dimensions": ["clientIp"]},
 }
-KINDS = {"total": None, "api": "projectName", "referrer": "referrerHostname", "country": "clientIpCountry"}
 IST = timezone(timedelta(hours=5, minutes=30))
-OUT = Path(__file__).resolve().parent.parent / "data" / "stats-apis.json"
+DATA = Path(__file__).resolve().parent.parent / "data"
 
 
-def query(dimension: str | None, start: date, end: date) -> dict:
-    body = {"metrics": METRICS, "outputs": ["req", "ips"], "bucketSeconds": 86400, "filter": FILTER}
+def target_filter(target: dict) -> str:
+    projects = " OR ".join(f"projectName:{p}" for p in target["projects"])
+    only = f" AND {target['only']}" if target["only"] else ""
+    return f"environment:production AND ({projects}){only}"
+
+
+def kinds(target: dict) -> dict:
+    return {"total": None, "api": target["path"], "referrer": "referrerHostname", "country": "clientIpCountry"}
+
+
+def query(dimension: str | None, start: date, end: date, filter_: str) -> dict:
+    body = {"metrics": METRICS, "outputs": ["req", "ips"], "bucketSeconds": 86400, "filter": filter_}
     if dimension:
         body["groupBy"] = [dimension]
         body["seriesSelection"] = {"limit": 500, "rankBy": [{"metric": "req", "direction": "desc"}]}
@@ -65,15 +85,15 @@ def query(dimension: str | None, start: date, end: date) -> dict:
     raise SystemExit(f"Vercel metrics query failed for {dimension} {start}")
 
 
-def pull(days: int) -> dict:
+def pull(days: int, target: dict) -> dict:
     end = datetime.now(timezone.utc).date()  # today is partial, so it's excluded
     start = end - timedelta(days=days)
     raw = {}
-    for kind, dimension in KINDS.items():
+    for kind, dimension in kinds(target).items():
         cursor = start
         while cursor < end:
             stop = min(cursor + timedelta(days=7), end)  # longer windows time out
-            raw[f"{kind}_{cursor}"] = query(dimension, cursor, stop)
+            raw[f"{kind}_{cursor}"] = query(dimension, cursor, stop, target_filter(target))
             cursor = stop
     return raw
 
@@ -89,14 +109,15 @@ def rows(raw: dict, kind: str):
             continue
         for row in payload["data"]:
             day = datetime.fromisoformat(row["timestamp"].replace("Z", "+00:00")).date()
-            ident = (day, row.get("projectName"), row.get("referrerHostname"), row.get("clientIpCountry"))
+            ident = (day, row.get("projectName"), row.get("requestPath"), row.get("referrerHostname"),
+                     row.get("clientIpCountry"))
             if ident in seen:  # windows can share a boundary bucket
                 continue
             seen.add(ident)
             yield day, row
 
 
-def build(raw: dict, last_day: date) -> dict:
+def build(raw: dict, last_day: date, target: dict) -> dict:
     timeseries = [
         {"date": stamp(day), "pageviews": row["req"], "visitors": row["ips"], "bounce_rate": 0,
          "migration_date": day.isoformat()}
@@ -120,7 +141,7 @@ def build(raw: dict, last_day: date) -> dict:
         },
         "timeseries": timeseries,
         "stats": {
-            "path": entries("api", "projectName", lambda v: PROJECTS.get(v, v)),
+            "path": entries("api", target["path"], lambda v: target["projects"].get(v, v)),
             "referrer": entries("referrer", "referrerHostname", lambda v: v.lower().removeprefix("www.") or "(no referrer)"),
             "country": entries("country", "clientIpCountry", lambda v: v or "Unknown"),
             "device_type": [],
@@ -129,16 +150,16 @@ def build(raw: dict, last_day: date) -> dict:
     }
 
 
-def keep_older_history(data: dict) -> dict:
+def keep_older_history(data: dict, out: Path) -> dict:
     """Carry over days from the existing file that are older than this pull.
 
     Vercel only serves about 30 days of daily data, so each run would otherwise
     drop the oldest history.
     """
-    if not OUT.exists() or not data["timeseries"]:
+    if not out.exists() or not data["timeseries"]:
         return data
     first = data["timeseries"][0]["migration_date"]
-    old = json.loads(OUT.read_text())
+    old = json.loads(out.read_text())
     data["timeseries"] = [e for e in old["timeseries"] if e["migration_date"] < first] + data["timeseries"]
     for field, entries in data["stats"].items():
         older = [e for e in old["stats"].get(field, []) if (e.get("migration_date") or "") < first]
@@ -148,20 +169,23 @@ def keep_older_history(data: dict) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument("--target", choices=TARGETS, default="stats-apis", help="which API to export")
     parser.add_argument("--days", type=int, default=30, help="days of history (older daily data fails on Vercel)")
     parser.add_argument("--raw", type=Path, help="build from a saved pull instead of querying Vercel")
     parser.add_argument("--save-raw", type=Path, help="also save the raw Vercel responses here")
     parser.add_argument("--until", type=date.fromisoformat, help="last UTC day to include (default: yesterday)")
     args = parser.parse_args()
 
-    raw = json.loads(args.raw.read_text()) if args.raw else pull(args.days)
+    target = TARGETS[args.target]
+    out = DATA / f"{args.target}.json"
+    raw = json.loads(args.raw.read_text()) if args.raw else pull(args.days, target)
     if args.save_raw:
         args.save_raw.write_text(json.dumps(raw))
     last_day = args.until or datetime.now(timezone.utc).date() - timedelta(days=1)
-    data = keep_older_history(build(raw, last_day))
-    OUT.write_text(json.dumps(data, indent=1) + "\n")
+    data = keep_older_history(build(raw, last_day, target), out)
+    out.write_text(json.dumps(data, indent=1) + "\n")
     total = sum(e["pageviews"] for e in data["timeseries"])
-    print(f"wrote {OUT.name}: {len(data['timeseries'])} days, {total:,} requests, "
+    print(f"wrote {out.name}: {len(data['timeseries'])} days, {total:,} requests, "
           f"{len({e['key'] for e in data['stats']['referrer']})} calling sites")
 
 

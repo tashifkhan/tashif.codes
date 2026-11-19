@@ -1,0 +1,134 @@
+---
+/**
+ * Who calls the Delhi NCR Metro API. Reads the dated snapshot in
+ * src/data/metroApiUsage.json. Almost no calls carry a referrer, so instead of
+ * calling sites this lists the clients that send their own user agent.
+ * The daily history is on /projects/stats (api/data/delhi-metro-api.json).
+ */
+import Section from "./Section.astro";
+import usage from "@/data/metroApiUsage.json";
+
+const count = (n: number) => new Intl.NumberFormat("en-US").format(n);
+const date = (iso: string) =>
+	new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(iso));
+
+const growth = usage.requests30d / usage.previous.requests;
+const figures = [
+	{ value: count(usage.requests30d), label: "API calls in 30 days" },
+	{ value: count(usage.uniqueIps30d), label: "unique IP addresses" },
+	{ value: `${Number(growth.toFixed(1))}×`, label: `up on the month before (${count(usage.previous.requests)})` },
+];
+---
+
+<Section
+	id="usage"
+	title="Who calls it."
+	lead={`${date(usage.from)} to ${date(usage.to)}, from Vercel's request logs. Almost every call comes from an app or a script, not a web page, so the list below goes by the name each client sends.`}
+	layout="side"
+	gap="l"
+>
+	<dl class="mu-figures">
+		{figures.map((fig) => (
+			<div>
+				<dt>{fig.label}</dt>
+				<dd>{fig.value}</dd>
+			</div>
+		))}
+	</dl>
+	<p class="mu-note">
+		About {count(usage.automated30d)} of those calls come from headless browsers and Node, and some of that is my own testing.
+		<a class="ld-link" href={`/projects/stats?project=${usage.statsSlug}`}>Daily history and endpoints</a>
+	</p>
+
+	<h3 class="mu-h">Clients that name themselves</h3>
+	<ul class="mu-list">
+		{usage.clients.map((client) => (
+			<li>
+				<span class="mu-name">
+					<code>{client.name}</code>
+					<span>{client.what}{client.window ? `, ${client.window}` : ""}</span>
+				</span>
+				<span class="mu-count">{count(client.calls)}</span>
+			</li>
+		))}
+	</ul>
+</Section>
+
+<style>
+	.mu-figures {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--ld-space-lg);
+		margin: 0;
+		padding-block: var(--ld-space-md);
+		border-block: 1px solid var(--ld-rule);
+	}
+	.mu-figures div {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+	.mu-figures dt {
+		order: 2;
+		font-size: var(--ld-text-sm);
+		color: var(--ld-muted);
+	}
+	.mu-figures dd {
+		margin: 0;
+		font-family: var(--ld-font-display);
+		font-size: clamp(1.5rem, 4vw, 2.25rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+		line-height: 1.1;
+		font-variant-numeric: tabular-nums;
+	}
+	.mu-note {
+		display: grid;
+		gap: var(--ld-space-xs);
+		justify-items: start;
+		margin-top: var(--ld-space-md);
+		color: var(--ld-muted);
+	}
+	.mu-h {
+		margin-top: var(--ld-space-xl);
+		font-family: var(--ld-font-display);
+		font-size: var(--ld-text-title);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+	}
+	.mu-list {
+		display: grid;
+		margin: var(--ld-space-md) 0 0;
+		padding: 0;
+		list-style: none;
+		border-top: 1px solid var(--ld-rule);
+	}
+	.mu-list li {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--ld-space-md);
+		min-width: 0;
+		padding-block: var(--ld-space-xs);
+		border-bottom: 1px solid var(--ld-rule);
+	}
+	.mu-name {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0 var(--ld-space-sm);
+		min-width: 0;
+	}
+	.mu-name code {
+		overflow-wrap: anywhere;
+	}
+	.mu-name span,
+	.mu-count {
+		font-size: var(--ld-text-sm);
+		color: var(--ld-muted);
+	}
+	.mu-count {
+		flex-shrink: 0;
+		font-variant-numeric: tabular-nums;
+	}
+</style>
