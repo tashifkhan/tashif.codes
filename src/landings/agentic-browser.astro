@@ -94,11 +94,28 @@ const providers = [
 	["Anthropic", "claude-4.6-sonnet", "610", "1050"],
 ];
 
+// Current models per provider, from models.dev on 19 Nov 2026.
+const models: { name: string; ids: string[]; note?: string }[] = [
+	{ name: "Anthropic", ids: ["claude-fable-5-2", "claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"] },
+	{ name: "OpenAI", ids: ["gpt-6.2-sol", "gpt-6.2-astra", "gpt-6.1-terra", "gpt-6-luna"] },
+	{ name: "Google", ids: ["gemini-4-neon", "gemini-4-hydrogen", "gemini-4-carbon", "gemini-3.8-flash"] },
+	{ name: "DeepSeek", ids: ["deepseek-v4-pro", "deepseek-flash"] },
+	{ name: "OpenRouter", ids: ["qwen/qwen4-max"], note: "Any of its 380+ models, such as" },
+	{ name: "Ollama, local", ids: [], note: "Any model you pull, with no key and no network" },
+];
+
+const compatible = [
+	{ title: "OpenAI-compatible", body: "Give the OpenAI provider another base URL. vLLM, LM Studio, Groq and most hosted gateways speak this format." },
+	{ title: "Anthropic-compatible", body: "The Anthropic provider takes a base URL too, for any proxy or gateway that speaks the Messages API." },
+	{ title: "Gemini-compatible", body: "Gateways that speak Google's generateContent API work through the Google provider." },
+];
+
+
 const slideAlt = [
 	"Title slide",
 	"The problem: work scattered across too many tabs",
 	"Where existing solutions fall short",
-	"Literature review",
+	"Foundations of agentic systems",
 	"Objectives in two phases",
 	"Complete system architecture",
 	"One interface, several model providers",
@@ -138,7 +155,7 @@ const papers = [
 	{
 		title: "Deck",
 		body: "The 18 slides shown above, as a PDF.",
-		action: { label: "Open the deck", href: `${files}/PPT.pdf`, external: true },
+		action: { label: "Open the deck", href: `${tafMedia}/agentic-browser/deck.pdf`, external: true },
 	},
 	{
 		title: "Similarity report",
@@ -164,7 +181,7 @@ const papers = [
 const faq = [
 	{
 		q: "Which models work?",
-		a: "Six providers: Google Gemini, OpenAI, Anthropic, Deepseek, OpenRouter, and local models through Ollama. You bring the key.",
+		a: "Six providers: Google Gemini, OpenAI, Anthropic, DeepSeek, OpenRouter, and local models through Ollama. Any API that speaks the OpenAI, Anthropic or Gemini format works too. You bring the key.",
 	},
 	{
 		q: "Does it act without asking?",
@@ -249,6 +266,21 @@ const faq = [
 		<Rows rows={stores} />
 	</Section>
 
+	<Section id="models" title="Any model." lead="Six providers are built in, and any endpoint that speaks the OpenAI, Anthropic or Gemini API works too. You bring the key. Model ids are current as of November 2026, from models.dev." layout="side">
+		<div class="ld-table-wrap">
+			<table class="ld-table">
+				<caption>Built-in providers</caption>
+				<thead>
+					<tr><th scope="col">Provider</th><th scope="col">Current models</th></tr>
+				</thead>
+				<tbody>
+					{models.map((row) => <tr><th scope="row">{row.name}</th><td class="ab-ids">{row.note && `${row.note} `}{row.ids.map((id, i) => <>{i > 0 && ", "}<code>{id}</code></>)}</td></tr>)}
+				</tbody>
+			</table>
+		</div>
+		<Rows rows={compatible} />
+	</Section>
+
 	<Section
 		id="results"
 		title="Measured."
@@ -280,7 +312,7 @@ const faq = [
 		</div>
 		<div class="ld-table-wrap">
 			<table class="ld-table">
-				<caption>First response, by provider</caption>
+				<caption>First response, by provider, as tested for the report</caption>
 				<thead>
 					<tr>
 						<th scope="col">Provider</th>
@@ -381,6 +413,10 @@ const faq = [
 		gap: var(--ld-space-2xs);
 		padding-block: var(--ld-space-md);
 		border-bottom: 1px solid var(--ld-rule);
+	}
+	.ab-ids code {
+		font-size: 0.92em;
+		white-space: nowrap;
 	}
 	.ab-commands dt code {
 		font-weight: 500;
