@@ -57,6 +57,7 @@ export type {
 
 export type {
 	ResumeProject,
+	ResumeExtra,
 	Education,
 	Position,
 	SkillCategory,

@@ -22,6 +22,10 @@ export const experiences: ExperienceEntry[] = [
 		color: "purple",
 		website: "https://sitg.dev",
 		logo: "https://52.26.46.179:3000/icon.svg?icon.46fd8538.svg",
+		page: {
+			label: "product page",
+			url: "https://taf.sh/products/systematic-reasoning",
+		},
 		video: {
 			label: "product walkthrough",
 			url: "https://taf.sh/reel/systematic-reasoning-demo.mp4",

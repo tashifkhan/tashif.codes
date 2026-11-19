@@ -31,6 +31,7 @@ import type {
 	Education,
 	ExperienceEntry,
 	Position,
+	ResumeExtra,
 	ResumeProject,
 	SkillCategory,
 } from "@/types";
@@ -185,6 +186,49 @@ const VideoLink = ({
 		{video.label}
 	</a>
 );
+
+const PageLink = ({
+	page,
+	onNavigate,
+}: {
+	page: { label: string; url: string };
+	onNavigate: () => void;
+}) => (
+	<a
+		href={page.url}
+		target="_blank"
+		rel="noopener noreferrer"
+		onClick={onNavigate}
+		className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/50 px-2.5 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
+	>
+		<Globe size={12} className="text-primary/70" />
+		{page.label}
+	</a>
+);
+
+/** Page and video chips, shared by experience entries and project cards. */
+const ExtraLinks = ({ exp, extras }: { exp?: ExperienceEntry; extras?: ResumeExtra[] }) => {
+	const items: ResumeExtra[] = [
+		...(exp?.page ? [{ ...exp.page, kind: "page" as const }] : []),
+		...(exp?.video ? [{ ...exp.video, kind: "video" as const }] : []),
+		...(extras ?? []),
+	];
+	if (items.length === 0) return null;
+	return (
+		<div className="mt-3 flex flex-wrap gap-2">
+			{items.map((item) =>
+				item.kind === "video" ? (
+					<VideoLink key={item.url} video={item} onNavigate={() => trigger("light")} />
+				) : (
+					<PageLink key={item.url} page={item} onNavigate={() => trigger("light")} />
+				),
+			)}
+			{exp?.certificate && (
+				<CertificateLink href={exp.certificate} onNavigate={() => trigger("light")} />
+			)}
+		</div>
+	);
+};
 
 const tocMain = [
 	{ id: "about", label: "about", icon: Terminal },
@@ -503,18 +547,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 														<span className="absolute -left-[29px] top-[7px] h-2.5 w-2.5 rounded-full bg-background border border-primary/50" />
 														<RoleHeading exp={exp} />
 														<BulletList points={exp.points} />
-														{exp.video && (
-															<VideoLink
-																video={exp.video}
-																onNavigate={() => trigger("light")}
-															/>
-														)}
-														{exp.certificate && (
-															<CertificateLink
-																href={exp.certificate}
-																onNavigate={() => trigger("light")}
-															/>
-														)}
+														<ExtraLinks exp={exp} />
 													</div>
 												))}
 											</div>
@@ -523,18 +556,7 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 											<>
 												<RoleHeading exp={first} />
 												<BulletList points={first.points} />
-												{first.video && (
-													<VideoLink
-														video={first.video}
-														onNavigate={() => trigger("light")}
-													/>
-												)}
-												{first.certificate && (
-													<CertificateLink
-														href={first.certificate}
-														onNavigate={() => trigger("light")}
-													/>
-												)}
+												<ExtraLinks exp={first} />
 											</>
 										)}
 									</div>
@@ -621,6 +643,11 @@ export const InteractiveResume: React.FC<InteractiveResumeProps> = ({
 											</div>
 										))}
 									</div>
+									{project.extras && project.extras.length > 0 && (
+										<div className="px-5 pb-5 -mt-1">
+											<ExtraLinks extras={project.extras} />
+										</div>
+									)}
 								</section>
 							))}
 						</div>
