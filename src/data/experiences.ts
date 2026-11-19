@@ -27,10 +27,12 @@ export const experiences: ExperienceEntry[] = [
 			url: "https://taf.sh/reel/systematic-reasoning-demo.mp4",
 		},
 		points: [
-			"Own the compliance AI pipeline end-to-end; extended it to new regulatory frameworks and certificate scopes.",
-			"Built a real-time notification system (<strong>SSE</strong> + <strong>SMTP</strong> + <strong>Slack</strong>) monitoring <strong>Bugzilla</strong>, <strong>Google Groups</strong>, <strong>CCADB</strong>, and <strong>Regulatory Ballots</strong> for same-day compliance surfacing.",
-			"Built a continuous regulatory review pipeline; <strong>GitHub Bot</strong> reviews measure the impact of regulatory changes on CPS/Compliance Documents, powered by an internal <strong>Graph RAG LLM</strong> for compliance audits on Ballot releases and Governing Document updates.",
-			"Scraped live Google Groups, ballot releases, CAB Forum BR updates, and Root Policy GitHub Releases to build an active monitoring system with <strong>Graph RAG LLM</strong> orchestration.",
+			"Own the AI pipeline that audits certificate authorities' policy documents (<strong>CPS</strong>) against browser and <strong>CA/B Forum</strong> rules. It pulls out every compliance statement, matches it to the rule it has to meet, and reports the gaps. It covers <strong>23 governing documents</strong> from 10 standards bodies (CA/B Forum, Mozilla, Google, Apple, Microsoft, ETSI, IETF, NIST and others), and I extended it to new rule sets and certificate types.",
+			"Built a <strong>GitHub App</strong> that reviews pull requests to these policy documents before they merge. It verifies webhook signatures, checks each changed section in a parallel <strong>Celery</strong> chord (it used to review one section at a time), and posts <strong>Graph RAG LLM</strong> comments that a human reviewer can act on. I wrote 95% of that module.",
+			"Built the monitoring service (<strong>Django</strong>, <strong>Celery</strong> beat, <strong>Kafka</strong>) that syncs Mozilla's <strong>Bugzilla</strong> incidents, the CA <strong>Google Groups</strong> and <strong>CCADB</strong> every 6 hours, plus a weekly CCADB inventory. An <strong>LLM</strong> reads each new Bugzilla incident and links it to the CA it's about.",
+			"Its CCADB checks were validated in a full run over <strong>10K+</strong> CCADB records, <strong>3.6K+</strong> CRLs and <strong>4.1K+</strong> CA certificates, with every queued retry recovered.",
+			"Built real-time alerts for <strong>9</strong> event types (new incidents, CA/B Forum ballots, CCADB changes, finished exports and more), delivered in the app over <strong>SSE</strong> on Postgres LISTEN/NOTIFY and to <strong>Slack</strong> through Kafka, with read receipts, replay and retries for anything undelivered.",
+			"Wrote <strong>110+ tests</strong> covering download authorisation, API permissions and <strong>OpenAPI</strong> contracts. Changes ship through <strong>GitHub Actions</strong> to <strong>AWS</strong> (ECR, ECS, EC2).",
 		],
 	},
 	{
@@ -41,10 +43,10 @@ export const experiences: ExperienceEntry[] = [
 		website: "https://sitg.dev",
 		logo: "https://52.26.46.179:3000/icon.svg?icon.46fd8538.svg",
 		points: [
-			"Built the pipeline the current role now owns: <strong>Django</strong>/<strong>Python</strong> converting hierarchical PDFs to Markdown and extracting structured compliance statements.",
-			"Ran LLM workloads async via <strong>Celery</strong>, <strong>Redis</strong>, and <strong>Kafka</strong> so a slow document never blocks a request.",
-			"Added semantic search on <strong>OpenSearch</strong> + <strong>PostgreSQL</strong> mapping conformance statements to regulatory standards.",
-			"Shipped the first <strong>Next.js</strong> dashboard with <strong>Auth0</strong> for compliance radar metrics.",
+			"Built v1 of that pipeline in <strong>Django</strong>. It turns a CA's policy PDF into Markdown, splits it by section, and has an LLM extract each compliance statement as structured data.",
+			"Moved the LLM analysis to background <strong>Celery</strong> workers (<strong>Redis</strong>, <strong>Kafka</strong>). One CPS needs about <strong>48 minutes</strong> of LLM work across 48 rule classes, so it now runs in the background and the upload request returns straight away.",
+			"Built search on <strong>OpenSearch</strong> + <strong>PostgreSQL</strong> that matches each extracted statement to the rules it has to satisfy.",
+			"Shipped the first <strong>Next.js</strong> dashboard (<strong>Auth0</strong> login) for the compliance radar, which tracks how quickly each CA updates its documents after the rules change.",
 		],
 	},
 	{
@@ -56,9 +58,9 @@ export const experiences: ExperienceEntry[] = [
 		color: "blue",
 		logo: "https://unicloud.co/wp-content/themes/u-design/assets/images/favicon.png",
 		points: [
-			'Shipped 3 <strong>React</strong> modules (video tracking, shapefile download, block change/edit page) for a <a href="https://irgvap.ircep.gov.in" target="_blank" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">live IRCTC project</a> covering vendor progress monitoring.',
-			"Wrote <strong>FastAPI</strong> REST APIs with <strong>JWT auth</strong> on <strong>PostgreSQL</strong>.",
-			"Automated DB migration cron jobs; added Block Change Alerts for approvers via <strong>SMTP</strong> and web push.",
+			'Built <strong>JWT</strong>-authenticated, role-based <strong>FastAPI</strong> REST APIs on <strong>PostgreSQL</strong> for <a href="https://irgvap.ircep.gov.in" target="_blank" class="text-primary hover:text-primary/80 underline decoration-dotted transition-colors">IRCTC\'s vendor progress tracking platform</a>, used across India. Vendors upload video of their progress, project managers review and list it, and IRCTC officials sign off.',
+			"Shipped 3 <strong>React</strong> modules for the same platform: a video progress tracker, shapefile downloads for site maps, and a block change/edit page.",
+			"Automated database migrations with cron jobs, and built <strong>SMTP</strong> and web-push alerts that notify approvers when a block changes.",
 		],
 	},
 ];
