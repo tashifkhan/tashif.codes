@@ -1,10 +1,14 @@
 import { trigger } from "@/lib/haptics"
+import type { Mounted } from 'pele/lazy'
+import { sketchPeleSvg } from './pele-sketch'
 
 /**
  * Browser-side behaviour for rendered Markdown: copy buttons and diagrams.
  *
- * `mermaid` is passed in rather than imported so a site that has no diagrams —
- * the blog posts have none — does not pull the bundle into its client build.
+ * Diagrams are drawn by Pele (obsidianmd/pele), the Mermaid renderer T3 Code
+ * uses, with an Excalidraw finish from pele-sketch.ts. Pele loads lazily, one
+ * chunk per diagram type. Mermaid.js is passed in as a loader rather than
+ * imported, and only loads for a diagram Pele can't parse.
  */
 
 export type MermaidLike = {
@@ -199,13 +203,14 @@ export function initTabs(root: ParentNode = document): void {
 
 /**
  * Diagram labels use Excalifont, Excalidraw's handwriting face, to match the
- * rough.js strokes from `look: 'handDrawn'`. Self-hosted from
- * public/fonts/excalifont (OFL), declared in markdown.css.
+ * rough.js strokes from pele-sketch.ts. Self-hosted from
+ * public/fonts/excalifont (OFL), declared in markdown.css. Pele reads it from
+ * --pele-font; the Mermaid fallback takes it from here.
  */
 export const MERMAID_FONT = "'Excalifont', var(--font-sans, 'Lexend'), cursive"
 
-// Outlines and arrows are darker than the card borders elsewhere: rough.js
-// strokes are thin and broken, and pale slate made them look washed out.
+// Mermaid fallback palettes. Pele takes the same colors from the --pele-*
+// variables in markdown.css.
 export const MERMAID_DARK: Record<string, unknown> = {
   darkMode: true,
   background: '#0d0e15',
@@ -282,21 +287,95 @@ function normalizeDiagramSvg(target: HTMLElement): void {
   svg.style.height = 'auto'
 }
 
+type Pele = typeof import('pele/lazy')
+
+let peleLoad: Promise<Pele> | null = null
+
+function loadPele(): Promise<Pele> {
+  peleLoad ??= import('pele/lazy')
+  return peleLoad
+}
+
+/** Live Pele mounts, so a redraw tears down the old resize observer first. */
+const mounts = new WeakMap<Element, Mounted>()
+
+/**
+ * Draw `source` into `target` with Pele, then sketch it. Returns null on
+ * success or the reason Pele couldn't draw it.
+ */
+async function renderWithPele(target: HTMLElement, source: string): Promise<string | null> {
+  let pele: Pele
+  try {
+    pele = await loadPele()
+  } catch (err) {
+    return err instanceof Error ? err.message : String(err)
+  }
+  let type: ReturnType<Pele['detectType']>
+  try {
+    type = pele.detectType(source)
+  } catch (err) {
+    return err instanceof Error ? err.message : String(err)
+  }
+  if (!type) return 'No diagram type detected'
+  if (!(await pele.load(type).catch(() => false))) return `Pele could not load the ${type} renderer`
+
+  mounts.get(target)?.destroy()
+  mounts.delete(target)
+  target.replaceChildren()
+  try {
+    const mounted = await pele.mountAsync(target, source, {
+      links: false,
+      images: false,
+      zoom: false,
+      // Keep the author's direction. A wide diagram scales down to fit
+      // instead of turning vertical (same choice as T3 Code).
+      autoDirection: false,
+      // Pele redraws when the column width changes, so sketch every render.
+      onRender: () => {
+        const svg = target.querySelector('svg')
+        if (!svg) return
+        try {
+          sketchPeleSvg(svg, source)
+        } catch (err) {
+          // Clean Pele strokes are still a readable diagram.
+          console.warn('Pele sketch skipped:', err)
+        }
+      },
+    })
+    if (mounted.error || !target.querySelector('svg')) {
+      mounted.destroy()
+      const err = mounted.error
+      return err instanceof Error ? err.message : err ? String(err) : 'Pele produced no SVG'
+    }
+    mounts.set(target, mounted)
+    return null
+  } catch (err) {
+    return err instanceof Error ? err.message : String(err)
+  }
+}
+
+function showSource(target: HTMLElement, source: string): void {
+  target.innerHTML = `<div class="md-mermaid-fallback">${WARN_ICON}<span>Diagram preview unavailable — showing source</span></div><pre class="md-code-pre"><code></code></pre>`
+  const code = target.querySelector('code')
+  if (code) code.textContent = source
+}
+
 /**
  * Render every `.md-mermaid` block under `root`.
  *
  * Blocks are marked once drawn so this is safe to call repeatedly — the blog
  * watches for content appearing inside a React island and would otherwise
- * redraw every diagram on each mutation. Pass `force` when the theme flips and
- * the diagrams genuinely need regenerating.
+ * redraw every diagram on each mutation. Pass `force` when the theme flips.
+ * Pele's colors are CSS variables, so a theme flip only matters for the
+ * Mermaid fallback, which bakes its palette into the SVG.
  */
 export async function renderMermaidBlocks(
-  mermaid: MermaidLike,
+  loadMermaid: () => Promise<MermaidLike>,
   options: { dark?: boolean; root?: ParentNode; force?: boolean } = {},
 ): Promise<void> {
   const root = options.root ?? document
   const selector = options.force
-    ? '.md-mermaid'
+    ? '.md-mermaid:not([data-md-renderer="pele"])'
     : '.md-mermaid:not([data-md-diagram])'
   const blocks = root.querySelectorAll<HTMLElement>(selector)
   if (!blocks.length) return
@@ -304,30 +383,11 @@ export async function renderMermaidBlocks(
   const dark = options.dark ?? isDarkTheme()
 
   // Excalifont only appears inside diagrams, so nothing on the page has
-  // requested it yet. Load it before mermaid measures labels, or every box is
+  // requested it yet. Load it before Pele measures labels, or every box is
   // sized for the fallback font.
   try {
-    await document.fonts?.load("14px 'Excalifont'")
+    await document.fonts?.load("16px 'Excalifont'")
   } catch {}
-
-  mermaid.initialize({
-    startOnLoad: false,
-    theme: 'base',
-    themeVariables: dark ? MERMAID_DARK : MERMAID_LIGHT,
-    fontFamily: MERMAID_FONT,
-    // rough.js strokes and hachure fills, like Excalidraw. A fixed seed keeps
-    // the wobble identical across reloads and theme switches.
-    look: 'handDrawn',
-    handDrawnSeed: 7,
-    // Natural SVG size; CSS max-width scales to the column (mobile can zoom).
-    sequence: { useMaxWidth: false, diagramMarginX: 16, diagramMarginY: 16 },
-    // Keep subgraph titles under ~22 characters. mermaid hard-caps a cluster
-    // label at 200px and lays the cluster out as if the title were one line, so
-    // a title that wraps prints straight over the first node inside it — and
-    // neither `wrappingWidth` nor `subGraphTitleMargin` moves that box.
-    flowchart: { useMaxWidth: false },
-    er: { useMaxWidth: false, diagramPadding: 20 },
-  })
 
   for (const block of blocks) {
     const source = block
@@ -335,10 +395,30 @@ export async function renderMermaidBlocks(
       ?.textContent?.trim()
     const target = block.querySelector<HTMLElement>('.md-mermaid-render')
     if (!source || !target) continue
-
-    const id = `md-mermaid-${++diagramSequence}`
     block.dataset.mdDiagram = 'done'
+
+    const problem = await renderWithPele(target, source)
+    if (!problem) {
+      block.dataset.mdRenderer = 'pele'
+      continue
+    }
+
+    // Fallback: Mermaid.js, loaded only when a diagram needs it.
+    block.dataset.mdRenderer = 'mermaid'
+    const id = `md-mermaid-${++diagramSequence}`
     try {
+      const mermaid = await loadMermaid()
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'base',
+        themeVariables: dark ? MERMAID_DARK : MERMAID_LIGHT,
+        fontFamily: MERMAID_FONT,
+        // Classic look: Mermaid's handDrawn mode kinks every edge.
+        look: 'classic',
+        sequence: { useMaxWidth: false, diagramMarginX: 16, diagramMarginY: 16 },
+        flowchart: { useMaxWidth: false, curve: 'basis' },
+        er: { useMaxWidth: false, diagramPadding: 20 },
+      })
       const { svg } = await mermaid.render(id, source)
       target.innerHTML = svg
       normalizeDiagramSvg(target)
@@ -346,10 +426,7 @@ export async function renderMermaidBlocks(
       // mermaid leaves orphaned nodes behind when a parse fails.
       document.getElementById(id)?.remove()
       document.getElementById(`d${id}`)?.remove()
-
-      target.innerHTML = `<div class="md-mermaid-fallback">${WARN_ICON}<span>Diagram preview unavailable — showing source</span></div><pre class="md-code-pre"><code></code></pre>`
-      const code = target.querySelector('code')
-      if (code) code.textContent = source
+      showSource(target, source)
     }
   }
 }
