@@ -11,6 +11,7 @@ import LandingHero from "./LandingHero.astro";
 import Section from "./Section.astro";
 import Shot from "./Shot.astro";
 import LandingVideo from "./LandingVideo.astro";
+import ApiUsage from "./ApiUsage.astro";
 import { statsApis, samplePath, type StatsApi } from "@/data/statsApis";
 import type { Project } from "@/types";
 
@@ -93,6 +94,8 @@ const reel = "https://taf.sh/reel";
 			}
 		</dl>
 	</Section>
+
+	<ApiUsage platform={api.platform} />
 
 	{
 		lead && (

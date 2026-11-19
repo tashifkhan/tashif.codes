@@ -13,6 +13,7 @@ import {
 	Rows,
 } from "@/components/landing";
 import { statsApis } from "@/data/statsApis";
+import ApiUsage from "@/components/landing/ApiUsage.astro";
 import type { LandingMeta } from "@/lib/landings";
 import type { Project } from "@/types";
 
@@ -135,6 +136,8 @@ const features = [
 			}
 		</ul>
 	</Section>
+
+	<ApiUsage />
 </Landing>
 
 <style>

@@ -1,0 +1,191 @@
+---
+/**
+ * Who calls the stats APIs. Reads the dated snapshot in
+ * src/data/statsApiUsage.json. Pass `platform` for one API, or leave it out
+ * for all seven (the CodeTrace landing). The site list is the referrer
+ * hostnames Vercel recorded, minus my own sites and preview builds.
+ */
+import Section from "./Section.astro";
+import usage from "@/data/statsApiUsage.json";
+
+interface Props {
+	/** Platform name as in src/data/statsApis.ts, e.g. "LeetCode". */
+	platform?: string;
+}
+
+const { platform } = Astro.props;
+const count = (n: number) => new Intl.NumberFormat("en-US").format(n);
+const date = (iso: string) =>
+	new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(iso));
+
+const totals = platform
+	? usage.perApi[platform as keyof typeof usage.perApi]
+	: { requests: usage.requests30d, uniqueIps: usage.uniqueIps30d };
+const sites = platform ? usage.sites.filter((site) => site.apis.includes(platform)) : usage.sites;
+const siteCount = platform ? sites.length : usage.externalSites;
+const tools = sites.filter((site) => site.tool);
+const rest = sites.filter((site) => !site.tool);
+const open = rest.slice(0, 12);
+const more = rest.slice(12);
+const figures = [
+	{ value: count(totals.requests), label: "requests in 30 days" },
+	{ value: `${count(totals.uniqueIps)}`, label: "unique IP addresses" },
+	{ value: platform ? count(siteCount) : `${siteCount}+`, label: "other sites calling it" },
+];
+---
+
+{
+	totals && (
+		<Section
+			id="usage"
+			title="Who calls it."
+			lead={`${date(usage.from)} to ${date(usage.to)}, from Vercel's request logs. About two thirds of requests carry no referrer, so the real list is longer.`}
+			layout="side"
+			gap="l"
+		>
+			<dl class="au-figures">
+				{figures.map((fig) => (
+					<div>
+						<dt>{fig.label}</dt>
+						<dd>{fig.value}</dd>
+					</div>
+				))}
+			</dl>
+			{!platform && (
+				<p class="au-note">{count(usage.requests90d)} requests over 90 days, across all seven APIs.</p>
+			)}
+
+			{tools.length > 0 && (
+				<>
+					<h3 class="au-h">Tools and colleges built on it</h3>
+					<ul class="au-list">
+						{tools.map((site) => (
+							<li>
+								<a href={`https://${site.host}`} target="_blank" rel="noopener noreferrer nofollow" data-haptic-external>
+									{site.host}
+								</a>
+								<span>{count(site.requests)}</span>
+							</li>
+						))}
+					</ul>
+				</>
+			)}
+
+			{rest.length > 0 && (
+				<>
+					<h3 class="au-h">Portfolios and other sites</h3>
+					<ul class="au-list">
+						{open.map((site) => (
+							<li>
+								<a href={`https://${site.host}`} target="_blank" rel="noopener noreferrer nofollow" data-haptic-external>
+									{site.host}
+								</a>
+								<span>{count(site.requests)}</span>
+							</li>
+						))}
+					</ul>
+					{more.length > 0 && (
+						<details class="au-more">
+							<summary>Show {more.length} more</summary>
+							<ul class="au-list">
+								{more.map((site) => (
+									<li>
+										<a href={`https://${site.host}`} target="_blank" rel="noopener noreferrer nofollow" data-haptic-external>
+											{site.host}
+										</a>
+										<span>{count(site.requests)}</span>
+									</li>
+								))}
+							</ul>
+						</details>
+					)}
+				</>
+			)}
+		</Section>
+	)
+}
+
+<style>
+	.au-figures {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--ld-space-lg);
+		margin: 0;
+		padding-block: var(--ld-space-md);
+		border-block: 1px solid var(--ld-rule);
+	}
+	.au-figures div {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+	.au-figures dt {
+		order: 2;
+		font-size: var(--ld-text-sm);
+		color: var(--ld-muted);
+	}
+	.au-figures dd {
+		margin: 0;
+		font-family: var(--ld-font-display);
+		font-size: clamp(1.5rem, 4vw, 2.25rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+		line-height: 1.1;
+		font-variant-numeric: tabular-nums;
+	}
+	.au-note {
+		margin-top: var(--ld-space-md);
+		color: var(--ld-muted);
+	}
+	.au-h {
+		margin-top: var(--ld-space-xl);
+		font-family: var(--ld-font-display);
+		font-size: var(--ld-text-title);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+	}
+	.au-list {
+		display: grid;
+		margin: var(--ld-space-md) 0 0;
+		padding: 0;
+		list-style: none;
+		border-top: 1px solid var(--ld-rule);
+	}
+	.au-list li {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--ld-space-md);
+		min-width: 0;
+		padding-block: var(--ld-space-xs);
+		border-bottom: 1px solid var(--ld-rule);
+	}
+	.au-list a {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.au-list a:hover {
+		color: var(--ld-accent);
+	}
+	.au-list span {
+		flex-shrink: 0;
+		font-size: var(--ld-text-sm);
+		font-variant-numeric: tabular-nums;
+		color: var(--ld-muted);
+	}
+	.au-more {
+		margin-top: var(--ld-space-md);
+	}
+	.au-more summary {
+		cursor: pointer;
+		color: var(--ld-accent);
+	}
+	@media (min-width: 48rem) {
+		.au-list {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			column-gap: var(--ld-gap-columns);
+		}
+	}
+</style>

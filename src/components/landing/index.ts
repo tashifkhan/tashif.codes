@@ -16,3 +16,4 @@ export { default as Rail } from "./Rail.astro";
 export { default as Faq } from "./Faq.astro";
 export { default as Routes } from "./Routes.astro";
 export { default as StatsApi } from "./StatsApi.astro";
+export { default as ApiUsage } from "./ApiUsage.astro";
