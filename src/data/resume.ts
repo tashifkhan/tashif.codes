@@ -41,18 +41,24 @@ export const resumeProjects: ResumeProject[] = [
 	{
 		title: "Agentic Browser",
 		stack:
-			"FastAPI, LangChain, LangGraph, React, TypeScript, MCP, Docker, WebExtension APIs",
+			"FastAPI, LangGraph, LangChain, MCP, React, TypeScript, WXT, PostgreSQL, OpenSearch, Neo4j",
 		color: "green",
 		links: [
 			{ label: "Live", url: "https://tashif.codes/projects/agentic-browser" },
 			{ label: "GitHub", url: "https://github.com/tashifkhan/agentic-browser" },
 		],
+		extras: [
+			{ label: "demo reel", url: "https://taf.sh/reel/agentic-browser-demo.mp4", kind: "video" },
+		],
 		points: [
-			"Built a <strong>model-agnostic automation platform</strong> where AI agents plan, execute, and verify actions on any website, through <strong>FastAPI</strong> and <strong>MCP</strong>.",
-			"<strong>LangGraph</strong> coordinates multiple agents with tools for web search, content extraction, and Google Workspace tasks.",
-			"One dual-mode server serves both REST endpoints and <strong>Model Context Protocol</strong> clients.",
-			"A <strong>TypeScript extension</strong> drives the DOM directly and executes AI-generated script plans, backed by the Python server.",
-			"Bring Your Own Keys: works with Gemini, OpenAI, and Anthropic models.",
+			"A browser agent that works on any website: a <strong>WXT</strong>/<strong>React</strong> side-panel extension talks to a <strong>FastAPI</strong> backend, which serves <strong>120+ REST endpoints</strong> and an <strong>MCP</strong> server from the same port.",
+			"A <strong>LangGraph</strong> supervisor hands each task to a research, browser, productivity or coding subagent. An LLM then scores the draft answer from 0 to 10 and sends it back for another pass if it falls short.",
+			"<strong>17+ tools</strong> for the agents: Tavily web search, page scraping, YouTube transcripts, GitHub repo Q&A, Gmail, Google Calendar, LinkedIn, and sandboxed bash and Python.",
+			"Browser automation runs one step at a time. The extension sends a snapshot of the page (visible text and interactive elements), the planner picks one of 9 action types, and the extension executes it through the WebExtension scripting APIs and snapshots the page again.",
+			"Loop guards stop it on a captcha, a login wall, three steps with no change to the page, or the same action failing twice, so it doesn't click around forever.",
+			"Long-term memory: <strong>OpenSearch</strong> hybrid vector and BM25 search merged with reciprocal rank fusion, plus <strong>Neo4j</strong> graph traversal, kept tidy by hourly, nightly and weekly consolidation, decay and dedup jobs.",
+			"Bring your own keys for <strong>6 LLM providers</strong> (Gemini, OpenAI, Anthropic, Ollama, DeepSeek, OpenRouter), stored encrypted in <strong>PostgreSQL</strong>.",
+			"Voice in and out (faster-whisper, OpenAI or Groq for speech-to-text, four text-to-speech providers), streaming over SSE, and a Telegram bot on the same backend. 14 GitHub stars.",
 		],
 	},
 	{
@@ -63,6 +69,11 @@ export const resumeProjects: ResumeProject[] = [
 		links: [
 			{ label: "Live", url: "https://talentsync.tashif.codes" },
 			{ label: "GitHub", url: "https://github.com/tashifkhan/TalentSync" },
+		],
+		extras: [
+			{ label: "product page", url: "https://taf.sh/products/talentsync", kind: "page" },
+			{ label: "HR dashboard", url: "https://taf.sh/products/talentsync-hr", kind: "page" },
+			{ label: "demo reel", url: "https://taf.sh/reel/talentsync-demo.mp4", kind: "video" },
 		],
 		points: [
 			"AI career platform. Candidates get resume analysis, ATS scoring, tailored resume PDFs, cold emails, LinkedIn posts and interview prep. Employers get a dashboard of pre-vetted talent.",
@@ -85,6 +96,11 @@ export const resumeProjects: ResumeProject[] = [
 				label: "GitHub",
 				url: "https://github.com/stars/tashifkhan/lists/coding-profile-stats-apis",
 			},
+		],
+		extras: [
+			{ label: "case study", url: "https://taf.sh/work/stats-apis", kind: "page" },
+			{ label: "CodeTrace demo", url: "https://taf.sh/reel/codetrace-demo.mp4", kind: "video" },
+			{ label: "APIs demo", url: "https://taf.sh/reel/stats-api-demo.mp4", kind: "video" },
 		],
 		points: [
 			"<strong>CodeTrace</strong> puts a developer's GitHub, LeetCode, Codeforces, GeeksForGeeks, CodeChef, HackerRank and takeUforward profiles on one page, with rating history, difficulty breakdowns and one merged <strong>activity heatmap</strong>. Sign in with Google and <code>/username</code> becomes a shareable profile, stored in <strong>PostgreSQL</strong> with row-level security.",
@@ -116,15 +132,20 @@ export const resumeProjects: ResumeProject[] = [
 	},
 	{
 		title: "Home Lab",
-		stack: "Docker, Docker Compose, Linux, Bash",
+		stack: "Docker Compose, Linux, Tailscale, Nginx Proxy Manager, FastAPI, Forgejo Actions",
 		color: "gray",
-		links: [{ label: "GitHub", url: "https://github.com/tashifkhan/home-lab" }],
+		links: [
+			{ label: "Live", url: "https://tashif.codes/projects/home-lab" },
+			{ label: "GitHub", url: "https://github.com/tashifkhan/home-lab" },
+		],
+		extras: [{ label: "how it's set up", url: "https://tashif.codes/projects/home-lab", kind: "page" }],
 		points: [
-			"20+ self-hosted services on Docker: Nextcloud, Jellyfin, OnlyOffice, Forgejo, SearXNG, Homarr. One Compose file keeps the stack reproducible.",
-			"Media pipeline: Prowlarr/Sonarr/Radarr/Lidarr/Readarr feed qBittorrent through FlareSolverr; Seerr handles requests and Tdarr transcodes overnight so storage stays sane.",
-			"A custom FastAPI dashboard tracks service health, container restarts and Tailscale devices, with uptime pings that catch a failed service early.",
-			"Remote access over Tailscale VPN with Nginx Proxy Manager in front for SSL and subdomains, tunneled through a VPS so it works without a static IP.",
-			"Nightly backups to local disk and an encrypted offsite copy, plus Watchtower for updates and health checks that alert if anything stays down.",
+			"<strong>30 containers</strong> in <strong>10 Docker Compose stacks</strong> on one Linux box: Jellyfin, Nextcloud with Euro-Office, Forgejo, SearXNG, BentoPDF, my dump.lab notes app and a full media pipeline.",
+			"No static IP, so public traffic goes through Cloudflare to <strong>Nginx Proxy Manager</strong> on a VPS (TLS and subdomains) and over <strong>Tailscale</strong> to the house. Admin tools bind only to the Tailscale address, and the server is a Tailscale exit node.",
+			"Requests in Seerr flow through Sonarr/Radarr and Prowlarr to qBittorrent. Bazarr adds subtitles, and Tdarr keeps the original while adding 1080p and 720p copies for weaker clients.",
+			"A <strong>FastAPI</strong> dashboard (Material 3, installable PWA) shows health for about 22 services, every Tailscale device with its battery, and short links like /git.",
+			"Self-hosted <strong>Forgejo</strong> with three Actions runners redeploys dump.taf.sh on every push. I also maintain Taflix skins for Jellyfin and a 26-theme Forgejo.",
+			"Upgrades are by hand and written up in the repo, including a 20-image upgrade with Postgres 16 to 18 and a failed-disk diagnosis.",
 		],
 	},
 	{
@@ -135,6 +156,11 @@ export const resumeProjects: ResumeProject[] = [
 		links: [
 			{ label: "F-Droid", url: "https://tashif.codes/fdroid" },
 			{ label: "GitHub", url: "https://github.com/tashifkhan/Paisa" },
+		],
+		extras: [
+			{ label: "Paisa demo", url: "https://taf.sh/reel/paisa-demo.mp4", kind: "video" },
+			{ label: "Patchwork demo", url: "https://taf.sh/reel/patchwork-native-demo.mp4", kind: "video" },
+			{ label: "Metro demo", url: "https://taf.sh/reel/ncr-metro-web-demo.mp4", kind: "video" },
 		],
 		points: [
 			`I run my own ${a("https://tashif.codes/fdroid", "F-Droid repo")} at <strong>tashif.codes/fdroid</strong> with 3 signed apps. Add it once and updates show up like any other F-Droid app.`,

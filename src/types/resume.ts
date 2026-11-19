@@ -10,6 +10,15 @@ export interface ResumeProject {
 	points: string[];
 	/** Where it runs, shown as small tags: "Android", "iOS", "Web". */
 	platforms?: string[];
+	/** Product pages, case studies and demo reels, shown as chips under the points. */
+	extras?: ResumeExtra[];
+}
+
+/** A chip under an entry: a page about the work, or a video of it. */
+export interface ResumeExtra {
+	label: string;
+	url: string;
+	kind: "page" | "video";
 }
 
 export interface Education {
@@ -52,4 +61,6 @@ export interface ExperienceEntry {
 	logo?: string;
 	/** A walkthrough of the work, opened in a new tab. */
 	video?: { label: string; url: string };
+	/** A page about the product, e.g. on taf.sh. */
+	page?: { label: string; url: string };
 }

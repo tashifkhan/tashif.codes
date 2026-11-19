@@ -1,0 +1,343 @@
+---
+/**
+ * Home lab. Replaces the README at /projects/home-lab. Everything here is
+ * read off the compose files, scripts and write-ups in the home-lab repo.
+ * Admin-only subdomains are left out on purpose.
+ */
+import { ExternalLink, Github } from "lucide-react";
+import { Landing, LandingHero, Section, Rows, Faq } from "@/components/landing";
+import type { LandingMeta } from "@/lib/landings";
+import type { Project } from "@/types";
+
+export const landing: LandingMeta = {
+	tagline: "30 containers in 10 Compose stacks on one Linux box at home, reachable from anywhere.",
+	cta: { label: "Read the compose files", href: "https://github.com/tashifkhan/home-lab", external: true },
+};
+
+interface Props {
+	project: Project;
+}
+
+const { project } = Astro.props;
+
+const path = [
+	{ name: "Cloudflare", note: "DNS, and caching for static Office and PDF assets" },
+	{ name: "VPS", note: "Nginx Proxy Manager: TLS and every subdomain" },
+	{ name: "Tailscale", note: "an encrypted hop back to the house" },
+	{ name: "home server", note: "10 Compose stacks, 30 containers" },
+];
+
+const access = [
+	{
+		title: "No static IP, so a VPS fronts it",
+		body: "My ISP only hands out static IPs on business plans. Public requests hit Cloudflare, then Nginx Proxy Manager on a small VPS, which holds the certificates and subdomains and forwards over Tailscale to the box at home.",
+	},
+	{
+		title: "Admin tools stay on the tailnet",
+		body: "Forgejo, dump and the office server bind only to the Tailscale address, so they never listen on the public internet. Each stack gets its own Docker network.",
+	},
+	{
+		title: "It doubles as an exit node",
+		body: "The server is a Tailscale exit node for IPv4 and IPv6, so my laptop and phone can route through home from anywhere.",
+	},
+];
+
+const stacks = [
+	{
+		group: "Media",
+		items: [
+			["Jellyfin", "Streams the library as \"Taflix\", with my own skins (below)."],
+			["Seerr", "Where requests for shows and films come in."],
+			["Bazarr", "Adds English subtitles automatically."],
+			["Tdarr", "Keeps the original and adds 1080p HEVC and 720p H.264 copies for weak clients."],
+		],
+	},
+	{
+		group: "Library automation",
+		items: [
+			["Sonarr, Radarr, Lidarr, Readarr", "Track TV, films, music and books, and pick releases."],
+			["Prowlarr + FlareSolverr", "Manage the indexers, with FlareSolverr getting through Cloudflare challenges."],
+			["qBittorrent", "Does the downloading."],
+			["AudioBookRequest", "A request page just for audiobooks."],
+		],
+	},
+	{
+		group: "Files and office",
+		items: [
+			["Nextcloud", "My own drive, on MariaDB and Redis."],
+			["Euro-Office", "Edits documents inside Nextcloud, served over TLS on the tailnet."],
+		],
+	},
+	{
+		group: "Dev",
+		items: [
+			["Forgejo", "My own Git host at git.taf.sh, on Postgres 18, with three Actions runners."],
+			["dump.lab", "My notes and HTML dumps at dump.taf.sh. It redeploys itself on every push through Forgejo Actions."],
+		],
+	},
+	{
+		group: "Search and tools",
+		items: [
+			["SearXNG", "Private search at search.taf.sh on Valkey, with a tuned engine set and a Discovery tab."],
+			["BentoPDF", "My fork of a PDF toolkit at pdf.taf.sh. PDFs are processed in the browser, never uploaded."],
+			["Homarr", "A start page for everything above."],
+		],
+	},
+];
+
+const builds = [
+	{
+		title: "A dashboard that knows the whole lab",
+		body: "FastAPI with Jinja and Tailwind in a Material 3 style, installable as a PWA, behind a password login. It shows about 22 services with live health dots (concurrent pings, cached for 30 seconds), lists every Tailscale device with its battery through the Tailscale API, and gives each service a short link like /git or /taflix.",
+	},
+	{
+		title: "Taflix skins for Jellyfin",
+		body: "A fork of a Jellyfin skin-manager plugin that bundles Netflix, Abyss and Catppuccin skins in the DLL, plus a Netflix-style CSS theme. A startup script trims the nav to three libraries and renames the patched JavaScript so browsers can't keep a stale copy.",
+	},
+	{
+		title: "A themed Forgejo",
+		body: "26 colour themes and a GitHub-style contribution heatmap on profiles.",
+	},
+	{
+		title: "Locked-down containers",
+		body: "BentoPDF runs with a read-only filesystem, every Linux capability dropped, and memory, CPU and process limits. SearXNG and BentoPDF are pinned by image digest, so an upstream tag can't change under me.",
+	},
+];
+
+const incidents = [
+	{
+		q: "The October upgrade",
+		a: "About 20 images moved up in one sitting: Postgres 16 to 18 by dump and restore, and Homarr 0.15 to 2.x through its 1.10 importer. Nginx Proxy Manager then refused to start because two locations pointed at hosts that no longer existed, which runtime DNS resolution fixed. Along the way I found the server's Ethernet had negotiated down to 10 Mbps. Every step is written up in the repo.",
+	},
+	{
+		q: "A disk that vanished",
+		a: "The USB SSD holding Docker's data started reporting \"medium not present\". I went through a USB reset, a driver rebind, raw SCSI probes and a power cycle of that single port while keeping the other two disks mounted, and concluded it was a physical failure. Docker moved onto the system disk.",
+	},
+	{
+		q: "Search that quietly stopped searching Google",
+		a: "An audit showed the image tagged latest was stale and the Google engine had been inactive for a while. I pinned the image, reweighted the engines, and added healthchecks and new Discovery sources.",
+	},
+];
+
+const gaps = [
+	{
+		title: "Backups",
+		body: "A nightly, validated dump of Nextcloud's database goes to a separate backup disk and is kept for 14 days. Nothing is copied offsite yet.",
+	},
+	{
+		title: "Updates",
+		body: "By hand. Images are pinned and each upgrade is written down, which is slower than auto-updating but means I know what changed.",
+	},
+	{
+		title: "Monitoring",
+		body: "Docker healthchecks on the critical containers and the dashboard's health dots. No alerting yet, so I find out when I look.",
+	},
+];
+---
+
+<Landing name="home-lab">
+	<LandingHero
+		wide
+		title="The server under my desk."
+		lead="30 containers in 10 Docker Compose stacks on one Linux box: my media, my files, my Git host and my search engine, reachable from anywhere without a static IP."
+	>
+		<Fragment slot="actions">
+			<a
+				href={project.github_link || "https://github.com/tashifkhan/home-lab"}
+				target="_blank"
+				rel="noopener noreferrer"
+				data-haptic-external
+				class="ld-btn ld-btn-primary"
+			>
+				<Github aria-hidden="true" />
+				Compose files
+			</a>
+			<a
+				href="https://search.taf.sh"
+				target="_blank"
+				rel="noopener noreferrer"
+				data-haptic-external
+				class="ld-btn"
+			>
+				<ExternalLink aria-hidden="true" />
+				Try search.taf.sh
+			</a>
+		</Fragment>
+		<Fragment slot="terms">Everything here is in the repo: compose files, scripts and incident write-ups.</Fragment>
+		<div slot="media" class="hl-path" role="img" aria-label="Request path: Cloudflare, then a VPS running Nginx Proxy Manager, then Tailscale, then the home server">
+			{
+				path.map((hop, i) => (
+					<div class="hl-hop">
+						<span class="hl-step">{String(i + 1).padStart(2, "0")}</span>
+						<span class="hl-name">{hop.name}</span>
+						<span class="hl-note">{hop.note}</span>
+					</div>
+				))
+			}
+		</div>
+	</LandingHero>
+
+	<Section id="access" title="How a request gets home." layout="side" gap="s">
+		<Rows rows={access} />
+	</Section>
+
+	<Section
+		id="stacks"
+		title="What runs on it."
+		lead="Each stack is its own Compose file, with its data on bind-mounted disks: one for Docker and databases, one for media, one for backups."
+		gap="l"
+	>
+		<div class="hl-stacks">
+			{
+				stacks.map((stack) => (
+					<section class="hl-stack">
+						<h3>{stack.group}</h3>
+						<ul>
+							{stack.items.map(([name, body]) => (
+								<li>
+									<strong>{name}</strong>
+									<span>{body}</span>
+								</li>
+							))}
+						</ul>
+					</section>
+				))
+			}
+		</div>
+	</Section>
+
+	<Section
+		id="pipeline"
+		title="From a request to a film."
+		lead="The media side runs without me touching it."
+		layout="side"
+	>
+		<ol class="hl-steps">
+			<li>Someone asks for a show in Seerr, or an audiobook in AudioBookRequest.</li>
+			<li>Sonarr or Radarr searches the indexers through Prowlarr.</li>
+			<li>qBittorrent downloads it.</li>
+			<li>The file moves into the library on the media disk.</li>
+			<li>Bazarr adds English subtitles.</li>
+			<li>Tdarr adds 1080p and 720p copies next to the original. It runs on the CPU, since the hardware encoders don't work on this box.</li>
+			<li>It shows up in Taflix.</li>
+		</ol>
+	</Section>
+
+	<Section id="builds" title="Things I built for it." layout="side" gap="s">
+		<Rows rows={builds} />
+	</Section>
+
+	<Section id="incidents" title="When it broke." lead="The parts worth writing down." layout="side">
+		<Faq items={incidents} />
+	</Section>
+
+	<Section id="gaps" title="What it doesn't do yet." layout="side" gap="s">
+		<Rows rows={gaps} />
+	</Section>
+</Landing>
+
+<style>
+	.hl-path {
+		display: grid;
+		gap: var(--ld-space-sm);
+		padding: var(--ld-space-lg);
+		border: 1px solid var(--ld-rule);
+		border-radius: var(--ld-radius-shot);
+		background: var(--ld-paper-2);
+	}
+	.hl-hop {
+		position: relative;
+		display: grid;
+		grid-template-columns: auto 1fr;
+		column-gap: var(--ld-space-md);
+		padding: var(--ld-space-md);
+		border: 1px solid var(--ld-rule);
+		border-radius: var(--ld-radius);
+		background: var(--ld-paper);
+	}
+	.hl-hop + .hl-hop::before {
+		content: "";
+		position: absolute;
+		left: calc(var(--ld-space-md) + 0.6rem);
+		top: calc(-1 * var(--ld-space-sm) - 1px);
+		height: var(--ld-space-sm);
+		border-left: 1px dashed var(--ld-accent);
+	}
+	.hl-step {
+		grid-row: span 2;
+		font-family: var(--ld-font-code);
+		font-size: var(--ld-text-sm);
+		color: var(--ld-accent);
+	}
+	.hl-name {
+		font-family: var(--ld-font-display);
+		font-size: var(--ld-text-title);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		color: var(--ld-ink);
+	}
+	.hl-note {
+		font-size: var(--ld-text-sm);
+		color: var(--ld-muted);
+	}
+	.hl-stacks {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+		gap: var(--ld-space-lg);
+	}
+	.hl-stack {
+		padding: var(--ld-space-lg);
+		border: 1px solid var(--ld-rule);
+		border-radius: var(--ld-radius);
+		background: var(--ld-paper-2);
+	}
+	.hl-stack h3 {
+		margin: 0 0 var(--ld-space-md);
+		font-family: var(--ld-font-code);
+		font-size: var(--ld-text-sm);
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--ld-accent);
+	}
+	.hl-stack ul {
+		display: grid;
+		gap: var(--ld-space-md);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.hl-stack li {
+		display: grid;
+		gap: 2px;
+	}
+	.hl-stack strong {
+		color: var(--ld-ink);
+	}
+	.hl-stack span {
+		font-size: var(--ld-text-sm);
+		color: var(--ld-muted);
+	}
+	.hl-steps {
+		display: grid;
+		gap: var(--ld-space-sm);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		counter-reset: step;
+	}
+	.hl-steps li {
+		counter-increment: step;
+		display: grid;
+		grid-template-columns: 2.5rem 1fr;
+		align-items: baseline;
+		padding-block: var(--ld-space-sm);
+		border-bottom: 1px solid var(--ld-rule);
+		color: var(--ld-ink);
+	}
+	.hl-steps li::before {
+		content: counter(step, decimal-leading-zero);
+		font-family: var(--ld-font-code);
+		font-size: var(--ld-text-sm);
+		color: var(--ld-accent);
+	}
+</style>
