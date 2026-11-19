@@ -380,6 +380,7 @@ body {
 	inset: 0;
 }
 .ld-player {
+	container: ld-player / inline-size;
 	background: var(--ld-paper-3);
 }
 .ld-player > video {
@@ -1044,4 +1045,34 @@ body {
 :root[data-reduce-motion] [data-landing] * {
 	transition-duration: 0.01ms !important;
 	scroll-behavior: auto !important;
+}
+
+/* A narrow frame, such as the phone clip beside a hero, has no room for the
+   seek bar between the times and the buttons. It takes its own row on top,
+   with the times beside the play button and the rest pushed right. */
+@container ld-player (max-width: 32rem) {
+	.ld-player-bar {
+		flex-wrap: wrap;
+		gap: 0 var(--ld-space-2xs);
+		padding-top: 0;
+	}
+	.ld-player-seek {
+		order: -1;
+		flex-basis: 100%;
+		height: 28px;
+	}
+	.ld-player-time,
+	.ld-player-time[data-ld-duration] {
+		display: block;
+		min-width: 0;
+	}
+	.ld-player-time[data-ld-duration]::before {
+		content: "/ ";
+	}
+	.ld-player-speed {
+		margin-left: auto;
+	}
+	.ld-player-btn {
+		width: 36px;
+	}
 }

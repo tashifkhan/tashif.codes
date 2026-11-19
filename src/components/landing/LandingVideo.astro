@@ -8,8 +8,10 @@
  *
  * With `controls` it gets the site's own player: a play button over the
  * poster, then a bar with seek, time, speed up to 3x, sound, picture in
- * picture and full screen, drawn in the theme's colours. Nothing downloads
- * before the first press. A clip in picture in picture keeps playing while
+ * picture and full screen, drawn in the theme's colours. It starts playing,
+ * muted, once half of it is on screen, and pauses when it scrolls away.
+ * After the visitor presses play, pause, seek or sound, it no longer starts
+ * or stops on its own. Reduce motion leaves it on the poster. A clip in picture in picture keeps playing while
  * you move to another page of the site.
  */
 import {
@@ -190,6 +192,18 @@ const { src, poster, label, autoplay = false, controls = false } = Astro.props;
 				if (!video || !seek || !time || !duration || !mute || !full) return;
 				player.dataset.wired = "true";
 
+				// Set once the visitor takes control, so scrolling stops driving playback.
+				let touched = false;
+				const take = () => {
+					touched = true;
+					video.loop = false;
+				};
+				player.querySelectorAll("button, input").forEach((control) => {
+					control.addEventListener("pointerdown", take);
+					control.addEventListener("keydown", take);
+				});
+				video.addEventListener("pointerdown", take);
+
 				let seeking = false;
 				const toggles = player.querySelectorAll<HTMLButtonElement>("[data-ld-toggle]");
 
@@ -316,6 +330,23 @@ const { src, poster, label, autoplay = false, controls = false } = Astro.props;
 				});
 
 				sync();
+
+				if (!reduced()) {
+					const io = new IntersectionObserver(
+						([entry]) => {
+							if (touched) return;
+							if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+								video.muted = true;
+								video.loop = true;
+								video.play().catch(() => {});
+							} else if (!video.paused) {
+								video.pause();
+							}
+						},
+						{ threshold: [0, 0.5] },
+					);
+					io.observe(player);
+				}
 			});
 	}
 
