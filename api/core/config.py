@@ -123,6 +123,34 @@ PROJECT_REGISTRY = {
             "bounce": False,
         },
     },
+    # The metro APIs, from the same Vercel export (--target delhi-metro-api /
+    # blr-metro-api). Only /api/* calls count, and path is the endpoint.
+    "delhi-metro-api": {
+        "ph_id": "",
+        "vercel_file": DATA_DIR / "delhi-metro-api.json",
+        "display_name": "Delhi NCR Metro API",
+        "labels": {
+            "pageviews": "API calls",
+            "visitors": "Unique IPs",
+            "visitors_note": "Distinct client IPs, summed per day",
+            "paths": "Top Endpoints",
+            "referrers": "Calling Sites",
+            "bounce": False,
+        },
+    },
+    "blr-metro-api": {
+        "ph_id": "",
+        "vercel_file": DATA_DIR / "blr-metro-api.json",
+        "display_name": "Namma Metro API",
+        "labels": {
+            "pageviews": "API calls",
+            "visitors": "Unique IPs",
+            "visitors_note": "Distinct client IPs, summed per day",
+            "paths": "Top Endpoints",
+            "referrers": "Calling Sites",
+            "bounce": False,
+        },
+    },
 }
 
 

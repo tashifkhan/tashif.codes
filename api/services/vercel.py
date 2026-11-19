@@ -153,6 +153,99 @@ def filter_stats_by_date(stats: "Stats", days: int | None = None) -> "Stats":
     )
 
 
+_rows_cache: dict[Path, tuple[float, list[dict] | None]] = {}
+
+# Fields the export's combination rows carry.
+ROW_FIELDS = ("path", "referrer", "country")
+
+
+def load_vercel_rows(file_path: Path) -> list[dict] | None:
+    """
+    The export's per-day (path, referrer, country) rows, or None if it has none.
+
+    Only the request metrics exports (scripts/export_stats_apis.py) write them.
+    The parsed list is kept until the file changes.
+    """
+    try:
+        mtime = file_path.stat().st_mtime
+    except OSError:
+        return None
+    cached = _rows_cache.get(file_path)
+    if cached and cached[0] == mtime:
+        return cached[1]
+    try:
+        rows = json.loads(file_path.read_text()).get("rows") or None
+    except (OSError, json.JSONDecodeError):
+        rows = None
+    _rows_cache[file_path] = (mtime, rows)
+    return rows
+
+
+def _stamp(day) -> datetime:
+    return datetime.combine(day, time(), IST).astimezone(timezone.utc)
+
+
+def filter_vercel_rows(
+    data: AllStats, rows: list[dict], filters: list[Filter], days: int | None = None
+) -> AllStats | None:
+    """
+    History matching any set of filters, from the export's combination rows.
+
+    Every breakdown is filled, not just the filtered field. Visitors in rows
+    are distinct IPs per combination, so sums across combinations overcount.
+    With a single filter the timeseries and that field's entries come from the
+    per-field totals instead, which count each IP once per day.
+    """
+    if any(field not in ROW_FIELDS for field, _ in filters):
+        return None
+    cutoff = ((datetime.now(timezone.utc) - timedelta(days=days)).date().isoformat() if days else None)
+    wanted = [(field, raw_values(field, value)) for field, value in filters]
+    matched = [
+        row
+        for row in rows
+        if (cutoff is None or row["date"] >= cutoff)
+        and all(str(row.get(field, "")).lower() in values for field, values in wanted)
+    ]
+
+    def totals(field: str) -> list[StatEntry]:
+        sums: dict[str, list[int]] = {}
+        for row in matched:
+            key = row[field]
+            entry = sums.setdefault(key, [0, 0])
+            entry[0] += row["pageviews"]
+            entry[1] += row["visitors"]
+        return sorted(
+            (StatEntry(key=key, pageviews=pv, visitors=v) for key, (pv, v) in sums.items()),
+            key=lambda e: e.pageviews,
+            reverse=True,
+        )
+
+    stats = {field: totals(field) for field in ROW_FIELDS}
+    if len(filters) == 1:
+        exact = filter_vercel_history(data, filters, days)
+        if exact is not None:
+            field = filters[0][0]
+            stats[field] = getattr(exact.stats, field)
+            return AllStats(metadata=data.metadata, timeseries=exact.timeseries, stats=Stats(**stats))
+
+    daily: dict[str, list[int]] = {}
+    for row in matched:
+        day = daily.setdefault(row["date"], [0, 0])
+        day[0] += row["pageviews"]
+        day[1] += row["visitors"]
+    timeseries = [
+        TimeseriesEntry(
+            date=_stamp(datetime.fromisoformat(day).date()),
+            pageviews=pageviews,
+            visitors=visitors,
+            bounce_rate=0,
+            migration_date=datetime.fromisoformat(day).date(),
+        )
+        for day, (pageviews, visitors) in sorted(daily.items())
+    ]
+    return AllStats(metadata=data.metadata, timeseries=timeseries, stats=Stats(**stats))
+
+
 def filter_vercel_history(data: AllStats, filters: list[Filter], days: int | None = None) -> AllStats | None:
     """
     Vercel history matching one filter, or None when it can't be filtered.

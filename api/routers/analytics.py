@@ -12,8 +12,10 @@ from services import (
     filter_stats_by_date,
     filter_timeseries_by_date,
     filter_vercel_history,
+    filter_vercel_rows,
     get_empty_stats,
     load_vercel_data,
+    load_vercel_rows,
     merge_stats,
     merge_timeseries,
 )
@@ -70,18 +72,28 @@ async def _get_project_stats_internal(
         else days
     )
 
-    # 1. Load Vercel migration data and filter by days. The export only has
-    # daily totals per field, so it can answer one filter but not several.
+    # 1. Load Vercel migration data and filter by days.
     filter_days = effective_days if effective_days > 0 else None
     vercel_data = (load_vercel_data(vercel_file) if vercel_file else None) or get_empty_stats()
     excludes_history = False
+    from_rows = False
     if filters:
-        history = filter_vercel_history(vercel_data, filters, filter_days)
+        # Request metrics exports carry per-combination rows, which answer any
+        # mix of filters and fill every breakdown. Other exports fall back to
+        # one filter on its own field.
+        rows = load_vercel_rows(vercel_file) if vercel_file else None
+        history = filter_vercel_rows(vercel_data, rows, filters, filter_days) if rows else None
+        from_rows = history is not None
+        if history is None:
+            history = filter_vercel_history(vercel_data, filters, filter_days)
         excludes_history = history is None and any(
             entry.pageviews for entry in filter_timeseries_by_date(vercel_data.timeseries, filter_days)
         )
         vercel_data = history or get_empty_stats()
-    history_field = filters[0][0] if filters and not excludes_history and vercel_data.timeseries else None
+    # Rows fill every list, so there's no single history field to point out.
+    history_field = (
+        filters[0][0] if filters and not from_rows and not excludes_history and vercel_data.timeseries else None
+    )
 
     # Filtered history is already cut to the period.
     history_days = None if filters else filter_days

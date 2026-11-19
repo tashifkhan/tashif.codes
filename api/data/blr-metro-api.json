@@ -1,0 +1,812 @@
+{
+ "metadata": {
+  "export_date": "2026-11-19T18:59:11.260568+00:00",
+  "source": "vercel_request_metrics"
+ },
+ "timeseries": [
+  {
+   "date": "2026-11-14T18:30:00Z",
+   "pageviews": 163,
+   "visitors": 46,
+   "bounce_rate": 0,
+   "migration_date": "2026-11-15"
+  },
+  {
+   "date": "2026-11-15T18:30:00Z",
+   "pageviews": 158,
+   "visitors": 77,
+   "bounce_rate": 0,
+   "migration_date": "2026-11-16"
+  },
+  {
+   "date": "2026-11-16T18:30:00Z",
+   "pageviews": 78,
+   "visitors": 38,
+   "bounce_rate": 0,
+   "migration_date": "2026-11-17"
+  },
+  {
+   "date": "2026-11-17T18:30:00Z",
+   "pageviews": 36,
+   "visitors": 18,
+   "bounce_rate": 0,
+   "migration_date": "2026-11-18"
+  }
+ ],
+ "stats": {
+  "path": [
+   {
+    "key": "/api/v1/stations/search",
+    "pageviews": 65,
+    "visitors": 44,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/v1/news",
+    "pageviews": 64,
+    "visitors": 44,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/v1/journeys/plan",
+    "pageviews": 10,
+    "visitors": 4,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/v1/lines",
+    "pageviews": 7,
+    "visitors": 4,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/v1/health",
+    "pageviews": 3,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/v1/stations/VWIA",
+    "pageviews": 3,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/v1/stations/KGWA",
+    "pageviews": 2,
+    "visitors": 2,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/config",
+    "pageviews": 1,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/env",
+    "pageviews": 1,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/settings",
+    "pageviews": 1,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/v1/lines/PL/stations",
+    "pageviews": 1,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/v1/stations/AGPP",
+    "pageviews": 1,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/v1/stations/ETCT",
+    "pageviews": 1,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/v1/stations/HOSR",
+    "pageviews": 1,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/v1/stations/IIMB",
+    "pageviews": 1,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/v1/stations/SSHP",
+    "pageviews": 1,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "/api/v1/stations/search",
+    "pageviews": 79,
+    "visitors": 76,
+    "migration_date": "2026-11-16"
+   },
+   {
+    "key": "/api/v1/news",
+    "pageviews": 79,
+    "visitors": 76,
+    "migration_date": "2026-11-16"
+   },
+   {
+    "key": "/api/v1/news",
+    "pageviews": 39,
+    "visitors": 38,
+    "migration_date": "2026-11-17"
+   },
+   {
+    "key": "/api/v1/stations/search",
+    "pageviews": 39,
+    "visitors": 38,
+    "migration_date": "2026-11-17"
+   },
+   {
+    "key": "/api/v1/news",
+    "pageviews": 18,
+    "visitors": 18,
+    "migration_date": "2026-11-18"
+   },
+   {
+    "key": "/api/v1/stations/search",
+    "pageviews": 18,
+    "visitors": 18,
+    "migration_date": "2026-11-18"
+   }
+  ],
+  "referrer": [
+   {
+    "key": "blr-metro.vercel.app",
+    "pageviews": 70,
+    "visitors": 28,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "blr-metro.tashif.codes",
+    "pageviews": 58,
+    "visitors": 16,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "(no referrer)",
+    "pageviews": 15,
+    "visitors": 2,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "blr-metro-a0wzvp3n4-tashifkhans-projects.vercel.app",
+    "pageviews": 4,
+    "visitors": 2,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "blr-metro-czbeutl28-tashifkhans-projects.vercel.app",
+    "pageviews": 4,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "blr-metro-eddemrr8x-tashifkhans-projects.vercel.app",
+    "pageviews": 4,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "blr-metro-lqdp3m4nr-tashifkhans-projects.vercel.app",
+    "pageviews": 4,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "blr-metro-rew6qlenj-tashifkhans-projects.vercel.app",
+    "pageviews": 4,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "blr-metro.tashif.codes",
+    "pageviews": 86,
+    "visitors": 44,
+    "migration_date": "2026-11-16"
+   },
+   {
+    "key": "blr-metro.vercel.app",
+    "pageviews": 72,
+    "visitors": 34,
+    "migration_date": "2026-11-16"
+   },
+   {
+    "key": "blr-metro.tashif.codes",
+    "pageviews": 44,
+    "visitors": 21,
+    "migration_date": "2026-11-17"
+   },
+   {
+    "key": "blr-metro.vercel.app",
+    "pageviews": 34,
+    "visitors": 17,
+    "migration_date": "2026-11-17"
+   },
+   {
+    "key": "blr-metro.tashif.codes",
+    "pageviews": 20,
+    "visitors": 10,
+    "migration_date": "2026-11-18"
+   },
+   {
+    "key": "blr-metro.vercel.app",
+    "pageviews": 16,
+    "visitors": 8,
+    "migration_date": "2026-11-18"
+   }
+  ],
+  "country": [
+   {
+    "key": "US",
+    "pageviews": 97,
+    "visitors": 39,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "IN",
+    "pageviews": 60,
+    "visitors": 4,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "CA",
+    "pageviews": 2,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "DE",
+    "pageviews": 2,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "NL",
+    "pageviews": 2,
+    "visitors": 1,
+    "migration_date": "2026-11-15"
+   },
+   {
+    "key": "US",
+    "pageviews": 158,
+    "visitors": 77,
+    "migration_date": "2026-11-16"
+   },
+   {
+    "key": "US",
+    "pageviews": 72,
+    "visitors": 36,
+    "migration_date": "2026-11-17"
+   },
+   {
+    "key": "IN",
+    "pageviews": 4,
+    "visitors": 1,
+    "migration_date": "2026-11-17"
+   },
+   {
+    "key": "ZA",
+    "pageviews": 2,
+    "visitors": 1,
+    "migration_date": "2026-11-17"
+   },
+   {
+    "key": "US",
+    "pageviews": 36,
+    "visitors": 18,
+    "migration_date": "2026-11-18"
+   }
+  ],
+  "device_type": [],
+  "os_name": []
+ },
+ "rows": [
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.vercel.app",
+   "country": "US",
+   "pageviews": 23,
+   "visitors": 23
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.vercel.app",
+   "country": "US",
+   "pageviews": 23,
+   "visitors": 23
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "US",
+   "pageviews": 14,
+   "visitors": 12
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "US",
+   "pageviews": 14,
+   "visitors": 12
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "IN",
+   "pageviews": 8,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "IN",
+   "pageviews": 7,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/journeys/plan",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 3
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.vercel.app",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.vercel.app",
+   "country": "IN",
+   "pageviews": 5,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/journeys/plan",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 4,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/lines",
+   "referrer": "blr-metro.vercel.app",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/VWIA",
+   "referrer": "blr-metro.vercel.app",
+   "country": "IN",
+   "pageviews": 3,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/health",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/lines",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/lines",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/news",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro-a0wzvp3n4-tashifkhans-projects.vercel.app",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro-czbeutl28-tashifkhans-projects.vercel.app",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro-eddemrr8x-tashifkhans-projects.vercel.app",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro-lqdp3m4nr-tashifkhans-projects.vercel.app",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro-rew6qlenj-tashifkhans-projects.vercel.app",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/KGWA",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/search",
+   "referrer": "(no referrer)",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro-a0wzvp3n4-tashifkhans-projects.vercel.app",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 2
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro-czbeutl28-tashifkhans-projects.vercel.app",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro-eddemrr8x-tashifkhans-projects.vercel.app",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro-lqdp3m4nr-tashifkhans-projects.vercel.app",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro-rew6qlenj-tashifkhans-projects.vercel.app",
+   "country": "US",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/config",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/env",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/settings",
+   "referrer": "(no referrer)",
+   "country": "US",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/health",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/journeys/plan",
+   "referrer": "blr-metro.vercel.app",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/lines/PL/stations",
+   "referrer": "blr-metro.vercel.app",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.vercel.app",
+   "country": "CA",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.vercel.app",
+   "country": "DE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/AGPP",
+   "referrer": "blr-metro.vercel.app",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/ETCT",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/HOSR",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/IIMB",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "NL",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.vercel.app",
+   "country": "CA",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.vercel.app",
+   "country": "DE",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-15",
+   "path": "/api/v1/stations/SSHP",
+   "referrer": "blr-metro.vercel.app",
+   "country": "IN",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "US",
+   "pageviews": 43,
+   "visitors": 43
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "US",
+   "pageviews": 43,
+   "visitors": 43
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.vercel.app",
+   "country": "US",
+   "pageviews": 36,
+   "visitors": 34
+  },
+  {
+   "date": "2026-11-16",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.vercel.app",
+   "country": "US",
+   "pageviews": 36,
+   "visitors": 34
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "US",
+   "pageviews": 20,
+   "visitors": 20
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "US",
+   "pageviews": 20,
+   "visitors": 20
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.vercel.app",
+   "country": "US",
+   "pageviews": 16,
+   "visitors": 16
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.vercel.app",
+   "country": "US",
+   "pageviews": 16,
+   "visitors": 16
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "IN",
+   "pageviews": 2,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.vercel.app",
+   "country": "ZA",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-17",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.vercel.app",
+   "country": "ZA",
+   "pageviews": 1,
+   "visitors": 1
+  },
+  {
+   "date": "2026-11-18",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "US",
+   "pageviews": 10,
+   "visitors": 10
+  },
+  {
+   "date": "2026-11-18",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.tashif.codes",
+   "country": "US",
+   "pageviews": 10,
+   "visitors": 10
+  },
+  {
+   "date": "2026-11-18",
+   "path": "/api/v1/news",
+   "referrer": "blr-metro.vercel.app",
+   "country": "US",
+   "pageviews": 8,
+   "visitors": 8
+  },
+  {
+   "date": "2026-11-18",
+   "path": "/api/v1/stations/search",
+   "referrer": "blr-metro.vercel.app",
+   "country": "US",
+   "pageviews": 8,
+   "visitors": 8
+  }
+ ]
+}

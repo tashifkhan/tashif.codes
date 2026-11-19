@@ -11,6 +11,8 @@ from .vercel import (
     filter_timeseries_by_date,
     filter_stats_by_date,
     filter_vercel_history,
+    filter_vercel_rows,
+    load_vercel_rows,
 )
 from .merger import merge_stat_lists, merge_timeseries, merge_stats
 from .cache import cached, invalidate
@@ -25,6 +27,8 @@ __all__ = [
     "filter_timeseries_by_date",
     "filter_stats_by_date",
     "filter_vercel_history",
+    "filter_vercel_rows",
+    "load_vercel_rows",
     "merge_stat_lists",
     "merge_timeseries",
     "merge_stats",

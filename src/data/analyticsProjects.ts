@@ -47,6 +47,9 @@ const slugMapping: Record<string, string> = {
     "codechef-stats-api": "stats-apis",
     "hackerrank-stats-api": "stats-apis",
     "tuf-stats-api": "stats-apis",
+    // The metro apps' cards open their API's request history.
+    "delhi-metro": "delhi-metro-api",
+    "blr-metro": "blr-metro-api",
 };
 
 export function getAnalyticsSlug(slug: string): string {

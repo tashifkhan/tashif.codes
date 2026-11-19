@@ -1,0 +1,15 @@
+{
+	"source": "Vercel request metrics for the dmrc-rest-api project, production, /api/* paths only",
+	"from": "2026-10-20",
+	"to": "2026-11-19",
+	"requests30d": 2949,
+	"uniqueIps30d": 378,
+	"previous": { "from": "2026-09-20", "to": "2026-10-20", "requests": 1476 },
+	"automated30d": 1113,
+	"statsSlug": "delhi-metro-api",
+	"clients": [
+		{ "name": "disha-data-pipeline", "what": "a transit dataset builder", "calls": 285, "window": "Sep 20 to Oct 20" },
+		{ "name": "okhttp", "what": "the Android app", "calls": 270 },
+		{ "name": "ncr-metro-map-builder", "what": "a metro map builder", "calls": 28 }
+	]
+}
