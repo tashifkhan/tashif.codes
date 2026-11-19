@@ -48,7 +48,7 @@ export const resumeProjects: ResumeProject[] = [
 			{ label: "GitHub", url: "https://github.com/tashifkhan/agentic-browser" },
 		],
 		extras: [
-			{ label: "demo reel", url: "https://taf.sh/reel/agentic-browser-demo.mp4", kind: "video" },
+			{ label: "demo reel", url: "https://taf.sh/media/agentic-browser/demo.mp4", kind: "video" },
 		],
 		points: [
 			"A browser agent that works on any website: a <strong>WXT</strong>/<strong>React</strong> side-panel extension talks to a <strong>FastAPI</strong> backend, which serves <strong>120+ REST endpoints</strong> and an <strong>MCP</strong> server from the same port.",
@@ -73,7 +73,7 @@ export const resumeProjects: ResumeProject[] = [
 		extras: [
 			{ label: "product page", url: "https://taf.sh/products/talentsync", kind: "page" },
 			{ label: "HR dashboard", url: "https://taf.sh/products/talentsync-hr", kind: "page" },
-			{ label: "demo reel", url: "https://taf.sh/reel/talentsync-demo.mp4", kind: "video" },
+			{ label: "demo reel", url: "https://taf.sh/media/talentsync/demo.mp4", kind: "video" },
 		],
 		points: [
 			"AI career platform. Candidates get resume analysis, ATS scoring, tailored resume PDFs, cold emails, LinkedIn posts and interview prep. Employers get a dashboard of pre-vetted talent.",
@@ -99,8 +99,8 @@ export const resumeProjects: ResumeProject[] = [
 		],
 		extras: [
 			{ label: "case study", url: "https://taf.sh/work/stats-apis", kind: "page" },
-			{ label: "CodeTrace demo", url: "https://taf.sh/reel/codetrace-demo.mp4", kind: "video" },
-			{ label: "APIs demo", url: "https://taf.sh/reel/stats-api-demo.mp4", kind: "video" },
+			{ label: "CodeTrace demo", url: "https://taf.sh/media/codetrace/demo.mp4", kind: "video" },
+			{ label: "APIs demo", url: "https://taf.sh/media/stats-apis/demo.mp4", kind: "video" },
 		],
 		points: [
 			"<strong>CodeTrace</strong> puts a developer's GitHub, LeetCode, Codeforces, GeeksForGeeks, CodeChef, HackerRank and takeUforward profiles on one page, with rating history, difficulty breakdowns and one merged <strong>activity heatmap</strong>. Sign in with Google and <code>/username</code> becomes a shareable profile, stored in <strong>PostgreSQL</strong> with row-level security.",
@@ -158,9 +158,9 @@ export const resumeProjects: ResumeProject[] = [
 			{ label: "GitHub", url: "https://github.com/tashifkhan/Paisa" },
 		],
 		extras: [
-			{ label: "Paisa demo", url: "https://taf.sh/reel/paisa-demo.mp4", kind: "video" },
-			{ label: "Patchwork demo", url: "https://taf.sh/reel/patchwork-native-demo.mp4", kind: "video" },
-			{ label: "Metro demo", url: "https://taf.sh/reel/ncr-metro-web-demo.mp4", kind: "video" },
+			{ label: "Paisa demo", url: "https://taf.sh/media/paisa/demo.mp4", kind: "video" },
+			{ label: "Patchwork demo", url: "https://taf.sh/media/patchwork/demo.mp4", kind: "video" },
+			{ label: "Metro demo", url: "https://taf.sh/media/delhi-metro/demo.mp4", kind: "video" },
 		],
 		points: [
 			`I run my own ${a("https://tashif.codes/fdroid", "F-Droid repo")} at <strong>tashif.codes/fdroid</strong> with 3 signed apps. Add it once and updates show up like any other F-Droid app.`,

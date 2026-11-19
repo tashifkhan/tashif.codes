@@ -33,7 +33,7 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const reel = "https://taf.sh/reel";
+const tafMedia = "https://taf.sh/media";
 const media = "/landings/agentic-browser";
 const files = "https://drive.tashif.codes/public.php/dav/files/9XPLTERoHiNdnBw";
 const report = `${files}/Report.pdf`;
@@ -218,8 +218,8 @@ const faq = [
 		</Fragment>
 		<Shot slot="media" width={1280} height={800}>
 			<LandingVideo
-				src={`${reel}/agentic-browser-demo.mp4`}
-				poster={`${reel}/agentic-browser-poster.jpg`}
+				src={`${tafMedia}/agentic-browser/demo.mp4`}
+				poster={`${tafMedia}/agentic-browser/poster.jpg`}
 				label="Agentic Browser walkthrough: the side panel planning and acting on a page"
 				controls
 			/>

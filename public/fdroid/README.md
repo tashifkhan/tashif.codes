@@ -100,7 +100,7 @@ many bullets as fit in 500 characters. A file that already exists is left
 alone, so write one by hand before releasing if you want different wording.
 
 The walkthrough videos are served by taf.sh, and `video.txt` points at them
-under `https://taf.sh/reel/`.
+under `https://taf.sh/media/<id>/`.
 
 ## Required GitHub Secrets
 

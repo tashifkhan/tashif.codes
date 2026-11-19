@@ -26,7 +26,7 @@ const { project, api, lead = false } = Astro.props;
 const base = `https://${api.host}`;
 const call = `curl ${base}${samplePath(api)}`;
 const siblings = statsApis.filter((other) => other.slug !== api.slug);
-const reel = "https://taf.sh/reel";
+const tafMedia = "https://taf.sh/media";
 ---
 
 <Landing name="stats-api">
@@ -60,8 +60,8 @@ const reel = "https://taf.sh/reel";
 		<Fragment slot="terms">{api.angle}</Fragment>
 		<Shot slot="media" width={1280} height={800}>
 			<LandingVideo
-				src={`${reel}/stats-api-demo.mp4`}
-				poster={`${reel}/stats-api-poster.jpg`}
+				src={`${tafMedia}/stats-apis/demo.mp4`}
+				poster={`${tafMedia}/stats-apis/poster.jpg`}
 				label="A walkthrough of the seven stats APIs and their playgrounds"
 				controls
 			/>
@@ -103,7 +103,7 @@ const reel = "https://taf.sh/reel";
 				<div class="ld-shots">
 					{[1, 2, 3, 4].map((n) => (
 						<Shot
-							src={`${reel}/stats-api-${n}.jpg`}
+							src={`${tafMedia}/stats-apis/shots/${n}.jpg`}
 							alt={`Stats API playground, screen ${n}`}
 							width={1440}
 							height={900}

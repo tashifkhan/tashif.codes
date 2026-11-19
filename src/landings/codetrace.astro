@@ -28,7 +28,7 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const reel = "https://taf.sh/reel";
+const tafMedia = "https://taf.sh/media";
 const sample = "https://codetrace.xyz/app?github=tashifkhan&leetcode=khan-tashif";
 
 const features = [
@@ -82,8 +82,8 @@ const features = [
 		<Fragment slot="terms">Free. No account needed to look someone up.</Fragment>
 		<Shot slot="media" width={1280} height={800}>
 			<LandingVideo
-				src={`${reel}/codetrace-demo.mp4`}
-				poster={`${reel}/codetrace-poster.jpg`}
+				src={`${tafMedia}/codetrace/demo.mp4`}
+				poster={`${tafMedia}/codetrace/poster.jpg`}
 				label="CodeTrace walkthrough: a combined dashboard, then one page per platform"
 				controls
 			/>
@@ -99,7 +99,7 @@ const features = [
 			{
 				[1, 2, 3].map((n) => (
 					<Shot
-						src={`${reel}/codetrace-${n}.jpg`}
+						src={`${tafMedia}/codetrace/shots/${n}.jpg`}
 						alt={`CodeTrace, screen ${n}`}
 						width={1200}
 						height={750}
@@ -117,8 +117,8 @@ const features = [
 	>
 		<Shot width={1280} height={800}>
 			<LandingVideo
-				src={`${reel}/stats-api-demo.mp4`}
-				poster={`${reel}/stats-api-poster.jpg`}
+				src={`${tafMedia}/stats-apis/demo.mp4`}
+				poster={`${tafMedia}/stats-apis/poster.jpg`}
 				label="A walkthrough of the seven stats APIs and their playgrounds"
 				controls
 			/>
