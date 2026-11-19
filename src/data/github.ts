@@ -1,10 +1,13 @@
 import { githubAttributedStatsUrl, githubUsernames, personalGithubUsername } from "./profile";
-import { createCachedFetch } from "../lib/fetchCached";
+import { createCachedFetch, readCache, writeCache } from "../lib/fetchCached";
 import type { Commit, GitHubStats, GitHubStatsData, OrgContribution, Pull, PullRequest, StarsData } from "@/types";
+
+type LanguageData = GitHubStatsData["topLanguages"][number];
 
 // Shares the "github" namespace with projects.ts — same upstream, and the keys
 // below are distinct from the ones that module writes.
-const { fetchJson, fetchText } = createCachedFetch("github");
+const GITHUB_CACHE_NS = "github";
+const { fetchJson, fetchText } = createCachedFetch(GITHUB_CACHE_NS);
 
 
 type UserResults = {
@@ -85,9 +88,34 @@ async function fetchUserResults(username: string): Promise<UserResults> {
 		],
 	];
 
+	// The stats API answers 200 with `topLanguages: []` while its authored-code
+	// walk is still pending, and that payload overwrites the cached stats. Keep
+	// the last non-empty language list under its own key so a pending response
+	// doesn't wipe the chart. Seed it from the old stats cache on first run.
+	const languagesKey = `stats-languages-${username}`;
+	const previousLanguages: LanguageData[] =
+		readCache<LanguageData[]>(GITHUB_CACHE_NS, languagesKey) ??
+		readCache<{ topLanguages?: LanguageData[] }>(
+			GITHUB_CACHE_NS,
+			`stats-attributed-${username}`,
+		)?.topLanguages ??
+		[];
+
 	const results = await Promise.all(
 		endpoints.map(([url, key]) => fetchJson<any>(url, key))
 	);
+
+	const stats = results[0];
+	if (stats?.topLanguages?.length) {
+		writeCache(GITHUB_CACHE_NS, languagesKey, stats.topLanguages);
+	} else if (stats && previousLanguages.length) {
+		console.warn(
+			`GitHub languages pending for ${username}; using last known list`,
+		);
+		// The stats fetch above just overwrote the seed, so persist the list now.
+		writeCache(GITHUB_CACHE_NS, languagesKey, previousLanguages);
+		results[0] = { ...stats, topLanguages: previousLanguages };
+	}
 
 	return { username, results: results as UserResults["results"] };
 }
