@@ -531,10 +531,11 @@ const tocLinkClass = "toc-link";
 
 		<!--
 			Left padding clears the collapsed settings dock in the bottom-left corner.
-			The bottom offsets put the bar's centre level with the dock button's,
-			which sits at bottom-4 on phones and bottom-6 from sm up.
+			The bar is 52px tall like the dock button (42px buttons, 4px padding,
+			1px border), and uses the same bottom-4 / sm:bottom-6 offsets, so the
+			two line up top and bottom.
 		-->
-		<div class="pointer-events-none sticky bottom-3 z-30 flex justify-center pl-[4.25rem] pr-3 sm:bottom-5 sm:px-3 lg:hidden" data-post-bar>
+		<div class="pointer-events-none sticky bottom-4 z-30 flex justify-center pl-[4.5rem] pr-3 sm:bottom-6 sm:px-3 lg:hidden" data-post-bar>
 			<div
 				class="pointer-events-auto flex gap-0.5 rounded-full border border-border/70 bg-card/90 p-1 shadow-lg backdrop-blur-md"
 				role="toolbar"
