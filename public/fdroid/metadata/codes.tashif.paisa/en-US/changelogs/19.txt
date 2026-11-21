@@ -1,0 +1,6 @@
+Payment app notifications, Gemini Nano on the phone, AI for messages the rules can't read, account links for UPI apps, and merchant renames.
+
+* More → Payment notifications reads payment alerts from bank and UPI apps.
+* Only the apps switched on are read.
+* Alerts like "₹250 paid to Swiggy", "+₹500", "Arjun sent you ₹500" and "Rs 500 debited" are read.
+* A payment that arrives as a UPI app alert, a bank SMS and a bank app alert is saved once.
