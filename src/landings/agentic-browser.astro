@@ -2,24 +2,14 @@
 /**
  * Agentic Browser. Replaces the README at /projects/agentic-browser.
  *
- * The figures, the memory design and the limits come from the project
- * report and deck, which are public at tashif.codes/agentic-browser. The
- * slides are in public/landings/agentic-browser/slides. The video streams
- * from taf.sh.
+ * The figures, the memory design and the limits come from the project report
+ * and deck, which are public at tashif.codes/agentic-browser. The tour frames
+ * are stills from the film (the real extension on real pages), in
+ * public/landings/agentic-browser/tour, beside the slides and the README's
+ * architecture diagram in both themes. The film streams from taf.sh.
  */
-import { FileText, Github } from "lucide-react";
-import {
-	Landing,
-	LandingHero,
-	Section,
-	Shot,
-	LandingVideo,
-	Rows,
-	Deck,
-	DeckOpen,
-	Faq,
-	Routes,
-} from "@/components/landing";
+import { Copy, FileText, Github } from "lucide-react";
+import { Landing, Shot, LandingVideo, Deck, DeckOpen, Faq, Routes } from "@/components/landing";
 import type { LandingMeta } from "@/lib/landings";
 import type { Project } from "@/types";
 
@@ -36,46 +26,47 @@ interface Props {
 const { project } = Astro.props;
 const tafMedia = "https://taf.sh/media";
 const media = "/landings/agentic-browser";
+const repo = project.github_link;
 const files = "https://drive.tashif.codes/public.php/dav/files/9XPLTERoHiNdnBw";
 const report = `${files}/Report.pdf`;
 const install = "curl -fsSL https://tashif.codes/agentic-browser:install | sh";
 
 const loop = [
-	{
-		title: "Plan",
-		body: "It reads the page's DOM as it is right now, then writes the steps it means to take.",
-	},
-	{
-		title: "Act",
-		body: "It clicks, types, scrolls and navigates through 27 browser tools. Each action waits for your approval.",
-	},
-	{
-		title: "Verify",
-		body: "It looks at the page after every step, and reasons again when the result is not what it planned for.",
-	},
+	{ title: "Plan", body: "It reads the page's DOM as it is right now, then writes the steps it means to take." },
+	{ title: "Act", body: "It clicks, types, scrolls and navigates through 27 browser tools. Each action waits for your approval." },
+	{ title: "Verify", body: "It looks at the page after every step, and reasons again when the result is not what it planned for." },
+];
+
+// The tour: one frame from the film per chapter.
+const tour = [
+	{ id: "read", title: "It reads what you are looking at", body: "Ask about the page or the video in front of you. Here it answers from a 27-minute video's transcript.", alt: "The side panel beside a YouTube video, answering from its transcript" },
+	{ id: "act", title: "It clicks through for you", body: "Give it a task with several steps. It searches crates.io, opens reqwest, then its Versions tab, and checks the page after each step.", alt: "crates.io open on the reqwest Versions tab, with the side panel listing each step it took" },
+	{ id: "plan", title: "It runs on the plan you pay for", body: "Pick Claude, ChatGPT, Google AI or OpenCode in the model menu. That plan's own agent runs the turn with this browser's tools, and no shell.", alt: "The side panel on GitHub, answering with Claude Sonnet picked from the model menu" },
+	{ id: "attach", title: "It reads your screenshots", body: "Attach an image, a PDF or a log. Here it reads a declined payment and explains code 51.", alt: "A screenshot of a declined payment attached in the side panel, with the agent explaining code 51" },
+	{ id: "voice", title: "It hears what you meant", body: "Ramble, say um, correct yourself halfway. One pass through Gemini writes the request you meant, then it clicks through.", alt: "The side panel on Wikipedia with a cleaned-up spoken request in the composer" },
+	{ id: "mcp", title: "Your coding agent drives it", body: "Claude Code, Codex and Cursor get your real tabs over MCP. Here Claude Code searches crates.io and reads the axum page.", alt: "Claude Code calling the browser tools, with the axum crate page open beside it" },
+	{ id: "memory", title: "It remembers you", body: "Tell it once. A new chat recalls the talk you are giving on async Rust and picks the Tokio sections for it.", alt: "The side panel on the Tokio tutorial, answering with what it remembers about the talk" },
+];
+const also = [
+	{ title: "From your phone", body: "Text a task to the Telegram bot. It runs in your browser at home and replies with the answer or a screenshot. Only people on your allow list can use it." },
+	{ title: "Long chats", body: "Older messages fold into running notes instead of falling off the end of the context." },
+	{ title: "A repo agent", body: "It clones a repository, greps it and reads the files before it answers. Private repos work through your GitHub token." },
 ];
 
 const stores = [
-	{
-		title: "PostgreSQL",
-		body: "The source of truth. Facts, entities, claims and events, written in transactions.",
-	},
-	{
-		title: "Neo4j",
-		body: "A knowledge graph of how those things relate, so a recall can follow a link two hops out.",
-	},
-	{
-		title: "OpenSearch",
-		body: "Meaning and keywords together: vector search and BM25 run side by side.",
-	},
-	{
-		title: "Fused, then trimmed",
-		body: "Reciprocal Rank Fusion merges the results, the graph expands the best of them, and the rest is cut to fit the model's context.",
-	},
-	{
-		title: "Memories fade",
-		body: "Each memory decays on a forgetting curve unless it is used again. Preferences last far longer than passing context.",
-	},
+	{ title: "PostgreSQL", body: "The source of truth. Facts, entities, claims and events, written in transactions." },
+	{ title: "Neo4j", body: "A knowledge graph of how those things relate, so a recall can follow a link two hops out." },
+	{ title: "OpenSearch", body: "Meaning and keywords together: vector search and BM25 run side by side." },
+	{ title: "Fused, then trimmed", body: "Reciprocal Rank Fusion merges the results, the graph expands the best of them, and the rest is cut to fit the model's context." },
+	{ title: "Memories fade", body: "Each memory decays on a forgetting curve unless it is used again. Preferences last far longer than passing context." },
+];
+
+// From the tests behind slides 22 and 24 of the deck, and the Settings test in the film.
+const proof = [
+	{ value: "14/14", label: "unsafe shell commands refused by the repo agent" },
+	{ value: "6/6", label: "facts kept after a long chat was compacted" },
+	{ value: "142 s", label: "longest task, finished with no step cap" },
+	{ value: "3.5 s", label: "for a test turn on a Claude subscription" },
 ];
 
 // Table 5.2 of the report.
@@ -105,30 +96,16 @@ const models: { name: string; ids: string[]; note?: string }[] = [
 	{ name: "OpenRouter", ids: ["qwen/qwen4-max"], note: "Any of its 380+ models, such as" },
 	{ name: "Ollama, local", ids: [], note: "Any model you pull, with no key and no network" },
 ];
+const plans = ["Claude", "ChatGPT", "Google AI", "OpenCode"];
 
-// Shipped after the May defence, in PR #122.
-const since = [
-	{ title: "Your plan, not just your keys", body: "Run a turn on your Claude, ChatGPT, Google AI or OpenCode subscription. That plan's own agent does the work, with this browser's tools and no shell." },
-	{ title: "Screenshots and files", body: "Attach an image, a PDF or a log and ask about it. Images go to any model that can see." },
-	{ title: "Voice in one pass", body: "Ramble and correct yourself. A model that hears audio writes down what you meant, then the agent acts on it." },
-	{ title: "Long chats", body: "Older messages fold into running notes instead of falling off the end of the context." },
-	{ title: "From your phone", body: "Text a task to the Telegram bot. It runs in your browser at home and replies with the answer or a screenshot. Only people on your allow list can use it." },
-	{ title: "Coding agents drive it", body: "Claude Code, Codex, Cursor and other MCP clients get your real tabs and your memory." },
-	{ title: "A repo agent", body: "It clones a repository, greps it and reads the files before it answers. Private repos work through your GitHub token." },
-	{ title: "One command to install", body: "Databases, backend, extension, browsers and MCP, on macOS and Linux. It asks before anything that touches your machine." },
-];
-
-const setup = [
-	{
-		title: "Install",
-		body: "macOS or Linux. It clones the repo into ~/agentic‑browser and walks through seven steps. Add <code>-s -- --yes</code> after <code>sh</code> to take every default.",
-		copy: install,
-	},
-	{
-		title: "Read it first",
-		body: "The whole installer is one shell script and one Python file.",
-		action: { label: "Read install.sh", href: `${project.github_link}/blob/main/install.sh`, external: true },
-	},
+const steps = [
+	{ title: "Tools", body: "docker, uv, node and pnpm, with Homebrew offers for what is missing" },
+	{ title: "Settings", body: "a .env, a model key, the encryption key, the backend on 127.0.0.1" },
+	{ title: "Databases", body: "Postgres, Neo4j and OpenSearch, waited on until healthy" },
+	{ title: "Build", body: "dependencies and the extension" },
+	{ title: "Backend", body: "at login with launchd or systemd, or just for now" },
+	{ title: "Browsers", body: "finds them, guides the load, confirms it connected" },
+	{ title: "MCP", body: "registers the tools with your coding agents, after showing the diff" },
 ];
 
 const compatible = [
@@ -183,21 +160,9 @@ const commands = [
 ];
 
 const papers = [
-	{
-		title: "Report",
-		body: "76 pages. Architecture, the memory algorithms, the security model, and the results above.",
-		action: { label: "Read the report", href: report, primary: true, external: true },
-	},
-	{
-		title: "Deck",
-		body: "All 26 slides shown above, as a PDF.",
-		action: { label: "Open the deck", href: `${tafMedia}/agentic-browser/deck.pdf`, external: true },
-	},
-	{
-		title: "Deck as PowerPoint",
-		body: "The same 26 slides with editable text, 5 MB.",
-		action: { label: "Download the PowerPoint", href: `${files}/PPT.pptx`, external: true },
-	},
+	{ title: "Report", body: "76 pages. Architecture, the memory algorithms, the security model, and the results above.", action: { label: "Read the report", href: report, primary: true, external: true } },
+	{ title: "Deck", body: "All 26 slides shown above, as a PDF.", action: { label: "Open the deck", href: `${tafMedia}/agentic-browser/deck.pdf`, external: true } },
+	{ title: "Deck as PowerPoint", body: "The same 26 slides with editable text, 5 MB.", action: { label: "Download the PowerPoint", href: `${files}/PPT.pptx`, external: true } },
 	{
 		title: "Similarity report",
 		body: "The university's plagiarism check of the report: 8% overall similarity.",
@@ -207,280 +172,796 @@ const papers = [
 			external: true,
 		},
 	},
-	{
-		title: "The film in full resolution",
-		body: "The film at the top of this page at 1920x1200, straight from the render, 121 MB.",
-		action: { label: "Watch in full resolution", href: `${files}/demo-hd.mp4`, external: true },
-	},
-	{
-		title: "Full demo",
-		body: "The longer recording, 48 MB.",
-		action: { label: "Watch the full demo", href: `${files}/demo.mp4`, external: true },
-	},
-	{
-		title: "Source",
-		body: "The extension, the Python server and the debug dashboard, in one repository.",
-		action: { label: "Open on GitHub", href: project.github_link, external: true },
-	},
+	{ title: "The film in full resolution", body: "The film at the top of this page at 1920x1200, straight from the render, 121 MB.", action: { label: "Watch in full resolution", href: `${files}/demo-hd.mp4`, external: true } },
+	{ title: "Full demo", body: "The longer recording, 48 MB.", action: { label: "Watch the full demo", href: `${files}/demo.mp4`, external: true } },
+	{ title: "Source", body: "The extension, the Python server and the debug dashboard, in one repository.", action: { label: "Open on GitHub", href: repo, external: true } },
 ];
 
 const faq = [
-	{
-		q: "Which models work?",
-		a: "Six providers: Google Gemini, OpenAI, Anthropic, DeepSeek, OpenRouter, and local models through Ollama. Any API that speaks the OpenAI, Anthropic or Gemini format works too. Bring a key, or use a Claude, ChatGPT, Google AI or OpenCode subscription you already have.",
-	},
-	{
-		q: "Does it act without asking?",
-		a: "No. Browser actions are declared first and wait for your approval, and every action is logged.",
-	},
-	{
-		q: "Where do my keys and memories go?",
-		a: "Keys stay on your machine. Stored memories are encrypted with AES-CBC.",
-	},
-	{
-		q: "What does it not do yet?",
-		a: "Safari is not supported. Local models through Ollama want a GPU, and the MLX setup needs macOS.",
-	},
-	{
-		q: "How do I install it?",
-		a: `Run <code>${install}</code>. It sets up the databases, backend and extension, and registers the MCP server with your coding agents. It is not on a browser store.`,
-	},
+	{ q: "Which models work?", a: "Six providers: Google Gemini, OpenAI, Anthropic, DeepSeek, OpenRouter, and local models through Ollama. Any API that speaks the OpenAI, Anthropic or Gemini format works too. Bring a key, or use a Claude, ChatGPT, Google AI or OpenCode subscription you already have." },
+	{ q: "Does it act without asking?", a: "No. Browser actions are declared first and wait for your approval, and every action is logged." },
+	{ q: "Where do my keys and memories go?", a: "Keys stay on your machine. Stored memories are encrypted with AES-CBC." },
+	{ q: "What does it not do yet?", a: "Safari is not supported. Local models through Ollama want a GPU, and the MLX setup needs macOS." },
+	{ q: "How do I install it?", a: `Run <code>${install}</code>. It sets up the databases, backend and extension, and registers the MCP server with your coding agents. It is not on a browser store.` },
 ];
 ---
 
 <Landing name="agentic-browser">
-	<LandingHero
-		wide
-		title="An agent that acts on the page."
-		lead="It plans, clicks and checks its own work in your browser, on your own keys or the plan you already pay for."
-	>
-		<Fragment slot="actions">
-			<a
-				href={report}
-				target="_blank"
-				rel="noopener noreferrer"
-				data-haptic-external
-				class="ld-btn ld-btn-primary"
-			>
-				<FileText aria-hidden="true" />
-				Read the report
-			</a>
-			<a
-				href={project.github_link}
-				target="_blank"
-				rel="noopener noreferrer"
-				data-haptic-external
-				class="ld-btn"
-			>
-				<Github aria-hidden="true" />
-				Source
-			</a>
-		</Fragment>
-		<Fragment slot="terms">
-			My B.Tech major project at JIIT, May 2026, still growing. Open source.
-		</Fragment>
-		<Shot slot="media" width={1280} height={800}>
-			<LandingVideo
-				src={`${tafMedia}/agentic-browser/demo.mp4`}
-				poster={`${tafMedia}/agentic-browser/poster.jpg`}
-				label="Agentic Browser walkthrough: the side panel planning and acting on a page"
-				controls
-			/>
-		</Shot>
-	</LandingHero>
+	<section class="ab-hero">
+		<div class="ab-hero-text">
+			<h1 class="ab-display">An agent that acts on the page.</h1>
+			<p class="ab-lead">It plans, clicks and checks its own work in your browser, on your own keys or the plan you already pay for.</p>
+			<div class="ab-cmd">
+				<code>{install}</code>
+				<button type="button" class="ab-copy" data-copy={install} aria-label="Copy the install command"><Copy aria-hidden="true" /><span data-copy-label>Copy</span></button>
+			</div>
+			<div class="ab-links">
+				<a href={report} target="_blank" rel="noopener noreferrer" class="ld-btn"><FileText aria-hidden="true" /> Read the report</a>
+				<a href={repo} target="_blank" rel="noopener noreferrer" class="ld-btn"><Github aria-hidden="true" /> Source</a>
+			</div>
+			<p class="ab-small">My B.Tech major project at JIIT, May 2026, still growing. Open source.</p>
+		</div>
+		<div class="ab-hero-media">
+			<Shot width={1920} height={1200}>
+				<LandingVideo src={`${tafMedia}/agentic-browser/demo.mp4`} poster={`${tafMedia}/agentic-browser/poster.jpg`} label="Agentic Browser walkthrough: the side panel planning and acting on real pages" controls />
+			</Shot>
+		</div>
+	</section>
 
-	<Section id="loop" title="Plan, act, verify." layout="side" gap="s">
-		<ol class="ab-loop">
-			{
-				loop.map((step) => (
-					<li>
-						<h3>{step.title}</h3>
-						<p>{step.body}</p>
-					</li>
-				))
-			}
+	<section id="loop" class="ab-sec">
+		<div class="ab-head ab-head-split">
+			<h2>Plan, act, verify.</h2>
+			<p class="ab-lead">One action at a time, then it looks at the page again before the next.</p>
+		</div>
+		<ol class="ab-steps">
+			{loop.map((step) => (
+				<li>
+					<h3>{step.title}</h3>
+					<p>{step.body}</p>
+				</li>
+			))}
 		</ol>
-	</Section>
+		<figure class="ab-arch">
+			<img class="ab-arch-light" src={`${media}/architecture-light.svg`} width="1240" height="900" loading="lazy" decoding="async" alt="Architecture: the side panel talks to the FastAPI backend over HTTP and SSE. The backend runs the agents, tools, model layer and memory, backed by model providers and Postgres, Neo4j and OpenSearch. Coding agents reach the browser through agentic-mcp, whose bridge the extension connects to over a WebSocket." />
+			<img class="ab-arch-dark" src={`${media}/architecture-dark.svg`} width="1240" height="900" loading="lazy" decoding="async" alt="Architecture: the side panel talks to the FastAPI backend over HTTP and SSE. The backend runs the agents, tools, model layer and memory, backed by model providers and Postgres, Neo4j and OpenSearch. Coding agents reach the browser through agentic-mcp, whose bridge the extension connects to over a WebSocket." />
+			<figcaption>The side panel, your coding agents and the Telegram bot all drive the same backend, the same memory and the same tabs.</figcaption>
+		</figure>
+	</section>
 
-	<Section id="since" title="Since May." lead="What shipped after the defence." layout="side" gap="l">
-		<Rows rows={since} />
-	</Section>
+	<section id="tour" class="ab-sec">
+		<div class="ab-head">
+			<h2>Watch it work.</h2>
+			<p class="ab-lead">Seven frames from the film, each the real extension on a real page.</p>
+		</div>
+		<div class="ab-tour" data-ab-tour>
+			<ol class="ab-tour-panels">
+				{tour.map((chapter, i) => (
+					<li class="ab-tour-panel" data-ab-panel={chapter.id} data-on={i === 0 ? "" : undefined}>
+						<h3>{chapter.title}</h3>
+						<p>{chapter.body}</p>
+						<div class="ab-tour-inline">
+							<Shot src={`${media}/tour/${chapter.id}.webp`} alt={chapter.alt} width={1760} height={1100} />
+						</div>
+					</li>
+				))}
+			</ol>
+			<div class="ab-tour-stage" aria-hidden="true">
+				<div class="ab-tour-frame">
+					{tour.map((chapter, i) => (
+						<img src={`${media}/tour/${chapter.id}.webp`} alt="" width="1760" height="1100" loading={i === 0 ? "eager" : "lazy"} decoding="async" data-ab-frame={chapter.id} data-on={i === 0 ? "" : undefined} />
+					))}
+				</div>
+			</div>
+		</div>
+		<dl class="ab-also">
+			{also.map((entry) => (
+				<div>
+					<dt>{entry.title}</dt>
+					<dd>{entry.body}</dd>
+				</div>
+			))}
+		</dl>
+	</section>
 
-	<Section id="install" title="Install." lead="One command." layout="side">
-		<Routes routes={setup} />
-	</Section>
+	<section id="memory" class="ab-sec ab-split">
+		<div>
+			<div class="ab-head">
+				<h2>It remembers, in three stores.</h2>
+				<p class="ab-lead">Most agents forget everything between sessions. This one writes what it learns to three databases, each good at one kind of recall.</p>
+			</div>
+			<dl class="ab-rows">
+				{stores.map((store) => (
+					<div>
+						<dt>{store.title}</dt>
+						<dd>{store.body}</dd>
+					</div>
+				))}
+			</dl>
+		</div>
+		<div class="ab-split-media">
+			<Shot src={`${media}/tour/graph.webp`} alt="The console's memory graph: you at the centre, linked to people, projects and preferences" width={1920} height={1200} />
+		</div>
+	</section>
 
-	<Section
-		id="memory"
-		title="It remembers, in three stores."
-		lead="Most agents forget everything between sessions. This one writes what it learns to three databases, each good at one kind of recall."
-		layout="side"
-		gap="l"
-	>
-		<Rows rows={stores} />
-	</Section>
+	<section id="results" class="ab-sec">
+		<div class="ab-head ab-head-split">
+			<h2>Tested on real runs.</h2>
+			<p class="ab-lead">From the tests behind the deck, and chapter 5 of the report in milliseconds, average and 95th percentile.</p>
+		</div>
+		<ul class="ab-figures">
+			{proof.map((figure) => (
+				<li>
+					<span class="ab-figure">{figure.value}</span>
+					<span class="ab-figure-label">{figure.label}</span>
+				</li>
+			))}
+		</ul>
+		<div class="ab-tables">
+			<div class="ld-table-wrap">
+				<table class="ld-table">
+					<caption>Memory</caption>
+					<thead>
+						<tr><th scope="col">Operation</th><th scope="col">Average</th><th scope="col">p95</th></tr>
+					</thead>
+					<tbody>
+						{memory.map(([name, avg, p95]) => <tr><th scope="row">{name}</th><td>{avg}</td><td>{p95}</td></tr>)}
+					</tbody>
+				</table>
+			</div>
+			<div class="ld-table-wrap">
+				<table class="ld-table">
+					<caption>First response, by provider, as tested for the report</caption>
+					<thead>
+						<tr><th scope="col">Provider</th><th scope="col">Model</th><th scope="col">Average</th><th scope="col">p95</th></tr>
+					</thead>
+					<tbody>
+						{providers.map(([name, model, avg, p95]) => <tr><th scope="row">{name}</th><td>{model}</td><td>{avg}</td><td>{p95}</td></tr>)}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</section>
 
-	<Section id="models" title="Any model." lead="Six providers are built in, and any endpoint that speaks the OpenAI, Anthropic or Gemini API works too. Bring a key, or run on your Claude, ChatGPT, Google AI or OpenCode plan. Model ids are current as of November 2026, from models.dev." layout="side">
+	<section id="models" class="ab-sec">
+		<div class="ab-head ab-head-split">
+			<h2>Any model, or your plan.</h2>
+			<p class="ab-lead">Six providers are built in, and any endpoint that speaks the OpenAI, Anthropic or Gemini API works too. Model ids are current as of November 2026, from models.dev.</p>
+		</div>
 		<div class="ld-table-wrap">
-			<table class="ld-table">
-				<caption>Built-in providers</caption>
+			<table class="ld-table ab-models">
+				<caption>Built-in providers and the plans it runs on</caption>
 				<thead>
 					<tr><th scope="col">Provider</th><th scope="col">Current models</th></tr>
 				</thead>
 				<tbody>
 					{models.map((row) => <tr><th scope="row">{row.name}</th><td class="ab-ids">{row.note && `${row.note} `}{row.ids.map((id, i) => <>{i > 0 && ", "}<code>{id}</code></>)}</td></tr>)}
+					<tr class="ab-plan-row"><th scope="row">Your subscription</th><td>{plans.join(", ")}, each through its own agent, logged in as you</td></tr>
 				</tbody>
 			</table>
 		</div>
-		<Rows rows={compatible} />
-	</Section>
-
-	<Section
-		id="results"
-		title="Measured."
-		lead="From chapter 5 of the report. Milliseconds, average and 95th percentile."
-		layout="side"
-	>
-		<div class="ld-table-wrap">
-			<table class="ld-table">
-				<caption>Memory</caption>
-				<thead>
-					<tr>
-						<th scope="col">Operation</th>
-						<th scope="col">Average</th>
-						<th scope="col">p95</th>
-					</tr>
-				</thead>
-				<tbody>
-					{
-						memory.map(([name, avg, p95]) => (
-							<tr>
-								<th scope="row">{name}</th>
-								<td>{avg}</td>
-								<td>{p95}</td>
-							</tr>
-						))
-					}
-				</tbody>
-			</table>
-		</div>
-		<div class="ld-table-wrap">
-			<table class="ld-table">
-				<caption>First response, by provider, as tested for the report</caption>
-				<thead>
-					<tr>
-						<th scope="col">Provider</th>
-						<th scope="col">Model</th>
-						<th scope="col">Average</th>
-						<th scope="col">p95</th>
-					</tr>
-				</thead>
-				<tbody>
-					{
-						providers.map(([name, model, avg, p95]) => (
-							<tr>
-								<th scope="row">{name}</th>
-								<td>{model}</td>
-								<td>{avg}</td>
-								<td>{p95}</td>
-							</tr>
-						))
-					}
-				</tbody>
-			</table>
-		</div>
-	</Section>
-
-	<Section id="deck" title="The deck." lead="The May defence in 18 slides, then eight on what's new since." gap="l">
-		<DeckOpen slot="action" />
-		<Deck slides={slides} title="Agentic Browser deck" width={1280} height={853} />
-	</Section>
-
-	<Section
-		id="commands"
-		title="Slash commands."
-		lead="Each one is a tool the agents can also call on their own."
-		layout="side"
-	>
-		<dl class="ab-commands">
-			{
-				commands.map((command) => (
-					<div>
-						<dt>
-							<code>{command.title}</code>
-						</dt>
-						<dd>{command.body}</dd>
-					</div>
-				))
-			}
+		<dl class="ab-compat">
+			{compatible.map((entry) => (
+				<div>
+					<dt>{entry.title}</dt>
+					<dd>{entry.body}</dd>
+				</div>
+			))}
 		</dl>
-	</Section>
+	</section>
 
-	<Section id="faq" title="Questions." layout="side" gap="l">
+	<section id="deck" class="ab-sec">
+		<div class="ab-head ab-head-row">
+			<div>
+				<h2>The deck.</h2>
+				<p class="ab-lead">The May defence in 18 slides, then eight on what's new since.</p>
+			</div>
+			<DeckOpen />
+		</div>
+		<Deck slides={slides} title="Agentic Browser deck" width={1280} height={853} />
+	</section>
+
+	<section id="commands" class="ab-sec">
+		<div class="ab-head ab-head-split">
+			<h2>Slash commands.</h2>
+			<p class="ab-lead">Each one is a tool the agents can also call on their own.</p>
+		</div>
+		<dl class="ab-commands">
+			{commands.map((command) => (
+				<div>
+					<dt><code>{command.title}</code></dt>
+					<dd>{command.body}</dd>
+				</div>
+			))}
+		</dl>
+	</section>
+
+	<section id="install" class="ab-sec">
+		<div class="ab-band">
+			<div class="ab-head">
+				<h2>One command, everything.</h2>
+				<p class="ab-lead">macOS or Linux. It clones the repo into ~/agentic&#8209;browser and asks before anything that touches your machine.</p>
+			</div>
+			<div class="ab-cmd ab-cmd-big">
+				<code>{install}</code>
+				<button type="button" class="ab-copy" data-copy={install} aria-label="Copy the install command"><Copy aria-hidden="true" /><span data-copy-label>Copy</span></button>
+			</div>
+			<ol class="ab-install-steps">
+				{steps.map((step) => (
+					<li>
+						<h3>{step.title}</h3>
+						<p>{step.body}</p>
+					</li>
+				))}
+			</ol>
+			<p class="ab-small">Add <code>-s -- --yes</code> after <code>sh</code> to take every default, or <code>--dry-run</code> to see what it would do. <a href={`${repo}/blob/main/install.sh`} target="_blank" rel="noopener noreferrer">Read install.sh</a> before you pipe it into a shell.</p>
+		</div>
+	</section>
+
+	<section id="faq" class="ab-sec ab-side">
+		<div class="ab-head">
+			<h2>Questions.</h2>
+		</div>
 		<Faq items={faq} />
-	</Section>
+	</section>
 
-	<Section id="papers" title="Report, deck and source." layout="side">
+	<section id="papers" class="ab-sec ab-side ab-last">
+		<div class="ab-head">
+			<h2>Report, deck and source.</h2>
+		</div>
 		<Routes routes={papers} />
-	</Section>
+	</section>
 </Landing>
 
+<script>
+	// Copy the install command, with the label confirming it.
+	document.querySelectorAll<HTMLButtonElement>("[data-landing='agentic-browser'] [data-copy]").forEach((button) => {
+		const label = button.querySelector<HTMLElement>("[data-copy-label]");
+		button.addEventListener("click", async () => {
+			try {
+				await navigator.clipboard.writeText(button.dataset.copy || "");
+				if (label) label.textContent = "Copied";
+				setTimeout(() => label && (label.textContent = "Copy"), 1600);
+			} catch {}
+		});
+	});
+
+	// The tour: on a wide screen the stage holds one frame while the chapters
+	// scroll past, and swaps to the chapter nearest the middle of the screen.
+	document.querySelectorAll<HTMLElement>("[data-ab-tour]").forEach((root) => {
+		const panels = [...root.querySelectorAll<HTMLElement>("[data-ab-panel]")];
+		const frames = [...root.querySelectorAll<HTMLElement>("[data-ab-frame]")];
+		root.dataset.wired = "";
+		const show = (id: string) => {
+			panels.forEach((p) => p.toggleAttribute("data-on", p.dataset.abPanel === id));
+			frames.forEach((f) => f.toggleAttribute("data-on", f.dataset.abFrame === id));
+		};
+		const seen = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) if (entry.isIntersecting) show((entry.target as HTMLElement).dataset.abPanel || "");
+			},
+			{ rootMargin: "-45% 0px -45% 0px" },
+		);
+		panels.forEach((p) => seen.observe(p));
+	});
+</script>
+
 <style>
-	.ab-loop,
-	.ab-commands {
+	/* Hallmark · redesign: full · shape: workbench · genre: modern-minimal · theme: brand, the landing kit's --ld-* tokens (the site's theme switcher sets them) · hero: Stage, the film on seven columns · signature: the pinned tour, seven real frames from the film swapping as the chapters scroll · sections: hero, loop with the architecture, tour, memory split, results, models, deck, commands, install band, questions, papers */
+	/* critique: the old page stacked the same head-then-rows block eleven times; now each section has its own composition and the product is shown, not listed */
+	/* Hallmark · dismiss F1 · the owner's house style is straight quotes everywhere */
+	/* Hallmark · waive 26b · no control on this page is ever disabled, no aria-disabled anywhere · copy buttons and deck controls always work, so a disabled look would never show */
+
+	.ab-sec {
+		scroll-margin-top: var(--ld-sticky-top);
+		padding-top: var(--ld-gap-m);
+	}
+	.ab-last {
+		padding-bottom: var(--ld-gap-s);
+	}
+	.ab-head {
 		display: grid;
+		gap: var(--ld-space-md);
+		margin-bottom: var(--ld-space-2xl);
+	}
+	.ab-head h2 {
+		margin: 0;
+		text-wrap: balance;
+		font-family: var(--ld-font-display);
+		font-size: var(--ld-text-section);
+		line-height: 1.02;
+		letter-spacing: -0.02em;
+		overflow-wrap: break-word;
+		min-width: 0;
+	}
+	.ab-lead {
+		margin: 0;
+		max-width: 52ch;
+		font-size: var(--ld-text-lead);
+		line-height: 1.45;
+		color: var(--ld-muted);
+	}
+	.ab-small {
+		margin: 0;
+		font-size: var(--ld-text-sm);
+		color: var(--ld-muted);
+	}
+	.ab-small a {
+		color: var(--ld-ink);
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+	.ab-small code,
+	.ab-ids code {
+		font-family: var(--ld-font-code);
+		font-size: 0.92em;
+	}
+	.ab-head-row {
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: end;
+	}
+	.ab-head-row > div {
+		display: grid;
+		gap: var(--ld-space-md);
+	}
+
+	/* Hero: the film on seven columns, the claim and the install on five. */
+	.ab-hero {
+		display: grid;
+		gap: var(--ld-space-xl);
+		padding-top: var(--ld-space-2xl);
+		align-items: center;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.ab-hero-text {
+		display: grid;
+		gap: var(--ld-space-lg);
+		align-content: center;
+		min-width: 0;
+	}
+	.ab-display {
+		margin: 0;
+		text-wrap: balance;
+		font-family: var(--ld-font-display);
+		font-size: clamp(2.75rem, 3.4vw + 1rem, 4.75rem);
+		line-height: 0.98;
+		letter-spacing: -0.03em;
+		overflow-wrap: break-word;
+		min-width: 0;
+	}
+	.ab-cmd {
+		display: flex;
+		align-items: center;
+		gap: var(--ld-space-sm);
+		min-width: 0;
+		padding: var(--ld-space-xs) var(--ld-space-xs) var(--ld-space-xs) var(--ld-space-md);
+		border: 1px solid var(--ld-rule);
+		border-radius: var(--ld-radius);
+		background: var(--ld-paper-2);
+	}
+	.ab-cmd code {
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow-x: auto;
+		white-space: nowrap;
+		font-family: var(--ld-font-code);
+		font-size: var(--ld-text-sm);
+		color: var(--ld-ink);
+		scrollbar-width: none;
+	}
+	.ab-copy {
+		display: inline-flex;
+		flex: none;
+		align-items: center;
+		gap: var(--ld-space-xs);
+		min-height: 40px;
+		padding: 0 var(--ld-space-md);
+		border: 0;
+		border-radius: calc(var(--ld-radius) - 4px);
+		background: var(--ld-accent);
+		color: var(--ld-accent-ink);
+		font: inherit;
+		font-weight: 600;
+		font-size: var(--ld-text-sm);
+		cursor: pointer;
+		transition: background-color var(--ld-dur-micro) var(--ld-ease-out), transform var(--ld-dur-micro) var(--ld-ease-out);
+	}
+	.ab-copy :global(svg) {
+		width: 1em;
+		height: 1em;
+	}
+	.ab-copy:hover {
+		background: var(--ld-press);
+	}
+	.ab-copy:active {
+		transform: scale(0.97);
+	}
+	.ab-copy:focus-visible {
+		outline: 2px solid var(--ld-focus);
+		outline-offset: 2px;
+		transition: none;
+	}
+	.ab-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--ld-space-sm);
+	}
+	.ab-hero-media {
+		min-width: 0;
+	}
+
+	/* Loop: three numbered steps across, the architecture beneath. */
+	.ab-steps {
+		display: grid;
+		gap: var(--ld-space-xl);
 		margin: 0;
 		padding: 0;
 		list-style: none;
-		border-top: 1px solid var(--ld-rule);
-	}
-	.ab-loop {
 		counter-reset: step;
+		grid-template-columns: minmax(0, 1fr);
 	}
-	.ab-loop > li {
-		position: relative;
+	.ab-steps > li {
 		display: grid;
-		gap: var(--ld-space-2xs);
-		padding: var(--ld-space-lg) 0 var(--ld-space-lg) var(--ld-space-2xl);
-		border-bottom: 1px solid var(--ld-rule);
+		gap: var(--ld-space-xs);
+		padding-top: var(--ld-space-lg);
+		border-top: 1px solid var(--ld-rule);
 		counter-increment: step;
 	}
-	.ab-loop > li::before {
+	.ab-steps > li::before {
 		content: counter(step);
-		position: absolute;
-		left: 0;
-		top: var(--ld-space-lg);
 		font-family: var(--ld-font-display);
 		font-size: var(--ld-text-section);
 		font-weight: 700;
-		line-height: 0.9;
+		line-height: 1;
 		color: var(--ld-accent);
+		font-variant-numeric: tabular-nums;
 	}
-	.ab-loop p,
-	.ab-commands dd {
+	.ab-steps h3,
+	.ab-install-steps h3,
+	.ab-tour-panel h3 {
 		margin: 0;
-		max-width: 56ch;
+		font-family: var(--ld-font-display);
+		font-size: var(--ld-text-title);
+		line-height: 1.15;
+	}
+	.ab-steps p,
+	.ab-install-steps p,
+	.ab-tour-panel p {
+		margin: 0;
+		max-width: 44ch;
 		color: var(--ld-muted);
+	}
+	.ab-arch {
+		margin: var(--ld-space-3xl) 0 0;
+		display: grid;
+		gap: var(--ld-space-md);
+	}
+	.ab-arch img {
+		display: block;
+		width: 100%;
+		height: auto;
+		border: 1px solid var(--ld-rule);
+		border-radius: var(--ld-radius-shot);
+		background: var(--ld-paper-2);
+	}
+	.ab-arch figcaption {
+		font-size: var(--ld-text-sm);
+		color: var(--ld-muted);
+	}
+	.ab-arch-dark {
+		display: none !important;
+	}
+	:global(html.dark) .ab-arch-dark {
+		display: block !important;
+	}
+	:global(html.dark) .ab-arch-light {
+		display: none !important;
+	}
+
+	/* Tour: chapters scroll, the stage holds the frame. */
+	.ab-tour-panels {
+		display: grid;
+		gap: var(--ld-space-2xl);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		counter-reset: chapter;
+	}
+	.ab-tour-panel {
+		display: grid;
+		gap: var(--ld-space-sm);
+		counter-increment: chapter;
+	}
+	.ab-tour-panel::before {
+		content: counter(chapter);
+		font-family: var(--ld-font-display);
+		font-size: var(--ld-text-title);
+		font-weight: 700;
+		color: var(--ld-accent);
+		font-variant-numeric: tabular-nums;
+	}
+	.ab-tour-inline {
+		margin-top: var(--ld-space-sm);
+	}
+	.ab-tour-stage {
+		display: none;
+	}
+	.ab-tour-frame {
+		position: relative;
+		aspect-ratio: 1760 / 1100;
+		overflow: hidden;
+		border: 1px solid var(--ld-rule);
+		border-radius: var(--ld-radius-shot);
+		background: var(--ld-paper-2);
+	}
+	.ab-tour-frame img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		opacity: 0;
+		transition: opacity var(--ld-dur-long) var(--ld-ease-out);
+	}
+	.ab-tour-frame img[data-on] {
+		opacity: 1;
+	}
+	.ab-also {
+		display: grid;
+		gap: var(--ld-space-xl);
+		margin: var(--ld-space-3xl) 0 0;
+		padding-top: var(--ld-space-xl);
+		border-top: 1px solid var(--ld-rule);
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.ab-also dt,
+	.ab-compat dt,
+	.ab-rows dt {
+		font-family: var(--ld-font-display);
+		font-size: var(--ld-text-title);
+		font-weight: 700;
+		line-height: 1.15;
+	}
+	.ab-also dd,
+	.ab-compat dd,
+	.ab-rows dd {
+		margin: var(--ld-space-xs) 0 0;
+		color: var(--ld-muted);
+	}
+
+	/* Memory: the stores beside the graph. */
+	.ab-split {
+		display: grid;
+		gap: var(--ld-space-2xl);
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.ab-rows {
+		display: grid;
+		margin: 0;
+		border-top: 1px solid var(--ld-rule);
+	}
+	.ab-rows > div {
+		padding: var(--ld-space-md) 0;
+		border-bottom: 1px solid var(--ld-rule);
+	}
+	.ab-rows dt {
+		font-size: var(--ld-text-md);
+	}
+	.ab-split-media {
+		min-width: 0;
+	}
+
+	/* Results: four figures, then the report's two tables. */
+	.ab-figures {
+		display: grid;
+		margin: 0 0 var(--ld-space-3xl);
+		padding: 0;
+		list-style: none;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--ld-space-xl) var(--ld-gap-columns);
+	}
+	.ab-figures li {
+		display: grid;
+		gap: var(--ld-space-xs);
+		align-content: start;
+		padding-top: var(--ld-space-md);
+		border-top: 2px solid var(--ld-ink);
+	}
+	.ab-figure {
+		font-family: var(--ld-font-display);
+		font-size: clamp(2.5rem, 3vw + 1.25rem, 4.5rem);
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: -0.03em;
+		font-variant-numeric: tabular-nums;
+	}
+	.ab-figure-label {
+		max-width: 24ch;
+		color: var(--ld-muted);
+	}
+	.ab-tables {
+		display: grid;
+		gap: var(--ld-space-2xl);
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	/* Models. */
+	.ab-ids code {
+		white-space: nowrap;
+	}
+	.ab-plan-row th,
+	.ab-plan-row td {
+		color: var(--ld-accent);
+		font-weight: 600;
+	}
+	.ab-compat {
+		display: grid;
+		gap: var(--ld-space-xl);
+		margin: var(--ld-space-2xl) 0 0;
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	/* Commands: a dense two-column index. */
+	.ab-commands {
+		display: grid;
+		margin: 0;
+		grid-template-columns: minmax(0, 1fr);
+		column-gap: var(--ld-gap-columns);
+		border-top: 1px solid var(--ld-rule);
 	}
 	.ab-commands > div {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr);
 		gap: var(--ld-space-2xs);
-		padding-block: var(--ld-space-md);
+		padding: var(--ld-space-md) 0;
 		border-bottom: 1px solid var(--ld-rule);
 	}
-	.ab-ids code {
-		font-size: 0.92em;
-		white-space: nowrap;
-	}
 	.ab-commands dt code {
-		font-weight: 500;
+		font-family: var(--ld-font-code);
+		font-size: var(--ld-text-md);
+		font-weight: 600;
+		color: var(--ld-accent);
 	}
+	.ab-commands dd {
+		margin: 0;
+		color: var(--ld-muted);
+	}
+
+	/* Install: the one band, on the second paper. */
+	.ab-band {
+		display: grid;
+		gap: var(--ld-space-xl);
+		padding: var(--ld-space-3xl) var(--ld-space-xl);
+		border-radius: var(--ld-radius-shot);
+		background: var(--ld-paper-2);
+	}
+	.ab-band .ab-head {
+		margin-bottom: 0;
+	}
+	.ab-cmd-big {
+		background: var(--ld-paper);
+	}
+	.ab-cmd-big code {
+		font-size: var(--ld-text-lead);
+	}
+	.ab-install-steps {
+		display: grid;
+		gap: var(--ld-space-lg) var(--ld-gap-columns);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		counter-reset: step;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+	}
+	.ab-install-steps > li {
+		display: grid;
+		gap: var(--ld-space-2xs);
+		align-content: start;
+		counter-increment: step;
+	}
+	.ab-install-steps > li::before {
+		content: counter(step);
+		font-family: var(--ld-font-code);
+		font-size: var(--ld-text-sm);
+		color: var(--ld-accent);
+	}
+	.ab-install-steps h3 {
+		font-size: var(--ld-text-md);
+	}
+
 	@media (min-width: 40rem) {
-		.ab-commands > div {
+		.ab-also,
+		.ab-compat {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			column-gap: var(--ld-gap-columns);
+		}
+		.ab-commands {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		.ab-band {
+			padding: var(--ld-space-3xl);
+		}
+	}
+
+	@media (min-width: 60rem) {
+		.ab-hero {
+			min-height: calc(100svh - var(--ld-sticky-top) - var(--ld-space-2xl));
+			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+			gap: var(--ld-space-3xl);
+			padding-top: 0;
+		}
+		.ab-head-split {
+			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+			column-gap: var(--ld-gap-columns);
+			align-items: end;
+		}
+		.ab-head-split .ab-lead {
+			justify-self: start;
+		}
+		.ab-steps {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			column-gap: var(--ld-gap-columns);
+		}
+		.ab-figures {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+		.ab-tables {
+			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+			column-gap: var(--ld-gap-columns);
+			align-items: start;
+		}
+		.ab-split {
+			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+			column-gap: var(--ld-gap-columns);
+			align-items: center;
+		}
+		.ab-side {
+			display: grid;
 			grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
 			column-gap: var(--ld-gap-columns);
-			align-items: baseline;
+			align-items: start;
+		}
+
+		/* With script the tour pins: chapters on five columns, the stage on seven. */
+		[data-wired].ab-tour {
+			display: grid;
+			grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+			column-gap: var(--ld-space-2xl);
+		}
+		[data-wired] .ab-tour-stage {
+			display: block;
+			position: sticky;
+			top: max(var(--ld-sticky-top), calc(50svh - 18rem));
+			align-self: start;
+		}
+		[data-wired] .ab-tour-inline {
+			display: none;
+		}
+		[data-wired] .ab-tour-panels {
+			gap: 0;
+		}
+		[data-wired] .ab-tour-panel {
+			min-height: 46svh;
+			align-content: center;
+			opacity: 0.38;
+			transition: opacity var(--ld-dur-long) var(--ld-ease-out);
+		}
+		[data-wired] .ab-tour-panel[data-on] {
+			opacity: 1;
+		}
+		[data-wired] .ab-tour-panel:first-child {
+			min-height: 40svh;
+			align-content: start;
+			padding-top: var(--ld-space-xl);
+		}
+		[data-wired] .ab-tour-panel:last-child {
+			min-height: 60svh;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ab-copy,
+		.ab-tour-frame img,
+		[data-wired] .ab-tour-panel {
+			transition: none;
 		}
 	}
 </style>
