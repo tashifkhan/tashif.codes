@@ -262,6 +262,104 @@ export function isDarkTheme(): boolean {
   return document.documentElement.classList.contains('dark')
 }
 
+let colorProbe: CanvasRenderingContext2D | null | undefined
+
+/**
+ * Resolve any CSS color (color-mix, oklab, var-free) to `#rrggbb`. Mermaid
+ * parses colors itself and only understands hex/rgb/hsl, so the skin tokens
+ * have to be flattened first. Paints one pixel and reads it back.
+ */
+function toHex(value: string, backdrop: string): string | null {
+  if (colorProbe === undefined) {
+    const canvas = document.createElement('canvas')
+    canvas.width = canvas.height = 1
+    colorProbe = canvas.getContext('2d', { willReadFrequently: true })
+  }
+  const ctx = colorProbe
+  if (!ctx || !value) return null
+  ctx.clearRect(0, 0, 1, 1)
+  ctx.fillStyle = '#000'
+  ctx.fillStyle = backdrop || '#000'
+  ctx.fillRect(0, 0, 1, 1)
+  const sentinel = '#010203'
+  ctx.fillStyle = sentinel
+  ctx.fillStyle = value
+  if (ctx.fillStyle === sentinel && value.trim().toLowerCase() !== sentinel) return null
+  ctx.fillRect(0, 0, 1, 1)
+  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data
+  return `#${[r, g, b].map((n) => n.toString(16).padStart(2, '0')).join('')}`
+}
+
+/**
+ * Build the Mermaid palette from the same --pele-* variables Pele uses, so the
+ * fallback follows the active style and colour too. Falls back to the fixed
+ * palettes when a color can't be resolved.
+ */
+function skinPalette(target: HTMLElement, dark: boolean): Record<string, unknown> {
+  const base = dark ? MERMAID_DARK : MERMAID_LIGHT
+  // A probe child resolves var()/currentColor in the diagram's own context.
+  const probe = document.createElement('span')
+  probe.style.display = 'none'
+  target.appendChild(probe)
+  const read = (prop: string): string | null => {
+    probe.style.color = ''
+    probe.style.color = `var(${prop})`
+    return getComputedStyle(probe).color || null
+  }
+  const pageBg = getComputedStyle(document.body).backgroundColor
+  const raw = {
+    bg: read('--pele-bg'),
+    fg: read('--pele-fg'),
+    muted: read('--pele-muted'),
+    line: read('--pele-line'),
+    surface: read('--pele-surface'),
+    surfaceAlt: read('--pele-surface-alt'),
+    border: read('--pele-border'),
+  }
+  probe.remove()
+
+  const bg = raw.bg ? toHex(raw.bg, pageBg) : null
+  const hex = (v: string | null) => (v ? toHex(v, bg ?? pageBg) : null)
+  const fg = hex(raw.fg)
+  const line = hex(raw.line)
+  const surface = hex(raw.surface)
+  const surfaceAlt = hex(raw.surfaceAlt)
+  const border = hex(raw.border)
+  const muted = hex(raw.muted)
+  if (!bg || !fg || !line || !surface || !border) return base
+
+  return {
+    ...base,
+    background: bg,
+    mainBkg: surface,
+    primaryColor: surface,
+    primaryTextColor: fg,
+    primaryBorderColor: border,
+    nodeTextColor: fg,
+    lineColor: line,
+    secondaryColor: surfaceAlt ?? surface,
+    tertiaryColor: surface,
+    clusterBkg: bg,
+    clusterBorder: muted ?? border,
+    edgeLabelBackground: bg,
+    noteBkgColor: surfaceAlt ?? surface,
+    noteTextColor: fg,
+    noteBorderColor: border,
+    defaultLinkColor: line,
+    actorBkg: surface,
+    actorBorder: border,
+    actorTextColor: fg,
+    actorLineColor: line,
+    signalColor: line,
+    signalTextColor: fg,
+    labelBoxBkgColor: surface,
+    labelBoxBorderColor: border,
+    labelTextColor: fg,
+    loopTextColor: fg,
+    sequenceNumberColor: bg,
+  }
+}
+
 /**
  * Normalize the rendered SVG so CSS can scale it with max-width.
  *
@@ -411,7 +509,7 @@ export async function renderMermaidBlocks(
       mermaid.initialize({
         startOnLoad: false,
         theme: 'base',
-        themeVariables: dark ? MERMAID_DARK : MERMAID_LIGHT,
+        themeVariables: skinPalette(target, dark),
         fontFamily: MERMAID_FONT,
         // Classic look: Mermaid's handDrawn mode kinks every edge.
         look: 'classic',
@@ -458,20 +556,22 @@ export function watchForContent(draw: () => void): () => void {
 }
 
 /**
- * Call `onChange` when the document's light/dark class flips, so diagrams can be
- * re-rendered with matching theme variables.
+ * Call `onChange` when light/dark, the style or the colour combo changes, so
+ * Mermaid fallback diagrams (which bake colors into the SVG) can be redrawn.
  */
 export function watchThemeChanges(onChange: (dark: boolean) => void): () => void {
-  let last = isDarkTheme()
+  const root = document.documentElement
+  const key = () => `${isDarkTheme()}|${root.dataset.skin ?? ''}|${root.dataset.color ?? ''}`
+  let last = key()
   const observer = new MutationObserver(() => {
-    const dark = isDarkTheme()
-    if (dark === last) return
-    last = dark
-    onChange(dark)
+    const next = key()
+    if (next === last) return
+    last = next
+    onChange(isDarkTheme())
   })
-  observer.observe(document.documentElement, {
+  observer.observe(root, {
     attributes: true,
-    attributeFilter: ['class'],
+    attributeFilter: ['class', 'data-skin', 'data-color'],
   })
   return () => observer.disconnect()
 }

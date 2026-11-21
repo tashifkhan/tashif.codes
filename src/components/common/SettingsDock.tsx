@@ -314,8 +314,29 @@ export default function SettingsDock() {
 
 	useEffect(() => {
 		let wasScrolling = false;
+		// Docs pages scroll inside a nested pane, so window.scrollY stays 0
+		// there. Track the offset of whichever element actually scrolled, or
+		// the dock thinks it is back at the top and re-opens after every scroll.
+		let scrollTop = pageScrollTop();
+		let fromDocument = true;
+		// A wheel at the edge of a nested pane fires no scroll event; if the
+		// page itself can't scroll, that wheel must not count as "at the top".
+		const documentScrolls = () =>
+			document.documentElement.scrollHeight > window.innerHeight + 1;
 
-		const onScroll = () => {
+		const onScroll = (event: Event) => {
+			if (event.type === "scroll") {
+				const target = event.target;
+				fromDocument = !(
+					target instanceof Element &&
+					target !== document.documentElement &&
+					target !== document.body
+				);
+				scrollTop = fromDocument
+					? pageScrollTop()
+					: (target as Element).scrollTop;
+			}
+
 			if (!wasScrolling) {
 				wasScrolling = true;
 				setVisible(false);
@@ -324,7 +345,10 @@ export default function SettingsDock() {
 			if (idleTimer.current) window.clearTimeout(idleTimer.current);
 			idleTimer.current = window.setTimeout(() => {
 				wasScrolling = false;
-				setExpanded(pageScrollTop() < 96);
+				// Scrolling only ever collapses the dock. It opens again only
+				// when the reader returns to the top of the page itself.
+				if (scrollTop >= 96) setExpanded(false);
+				else if (fromDocument && documentScrolls()) setExpanded(true);
 				setVisible(true);
 			}, 220);
 		};

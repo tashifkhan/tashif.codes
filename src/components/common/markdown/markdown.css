@@ -412,20 +412,14 @@
   --pele-bg: var(--md-surface);
   --pele-fg: var(--md-fg);
   --pele-muted: var(--md-fg-muted);
-  --pele-line: #475569;
-  --pele-surface: #f1f5f9;
-  --pele-surface-alt: #e2e8f0;
-  --pele-border: #475569;
+  /* Mixed from the skin tokens so every style, colour and mode carries over. */
+  --pele-line: color-mix(in oklab, var(--md-fg) 62%, var(--md-surface));
+  --pele-surface: color-mix(in oklab, var(--md-accent) 7%, var(--md-surface));
+  --pele-surface-alt: color-mix(in oklab, var(--md-accent) 13%, var(--md-surface));
+  --pele-border: color-mix(in oklab, var(--md-fg) 58%, var(--md-surface));
   --pele-accent: var(--md-accent);
   --pele-font: 'Excalifont', var(--font-sans, 'Lexend'), cursive;
   --pele-radius: 6px;
-}
-
-.dark .md-mermaid-render {
-  --pele-line: #9aa2b8;
-  --pele-surface: #11131c;
-  --pele-surface-alt: #1a1d2a;
-  --pele-border: #8b93ab;
 }
 
 /*
