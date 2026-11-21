@@ -427,8 +427,9 @@
   overflow-wrap: anywhere;
 }
 
-/* Inline code should sit on the text baseline and wrap as individual chips,
-   not grow into one tall capsule around a long command. */
+/* Inline code is a borderless tint of the text colour, so it follows every
+   skin. Without a border, a long path that wraps reads as one highlight per
+   line instead of a stack of outlined pills. */
 .markdown-body .md-code-inline {
   display: inline;
   box-decoration-break: clone;
@@ -458,9 +459,8 @@
 
 .markdown-body :not(pre) > code:not([class]) {
   display: inline;
-  border-radius: var(--md-radius-sm);
-  border: 1px solid var(--border);
-  background: color-mix(in oklab, var(--muted) 55%, transparent);
+  border-radius: 0.3em;
+  background: color-mix(in oklab, var(--foreground) 9%, transparent);
   padding: 0.1em 0.35em;
   font-family: var(--font-mono);
   font-size: 0.85em;
