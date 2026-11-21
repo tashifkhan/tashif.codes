@@ -25,7 +25,7 @@ import type { Project } from "@/types";
 
 export const landing: LandingMeta = {
 	tagline:
-		"A browser side panel whose agents plan, act and check their work on any page, with your own model keys.",
+		"A browser side panel whose agents plan, act and check their work on any page, on your own model keys or the plan you already pay for.",
 	cta: { label: "Report and deck", href: "#papers" },
 };
 
@@ -38,6 +38,7 @@ const tafMedia = "https://taf.sh/media";
 const media = "/landings/agentic-browser";
 const files = "https://drive.tashif.codes/public.php/dav/files/9XPLTERoHiNdnBw";
 const report = `${files}/Report.pdf`;
+const install = "curl -fsSL https://tashif.codes/agentic-browser:install | sh";
 
 const loop = [
 	{
@@ -105,6 +106,31 @@ const models: { name: string; ids: string[]; note?: string }[] = [
 	{ name: "Ollama, local", ids: [], note: "Any model you pull, with no key and no network" },
 ];
 
+// Shipped after the May defence, in PR #122.
+const since = [
+	{ title: "Your plan, not just your keys", body: "Run a turn on your Claude, ChatGPT, Google AI or OpenCode subscription. That plan's own agent does the work, with this browser's tools and no shell." },
+	{ title: "Screenshots and files", body: "Attach an image, a PDF or a log and ask about it. Images go to any model that can see." },
+	{ title: "Voice in one pass", body: "Ramble and correct yourself. A model that hears audio writes down what you meant, then the agent acts on it." },
+	{ title: "Long chats", body: "Older messages fold into running notes instead of falling off the end of the context." },
+	{ title: "From your phone", body: "Text a task to the Telegram bot. It runs in your browser at home and replies with the answer or a screenshot. Only people on your allow list can use it." },
+	{ title: "Coding agents drive it", body: "Claude Code, Codex, Cursor and other MCP clients get your real tabs and your memory." },
+	{ title: "A repo agent", body: "It clones a repository, greps it and reads the files before it answers. Private repos work through your GitHub token." },
+	{ title: "One command to install", body: "Databases, backend, extension, browsers and MCP, on macOS and Linux. It asks before anything that touches your machine." },
+];
+
+const setup = [
+	{
+		title: "Install",
+		body: "macOS or Linux. It clones the repo into ~/agentic‑browser and walks through seven steps. Add <code>-s -- --yes</code> after <code>sh</code> to take every default.",
+		copy: install,
+	},
+	{
+		title: "Read it first",
+		body: "The whole installer is one shell script and one Python file.",
+		action: { label: "Read install.sh", href: `${project.github_link}/blob/main/install.sh`, external: true },
+	},
+];
+
 const compatible = [
 	{ title: "OpenAI-compatible", body: "Give the OpenAI provider another base URL. vLLM, LM Studio, Groq and most hosted gateways speak this format." },
 	{ title: "Anthropic-compatible", body: "The Anthropic provider takes a base URL too, for any proxy or gateway that speaks the Messages API." },
@@ -131,6 +157,14 @@ const slideAlt = [
 	"Results and system impact",
 	"Conclusion, limitations and future scope",
 	"Closing slide",
+	"Since the report: what's new in November 2026",
+	"Runs on the plan you already pay for",
+	"Show it, say it: attachments and voice",
+	"Long chats, no amnesia",
+	"Your coding agent and your phone drive it",
+	"A repo agent that reads the code",
+	"One command to install",
+	"Try it",
 ];
 const slides = slideAlt.map((alt, i) => ({
 	src: `${media}/slides/${String(i + 1).padStart(2, "0")}.webp`,
@@ -156,7 +190,7 @@ const papers = [
 	},
 	{
 		title: "Deck",
-		body: "The 18 slides shown above, as a PDF.",
+		body: "All 26 slides shown above, as a PDF.",
 		action: { label: "Open the deck", href: `${tafMedia}/agentic-browser/deck.pdf`, external: true },
 	},
 	{
@@ -183,7 +217,7 @@ const papers = [
 const faq = [
 	{
 		q: "Which models work?",
-		a: "Six providers: Google Gemini, OpenAI, Anthropic, DeepSeek, OpenRouter, and local models through Ollama. Any API that speaks the OpenAI, Anthropic or Gemini format works too. You bring the key.",
+		a: "Six providers: Google Gemini, OpenAI, Anthropic, DeepSeek, OpenRouter, and local models through Ollama. Any API that speaks the OpenAI, Anthropic or Gemini format works too. Bring a key, or use a Claude, ChatGPT, Google AI or OpenCode subscription you already have.",
 	},
 	{
 		q: "Does it act without asking?",
@@ -199,7 +233,7 @@ const faq = [
 	},
 	{
 		q: "How do I install it?",
-		a: `Build it from <a href="${project.github_link}" target="_blank" rel="noopener noreferrer">the source</a>. It is not on a browser store.`,
+		a: `Run <code>${install}</code>. It sets up the databases, backend and extension, and registers the MCP server with your coding agents. It is not on a browser store.`,
 	},
 ];
 ---
@@ -208,7 +242,7 @@ const faq = [
 	<LandingHero
 		wide
 		title="An agent that acts on the page."
-		lead="It plans, clicks and checks its own work in your browser, on the model you choose."
+		lead="It plans, clicks and checks its own work in your browser, on your own keys or the plan you already pay for."
 	>
 		<Fragment slot="actions">
 			<a
@@ -233,7 +267,7 @@ const faq = [
 			</a>
 		</Fragment>
 		<Fragment slot="terms">
-			My B.Tech major project at JIIT, May 2026. Open source.
+			My B.Tech major project at JIIT, May 2026, still growing. Open source.
 		</Fragment>
 		<Shot slot="media" width={1280} height={800}>
 			<LandingVideo
@@ -258,6 +292,14 @@ const faq = [
 		</ol>
 	</Section>
 
+	<Section id="since" title="Since May." lead="What shipped after the defence." layout="side" gap="l">
+		<Rows rows={since} />
+	</Section>
+
+	<Section id="install" title="Install." lead="One command." layout="side">
+		<Routes routes={setup} />
+	</Section>
+
 	<Section
 		id="memory"
 		title="It remembers, in three stores."
@@ -268,7 +310,7 @@ const faq = [
 		<Rows rows={stores} />
 	</Section>
 
-	<Section id="models" title="Any model." lead="Six providers are built in, and any endpoint that speaks the OpenAI, Anthropic or Gemini API works too. You bring the key. Model ids are current as of November 2026, from models.dev." layout="side">
+	<Section id="models" title="Any model." lead="Six providers are built in, and any endpoint that speaks the OpenAI, Anthropic or Gemini API works too. Bring a key, or run on your Claude, ChatGPT, Google AI or OpenCode plan. Model ids are current as of November 2026, from models.dev." layout="side">
 		<div class="ld-table-wrap">
 			<table class="ld-table">
 				<caption>Built-in providers</caption>
@@ -339,7 +381,7 @@ const faq = [
 		</div>
 	</Section>
 
-	<Section id="deck" title="The deck." lead="Eighteen slides, from the problem to the results." gap="l">
+	<Section id="deck" title="The deck." lead="The May defence in 18 slides, then eight on what's new since." gap="l">
 		<DeckOpen slot="action" />
 		<Deck slides={slides} title="Agentic Browser deck" width={1280} height={853} />
 	</Section>
