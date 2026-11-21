@@ -1,384 +1,256 @@
 # Troubleshooting and FAQ
 
-## Introduction
-Common breakages: install, config, agent runs, extension messaging, MCP, providers, and auth. Start with the symptom that matches, then use the diagnostics at the end if nothing fits.
+This page collects failure modes that have a traceable cause in the code: startup guards that skip a store, provider errors, bridge states, loop guard stops, memory reconciliation outcomes, and build problems. Each entry names the symptom, the mechanism behind it, and the check or fix.
 
-## Project structure
-Agentic Browser comprises:
-- A Python backend with two modes: API server and MCP server
-- A FastAPI application exposing multiple routers for services
-- An MCP server implementing tools for LLM generation, GitHub QA, and website content conversion
-- A browser extension (React + WXT) with background and content scripts, WebSocket client, and sidepanel UI
-- Core modules for configuration and LLM provider abstraction
+If a symptom is not here, start with the run trace in the console. Every chat turn, browser runtime session and supervisor round records events, tool calls and subagent rows, so the failure usually has a row before it has a message.
+
+Key capabilities:
+- Startup and database problems
+- Model and provider selection problems
+- Extension, bridge and MCP problems
+- Browser action and loop guard problems
+- Memory ingestion and retrieval problems
+- Build and type checking problems
+- Answers to recurring design questions
+
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Backend"
-M["main.py<br/>CLI entrypoint"]
-API["main.py<br/>FastAPI app"]
-MCP["mcp_server/server.py<br/>MCP server"]
-CFG["core/config.py<br/>Env & logging"]
-LLM["core/llm.py<br/>Provider adapter"]
-end
-subgraph "Extension"
-BG["background.ts<br/>background script"]
-CT["content.ts<br/>content script"]
-WS["websocket-client.ts<br/>WebSocket client"]
-UI["sidepanel UI<br/>AgentExecutor.tsx"]
-end
-M --> API
-M --> MCP
-API --> LLM
-MCP --> LLM
-BG --> CT
-UI --> WS
-WS --> API
-BG --> API
+  subgraph "Entry"
+    MAIN["main.py"]
+    ROUTES["routers/"]
+  end
+  subgraph "Runtime"
+    SVC["services/"]
+    AG["agents/"]
+    MEM["memory/"]
+  end
+  subgraph "Clients"
+    EXT["clients/browser-extension"]
+    CON["clients/debug-web"]
+  end
+  subgraph "Stores"
+    PG[("Postgres")]
+    NEO[("Neo4j")]
+    OS[("OpenSearch")]
+  end
+  EXT --> ROUTES
+  CON --> ROUTES
+  MAIN --> ROUTES
+  ROUTES --> SVC
+  SVC --> AG
+  SVC --> MEM
+  SVC --> PG
+  MEM --> NEO
+  MEM --> OS
 ```
 
-## Core components
-- CLI entrypoint
- - API: `python main.py` or `agentic-api-run`
- - Stdio MCP: `agentic-mcp`
- - HTTP MCP is mounted at `/mcp` on the API process
- - Environment variables loaded via dotenv
- - See `main.py`
+## Building blocks
 
-- Backend servers
- - API server: FastAPI app with routers for health, GitHub, website, YouTube, Google Search, Gmail, Calendar, PyJIIT, React agent, website validator, agent, and file upload
- - MCP server: Implements tools for LLM generation, GitHub QA, website markdown conversion, and error handling
- - See `main.py`, `mcp_server/server.py`
+- `main.py`: startup guards. A warning here is the first clue for a missing store or bot token.
+- `core/config.py`: every environment variable and its default.
+- `core/llm.py`: provider construction and key resolution.
+- `core/loop_guard.py`: the stop condition for repeated browser or tool steps.
+- `mcp_server/bridge.py`: host or relay election and the browser WebSocket.
+- `services/browser_runtime_service.py`: blocker detection and action validation.
+- `services/react_agent_service.py`: the chat path, including error recovery.
+- `memory/README.md`: the write and read model, with the caveats that matter.
 
-- Configuration and logging
- - Reads environment variables for host, port, debug, and Google API key
- - Configures logging level and logger factory
- - See `core/config.py`
+## How it fits together
 
-- LLM provider abstraction
- - Supports Google, OpenAI, Anthropic, Ollama, DeepSeek, OpenRouter
- - Validates provider availability, API keys, base URLs, and model names
- - Raises descriptive errors for misconfiguration
- - See `core/llm.py`
-
-- Extension
- - Background script handles messaging, tab operations, action execution, and agent tool execution
- - Content script provides page context helpers
- - WebSocket client manages connection to backend API and agent execution
- - Sidepanel UI formats responses and displays progress
- - See `clients/browser-extension/entrypoints/background.ts`, `clients/browser-extension/entrypoints/content.ts`, `clients/browser-extension/entrypoints/utils/websocket-client.ts`, `clients/browser-extension/entrypoints/sidepanel/AgentExecutor.tsx`
-
-## Architecture overview
-Agentic Browser integrates a browser extension with a Python backend. The extension communicates with the backend via WebSocket for agent execution and with the MCP server for tool invocations. The backend orchestrates LLM calls and service tools.
+A failure has a path. The client posts, the route validates, the service writes a run, the agent calls tools, and the error lands in the run events before the answer is saved. That is why the console is the first stop for anything that is not a startup failure.
 
 ```mermaid
 sequenceDiagram
-participant User as "User"
-participant Sidepanel as "Sidepanel UI"
-participant WS as "WebSocketClient"
-participant API as "FastAPI Server"
-participant MCP as "MCP Server"
-User->>Sidepanel : "Enter command"
-Sidepanel->>WS : "executeAgent(command)"
-WS->>API : "emit execute_agent {command}"
-API-->>WS : "agent_progress x N"
-API-->>WS : "agent_result or agent_error"
-WS-->>Sidepanel : "progress updates"
-WS-->>Sidepanel : "final result/error"
-Note over Sidepanel,MCP : "Alternative : MCP tool invocation"
-Sidepanel->>MCP : "call_tool(llm.generate, ...)"
-MCP-->>Sidepanel : "tool result or error"
+  participant Ext as "client"
+  participant API as "route"
+  participant Svc as "service"
+  participant Trace as "agent_events"
+  participant Log as "backend log"
+  Ext->>API : "request"
+  API->>Svc : "call"
+  Svc->>Trace : "run_started"
+  Svc->>Svc : "work"
+  alt success
+    Svc-->>API : "answer"
+    Svc->>Trace : "final"
+  else failure
+    Svc->>Log : "logger.exception"
+    Svc->>Trace : "error event"
+    Svc-->>API : "error or apology text"
+  end
+  API-->>Ext : "JSON or SSE"
 ```
 
-## Detailed component analysis
-
-### CLI and process start
-Common issues:
-- Wrong entrypoint (API vs stdio MCP)
-- Environment variables not loaded
-- Port conflicts or host binding issues
-
-Resolution steps:
-- API: `python main.py` or `agentic-api-run`
-- Stdio MCP: `agentic-mcp`
-- Confirm `.env` presence and required keys
-- Check BACKEND_HOST and BACKEND_PORT values
-
-### Backend API server
-Common issues:
-- Router inclusion errors
-- Health endpoint not reachable
-- Missing service dependencies
-
-Resolution steps:
-- Ensure all routers are imported and included with correct prefixes
-- Test health endpoint
-- Validate service dependencies and environment variables
-
-### MCP server
-Common issues:
-- Tool invocation failures
-- Provider misconfiguration
-- Tool schema mismatches
-
-Resolution steps:
-- Validate tool names and input schemas
-- Confirm provider, model, and base URL parameters
-- Inspect error responses returned by MCP server
-
-### LLM provider integration
-Common issues:
-- Unsupported provider
-- Missing API key or base URL
-- Model name not provided or invalid
-- Initialization failures
-
-Resolution steps:
-- Choose supported provider from the provider list
-- Set required environment variables for API keys and base URLs
-- Provide a valid model name or rely on defaults
-- Review initialization error messages for guidance
-
-### Extension communication and agent execution
-Common issues:
-- WebSocket connection failures
-- Background script message handling errors
-- Content script injection failures
-- Action execution timeouts or selector mismatches
-
-Resolution steps:
-- Verify VITE_API_URL and backend reachability
-- Check background script logs for message type handling
-- Ensure content script injection path is correct
-- Validate action selectors and tab contexts
-
-### Browser automation actions
-Common issues:
-- Element not found selectors
-- Content editable vs standard input handling
-- Navigation/reload completion waits
-- Tab/window control errors
-
-Resolution steps:
-- Use precise selectors and verify element presence
-- Differentiate contenteditable and standard inputs
-- Respect navigation/reload completion timeouts
-- Validate tab IDs and window contexts
-
-### Sidepanel UI and response formatting
-Common issues:
-- HTML-like error messages
-- Progress display inconsistencies
-- Response formatting issues
-
-Resolution steps:
-- Parse and sanitize error messages for readability
-- Accumulate progress events and render consistently
-- Format nested data structures for plain display
-
-### PyJIIT service exceptions
-Common issues:
-- API errors during service calls
-- Login/session-related failures
-- Account API errors
-
-Resolution steps:
-- Catch and propagate specific exception types
-- Handle session expiration and re-authentication
-- Log detailed error context for diagnostics
-
-## Dependency analysis
-The backend depends on FastAPI, Uvicorn, LangChain/LangGraph, MCP, and various provider SDKs. The extension depends on Socket.IO client and React components. Ensure dependency versions align with project requirements.
+## Where to look first
 
 ```mermaid
-graph LR
-A["pyproject.toml<br/>dependencies"] --> B["FastAPI/Uvicorn"]
-A --> C["LangChain/LangGraph"]
-A --> D["MCP"]
-A --> E["Provider SDKs"]
-F["Extension deps<br/>Socket.IO client"] --> G["Sidepanel UI"]
+flowchart TD
+  Problem(["something failed"]) --> Kind{"where?"}
+  Kind -- "backend did not start" --> Startup["read uvicorn log"]
+  Kind -- "chat answer wrong" --> Trace["console → Agent runs"]
+  Kind -- "browser did nothing" --> Bridge["/bridge/status"]
+  Kind -- "memory wrong" --> Mem["console → Memory"]
+  Kind -- "UI broken" --> Build["pnpm typecheck, devtools"]
+  Startup --> Fix1["start container, fix .env"]
+  Trace --> Fix2["inspect events and tool results"]
+  Bridge --> Fix3["reload extension, start bridge"]
+  Mem --> Fix4["explain claim, confirm or forget"]
+  Build --> Fix5["pnpm install, rebuild"]
 ```
 
-## Performance considerations
-- Reduce unnecessary DOM queries and injections
-- Batch navigation and tab operations
-- Limit concurrent tool executions
-- Monitor memory usage in long-running sessions
-- Use caching for repeated website content conversions
-- Optimize LLM calls with concise prompts and appropriate temperatures
+## Startup and databases
 
-## Troubleshooting guide
+**Backend starts but says `Postgres init skipped`.** `main.lifespan` wraps `init_db()` in a `try` and logs a warning instead of exiting. Causes: Docker down, password mismatch, port 5433 taken. Check `docker compose ps` and `docker compose logs postgres`.
 
-### Installation and setup
-Symptoms:
-- Missing dependencies or import errors
-- CLI not recognizing modes
-- Backend not starting
+**`Neo4j init skipped`.** The graph is optional at boot. Memory retrieval still works from Postgres and OpenSearch, but graph expansion is empty. Start the container and restart the API.
 
-Resolution steps:
-- Install dependencies per project requirements
-- Verify Python version and virtual environment
-- Confirm CLI usage and mode flags
-- Check backend host/port configuration
+**`OpenSearch init skipped`.** Search falls back to keyword-only behaviour and context gets thinner. OpenSearch needs about 1 GB free to Docker. Check `curl http://localhost:9201/_cluster/health`.
 
-### Configuration errors
-Symptoms:
-- LLM initialization failures
-- Missing API keys or base URLs
-- Incorrect provider selection
+**A migration fails halfway.** Each `upgrade(conn)` runs inside one transaction. A failure rolls back and is not recorded, so the next boot retries it. Fix the SQL and restart.
 
-Resolution steps:
-- Validate provider and set required environment variables
-- Provide model names or rely on defaults
-- Review error messages for missing keys/base URLs
+## Models and providers
 
-### Agent execution failures
-Symptoms:
-- WebSocket connection errors
-- Agent execution timeouts
-- Progress events not received
+**`API key for 'google' not found`.** `LargeLanguageModel` checks the passed key, then the env variable. The database secret is resolved earlier by `resolve_provider_secrets`. Add a key in Settings → Model.
 
-Resolution steps:
-- Verify backend connectivity and URL
-- Check agent execution lifecycle and error emissions
-- Ensure proper event listeners and cleanup
+**`Unsupported LLM provider`.** Accepted values are `google`, `openai`, `anthropic`, `ollama`, `deepseek`, `opencode`, `opencode-go`, `openrouter`. A subscription runtime id is handled before the LLM path.
 
-### Browser extension issues
-Symptoms:
-- Background script message handling errors
-- Content script injection failures
-- Action execution errors
+**A model in the picker is rejected.** The catalog comes from models.dev and may be newer than your key's entitlements. Pick another model or point the provider at a gateway.
 
-Resolution steps:
-- Inspect background script logs for unknown message types
-- Verify content script injection paths
-- Validate action parameters and selectors
+**Temperature errors on a reasoning model.** `llm_for` asks `model_info` whether the model accepts temperature and passes `None` when it does not.
 
-### Backend server issues
-Symptoms:
-- API routes not found
-- Health endpoint unreachable
-- Router import errors
+**The picked model is ignored.** The override reads `X-Agentic-Provider` and `X-Agentic-Model`. A client that does not send them gets the saved default.
 
-Resolution steps:
-- Confirm router imports and prefixes
-- Test health route independently
-- Validate service dependencies
+## Extension and bridge
 
-### MCP protocol problems
-Symptoms:
-- Tool invocation errors
-- Schema mismatch errors
-- Provider configuration errors
+**The side panel says the backend is offline.** The panel calls `http://localhost:5454` unless `baseUrl` is set or `VITE_API_URL` at build time. Check both.
 
-Resolution steps:
-- Validate tool names and input schemas
-- Check provider, model, and base URL parameters
-- Inspect MCP server error responses
+**`No browser is connected to the Agentic Browser bridge`.** The bridge is up but no extension WebSocket is attached. Open the browser with the extension and check its MCP Bridge section.
 
-### Extension communication failures
-Symptoms:
-- WebSocket disconnects
-- No agent progress updates
-- Connection status issues
+**Bridge closes with 4403.** The origin was not an extension scheme, or `AGENTIC_BROWSER_EXTENSION_IDS` excludes this build.
 
-Resolution steps:
-- Verify VITE_API_URL and backend accessibility
-- Check reconnection attempts and delays
-- Monitor connection status events
+**Bridge closes with 4400.** The first frame was not `hello` within 10 seconds. Rebuild the extension.
 
-### Browser automation debugging
-Symptoms:
-- Element not found errors
-- Selector mismatches
-- Navigation/reload timeouts
+**`/bridge/call` 401 or 403.** 401 is a missing or wrong token. 403 means a browser sent the request; only local processes may relay.
 
-Resolution steps:
-- Use precise selectors and verify element presence
-- Differentiate contenteditable and standard inputs
-- Respect navigation/reload completion waits
+**MCP tools changed but the client shows the old list.** Settings apply through a 2 second file watcher and `tools/list_changed`. Clients that ignore it need a restart.
 
-### LLM provider integration
-Symptoms:
-- Unsupported provider errors
-- API key or base URL missing
-- Model name invalid
+## Browser actions
 
-Resolution steps:
-- Choose supported provider
-- Set required environment variables
-- Provide valid model names
+**The agent plans an action but nothing happens.** The backend only returns the action; the extension executes it. Check the work log for `browser_action_agent` and the continuation call.
 
-### Service authentication and tool execution
-Symptoms:
-- PyJIIT API errors
-- Login/session failures
-- Account API errors
+**`Chrome does not let extensions script chrome://...`.** The handler blocks browser-internal pages and the web store. Navigate to a normal site.
 
-Resolution steps:
-- Catch and handle specific exception types
-- Manage session expiration and re-authentication
-- Log detailed error context
+**Actions are ignored by the page.** Clicks and typing go through `chrome.debugger` when available. With DevTools open, the debugger cannot attach and the fallback uses synthetic events. Close DevTools.
 
-### Diagnostic tools and log analysis
-- Enable DEBUG logging for development
-- Inspect background script console logs
-- Capture WebSocket event sequences
-- Review MCP tool invocation logs
+**A login, captcha or permission prompt stops the run.** `_detect_user_blocker` returns `status="blocked"`. This is intended.
 
-### Escalation procedures
-- Collect environment details and dependency versions
-- Provide reproducible steps and logs
-- Report issues with clear error messages and stack traces
-- Engage community channels for support
+**A ref like `e12` stopped working.** Refs live in the page's isolated world and drop on navigation. Take a new snapshot.
+
+**The run stops with "going in circles".** The loop guard warned and then stopped after the grace period. Change the instruction or starting page.
+
+## Memory
+
+**A fact the user said is missing.** Check: the turn was trivial, extraction failed twice, the gate rejected it, or reconciliation called it duplicate.
+
+**A changed fact did not replace the old one.** The reconciler was not confident. Mention it again in a later turn.
+
+**Two contradictory facts both exist.** That is the designed outcome when the reconciler is unsure. Both are linked with `CONTRADICTS`. Confirm one or forget the other.
+
+**Search returns nothing for a reasonable question.** Weak matches are dropped. If the embedding provider changed, old vectors are not comparable. Re-ingest or clear memory.
+
+**Local mode has poor recall.** Without a Google or OpenAI key, memory uses a word-hashing embedder. That is a known roadmap gap.
+
+**A forgotten fact still appears in a document answer.** Forget redacts chat artifacts but does not delete imported documents. Forget the document source too.
+
+**`memory_recall` over MCP fails.** The memory MCP tools call the backend at `AGENTIC_BROWSER_API_URL`. Start it.
+
+## Attachments and voice
+
+**`Attachments must be uploaded through /api/upload first`.** `services/attachments.py` refuses paths outside `uploads/`.
+
+**An image is rejected by the model.** The agent checks whether the picked model sees images and returns a refusal instead of guessing.
+
+**Voice errors about `metadata_errors`.** `services/voice_input.py` patches `av.open` for PyAV 15 and faster-whisper 1.2.1. Check the installed `av` version.
+
+**Cloud transcription fails and the text is empty.** Both routes fall back to local Whisper. If local Whisper is unavailable, there is no fallback left.
+
+## Build and type checking
+
+**`pnpm build:extension` cannot find `.wxt` types.** Run `pnpm install`; `postinstall` runs `wxt prepare`.
+
+**Type errors after pulling.** Run `pnpm typecheck:extension` and the shared package's `tsc --noEmit`.
+
+**Console builds but deep links 404 on refresh.** The host must rewrite unknown paths to `index.html`.
+
+**`pnpm screenshots` cannot launch Chromium.** Run `pnpm exec playwright install chromium`.
 
 ## FAQ
 
-### Setup and installation
-Q: How do I run the backend API and MCP?
-A: `python main.py` or `agentic-api-run` for FastAPI (MCP at `/mcp`). `agentic-mcp` for stdio MCP. Load environment variables from `.env`.
+**Does the backend have authentication?** No. It is a single-user local service. CORS limits browser origins and the bridge has a token, but any local process can call the API.
 
-Q: What environment variables are required?
-A: Configure host, port, debug, and provider-specific keys. See configuration module.
+**Can two backends share the databases?** Not safely for memory writes. The reconcile lock is in-process.
 
-Q: How do I install dependencies?
-A: Install Python dependencies as defined in project requirements.
+**Does the agent act without asking?** It stops at logins, captchas and permission prompts, and is told to ask before purchases, messages, deletions and credentials. There is no per-action approval UI yet.
 
-### Configuration
-Q: Which providers are supported?
-A: Supported providers include Google, OpenAI, Anthropic, Ollama, DeepSeek, and OpenRouter.
+**Where do API keys live?** In `.env` or encrypted `app_settings` rows. OAuth tokens live encrypted in `browser_credentials`.
 
-Q: How do I configure API keys and base URLs?
-A: Set environment variables for each provider and ensure base URLs are correct.
+**Why does the extension need `debugger` permission?** For trusted input events and screenshots through CDP.
 
-### Usage patterns
-Q: How do I execute agent commands via the extension?
-A: Use the sidepanel to enter commands; the WebSocket client will execute and stream progress.
+**Can I use it on Firefox?** Yes, with the MV2 build. The debugger path is Chrome-only, so input uses DOM events.
 
-Q: How do I troubleshoot action execution failures?
-A: Validate selectors, ensure content script injection, and check navigation completion.
+**What runs on a subscription?** Claude through the Claude Agent SDK, ChatGPT through `codex exec`, Google AI through Antigravity ACP, and OpenCode through `opencode acp`.
 
-### Limitations and known issues
-- Some actions require explicit user approval in the extension UI
-- Certain websites may block automation or require manual intervention
-- Provider-specific rate limits and quotas apply
+**How long are chats kept?** Until deleted. Compaction summarizes older messages but does not delete originals.
 
-### Workarounds and planned improvements
-- Use precise selectors
-- Implement retry logic for transient network errors
-- Plan for future improvements such as visual DOM debugger and offline retrieval
+**How do I wipe everything?** `POST /api/memory/clear` clears the three memory stores. Conversations and runs are separate tables.
 
-### Community support and reporting
-- Contribute via fork and pull request
-- Report issues with detailed logs and reproducible steps
+## Dependencies
 
-## Conclusion
-Most failures are missing env vars, a dead WebSocket, or a bad provider key. Log levels up, reproduce once, then file an issue with the stack and the command you ran.
+```mermaid
+graph TB
+  FAQ["Troubleshooting"] --> Startup["main.py lifespan"]
+  FAQ --> Bridge["mcp_server/bridge.py"]
+  FAQ --> Runtime["services/browser_runtime_service.py"]
+  FAQ --> Memory["memory/README.md"]
+  FAQ --> LLM["core/llm.py"]
+  FAQ --> Extension["clients/browser-extension"]
+  Startup --> Compose["docker-compose.yml"]
+  Bridge --> Token["bridge-token"]
+  Runtime --> Guard["core/loop_guard.py"]
+  Memory --> Stores["postgres, opensearch, neo4j"]
+  LLM --> Providers["models.dev catalog"]
+```
 
-## Appendices
+## Performance
 
-### Error message reference
-- LLM initialization errors: indicate missing API keys, base URLs, or invalid model names
-- MCP tool invocation errors: indicate schema mismatches or provider misconfiguration
-- WebSocket connection errors: indicate backend unreachability or URL misconfiguration
-- Background script message errors: indicate unsupported message types or missing handlers
-- Action execution errors: indicate selector mismatches or navigation timeouts
+- Startup catches every optional dependency, so a degraded stack is normal.
+- The bridge waits 3 seconds for a browser and calls time out at `timeout + 2`.
+- The loop guard warns before it stops.
+- The browser runtime keeps the last 6 observations and up to 40 notes.
+- Compaction triggers at half the model window and keeps the last 8 messages verbatim.
+
+## Appendix
+
+### Implementation examples
+- Health: `curl http://127.0.0.1:5454/api/genai/health/`.
+- Bridge: `curl http://127.0.0.1:5455/bridge/status`.
+- Runs: `GET /api/debug/runs?status=failed&limit=20`.
+- One run: `GET /api/debug/runs/{run_id}` and `/events`.
+- Memory explain: `GET /api/memory/explain/{claim_id}`.
+- Clear memory: `POST /api/memory/clear`.
+
+### Source files
+- `README.md`
+- `main.py`
+- `core/config.py`
+- `core/llm.py`
+- `core/loop_guard.py`
+- `mcp_server/bridge.py`
+- `mcp_server/server.py`
+- `services/react_agent_service.py`
+- `services/browser_runtime_service.py`
+- `services/attachments.py`
+- `services/voice_input.py`
+- `memory/README.md`

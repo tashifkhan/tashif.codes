@@ -1,347 +1,206 @@
 # API server
 
-## Introduction
-REST surface for GitHub, Gmail, Calendar, YouTube, Website, and Health. Routers group by service; Pydantic models live under a shared models package.
+The backend is one FastAPI application built in `main.py`. Every route is a module in `routers/` (plus `memory/api/router.py` and `routers/mcp_settings.py`) mounted under an `/api/...` prefix. This folder documents those routes: method, path, request model, response shape, status codes and the handler that runs.
 
-## Project structure
-The API server is initialized in a central module and mounts routers under prefixed paths. Routers define endpoints and request/response models, while services encapsulate business logic.
+Start with [API overview](API%20Overview) for the conventions every route shares, then open the page for the route group you need.
 
-```mermaid
-graph TB
-A["FastAPI App<br/>main.py"] --> B["Routers Package<br/>routers/__init__.py"]
-B --> C["Health Router<br/>routers/health.py"]
-B --> D["GitHub Router<br/>routers/github.py"]
-B --> E["Gmail Router<br/>routers/gmail.py"]
-B --> F["Calendar Router<br/>routers/calendar.py"]
-B --> G["YouTube Router<br/>routers/youtube.py"]
-B --> H["Website Router<br/>routers/website.py"]
-A --> I["Mounted Prefixes"]
-I --> J["/api/genai/health"]
-I --> K["/api/genai/github"]
-I --> L["/api/genai/website"]
-I --> M["/api/genai/youtube"]
-I --> N["/api/gmail"]
-I --> O["/api/calendar"]
-I --> P["/api/pyjiit"]
-I --> Q["/api/genai/react"]
-I --> R["/api/validator"]
-I --> S["/api/agent"]
-I --> T["/api/upload"]
-```
+Key capabilities:
+- Ten route groups covering chat, conversations, browser runtime, memory, integrations, auth, Google Workspace, local tools, skills and the debug console
+- A global middleware that can swap the model per request with two headers
+- Server-sent events for streamed chat and streamed skill execution
+- One error convention: `HTTPException` with a string or object `detail`
+- No bearer auth, with identity carried by a `user_id` query parameter
+- A browser-only CORS policy with an environment override
 
-## Core components
-- FastAPI Application: Initializes the server with metadata and mounts routers under service-specific prefixes.
-- Routers: Define endpoints per service, handle request validation, and delegate to services.
-- Services: Encapsulate external integrations and business logic.
-- Models: Pydantic models define request/response schemas and validation.
+## Repository layout
 
-Key initialization and mounting points:
-- Application creation and router inclusion are defined in the main API module.
-- Routers are exported via the routers package for centralized imports.
-
-## Architecture overview
-Split across these pieces:
-- Presentation Layer: FastAPI routes and request validation.
-- Domain Layer: Services orchestrate tool integrations.
-- Data Contracts: Pydantic models enforce schema and validation.
+`main.py` owns the app object, middleware order and `include_router` calls. Router modules declare paths relative to their mount prefix, so `/api/genai/react` plus `@router.post("/")` becomes `POST /api/genai/react/`.
 
 ```mermaid
 graph TB
-subgraph "Presentation"
-R1["Health Router<br/>GET /api/genai/health"]
-R2["GitHub Router<br/>POST /api/genai/github"]
-R3["Gmail Router<br/>POST /api/gmail/*"]
-R4["Calendar Router<br/>POST /api/calendar/*"]
-R5["YouTube Router<br/>POST /api/genai/youtube"]
-R6["Website Router<br/>POST /api/genai/website"]
-end
-subgraph "Domain"
-S1["GitHubService"]
-S2["GmailService"]
-S3["CalendarService"]
-end
-R1 --> |"returns"| R1R["HealthResponse"]
-R2 --> S1 --> |"calls tools & prompts"| R2R["GitHubResponse"]
-R3 --> S2 --> |"calls tools"| R3R["JSON object"]
-R4 --> S3 --> |"calls tools"| R4R["JSON object"]
-R5 --> |"asks YouTube service"| R5R["JSON object"]
-R6 --> |"asks website service"| R6R["JSON object"]
+  subgraph "HTTP entry"
+    MAIN["main.py<br/>app + prefixes"]
+    RM["core/request_model.py"]
+    CORS["CORSMiddleware"]
+  end
+  subgraph "Pages to code"
+    P1["API overview"] --> REACT["routers/react_agent.py<br/>routers/conversations.py"]
+    P2["Agent system API"] --> CHAT["react_agent, browser_use,<br/>skills"]
+    P3["Conversations and runs API"] --> RUNS["conversations.py, state.py,<br/>services/run_traces.py"]
+    P4["Browser runtime API"] --> BRT["browser_runtime.py, automation.py"]
+    P5["Memory API"] --> MEM["memory/api/router.py"]
+    P6["Integrations and settings API"] --> INT["integrations.py, mcp_settings.py"]
+    P7["Authentication and security"] --> AUTH["auth.py"]
+    P8["Gmail and Calendar pages"] --> GOOG["gmail.py, calendar.py,<br/>google_search.py"]
+    P9["Tool pages"] --> TOOLS["website, youtube, github,<br/>file_upload, pyjiit"]
+    P10["Health and debug pages"] --> DBG["health.py, debug.py"]
+  end
+  MAIN --> RM
+  RM --> CORS
+  CORS --> REACT
+  CORS --> MEM
+  CORS --> INT
+  CORS --> AUTH
 ```
 
-## Detailed component analysis
+The mount list is the fastest way to find which file owns a path.
 
-### Health endpoint
-- Method: GET
-- Path: /api/genai/health
-- Authentication: Not required
-- Request: No body
-- Response: HealthResponse
- - Fields: status (string), message (string)
-- Error Handling: None defined; returns success payload
+| Prefix | Router module | Documented on |
+| --- | --- | --- |
+| `/api/genai/react` | `routers/react_agent.py` | [Agent system API](Agent%20System%20API) |
+| `/api/agent` | `routers/browser_use.py` | [Agent system API](Agent%20System%20API) |
+| `/api/skills` | `routers/skills.py` | [Agent system API](Agent%20System%20API) |
+| `/api` | `routers/conversations.py` | [Conversations and runs API](Conversations%20and%20Runs%20API) |
+| `/api/state` | `routers/state.py` | [Conversations and runs API](Conversations%20and%20Runs%20API) |
+| `/api/browser/runtime` | `routers/browser_runtime.py` | [Browser runtime API](Browser%20Runtime%20API) |
+| `/api/browser/automation` | `routers/automation.py` | [Browser runtime API](Browser%20Runtime%20API) |
+| `/api/memory` | `memory/api/router.py` | [Memory API](Memory%20API) |
+| `/api/integrations` | `routers/integrations.py` | [Integrations and settings API](Integrations%20and%20Settings%20API) |
+| `/api/mcp` | `routers/mcp_settings.py` | [Integrations and settings API](Integrations%20and%20Settings%20API) |
+| `/api/auth` | `routers/auth.py` | [Authentication and security](Authentication%20and%20Security) |
+| `/api/gmail` | `routers/gmail.py` | [Gmail integration API](Gmail%20Integration%20API) |
+| `/api/calendar` | `routers/calendar.py` | [Calendar integration API](Calendar%20Integration%20API) |
+| `/api/google-search` | `routers/google_search.py` | [Search integration API](Search%20Integration%20API) |
+| `/api/genai/github` | `routers/github.py` | [GitHub integration API](GitHub%20Integration%20API) |
+| `/api/genai/youtube` | `routers/youtube.py` | [YouTube integration API](YouTube%20Integration%20API) |
+| `/api/genai/website` | `routers/website.py` | [Website processing API](Website%20Processing%20API) |
+| `/api/validator` | `routers/website_validator.py` | [Website processing API](Website%20Processing%20API) |
+| `/api/pyjiit` | `routers/pyjiit.py` | [Academic portal API](Academic%20Portal%20API) |
+| `/api/upload` | `routers/file_upload.py` | [File upload API](File%20Upload%20API) |
+| `/api/genai/health` | `routers/health.py` | [Health and monitoring API](Health%20and%20Monitoring%20API) |
+| `/api/debug` | `routers/debug.py` | [Debug and observability API](Debug%20and%20Observability%20API) |
+| `/api/voice` | `routers/voice.py` | settings via [Integrations and settings API](Integrations%20and%20Settings%20API) |
+| `/` | `main.py` | [API overview](API%20Overview) |
+
+## Pages
+
+| Page | What it covers |
+| --- | --- |
+| [API overview](API%20Overview) | base URL, 23 mounts, model headers, errors, CORS, startup, SSE conventions |
+| [Agent system API](Agent%20System%20API) | chat, SSE stream, runner selection, script generation, skills |
+| [Conversations and runs API](Conversations%20and%20Runs%20API) | conversations, messages, run traces, client context, key-value state |
+| [Browser runtime API](Browser%20Runtime%20API) | one planned action per step, session lifecycle, blockers, loop guard |
+| [Memory API](Memory%20API) | search, context, tools, claims, graph, feedback, ingestion, maintenance |
+| [Integrations and settings API](Integrations%20and%20Settings%20API) | LLM defaults, secrets, Composio, OAuth clients, runtimes, MCP, infra |
+| [Authentication and security](Authentication%20and%20Security) | Google and GitHub code exchange, encrypted token store, refresh, status, CORS posture |
+| [Gmail integration API](Gmail%20Integration%20API) | unread, latest, mark read, send |
+| [Calendar integration API](Calendar%20Integration%20API) | list upcoming events, create an event |
+| [Search integration API](Search%20Integration%20API) | server-side web search through the Tavily pipeline |
+| [GitHub integration API](GitHub%20Integration%20API) | repo agent, clone cache, private archive upload, read-only shell |
+| [YouTube integration API](YouTube%20Integration%20API) | transcript fetch, cleanup, question answering, attachments |
+| [Website processing API](Website%20Processing%20API) | page question answering and prompt injection validation |
+| [Academic portal API](Academic%20Portal%20API) | PyJIIT login, semesters, attendance, wrapper surface |
+| [File upload API](File%20Upload%20API) | multipart upload, download guard, attachment loading and limits |
+| [Health and monitoring API](Health%20and%20Monitoring%20API) | static health route, startup checks, infra probe, other probes |
+| [Debug and observability API](Debug%20and%20Observability%20API) | stats, timeseries, run detail, memory inspection, maintenance history |
+
+## Shared concepts
+
+Every router uses the same moving parts, so the child pages assume them.
+
+- **Prefix mounting.** `main.py` calls `app.include_router(router, prefix=...)` once per module. `browser_use_router` is exported a second time as `agent_router` for `/api/agent`.
+- **No bearer auth.** Identity is a `user_id` query parameter defaulting to `"default"` (`services/conversations.py`, `services/app_state.py`). OAuth tokens are resolved server side from `browser_credentials`.
+- **Per-request model.** `RequestModelMiddleware` reads `X-Agentic-Provider` and `X-Agentic-Model` and binds the picked model with `set_request_llm` for the request, including streamed bodies.
+- **Errors.** Validation errors are 422 from FastAPI. Handlers raise `HTTPException` for 400, 401, 404 and 500. Several routers catch broad exceptions and return 500 with `str(exc)`.
+- **Streaming.** Chat and skill execution return `text/event-stream` with `Cache-Control: no-cache`, `Connection: keep-alive` and `X-Accel-Buffering: no`.
+
+## How it fits together
+
+The request model middleware is added before CORS so CORS wraps it and its 400 responses still carry CORS headers.
+
+```mermaid
+flowchart TD
+  A["Client request"] --> B["CORSMiddleware<br/>extension and localhost only"]
+  B --> C["RequestModelMiddleware<br/>x-agentic-provider / x-agentic-model"]
+  C -->|"both headers"| D["llm_for(provider, model)<br/>or runtimes.set_pick()"]
+  C -->|"absent"| E["saved default model"]
+  D --> F["router handler"]
+  E --> F
+  F --> G["service layer"]
+  G --> H["Postgres / OpenSearch / Neo4j"]
+  F --> I["JSONResponse or StreamingResponse"]
+```
+
+Handlers stay thin. They validate one or two fields, resolve an optional Google token with `resolve_google_token_optional()`, and delegate to a service. The service owns the database session, the agent call and the trace writes.
 
 ```mermaid
 sequenceDiagram
-participant C as "Client"
-participant A as "FastAPI App"
-participant H as "Health Router"
-participant M as "HealthResponse"
-C->>A : "GET /api/genai/health"
-A->>H : "Route to handler"
-H->>M : "Construct response"
-H-->>C : "{status, message}"
+  participant C as Client
+  participant M as RequestModelMiddleware
+  participant R as router handler
+  participant S as service
+  participant DB as Postgres
+  C->>M: "POST /api/... with optional model headers"
+  M->>M: "set_request_llm or runtimes.set_pick"
+  M->>R: "call next ASGI app"
+  R->>S: "generate_answer / plan_step / search"
+  S->>DB: "get_session()"
+  DB-->>S: "commit on context exit"
+  S-->>R: "answer or response model"
+  R-->>C: "200 JSON or SSE frames"
 ```
 
-### GitHub endpoint
-- Method: POST
-- Path: /api/genai/github
-- Authentication: Not required
-- Request Model: GitHubRequest
- - Fields:
- - url: HttpUrl (required)
- - question: string (required)
- - chat_history: array of dicts (optional, default [])
- - attached_file_path: string or null (optional)
-- Response Model: GitHubResponse
- - Fields:
- - content: string
-- Validation Rules:
- - url must be a valid HTTP(S) URL
- - question must be present
-- Error Handling:
- - Returns HTTP 400 if required fields are missing
- - Returns HTTP 500 for internal errors; logs error details
+## Reading paths
+
+- New to the backend: [API overview](API%20Overview), then [Agent system API](Agent%20System%20API) and [Conversations and runs API](Conversations%20and%20Runs%20API).
+- Building a browser client: [Browser runtime API](Browser%20Runtime%20API) for the step loop, [Agent system API](Agent%20System%20API) for chat.
+- Wiring a provider: [Integrations and settings API](Integrations%20and%20Settings%20API) for keys and default models, [Authentication and security](Authentication%20and%20Security) for OAuth.
+- Adding a tool: start from the page for the closest existing route, then follow the service and tool files listed in its appendix.
+
+## Dependencies
 
 ```mermaid
-sequenceDiagram
-participant C as "Client"
-participant A as "FastAPI App"
-participant G as "GitHub Router"
-participant GS as "GitHubService"
-participant M as "GitHubResponse"
-C->>A : "POST /api/genai/github"
-A->>G : "Route to handler"
-G->>G : "Validate GitHubRequest"
-G->>GS : "generate_answer(url, question, chat_history, attached_file_path)"
-GS-->>G : "Answer string"
-G->>M : "Wrap into GitHubResponse"
-G-->>C : "{content}"
+graph TB
+  subgraph "HTTP"
+    FA["fastapi >=0.115.0"]
+    PD["pydantic >=2.9.0"]
+  end
+  subgraph "App"
+    ROUTERS["routers/*.py"]
+    SERVICES["services/*.py"]
+    AGENTS["agents/*.py"]
+    MEMORY["memory/*.py"]
+  end
+  subgraph "Storage"
+    SA["sqlalchemy[asyncio] >=2.0"]
+    AP["asyncpg >=0.29"]
+    OS["opensearch-py >=2.6"]
+    N4["neo4j >=5.20"]
+  end
+  ROUTERS --> FA
+  ROUTERS --> PD
+  ROUTERS --> SERVICES
+  SERVICES --> AGENTS
+  SERVICES --> MEMORY
+  SERVICES --> SA
+  SA --> AP
+  MEMORY --> OS
+  MEMORY --> N4
 ```
 
-### Gmail endpoints
-- Method: POST
-- Paths:
- - /api/gmail/unread
- - /api/gmail/latest
- - /api/gmail/mark_read
- - /api/gmail/send
-- Authentication: Requires access_token in request body for all endpoints
-- Request Models:
- - UnreadRequest: access_token (required), max_results (optional, default 10)
- - LatestRequest: access_token (required), max_results (optional, default 5)
- - MarkReadRequest: access_token (required), message_id (required)
- - SendEmailRequest: access_token (required), to (required), subject (required), body (optional)
-- Response Models:
- - All endpoints return JSON objects with service-specific keys
-- Validation Rules:
- - access_token is required for all endpoints
- - max_results must be positive; defaults applied if omitted or invalid
- - mark_read requires message_id
- - send requires to and subject
-- Error Handling:
- - Returns HTTP 400 for missing required fields
- - Returns HTTP 500 for unexpected errors; logs exception details
+Versions come from `pyproject.toml`. Provider SDKs (`langchain-openai`, `langchain-anthropic`, `langchain-google-genai`, `langchain-ollama`) sit behind `core/llm.py`, so a router never imports one directly.
 
-```mermaid
-sequenceDiagram
-participant C as "Client"
-participant A as "FastAPI App"
-participant GM as "Gmail Router"
-participant GS as "GmailService"
-C->>A : "POST /api/gmail/unread"
-A->>GM : "Route to list_unread_messages"
-GM->>GM : "Validate UnreadRequest"
-GM->>GS : "list_unread_messages(access_token, max_results)"
-GS-->>GM : "Messages list"
-GM-->>C : "{messages : [...]}"
-```
+## Troubleshooting
 
-### Calendar endpoints
-- Method: POST
-- Paths:
- - /api/calendar/events
- - /api/calendar/create
-- Authentication: Requires access_token in request body for both endpoints
-- Request Models:
- - EventsRequest: access_token (required), max_results (optional, default 10)
- - CreateEventRequest: access_token (required), summary (required), start_time (required, ISO 8601 string), end_time (required, ISO 8601 string), description (optional, default)
-- Validation Rules:
- - access_token is required
- - max_results must be positive; defaults applied if omitted or invalid
- - start_time and end_time must be valid ISO 8601 strings
-- Error Handling:
- - Returns HTTP 400 for missing or invalid fields
- - Returns HTTP 500 for unexpected errors; logs exception details
+- A whole prefix 404s: check the mount table and the trailing slash. A reverse proxy that strips `/api` produces the same symptom.
+- Browser call blocked by CORS: the page origin is not an extension scheme and not localhost. Add it to `CORS_ORIGINS`.
+- A model header is ignored: both `X-Agentic-Provider` and `X-Agentic-Model` are required. One header alone falls back to the saved default.
+- A request returns 500 with a raw exception string: most routers catch `Exception` and use `str(exc)`. Check the server log for the traceback.
+- A streamed answer arrives all at once behind a proxy: SSE sets `X-Accel-Buffering: no`, but a proxy can still buffer. Test against `127.0.0.1:5454` directly.
+- Health is 200 but chat fails: the process is alive while a store or model is down. Use [Health and monitoring API](Health%20and%20Monitoring%20API) and [Debug and observability API](Debug%20and%20Observability%20API).
+- A run id from chat 404s in the console: the run row was never created, so the `conversation` SSE frame carried no id. Fall back to the conversation routes.
 
-```mermaid
-sequenceDiagram
-participant C as "Client"
-participant A as "FastAPI App"
-participant CA as "Calendar Router"
-participant CS as "CalendarService"
-C->>A : "POST /api/calendar/create"
-A->>CA : "Route to create_event"
-CA->>CA : "Validate CreateEventRequest"
-CA->>CS : "create_event(access_token, summary, start_time, end_time, description)"
-CS-->>CA : "Event object"
-CA-->>C : "{result : \"created\", event : {...}}"
-```
+## Appendix
 
-### YouTube endpoint
-- Method: POST
-- Path: /api/genai/youtube
-- Authentication: Not required
-- Request Model: AskRequest
- - Fields:
- - url: string (required)
- - question: string (required)
- - chat_history: array of dicts (optional, default [])
- - attached_file_path: string or null (optional)
-- Response: JSON object containing an answer field
-- Validation Rules:
- - url and question are required
-- Error Handling:
- - Returns HTTP 400 for missing required fields
- - Returns HTTP 500 for internal errors; logs error details
+### Implementation examples
+- App factory: `FastAPI(title="Agentic Browser API", version="0.1.0", lifespan=lifespan)` in `main.py`, served by `run()` on port 5454.
+- Middleware order: `app.add_middleware(RequestModelMiddleware)` before `app.add_middleware(CORSMiddleware, ...)`.
+- CORS regex: `^(chrome-extension|moz-extension)://[a-z0-9-]+$|^https?://(localhost|127\.0\.0\.1)(:\d+)?$`.
+- Default user: `DEFAULT_USER_ID = "default"` in `services/conversations.py` and `services/app_state.py`.
+- Root route: `GET /` returns `{"name": app.title, "version": app.version}`.
 
-```mermaid
-sequenceDiagram
-participant C as "Client"
-participant A as "FastAPI App"
-participant Y as "YouTube Router"
-participant S as "YouTubeService"
-C->>A : "POST /api/genai/youtube"
-A->>Y : "Route to ask"
-Y->>Y : "Validate AskRequest"
-Y->>S : "generate_answer(url, question, chat_history, attached_file_path)"
-S-->>Y : "Answer string"
-Y-->>C : "{answer : \"...\"}"
-```
-
-### Website endpoint
-- Method: POST
-- Path: /api/genai/website
-- Authentication: Not required
-- Request Model: WebsiteRequest
- - Fields:
- - url: string (required)
- - question: string (required)
- - chat_history: array of dicts (optional, default [])
- - client_html: string or null (optional)
- - attached_file_path: string or null (optional)
-- Response: JSON object containing an answer field
-- Validation Rules:
- - url and question are required
-- Error Handling:
- - Returns HTTP 400 for missing required fields
- - Returns HTTP 500 for internal errors; logs error details
-
-```mermaid
-sequenceDiagram
-participant C as "Client"
-participant A as "FastAPI App"
-participant W as "Website Router"
-participant S as "WebsiteService"
-C->>A : "POST /api/genai/website"
-A->>W : "Route to website"
-W->>W : "Validate WebsiteRequest"
-W->>S : "generate_answer(url, question, chat_history, client_html)"
-S-->>W : "Answer string"
-W-->>C : "{answer : \"...\"}"
-```
-
-## Dependency analysis
-- Router-to-Service Coupling:
- - Each router depends on a dedicated service class injected via FastAPI Depends.
- - Services depend on tool modules for external integrations.
-- Cross-Router Cohesion:
- - Routers group by domain and share few cross-dependencies.
-- External Dependencies:
- - Services rely on external APIs/tools; errors propagate as HTTP 500 with logged details.
-
-```mermaid
-graph LR
-GH["GitHub Router"] --> GHS["GitHubService"]
-GM["Gmail Router"] --> GMS["GmailService"]
-CA["Calendar Router"] --> CAS["CalendarService"]
-YT["YouTube Router"] --> YTS["YouTubeService"]
-WS["Website Router"] --> WSS["WebsiteService"]
-```
-
-## Performance considerations
-- Validation Early Exit: Routers validate required fields and return HTTP 400 promptly to avoid unnecessary work.
-- Defaults for Pagination: Endpoints default max_results to safe values when omitted or invalid.
-- Logging: Routers and services log errors; ensure structured logging is configured for production observability.
-- Asynchronous Workflows: GitHub endpoint supports async processing; ensure the underlying tooling is efficient and consider timeouts.
-
-## Troubleshooting guide
-- Common HTTP 400 Errors:
- - Missing access_token or message_id in Gmail/Calendar endpoints.
- - Missing url or question in YouTube/Website/GitHub endpoints.
- - Invalid ISO 8601 timestamps in Calendar create endpoint.
-- Internal HTTP 500 Errors:
- - Unexpected exceptions are caught and returned as HTTP 500 with a generic message; check server logs for stack traces.
-- Authentication Notes:
- - Access tokens are passed in request bodies for Gmail and Calendar endpoints; ensure clients supply valid tokens.
-- Debugging Tips:
- - Enable server-side logging to capture request validation failures and service exceptions.
- - Use curl or Postman to test endpoints with minimal payloads to isolate issues.
-
-## Conclusion
-Call the mounted prefixes, send the fields each request model expects, and treat 4xx bodies as validation truth. Services wrap the external SDKs so routers stay thin.
-
-## Appendices
-
-### API versioning and compatibility
-- Current Version: The application declares a version in the FastAPI metadata.
-- Recommendations:
- - Add a version prefix to router paths (e.g., /api/v1/.) to support multiple versions concurrently.
- - Introduce deprecation headers and a changelog for breaking changes.
- - Maintain backward compatibility windows with clear deprecation timelines.
-
-### Security considerations
-- Token Handling:
- - Gmail and Calendar endpoints require access_token in request bodies; treat them as sensitive credentials.
- - Avoid logging raw tokens; sanitize logs and consider token masking.
-- Transport Security:
- - Deploy behind HTTPS termination; enforce TLS in production.
-- Input Sanitization:
- - Validate and sanitize inputs; consider rate limiting and request size caps.
-- Authorization:
- - For endpoints requiring broader authorization, integrate middleware or API keys at the gateway level.
-
-### Rate limiting
-- Recommendation:
- - Implement rate limiting at the gateway or via middleware to protect downstream tools.
- - Use sliding window or token bucket algorithms; expose quota headers when possible.
-
-### Monitoring endpoints
-- Health Endpoint:
- - Use the existing health endpoint for liveness/readiness probes.
-- Metrics:
- - Expose metrics via a separate endpoint or middleware for latency, error rates, and throughput.
-
-### Administrative interfaces
-- Recommendations:
- - Provide admin endpoints for diagnostics, queue inspection, and configuration updates.
- - Secure admin endpoints with authentication and authorization controls.
-
-### Client implementation guidelines
-- Base URL:
- - Use the mounted router prefixes as base paths for each service.
-- Request Bodies:
- - Supply required fields as defined by each endpoint's request model.
-- Error Handling:
- - Clients should parse HTTP 400 responses for validation errors and HTTP 500 for server errors.
-- Example Patterns:
- - For YouTube/Website/GitHub: send url and question; optionally include chat_history and attached_file_path.
- - For Gmail/Calendar: include access_token and any additional required fields.
+### Source files
+- `main.py`
+- `routers/__init__.py`
+- `core/request_model.py`
+- `core/config.py`

@@ -1,288 +1,255 @@
 # Backend server design
 
-## Introduction
-FastAPI app structure, routers, services, LLM abstraction, config, errors, and concurrency. How the MCP server sits beside the REST API.
+The backend is a FastAPI application with four internal layers: routes, services, agents and core. Dependencies point down. A route may import a service, a service may import an agent or core module, and core imports neither routes nor services. Memory is a peer subsystem that services call through `MemoryService`.
 
-## Project structure
-The backend consists of:
-- FastAPI application in `main.py` with modular routers
-- MCP server in `mcp_server/` (stdio via `agentic-mcp`, HTTP at `/mcp`)
-- Core configuration and LLM abstraction
-- Routers for each domain endpoint
-- Services implementing business logic
-- Agents orchestrating multi-step reasoning with tools
-- Memory stores (sqlmodel/asyncpg, Neo4j, OpenSearch)
+The code is intentionally explicit rather than framework-heavy. Service classes are constructed in route dependencies, module-level singletons hold clients, and async is used everywhere a network or database call happens.
 
-```mermaid
-graph TB
-Entry["Entry Point<br/>main.py"] --> APIApp["FastAPI App<br/>main.py"]
-Entry --> MCP["MCP mount /mcp<br/>mcp_server/server.py"]
-APIApp --> Routers["Routers<br/>routers/*"]
-APIApp --> Config["Config<br/>core/config.py"]
-APIApp --> Run["Uvicorn Runner<br/>main.py run()"]
-Routers --> Services["Services<br/>services/*"]
-Services --> Agents["Agents<br/>agents/react_agent.py"]
-Services --> LLM["LLM Abstraction<br/>core/llm.py"]
-```
+Key capabilities:
+- Thin routes with Pydantic request and response models
+- Service classes that own orchestration
+- LangGraph agents behind a streamed interface
+- Module-level clients for Postgres, Neo4j and OpenSearch
+- Guarded startup with degraded modes
+- Consistent HTTP error mapping
+- Background work with no durable queue
 
-## Core components
-- Entry point: `main.py` starts FastAPI with Uvicorn and mounts MCP at `/mcp`. Stdio MCP is `agentic-mcp`.
-- FastAPI application: defines routes under multiple prefixes and includes health, GitHub, website, YouTube, Google Search, Gmail, Calendar, PyJIIT, React agent, website validator, agent, and file upload endpoints.
-- Configuration: environment-driven settings for host, port, debug level, and Google API key; centralized logger factory.
-- LLM abstraction: provider-agnostic initialization and generation interface supporting Google, OpenAI, Anthropic, Ollama, DeepSeek, and OpenRouter.
-- Routers: per-domain endpoints with dependency injection of services and standardized error handling.
-- Services: business logic implementations for website QA, React agent orchestration, and related tasks.
-- Agents: LangGraph-based reasoning with tool execution and message normalization.
-- MCP server: exposes tools for LLM generation, GitHub Q&A, website markdown fetching, and HTML-to-markdown conversion.
-
-## Architecture overview
-The system separates concerns across layers:
-- Presentation: FastAPI routers define endpoints and handle request validation and error mapping.
-- Business logic: Services encapsulate domain-specific workflows.
-- Orchestration: Agents coordinate tool use and multi-step reasoning.
-- Infrastructure: Configuration and LLM abstraction provide pluggable providers and runtime settings.
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Presentation Layer"
-RWebsite["Website Router<br/>routers/website.py"]
-RReact["React Agent Router<br/>routers/react_agent.py"]
-RHealth["Health Router<br/>routers/health.py"]
+subgraph "Routes"
+  RA["routers/react_agent.py"]
+  RB["routers/browser_runtime.py"]
+  RC["routers/conversations.py"]
+  RI["routers/integrations.py"]
 end
-subgraph "Business Logic Layer"
-SWebsite["Website Service<br/>services/website_service.py"]
-SReact["React Agent Service<br/>services/react_agent_service.py"]
+subgraph "Services"
+  SA["services/react_agent_service.py"]
+  SB["services/browser_runtime_service.py"]
+  SC["services/conversations.py"]
+  SD["services/run_traces.py"]
+  SE["services/compaction.py"]
 end
-subgraph "Orchestration Layer"
-Agent["React Agent Graph<br/>agents/react_agent.py"]
+subgraph "Agents"
+  AA["agents/react_agent.py"]
+  AB["agents/while_loop_harness.py"]
+  AC["agents/react_tools.py"]
 end
-subgraph "Infrastructure"
-LLM["LLM Provider Abstraction<br/>core/llm.py"]
-CFG["Environment Config<br/>core/config.py"]
+subgraph "Core"
+  CA["core/llm.py"]
+  CB["core/db.py"]
+  CC["core/loop_guard.py"]
+  CD["core/runtimes.py"]
 end
-RWebsite --> SWebsite
-RReact --> SReact
-SWebsite --> LLM
-SReact --> Agent
-Agent --> LLM
-RWebsite --> CFG
-RReact --> CFG
-RHealth --> CFG
+RA --> SA
+RB --> SB
+RC --> SC
+SA --> AA
+SA --> AB
+SA --> SD
+SA --> SE
+AA --> AC
+AA --> CA
+AA --> CC
+SA --> CD
+SC --> CB
 ```
 
-## Detailed component analysis
+## Building blocks
 
-### FastAPI application and routing organization
-- Central app definition with title and version.
-- Modular router inclusion under distinct prefixes for health, GitHub, website, YouTube, Google Search, Gmail, Calendar, PyJIIT, React agent, website validator, agent, and file upload.
-- Root endpoint returns app metadata.
+### Routes
 
-```mermaid
-graph LR
-App["FastAPI App<br/>main.py"] --> Prefixes["Route Prefixes"]
-Prefixes --> H["/api/genai/health"]
-Prefixes --> G["/api/genai/github"]
-Prefixes --> W["/api/genai/website"]
-Prefixes --> Y["/api/genai/youtube"]
-Prefixes --> GS["/api/google-search"]
-Prefixes --> GM["/api/gmail"]
-Prefixes --> C["/api/calendar"]
-Prefixes --> P["/api/pyjiit"]
-Prefixes --> RA["/api/genai/react"]
-Prefixes --> V["/api/validator"]
-Prefixes --> A["/api/agent"]
-Prefixes --> U["/api/upload"]
-```
+Routes validate input, call one service, map errors and return a response model. They do not contain prompts or SQL. `routers/react_agent.py` is a good example: it resolves an optional Google token, calls `generate_answer` or `stream_answer`, and wraps the stream in `StreamingResponse` with `text/event-stream`.
 
-### Request/Response handling patterns and error handling
-- Routers validate inputs and delegate to services using dependency injection.
-- Standardized try/catch blocks log errors and raise HTTP exceptions with appropriate status codes.
-- Responses are typed via Pydantic models where applicable.
+A few routes carry more logic because the service is thin:
 
-```mermaid
-sequenceDiagram
-participant Client as "Client"
-participant Router as "Website Router<br/>routers/website.py"
-participant Service as "Website Service<br/>services/website_service.py"
-Client->>Router : POST /api/genai/website
-Router->>Router : Validate request<br/>Extract url, question, chat_history
-Router->>Service : generate_answer(url, question, chat_history, client_html)
-Service-->>Router : Answer string or error
-alt Success
-Router-->>Client : 200 OK with answer
-else Validation Error
-Router-->>Client : 400 Bad Request
-else Internal Error
-Router-->>Client : 500 Internal Server Error
-end
-```
+- `routers/skills.py` builds the skill execution prompt and then delegates to the chat service.
+- `routers/voice.py` owns the TTS cache and provider fallback chain.
+- `routers/debug.py` runs aggregate SQL directly for the console.
 
-### Dependency injection and service layer
-- Routers define dependency factories returning service instances.
-- Services encapsulate domain logic and integrate with tools and LLM providers.
-- Example: Website router depends on WebsiteService; React agent router depends on ReactAgentService.
+### Services
+
+| Service | Responsibility |
+| --- | --- |
+| `ReactAgentService` | conversation setup, memory context, agent selection, persistence, post-turn ingestion |
+| `BrowserRuntimeService` | session state, planning prompt, action validation, loop guard, trace |
+| `ConversationService` | conversation, message and context snapshot CRUD; chat title generation |
+| `RunTraceService` | run, subagent, event and tool-call rows |
+| `CompactionService` | history loading, summary creation, tool output trimming |
+| `SecretsService` | encrypted settings and OAuth client storage |
+| `OAuthCredentialsService` | encrypted OAuth tokens and refresh |
+| `ComposioService` | toolkit discovery and action execution |
+
+### Agents
+
+`GraphBuilder` compiles a ReAct graph with two nodes. `SupervisorHarness` compiles a four-node graph with a subagent runner. Tools are `StructuredTool` objects built by `build_agent_tools(context)`, which conditionally adds Gmail, Calendar, PyJIIT and browser tools based on the request context.
+
+### Core
+
+`core/config.py` is the Pydantic settings singleton. `core/db.py` owns the async engine and session factory. `core/llm.py` owns provider construction, per-request overrides and the default model. `core/loop_guard.py` owns progress detection. `core/runtimes.py` owns subscription execution. `core/crypto.py` owns AES-GCM.
+
+## Service graph
+
+The main service classes depend on each other in one direction. `ReactAgentService` is the widest: it uses conversations, traces, compaction, attachments, runtimes and memory.
 
 ```mermaid
 classDiagram
-class WebsiteRouter {
-+POST /api/genai/website
-}
-class WebsiteService {
-+generate_answer(url, question, chat_history, client_html)
-}
-class ReactAgentRouter {
-+POST /api/genai/react
-}
-class ReactAgentService {
-+generate_answer(question, chat_history, ...)
-}
-WebsiteRouter --> WebsiteService : "Depends via Depends()"
-ReactAgentRouter --> ReactAgentService : "Depends via Depends()"
+  class ReactAgentService {
+    +generate_answer()
+    +stream_answer()
+    -_prepare_conversation()
+    -_build_context()
+    -_runtime_turn()
+  }
+  class ConversationService {
+    +get_or_create_conversation()
+    +add_message()
+    +recent_history()
+  }
+  class RunTraceService {
+    +create_run()
+    +record_event()
+    +complete_run()
+  }
+  class BrowserRuntimeService {
+    +start_session()
+    +continue_session()
+  }
+  class MemoryService {
+    +get_context()
+    +ingest_chat()
+  }
+  ReactAgentService --> ConversationService
+  ReactAgentService --> RunTraceService
+  ReactAgentService --> MemoryService
+  BrowserRuntimeService --> RunTraceService
+  BrowserRuntimeService --> ConversationService
 ```
 
-### LLM provider abstraction
-- Provider configurations map provider names to LangChain classes and parameter mappings.
-- Initialization validates provider support, model defaults, API keys, and base URLs.
-- Generation method constructs system and human messages and invokes the underlying client.
-- Default LLM instance is created for application-wide use.
+## Dependency direction
 
 ```mermaid
-classDiagram
-class LargeLanguageModel {
-+provider
-+model_name
-+generate_text(prompt, system_message) str
-}
-class Providers {
-+google
-+openai
-+anthropic
-+ollama
-+deepseek
-+openrouter
-}
-LargeLanguageModel --> Providers : "selects via config"
+flowchart TD
+  Routes["routers/"] --> Services["services/"]
+  Services --> Agents["agents/"]
+  Services --> Memory["memory/"]
+  Services --> Core["core/"]
+  Agents --> Core
+  Agents --> Tools["tools/"]
+  Memory --> Core
+  Tools --> Core
+  Core --> Models["models/"]
+  Services --> Models
+  Routes --> Models
+  MCP["mcp_server/"] -.->|"must not import"| Core
 ```
 
-### MCP server integration
-- Defines tools for LLM generation, GitHub Q&A, website markdown fetching, and HTML-to-markdown conversion.
-- Implements tool dispatch based on tool name and arguments.
-- Runs over stdio using MCP server framework.
+The dotted edge is a hard rule stated at the top of `mcp_server/server.py`: the MCP package must not import the backend. It reaches memory over HTTP and the browser over its own bridge.
+
+## How it fits together
 
 ```mermaid
 sequenceDiagram
-participant Ext as "External Client"
-participant MCP as "MCP Server<br/>mcp_server/server.py"
-participant LLM as "LargeLanguageModel<br/>core/llm.py"
-Ext->>MCP : call_tool("llm.generate", args)
-MCP->>LLM : initialize with provider/model/api_key/base_url
-MCP->>LLM : generate_text(prompt, system_message)
-LLM-->>MCP : response text
-MCP-->>Ext : TextContent(text)
+  participant Client as "client"
+  participant Route as "route"
+  participant Service as "service"
+  participant Agent as "LangGraph"
+  participant Tool as "tool"
+  participant Store as "Postgres"
+  Client->>Route: "HTTP request"
+  Route->>Route: "pydantic validation"
+  Route->>Service: "call with typed arguments"
+  Service->>Store: "create or read rows"
+  Service->>Agent: "run or stream"
+  Agent->>Tool: "tool call"
+  Tool-->>Agent: "ToolMessage"
+  Agent-->>Service: "answer"
+  Service->>Store: "save answer and complete run"
+  Service-->>Route: "answer or async generator"
+  Route-->>Client: "JSON or SSE"
 ```
 
-### React agent orchestration
-- Converts chat history and optional client HTML into LangGraph messages.
-- Builds a graph with an agent node and a tool execution node, conditionally routing between them.
-- Uses cached compilation for performance.
+Error handling has two patterns:
+
+- Routes that call a service with its own try/except return a friendly string and HTTP 200. `generate_answer` does this on unexpected failures.
+- Routes that own validation raise `HTTPException` with a 400 or 404 and a short detail string. The stream route raises 400 for a missing question before opening the stream.
 
 ```mermaid
 flowchart TD
-Start(["Start"]) --> BuildGraph["Build or Load Compiled Graph"]
-BuildGraph --> Messages["Normalize Chat History to Messages"]
-Messages --> InjectPage{"Client HTML Provided?"}
-InjectPage --> |Yes| AddPage["Add Page Context as SystemMessage"]
-InjectPage --> |No| AskQ["Append Question as HumanMessage"]
-AddPage --> AskQ
-AskQ --> RunGraph["Invoke Graph Async"]
-RunGraph --> Output["Extract Final Message Content"]
-Output --> End(["End"])
+  In(["request"]) --> Validate{"valid input?"}
+  Validate -->|"no"| H400["HTTPException 400"]
+  Validate -->|"yes"| Service["service call"]
+  Service --> Known{"known error?"}
+  Known -->|"ValueError"| H404["HTTPException 404"]
+  Known -->|"other"| Guard{"service catches?"}
+  Guard -->|"yes"| Text["200 with error text"]
+  Guard -->|"no"| H500["HTTPException 500"]
 ```
 
-### Configuration management
-- Environment variables drive host, port, debug level, and Google API key.
-- Logging level is derived from debug flag.
-- Centralized logger factory ensures consistent logging across modules.
+## Data access
 
-```mermaid
-flowchart TD
-Env["Load .env"] --> ReadEnv["Read ENV, DEBUG, BACKEND_HOST, BACKEND_PORT, GOOGLE_API_KEY"]
-ReadEnv --> SetLevel{"DEBUG true?"}
-SetLevel --> |Yes| Debug["Set logging level DEBUG"]
-SetLevel --> |No| Info["Set logging level INFO"]
-Debug --> Logger["Logger Factory"]
-Info --> Logger
-Logger --> Use["Used by routers and services"]
-```
+`core/db.py` exposes one async engine and a `get_session()` context manager that commits on success and rolls back on exception. Services use SQLAlchemy `select` statements directly; there is no repository layer. A few modules use `sqlmodel` models (`models/db/app.py`) while memory uses declarative SQLAlchemy (`models/db/memory.py`). Both share the same metadata and engine.
 
-### Middleware implementation
-- No explicit middleware is defined in the analyzed files. Logging is handled via module loggers and exception handlers in routers.
+Neo4j and OpenSearch clients are module singletons in `core/clients/`. They connect lazily and expose small wrappers rather than raw drivers.
 
-### Concurrency and request handling
-- FastAPI uses async route handlers; services implement async methods for I/O-bound operations (external APIs, LLM calls).
-- LangGraph invocation is awaited so the event loop stays cooperative.
+## Background work
 
-### External service integrations
-- Website service integrates markdown fetching and HTML-to-Markdown conversion.
-- React agent service optionally uploads files to Google GenAI and uses LangChain messages.
-- MCP server integrates with LangChain providers and website tools.
+- Post-turn memory ingestion is an `asyncio.create_task` held in `_BACKGROUND_TASKS` so it cannot be garbage collected mid-run.
+- Telegram polling is a task created in `lifespan`.
+- APScheduler runs memory maintenance.
+- The MCP settings watcher polls the settings file every 2 seconds.
 
-### Caching strategies
-- LangGraph graph is compiled once and cached via a cached graph factory, reducing startup overhead for repeated invocations.
+None of these have a durable queue. A process restart loses an in-flight ingestion or maintenance pass; the next turn or schedule retries.
 
-## Dependency analysis
-Layering:
-- Presentation depends on business logic
-- Business logic depends on agents and LLM abstraction
-- Configuration is consumed across layers
-- MCP server reuses LLM and tools
+## Dependencies
 
 ```mermaid
 graph TB
-API["main.py"] --> Routers["routers/*"]
-Routers --> Services["services/*"]
-Services --> Agents["agents/react_agent.py"]
-Services --> LLM["core/llm.py"]
-API --> Config["core/config.py"]
-MCP["mcp_server/server.py"] --> LLM
-MCP --> Tools["Website Tools"]
+  FastAPI["fastapi>=0.115.0"] --> App["main.py"]
+  Pydantic["pydantic>=2.9.0"] --> Routes["routers/"]
+  SQL["sqlalchemy[asyncio]>=2.0"] --> DB["core/db.py"]
+  SQLModel["sqlmodel>=0.0.22"] --> AppModels["models/db/app.py"]
+  Asyncpg["asyncpg>=0.29"] --> DB
+  LangGraph["langgraph>=1.0.1"] --> Agents["agents/"]
+  LangChain["langchain>=0.3.27"] --> Agents
+  APS["apscheduler>=3.10"] --> Maint["memory/maintenance/"]
+  Crypto["pycryptodome>=3.23.0"] --> Secrets["services/secrets_service.py"]
 ```
 
-## Performance considerations
-- Async-first design: route handlers and services use async to handle concurrent requests efficiently.
-- Cached graph compilation: reduces repeated graph building costs in the React agent.
-- Minimal synchronous work in hot paths; offloads heavy operations to external services.
-- Environment-driven tuning: adjust debug level and provider/model settings via environment variables.
+## Performance
 
-## Troubleshooting guide
-- Missing environment variables: ensure required keys (e.g., provider API keys and base URLs) are set; the LLM initializer raises explicit errors when missing.
-- Router-level validation: routers check required fields and return 400 for invalid requests.
-- Service-level errors: services catch exceptions and return plain messages; routers map unexpected errors to 500.
-- Logging: configure logging level via environment; use module loggers to trace execution paths.
+- Session commits happen once per context manager, not per statement. A service method that writes several rows pays one commit.
+- `pool_pre_ping=True` adds a round trip before checkout when a connection may be stale.
+- Streaming avoids buffering the whole answer; the route yields SSE frames as the agent emits them.
+- Memory context retrieval runs three operations concurrently with `asyncio.gather`: query planning, procedural memories and profile claims.
+- Tool calls that block (Gmail, GitHub, filesystem) run in threads or subprocesses.
 
-## Conclusion
-Thin routers, fat services, awaited LangGraph calls. Start the API with `python main.py` or `agentic-api-run`. Stdio MCP is `agentic-mcp`. Config comes from the environment.
+## Troubleshooting
 
-## Appendices
+- A route returns 200 with an apology string: the service caught an exception. Check the backend log, where `logger.error` or `logger.exception` recorded the cause.
+- `get_session` rollback loops: an exception inside the `async with` block rolls back, but the caller may retry. Ensure writes are idempotent or keyed.
+- A service import fails at startup: services import agents and core at module load. A missing optional package can break the route import. Check the traceback for the package name.
+- Background work disappears after restart: ingestion and maintenance have no queue. Re-run maintenance from the console if needed.
+- Circular import between `services/react_agent_service.py` and `agents/react_agent.py`: the service imports the agent lazily inside the streaming branch. Keep new cross-layer imports inside functions.
 
-### Endpoint catalog
-- Health: GET /api/genai/health
-- GitHub: GET /api/genai/github
-- Website: POST /api/genai/website
-- YouTube: GET /api/genai/youtube
-- Google Search: GET /api/google-search
-- Gmail: GET /api/gmail
-- Calendar: GET /api/calendar
-- PyJIIT: GET /api/pyjiit
-- React Agent: POST /api/genai/react
-- Website Validator: GET /api/validator
-- Agent: POST /api/agent
-- File Upload: POST /api/upload
+## Appendix
 
-### Startup and runtime
-- Entry point `main.py` runs FastAPI via Uvicorn and mounts MCP at `/mcp`.
-- Stdio MCP is `agentic-mcp`.
-- API host/port come from configuration.
+### Implementation examples
+- Route dependency: `def get_service() -> BrowserRuntimeService: return BrowserRuntimeService()`.
+- Error mapping: `except ValueError as exc: raise HTTPException(status_code=404, detail=str(exc))`.
+- Session: `async with get_session() as session: ...`.
+- Stream: `StreamingResponse(event_generator(), media_type="text/event-stream")`.
 
-### Scripts and entrypoints
-- Project scripts expose CLI commands for running API and MCP servers.
+### Source files
+- `main.py`
+- `routers/react_agent.py`
+- `services/react_agent_service.py`
+- `services/browser_runtime_service.py`
+- `services/conversations.py`
+- `services/run_traces.py`
+- `agents/react_agent.py`
+- `agents/react_tools.py`
+- `core/llm.py`
+- `core/db.py`
+- `core/loop_guard.py`
+- `core/runtimes.py`

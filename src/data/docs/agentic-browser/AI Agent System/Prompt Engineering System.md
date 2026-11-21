@@ -1,287 +1,217 @@
 # Prompt engineering system
 
-## Introduction
-`DEFAULT_SYSTEM_PROMPT`, domain templates, injection checks, and how system, user, and tool messages stay coherent across a run.
+`prompts/` holds one module per prompt family. The agent uses `react.py` for the generic tool prompt, `browser_use.py` for browser plans, `memory.py` for extraction and reconciliation, and `prompt_injection_validator.py` for untrusted page text. Service answer prompts for websites, YouTube and GitHub live in the same folder and are covered in the prompts folder index.
 
-## Project structure
-The prompt engineering system spans several modules:
-- Agents orchestrate conversational loops and tool use, with a DEFAULT_SYSTEM_PROMPT guiding behavior.
-- Prompts define domain-specific templates for GitHub repositories, websites, YouTube videos, and browser automation.
-- Validation services detect prompt injection risks in website content.
-- Utilities sanitize generated JSON action plans for browser automation.
-- Core LLM configuration supports multiple providers and runtime selection.
+Key capabilities:
+- A default system prompt that states the memory, browser and credential policy for every ReAct turn.
+- Two browser contracts: a full action plan and a single-step runtime loop.
+- One fixed JSON schema for memory extraction, with chat rules layered on top.
+- A one-word classifier for prompt injection in page markdown.
+- Prompt modules that are plain constants where possible, so they import without provider packages.
+
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Agents"
-RA["React Agent<br/>DEFAULT_SYSTEM_PROMPT"]
-RT["React Tools<br/>Domain Tools"]
-end
-subgraph "Prompts"
-PR["React Template"]
-PG["GitHub Template"]
-PW["Website Template"]
-PY["YouTube Template"]
-PB["Browser Automation Template"]
-PV["Prompt Injection Validator Template"]
-end
-subgraph "Validation"
-SV["Website Validator Service"]
-SAN["Agent Sanitizer"]
-end
-subgraph "Core"
-LLM["LargeLanguageModel"]
-CFG["Config"]
-end
-RA --> RT
-RA --> LLM
-RT --> PG
-RT --> PW
-RT --> PY
-RA --> PB
-SV --> PV
-SV --> LLM
-RA --> SAN
-LLM --> CFG
+  subgraph Prompts
+    PR["prompts/react.py"]
+    PB["prompts/browser_use.py"]
+    PM["prompts/memory.py"]
+    PV["prompts/prompt_injection_validator.py"]
+  end
+  subgraph Consumers
+    RA["agents/react_agent.py"]
+    BR["services/browser_runtime_service.py"]
+    MI["memory/ingestion/extractor.py"]
+    MR["memory/ingestion/reconcile.py"]
+    WV["services/website_validator_service.py"]
+  end
+  PR --> RA
+  PB --> BR
+  PM --> MI
+  PM --> MR
+  PV --> WV
+  RA --> BR
 ```
 
-## Core components
-- DEFAULT_SYSTEM_PROMPT: Defines agent persona, memory of user-provided credentials, and explicit tool invocation policies for sensitive domains (e.g., JIIT attendance).
-- Domain-specific prompt templates: GitHub, Website, YouTube, and Browser Automation templates encapsulate context framing and response formatting.
-- Prompt injection validator: A dedicated template and service to flag potentially malicious website content.
-- Agent sanitizer: Validates and sanitizes JSON action plans produced by the browser automation agent.
-- LLM provider abstraction: Centralized configuration supporting multiple providers and runtime overrides.
+## Building blocks
 
-## Architecture overview
-The system composes prompts with LLM clients and orchestrates tool use through a LangGraph workflow. The DEFAULT_SYSTEM_PROMPT is prepended to conversation turns when absent. Domain-specific chains inject context and enforce response formatting. Validation and sanitization occur at boundaries to mitigate risk.
+- `prompts/react.py`: a `ChatPromptTemplate` with `{tools}` and `{question}`.
+- `agents/react_agent.py`: `DEFAULT_SYSTEM_PROMPT`, built as a module-level `SystemMessage`.
+- `prompts/browser_use.py`: `prompt_template_str`, `prompt`, `runtime_system_prompt_str`, `get_runtime_system_prompt` and `build_runtime_prompt_payload`.
+- `prompts/memory.py`: `EXTRACTION_SYSTEM_PROMPT`, `CHAT_EXTRACTION_RULES` and `RECONCILE_SYSTEM_PROMPT`.
+- `prompts/prompt_injection_validator.py`: `prompt_template`, a safe or unsafe classifier.
 
-```mermaid
-sequenceDiagram
-participant Client as "Client"
-participant Router as "Routers"
-participant Service as "ReactAgentService"
-participant Agent as "React Agent"
-participant Tools as "Domain Tools"
-participant LLM as "LargeLanguageModel"
-participant Validator as "Website Validator"
-Client->>Router : POST /react-agent
-Router->>Service : generate_answer(question, history, tokens, session)
-Service->>Agent : run_react_agent(messages)
-Agent->>Agent : prepend DEFAULT_SYSTEM_PROMPT if missing
-Agent->>LLM : invoke(messages)
-LLM-->>Agent : response (AIMessage)
-Agent->>Tools : conditionally invoke tools
-Tools-->>Agent : tool results (ToolMessage)
-Agent-->>Service : final messages
-Service-->>Router : answer
-Router-->>Client : response
-Client->>Validator : POST /validate-website
-Validator->>Validator : parse HTML -> Markdown
-Validator->>LLM : prompt_injection_validator
-LLM-->>Validator : true/false
-Validator-->>Client : is_safe
-```
+## The ReAct system prompt
 
-## Detailed component analysis
+`DEFAULT_SYSTEM_PROMPT` is the policy layer. It tells the model that memory is external durable state, not model memory. It names when to call `recall_memory`, `write_memory`, `recall_document_facts`, `browser_task`, `composio_apps` and `composio_action`. It forbids storing secrets, tokens, temporary page state and transient feelings. It also states that Google access tokens and PyJIIT sessions arrive automatically, so the model must never ask for them. For JIIT attendance it must call `pyjiit_agent` immediately and report an expired session rather than request a password.
 
-### DEFAULT_SYSTEM_PROMPT and agent behavior
-- Purpose: Establishes agent persona, context retention, credential handling policy, and explicit tool invocation rules for sensitive domains.
-- Behavior cues:
- - Maintain conversation context and remember user-provided information.
- - Automatically use available tools when beneficial; otherwise respond directly.
- - Credentials (e.g., Google access tokens, JIIT sessions) are handled automatically; do not ask users for them.
- - For JIIT attendance, call the dedicated tool immediately using existing session; if it fails, report expiration and instruct secure refresh without requesting credentials.
+The graph prepends `_system_message` only when the first message is not already a `SystemMessage`. A caller can therefore supply a different system prompt and keep it.
+
+`prompts/react.py` is short by design. It tells the model it is a helpful assistant that answers from tools, lists the tools under a `TOOLS` header, and places the question under `here is the question:`. If the data is not available, the model should say so. The template is not a policy engine. Tool selection and stop rules live in `agents/react_agent.py` and the loop guard.
 
 ```mermaid
 flowchart TD
-Start(["Agent Turn Starts"]) --> CheckSys["Check if first message is SystemMessage"]
-CheckSys --> |No| Prepend["Prepend DEFAULT_SYSTEM_PROMPT"]
-CheckSys --> |Yes| Continue["Continue with existing messages"]
-Prepend --> InvokeLLM["Invoke LLM with messages"]
-Continue --> InvokeLLM
-InvokeLLM --> ToolChoice{"Tool needed?"}
-ToolChoice --> |Yes| ExecTool["Execute ToolNode"]
-ToolChoice --> |No| End(["Return AIMessage"])
-ExecTool --> PostExec["Append ToolMessage"]
-PostExec --> InvokeLLM
+  S["service builds message list"] --> F{"first message is SystemMessage?"}
+  F -->|no| P["prepend DEFAULT_SYSTEM_PROMPT"]
+  F -->|yes| K["keep caller system message"]
+  P --> G["agent node"]
+  K --> G
+  G --> B["bind_tools and invoke"]
+  B --> D{"tool calls?"}
+  D -->|yes| T["tool_execution"]
+  T --> G
+  D -->|no| A["final answer"]
 ```
 
-### Prompt injection validation system
-- Validator template: Requires a binary safety assessment ("true" or "false") after analyzing website markdown for prompt injection attempts.
-- Service flow:
- - Convert HTML to Markdown.
- - Compose a validation chain using the validator template and the configured LLM.
- - Evaluate the model's response and return a boolean safety flag.
+## Browser prompts
 
-```mermaid
-sequenceDiagram
-participant FE as "Frontend"
-participant Router as "/validate-website"
-participant Service as "validate_website"
-participant LLM as "LLM Client"
-participant Model as "Validator Template"
-FE->>Router : POST {html}
-Router->>Service : validate_website(request)
-Service->>Service : return_html_md(html)
-Service->>Model : PromptTemplate(template=validator_template)
-Service->>LLM : chain.invoke({markdown_text})
-LLM-->>Service : response (true/false)
-Service-->>FE : {is_safe}
-```
+`prompt_template_str` asks for a JSON action plan from the DOM. It lists six DOM actions (`CLICK`, `TYPE`, `SCROLL`, `WAIT`, `SELECT`, `EXECUTE_SCRIPT`) and six tab actions (`OPEN_TAB`, `CLOSE_TAB`, `SWITCH_TAB`, `NAVIGATE`, `RELOAD_TAB`, `DUPLICATE_TAB`). The examples cover a DOM action, a tab open, a direct search URL and a combined open, wait, type and click flow.
 
-### Prompt template architecture and domain organization
-- GitHub template:
- - Inputs: repository summary, file tree, relevant file content, question, optional chat history.
- - Guidelines emphasize reliance on provided context, concise answers, Markdown formatting, and code block usage.
-- Website template:
- - Inputs: server-fetched context, client-rendered context, question, optional chat history.
- - Guidelines prioritize client context for dynamic content, structured summaries, headings-based TOC, and precise quoting of metadata.
-- YouTube template:
- - Inputs: processed transcript/context, question, optional chat history.
- - Guidelines focus on duration conversion, statistics quoting, thematic analysis, and avoiding out-of-scope claims.
-- Browser automation template:
- - Inputs: DOM and tab control actions, with explicit JSON schema and examples.
- - Rules govern selector specificity, preferred direct search URLs, and constraints on unsafe actions.
+The rules are specific. Prefer ids, then data attributes, then specific classes, then tag and type. Never run DOM actions on `chrome://` URLs. For a search, build the full search URL in `OPEN_TAB` instead of opening a blank tab and typing.
 
-```mermaid
-classDiagram
-class PromptTemplates {
-+github_prompt
-+website_prompt
-+youtube_prompt
-+browser_script_prompt
-+injection_validator_prompt
-}
-class Chains {
-+github_chain
-+website_chain
-+youtube_chain
-+browser_script_chain
-+validator_chain
-}
-PromptTemplates --> Chains : "compose with LLM"
-```
+`runtime_system_prompt_str` is the tighter loop prompt. It plans exactly one safe action or finishes. The reply is JSON with `done`, `message`, `action`, `expected_state`, `verification`, `reason` and optional `notes`. The allowed types are `NAVIGATE`, `OPEN_TAB`, `CLICK`, `TYPE`, `KEY_PRESS`, `HOVER`, `SCROLL`, `WAIT` and `MEDIA_CONTROL`. The action object can carry `selector`, `text`, `role`, `value`, `url`, `active`, `key`, `command`, `direction`, `amount`, `ms` and a description.
 
-### Security measures against malicious input
-- Prompt injection detection:
- - Dedicated validator template and service to assess website content safety.
- - Returns a boolean flag enabling downstream decisions (e.g., block or sanitize).
-- Browser automation safeguards:
- - Strict JSON schema validation for action plans.
- - Disallows unsafe patterns (e.g., eval, innerHTML assignment).
- - Enforces required fields per action type (e.g., url for OPEN_TAB/NAVIGATE, selector/value for DOM actions).
+The prompt tells the model to copy concrete facts into `notes`, because earlier pages are not visible later. It also tells the model to obey `session.loop_check` and `session.finish_now`. Those two keys are how the loop guard steers the next step.
 
 ```mermaid
 flowchart TD
-A["Receive Action Plan JSON"] --> B["Strip code fences"]
-B --> C["Parse JSON"]
-C --> D{"Has 'actions' array?"}
-D --> |No| E["Reject: Missing actions"]
-D --> |Yes| F["Validate each action"]
-F --> G{"Type valid?"}
-G --> |No| H["Record invalid type"]
-G --> |Yes| I{"Required fields present?"}
-I --> |No| H
-I --> |Yes| J{"Dangerous patterns?"}
-J --> |Yes| H
-J --> |No| K["Accept"]
+  G["goal and page state"] --> P["runtime system prompt"]
+  P --> M["model"]
+  M --> J["JSON reply"]
+  J --> D{"done?"}
+  D -->|true| F["final message from notes"]
+  D -->|false| A["one allowed action"]
+  A --> E["extension executes"]
+  E --> O["observation"]
+  O --> G
+  J --> L{"loop_check or finish_now?"}
+  L -->|set| F
 ```
 
-### Prompt customization, context injection, and dynamic generation
-- Customization anchors:
- - DEFAULT_SYSTEM_PROMPT: Adjust persona, credential handling, and tool invocation policies.
- - Domain templates: Modify guidelines, response formatting, and context framing.
-- Context injection:
- - GitHub: Inject repository summary, file tree, and relevant file content.
- - Website: Inject server-fetched and client-rendered markdown contexts.
- - YouTube: Inject processed transcript/context derived from video metadata.
- - Browser automation: Inject DOM structure and action examples to guide JSON plans.
-- Dynamic generation:
- - Chains assemble prompt templates with LLM clients and parsers.
- - Provider configuration enables runtime selection and parameterization.
+`build_runtime_prompt_payload` serialises a dictionary with `goal`, `step`, `session`, `current_page`, `latest_result` and `extra_context`. It uses `json.dumps(..., ensure_ascii=True, default=str)` so a page object with unusual types still produces valid JSON.
 
-### Relationship between system prompts, user messages, and tool responses
-- Conversation flow:
- - System message is prepended when missing to anchor behavior.
- - User messages are appended; tool responses are converted to ToolMessages and re-enter the loop.
- - ToolNode executes selected tools; results feed back into the LLM for grounded responses.
-- Coherence:
- - DEFAULT_SYSTEM_PROMPT ensures consistent persona and policies.
- - Domain templates frame context precisely, reducing ambiguity.
- - Tool responses provide verifiable facts, anchoring further reasoning.
+## Memory prompts
+
+`EXTRACTION_SYSTEM_PROMPT` defines a fixed JSON schema. Entities have `canonical_name`, `entity_type`, `description` and `aliases`. Claims have `claim_text`, `predicate`, `subject_name`, `object_name`, `memory_class`, `segment`, `confidence`, `base_importance`, `needs_confirmation`, `evidence_type`, `valid_from` and `is_update`. The response also has a short `summary`.
+
+```mermaid
+erDiagram
+  ENTITY {
+    string canonical_name
+    string entity_type
+    string description
+    string aliases
+  }
+  CLAIM {
+    string claim_text
+    string predicate
+    string subject_name
+    string object_name
+    string memory_class
+    string segment
+    float confidence
+    bool is_update
+  }
+  ENTITY ||--o{ CLAIM : subject
+  ENTITY ||--o{ CLAIM : object
+```
+
+`CHAT_EXTRACTION_RULES` overrides the base prompt for chat turns. It extracts only from the user message, never from the assistant reply. It names the user entity `User`, writes claims in the third person, treats durable behaviour requests as `procedural` preferences, and marks moves or changes with `is_update`. Hypotheticals, questions and one-off reply instructions produce nothing.
+
+`RECONCILE_SYSTEM_PROMPT` compares a new memory with similar stored ones and returns one decision per pair. The relations are `duplicate`, `update`, `contradicts` and `unrelated`. Removing a constraint counts as an update, which is how "no length limit" replaces "under 150 words".
+
+## Injection validator
+
+`prompt_injection_validator.py` asks whether markdown from a website contains instructions that try to make the model do something it should not. The output contract is one word: `true` for safe, `false` for a potential injection. The prompt includes the text between `---` markers and ends with `Is the text safe? (true/false)`.
+
+`services/website_validator_service.py` converts HTML to markdown with `return_html_md`, builds a chain with `PromptTemplate` and the shared `llm`, and treats a stripped, lowercased `true` as safe. Any other answer, including an empty one, becomes unsafe.
 
 ```mermaid
 sequenceDiagram
-participant Agent as "Agent"
-participant LLM as "LLM"
-participant Tools as "Tools"
-Agent->>Agent : normalize messages
-Agent->>LLM : invoke(messages)
-LLM-->>Agent : AIMessage
-Agent->>Tools : condition
-Tools-->>Agent : ToolMessage
-Agent->>LLM : invoke(messages + ToolMessage)
-LLM-->>Agent : AIMessage (final)
+  participant C as Client
+  participant V as validate_website
+  participant H as return_html_md
+  participant L as llm
+  C->>V: html
+  V->>H: convert
+  H-->>V: markdown
+  V->>L: validator prompt
+  L-->>V: true or false
+  V-->>C: is_safe
 ```
 
-## Dependency analysis
-- Agent-to-tool coupling:
- - The React Agent builds a toolset from context and invokes them conditionally.
- - Tools depend on domain-specific prompt chains and external services.
-- Template-to-provider coupling:
- - All prompt chains bind to the configured LLM client.
- - Provider configuration is centralized and validated at runtime.
-- Validation-to-template coupling:
- - Validator service composes the injection template with the LLM client.
+## How prompts enter a run
+
+The service builds the message list, the graph adds the system prompt when needed, and the model either answers or asks for tools. Tool results come back as `ToolMessage` entries and the loop repeats. Prompt changes therefore affect the first model call and every later call that carries the same system message.
+
+```mermaid
+sequenceDiagram
+  participant S as ReactAgentService
+  participant G as agent node
+  participant L as model
+  participant T as tool_execution
+  S->>G: messages
+  G->>G: prepend system prompt if missing
+  G->>L: bind_tools and invoke
+  L-->>G: AIMessage with tool_calls
+  G->>T: run tools
+  T-->>G: ToolMessage
+  G->>L: invoke with results
+  L-->>G: final AIMessage
+```
+
+## Dependencies
 
 ```mermaid
 graph LR
-RA["React Agent"] --> RT["React Tools"]
-RT --> GH["GitHub Chain"]
-RT --> WT["Website Chain"]
-RT --> YT["YouTube Chain"]
-RA --> BR["Browser Script Chain"]
-SV["Validator Service"] --> PV["Injection Validator Template"]
-GH --> LLM["LLM Client"]
-WT --> LLM
-YT --> LLM
-BR --> LLM
-PV --> LLM
-LLM --> CFG["Provider Config"]
+  PR["prompts/react.py"] --> LC["langchain-core"]
+  PB["prompts/browser_use.py"] --> LLM["core.llm"]
+  PB --> LC
+  PM["prompts/memory.py"] --> NONE["constants only"]
+  PV["prompts/prompt_injection_validator.py"] --> NONE2["template only"]
+  RA["agents/react_agent.py"] --> PR
+  BR["services/browser_runtime_service.py"] --> PB
+  MI["memory/ingestion/extractor.py"] --> PM
 ```
 
-## Performance considerations
-- Prompt composition overhead:
- - Reuse compiled prompt chains and cached LLM clients to minimize repeated construction.
-- Tool latency:
- - Asynchronous tool execution prevents blocking; batch and limit concurrent tool calls where appropriate.
-- Validation cost:
- - Apply validator selectively to untrusted website content; cache results when feasible.
-- Provider tuning:
- - Adjust temperature and model selection per task; use smaller models for validation and larger ones for synthesis.
+`prompts/memory.py` and the validator are pure strings, so they can be imported without provider packages. `browser_use.py` imports `LargeLanguageModel`, which pulls in the provider SDKs.
 
-## Troubleshooting guide
-- Prompt injection flagged as unsafe:
- - Verify website content; if legitimate, adjust validator template or thresholds.
- - Ensure HTML-to-Markdown parsing is intact.
-- Browser automation failures:
- - Validate JSON action plan structure and required fields.
- - Review disallowed patterns and selector specificity.
-- Tool invocation errors:
- - Confirm context availability (tokens, session payloads).
- - Inspect tool argument schemas and bounds.
-- LLM initialization issues:
- - Check provider configuration, API keys, and base URLs.
+## Performance
 
-## Conclusion
-Prepend the default system prompt when missing, inject domain context at chain boundaries, and sanitize anything that becomes a browser plan.
+- Prompt modules are constants, so building a chain does not re-render a large template per request.
+- `build_runtime_prompt_payload` is one `json.dumps` call with `default=str`.
+- The memory extractor shares one schema string between the batch and chat paths, with chat rules appended as an override.
+- The validator is one short classification call. Run it before page text enters a larger prompt, not after.
+- The browser prompt caps nothing itself. The service bounds the page snapshot, history and notes before it builds the payload.
 
-## Appendices
+## Troubleshooting
 
-### Prompt engineering for agents
-- Keep system prompts concise yet explicit about roles, constraints, and credential handling.
-- Frame domain templates with clear input schemas and response formatting rules.
-- Inject only verified, minimal context to reduce noise and hallucinations.
-- Use validators and sanitizers at boundaries to mitigate prompt injection and unsafe actions.
-- Test prompts across representative scenarios and iterate with small, targeted changes.
+- The browser planner returns prose instead of JSON. Use a model that follows structured output, or retry with the runtime prompt and a lower temperature.
+- The planner repeats a failed action. `session.loop_check` was not passed in the payload. Set it from the loop guard state.
+- A search opens a blank tab. The model used `OPEN_TAB` without a search URL. The prompt requires the full URL, so inspect the plan.
+- Memory extraction stores assistant trivia. The base prompt was used without `CHAT_EXTRACTION_RULES`. Append the chat rules for chat turns.
+- The validator marks every page unsafe. The model ignored the one-word contract. Check that the response is exactly `true`, not a sentence that contains it.
+- The default system prompt is missing. The first message was already a `SystemMessage`, so the graph kept it.
 
+## Appendix
+
+### Implementation examples
+
+- ReAct template, `template` in `prompts/react.py`.
+- Agent policy, `DEFAULT_SYSTEM_PROMPT` in `agents/react_agent.py`.
+- Runtime contract, `runtime_system_prompt_str`.
+- Runtime payload, `build_runtime_prompt_payload`.
+- Memory schema, `EXTRACTION_SYSTEM_PROMPT`.
+- Chat overrides, `CHAT_EXTRACTION_RULES`.
+- Reconcile contract, `RECONCILE_SYSTEM_PROMPT`.
+- Injection check, `services/website_validator_service.py`.
+
+### Source files
+
+- `prompts/react.py`
+- `prompts/browser_use.py`
+- `prompts/memory.py`
+- `prompts/prompt_injection_validator.py`
+- `agents/react_agent.py`
+- `services/website_validator_service.py`

@@ -1,279 +1,198 @@
 # System architecture
 
-## Introduction
-How the React extension, Python MCP server, FastAPI backend, and tools fit together. MCP for tool transport, FastAPI for REST, shared LLM layer for providers.
+This folder describes the system at four levels: processes and ports, the backend's request path, the frontend split, and the data and model pipelines. Each page names the files that own the behaviour, so a code change can be traced from a diagram to a module.
 
-## Project structure
-Layout:
-- Extension: A Chromium extension built with React and TypeScript, implementing background and content scripts for browser automation and messaging.
-- Backend: A Python application exposing both an MCP server and a FastAPI HTTP API.
-- Core: Shared configuration and LLM abstraction.
-- Services: Business logic and orchestration for domain capabilities.
-- Tools: Modular, reusable tools consumed by agents and services.
-- Agents: Orchestrated reasoning graphs using LangGraph and LangChain tools.
-- Routers: FastAPI route handlers delegating to services.
+The short version: a FastAPI backend plans, an extension executes, LangGraph agents call tools, and three stores remember. The MCP bridge is a second entry point to the same browser.
+
+Key capabilities:
+- Process topology and port ownership for the backend and bridge
+- A strict layering rule from routes down to core
+- Extension, console and shared package boundaries
+- Four data flows: chat, browser action, memory write and memory read
+- A provider-agnostic model layer with per-request overrides
+- A single-host deployment with Docker-backed stores
+- A bridge protocol that carries MCP tool calls to the extension
+
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Extension (Chromium)"
-BG["background.ts"]
-CT["content.ts"]
-end
-subgraph "Python Backend"
-MAIN["main.py"]
-MCP["mcp_server/server.py"]
-CFG["core/config.py"]
-LLM["core/llm.py"]
-SRV_REACT["services/react_agent_service.py"]
-AG_REACT["agents/react_agent.py"]
-TOOL_BROWSER["tools/browser_use/tool.py"]
-ROUTER_REACT["routers/react_agent.py"]
-end
-BG --> |"Extension messaging"| CT
-BG --> |"MCP protocol"| MCP
-BG --> |"HTTP API"| MAIN
-MAIN --> |"Route handlers"| ROUTER_REACT
-ROUTER_REACT --> |"Service call"| SRV_REACT
-SRV_REACT --> |"Agent graph"| AG_REACT
-SRV_REACT --> |"Tools"| TOOL_BROWSER
-SRV_REACT --> |"LLM provider"| LLM
-MAIN --> |"HTTP /mcp"| MCP
-CFG --> MAIN
-CFG --> MCP
-CFG --> LLM
+  subgraph "Processes"
+    API["FastAPI app<br/>main.py :5454"]
+    BR["MCP bridge<br/>mcp_server/bridge.py :5455"]
+    EXT["extension<br/>clients/browser-extension"]
+    CON["console<br/>clients/debug-web"]
+  end
+  subgraph "Backend layers"
+    R["routers/"]
+    S["services/"]
+    A["agents/"]
+    M["memory/"]
+    C["core/"]
+  end
+  EXT --> API
+  EXT --> BR
+  CON --> API
+  API --> R
+  R --> S
+  S --> A
+  S --> M
+  A --> C
+  M --> C
+  BR --> EXT
 ```
 
-## Core components
-- CLI entrypoint: `main.py` / `agentic-api-run` starts FastAPI. `agentic-mcp` starts stdio MCP. HTTP MCP is mounted at `/mcp`.
-- FastAPI backend: Exposes HTTP endpoints under a unified router registry.
-- MCP server: Implements MCP protocol tools for LLM generation, GitHub Q&A, and website content conversion.
-- LLM abstraction: Provider-agnostic configuration supporting multiple LLM providers.
-- React agent service: Orchestrates agent workflows, integrates context, and coordinates tools.
-- Agent graph: LangGraph-based reasoning pipeline with tool invocation.
-- Browser-use tool: Structured tool for generating browser action plans.
-- Extension background/content scripts: Manage extension lifecycle, inject content scripts, and coordinate actions.
+## Pages in this folder
 
-## Architecture overview
-Agentic Browser separates concerns across three primary channels:
-- Browser extension messaging: Background script handles extension commands and delegates actions to content scripts or the MCP server.
-- MCP protocol: The extension communicates with the Python MCP server to execute tools (e.g., LLM generation, website markdown extraction).
-- HTTP API: The extension can also call the FastAPI backend for domain-specific routes (e.g., React agent).
+| Page | One line |
+| --- | --- |
+| [Technical Architecture Overview](Technical%20Architecture%20Overview) | layers, boundaries, state ownership and trust boundaries |
+| [Overall System Design](Overall%20System%20Design) | process topology, ports, startup order, router mounts and bridge election |
+| [Backend Server Design](Backend%20Server%20Design) | routes, services, agents, dependency direction and error mapping |
+| [Browser Extension Architecture](Browser%20Extension%20Architecture) | extension surfaces, console, shared package and theme contract |
+| [Component Interactions and Data Flow](Component%20Interactions%20and%20Data%20Flow) | chat, browser action, memory write and memory read end to end |
+| [MCP Protocol Implementation](MCP%20Protocol%20Implementation) | bridge frames, relay token, extension handlers and reconnect |
+| [AI_ML Architecture](AI_ML%20Architecture) | model clients, LangGraph graphs, prompts, retrieval and compaction |
+| [Deployment Architecture](Deployment%20Architecture) | compose, installer, login services, volumes and exposure |
+| [System Architecture](System%20Architecture) | this folder map and the shared concepts behind it |
 
-```mermaid
-sequenceDiagram
-participant Ext as "Extension<br/>background.ts"
-participant Content as "Content Script<br/>content.ts"
-participant MCP as "MCP Server<br/>mcp_server/server.py"
-participant API as "FastAPI<br/>main.py"
-participant Svc as "Service<br/>services/react_agent_service.py"
-participant Agent as "Agent Graph<br/>agents/react_agent.py"
-participant Tools as "Tools<br/>tools/browser_use/tool.py"
-Ext->>MCP : "List tools / Call tool"
-MCP-->>Ext : "Tool metadata / Tool result"
-Ext->>API : "POST /api/genai/react"
-API->>Svc : "generate_answer(...)"
-Svc->>Agent : "Invoke graph with messages"
-Agent->>Tools : "ToolNode executes structured tools"
-Tools-->>Agent : "Tool results"
-Agent-->>Svc : "Final answer"
-Svc-->>API : "Response"
-API-->>Ext : "HTTP response"
-```
+## Shared concepts
 
-## Detailed component analysis
+Two entry points to the browser. The side panel posts to `/api/browser/runtime`, while MCP clients post to the bridge. Both end in the same extension handlers.
 
-### CLI entrypoint
-`python main.py` and `agentic-api-run` start FastAPI with MCP at `/mcp`. `agentic-mcp` starts stdio MCP.
+Three stores, one record. Postgres is authoritative. OpenSearch and Neo4j are derived and repaired from it.
 
-```mermaid
-flowchart TD
-Start(["Start"]) --> Choose{"Entrypoint"}
-Choose --> |python main.py / agentic-api-run| RunAPI["Uvicorn FastAPI"]
-Choose --> |agentic-mcp| RunMCP["stdio MCP"]
-RunAPI --> Mount["Mount /mcp"]
-RunAPI --> End(["Running"])
-RunMCP --> End
-```
+Agents are graphs. `agents/react_agent.py` and `agents/while_loop_harness.py` compile LangGraph state machines; they are not prompt strings.
 
-### MCP protocol tools and execution
-The MCP server exposes tools for LLM generation, GitHub Q&A, and website content conversion. Tool execution delegates to the LLM abstraction and utility functions.
+Tools are typed. Every tool is a `StructuredTool` with a Pydantic `args_schema`. The model sees names, descriptions and schemas.
 
-```mermaid
-sequenceDiagram
-participant Ext as "Extension"
-participant MCP as "MCP Server"
-participant LLM as "LargeLanguageModel"
-participant Util as "Website Tools"
-Ext->>MCP : "call_tool(name, args)"
-alt llm.generate
-MCP->>LLM : "Initialize provider/model"
-LLM-->>MCP : "Client ready"
-MCP->>LLM : "generate_text(prompt, system)"
-LLM-->>MCP : "Text response"
-else website.fetch_markdown
-MCP->>Util : "fetch_markdown(url)"
-Util-->>MCP : "Markdown"
-else website.html_to_md
-MCP->>Util : "html_to_md(html)"
-Util-->>MCP : "Markdown"
-end
-MCP-->>Ext : "TextContent result"
-```
-
-### FastAPI backend and route composition
-The FastAPI app composes routers for health, GitHub, website, YouTube, Google Search, Gmail, Calendar, PyJiIT, React agent, validator, agent, and file upload. The React agent router delegates to the React agent service.
+Runs are first-class rows. A chat turn creates an `agent_runs` row before the model is called and completes it after the answer is saved.
 
 ```mermaid
 graph LR
-API["FastAPI app"]
-Health["/api/genai/health"]
-GH["/api/genai/github"]
-Site["/api/genai/website"]
-YT["/api/genai/youtube"]
-GSearch["/api/google-search"]
-Gmail["/api/gmail"]
-Cal["/api/calendar"]
-Pyj["/api/pyjiit"]
-React["/api/genai/react"]
-Validator["/api/validator"]
-Agent["/api/agent"]
-Upload["/api/upload"]
-API --> Health
-API --> GH
-API --> Site
-API --> YT
-API --> GSearch
-API --> Gmail
-API --> Cal
-API --> Pyj
-API --> React
-API --> Validator
-API --> Agent
-API --> Upload
+  subgraph "Ingress"
+    PANEL["side panel"]
+    MCPC["MCP client"]
+  end
+  subgraph "Control"
+    API["ReactAgentService"]
+    BRS["BrowserRuntimeService"]
+    BR["BridgeManager"]
+  end
+  subgraph "Execution"
+    GRAPH["LangGraph agent"]
+    EXT["extension worker"]
+    TAB["tab"]
+  end
+  subgraph "Record"
+    PG[("Postgres")]
+    OS[("OpenSearch")]
+    NEO[("Neo4j")]
+  end
+  PANEL --> API
+  PANEL --> BRS
+  MCPC --> BR
+  BR --> EXT
+  API --> GRAPH
+  GRAPH --> EXT
+  BRS --> EXT
+  EXT --> TAB
+  API --> PG
+  GRAPH --> PG
+  BRS --> PG
+  API --> OS
+  API --> NEO
 ```
 
-### React agent orchestration
-The React agent service constructs a LangGraph workflow, normalizes messages, injects page context when provided, and invokes the compiled graph. The agent graph uses a tool node to execute structured tools.
+## Reading order
 
 ```mermaid
-sequenceDiagram
-participant API as "React Agent Router"
-participant Svc as "ReactAgentService"
-participant Agent as "GraphBuilder"
-participant Graph as "Compiled Graph"
-participant Tools as "Agent Tools"
-API->>Svc : "generate_answer(question, chat_history, ...)"
-Svc->>Agent : "Build graph with tools/context"
-Agent->>Graph : "Compile workflow"
-Svc->>Graph : "ainvoke(state)"
-Graph->>Tools : "ToolNode execution"
-Tools-->>Graph : "Tool results"
-Graph-->>Svc : "Final answer"
-Svc-->>API : "Response"
+flowchart LR
+  Tech["Technical overview"] --> Sys["Overall system design"]
+  Sys --> Back["Backend server design"]
+  Sys --> Front["Browser extension"]
+  Back --> Flow["Component interactions"]
+  Sys --> MCP["MCP protocol"]
+  Back --> AI["AI_ML architecture"]
+  Sys --> Deploy["Deployment"]
+  Flow --> Mem["Memory pages"]
+  AI --> Agents["Agent pages"]
 ```
 
-### Browser-Use tool integration
-The browser-use tool defines a structured tool for generating browser action plans. It is consumed by the agent graph during tool execution.
+Start with the technical overview for the layer table. Read the overall system design before changing a port, a mount or a startup step. Read component interactions before changing a payload shape, because most shapes cross two or three flows.
 
-```mermaid
-classDiagram
-class BrowserActionInput {
-+string goal
-+string target_url
-+dict dom_structure
-+dict constraints
-}
-class BrowserActionTool {
-+name "browser_action_agent"
-+description "Generate JSON action plan"
-+coroutine _browser_action_tool(goal, target_url, dom_structure, constraints)
-}
-BrowserActionTool --> BrowserActionInput : "args_schema"
-```
+## Boundaries worth knowing
 
-### Extension messaging and action execution
-The extension's background script listens for messages from the UI and content scripts, handles tab management, and executes actions by injecting content scripts and sending messages. It supports dynamic Gemini requests and action-plan execution.
+| Boundary | Rule | Enforced in |
+| --- | --- | --- |
+| MCP to backend | `mcp_server/` must not import backend modules | comment at the top of `mcp_server/server.py` |
+| Services to agents | services call agents, agents never call services | `services/` and `agents/` imports |
+| Routes to persistence | routes never open a session directly | `routers/*` |
+| Extension to backend | HTTP or SSE only, except the bridge socket | `clients/browser-extension` |
+| Postgres to mirrors | mirrors update after commit, never inside it | `memory/ingestion/writer.py` |
 
 ```mermaid
 flowchart TD
-Msg["Message from UI/Content"] --> Type{"Message type?"}
-Type --> |EXECUTE_AGENT_TOOL| ExecTool["handleExecuteAgentTool"]
-Type --> |ACTIVATE_AI_FRAME| ActFrame["handleActivateAIFrame"]
-Type --> |DEACTIVATE_AI_FRAME| DeactFrame["handleDeactivateAIFrame"]
-Type --> |GET_ACTIVE_TAB| GetActive["handleGetActiveTab"]
-Type --> |GET_ALL_TABS| GetAll["handleGetAllTabs"]
-Type --> |EXECUTE_ACTION| ExecAct["handleExecuteAction"]
-Type --> |GEMINI_REQUEST| Gemini["handleGeminiRequest"]
-Type --> |RUN_GENERATED_AGENT| RunAgent["handleRunGeneratedAgent"]
-ExecAct --> Inject["Inject content script"]
-Inject --> SendMsg["Send PERFORM_ACTION to tab"]
-ExecTool --> CallTool["executeAgentTool(...)"]
-RunAgent --> Loop["Iterate action_plan.actions"]
-Loop --> ExecAct
+  Ext["extension UI"] -->|"HTTP / SSE"| Routes["routers/"]
+  Routes --> Services["services/"]
+  Services --> Agents["agents/"]
+  Services --> Memory["memory/"]
+  Agents --> Core["core/"]
+  Memory --> Core
+  Services --> DB["Postgres"]
+  Memory --> Mirrors["OpenSearch + Neo4j"]
+  MCP["mcp_server/"] -.->|"no imports"| Services
+  MCP -->|"HTTP memory tools"| Routes
+  MCP -->|"bridge frames"| Ext
 ```
 
-## Dependency analysis
-- The CLI depends on the MCP server and FastAPI entrypoints.
-- The FastAPI app depends on routers, which depend on services.
-- Services depend on the agent graph and tools.
-- The agent graph depends on the LLM abstraction and tools.
-- The MCP server depends on the LLM abstraction and website utilities.
-- The extension depends on background and content scripts for messaging and automation.
+## Dependencies
 
 ```mermaid
-graph LR
-MAIN["main.py"] --> MCP["mcp_server/server.py"]
-MAIN --> ROUTERS["Routers"]
-ROUTERS --> SRV["Services"]
-SRV --> AG["agents/react_agent.py"]
-SRV --> TOOL["tools/browser_use/tool.py"]
-AG --> LLM["core/llm.py"]
-MCP --> LLM
-BG["clients/browser-extension/entrypoints/background.ts"] --> MCP
-BG --> MAIN
-BG --> CT["clients/browser-extension/entrypoints/content.ts"]
+graph TB
+  Index["System architecture"] --> Tech["Technical Architecture Overview"]
+  Index --> Sys["Overall System Design"]
+  Index --> Back["Backend Server Design"]
+  Index --> Front["Browser Extension Architecture"]
+  Index --> Flow["Component Interactions and Data Flow"]
+  Index --> MCP["MCP Protocol Implementation"]
+  Index --> AI["AI_ML Architecture"]
+  Index --> Deploy["Deployment Architecture"]
+  Sys --> Main["main.py"]
+  Back --> Routers["routers/"]
+  Front --> Clients["clients/"]
+  Flow --> DB["models/db/"]
+  AI --> LLM["core/llm.py"]
+  Deploy --> Compose["docker-compose.yml"]
 ```
 
-## Performance considerations
-- Model selection and provider routing: The LLM abstraction chooses providers and defaults, minimizing cold starts by caching clients.
-- Tool execution batching: The agent graph executes tools asynchronously; ensure tool implementations avoid blocking operations.
-- HTTP API throughput: Use asynchronous FastAPI handlers and keep route logic lightweight; delegate heavy work to services.
-- Extension responsiveness: Avoid long-running injected scripts; prefer background-worker coordination and short-lived content-script interactions.
-- Caching: Reuse compiled agent graphs and compiled LLM clients where feasible.
+## Performance
 
-## Security and transparency
-- Guardrails and prompt injection: Dedicated prompt injection validator and explicit system prompts guide the agent toward safe, transparent behavior.
-- API key management: LLM provider configuration reads keys from environment variables; avoid embedding secrets in code.
-- Extension permissions: The extension interacts with tabs and content scripts; maintain minimal permissions and sanitize injected content.
-- Transparency: The React agent service logs messages and context; expose logs for auditing while avoiding sensitive data leakage.
-- MCP tool scope: Limit MCP tools to necessary capabilities and validate inputs rigorously.
+- One uvicorn process and one event loop. Blocking calls go to threads or subprocesses.
+- Postgres pool is 10 with 20 overflow. Neo4j and OpenSearch are lazy module singletons.
+- Chat streams over SSE so the first token reaches the panel before the run finishes.
+- The bridge waits 3 seconds for a browser and adds 2 seconds to each call timeout.
+- Memory context is budgeted per turn: 1200 tokens for chat, 3000 for a direct `/context` call.
 
-## Monitoring and observability
-- Logging: Centralized logger configuration supports development and production logging levels.
-- Endpoint visibility: Health routers and standardized responses enable readiness/liveness checks.
-- Agent tracing: Log message counts and final outputs to track agent behavior and detect anomalies.
+## Troubleshooting
 
-## Infrastructure requirements and deployment topology
-- Runtime environments:
- - Python runtime for the MCP server and FastAPI backend.
- - Chromium-based browser for the extension.
-- Networking:
- - Localhost binding controlled by configuration; adjust host/port for containerized deployments.
-- Scalability:
- - Stateless FastAPI routes scale horizontally behind a reverse proxy.
- - MCP server runs as a single process; consider process isolation per tenant if needed.
- - Tool-heavy workloads benefit from caching and asynchronous processing.
-- Containerization:
- - Package the Python backend and serve via a containerized FastAPI app; run the MCP server alongside or separately.
-- Secrets management:
- - Store API keys and base URLs in environment variables; mount secrets securely in containers.
+- The API starts but every database route fails: a store was down during `lifespan`, and the warning was logged instead of raised. Start the container and restart the backend.
+- The panel cannot reach the backend: check `baseUrl`, `VITE_API_URL` and port 5454 in that order.
+- MCP browser tools fail while memory tools work: the backend is up but no extension socket is attached. Check `/bridge/status`.
+- Memory tools fail while browser tools work: the MCP process cannot reach `AGENTIC_BROWSER_API_URL`.
+- Run detail is empty: the console reads `/api/debug`; confirm the run row exists and the console points at the same backend.
+- A page in this folder disagrees with another: the narrower page wins for its own symbols. The wider page names the boundary, the narrower one names the file.
 
-## Troubleshooting guide
-- MCP tool errors: The MCP server wraps tool execution in try/catch and returns error text; verify tool names and arguments.
-- LLM initialization failures: Provider configuration requires API keys or base URLs; check environment variables and model names.
-- Extension action failures: Confirm content script injection and tab permissions; validate selectors and action parameters.
-- React agent errors: Inspect chat history normalization and page-context injection; ensure HTML-to-markdown conversion succeeds.
+## Appendix
 
-## Conclusion
-Extension, MCP, and FastAPI stay separate on purpose. LangGraph runs the agent; the extension runs the browser. Guardrails and logs cut across both.
+### Implementation examples
+- Root response: `GET /` returns `{"name": "Agentic Browser API", "version": "0.1.0"}`.
+- Bridge status: `GET http://127.0.0.1:5455/bridge/status`.
+- Model override: the `X-Agentic-Provider` and `X-Agentic-Model` headers.
+- Compose: `docker compose up -d postgres neo4j opensearch`.
 
+### Source files
+- `README.md`
+- `main.py`
+- `docker-compose.yml`
+- `docs/architecture-light.svg`

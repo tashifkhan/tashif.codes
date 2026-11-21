@@ -1,287 +1,237 @@
 # Security and safety mechanisms
 
-## Introduction
-Automation safety: input validation, permission limits, DOM isolation in content scripts, approval UI, filtering, and logging.
+The browser loop has two safety layers that do not depend on a human watching every step. The loop guard in `core/loop_guard.py` stops runs that repeat themselves or stop making progress. The user blocker check in `services/browser_runtime_service.py` stops a run before planning when the page is asking for a captcha, a password, or a browser permission.
 
-## Project structure
-The security-relevant parts of the system span three layers:
-- Extension background and content scripts for safe DOM/tab operations
-- Utilities for sanitization and validation
-- Frontend settings and authentication for secure credential handling
+Both are progress and consent checks, not sandboxing. Page access is still limited by the extension's manifest, restricted URL checks in the bridge, and the action vocabulary the planner may emit. Those boundaries are described where they occur: [Page Snapshot and Refs](Page%20Snapshot%20and%20Refs) for scriptable URLs, [DOM Manipulation and Element Targeting](DOM%20Manipulation%20and%20Element%20Targeting) for executor paths, and [Dynamic Script Generation](Dynamic%20Script%20Generation) for action validation.
+
+Key capabilities:
+- Four signals with separate thresholds: `repeat`, `cycle`, `failures`, `stalled`.
+- A warning phase followed by a grace period instead of a hard step cap.
+- Digit masking on outcomes so clocks and counters do not look like progress.
+- Replay support: `tool_loop_verdict` rebuilds state from a message list.
+- Optional environment caps per loop type.
+- Blocker detection from the rendered page, not from the URL alone.
+
+## Repository layout
+
+The guard is a standalone dataclass module with no imports from services or agents. Each caller owns its instance and decides what counts as a call and an outcome. The blocker check lives inside the planner and reads only the `PageSnapshot`.
 
 ```mermaid
 graph TB
-subgraph "Extension Layer"
-BG["Background Script<br/>background.ts"]
-CS["Content Script<br/>content.ts"]
-UI["Side Panel UI<br/>UnifiedSettingsMenu.tsx"]
-end
-subgraph "Utilities"
-SAN["Agent Sanitizer<br/>agent_sanitizer.py"]
-PINJ["Prompt Injection Validator<br/>prompt_injection_validator.py"]
-end
-subgraph "Execution"
-EXE["Action Executor<br/>executeActions.ts"]
-end
-subgraph "Permissions"
-CFG["Manifest Permissions<br/>wxt.config.ts"]
-end
-BG --> CS
-BG --> EXE
-EXE --> CS
-UI --> BG
-SAN --> BG
-PINJ --> BG
-CFG --> BG
-CFG --> CS
+  subgraph Core
+    Guard["core/loop_guard.py<br/>LoopGuard, Verdict, fingerprint"]
+    Env["env_max_steps"]
+  end
+  subgraph Browser
+    Runtime["services/browser_runtime_service.py<br/>kind=browser action"]
+    Blocker["_detect_user_blocker"]
+  end
+  subgraph Agents
+    React["agents/react_agent.py<br/>tool_loop_verdict"]
+    Harness["agents/while_loop_harness.py<br/>round guards"]
+  end
+  subgraph Outputs
+    Prompt["loop_check and finish_now"]
+    Event["loop_guard event"]
+    Stop["final answer without tools"]
+    Blocked["status=blocked, requires_user_input"]
+  end
+  Guard --> Env
+  Runtime --> Guard
+  Runtime --> Blocker
+  React --> Guard
+  Harness --> Guard
+  Guard --> Prompt
+  Guard --> Event
+  Guard --> Stop
+  Blocker --> Blocked
 ```
 
-## Core components
-- Agent Sanitizer: Validates and sanitizes action plans from the LLM, rejects unsafe constructs, and enforces required fields per action type.
-- Prompt Injection Validator: Provides a template to detect prompt injection attempts in markdown content.
-- Background Script: Orchestrates safe execution of tab-level and DOM-level actions, injects content scripts when needed, and coordinates messaging with the active tab.
-- Content Script: Executes DOM operations within the page context under strict selectors and event dispatching.
-- Action Executor: Translates high-level actions into browser APIs with minimal delay and error handling.
-- Manifest Permissions: Defines the minimal set of permissions required for safe automation.
-- Side Panel UI and Authentication: Manages secure storage of credentials and API keys, and handles OAuth flows.
+## Building blocks
 
-## Architecture overview
-The system separates concerns across layers to enforce security boundaries:
-- Background script controls browser-level actions and safe injection of content scripts.
-- Content script operates within the page's DOM with explicit selectors and event simulation.
-- Utilities validate inputs and actions before execution.
-- UI manages sensitive data and authentication securely.
+- `fingerprint(value, limit=4000, mask_digits=False)`: lowercases, optionally replaces digit runs with `#`, collapses whitespace, truncates, and returns the first 16 hex characters of a SHA-1.
+- `Step`: `call`, `outcome`, `ok`, `label`.
+- `Verdict`: `status` of `ok`, `warn`, or `stop`, plus `signal`, `reason`, and `hint`. `stop` and `warn` are properties, and `to_dict()` returns status, signal, and reason.
+- `LoopGuard`: thresholds, history, outcome set, pair counter, progress counters, and the last verdict.
+- `env_max_steps(name)`: reads an integer from the environment. Unset, zero, or unparseable means `None`.
+
+Defaults are `patience=5`, `repeat_limit=2`, `failure_limit=3`, `grace=2`, `max_steps=None`, and `kind="step"`.
+
+## How the guard fits together
+
+Every step is recorded as a `(call, outcome, ok)` triple. Progress means the call succeeded and the outcome fingerprint was never seen in this run. Only progress resets the no-progress counter and clears an earlier warning.
 
 ```mermaid
 sequenceDiagram
-participant UI as "Side Panel UI<br/>UnifiedSettingsMenu.tsx"
-participant BG as "Background Script<br/>background.ts"
-participant CS as "Content Script<br/>content.ts"
-participant TAB as "Target Tab"
-UI->>BG : Request action execution
-BG->>BG : Validate action plan via sanitizer
-BG->>CS : Inject content script if needed
-BG->>TAB : Send EXECUTE_ACTION message
-TAB-->>CS : Receive action payload
-CS->>CS : Find element by selector and simulate events
-CS-->>TAB : DOM mutation completes
-CS-->>BG : Return result
-BG-->>UI : Report outcome
+  participant C as Caller
+  participant G as LoopGuard
+  participant M as Model
+  C->>G: seed(starting page or state)
+  loop each step
+    C->>G: record(call, outcome, ok, label)
+    G->>G: fingerprint call and outcome
+    G->>G: update pairs, fail streak, since_progress
+    G-->>C: Verdict
+    alt warn
+      C->>M: verdict.hint appended to the prompt
+    else stop
+      C->>M: finish now with what was found
+    end
+  end
 ```
 
-## Detailed component analysis
+`seed` marks the starting state as already seen, so the first action cannot claim progress just by leaving the initial page unchanged. The browser runtime seeds with `_page_signature(page)`. The agent paths do not seed, because their history already starts with the first model turn.
 
-### Agent sanitizer
-The sanitizer validates JSON action plans and enforces:
-- Required fields per action type (e.g., selector for CLICK/TYPE/SELECT, url for OPEN_TAB/NAVIGATE, tab identifier or direction for SWITCH_TAB)
-- Structural checks (presence of actions array, non-empty list)
-- Safety checks for EXECUTE_SCRIPT against known dangerous patterns
-- Backward-compatible legacy JS validation
+## The four signals
+
+`_judge` checks signals in a fixed order and returns the first match. `max_steps` trumps everything. Then a repeated pair, then a cycle, then consecutive failures, then stalling.
 
 ```mermaid
 flowchart TD
-Start(["Sanitize JSON Actions"]) --> Strip["Remove code fences<br/>and normalize text"]
-Strip --> Parse{"Parse JSON"}
-Parse --> |Fail| Err["Return problems:<br/>Invalid JSON"]
-Parse --> |Success| CheckActions["Validate 'actions' array"]
-CheckActions --> ForEach["For each action"]
-ForEach --> TypeCheck{"Type valid?"}
-TypeCheck --> |No| AddProblem["Record invalid type"]
-TypeCheck --> |Yes| FieldChecks["Field validation per type"]
-FieldChecks --> ExecScript{"EXECUTE_SCRIPT?"}
-ExecScript --> |Yes| Safety["Scan for dangerous patterns"]
-ExecScript --> |No| NextAction["Next action"]
-Safety --> NextAction
-AddProblem --> NextAction
-NextAction --> ForEach
-ForEach --> Done{"All validated?"}
-Done --> |Yes| ReturnOK["Return data + empty problems"]
-Done --> |No| ReturnErr["Return data + problems"]
+  A["record(call, outcome, ok)"] --> B{"max_steps reached?"}
+  B -->|yes| S0["stop: max_steps"]
+  B -->|no| C{"pair count >= repeat_limit?"}
+  C -->|yes| S1["signal = repeat"]
+  C -->|no| D{"_cycle() > 0?"}
+  D -->|yes| S2["signal = cycle"]
+  D -->|no| E{"fail_streak >= failure_limit?"}
+  E -->|yes| S3["signal = failures"]
+  E -->|no| F{"since_progress >= patience?"}
+  F -->|yes| S4["signal = stalled"]
+  F -->|no| OK["Verdict ok"]
+  S1 --> W{"warned and grace elapsed?"}
+  S2 --> W
+  S3 --> W
+  S4 --> W
+  W -->|yes| STOP["Verdict stop"]
+  W -->|no| WARN["Verdict warn, set warned_at"]
 ```
 
-### Prompt injection validator
-The validator defines a structured prompt template to classify whether a markdown text is safe or contains prompt injection attempts. It expects a binary classification response suitable for automated gating.
+`_cycle` takes the last `k` steps for `k` in 1, 2, and 3, and compares them to the preceding block of the same length. The block must also contain distinct steps, so a repeated single step is reported as a repeat rather than a one-step cycle.
 
-```mermaid
-flowchart TD
-A["Receive markdown text"] --> B["Wrap with validator template"]
-B --> C["Send to LLM for classification"]
-C --> D{"true/false"}
-D --> |true| E["Safe content"]
-D --> |false| F["Flag for review or block"]
-```
+`repeat` counts every occurrence of the same `(call, outcome)` pair across the run. `repeat_limit=2` means the second identical result warns. `failures` counts consecutive `ok=false` records. `stalled` counts consecutive non-progress records, whether the calls failed or returned a page state already seen.
 
-### Background script: safe execution engine
-The background script coordinates:
-- Tab/window control actions (OPEN_TAB, CLOSE_TAB, SWITCH_TAB, NAVIGATE, RELOAD_TAB, DUPLICATE_TAB)
-- DOM manipulation actions (CLICK, TYPE, SCROLL, WAIT) via content script injection
-- Message routing and result aggregation
-- Waiting for navigation/reload completion with timeouts
+## Verdict lifecycle
+
+The first signal records `_warned_at`. The guard keeps returning warnings while the signal persists, and turns the verdict into a stop once `grace` steps have passed since that first warning. Any progress clears `_warned_at`, so a long run that keeps learning something can continue. The `reason` strings name the loop kind, for example `The same browser action (click #submit) gave the same result 2 times.` The `hint` is written for the model: `You already ran ... and got this exact result. Running it again won't change it.` Browser runtime hints append `Try a different approach, or if you have enough, stop and answer with what you found.`
+
+## Wiring in the browser runtime
+
+`BrowserRuntimeSession` creates `LoopGuard(kind="browser action")`. `start_session` sets `guard.max_steps` and calls `guard.seed(self._page_signature(request.page))`. `_record_progress` handles every result:
+
+- `call = _action_signature(result.action)`, a sorted JSON dump of the action.
+- For `WAIT`, the call gets `#<step count>` appended, so a wait never counts as a repeated call. It still counts as no progress.
+- `outcome = _page_signature(page)`, built from URL, title, the first 600 characters of visible text, the first 12 interactive elements, and media state.
+- `ok = result.success`.
+
+The planner then reads `session.guard.verdict`. A warning becomes `session.loop_check` in the prompt payload and `loop_check` in the response. A stop becomes `session.finish_now` in the payload and ends the run after one final model call that summarises findings. Notes copied from earlier pages are used as the fallback summary.
 
 ```mermaid
 sequenceDiagram
-participant BG as "Background Script"
-participant CS as "Content Script"
-participant TAB as "Target Tab"
-BG->>BG : handleRunGeneratedAgent(action_plan)
-loop For each action
-BG->>CS : executeScript(func,args) or sendMessage(PERFORM_ACTION)
-alt DOM action
-CS->>CS : Query selector and dispatch events
-else Tab action
-BG->>TAB : tabs.create/update/remove/duplicate
-end
-CS-->>BG : Result
-BG-->>BG : Aggregate results
-end
-BG-->>Caller : Final report
+  participant X as Extension
+  participant S as BrowserRuntimeService
+  participant G as LoopGuard
+  participant L as LLM
+  X->>S: /step with page and result
+  S->>S: _record_progress
+  S->>G: record(action_signature, page_signature, ok)
+  G-->>S: Verdict warn
+  S->>L: prompt with loop_check hint
+  L-->>S: new action or done
+  S-->>X: response with loop_check
+  X->>S: /step with another unchanged page
+  S->>G: record again
+  G-->>S: Verdict stop
+  S->>L: prompt with finish_now
+  S-->>X: final response
 ```
 
-### Content script: page context operations
-The content script executes DOM operations safely:
-- Finds elements by selector
-- Dispatches realistic input/change/keyboard events for editable and standard inputs
-- Scrolls and interacts with page elements
+## Wiring in the agents
 
-```mermaid
-flowchart TD
-Start(["performAction(action)"]) --> Parse["Normalize and parse action"]
-Parse --> Click{"CLICK?"}
-Click --> |Yes| FindEl["querySelector(selector)"]
-FindEl --> Exists{"Element exists?"}
-Exists --> |No| Err["Throw error"]
-Exists --> |Yes| ClickEvt["Dispatch click"]
-ClickEvt --> Done["Return success"]
-Parse --> Type{"TYPE?"}
-Type --> |Yes| FindInput["querySelector(selector)"]
-FindInput --> Editable{"Editable?"}
-Editable --> |Yes| SetText["Set innerText/textContent"]
-Editable --> |No| SetVal["Set value"]
-SetText --> Events["Dispatch input/change/keydown/keyup"]
-SetVal --> Events
-Events --> Done
-```
+`agents/react_agent.py` exposes `tool_loop_verdict(messages)`. It creates `LoopGuard(kind="tool call", patience=4, max_steps=env_max_steps("AGENT_MAX_TOOL_CALLS"))`, maps each `AIMessage.tool_calls` entry by id, then records one step per `ToolMessage` using the tool name, arguments, and content. It runs on every `agent` node invocation, so the guard is rebuilt from history rather than stored on the graph state.
 
-### Action executor: minimal bridge between UI and browser APIs
-The executor translates high-level actions into browser APIs :
-- Targeting the active tab for DOM actions
-- Sending messages to the content script for DOM operations
-- Introducing small delays between actions to avoid overwhelming the page
+In `_agent_node`, a warning appends the hint as a `HumanMessage`. A stop skips the tool-bound model and calls the plain client with a message telling it to answer with what it found. A `loop_guard` custom event is dispatched for streamed runs.
 
-```mermaid
-flowchart TD
-Start(["executeBrowserActions(actions)"]) --> Loop["For each action"]
-Loop --> Type{"Action type?"}
-Type --> |OPEN_TAB| Open["Create tab with url"]
-Type --> |CLICK/TYPE| Active["Find active tab id"]
-Active --> Msg["sendMessage(EXECUTE_ACTION)"]
-Open --> Delay["Wait 500ms"]
-Msg --> Delay
-Delay --> Next["Next action"]
-Next --> Loop
-Loop --> End(["Done"])
-```
-
-### Permissions and security boundaries
-The manifest grants minimal permissions necessary for automation:
-- Tabs, scripting, storage, identity, side panel, webNavigation, webRequest, cookies, bookmarks, history, clipboard, notifications, context menus, downloads
-- Host permissions for all URLs to enable page context operations
+`agents/while_loop_harness.py` uses two guards. Each `SubAgentRunner` has a round guard with `patience=2`, `grace=1`, and `max_steps=env_max_steps("HARNESS_MAX_SUBAGENT_ROUNDS")`. It records `"completion round"` against the sorted tool outputs as the outcome, so a round only progresses when it produced new tool output. The `SupervisorHarness` has its own round guard with `max_steps=env_max_steps("HARNESS_MAX_ROUNDS")` and records the draft answer with `ok = score > best_score`.
 
 ```mermaid
 graph LR
-BG["Background Script"] --> Tabs["Tabs API"]
-BG --> Scripting["Scripting API"]
-BG --> Storage["Storage API"]
-BG --> Identity["Identity API"]
-BG --> SidePanel["Side Panel API"]
-BG --> WebNav["Web Navigation API"]
-BG --> WebReq["Web Request API"]
-BG --> Cookies["Cookies API"]
-BG --> Bookmarks["Bookmarks API"]
-BG --> History["History API"]
-BG --> Clipboard["Clipboard API"]
-BG --> Notifications["Notifications API"]
-BG --> CtxMenu["Context Menus API"]
-BG --> Downloads["Downloads API"]
-BG --> AllUrls["<all_urls> Host Permissions"]
+  subgraph GuardUsers
+    Browser["Browser runtime<br/>kind=browser action"]
+    React["ReAct tool loop<br/>kind=tool call, patience=4"]
+    Sub["Subagent rounds<br/>kind=round, patience=2, grace=1"]
+    Sup["Supervisor rounds<br/>kind=round, patience=2, grace=1"]
+  end
+  subgraph Caps
+    E1["BROWSER_RUNTIME_MAX_STEPS"]
+    E2["AGENT_MAX_TOOL_CALLS"]
+    E3["HARNESS_MAX_SUBAGENT_ROUNDS"]
+    E4["HARNESS_MAX_ROUNDS"]
+  end
+  E1 --> Browser
+  E2 --> React
+  E3 --> Sub
+  E4 --> Sup
 ```
 
-### Secure credential management and authentication
-The side panel UI and authentication hook:
-- Store API keys and credentials securely in browser storage
-- Manage OAuth flows with explicit consent and token lifecycle
-- Provide visibility into token status and expiry
+LangGraph still requires a recursion limit. `RECURSION_LIMIT = 2000` in `react_agent.py` is that outer bound, chosen so a progressing run will not reach it. It is a safety net, not the intended stop condition.
+
+## User blockers
+
+`_detect_user_blocker` builds one lowercase haystack from the page title, visible text, and the text of the first 40 interactive elements. A captcha phrase stops the run. A visible password field stops it unless the goal itself mentions `login`, `log in`, `sign in`, `password`, or `otp`. Permission language such as `browser permission`, `allow notifications`, or `permission request` also stops it.
 
 ```mermaid
-sequenceDiagram
-participant UI as "UnifiedSettingsMenu.tsx"
-participant Auth as "useAuth.ts"
-participant Storage as "Browser Storage"
-participant Google as "Google OAuth"
-UI->>Auth : handleLogin()
-Auth->>Google : Launch web auth flow
-Google-->>Auth : Authorization code
-Auth->>Auth : Exchange code for tokens
-Auth->>Storage : Save user + tokens
-Storage-->>UI : Updated token status
+flowchart TD
+  P["PageSnapshot"] --> H["haystack: title + visible_text + 40 element texts, lowercased"]
+  H --> C{"captcha or not a robot?"}
+  C -->|yes| R1["blocked: solve captcha"]
+  C -->|no| L{"visible password field?"}
+  L -->|no| Q{"permission wording?"}
+  L -->|yes| G{"goal mentions login, password, otp?"}
+  G -->|no| R2["blocked: login screen"]
+  G -->|yes| Q
+  Q -->|yes| R3["blocked: permission prompt"]
+  Q -->|no| OK["no blocker, plan normally"]
 ```
 
-## Dependency analysis
-The security-critical dependencies are:
-- Background script depends on content script for DOM operations
-- Sanitizer and validator feed into background action orchestration
-- UI depends on background for executing actions and on storage for credentials
-- Manifest permissions enable safe automation boundaries
+This check is deliberately about the rendered page, not the URL. A header "Log in" link on an otherwise usable page does not trigger it, because only a visible `input_type="password"` counts.
 
-```mermaid
-graph TB
-SAN["agent_sanitizer.py"] --> BG["background.ts"]
-PINJ["prompt_injection_validator.py"] --> BG
-BG --> CS["content.ts"]
-BG --> EXE["executeActions.ts"]
-UI["UnifiedSettingsMenu.tsx"] --> BG
-AUTH["useAuth.ts"] --> UI
-CFG["wxt.config.ts"] --> BG
-CFG --> CS
-```
+A blocked run ends immediately with `status="blocked"` and `requires_user_input=True`. No model call is made, so the blocker cannot be argued away by the model. The final message tells the user what to solve, and the session is popped like any other final response.
 
-## Performance considerations
-- Artificial delays between actions reduce page overload and improve stability.
-- Waiting for navigation/reload completion prevents race conditions.
-- Minimal content script injection reduces overhead.
-- Event dispatching simulates realistic user interactions to minimize detection.
+## Dependencies
 
-## Troubleshooting guide
-Common issues and mitigations:
-- Element not found during CLICK/TYPE: Verify selector specificity and timing; ensure content script runs after page load.
-- Navigation failures: Confirm URL validity and allow sufficient completion time.
-- Sanitizer rejects action plan: Review required fields and action types; remove dangerous patterns for EXECUTE_SCRIPT.
-- Authentication errors: Re-run OAuth flow and confirm backend connectivity.
+The guard module imports only the standard library: `hashlib`, `json`, `re`, `collections.Counter`, `dataclasses`, and `typing`. That keeps it usable from the browser runtime, both agent graphs, and tests without pulling in LLM or database code. The blocker check uses only the `PageSnapshot` fields and the goal string.
 
-## Conclusion
-Validate inputs, isolate DOM work, require approval, and log what ran. That boundary is the difference between a demo and something you can leave installed.
+## Performance
 
-## Appendices
+Fingerprinting is O(length) over at most 4000 characters and allocates one SHA-1 hash. Pair counting is a `Counter` keyed by two 16-character strings. The outcome set grows with distinct outcomes, which is bounded by the run length. Cycle detection scans at most six recent steps. Replay in `tool_loop_verdict` walks the whole message list on each model turn, so its cost grows with conversation length; trimming from `services/compaction.py` keeps that bounded.
 
-### Security policies
-- Enforce user approval for all potentially destructive actions (OPEN_TAB, NAVIGATE, TYPE, CLICK).
-- Maintain detailed activity logs for every action with timestamps and outcomes.
-- Apply intelligent content filtering using prompt injection validators and sanitizer rules.
-- Limit permissions to the minimum required for automation.
-- Use secure storage for credentials and tokens; avoid exposing secrets in logs or UI.
-- Implement timeouts and retries for navigation and reload operations.
-- Regularly audit action plans and runtime logs for anomalies.
+## Troubleshooting
 
-### Threat mitigation strategies
-- Reject unknown action types and missing fields.
-- Block EXECUTE_SCRIPT with dangerous patterns.
-- Validate URLs for OPEN_TAB/NAVIGATE.
-- Use selectors strictly and avoid broad DOM queries.
-- Simulate realistic user events to reduce fingerprinting risk.
+- A run stops early with `stalled` at five steps: the page signature is not changing. Check whether the action actually did anything, and whether the extension returned a fresh `after` snapshot.
+- A legitimate refresh is flagged as a repeat: navigation back to an identical page produces the same signature. Use a different route or accept the warning and let the model change approach.
+- Waits never warn as repeats: this is intentional in `_record_progress`, but repeated waits still accumulate `since_progress` and can trigger `stalled`.
+- `max_steps` stops a long but productive run: `BROWSER_RUNTIME_MAX_STEPS`, `AGENT_MAX_TOOL_CALLS`, `HARNESS_MAX_ROUNDS`, or `HARNESS_MAX_SUBAGENT_ROUNDS` is set. Remove it or raise it.
+- A stop leaves the user with a bare refusal: the browser runtime only returns `completed` when a summary exists. Check that `message` or `notes` contains findings.
+- Subagent rounds stop immediately: the round guard compares sorted tool outputs, so a round that only rephrases text counts as no progress. Give the subagent a task that needs new tool calls.
+- The guard never fires: the caller may be recording a constant outcome, or not recording at all. Each record needs a real call and the state that came back.
+- A normal search is blocked as a login wall: the page has a visible password field and the goal does not contain a login term. Rephrase the goal or handle the login manually.
 
-### Incident response procedures
-- Isolate affected tabs and revoke tokens if compromise suspected.
-- Review logs for suspicious action sequences and sanitize inputs.
-- Rotate API keys and re-authenticate users.
-- Notify administrators and document the incident timeline.
+## Appendix
 
+### Implementation examples
+
+- `LoopGuard.record(call, outcome, ok=True, label="")`: returns the current `Verdict`.
+- `LoopGuard.seed(outcome)`: marks the starting state as seen with digits masked.
+- `Verdict.to_dict()`: `{"status": ..., "signal": ..., "reason": ...}` for traces and responses.
+- `env_max_steps("AGENT_MAX_TOOL_CALLS")`: optional cap, `None` when unset or zero.
+- `tool_loop_verdict(messages)`: replay helper used by both the ReAct agent and subagents.
+- `_cycle()`: detects blocks of length one, two, or three at the end of the history.
+- `_detect_user_blocker(page, goal)`: returns the blocker message, or `None`.
+
+### Source files
+
+- `core/loop_guard.py`
+- `agents/react_agent.py`
+- `agents/while_loop_harness.py`
+- `services/browser_runtime_service.py`

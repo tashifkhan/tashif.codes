@@ -1,240 +1,209 @@
 # MCP server
 
-## Introduction
-The Model Context Protocol server that exposes tools and LLM generation to clients. Registration patterns, prompt templates tied to repo context, and how the extension talks to it.
+`agentic-mcp` lets a coding agent drive the user's real browser through MCP. It exposes four browser tools and five memory tools, and it runs as a standalone package so Claude Code, Codex, Cursor, Gemini CLI or OpenCode can use it without the full backend.
 
-## Project structure
-The MCP server lives under a dedicated module and integrates with core LLM capabilities, prompt chains, and website context extraction tools. The broader system includes an agent framework and a browser extension that communicates with a backend via WebSocket.
+The browser tools go through a local bridge on `127.0.0.1:5455`. The extension dials that bridge over a WebSocket. Memory tools call the backend HTTP API, so they need the backend running; browser tools do not.
+
+Key capabilities:
+- Four browser tools with a shared bridge
+- Five memory tools backed by the HTTP API
+- Code mode with a QuickJS sandbox
+- Host or relay election on port 5455
+- Client registration for five coding agents
+- Tool groups configurable from the console
+
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "MCP Server"
-MCP["mcp_server/server.py"]
+subgraph "MCP package"
+  SRV["mcp_server/server.py"]
+  BR["mcp_server/bridge.py"]
+  CM["mcp_server/codemode.py"]
+  SET["mcp_server/settings.py"]
+  INS["mcp_server/install.py"]
+  CFG["mcp_server/config.py"]
 end
-subgraph "Core"
-LLM["core/llm.py"]
-CFG["core/config.py"]
-end
-subgraph "Prompts"
-GH["prompts/github.py"]
-end
-subgraph "Tools"
-WM["tools/website_context/request_md.py"]
-HM["tools/website_context/html_md.py"]
-end
-subgraph "Agents"
-RA["agents/react_agent.py"]
-RT["agents/react_tools.py"]
+subgraph "Backend"
+  MEM["memory/api/router.py"]
+  TOOLS["tools/memory.py"]
 end
 subgraph "Extension"
-BG["clients/browser-extension/entrypoints/background.ts"]
-CT["clients/browser-extension/entrypoints/content.ts"]
-WS["clients/browser-extension/entrypoints/utils/websocket-client.ts"]
+  SOCK["bridge/client.ts"]
+  HAND["bridge/handlers.ts"]
 end
-MCP --> LLM
-MCP --> GH
-MCP --> WM
-MCP --> HM
-RA --> RT
-BG --> WS
-CT --> BG
+SRV --> BR
+SRV --> CM
+SRV --> SET
+SRV --> INS
+BR --> SOCK
+SOCK --> HAND
+SRV -->|"httpx"| MEM
+MEM --> TOOLS
 ```
 
-## Core components
-- MCP Server: Defines and registers tools, handles tool invocations, and streams responses back to the AI model over stdio.
-- LLM Provider Abstraction: Centralizes provider selection, model instantiation, and text generation.
-- Prompt Chains: Provide domain-specific prompting for GitHub repositories and other domains.
-- Website Context Tools: Fetch and convert website content to markdown for downstream consumption.
-- Agent Framework: Provides a structured agent with tool execution and state management.
-- Extension: Implements background and content scripts and a WebSocket client for agent orchestration.
+## Building blocks
 
-## Architecture overview
-The MCP server runs as a standalone process communicating over stdio. AI models request tools via MCP, and the server executes them, returning textual content. The browser extension coordinates agent actions and can communicate with a backend via WebSocket. The agent framework orchestrates tool use and manages conversational state.
+- `mcp_server/server.py`: `MCPServer` instance, tool definitions, CLI, HTTP app, tool-group application.
+- `mcp_server/bridge.py`: `LocalBridge` owns extension WebSockets; `RemoteBridge` relays over HTTP; `BridgeManager` elects host or relay.
+- `mcp_server/codemode.py`: `CodeRunner` with QuickJS, a prelude that defines `browser` and `tab`, and a host-call event loop.
+- `mcp_server/settings.py`: tool groups in `~/.agentic-browser/mcp-settings.json`, with env defaults.
+- `mcp_server/install.py`: writes MCP config for Claude Code, Codex, Cursor, Gemini CLI and OpenCode.
+- `mcp_server/config.py`: bridge host, port, state dir, token file, API URL and allowed extension ids.
+
+## Browser tools
+
+| Tool | Arguments | Returns |
+| --- | --- | --- |
+| `browser_tabs` | `action` list/open/close/focus, `tab_id`, `url`, `active` | connected browsers and tab lines, or a confirmation |
+| `browser_snapshot` | `tab_id`, `screenshot`, `max_chars` 2000 to 100000 | accessibility outline with `[ref=eN]`, optional image |
+| `browser_act` | action plus action-specific fields | tab line, ok or failed, note, dialog, optional snapshot |
+| `browser_execute` | `code`, `timeout_s` 5 to 300 | return value, console output, call count, images |
+
+`browser_act` supports click, type, press, hover, select, check, scroll, navigate, back, forward, reload, wait_for, evaluate and dialog. `target` is a snapshot ref, a CSS selector or `text=Visible text`.
+
+## The bridge
+
+One process owns `127.0.0.1:5455`. The extension connects to `/bridge/ws` and sends a `hello` frame. Tool calls are JSON frames with a request id and a timeout. A second process that wants the browser relays through `POST /bridge/call` with the token from `~/.agentic-browser/bridge-token`.
 
 ```mermaid
 sequenceDiagram
-participant AI as "AI Model"
-participant MCP as "MCP Server"
-participant LLM as "LLM Provider"
-participant GH as "GitHub Prompt Chain"
-participant WM as "Website Markdown Tool"
-participant HM as "HTML to Markdown Tool"
-AI->>MCP : "list_tools()"
-MCP-->>AI : "Tool definitions"
-AI->>MCP : "call_tool(name, arguments)"
-alt llm.generate
-MCP->>LLM : "generate_text(prompt, system_message)"
-LLM-->>MCP : "text"
-else github.answer
-MCP->>GH : "github_processor_optimized(...)"
-GH-->>MCP : "text"
-else website.fetch_markdown
-MCP->>WM : "return_markdown(url)"
-WM-->>MCP : "text"
-else website.html_to_md
-MCP->>HM : "return_html_md(html)"
-HM-->>MCP : "text"
-else unknown
-MCP-->>AI : "error or unknown tool"
-end
-MCP-->>AI : "TextContent(text)"
+  participant Client as "MCP client"
+  participant Server as "agentic-mcp"
+  participant Bridge as "bridge :5455"
+  participant Ext as "extension"
+  participant Tab as "tab"
+  Client->>Server : "browser_snapshot"
+  Server->>Bridge : "call(page.snapshot)"
+  Bridge->>Ext : "request frame"
+  Ext->>Tab : "scripting.executeScript(pageAgent)"
+  Tab-->>Ext : "outline envelope"
+  Ext-->>Bridge : "response frame"
+  Bridge-->>Server : "result"
+  Server-->>Client : "text and optional image"
 ```
 
-## Detailed component analysis
+```mermaid
+stateDiagram-v2
+  [*] --> Starting
+  Starting --> Host : "bind port 5455 succeeds"
+  Starting --> Relay : "bind fails"
+  Host --> Serving : "uvicorn on the socket"
+  Relay --> Forwarding : "POST /bridge/call"
+  Forwarding --> Host : "relay unavailable, retry bind"
+  Serving --> Stopped : "stop()"
+```
 
-### MCP server: tool definition and invocation
-- Tool Registration: The server registers four tools via a decorator that returns a list of tool descriptors with names, descriptions, and JSON Schemas for inputs.
-- Tool Execution: The server routes tool calls to specific handlers, instantiating providers or invoking utility functions, and returns TextContent responses.
+## Memory tools
+
+| Tool | Behavior |
+| --- | --- |
+| `memory_recall` | hybrid search over active memories |
+| `memory_save` | one durable fact, reconciled with existing claims |
+| `memory_profile` | short identity and skills summary |
+| `memory_documents` | source snippets and extracted facts from imported documents |
+| `memory_forget` | deletes by claim id and redacts source chat turns |
+
+These call `/api/memory/tools/*`, `/api/memory/profile` and `/api/memory/forget`. They reuse the same functions as the in-process agent tools, so classification and reconciliation match.
+
+## Code mode
+
+`browser_execute` runs an async JavaScript program in QuickJS. The program gets `browser.tabs()`, `browser.tab(id)`, `browser.open(url)`, `sleep(ms)`, `console` and a persistent `state` object. Each `tab` has snapshot, navigate, click, type, press, select, check, hover, scroll, waitFor, evaluate, text, screenshot, dialog, close and focus.
+
+The sandbox has no network, file system or Node APIs. Each burst of JS between browser calls gets 5 seconds; the whole program gets the caller's timeout, capped at 300 seconds. Memory is limited to 256 MB and output to 40,000 characters.
 
 ```mermaid
 flowchart TD
-Start(["list_tools()"]) --> ListTools["Return tool descriptors"]
-CallStart(["call_tool(name, args)"]) --> Route{"Tool Name"}
-Route --> |llm.generate| Gen["Instantiate LLM<br/>Generate text"]
-Route --> |github.answer| GH["Invoke GitHub processor"]
-Route --> |website.fetch_markdown| WM["Fetch markdown via Jina"]
-Route --> |website.html_to_md| HM["Convert HTML to markdown"]
-Route --> |other| Err["Return error or unknown tool"]
-Gen --> Return["Return TextContent"]
-GH --> Return
-WM --> Return
-HM --> Return
-Err --> Return
+  Code(["JS program"]) --> QuickJS["QuickJS context"]
+  QuickJS -->|"await call"| Queue["host-call queue"]
+  Queue --> Host["Python dispatch"]
+  Host --> Bridge["bridge.call"]
+  Bridge --> Result["result"]
+  Result --> Settle["settle Promise in JS"]
+  Settle --> QuickJS
+  QuickJS -->|"return"| Output["value + logs + images"]
 ```
 
-### LLM provider abstraction
-- Provider Configurations: Centralized mapping of providers to underlying SDK clients, default models, and parameter mappings.
-- Initialization: Validates API keys and base URLs, constructs the appropriate client, and raises descriptive errors on misconfiguration.
-- Generation: Accepts optional system messages and returns generated text.
+## Installation
 
-```mermaid
-classDiagram
-class LargeLanguageModel {
-+string provider
-+string model_name
-+float temperature
-+generate_text(prompt, system_message) string
-+summarize_text(text) string
-}
+```sh
+uv tool install ./mcp_server
+agentic-mcp install
+agentic-mcp install --dry-run
+agentic-mcp config
+agentic-mcp status
+agentic-mcp serve
 ```
 
-### Prompt engineering for GitHub tools
-- Prompt Template: System and user prompt template written to constrain responses to repository context.
-- Runnable Chain: Composes inputs (tree, summary, content, question, chat history) with a formatter and an LLM client to produce a final answer.
+`install` detects clients and writes user-scope config. Codex gets a TOML table, Claude Code uses `claude mcp add`, Cursor and Gemini get JSON files, and OpenCode gets its JSON config. Files are backed up first.
 
-```mermaid
-flowchart TD
-Build["_build_chain(llm_options)"] --> LLM["Initialize LLM"]
-LLM --> Chain["RunnableParallel inputs"]
-Chain --> Prompt["PromptTemplate"]
-Prompt --> Invoke["LLM client invoke"]
-Invoke --> Parse["StrOutputParser"]
-Parse --> Result["Final answer"]
-```
+## Tool groups
 
-### Website context tools
-- Fetch Markdown: Uses an external service to retrieve markdown content for a given URL.
-- HTML to Markdown: Converts raw HTML to markdown using parsing utilities.
-
-```mermaid
-flowchart TD
-URL["Input URL"] --> Fetch["HTTP GET to external service"]
-Fetch --> MD["Raw markdown text"]
-HTML["Input HTML"] --> Convert["Parse and convert to markdown"]
-Convert --> MD2["Markdown text"]
-```
-
-### Agent framework and tool lifecycle
-- Agent State: Maintains conversation context and supports tool calls with structured messages.
-- ToolNode Integration: Tools are structured and invoked by the agent's tool node, enabling conditional routing between agent reasoning and tool execution.
-- Tool Definitions: Rich tool schemas and coroutines encapsulate domain-specific capabilities.
-
-```mermaid
-sequenceDiagram
-participant User as "User"
-participant Agent as "React Agent"
-participant Tools as "ToolNode"
-participant LLM as "LLM Client"
-User->>Agent : "Messages with tool calls"
-Agent->>LLM : "Reason and decide"
-LLM-->>Agent : "Next action or final answer"
-Agent->>Tools : "Execute tool with args"
-Tools-->>Agent : "Tool result"
-Agent-->>User : "Final response"
-```
-
-### Browser extension communication patterns
-- Background Script: Handles messaging for agent tool execution, tab management, and action dispatch.
-- Content Script: Provides lightweight DOM-aware actions and can be extended for richer interactions.
-- WebSocket Client: Manages connection to a backend, emits progress events, and supports agent execution commands.
-
-```mermaid
-sequenceDiagram
-participant Ext as "Extension UI"
-participant BG as "Background Script"
-participant WS as "WebSocket Client"
-participant BE as "Backend/API"
-Ext->>BG : "EXECUTE_AGENT_TOOL"
-BG->>WS : "Forward to backend"
-WS->>BE : "executeAgent / stats"
-BE-->>WS : "agent_result / stats_result"
-WS-->>BG : "Emit events"
-BG-->>Ext : "Result"
-```
-
-## Dependency analysis
-- MCP Server depends on:
- - LLM provider abstraction for text generation
- - Prompt chains for contextual QA
- - Website context tools for content retrieval/conversion
-- Agent framework depends on:
- - Structured tools and prompt chains
- - LLM provider for reasoning
-- Extension depends on:
- - Background and content scripts for browser automation
- - WebSocket client for backend coordination
+The console writes `browser_tools`, `memory_tools` and `browser_mode` to `~/.agentic-browser/mcp-settings.json`. `browser_mode` is `all`, `execute` (tabs and code mode only) or `plain` (no code mode). Every `agentic-mcp` process watches the file and re-applies the tool list within about two seconds.
 
 ```mermaid
 graph LR
-MCP["MCP Server"] --> LLM["LLM Provider"]
-MCP --> GH["GitHub Prompt Chain"]
-MCP --> WM["Website Markdown"]
-MCP --> HM["HTML to Markdown"]
-RA["React Agent"] --> RT["Agent Tools"]
-RT --> GH
-RT --> WM
-RT --> LLM
-BG["Background Script"] --> WS["WebSocket Client"]
-CT["Content Script"] --> BG
+  Console["Settings → MCP server"] --> API["/api/mcp/settings"]
+  API --> File["mcp-settings.json"]
+  File --> Watcher["settings watcher"]
+  Watcher --> Server["tool manager"]
+  Server --> Clients["tools/list"]
 ```
 
-## Performance considerations
-- Asynchronous Execution: MCP tool handlers and agent workflows use async patterns to avoid blocking.
-- Threading for Blocking IO: Agent tools use threads for blocking operations (e.g., HTTP requests, file reads) to keep the event loop responsive.
-- Caching: Agent graph compilation is cached to reduce startup overhead.
-- Provider Selection: LLM initialization validates environment variables early to fail fast and avoid runtime retries.
+## Security
 
-## Troubleshooting guide
-- MCP Tool Not Found: Ensure the requested tool name matches the registered tool names and schemas.
-- LLM Initialization Failures: Verify provider configuration, API keys, and base URLs. The LLM provider raises explicit errors when required environment variables are missing.
-- GitHub Processor Errors: Confirm that the prompt chain receives all required inputs and that the LLM client is reachable.
-- Website Tools Failures: Check network connectivity to the external markdown service and input URL validity.
-- Extension WebSocket Issues: Validate backend URL and network connectivity; the WebSocket client logs connection events and errors.
+- The bridge binds loopback.
+- WebSockets are accepted only from `chrome-extension://` and `moz-extension://` origins, optionally restricted by `AGENTIC_BROWSER_EXTENSION_IDS`.
+- `/mcp` rejects cross-site `Origin` and foreign `Host` headers.
+- `/bridge/call` requires the bearer token and rejects requests with an `Origin` header.
+- The token file is created with mode 0600.
 
-## Conclusion
-Add tools next to the existing handlers, keep schemas strict, and wire the extension WebSocket client for progress. Provider selection still goes through the shared LLM layer.
+## Dependencies
 
-## Appendices
+```mermaid
+graph TB
+  Server["mcp_server/server.py"] --> SDK["mcp>=2.3.0"]
+  Server --> Pydantic["pydantic"]
+  Bridge["bridge.py"] --> Starlette["starlette"]
+  Bridge --> Websockets["websockets-sansio"]
+  Bridge --> HTTPX["httpx"]
+  Code["codemode.py"] --> QuickJS["quickjs-ng"]
+  Install["install.py"] --> Clients["claude, codex, cursor, gemini, opencode"]
+```
 
-### Configuration management
-- Environment Variables: API keys and base URLs are resolved from environment variables per provider configuration.
-- Logging: Centralized logging configuration supports development and production environments.
+## Performance
 
-### Security considerations
-- API Keys and Base URLs: Providers requiring secrets rely on environment variables; avoid embedding credentials in code.
-- Tool Inputs: MCP tool schemas define required fields and types to reduce injection risks.
-- Extension Permissions: Background and content scripts should limit permissions to those required for automation.
+- API call timeouts clamp between 1 and 1800 seconds.
+- `browser_tabs open` uses a 45 second bridge timeout.
+- The bridge waits 3 seconds for a browser before failing a call.
+- Code mode gets 5 seconds per JS burst, 256 MB memory, 40k output.
+- Settings changes apply in about 2 seconds; clients that ignore tool-list updates need a restart.
 
-### Example tool implementations and client integration
-- MCP Tool Implementations: See the tool registration and call handlers for patterns to add new tools.
-- Client Integration: Use the WebSocket client to integrate agent execution and progress reporting with the extension.
+## Troubleshooting
+
+- `No browser is connected`: the extension is not loaded or points at another bridge.
+- WebSocket close 4403: origin rejected. Check `AGENTIC_BROWSER_EXTENSION_IDS`.
+- WebSocket close 4400: first frame was not `hello`. Update the extension.
+- `/bridge/call` 401: wrong or missing token.
+- `/bridge/call` 403: a browser sent the request. Only local processes may relay.
+- Memory tool error: the backend is not running at `AGENTIC_BROWSER_API_URL`.
+- Tool list stale: restart the client, or apply settings again from the console.
+
+## Appendix
+
+### Implementation examples
+- CLI: `agentic-mcp stdio`, `serve`, `status`, `install`, `config`.
+- Bridge status: `GET http://127.0.0.1:5455/bridge/status`.
+- MCP HTTP: `http://127.0.0.1:5455/mcp`.
+- Tool groups: `GET /api/mcp/settings`, `PUT /api/mcp/settings`, `POST /api/mcp/restart`.
+
+### Source files
+- `mcp_server/server.py`
+- `mcp_server/bridge.py`
+- `mcp_server/codemode.py`
+- `mcp_server/settings.py`
+- `mcp_server/install.py`
+- `mcp_server/config.py`
+- `routers/mcp_settings.py`
+- `tools/memory.py`
+- `memory/api/router.py`

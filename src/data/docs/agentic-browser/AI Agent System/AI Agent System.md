@@ -1,358 +1,150 @@
 # AI agent system
 
-## Introduction
-LangGraph ReAct loop: answer directly or call tools until done. Tools cover search, websites, YouTube, Gmail, Calendar, JIIT attendance, and browser actions. Providers plug in through one LLM layer; a sanitizer checks browser plans.
+This folder covers the part of the backend that turns a chat turn into model calls, tool calls and stored memory. `services/react_agent_service.py` picks an execution path, the graphs in `agents/` do the loop, `agents/react_tools.py` decides what the model can call, and `core/llm.py` builds the client. The prompt, catalog, compaction and memory pages explain the pieces around that loop.
 
-## Project structure
-The repository organizes functionality by concerns:
-- agents: Reactive agent graph and tool integration
-- core: LLM provider abstraction and configuration
-- prompts: Domain-specific prompts and injection validation
-- tools: Tool implementations and schemas
-- services: Business logic and orchestration
-- routers: API endpoints
-- models: Request/response schemas
-- utils: Utilities such as sanitization
-- extension: Browser extension entrypoints and utilities
+Key capabilities:
+- Two LangGraph harnesses, the ReAct agent and the while-loop supervisor, plus four subscription runtimes.
+- One tool registry shared by both graphs, with credentials injected per request.
+- Eight API providers and a model catalog that lists what each one offers.
+- Prompt modules with explicit JSON contracts for the planner and the memory extractor.
+- A token budget for long chats, long tool output and injected memory.
+- A durable memory system with separate write, read and maintenance paths.
+
+## Repository layout
+
+The pages in this folder follow the code boundaries. The harness pages sit on `agents/`, the model pages on `core/` and `prompts/`, and the memory pages on `memory/`.
 
 ```mermaid
 graph TB
-subgraph "Extension"
-EXTS["executeAgent.ts"]
-MAP["agent-map.ts"]
-WS["websocket-client.ts"]
-end
-subgraph "API Layer"
-ROUTER["routers/react_agent.py"]
-end
-subgraph "Service Layer"
-SVC["services/react_agent_service.py"]
-end
-subgraph "Agent Core"
-GRAPH["agents/react_agent.py"]
-TOOLS["agents/react_tools.py"]
-end
-subgraph "LLM Abstraction"
-LLM["core/llm.py"]
-CFG["core/config.py"]
-end
-subgraph "Prompts & Tools"
-PROMPT_BROWSER["prompts/browser_use.py"]
-TOOL_BROWSER["tools/browser_use/tool.py"]
-SAN["utils/agent_sanitizer.py"]
-INJ["prompts/prompt_injection_validator.py"]
-end
-EXTS --> ROUTER
-MAP --> EXTS
-WS --> EXTS
-ROUTER --> SVC
-SVC --> GRAPH
-GRAPH --> TOOLS
-TOOLS --> PROMPT_BROWSER
-TOOLS --> TOOL_BROWSER
-GRAPH --> LLM
-LLM --> CFG
-PROMPT_BROWSER --> SAN
-INJ --> SVC
+  subgraph Entry
+    Svc["services/react_agent_service.py<br/>path selection"]
+  end
+  subgraph Harness
+    Index["AI Agent System<br/>this page"]
+    React["Reactive Agent Architecture"]
+    Supervisor["While-Loop Supervisor"]
+    Tools["Tool Integration System"]
+    Runtimes["Subscription Runtimes"]
+  end
+  subgraph Model
+    Providers["LLM Provider Abstraction"]
+    Catalog["Model Catalog"]
+    Prompts["Prompt Engineering System"]
+    Context["Compaction and Context Management"]
+  end
+  subgraph Memory
+    LTM["Long-Term Memory"]
+    Ingest["Memory Ingestion"]
+    Retrieve["Memory Retrieval"]
+    Maint["Memory Maintenance"]
+  end
+  Svc --> Index
+  Index --> React
+  Index --> Supervisor
+  Index --> Runtimes
+  React --> Tools
+  Supervisor --> Tools
+  React --> Providers
+  Supervisor --> Providers
+  React --> Context
+  Prompts --> React
+  Prompts --> Supervisor
+  Providers --> Catalog
+  Svc --> LTM
+  LTM --> Ingest
+  LTM --> Retrieve
+  LTM --> Maint
 ```
 
-## Core components
-- Reactive Agent Graph: Defines a LangGraph workflow with an agent node and a tool execution node, enabling conditional routing between reasoning and tool use.
-- Tool Integration: Structured tools with typed schemas, composition based on context (tokens, session payloads), and async execution.
-- LLM Provider Abstraction: Centralizes provider selection, model mapping, environment-driven configuration, and runtime client instantiation.
-- Prompt Engineering: Supplies domain-specific prompts for browser automation and injection validation for safety.
-- State Management: Maintains conversation context and message sequences for multi-turn interactions.
-- Orchestration: Bridges the extension UI to backend APIs and services, capturing page context and assembling tool-ready payloads.
+## Pages in this folder
 
-## Architecture overview
-Stack from the outside in:
-- Extension layer captures user intent, active tab context, and constructs payloads for backend endpoints.
-- API layer exposes endpoints for agent orchestration and tool-specific operations.
-- Service layer translates requests into agent state, injects context, and invokes the compiled LangGraph.
-- Agent layer executes the reasoning loop, optionally invoking tools and returning final responses.
-- Tool layer encapsulates domain capabilities with validated inputs and safe execution patterns.
-- LLM abstraction provides a unified interface across providers and models.
+| Page | What it covers |
+| --- | --- |
+| AI Agent System | This folder map and the path selection between harnesses. |
+| Reactive Agent Architecture | `AgentState`, the `agent` and `tool_execution` nodes, graph caching and streamed events. |
+| While-Loop Supervisor | The four supervisor nodes, five subagent roles, tool partitions and the quality gate. |
+| Tool Integration System | `build_agent_tools`, the tool inventory, input bounds and memory tool behaviour. |
+| Subscription Runtimes | The Claude Agent SDK, `codex exec`, the ACP client and Antigravity install and login. |
+| LLM Provider Abstraction | `PROVIDER_CONFIGS`, secret resolution, the client cache and the per-request model headers. |
+| Model Catalog | models.dev loading, endpoint listing per API format and `model_info`. |
+| Prompt Engineering System | Every prompt module used by the agent, its inputs and its output contract. |
+| Compaction and Context Management | Chat summaries, in-run tool trimming and memory context packing. |
+| Long-Term Memory | The three stores, the service surface and the boundaries between write and read paths. |
+| Memory Ingestion | Chat extraction, the memory gate, reconciliation and the writer transaction. |
+| Memory Retrieval | Query planning, hybrid search, scoring, context assembly and graph expansion. |
+| Memory Maintenance | Scheduled decay, dedup, promotion, repair, and the document and profile ingestion paths. |
+
+## How the folder fits together
+
+A request arrives at a router, which calls `ReactAgentService`. The service resolves the runtime pick, decides between the ReAct agent and the supervisor, assembles memory context, and invokes a compiled graph. The graph calls the model through `core/llm.py`, runs tools from the registry, and returns an answer. After the answer, a background task ingests the turn into memory.
 
 ```mermaid
 sequenceDiagram
-participant User as "User"
-participant Ext as "Extension executeAgent.ts"
-participant API as "FastAPI Router"
-participant Svc as "ReactAgentService"
-participant Graph as "LangGraph (react_agent.py)"
-participant Tools as "Tools (react_tools.py)"
-participant LLM as "LargeLanguageModel"
-User->>Ext : Issue command with prompt
-Ext->>API : POST /api/genai/react with payload
-API->>Svc : generate_answer(question, chat_history, tokens, session)
-Svc->>Graph : invoke(state with messages + context)
-Graph->>LLM : ainvoke(messages with tools bound)
-LLM-->>Graph : AIMessage(tool_calls?)
-alt Tool calls present
-Graph->>Tools : ToolNode executes selected tool
-Tools-->>Graph : ToolMessage(result)
-Graph->>LLM : ainvoke(updated messages)
-LLM-->>Graph : Final AIMessage
-else No tool calls
-Graph-->>Svc : Final AIMessage
-end
-Svc-->>API : Final answer text
-API-->>Ext : Response
-Ext-->>User : Rendered answer
+  participant C as Client
+  participant R as Router
+  participant S as ReactAgentService
+  participant M as MemoryService
+  participant H as Harness
+  participant T as Tool registry
+  participant L as core/llm.py
+  C->>R: question and context
+  R->>S: generate_answer or stream_answer
+  S->>M: get_context
+  M-->>S: memory block
+  S->>S: pick runtime, supervisor or ReAct
+  S->>H: invoke graph with messages
+  H->>L: model call with bound tools
+  L-->>H: answer or tool calls
+  H->>T: execute tools
+  T-->>H: tool results
+  H-->>S: final answer and events
+  S-->>R: response or stream
+  S->>M: ingest_chat after the turn
 ```
 
-## Detailed component analysis
+## Shared concepts
 
-### Reactive agent graph and state management
-The agent uses a LangGraph StateGraph with two nodes:
-- Agent node: binds available tools to the LLM and generates a response.
-- ToolNode: executes selected tools and returns results as ToolMessages.
-Conditional edges route from agent to tool execution when tool_calls are detected, then back to the agent until completion.
+- `StructuredTool` is the only tool type. Each entry has a name, a description, a coroutine and a Pydantic `args_schema`.
+- `add_messages` is the reducer on both agent states. Nodes return `{"messages": [...]}` and LangGraph appends.
+- `EventCallback` is `Callable[[dict[str, Any]], Awaitable[None]]`. The same event names are used by the ReAct agent, the supervisor and the runtimes.
+- `LoopGuard` stops a run that repeats itself. The ReAct agent rebuilds it from message history, the supervisor keeps one per subagent.
+- `build_agent_tools(context)` is the single entry point for the tool list, so both graphs offer the same names and schemas.
+- `get_default_llm()` returns the request-scoped client when one is set, otherwise the process default.
 
-```mermaid
-flowchart TD
-Start(["Start"]) --> InitSys["Ensure System Message"]
-InitSys --> InvokeAgent["LLM ainvoke(messages with tools)"]
-InvokeAgent --> HasTools{"Has tool_calls?"}
-HasTools --> |Yes| ToolExec["ToolNode executes tool(s)"]
-ToolExec --> AppendToolMsg["Append ToolMessage to state"]
-AppendToolMsg --> InvokeAgent
-HasTools --> |No| Done(["Return final AIMessage"])
-```
-
-Key implementation highlights:
-- AgentState defines a messages accumulator.
-- Payload conversion helpers normalize content and preserve tool_calls and tool_call_id.
-- GraphBuilder compiles the workflow once and caches it.
-- run_react_agent converts external payloads to LangChain messages, invokes the graph, and returns normalized payloads.
-
-### Tool integration system
-The tool system:
-- Defines structured tools with Pydantic schemas for inputs.
-- Dynamically composes tools from a base set, augmenting with Google and JIIT capabilities when context is provided.
-- Executes tool coroutines asynchronously and formats results safely.
-
-```mermaid
-classDiagram
-class StructuredTool {
-+name : string
-+description : string
-+args_schema
-+coroutine
-}
-class GitHubToolInput
-class WebSearchToolInput
-class WebsiteToolInput
-class YouTubeToolInput
-class GmailToolInput
-class GmailSendEmailInput
-class GmailListUnreadInput
-class GmailMarkReadInput
-class CalendarToolInput
-class CalendarCreateEventInput
-class PyjiitAttendanceInput
-class BrowserActionInput
-class build_agent_tools {
-+build_agent_tools(context) StructuredTool[]
-}
-StructuredTool <.. GitHubToolInput
-StructuredTool <.. WebSearchToolInput
-StructuredTool <.. WebsiteToolInput
-StructuredTool <.. YouTubeToolInput
-StructuredTool <.. GmailToolInput
-StructuredTool <.. GmailSendEmailInput
-StructuredTool <.. GmailListUnreadInput
-StructuredTool <.. GmailMarkReadInput
-StructuredTool <.. CalendarToolInput
-StructuredTool <.. CalendarCreateEventInput
-StructuredTool <.. PyjiitAttendanceInput
-StructuredTool <.. BrowserActionInput
-build_agent_tools --> StructuredTool : "returns"
-```
-
-Tool selection and execution patterns:
-- Tool selection is driven by the LLM's tool_calls; LangGraph routes to ToolNode automatically.
-- Execution runs in threads to keep LLM calls responsive.
-- Results are normalized to text or JSON for downstream consumption.
-
-### LLM provider abstraction and model-agnostic design
-The LLM abstraction centralizes provider configuration and client instantiation:
-- Provider configs map provider names to LangChain chat model classes, default models, and environment variables.
-- LargeLanguageModel initializes clients with environment-driven parameters and validates presence of required keys/base URLs.
-- The agent uses a cached client instance so model selection stays consistent.
-
-```mermaid
-classDiagram
-class LargeLanguageModel {
-+provider : string
-+model_name : string
-+client
-+generate_text(prompt, system_message) string
-}
-class Providers {
-+google
-+openai
-+anthropic
-+ollama
-+deepseek
-+openrouter
-}
-LargeLanguageModel --> Providers : "selects"
-```
-
-Provider configuration and environment handling:
-- API keys and base URLs are resolved from environment variables or provided parameters.
-- Default models are provided per provider; errors guide users to configure missing values.
-
-### Prompt engineering system and injection validation
-Domain-specific prompts:
-- Browser automation prompt defines actions, constraints, and JSON output expectations for generating action plans the sanitizer can check.
-- Other prompts support specialized tasks (e.g., website, YouTube, GitHub).
-
-Injection validation:
-- A validator prompt determines whether provided markdown text contains prompt injection attempts, returning a boolean decision.
-
-```mermaid
-flowchart TD
-A["Receive markdown text"] --> B["Apply validator prompt"]
-B --> C{"Safe?"}
-C --> |true| D["Proceed with processing"]
-C --> |false| E["Reject or sanitize input"]
-```
-
-### Agent state management and conversation context
-The service layer:
-- Builds AgentState from incoming chat history and question.
-- Injects page context as a SystemMessage when client HTML is available.
-- Logs message sequences for observability and invokes the graph.
-
-```mermaid
-sequenceDiagram
-participant API as "Router"
-participant Svc as "ReactAgentService"
-participant State as "AgentState"
-participant Graph as "GraphBuilder"
-API->>Svc : generate_answer(question, chat_history, tokens, session, client_html)
-Svc->>State : Build messages list
-Svc->>Svc : Inject page context if present
-Svc->>Graph : Compile/build graph with context
-Svc->>Graph : invoke(state)
-Graph-->>Svc : Final messages
-Svc-->>API : Answer text
-```
-
-### Multi-Step workflow orchestration
-The workflow:
-- Starts with a user question and optional chat history.
-- Optionally augments with page context and tool availability.
-- Iteratively decides between reasoning and tool execution until a final answer is produced.
-
-```mermaid
-flowchart TD
-Q["User Question"] --> H["Chat History"]
-H --> Ctx["Optional Page Context"]
-Ctx --> Tools["Compose Tools (context-aware)"]
-Tools --> Loop{"LLM selects tools?"}
-Loop --> |Yes| Exec["Execute Tool(s)"]
-Exec --> Loop
-Loop --> |No| Ans["Final Answer"]
-```
-
-### Browser action generation and safety
-The browser action tool:
-- Accepts a goal, optional target URL, DOM structure, and constraints.
-- Delegates to a service that builds a chain using the browser automation prompt and LLM client.
-- Returns a JSON action plan.
-
-Safety validation:
-- A sanitizer checks JSON structure, validates action types, and enforces required fields.
-- Additional checks prevent dangerous script patterns.
-
-```mermaid
-flowchart TD
-Goal["Goal + DOM + Constraints"] --> Chain["Build chain with browser prompt + LLM"]
-Chain --> Plan["Generate JSON action plan"]
-Plan --> San["Sanitize JSON actions"]
-San --> Valid{"Valid?"}
-Valid --> |Yes| Exec["Execute actions"]
-Valid --> |No| Fix["Report validation issues"]
-```
-
-### Extension integration patterns
-The extension:
-- Parses slash commands and maps them to backend endpoints.
-- Captures active tab HTML and constructs payloads for agent endpoints.
-- Supports file uploads and special URL normalization for GitHub repositories.
-- Uses a WebSocket client to coordinate agent execution and progress.
-
-```mermaid
-sequenceDiagram
-participant User as "User"
-participant Ext as "executeAgent.ts"
-participant Map as "agent-map.ts"
-participant WS as "websocket-client.ts"
-participant API as "FastAPI Router"
-User->>Ext : "/agent-action prompt"
-Ext->>Map : Resolve endpoint
-Ext->>Ext : Capture active tab HTML
-Ext->>API : POST endpoint with payload
-API-->>Ext : Response
-Ext-->>User : Rendered answer
-```
-
-## Dependency analysis
-The system exhibits low coupling and high cohesion:
-- agents/react_agent.py depends on core/llm.py and agents/react_tools.py.
-- agents/react_tools.py depends on prompts and tool implementations.
-- services/react_agent_service.py orchestrates agents and tools.
-- routers/react_agent.py delegates to services.
-- Extension utilities depend on agent-map and websocket-client for coordination.
+## Dependencies
 
 ```mermaid
 graph LR
-RA["agents/react_agent.py"] --> RT["agents/react_tools.py"]
-RA --> LLM["core/llm.py"]
-SVC["services/react_agent_service.py"] --> RA
-SVC --> RT
-RTR["routers/react_agent.py"] --> SVC
-EXT["clients/browser-extension/entrypoints/utils/executeAgent.ts"] --> RTR
-EXT --> MAP["agent-map.ts"]
-EXT --> WS["websocket-client.ts"]
+  Svc["services/react_agent_service.py"] --> React["agents/react_agent.py"]
+  Svc --> Sup["agents/while_loop_harness.py"]
+  Svc --> Run["core/runtimes.py"]
+  React --> Tools["agents/react_tools.py"]
+  Sup --> Tools
+  React --> LLM["core/llm.py"]
+  Sup --> LLM
+  Tools --> Mem["memory/service.py"]
+  LLM --> Cat["core/model_catalog.py"]
+  Svc --> Comp["services/compaction.py"]
 ```
 
-## Performance considerations
-- Async execution: Tools run in threads to avoid blocking the LLM invocation loop.
-- Caching: GraphBuilder caches the compiled graph to reduce overhead on repeated invocations.
-- Provider selection: Choose appropriate models and providers based on latency and cost profiles.
-- Payload sizing: Limit DOM structures and chat histories to reasonable sizes to keep prompt costs and latency manageable.
-- Rate limits: Respect provider rate limits and implement retries with backoff.
+The folder depends on `langgraph>=1.0.1`, `langchain>=0.3.27`, `pydantic>=2.9.0`, the LangChain provider packages, and the store clients used by memory. The subscription path also needs the vendor binaries on `PATH`.
 
-## Troubleshooting guide
-Common issues and remedies:
-- Missing API keys or base URLs: Ensure environment variables are set for the chosen provider.
-- Tool failures: Inspect tool coroutines for exceptions and validate inputs using Pydantic schemas.
-- JSON action plan errors: Use the sanitizer to identify malformed or unsafe actions.
-- Extension errors: Verify endpoint resolution and payload construction; check WebSocket connectivity.
-- Injection risks: Apply the injection validator to incoming markdown content before processing.
+## Troubleshooting
 
-## Conclusion
-Typed tools, conversation state, and plan validation are what make multi-step runs trustworthy. Log service and router traffic when a tool call looks wrong.
+- The wrong harness ran: check `_SUPERVISOR_REQUEST_RE` in `services/react_agent_service.py`. Words such as `open`, `click` or `browse` select the supervisor.
+- A provider is missing: the name must be a key in `PROVIDER_CONFIGS`, not just a model name.
+- A tool is missing from the list: check the context keys and the `client_id` filter in `build_agent_tools`.
+- A long chat loses old facts: read the compaction page before raising the budget, because the summary may be the cause.
+- A memory claim is not found: check the gate decision first, then the search index, then run store repair.
 
-## Appendices
+## Appendix
 
-### Agent configuration examples
-- Configure provider and model via environment variables or constructor parameters.
-- Supply optional context (Google access token, JIIT session payload) to dynamically compose tools.
-- Use the extension slash command to trigger workflows and capture page context.
+### Source files
 
-### Tool creation checklist
-- Define a Pydantic input schema with constraints.
-- Implement an async coroutine that performs the operation safely.
-- Wrap as a StructuredTool with a clear description.
-- Register the tool in the tool builder and ensure it is included in the agent graph.
-
-### Debugging techniques
-- Enable logging at the service and router layers to trace message sequences.
-- Inspect tool call payloads and results for mismatches.
-- Validate browser action plans with the sanitizer and review warnings.
-- Monitor provider quotas and adjust model selection accordingly.
+- `services/react_agent_service.py`
+- `agents/react_agent.py`
+- `agents/while_loop_harness.py`
+- `agents/react_tools.py`
+- `core/llm.py`
+- `core/runtimes.py`
+- `memory/service.py`

@@ -1,286 +1,225 @@
 # Development guidelines
 
-## Introduction
-Standards for the Python backend, TypeScript clients, and how changes move from branch to review. Use this when you add a tool, a service, or touch shared schemas.
+This page is the working guide for changing the repo: where code lives, how to run each app, how to add a tool or route, and what to check before handing work back. It is not a style manifesto. It describes the patterns the code already follows.
 
-Source: [github.com/tashifkhan/agentic-browser](https://github.com/tashifkhan/agentic-browser)
+The repository is a Python backend plus a pnpm frontend workspace. The backend is plain FastAPI and LangGraph, not a framework with generated layers. The frontend is React 19 with WXT and Vite.
 
-## Project structure
-Layout:
-- Python backend: FastAPI in `main.py` and MCP in `mcp_server/` for model-agnostic agent orchestration
-- Agent runtime: LangGraph-based React agent with tool integration (`agents/`)
-- Services, routers, tools, skills
-- Memory: sqlmodel/asyncpg, Neo4j, OpenSearch
-- Models: Request/response DTOs for typed API interactions
-- Prompts: Prompt templates and validators
-- Clients: pnpm workspace under `clients/` (`browser-extension`, `debug-web`, `shared`)
+Key capabilities:
+- One checkout, two package managers
+- Clear layer boundaries on the backend
+- Typed tools and pydantic request models
+- Shared frontend API client and query hooks
+- Type checks and manual verification steps
+- Known gaps, including the missing test suite
 
-```mermaid
-graph TB
-subgraph "Python Backend"
-MAIN["main.py"]
-MCP_SRV["mcp_server/server.py"]
-CFG["core/config.py"]
-end
-subgraph "Agent Runtime"
-REACT_AGENT["agents/react_agent.py"]
-end
-subgraph "Services"
-REACT_SVC["services/react_agent_service.py"]
-end
-subgraph "Routers"
-REACT_ROUTER["routers/react_agent.py"]
-end
-subgraph "Extension"
-EXT_README["clients/browser-extension/README.md"]
-PKG["clients/browser-extension/package.json"]
-WXT["clients/browser-extension/wxt.config.ts"]
-TSCONFIG["clients/browser-extension/tsconfig.json"]
-end
-MAIN --> MCP_SRV
-MAIN --> REACT_ROUTER
-REACT_ROUTER --> REACT_SVC
-REACT_SVC --> REACT_AGENT
-REACT_AGENT --> MCP_SRV
-EXT_README --> PKG
-PKG --> WXT
-WXT --> TSCONFIG
-```
-
-## Core components
-- Entry point: `main.py` starts FastAPI (Uvicorn) and mounts MCP at `/mcp`. Stdio MCP is `agentic-mcp`.
-- API server: Uvicorn-based FastAPI app with reload capability for development.
-- MCP server: Model Context Protocol server exposing tools for LLMs and website context conversion.
-- Agent runtime: LangGraph-based React agent with tool binding and caching.
-- Services: Orchestrate agent workflows, integrate external SDKs, and manage context.
-- Extension: React sidepanel, background scripts, and utilities for agent execution and WebSocket communication.
-
-## Architecture overview
-Agentic Browser follows a model-agnostic architecture with a Python MCP server bridging LLM reasoning and browser automation. The React agent orchestrates multi-step workflows, while the extension provides a UI and WebSocket connectivity.
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Extension"
-BG["Background Script"]
-SIDE["Sidepanel UI"]
-WS["WebSocket Client"]
-end
-subgraph "Python Backend"
-API["FastAPI Router"]
-SVC["React Agent Service"]
-AGENT["React Agent Graph"]
-MCP["MCP Server"]
-end
-BG --> WS
-SIDE --> WS
-WS --> API
-API --> SVC
-SVC --> AGENT
-AGENT --> MCP
-MCP --> AGENT
+  subgraph "Python"
+    MAIN["main.py"]
+    R["routers/"]
+    S["services/"]
+    A["agents/"]
+    M["memory/"]
+    C["core/"]
+    T["tools/"]
+  end
+  subgraph "TypeScript"
+    EXT["clients/browser-extension"]
+    CON["clients/debug-web"]
+    SH["clients/shared"]
+  end
+  subgraph "Packaging"
+    PY["pyproject.toml"]
+    PKG["package.json"]
+    WS["pnpm-workspace.yaml"]
+  end
+  MAIN --> R
+  R --> S
+  S --> A
+  S --> M
+  A --> C
+  A --> T
+  EXT --> SH
+  CON --> SH
+  PKG --> EXT
+  PKG --> CON
 ```
 
-## Detailed component analysis
+## Building blocks
 
-### Python backend entry point
-- FastAPI process: `python main.py` or `agentic-api-run`.
-- Stdio MCP: `agentic-mcp` (`mcp_server.server:run`).
-- Environment loading via dotenv for configuration.
+- `pyproject.toml`: Python dependencies, the `agentic-api-run` and `agentic-mcp` scripts, and the package list for setuptools.
+- `package.json`: pnpm workspace scripts. `dev:debug`, `dev:extension`, `build:extension`, `typecheck:extension`, `screenshots`.
+- `pnpm-workspace.yaml`: includes `clients/*`.
+- `main.py`: app creation and router mounts.
+- `routers/`: one module per resource group. Routes validate and delegate.
+- `services/`: orchestration. Business logic lives here, not in routes.
+- `agents/`: LangGraph graphs and the tool registry.
+- `memory/`: ingestion, retrieval, graph and maintenance.
+- `core/`: config, DB, crypto, model clients, runtimes and loop guard.
+- `tools/`: callable tools grouped by service.
+- `clients/shared`: the single API client, query hooks, settings UI, markdown and primitives.
 
-```mermaid
-flowchart TD
-Start(["Start"]) --> Choose{"Entrypoint"}
-Choose --> |API| RunAPI["python main.py / agentic-api-run"]
-Choose --> |MCP stdio| RunMCP["agentic-mcp"]
-RunAPI --> Mount["Mount /mcp on FastAPI"]
-```
+## How it fits together
 
-### API server and router
-- Uvicorn runner with configurable host, port, and reload.
-- Router validates inputs and delegates to service layer.
-- Service handles agent execution and returns responses.
+A change usually crosses one boundary. A new endpoint adds a route, a service method, and a request or response model. A new tool adds a `StructuredTool` and wires it into `build_agent_tools`. A new frontend screen adds a route and a query hook.
 
 ```mermaid
 sequenceDiagram
-participant Client as "Client"
-participant Router as "React Agent Router"
-participant Service as "ReactAgentService"
-participant Agent as "React Agent Graph"
-Client->>Router : POST /react-agent
-Router->>Router : Validate Request
-Router->>Service : generate_answer(question, chat_history, ...)
-Service->>Agent : Invoke graph with messages
-Agent-->>Service : Final answer
-Service-->>Router : Answer text
-Router-->>Client : 200 OK with answer
+  participant Dev as "developer"
+  participant Route as "routers/"
+  participant Service as "services/"
+  participant Model as "models/"
+  participant Tool as "tools/"
+  Dev->>Model : "define request/response shape"
+  Dev->>Service : "implement orchestration"
+  Dev->>Route : "validate and delegate"
+  Dev->>Tool : "add StructuredTool if the model must call it"
+  Route-->>Dev : "typed endpoint"
 ```
 
-### MCP server and tools
-- Exposes tools for LLM generation, GitHub Q&A, and website content conversion.
-- Uses typed inputs and structured responses via MCP types.
-- Error handling returns descriptive text responses.
+## Local workflow
 
-```mermaid
-flowchart TD
-StartMCP(["MCP Server Start"]) --> ListTools["List Available Tools"]
-ListTools --> CallTool["Call Tool by Name"]
-CallTool --> Dispatch{"Tool Type?"}
-Dispatch --> |llm.generate| GenText["Generate Text via LLM"]
-Dispatch --> |github.answer| GHQnA["Process GitHub Context"]
-Dispatch --> |website.fetch_markdown| FetchMD["Fetch Markdown via Proxy"]
-Dispatch --> |website.html_to_md| HTMLtoMD["Convert HTML to Markdown"]
-GenText --> Return["Return Text Content"]
-GHQnA --> Return
-FetchMD --> Return
-HTMLtoMD --> Return
-Dispatch --> |Unknown/Error| ErrorResp["Return Error Message"]
+```sh
+docker compose up -d
+uv sync
+uv run agentic-api-run
+
+pnpm install
+pnpm dev:extension
+pnpm dev:debug
 ```
 
-### React agent graph
-- LangGraph workflow with agent node and tool execution node.
-- Caching via LRU cache for compiled graph.
-- Message normalization and conversion between payloads and LangChain messages.
+The extension dev server rebuilds on change. The console runs on Vite. The backend runs with reload from `main.run()`.
 
-```mermaid
-classDiagram
-class GraphBuilder {
-+tools : list
--_compiled : Any
-+buildgraph()
-+__call__()
-}
-class AgentState {
-+messages : list
-}
-class ReactAgent {
-+run_react_agent(messages) list
-}
-GraphBuilder --> AgentState : "compiles workflow"
-ReactAgent --> GraphBuilder : "uses cached graph"
+Useful checks:
+
+```sh
+pnpm typecheck:extension
+pnpm --filter @agentic-browser/shared typecheck
+uv run python -c "import main"
 ```
 
-### Extension configuration and build
-- WXT configuration defines permissions and host permissions.
-- Root pnpm scripts for dev, build, and zip targets.
-- TypeScript configuration extends WXT's tsconfig with path aliases.
+There is no linter or formatter configured in the repo. Match the surrounding style: type hints in Python, named exports in TypeScript, no default exports except entrypoints.
 
-```mermaid
-flowchart TD
-Dev["pnpm dev:extension"] --> WXTDev["WXT Dev Server"]
-Build["pnpm build:extension"] --> WXTBuild["WXT Build"]
-Zip["pnpm zip:extension"] --> WXTZip["WXT Zip"]
-WXTDev --> Manifest["Load Manifest"]
-WXTBuild --> Manifest
-WXTZip --> Manifest
-```
+## Backend conventions
 
-## Dependency analysis
-- Python dependencies declared in project metadata and scripts for CLI entry points.
-- Extension dependencies include React, Radix UI, and WXT tooling, plus `@agentic-browser/shared`.
-- Core configuration loads environment variables and sets logging levels.
+- Routes are thin. They validate with pydantic and map errors to `HTTPException`.
+- Services own state and side effects. They use `async with get_session()` for Postgres.
+- Use `get_logger(__name__)` and log exceptions with `logger.exception` or `logger.error`.
+- Background work is an `asyncio.create_task` with a strong reference if it must survive.
+- Blocking calls go through `asyncio.to_thread` or a subprocess.
+- Optional dependencies fail soft at startup. Do not make Neo4j or OpenSearch mandatory.
+- Tool functions return strings or JSON-safe dicts. Models see the text, not exceptions.
+- Add a tool to `build_agent_tools`, not only to `AGENT_TOOLS`, if it depends on request context.
+
+## Frontend conventions
+
+- The shared API client lives in `clients/shared/src/utils/http.ts`. Add endpoints there, not in a one-off fetch.
+- Query keys are scoped by base URL. Use `queryKeys` and the option factories in `query/hooks.ts`.
+- Settings UI is shared. Add a section under `settings-ui/sections` and register it in the settings shell.
+- Markdown rendering is shared. Do not fork the renderer for the console.
+- The extension stores display state in `browser.storage.local`; tokens stay on the backend.
+- Use `data-theme` for theme changes and the `ab-` classes for shared styling.
 
 ```mermaid
 graph LR
-PYMETA["pyproject.toml"] --> DEPS["Python Dependencies"]
-DEPS --> RUNTIME["Runtime Modules"]
-PKGJSON["clients/browser-extension/package.json"] --> EXTDEPS["Extension Dependencies"]
-EXTDEPS --> BUILD["Build and Dev Tooling"]
-CFG["core/config.py"] --> LOGGING["Logging Setup"]
+  Page["page component"] --> Hook["query hook"]
+  Hook --> Api["createApi"]
+  Api --> Http["createHttpClient"]
+  Http --> Backend["FastAPI"]
+  Page --> UI["shared/ui"]
+  Page --> Theme["shared/theme.css"]
 ```
 
-## Performance considerations
-- Use LRU caching for compiled agent graphs to avoid repeated compilation overhead.
-- Minimize synchronous I/O in hot paths; use async patterns in services and routers.
-- Profile long-running tool invocations and external API calls; consider timeouts and retries.
-- Monitor logging verbosity in production to reduce I/O overhead.
-- Optimize HTML-to-markdown conversions and file uploads for large content.
+## Adding a tool
 
-## Troubleshooting guide
-Common debugging techniques:
-- Backend debugging
- - Enable debug logging via environment variables and inspect loggers.
- - Use Uvicorn reload during development for rapid iteration.
- - Validate tool inputs and return structured error messages from MCP server.
-- Agent debugging
- - Inspect message payloads and tool calls; normalize content for consistent handling.
- - Verify graph compilation and caching behavior.
-- Extension debugging
- - Use browser devtools to inspect background scripts, sidepanel, and WebSocket connections.
- - Validate permissions and host permissions in WXT manifest.
-- API testing
- - Test routers with valid and invalid inputs; confirm HTTP status codes and error messages.
- - Mock external services for deterministic test runs.
+1. Define a pydantic input model in `agents/react_tools.py` or the tool module.
+2. Implement an async function. Return a string or a JSON-safe value.
+3. Wrap it in `StructuredTool` with a name, description and `args_schema`.
+4. Add it to `build_agent_tools` and, if it is always available, to `AGENT_TOOLS`.
+5. If the supervisor should route to it, add the name to a group in `_partition_tools`.
+6. Add a trace event if the tool does long work.
 
-## Development workflow
-- Branching strategy
- - Use feature branches per feature or bug fix.
- - Keep branches up to date with upstream main.
-- Commit message conventions
- - Use imperative mood; keep subject concise and add body for context and rationale.
-- Pull request guidelines
- - Include clear description, linked issues, and acceptance criteria.
- - Ensure tests pass and code is reviewed by maintainers.
+```mermaid
+flowchart TD
+  Schema["pydantic args_schema"] --> Fn["async function"]
+  Fn --> Tool["StructuredTool"]
+  Tool --> Build["build_agent_tools(context)"]
+  Build --> Graph["ReAct or supervisor"]
+  Graph --> Model["model chooses the tool"]
+  Model --> Result["tool result in messages"]
+```
 
-## Code standards and conventions
+## Adding an endpoint
 
-### Python backend
-- Naming
- - Modules: snake_case; classes: PascalCase; functions: snake_case; constants: UPPER_CASE.
-- Imports
- - Group standard library, third-party, and local imports; separate with blank lines.
-- Typing
- - Use TypedDict for request/response payloads; annotate async functions and return types.
-- Logging
- - Use module-scoped loggers; configure levels via environment variables.
-- Error handling
- - Return structured error responses; catch and log exceptions in routers and services.
+1. Add request and response models under `models/requests` and `models/response` if the shape is new.
+2. Add the service method.
+3. Add the route and mount the router in `main.py`.
+4. Add the client method in `clients/shared/src/utils/http.ts`.
+5. Add a query hook if the console reads it.
+6. Document the method, path, auth, body and errors.
 
-### TypeScript frontend
-- Naming
- - Components: PascalCase; hooks: useXxx; utilities: camelCase.
-- Imports
- - Prefer absolute paths via baseUrl and path mapping.
-- React
- - Use functional components with hooks; keep state local where appropriate.
-- Build and scripts
- - From repo root: `pnpm dev:extension`, `pnpm build:extension`, `pnpm --filter @agentic-browser/browser-extension compile`.
+## Type checks and tests
 
-### Browser extension
-- Permissions
- - Define required permissions in `clients/browser-extension/wxt.config.ts`; host permissions for all URLs.
-- Sidepanel and background
- - Separate concerns: background for lifecycle and messaging; sidepanel for UI.
-- WebSocket
- - Implement connection management and reconnection strategies.
+The only automated check is TypeScript compilation:
 
-## Testing requirements
-- Unit tests
- - Test individual functions, services, and tool logic with pytest.
- - Mock external dependencies to isolate units.
-- Integration tests
- - Validate router-service-agent pipeline with realistic inputs.
- - Test MCP tool invocation with various inputs and error conditions.
-- Frontend tests
- - Use React testing libraries for component and hook tests.
- - Validate WebSocket client behavior and sidepanel interactions.
+```sh
+pnpm typecheck:extension
+```
 
-## Documentation standards
-- Inline documentation
- - Document public functions, classes, and modules with purpose, parameters, and return values.
-- API documentation
- - Maintain OpenAPI/Swagger-compatible routers and models.
-- README updates
- - Update feature descriptions and contribution steps as needed.
+There is no pytest suite. `Testing Strategy` lists the first tests worth adding: loop guard, browser parser, message conversion, compaction and migrations. If you add tests, run them through `uv run pytest` so the project environment is used.
 
-## Release procedures
-- Versioning
- - Increment version in project metadata and package manifests.
-- Packaging
- - Build Python wheel and distribution artifacts; package extension builds with `pnpm zip:extension`.
-- Validation
- - Smoke-test API and extension in development environments.
-- Distribution
- - Publish to package registries and extension stores following their guidelines.
+## Dependencies
 
-## Conclusion
-Match the existing layout, keep types honest, and prove new tools with a small test. Security review matters more than clever abstractions here.
+```mermaid
+graph TB
+  Dev["development"] --> UV["uv"]
+  Dev --> PNPM["pnpm"]
+  Dev --> Docker["docker compose"]
+  Backend["backend"] --> FastAPI["fastapi"]
+  Backend --> LangGraph["langgraph"]
+  Backend --> SQL["sqlalchemy"]
+  Frontend["frontend"] --> React["react 19"]
+  Frontend --> WXT["wxt"]
+  Frontend --> Vite["vite"]
+  Frontend --> Query["tanstack query"]
+```
+
+## Performance
+
+- Keep request handlers non-blocking. A synchronous `requests` call in a route blocks the loop.
+- Reuse module-level clients for Neo4j, OpenSearch and the LLM.
+- Do not add a database query inside a loop when one `IN` query works.
+- The frontend polls stats every 4 seconds; do not add another global poller without a reason.
+- The browser planner payload is truncated to 5000 characters of page text and 80 elements.
+
+## Troubleshooting
+
+- `ModuleNotFoundError` after adding a package: run `uv sync`; `pyproject.toml` is the source of truth.
+- Extension types missing: run `pnpm install`; WXT's `postinstall` generates `.wxt/types`.
+- A route is not reachable: confirm it is mounted in `main.py` and the router is exported from `routers/__init__.py`.
+- A tool is not called: check it is in `build_agent_tools`, the model supports tool calling, and the description is specific.
+- Settings UI blank: the component needs `ApiProvider` and a TanStack Query client above it.
+- A doc page 404s after a rename: filenames are URL segments. Keep the old file or add a new page with the old name.
+
+## Appendix
+
+### Implementation examples
+- Type check: `pnpm typecheck:extension`.
+- Backend import check: `uv run python -c "import main"`.
+- Add a route: `routers/`, `main.py`, `clients/shared/src/utils/http.ts`.
+- Add a tool: `agents/react_tools.py` `build_agent_tools`.
+- Add a settings section: `clients/shared/src/settings-ui/sections/`.
+
+### Source files
+- `pyproject.toml`
+- `package.json`
+- `pnpm-workspace.yaml`
+- `main.py`
+- `routers/__init__.py`
+- `agents/react_tools.py`
+- `clients/shared/src/utils/http.ts`
+- `clients/shared/src/query/hooks.ts`
+- `clients/shared/src/settings-ui/index.ts`

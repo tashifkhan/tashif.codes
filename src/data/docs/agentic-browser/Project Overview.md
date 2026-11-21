@@ -1,250 +1,205 @@
 # Project overview
 
-## Introduction
-Agentic Browser is a browser extension that turns natural-language commands into actions on live pages. An LLM plans the work. The extension runs it only after you approve. Providers are swappable, keys stay local, and the code is open for extension.
+Agentic Browser is a local-first browser agent. A side panel reads the page you are on, a FastAPI backend plans the next step, and the extension executes it in the real browser. The same backend exposes long-term memory, MCP access, subscription runtimes, voice and a debug console.
 
-## Project structure
-The repo splits into a few layers:
-- Core runtime and configuration (`core/`)
-- Agent orchestration and tooling (`agents/`, `tools/`)
-- MCP server for model-agnostic communication (`mcp_server/`)
-- FastAPI app in `main.py` with `routers/`, `services/`, `skills/`
-- Memory stores (sqlmodel/asyncpg, Neo4j, OpenSearch)
-- Browser clients under `clients/` (`browser-extension`, `debug-web`, `shared`)
-- Prompts and utilities for grounded reasoning
+The project started as a B.Tech major project at JIIT and grew beyond the rubric. It is single-user by design. There are no accounts, no hosted sandbox, and no separate browser profile. The agent uses the tabs, cookies and logins you already have.
 
-```mermaid
-graph TB
-subgraph "Core"
-CFG["core/config.py"]
-LLM["core/llm.py"]
-end
-subgraph "Agent Runtime"
-RA["agents/react_agent.py"]
-RT["agents/react_tools.py"]
-end
-subgraph "MCP Server"
-MCP["mcp_server/server.py"]
-end
-subgraph "Extension"
-BG["clients/browser-extension/entrypoints/background.ts"]
-CT["clients/browser-extension/entrypoints/content.ts"]
-end
-subgraph "Tools"
-BA["tools/browser_use/tool.py"]
-PU["prompts/browser_use.py"]
-end
-CFG --> LLM
-RA --> RT
-RA --> LLM
-MCP --> LLM
-MCP --> RT
-BG --> RA
-BG --> MCP
-BA --> RA
-PU --> BA
-CT --> BG
-```
+Key capabilities:
+- One-action browser automation with an observation after every step
+- Eight API providers plus four subscription runtimes
+- Long-term memory over Postgres, OpenSearch and Neo4j
+- MCP tools for Claude Code, Codex, Cursor and other clients
+- Telegram control, voice input and read-aloud
+- A console for runs, memory, diagnostics and settings
 
-## Core components
-- Model-agnostic LLM integration: A unified adapter supporting multiple providers and local models.
-- MCP-compliant server: Exposes tools and LLM generation via the Model Context Protocol.
-- Agent orchestration: LangGraph-based ReAct agent with tools for web, calendar, email, and browser actions.
-- Browser extension: Secure background and content scripts with declarative action execution.
-- Prompt engineering: Specialized prompts for generating safe, structured action plans for browser automation.
-
-## Architecture overview
-Main pieces:
-- Frontend: Extension UI and messaging channels
-- Backend: FastAPI server and MCP server
-- Agent runtime: LangGraph workflows and tooling
-- LLM adapters: Provider-agnostic clients
-- Safety: Guardrails and declarative action system
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Extension"
-UI["Sidepanel / Popup"]
-WS["WebSocket Client"]
-BG["Background Script"]
-CT["Content Script"]
+subgraph "Clients"
+  EXT["clients/browser-extension"]
+  CON["clients/debug-web"]
+  TG["clients/telegram-bot"]
+  SH["clients/shared"]
 end
 subgraph "Backend"
-API["FastAPI Server"]
-MCP["MCP Server"]
-AG["Agent Orchestrator"]
+  R["routers/"]
+  S["services/"]
+  A["agents/"]
+  M["memory/"]
+  P["mcp_server/"]
 end
-subgraph "LLM Layer"
-LLM["LargeLanguageModel"]
-AD["Provider Adapters"]
+subgraph "Foundation"
+  C["core/"]
+  T["tools/"]
+  PR["prompts/"]
 end
-subgraph "Tools"
-BT["Browser Tools"]
-WT["Web Tools"]
-GT["Gmail/Calendar Tools"]
+subgraph "Storage"
+  PG[("Postgres")]
+  NEO[("Neo4j")]
+  OS[("OpenSearch")]
 end
-UI --> WS
-WS --> BG
-BG --> API
-BG --> MCP
-API --> AG
-MCP --> AG
-AG --> LLM
-AG --> BT
-AG --> WT
-AG --> GT
-LLM --> AD
-CT --> BG
+EXT --> R
+CON --> R
+TG --> R
+EXT --> P
+SH --> EXT
+SH --> CON
+R --> S
+S --> A
+S --> M
+A --> C
+A --> T
+M --> PG
+M --> NEO
+M --> OS
 ```
 
-## Detailed component analysis
+## Building blocks
 
-### Mission and objectives
-- Model-agnostic intelligence: Smooth switching across providers and local models.
-- Secure browser extension: WebExtensions-based design with explicit user approvals.
-- Advanced agent workflows: RAG, persistent memory, and multi-step automation.
-- Guardrails and transparency: User consent, logging, filtering, and allowlists.
-- Open-source extensibility: Modular architecture for community contributions.
+- `clients/browser-extension`: WXT MV3 extension. Owns the side panel, popup, background worker, content script and bridge socket.
+- `clients/debug-web`: Vite console with dashboard, runs, memory, diagnostics, settings and chat.
+- `clients/shared`: API client, query hooks, settings UI, markdown renderer and UI primitives used by both frontends.
+- `routers/`: FastAPI route modules mounted under `/api`.
+- `services/`: orchestration. Chat, browser runtime, conversations, traces, compaction, secrets, OAuth, voice and Composio.
+- `agents/`: LangGraph ReAct agent, supervisor harness and the tool registry.
+- `memory/`: ingestion, gate, reconciliation, retrieval, graph and maintenance.
+- `mcp_server/`: standalone MCP server, bridge and QuickJS code mode.
+- `core/`: config, database, crypto, model clients, subscription runtimes and the loop guard.
+- `tools/`: Gmail, Calendar, GitHub, PyJIIT, search, website, YouTube, shell, Python and memory tools.
 
-### Key architectural principles
-- Model-agnostic design: Unified LLM adapter supports OpenAI, Anthropic, Ollama, and others.
-- BYOKeys approach: Users supply their own API keys via environment or UI.
-- MCP compliance: Structured tool definitions and standardized LLM invocation.
-- Declarative action system: Natural language goals mapped to JSON action plans.
+## The problem it solves
 
-### Technical stack overview
-- Agent orchestration: LangChain, LangGraph for stateful workflows.
-- Browser control: WebExtensions API for tab/window control and DOM injection.
-- LLM adapters: OpenRouter, Ollama, Anthropic, OpenAI, Hugging Face integrations.
-- Backend agent: Python MCP server exposing tools and LLM generation.
-- Retrieval and citation: Vector databases and RAG pipelines.
-- Safety and guardrails: Logging, filtering, and explicit user consent.
-
-### Core objectives in practice
-- Model-agnostic agent backend: Python, LangChain, MCP framework with provider adapters.
-- Secure browser extension: Chrome/Firefox compatible via WebExtensions.
-- Advanced agent workflows: RAG, persistent memory, multi-step tasks.
-- Guardrails and transparency: User approval, logs, filtering, allowlists.
-- Open-source extensibility: Modular tool and service architecture.
-
-### Model-Agnostic LLM adapter
-The LLM adapter encapsulates provider-specific clients behind a unified interface. It supports multiple providers, validates API keys, and constructs client instances with configurable base URLs and models.
-
-```mermaid
-classDiagram
-class LargeLanguageModel {
-+string provider
-+string model_name
-+generate_text(prompt, system_message) str
-+summarize_text(text) str
-}
-class Providers {
-+dict PROVIDER_CONFIGS
-}
-LargeLanguageModel --> Providers : "uses"
-```
-
-### MCP server and tooling
-The MCP server exposes standardized tools for LLM generation, GitHub QA, website fetching, and HTML-to-markdown conversion. It dynamically initializes LLM clients based on incoming arguments and returns structured text content.
-
-```mermaid
-sequenceDiagram
-participant Ext as "Extension"
-participant BG as "Background Script"
-participant MCP as "MCP Server"
-participant LLM as "LargeLanguageModel"
-Ext->>BG : "EXECUTE_AGENT_TOOL"
-BG->>MCP : "call_tool(name, args)"
-MCP->>LLM : "initialize(provider, model, api_key, base_url)"
-LLM-->>MCP : "client instance"
-MCP->>LLM : "generate_text(prompt, system_message)"
-LLM-->>MCP : "text response"
-MCP-->>BG : "TextContent(text)"
-BG-->>Ext : "result"
-```
-
-### Agent orchestration and tools
-The ReAct agent uses LangGraph to alternate between reasoning and tool execution. It binds tools dynamically, manages conversation context, and converts between internal and external message formats.
+A chat model cannot see the page you are on. A browser script can click but cannot decide. A hosted agent can decide and click but does not have your logins. Agentic Browser connects the three: the real page becomes input, the model plans one step, the extension acts, and the new page state goes back to the model.
 
 ```mermaid
 flowchart TD
-Start(["Start"]) --> Init["Initialize LLM and Tools"]
-Init --> Loop{"Next Step"}
-Loop --> |Agent| Plan["LLM decides next step"]
-Plan --> ToolCheck{"Tool Needed?"}
-ToolCheck --> |Yes| Exec["Execute Tool"]
-ToolCheck --> |No| Reply["Generate Reply"]
-Exec --> Loop
-Reply --> Loop
-Loop --> End(["End"])
+  Chat["chat model"] -->|cannot see page| G1["no page state"]
+  Script["automation script"] -->|cannot decide| G2["no reasoning"]
+  Hosted["hosted agent"] -->|no sessions| G3["no logins"]
+  G1 --> Loop["observe, decide, act, verify"]
+  G2 --> Loop
+  G3 --> Loop
+  Loop --> Guard["loop guard"]
+  Loop --> Memory["durable memory"]
+  Loop --> Trace["run trace"]
 ```
 
-### Browser action agent and declarative actions
-The browser action agent translates natural language goals into JSON action plans. The prompt defines available actions (DOM manipulation and tab/window control) and enforces strict output formatting and selector selection rules.
+## How a request moves
 
 ```mermaid
 sequenceDiagram
-participant User as "User"
-participant Agent as "ReAct Agent"
-participant BA as "Browser Action Tool"
-participant PU as "Prompt Chain"
-participant BG as "Background Script"
-participant CT as "Content Script"
-User->>Agent : "Goal (e.g., search for flights)"
-Agent->>BA : "generate_script(goal, dom_structure)"
-BA->>PU : "invoke(prompt, llm_options)"
-PU-->>BA : "JSON action plan"
-BA-->>Agent : "action plan"
-Agent-->>BG : "RUN_GENERATED_AGENT"
-BG->>CT : "inject and execute actions"
-CT-->>BG : "results"
-BG-->>Agent : "status"
+  participant User as "User"
+  participant Panel as "side panel"
+  participant API as "FastAPI"
+  participant Agent as "agent or planner"
+  participant Page as "browser tab"
+  participant DB as "Postgres"
+  User->>Panel : "task or question"
+  Panel->>API : "page snapshot and goal"
+  API->>DB : "create conversation and run"
+  API->>Agent : "build context"
+  Agent->>Page : "plan one action"
+  Page-->>Agent : "observation"
+  Agent-->>API : "answer or next action"
+  API->>DB : "save message and trace"
+  API-->>Panel : "SSE events"
 ```
 
-### Extension messaging and security
-The extension uses explicit message types for agent tool execution, tab/window control, and action execution. Every action is logged and requires user consent.
+A chat turn uses the ReAct agent. A task with words like `browse`, `click`, `navigate` or `multi-step` uses the supervisor harness. A pure browser task uses the one-step runtime. All three record a run.
+
+## Key feature map
+
+| Feature | Main code |
+| --- | --- |
+| Chat with tools | `agents/react_agent.py`, `services/react_agent_service.py` |
+| Supervisor loop | `agents/while_loop_harness.py` |
+| Browser planning | `services/browser_runtime_service.py` |
+| Action execution | `clients/browser-extension/entrypoints/utils/executeActions.ts` |
+| Model providers | `core/llm.py`, `core/model_catalog.py` |
+| Subscriptions | `core/runtimes.py`, `core/antigravity.py` |
+| Memory | `memory/service.py` and `memory/ingestion/` |
+| MCP | `mcp_server/server.py`, `mcp_server/bridge.py` |
+| Voice | `services/voice_input.py`, `routers/voice.py` |
+| Console | `clients/debug-web`, `routers/debug.py` |
+
+## Design principles
+
+1. **The client executes.** The backend never touches a page directly. It returns an action; the extension runs it. This keeps credentials and page access at the browser boundary.
+2. **One step at a time.** A plan and an observation are one unit. Batching actions makes verification impossible.
+3. **Progress replaces step counts.** `core/loop_guard.py` stops loops that repeat, cycle, fail or stall. A fixed cap is only an outer safety net.
+4. **Memory is external state.** The agent is told not to treat model context as memory. Recall is injected, writes are reconciled, and forgotten facts are redacted from source turns.
+5. **Everything is traceable.** Runs, subagents, events and tool calls are rows in Postgres, not log lines.
+
+## Trust boundaries
 
 ```mermaid
-sequenceDiagram
-participant UI as "Extension UI"
-participant BG as "Background Script"
-participant CT as "Content Script"
-UI->>BG : "EXECUTE_ACTION"
-BG->>CT : "PERFORM_ACTION"
-CT-->>BG : "result"
-BG-->>UI : "success/error"
+flowchart TD
+  Web(["web page"]) -->|CORS blocks| API["FastAPI"]
+  Ext(["extension origin"]) -->|CORS allows| API
+  Local(["local process"]) --> API
+  Local -->|bearer token| BR["bridge relay"]
+  Browser(["extension websocket"]) -->|origin checked| BR
+  Agent["coding agent"] -->|MCP tool call| BR
+  BR -->|JSON request| Ext
+  Ext -->|chrome.debugger| Page["page"]
+  API -->|prompt| Model["provider"]
 ```
 
-## Dependency analysis
-The project relies on a curated set of libraries for LLM integration, web automation, and agent orchestration. The dependency graph highlights the central role of LangChain/LangGraph and MCP.
+The API has no login. CORS limits browser origins, the bridge checks extension origins and relay tokens, and the Telegram bot checks an allow list before enabling remote actions. None of that stops another local process.
+
+## Known limits
+
+- The agent stops at captchas, logins, 2FA and permission prompts.
+- There is no per-action approval button yet.
+- Memory writes use an in-process lock, so two backends can race.
+- The backend binds all interfaces by default.
+- Windows is not supported by the installer.
+
+## Dependencies
 
 ```mermaid
 graph TB
-LCA["langchain-core"]
-LCG["langgraph"]
-MCP["mcp"]
-UVI["uvicorn"]
-DOT["python-dotenv"]
-LLM["core/llm.py"] --> LCA
-LLM --> LCG
-MCP["mcp_server/server.py"] --> MCP
-API["main.py"] --> UVI
-CFG["core/config.py"] --> DOT
+  API["main.py"] --> FastAPI["fastapi"]
+  API --> LangGraph["langgraph"]
+  API --> SQL["sqlalchemy + sqlmodel"]
+  API --> Neo["neo4j"]
+  API --> OS["opensearch-py"]
+  Agents["agents/"] --> LangChain["langchain + providers"]
+  MCP["mcp_server/"] --> SDK["mcp"]
+  MCP --> QuickJS["quickjs-ng"]
+  Extension["browser-extension"] --> WXT["wxt"]
+  Console["debug-web"] --> Vite["vite"]
+  Both["shared"] --> Query["tanstack query"]
 ```
 
-## Performance considerations
-- Asynchronous tool execution: Tools use asyncio and thread pools to avoid blocking the main loop.
-- Provider configuration caching: LLM clients are constructed on-demand with validated credentials.
-- Minimal DOM manipulation: Content scripts inject only necessary scripts and dispatch minimal events.
-- Efficient prompting: Prompt templates are concise and output-only JSON to reduce parsing overhead.
+## Performance
 
-## Troubleshooting guide
-Common issues and resolutions:
-- Missing environment variables: Ensure API keys and base URLs are configured in the environment.
-- LLM initialization failures: Verify provider availability, base URLs, and model names.
-- Extension action errors: Confirm tab permissions and that the content script is injected before execution.
-- MCP tool errors: Validate tool names and argument schemas; check server logs for exceptions.
+- One model call per browser step. The loop guard bounds a stuck run.
+- Chat memory context is budgeted at 1200 tokens per turn.
+- Compaction triggers at half the model window, keeping the last 8 messages verbatim.
+- Postgres uses a pool of 10 with 20 overflow.
+- The bridge waits 3 seconds for a browser and caps calls at 1800 seconds.
 
-## Conclusion
-You get MCP tooling, JSON action plans, and guardrails that keep you in the loop. Swap providers without rewriting the agent. Add tools without touching the UI. That is the whole bet.
+## Troubleshooting
 
+- Backend starts with `Postgres init skipped`: Docker is down or credentials differ. Check `docker compose ps` and `.env`.
+- Chat answers but no tool rows: the model key works but tools were not bound. Check the selected model and run trace.
+- Browser action is planned but nothing happens: the client did not execute it. Check the extension's work log.
+- Memory answers are thin: OpenSearch or Neo4j is down, or the embedding provider changed and old vectors are incompatible.
+- MCP memory tools fail: they call the HTTP backend, which must be running.
+
+## Appendix
+
+### Implementation examples
+- Run: `uv run agentic-api-run`.
+- Build extension: `pnpm build:extension`.
+- Console: `pnpm dev:debug`.
+- Health: `GET /api/genai/health/`.
+- Bridge status: `GET http://127.0.0.1:5455/bridge/status`.
+
+### Source files
+- `README.md`
+- `main.py`
+- `package.json`
+- `pyproject.toml`

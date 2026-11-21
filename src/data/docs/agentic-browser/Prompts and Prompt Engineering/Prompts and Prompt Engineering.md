@@ -1,304 +1,141 @@
 # Prompts and prompt engineering
 
-## Introduction
-Prompt layout for the project: system defaults, browser-action templates, service prompts, and where validation hooks in.
+The `prompts/` package holds the text the models see. Each module serves one consumer: the ReAct agent, the browser runtime, chat memory, or a service answer chain. Most modules expose either a `PromptTemplate` or a plain string constant, and the chain is built by the caller so the model client can be chosen at runtime.
 
-## Project structure
-The prompt system is organized by domain and capability:
-- Domain prompts live under prompts/ and define reusable prompt templates and chains.
-- Agent orchestration lives under agents/ and integrates tools and prompts into workflows.
-- Routers and services expose endpoints and coordinate prompt-driven processing.
-- LLM configuration and environment are centralized in core/.
+Key capabilities:
+- One module per prompt family, with no shared mega template.
+- Explicit output contracts: JSON for the browser planner and the memory extractor, one word for the injection check.
+- Chains built from `PromptTemplate`, a model client and `StrOutputParser`.
+- Pure string modules for prompts that must import without provider packages.
+- Prompt inputs that name every context block, so missing data is visible to the model.
+
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Prompts"
-PR["prompts/react.py"]
-PB["prompts/browser_use.py"]
-PG["prompts/github.py"]
-PW["prompts/website.py"]
-PY["prompts/youtube.py"]
-PV["prompts/prompt_injection_validator.py"]
-end
-subgraph "Agents"
-AR["agents/react_agent.py"]
-AT["agents/react_tools.py"]
-end
-subgraph "Routers"
-RR["routers/react_agent.py"]
-RB["routers/browser_use.py"]
-RG["routers/github.py"]
-RW["routers/website.py"]
-RY["routers/youtube.py"]
-end
-subgraph "Services"
-SR["services/react_agent_service.py"]
-end
-subgraph "Core"
-CL["core/llm.py"]
-CC["core/config.py"]
-end
-RR --> SR
-SR --> AR
-AR --> AT
-AT --> PG
-AT --> PW
-AT --> PY
-PB --> CL
-PG --> CL
-PW --> CL
-PY --> CL
-PV --> CL
+  subgraph PromptModules
+    PR["prompts/react.py"]
+    PB["prompts/browser_use.py"]
+    PM["prompts/memory.py"]
+    PV["prompts/prompt_injection_validator.py"]
+    PW["prompts/website.py"]
+    PY["prompts/youtube.py"]
+    PG["prompts/github.py"]
+  end
+  subgraph Consumers
+    RA["agents/react_agent.py"]
+    BR["services/browser_runtime_service.py"]
+    MI["memory/ingestion/extractor.py"]
+    WV["services/website_validator_service.py"]
+    RW["routers/website.py"]
+    RY["routers/youtube.py"]
+    RG["routers/github.py"]
+  end
+  PR --> RA
+  PB --> BR
+  PM --> MI
+  PV --> WV
+  PW --> RW
+  PY --> RY
+  PG --> RG
 ```
 
-## Core components
-- Prompt templates and chains:
- - React agent prompt template for tool-use orchestration.
- - Browser automation script generator prompt with explicit JSON action plan and strict rules.
- - GitHub prompt with structured context windows and guidelines.
- - Website prompt combining server-fetched and client-rendered contexts.
- - YouTube prompt focused on video metadata and transcripts.
- - Prompt injection validator prompt for safety checks.
-- LLM abstraction:
- - Provider-agnostic initialization supporting multiple providers and environment-driven configuration.
-- Agent orchestration:
- - React agent graph with tool selection and execution.
- - Tool integrations that feed domain-specific prompts and chains.
-- Endpoints:
- - Routers for React agent, browser automation, GitHub, website, and YouTube workflows.
+## Pages in this folder
 
-## Architecture overview
-Prompt stack:
-- Templates define the instruction and context framing for each domain.
-- Chains assemble templates with LLM clients and output parsers.
-- Tools integrate chains into agent workflows.
-- Routers and services expose endpoints that prepare inputs and invoke chains or agents.
-- LLM configuration centralizes provider selection and runtime parameters.
+| Page | What it covers |
+| --- | --- |
+| Prompts and Prompt Engineering | This folder map and the shared chain pattern. |
+| Browser Automation Prompts | The one-shot action plan prompt, the single-step runtime prompt and the JSON payload builder. |
+| Prompt Security and Validation | The injection classifier, the memory gate's injection patterns and source trust rules. |
+| React Agent Prompts | `DEFAULT_SYSTEM_PROMPT`, the ReAct template, the loop guard stop message and the subagent prompt. |
+| Service-Specific Prompts | The website, YouTube and GitHub answer prompts, their inputs and their failure behaviour. |
 
-```mermaid
-sequenceDiagram
-participant Client as "Client"
-participant Router as "Router Endpoint"
-participant Service as "Service"
-participant Agent as "React Agent Graph"
-participant Tools as "Tools"
-participant Chain as "Domain Prompt Chain"
-participant LLM as "LLM Client"
-Client->>Router : "POST request with question/context"
-Router->>Service : "Invoke generate_answer(...)"
-Service->>Agent : "Build messages and invoke graph"
-Agent->>Tools : "Select and execute tool"
-Tools->>Chain : "Prepare inputs and invoke"
-Chain->>LLM : "Format prompt and call model"
-LLM-->>Chain : "Model response"
-Chain-->>Tools : "Parsed output"
-Tools-->>Agent : "Tool result"
-Agent-->>Service : "Final answer"
-Service-->>Router : "Response"
-Router-->>Client : "Answer"
-```
+## How the prompts are built
 
-## Detailed component analysis
-
-### React agent prompt template
-- Purpose: Defines the system role and tool-use instructions for the React agent.
-- Structure: Provides a structured template with placeholders for tools and question.
-- Integration: Used by the React agent graph to maintain conversation context and tool selection.
-
-```mermaid
-flowchart TD
-Start(["React Agent Prompt"]) --> Tools["Insert Available Tools"]
-Tools --> Question["Insert User Question"]
-Question --> Build["Build ChatPromptTemplate"]
-Build --> Ready["Ready for Agent Execution"]
-```
-
-### Browser automation script generator
-- Purpose: Generates precise JSON action plans for Chrome extension automation.
-- Structure: Explicit action vocabulary, strict JSON output rules, selector prioritization, and search URL construction patterns.
-- Chain: Uses a ChatPromptTemplate with a system message and user input, connected to an LLM client and string parser.
-
-```mermaid
-sequenceDiagram
-participant User as "User Goal"
-participant Prompt as "Browser Script Prompt"
-participant LLM as "LLM Client"
-participant Parser as "StrOutputParser"
-participant Executor as "Action Executor"
-User->>Prompt : "Goal + DOM + Constraints"
-Prompt->>LLM : "Formatted JSON instructions"
-LLM-->>Parser : "Raw JSON string"
-Parser-->>Executor : "Parsed JSON actions"
-Executor-->>User : "Executed automation"
-```
-
-### GitHub integration prompt
-- Purpose: Answer questions about a GitHub repository using repository context.
-- Structure: Repository summary, file tree, relevant file content, chat history, and explicit guidelines.
-- Chain: RunnableParallel that merges inputs, applies PromptTemplate, and connects to LLM and parser.
-
-```mermaid
-flowchart TD
-Inputs["Inputs: summary, tree, content, question, chat_history"] --> Merge["RunnableParallel"]
-Merge --> Template["PromptTemplate"]
-Template --> LLM["LLM Client"]
-LLM --> Parser["StrOutputParser"]
-Parser --> Output["Answer"]
-```
-
-### Website analysis prompt
-- Purpose: Answer questions about a website using both server-fetched and client-rendered contexts.
-- Structure: Clear guidance on context precedence, formatting rules, and scope limitations.
-- Chain: RunnableParallel that merges server/client contexts, question, and chat history.
-
-```mermaid
-flowchart TD
-Srv["Server Context"] --> Merge["RunnableParallel"]
-Cli["Client Context"] --> Merge
-Ques["Question"] --> Merge
-Hist["Chat History"] --> Merge
-Merge --> Template["PromptTemplate"]
-Template --> LLM["LLM Client"]
-LLM --> Parser["StrOutputParser"]
-Parser --> Answer["Answer"]
-```
-
-### YouTube processing prompt
-- Purpose: Answer questions about a YouTube video using metadata and transcripts.
-- Structure: Guidelines for summaries, statistics, sentiment, and recommendations; clear errors when transcript retrieval fails.
-- Chain: RunnableParallel that fetches transcript context and feeds PromptTemplate.
-
-```mermaid
-flowchart TD
-URL["Video URL"] --> Fetch["Fetch Transcript"]
-Fetch --> Clean["Clean/Validate Transcript"]
-Clean --> Merge["RunnableParallel"]
-Merge --> Template["PromptTemplate"]
-Template --> LLM["LLM Client"]
-LLM --> Parser["StrOutputParser"]
-Parser --> Answer["Answer"]
-```
-
-### Prompt injection validation system
-- Purpose: Detect potential prompt injection attempts in markdown inputs.
-- Structure: Simple classification prompt returning a boolean safety signal.
-- Integration: Can be used as a pre-processing step to sanitize inputs before invoking domain prompts.
-
-```mermaid
-flowchart TD
-Input["Markdown Text"] --> Validator["Injection Validator Prompt"]
-Validator --> Decision{"Safe?"}
-Decision --> |true| Proceed["Proceed to Chain"]
-Decision --> |false| Block["Block or Sanitize Input"]
-```
-
-### Relationship between prompts and agent behavior
-- Tool selection: The React agent graph binds tools and decides when to execute them based on prompts and model reasoning.
-- Response quality: Domain-specific prompts guide the model to focus on relevant context windows and adhere to formatting and scope rules.
-- Dynamic generation: Tools dynamically construct inputs for domain prompts, enabling adaptive behavior based on runtime context (e.g., client HTML, chat history).
-
-```mermaid
-classDiagram
-class ReactAgent {
-+DEFAULT_SYSTEM_PROMPT
-+GraphBuilder()
-+run_react_agent(messages)
-}
-class Tools {
-+github_agent
-+website_agent
-+youtube_agent
-+websearch_agent
-+browser_action_agent
-}
-class Chains {
-+github_chain
-+website_chain
-+youtube_chain
-}
-ReactAgent --> Tools : "selects and executes"
-Tools --> Chains : "invokes"
-```
-
-## Dependency analysis
-- Prompt-to-chain mapping:
- - GitHub prompt maps to GitHub chain.
- - Website prompt maps to website chain.
- - YouTube prompt maps to YouTube chain.
- - Browser prompt maps to a chain built with LargeLanguageModel.
-- Agent-to-tool mapping:
- - React agent builds a toolset dynamically from context and invokes tools that use domain prompts.
-- LLM provider configuration:
- - Provider selection and model initialization are centralized, enabling consistent behavior across prompts.
+Two shapes appear in the package. A chain module builds `prompt | llm.client | parser` and exposes a `get_chain` or `get_answer` helper. A pure module exports a string and lets the consumer build the chain. `browser_use.py` is a hybrid: it has a chain for the one-shot planner and plain strings for the runtime loop, where the service sends the system prompt and a JSON payload separately.
 
 ```mermaid
 graph LR
-GH["GitHub Prompt"] --> GC["GitHub Chain"]
-WEBSITE["Website Prompt"] --> WC["Website Chain"]
-YT["YouTube Prompt"] --> YC["YouTube Chain"]
-BR["Browser Prompt"] --> BC["Browser Chain"]
-GC --> LLM["LargeLanguageModel"]
-WC --> LLM
-YC --> LLM
-BC --> LLM
-RA["React Agent"] --> Tools["Agent Tools"]
-Tools --> GC
-Tools --> WC
-Tools --> YC
+  IN["router or service input"] --> T["PromptTemplate"]
+  T --> LLM["model client"]
+  LLM --> P["StrOutputParser"]
+  P --> OUT["text answer"]
+  SYS["runtime system prompt"] --> SVC["browser_runtime_service"]
+  PAY["build_runtime_prompt_payload"] --> SVC
+  SVC --> JSON["one action JSON"]
 ```
 
-## Performance considerations
-- Asynchronous tool invocation:
- - Tools use threads for blocking operations to avoid blocking the event loop during prompt execution.
-- RunnableParallel composition:
- - Parallel merging of inputs reduces overhead and matches how LangChain expects chains to be built.
-- LLM provider configuration:
- - Centralized provider selection and environment-driven configuration enable tuning of latency and cost.
-- Prompt reuse and caching:
- - Reusable prompt templates and cached compiled graphs reduce repeated work.
+## How a prompt reaches a model
 
-## Troubleshooting guide
-- Prompt injection detection:
- - Use the injection validator prompt to flag unsafe inputs before invoking domain prompts.
-- Error handling in chains:
- - GitHub and YouTube chains wrap invocations with try/catch and return informative error messages.
-- Logging and observability:
- - Services log messages and errors to aid debugging; routers propagate exceptions appropriately.
-- Environment configuration:
- - Ensure provider credentials and base URLs are configured; initialization failures indicate misconfiguration.
+The service assembles the inputs, the router or tool calls the chain, and the model returns text. For agent prompts, the graph adds the system message once and then carries it through every tool turn. For service prompts, the chain is rebuilt per call because the default client can change at runtime.
 
-## Conclusion
-Keep prompts next to the domain they serve. Version changes with the tools that depend on them. Test with hostile inputs, not just happy paths.
+```mermaid
+sequenceDiagram
+  participant C as Client
+  participant R as Router
+  participant S as Service
+  participant T as PromptTemplate
+  participant L as Model client
+  participant P as StrOutputParser
+  C->>R: question and context
+  R->>S: build input dictionary
+  S->>T: render template
+  T->>L: formatted messages
+  L-->>P: raw text
+  P-->>C: answer
+```
 
-## Appendices
+## Shared conventions
 
-### Prompt engineering habits
-- Define clear roles and constraints in system prompts.
-- Use structured context windows and explicit formatting rules.
-- Enforce output constraints (e.g., JSON-only) to reduce ambiguity.
-- Include examples and preferred patterns for complex tasks.
-- Validate inputs and sanitize context to prevent prompt injection.
+- Every answer prompt names its context blocks and asks the model not to invent facts.
+- JSON contracts state that the reply must be valid JSON with no markdown fences. The browser runtime service still extracts the first JSON object because models drift.
+- Placeholder keys are declared in `input_variables`, so a missing input fails at render time rather than at the model call.
+- Service prompts cap context upstream. The template does not truncate, so the caller controls token size.
+- Memory and validator prompts are strings only, which keeps them importable in tests without provider packages.
 
-### A/B testing approaches
-- Maintain multiple prompt variants per domain.
-- Randomize variant selection at request time.
-- Track response quality metrics and latency.
-- Roll out changes gradually and monitor for regressions.
+## Where to change a prompt
 
-### Performance optimization
-- Use RunnableParallel to merge inputs efficiently.
-- Cache compiled agent graphs and chains where appropriate.
-- Prefer streaming or chunked processing for long contexts.
-- Tune provider parameters (temperature, max tokens) per domain.
+- Agent policy: edit `DEFAULT_SYSTEM_PROMPT` in `agents/react_agent.py`. It affects every ReAct turn and every supervisor subagent that inherits the message.
+- Browser loop: edit `runtime_system_prompt_str` for behaviour, or `build_runtime_prompt_payload` for the data the model sees.
+- Memory extraction: edit `EXTRACTION_SYSTEM_PROMPT` for the schema and `CHAT_EXTRACTION_RULES` for chat-only behaviour.
+- Service answers: edit `website.py`, `youtube.py` or `github.py`. Each module owns its own context blocks and formatting rules.
+- Safety: edit `prompt_injection_validator.py` only after checking the consumer's exact-string comparison against `true`.
 
-### Prompt versioning and localization
-- Version prompts alongside semantic versioning of features.
-- Store prompt variants in separate files or branches for controlled rollouts.
-- Localize prompts by adapting examples and cultural references while preserving structure.
+## Dependencies
 
-### Debugging techniques
-- Log raw inputs and outputs for each chain.
-- Use small, reproducible test cases with minimal context.
-- Validate prompt injection risks before production deployment.
-- Monitor provider quotas and latency to detect anomalies.
+```mermaid
+graph LR
+  PR["react.py"] --> LC["langchain-core"]
+  PB["browser_use.py"] --> LLM["core.llm"]
+  PB --> LC
+  PW["website.py"] --> LLM
+  PW --> LC
+  PY["youtube.py"] --> LLM
+  PY --> UT["tools/youtube_utils"]
+  PG["github.py"] --> LLM
+  PG --> LC
+  PM["memory.py"] --> NONE["constants only"]
+  PV["prompt_injection_validator.py"] --> NONE2["template only"]
+```
 
+`core.llm` is imported by the modules that build a chain, because they call `LargeLanguageModel` or `get_default_llm`. `youtube.py` also imports the subtitle helpers and calls `load_dotenv()` at import time.
+
+## Troubleshooting
+
+- A chain fails at render time: one of the declared `input_variables` was missing from the input dictionary.
+- A JSON prompt returns prose: the model ignored the format instruction. Retry with a lower temperature or a model that supports structured output.
+- A prompt change has no effect: the consumer may build its own chain or its own prompt. Search for the module import before editing.
+- A service answer ignores the live page: the caller passed an empty `client_context`. The prompt cannot use context it did not receive.
+- A prompt cannot be imported in a test: it pulls in `core.llm` and therefore a provider package. Use the pure string modules for tests that should not need a provider.
+
+## Appendix
+
+### Source files
+
+- `prompts/react.py`
+- `prompts/browser_use.py`
+- `prompts/memory.py`
+- `prompts/prompt_injection_validator.py`
+- `prompts/website.py`
+- `prompts/youtube.py`
+- `prompts/github.py`

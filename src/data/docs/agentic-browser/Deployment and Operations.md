@@ -1,317 +1,246 @@
 # Deployment and operations
 
-## Introduction
-How to run the FastAPI and MCP servers and ship the extension across dev, staging, and production. Covers env setup, containers, logging, publishing, and recovery when things die.
+Agentic Browser runs on one machine: Docker Compose for Postgres, Neo4j and OpenSearch; `uv run agentic-api-run` for the FastAPI backend; a built extension loaded unpacked in the browser; and an optional Vite console. The installer is the deployment tool.
 
-Source: [github.com/tashifkhan/agentic-browser](https://github.com/tashifkhan/agentic-browser)
+There is no container image for the backend, no cloud deployment target, and no reverse proxy or TLS in the repo. The intended scale is one user.
 
-## Project structure
-Agentic Browser comprises:
-- A Python backend (Python >=3.12) with FastAPI in `main.py` and MCP in `mcp_server/`
-- LangGraph/LangChain agents, routers, tools, services, and skills
-- Memory via sqlmodel/asyncpg, Neo4j, and OpenSearch
-- A pnpm workspace: `clients/browser-extension`, `clients/debug-web`, `clients/shared`
+Key capabilities:
+- Four-service Compose stack with health checks
+- Idempotent database bootstrap
+- launchd and systemd user services for the backend
+- Chromium MV3 and Firefox MV2 extension builds
+- MCP registration for local coding agents
+- Volume ownership, backup and rollback notes
 
-```mermaid
-graph TB
-subgraph "Backend"
-A_main["main.py"]
-A_cfg["core/config.py"]
-A_mcp["mcp_server/server.py"]
-end
-subgraph "Clients"
-E_pkg["clients/browser-extension/package.json"]
-E_wxt["clients/browser-extension/wxt.config.ts"]
-DBG["clients/debug-web"]
-SHR["clients/shared"]
-end
-A_main --> A_mcp
-A_main --> A_cfg
-E_pkg --> E_wxt
-```
-
-## Core components
-- Backend entrypoint
- - `main.py` builds the FastAPI app, mounts `/mcp`, and starts Uvicorn via `run()`.
- - CLI aliases in `pyproject.toml`: `agentic-api-run` and `agentic-mcp`.
-
-- FastAPI application and router composition
- - Routers live under `routers/`. Memory routes come from `memory/api/router.py`.
- - See `main.py`.
-
-- Uvicorn runner
- - Host, port, and reload are arguments on `main.run()` (default port 5454).
- - See `main.py`.
-
-- Environment configuration and logging
- - Centralized environment variables for environment type, debug mode, host, port, and provider keys.
- - Logging level is derived from environment and configured globally.
- - See `core/config.py`.
-
-- MCP server and tool definitions
- - The MCP server exposes tools for LLM generation, GitHub Q&A, and website content conversion.
- - HTTP transport is mounted at `/mcp`; stdio transport is `agentic-mcp`.
- - See `mcp_server/server.py`.
-
-- Extension build and manifest
- - The extension uses WXT with React. Permissions live in the manifest.
- - Root scripts: `pnpm dev:extension`, `pnpm build:extension`, `pnpm zip:extension`.
- - See `clients/browser-extension/wxt.config.ts` and `clients/browser-extension/package.json`.
-
-## Architecture overview
-Agentic Browser runs two primary servers:
-- API server (FastAPI/Uvicorn) exposing REST endpoints for agent and service integrations
-- MCP server (Model Context Protocol) for LLM-driven tool execution, over stdio or `/mcp`
+## Repository layout
 
 ```mermaid
 graph TB
-Client["Browser Extension<br/>React UI + WebSocket"]
-API["FastAPI App<br/>Uvicorn"]
-MCP["MCP Server<br/>Tool Registry + Executor"]
-Tools["Agent Tools<br/>Website, GitHub, LLM"]
-LLM["LLM Providers<br/>OpenAI, Anthropic, Ollama, etc."]
-Storage["Postgres / Neo4j / OpenSearch"]
-Client --> API
-Client --> MCP
-API --> Tools
-MCP --> Tools
-Tools --> LLM
-API --> Storage
+subgraph "Orchestration"
+  SH["install.sh"]
+  PY["scripts/install.py"]
+end
+subgraph "Containers"
+  PG["postgres:16-alpine"]
+  NEO["neo4j:5-community"]
+  OS["opensearch 2.17.0"]
+  DASH["opensearch-dashboards"]
+end
+subgraph "Host"
+  API["main.py :5454"]
+  BR["mcp_server/bridge.py :5455"]
+  EXT["extension build"]
+  CON["debug-web build"]
+end
+subgraph "State"
+  ENV[".env"]
+  VOL["named volumes"]
+  HOME["~/.agentic-browser"]
+end
+SH --> PY
+PY --> PG
+PY --> NEO
+PY --> OS
+PY --> ENV
+PY --> API
+PY --> EXT
+PY --> HOME
+API --> BR
 ```
 
-## Detailed component analysis
+## Building blocks
 
-### Backend deployment strategies
-- Development
- - Run the API with hot reload: `python main.py` or `agentic-api-run`.
- - Environment variables: set environment type to development and enable debug logging via `core/config.py`.
+- `docker-compose.yml`: four services on one bridge network, named volumes, health checks.
+- `install.sh`: a thin wrapper. It execs `scripts/install.py` from a checkout, or clones the repo first.
+- `scripts/install.py`: standard-library installer. Tools, env, databases, build, service, browsers, MCP.
+- `main.py`: the process the service manager runs.
+- `mcp_server/bridge.py`: owns the loopback bridge when the port is free.
+- `pyproject.toml`: `agentic-api-run` and `agentic-mcp` console scripts.
+- `package.json`: extension, console and screenshot scripts.
 
-- Staging
- - Use non-reload mode (`reload=False` on `main.run()`).
- - Set environment variables for staging via `core/config.py`.
+## How it fits together
 
-- Production
- - Deploy behind a reverse proxy and configure production-grade logging and ports.
- - Use the CLI entrypoints defined in `pyproject.toml`.
-
-- Mode selection
- - API: `python main.py` / `agentic-api-run`.
- - Stdio MCP: `agentic-mcp`. HTTP MCP is always mounted at `/mcp` on the API process.
-
-### Containerization approach
-- Python backend
- - Use a Python 3.12+ base image and install dependencies from `pyproject.toml`.
- - Expose port 5454 (or configurable via environment) as defined in `core/config.py`.
- - Entrypoint can invoke `main:run` or `mcp_server.server:run`.
- - `docker-compose.yml` runs Postgres, Neo4j, and OpenSearch for memory.
-
-- Browser extension
- - Build artifacts land under `clients/browser-extension/.output/` after `pnpm build:extension`.
- - Manifest and permissions are defined in `clients/browser-extension/wxt.config.ts`.
-
-### Environment setup procedures
-- Environment variables
- - Configure environment type, debug flag, host, port, and provider keys via `core/config.py`.
- - The main entrypoint loads environment variables using python-dotenv as seen in `main.py`.
-
-- API server configuration
- - Host and port are passed to the Uvicorn runner in `main.py`.
-
-- MCP server configuration
- - Stdio MCP registers tools defined in `mcp_server/server.py`.
- - Streamable HTTP MCP is mounted at `/mcp` on the FastAPI app.
-
-### Infrastructure requirements
-- Compute and OS
- - Python 3.12+ runtime for the backend.
- - Node.js and pnpm 9 for the workspace.
-
-- Networking
- - API server binds to BACKEND_HOST and listens on BACKEND_PORT; ensure firewall rules permit inbound connections.
- - MCP over stdio needs a client that can spawn the process. HTTP MCP uses `/mcp`.
-
-- Storage
- - Postgres (asyncpg/sqlmodel), Neo4j, and OpenSearch for memory. Compose maps Postgres 5433, Neo4j 7687, OpenSearch 9201.
-
-- LLM providers
- - Configure provider credentials and base URLs as required by MCP tools in `mcp_server/server.py`.
-
-### CI/CD pipeline setup
-- Recommended stages
- - Install dependencies: Python (backend) and pnpm (workspace)
- - Lint and test (Python and TypeScript)
- - Build extension artifacts with `pnpm build:extension`
- - Build backend distribution (wheel/sdist) using `pyproject.toml`
- - Artifact publication and deployment to target environments
-
-- Versioning and release tagging
- - Use semantic versioning aligned with the project metadata in `pyproject.toml`.
-
-- Secrets management
- - Store provider keys and environment variables in CI secrets; avoid committing sensitive data.
-
-- Deployment automation
- - Use environment-specific configuration files and scripts to deploy the API server and MCP server to staging and production.
-
-### Monitoring and logging strategies
-- Logging
- - Centralized logging level controlled by environment variables in `core/config.py`.
- - Use structured logging for API and MCP servers to help correlation and alerting.
-
-- Metrics and health checks
- - Expose a health endpoint under `/api/genai/health` as included in `main.py`.
- - Monitor CPU, memory, and network usage of the Python processes.
-
-- Observability
- - Integrate with your platform's logging and metrics stack; consider exporting logs to a centralized system.
-
-### Performance optimization techniques
-- API server
- - Disable reload in production and tune worker/process counts for Uvicorn.
- - Optimize route handlers and database/vector store queries.
-
-- MCP server
- - Cache tool results where appropriate and limit concurrent heavy operations.
- - Use provider-specific connection pooling and timeouts.
-
-- Extension
- - Minimize bundle size and defer heavy computations to the backend.
- - Use lazy loading for UI components.
-
-### Scaling considerations
-- Horizontal scaling
- - Scale the API server behind a load balancer; keep FastAPI workers stateless.
- - Use message queues or shared state for MCP coordination if extending to distributed workers.
-
-- Vertical scaling
- - Increase CPU/memory for LLM-heavy operations; provision GPU instances if using local models.
-
-- Caching and persistence
- - Cache frequently accessed website content and embeddings; ensure durability for session data.
-
-### Extension publishing process
-- Chrome Web Store
- - Build with `pnpm build:extension` or `pnpm zip:extension`.
- - Prepare manifest and permissions in `clients/browser-extension/wxt.config.ts`.
- - Package and upload the extension following Chrome Developer Dashboard guidelines.
-
-- Firefox Add-ons
- - Build with `pnpm build:extension:firefox` or `pnpm zip:extension:firefox`.
- - Follow Mozilla Add-on Developer Hub submission process.
-
-- Signing and certification
- - Ensure all assets are properly signed and meet platform policies.
- - Maintain version alignment between backend and extension.
-
-### Operational procedures
-- Maintenance
- - Regularly update dependencies and patch vulnerabilities.
- - Rotate provider keys and review environment configurations.
-
-- Updates
- - Use blue-green or rolling deployments for zero-downtime updates.
- - Validate extension compatibility after backend changes.
-
-- Rollback strategies
- - Keep previous container images and extension builds available.
- - Revert API and MCP server versions quickly if issues arise.
-
-- Incident response
- - Enable alerting on critical errors and timeouts.
- - Collect logs from both API and MCP servers for forensic analysis.
-
-### Security considerations
-- Least privilege
- - Limit extension permissions to those declared in `clients/browser-extension/wxt.config.ts`.
-
-- Secrets management
- - Store API keys in environment variables and avoid hardcoding.
- - Restrict access to deployment systems and CI secrets.
-
-- Transport and isolation
- - Use HTTPS for API endpoints and secure communication channels.
- - Isolate MCP server processes and restrict IPC access.
-
-- Audit and compliance
- - Maintain audit logs for user actions and tool invocations.
- - Implement content filtering and allowlists as per project goals.
-
-### Backup and disaster recovery
-- Data backup
- - Back up configuration files, logs, and persistent data stores (Postgres, Neo4j, OpenSearch volumes).
- - Automate periodic snapshots of production volumes.
-
-- Recovery procedures
- - Test restoration procedures regularly.
- - Maintain documented runbooks for failover scenarios.
-
-## Dependency analysis
-- Backend dependencies
- - Core libraries include FastAPI, Uvicorn, LangChain/LangGraph, MCP, sqlmodel, asyncpg, neo4j, and opensearch-py as defined in `pyproject.toml`.
-
-- Extension dependencies
- - React, Socket.IO client, and WXT as defined in `clients/browser-extension/package.json`.
- - Shared UI/API code lives in `clients/shared`.
-
-- Environment and configuration
- - Environment variables drive behavior and logging in `core/config.py`.
+The installer is a linear pipeline with each step skippable. It does not install the backend as a container; it runs it from the checkout with `uv`.
 
 ```mermaid
-graph LR
-P["pyproject.toml<br/>Backend deps"]
-E["clients/browser-extension/package.json<br/>Frontend deps"]
-C["core/config.py<br/>Env vars + logging"]
-M["mcp_server/server.py<br/>Tools + MCP"]
-A["main.py<br/>Routers + App"]
-P --> A
-P --> M
-C --> A
-C --> M
-E --> A
+flowchart TD
+  Start(["./install.sh"]) --> Tools["1. check docker, uv, node, pnpm"]
+  Tools --> Env["2. write .env<br/>key, encryption key, host"]
+  Env --> DB["3. compose up postgres, neo4j, opensearch"]
+  DB --> Build["4. uv sync, pnpm install, build extension"]
+  Build --> Service{"5. login service?"}
+  Service -- launchd --> Mac["LaunchAgents plist"]
+  Service -- systemd --> Linux["systemd user unit"]
+  Service -- no --> Foreground["run for now"]
+  Mac --> Browsers["6. load extension"]
+  Linux --> Browsers
+  Foreground --> Browsers
+  Browsers --> MCP["7. agentic-mcp install"]
 ```
 
-## Performance considerations
-- API server
- - Tune Uvicorn workers and keep-alive timeouts.
- - Cache expensive operations and optimize route handlers.
+Startup inside the backend is defensive. Each dependency is wrapped in its own `try`, so a missing store logs a warning and the API still serves.
 
-- MCP server
- - Batch tool calls and reuse LLM clients.
- - Apply rate limiting and circuit breakers for external providers.
+```mermaid
+sequenceDiagram
+  participant Uvicorn as "uvicorn"
+  participant App as "main.lifespan"
+  participant DB as "core.db"
+  participant Neo as "neo4j"
+  participant OS as "opensearch"
+  participant LLM as "core.llm"
+  participant Bridge as "bridge"
+  Uvicorn->>App : "startup"
+  App->>DB : "init_db()"
+  DB->>DB : "create_all + run_migrations"
+  App->>Neo : "connect + constraints"
+  App->>OS : "connect + ensure_indices"
+  App->>LLM : "reload_default_llm()"
+  App->>Bridge : "ensure_started()"
+  App-->>Uvicorn : "serving"
+  Uvicorn->>App : "shutdown"
+  App->>Bridge : "stop()"
+```
 
-- Extension
- - Minimize DOM operations and offload heavy work to the backend.
- - Use debouncing and throttling for user interactions.
+## Compose services
 
-## Troubleshooting guide
-- Backend does not start
- - Verify environment variables and host/port configuration in `core/config.py`.
- - Confirm the selected entrypoint in `main.py` or `agentic-mcp`.
+| Service | Image | Host port | Health check | Volume |
+| --- | --- | --- | --- | --- |
+| `postgres` | `postgres:16-alpine` | 5433 → 5432 | `pg_isready` every 10 s | `postgres_data` |
+| `neo4j` | `neo4j:5-community` | 7474, 7687 | HTTP 7474 every 15 s | `neo4j_data`, `neo4j_logs`, `neo4j_plugins` |
+| `opensearch` | `opensearchproject/opensearch:2.17.0` | 9201 → 9200, 9601 → 9600 | cluster health not red every 15 s | `opensearch_data` |
+| `opensearch-dashboards` | `opensearchproject/opensearch-dashboards:2.17.0` | 5602 → 5601 | depends on healthy OpenSearch | none |
 
-- API server not reachable
- - Check Uvicorn binding in `main.py`.
- - Ensure firewall rules allow inbound traffic on the configured port.
+OpenSearch runs with the security plugin disabled and TLS off. That is acceptable only because the ports are local by default. On a shared network, bind the published ports to `127.0.0.1` or add a firewall.
 
-- MCP server not responding
- - Confirm MCP tool definitions and execution path in `mcp_server/server.py`.
- - Validate provider credentials and base URLs used in tool calls.
+Neo4j loads APOC with a 512 MB initial heap, 1 GB max heap and 512 MB page cache. OpenSearch uses `-Xms512m -Xmx1g` and `bootstrap.memory_lock`.
 
-- Extension build failures
- - Review scripts in root `package.json` and `clients/browser-extension/package.json`.
- - Check manifest permissions in `clients/browser-extension/wxt.config.ts`.
+## Environment and secrets
 
-- Permission errors
- - Review extension permissions in `clients/browser-extension/wxt.config.ts`.
+`.env` is created from `.env.example` with mode 0600. The installer fills `OAUTH_ENCRYPTION_KEY`, optionally sets `BACKEND_HOST=127.0.0.1`, and stores one model key plus `DEFAULT_LLM_PROVIDER`.
 
-## Conclusion
-Treat API keys as secrets, keep extension permissions tight, and watch health plus structured logs. Packaging lives in `clients/browser-extension/package.json`; server entrypoints are `agentic-api-run` and `agentic-mcp`.
+Secrets added later through the console live encrypted in `app_settings`, not in `.env`.
 
-## Appendices
-- Environment variables reference
- - Environment type, debug flag, host, port, and Google API key are managed in `core/config.py`.
+## Login services
 
-- CLI entrypoints
- - Backend scripts are defined in `pyproject.toml`.
+On macOS the installer writes `~/Library/LaunchAgents/sh.taf.agentic-browser.plist`, unloads any previous copy, then runs `launchctl load -w`. The plist runs `uv run agentic-api-run` with `WorkingDirectory` at the checkout, `RunAtLoad` and `KeepAlive`, and logs to `~/.agentic-browser/logs/backend.log`.
 
-- Extension build and packaging
- - Root commands: `pnpm dev:extension`, `pnpm build:extension`, `pnpm zip:extension`.
+On Linux it writes `~/.config/systemd/user/agentic-browser.service` with `Restart=on-failure` and runs `systemctl --user enable --now agentic-browser.service`. Without a systemd user session it starts the backend in the foreground.
+
+```mermaid
+stateDiagram-v2
+  [*] --> Installed
+  Installed --> Running : "launchctl load / systemctl start"
+  Running --> Restarting : "process exits"
+  Restarting --> Running : "KeepAlive / Restart=on-failure"
+  Running --> Stopped : "manual stop"
+  Stopped --> Running : "manual start"
+```
+
+## Frontend builds
+
+```sh
+pnpm install
+pnpm build:extension
+pnpm build:extension:firefox
+pnpm build:debug
+pnpm zip:extension
+```
+
+The Chromium build is unpacked MV3. The Firefox build is MV2 and loads as a temporary add-on unless signed. The console is a static Vite bundle.
+
+The build embeds `VITE_API_URL` at compile time. A build pointed at a remote backend keeps that host until rebuilt.
+
+## Database migrations
+
+`init_db()` creates missing tables from SQLAlchemy metadata, then `core/migrations.py` discovers `migrations/000*.py`, compares against `schema_migrations`, and calls each module's `upgrade(conn)` in one transaction. Migrations are additive and idempotent.
+
+There is no migration command to run before boot, and no down migration. Roll back the application, keep the schema.
+
+## Volumes and backup
+
+| Volume | Contents |
+| --- | --- |
+| `postgres_data` | conversations, runs, settings, credentials, memory tables |
+| `neo4j_data` | entities and claim links |
+| `opensearch_data` | claim, artifact and entity indices |
+
+Host state:
+
+- `uploads/` for attachments and generated skill output.
+- `~/.agentic-browser/bridge-token`, mode 0600.
+- `~/.agentic-browser/mcp-settings.json` for MCP tool groups.
+- `~/.agentic-browser/runtime-workspace/` for subscription agents.
+- `~/.agentic-browser/antigravity/` for the Google AI profile.
+- `~/.agentic-browser/logs/backend.log`.
+- `.oauth_encryption_key` beside `main.py` when no env key is set.
+
+Neo4j and OpenSearch can be rebuilt from Postgres with the maintenance repair job. Back up the Postgres volume.
+
+## MCP registration
+
+Step 7 runs `uv run agentic-mcp install`. It detects Claude Code, Codex, Cursor, Gemini CLI and OpenCode. `--dry-run` prints the diff. `agentic-mcp config` prints snippets for manual setup. Each file is backed up before editing.
+
+For URL-only clients, `agentic-mcp serve` keeps the HTTP endpoint at `http://127.0.0.1:5455/mcp`.
+
+## Rollback
+
+1. Stop the login service.
+2. Check out the previous commit, run `uv sync` and `pnpm install`.
+3. Rebuild and reload the extension.
+4. Leave the schema in place. Add a new migration if a rollback needs a change.
+5. Restart and check `/` and `/bridge/status`.
+
+## Dependencies
+
+```mermaid
+graph TB
+  Compose["docker-compose.yml"] --> Postgres["postgres:16-alpine"]
+  Compose --> Neo4j["neo4j:5-community"]
+  Compose --> OS["opensearch 2.17.0"]
+  Service["launchd / systemd"] --> Uvicorn["uvicorn"]
+  Uvicorn --> Main["main.py"]
+  Main --> Bridge["mcp_server/bridge.py"]
+  Bridge --> Token["bridge-token"]
+  Build["wxt build"] --> Ext["unpacked extension"]
+  Build2["vite build"] --> Console["static console"]
+```
+
+## Performance
+
+- Compose health checks run every 10 to 15 seconds; the installer polls up to 90 times at 2 seconds.
+- SQLAlchemy pool is 10 with 20 overflow.
+- The bridge uses `SO_REUSEADDR` on POSIX for fast restarts.
+- Neo4j and OpenSearch are capped at 1 GB heaps.
+- The extension is loaded from disk; there is no hot reload in production.
+
+## Troubleshooting
+
+- A database is not healthy after 90 polls: check `docker compose ps` and port conflicts on 5433, 7474 or 9201.
+- Memory search is empty: OpenSearch failed its startup block. Start the container and restart the API.
+- The login service cannot reach the backend: the service inherits `PATH` but not your shell env. Put variables in `.env`.
+- `launchctl load` fails: a previous plist is loaded. Unload it first.
+- Firefox loses the extension: temporary add-ons are removed on quit.
+- MCP install edits the wrong config: set `CODEX_HOME` or use `agentic-mcp config`.
+- The API is reachable on the LAN: set `BACKEND_HOST=127.0.0.1`.
+
+## Appendix
+
+### Implementation examples
+- Install: `./install.sh --yes --skip-browsers`.
+- Backend: `uv run agentic-api-run`.
+- Databases only: `docker compose up -d postgres neo4j opensearch`.
+- Extension: `pnpm --filter @agentic-browser/browser-extension build`.
+- MCP: `uv run agentic-mcp install --dry-run`.
+- Health: `GET /api/genai/health/`.
+
+### Source files
+- `docker-compose.yml`
+- `scripts/install.py`
+- `install.sh`
+- `main.py`
+- `pyproject.toml`
+- `package.json`
+- `.env.example`
+- `core/migrations.py`
+- `mcp_server/bridge.py`
+- `mcp_server/install.py`

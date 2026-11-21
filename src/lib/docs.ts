@@ -421,6 +421,28 @@ const SECTION_ORDER: Record<string, string[]> = {
     'Deployment and DevOps',
     'Troubleshooting and FAQ',
   ],
+  'agentic-browser': [
+    'Getting Started',
+    'Project Overview',
+    'AI Agent System',
+    'API Server',
+    'Browser Automation',
+    'Browser Extension',
+    'Data Models and Schemas',
+    'Prompts and Prompt Engineering',
+    'Service Integrations',
+    'System Architecture',
+    'Tool System',
+    'Chat Experience',
+    'Configuration Management',
+    'Deployment and Operations',
+    'Development Guidelines',
+    'MCP Server',
+    'Security Considerations',
+    'Testing Strategy',
+    'Troubleshooting and FAQ',
+    'API Client Libraries',
+  ],
 };
 
 function sortByDefinedOrder(items: SidebarItem[], projectSlug: string): SidebarItem[] {

@@ -1,262 +1,241 @@
 # Overall system design
 
-## Introduction
-Top-level design: extension frontend, REST + MCP backend, service/tool modules, async messaging, and where security sits.
+The system is a local service graph with two entry points: HTTP on 5454 for the app, and the bridge on 5455 for MCP and extension traffic. Both can live in one Python process (the backend hosts the bridge when the port is free) or split across processes (an `agentic-mcp` stdio server owns the bridge and the backend relays).
 
-## Project structure
-Layout:
-- Extension: React UI, background/content scripts, and WebSocket client for browser integration
-- Backend: FastAPI application exposing REST endpoints
-- MCP Server: Python MCP server implementing standardized tool protocols
-- Core: Shared configuration and LLM abstraction
-- Agents: Agent orchestration and tool binding
-- Services: Domain-specific business logic
-- Routers: API routing and request/response models
-- Tools: Modular capabilities for websites, YouTube, Gmail, GitHub, calendar, and more
+This page covers the process boundaries, port ownership, startup order and router mounts. Layer responsibilities are on [Technical Architecture Overview](Technical%20Architecture%20Overview); deploy mechanics are on [Deployment Architecture](Deployment%20Architecture).
 
-```mermaid
-graph TB
-subgraph "Browser Extension"
-BG["background.ts"]
-CT["content.ts"]
-WS["websocket-client.ts"]
-end
-subgraph "FastAPI Backend"
-API["main.py"]
-ROUTERS["Routers"]
-MODELS["Models"]
-end
-subgraph "MCP Server"
-MCP["mcp_server/server.py"]
-end
-subgraph "Core"
-CFG["core/config.py"]
-LLM["core/llm.py"]
-end
-subgraph "Agents & Services"
-REACT["agents/react_agent.py"]
-SVC["services/browser_use_service.py"]
-end
-BG --> WS
-WS --> API
-BG --> MCP
-API --> SVC
-SVC --> LLM
-MCP --> LLM
-REACT --> LLM
-```
+Key capabilities:
+- One backend process with optional background tasks
+- Bridge host or relay election on port 5455
+- Router groups for every product surface, mounted from one composition root
+- Optional Telegram bot and scheduler in the same event loop
+- Docker-backed storage on fixed host ports
+- A single request path through validation, service and agent layers
 
-## Core components
-- Entry point: `main.py` starts FastAPI and mounts MCP at `/mcp`; `agentic-mcp` is stdio MCP
-- FastAPI backend: exposes REST endpoints for agent scripting, validators, and integrations
-- MCP server: standardizes tool execution via the Model Context Protocol
-- Core LLM abstraction: provider-agnostic LLM client supporting multiple providers
-- Agent orchestration: React agent graph with tool execution nodes
-- Service layer: domain-specific logic (e.g., browser-use action plan generation)
-- Extension: background/content scripts and WebSocket client for UI and agent coordination
-
-Responsibilities:
-- Frontend (Extension): UI, tab management, action injection, and WebSocket-driven agent execution
-- Backend (FastAPI): request routing, service orchestration, and response modeling
-- Backend (MCP): tool catalog and execution for LLM-driven tasks
-- Core: configuration, logging, and LLM provider selection
-- Agents/Services: reasoning, tool binding, and domain logic
-
-## Architecture overview
-Agentic Browser runs FastAPI for REST and MCP together:
-- API: REST-driven orchestration via FastAPI
-- MCP: tool execution over stdio (`agentic-mcp`) or HTTP (`/mcp` on the API process)
-
-The system boundary separates the browser extension (UI and automation) from the backend services. The extension talks HTTP/WebSocket to FastAPI and can use MCP tools. The backend invokes services and tools, which may call external providers through the LLM abstraction.
+## Repository layout
 
 ```mermaid
 graph TB
-U["User"]
-EX["Extension UI<br/>background.ts / content.ts"]
-WS["WebSocket Client<br/>websocket-client.ts"]
-API["FastAPI App<br/>main.py"]
-MCP["MCP Server<br/>mcp_server/server.py"]
-CORE["Core Config & LLM<br/>core/config.py, core/llm.py"]
-SVC["Services<br/>services/*"]
-AG["Agent Orchestration<br/>agents/react_agent.py"]
-U --> EX
-EX --> WS
-WS --> API
-EX --> MCP
-API --> SVC
-SVC --> CORE
-MCP --> CORE
-AG --> CORE
-```
-
-## Detailed component analysis
-
-### System entry
-`python main.py` starts FastAPI. MCP is available at `/mcp` on that process, or as stdio via `agentic-mcp`.
-
-```mermaid
-flowchart TD
-Start(["Process Start"]) --> Choose{"Entrypoint"}
-Choose --> |python main.py / agentic-api-run| RunAPI["Run FastAPI Server"]
-Choose --> |agentic-mcp| RunMCP["Run stdio MCP"]
-RunAPI --> Mount["Mount /mcp"]
-```
-
-### FastAPI backend and routing
-The FastAPI application wires routers for various domains and exposes endpoints for agent scripting and validators. It includes dependency injection for services and consistent logging.
-
-```mermaid
-sequenceDiagram
-participant Client as "Client"
-participant API as "FastAPI App"
-participant Router as "Routers"
-participant Service as "Services"
-Client->>API : HTTP Request
-API->>Router : Route to Endpoint
-Router->>Service : Invoke Service Method
-Service-->>Router : Result
-Router-->>API : Response Model
-API-->>Client : HTTP Response
-```
-
-### MCP server and tool execution
-The MCP server defines a standardized tool catalog and routes tool invocations to provider-specific implementations. It supports LLM generation, GitHub Q&A, and website content extraction.
-
-```mermaid
-sequenceDiagram
-participant Ext as "Extension"
-participant MCP as "MCP Server"
-participant LLM as "LLM Abstraction"
-Ext->>MCP : List Tools
-MCP-->>Ext : Tool Catalog
-Ext->>MCP : Call Tool (e.g., llm.generate)
-MCP->>LLM : Initialize Provider
-LLM-->>MCP : Generated Text
-MCP-->>Ext : Tool Result
-```
-
-### Extension: background script and messaging
-The background script handles extension-level messaging for activation, tab management, action execution, and agent tool invocation. It coordinates with content scripts and the WebSocket client.
-
-```mermaid
-sequenceDiagram
-participant UI as "Extension UI"
-participant BG as "Background Script"
-participant CT as "Content Script"
-participant WS as "WebSocket Client"
-UI->>BG : Message (e.g., EXECUTE_ACTION)
-BG->>CT : Inject and Send Action
-CT-->>BG : Action Result
-BG-->>UI : Response
-UI->>BG : Message (EXECUTE_AGENT_TOOL)
-BG->>BG : handleExecuteAgentTool(...)
-BG-->>UI : Tool Execution Result
-UI->>WS : executeAgent(command)
-WS-->>UI : agent_progress / agent_result
-```
-
-### Agent orchestration and tool binding
-The React agent composes a LangGraph workflow with an agent node and a tool execution node. It binds tools and manages state transitions.
-
-```mermaid
-flowchart TD
-Init["Initialize Agent with Tools"] --> Build["Build LangGraph Workflow"]
-Build --> Run["Invoke Agent"]
-Run --> Decide{"Tool Needed?"}
-Decide --> |Yes| ToolExec["Execute Tool"]
-Decide --> |No| Reply["Generate Response"]
-ToolExec --> Update["Update Messages"]
-Reply --> Update
-Update --> Decide
-```
-
-### Service layer: browser use script generation
-The service generates an action plan for browser automation goals using LLM prompting and sanitization.
-
-```mermaid
-flowchart TD
-Start(["Service Entry"]) --> Format["Format DOM Info"]
-Format --> Compose["Compose Prompt"]
-Compose --> Invoke["Invoke LLM Chain"]
-Invoke --> Sanitize["Sanitize & Validate JSON"]
-Sanitize --> Decision{"Validation OK?"}
-Decision --> |Yes| Success["Return Action Plan"]
-Decision --> |No| Fail["Return Error + Problems"]
-```
-
-## Dependency analysis
-Dependency direction:
-- Extension depends on background/content scripts and the WebSocket client
-- FastAPI depends on routers, services, and models
-- Services depend on core LLM and prompts
-- MCP depends on core LLM and tool implementations
-- Agents depend on LLM and tool definitions
-
-```mermaid
-graph LR
-EX["Extension"] --> API["FastAPI"]
-EX --> MCP["MCP"]
-API --> SVC["Services"]
-SVC --> LLM["LLM"]
-MCP --> LLM
-AG["Agents"] --> LLM
-```
-
-## Performance considerations
-- Asynchronous messaging: Extension background and WebSocket client support non-blocking operations
-- Caching: Agent graph compilation is cached to reduce overhead
-- Streaming progress: WebSocket client emits incremental progress updates
-- Provider selection: LLM abstraction defers initialization and validation to optimize startup
-- Router composition: FastAPI routers keep endpoints focused and maintainable
-
-## Security and transparency
-- Guardrails: Prompt injection validation and sanitizer utilities protect against malformed inputs
-- Transparency: WebSocket client emits progress and status events; MCP returns explicit errors
-- Separation of concerns: LLM credentials and base URLs are managed centrally; providers are configurable
-- Logging: Centralized logging via core configuration
-
-## Modular tool system
-The MCP server exposes a standardized tool catalog:
-- LLM generation with provider selection
-- GitHub Q&A with context
-- Website content extraction (markdown and HTML conversion)
-
-That split gives you:
-- Extensibility: New tools can be added to the MCP catalog
-- Interoperability: Tools are protocol-driven and decoupled from UI
-- Reusability: Tools encapsulate domain logic and can be invoked from multiple entrypoints
-
-## Distributed communication patterns
-Asynchronous communication is central:
-- WebSocket client: emits progress and receives results/events
-- Background script: handles long-running actions and responds via message channels
-- MCP: streaming-like tool results via protocol responses
-- FastAPI: request-response with structured models
-
-```mermaid
-sequenceDiagram
-participant Ext as "Extension"
-participant WS as "WebSocket"
-participant API as "FastAPI"
-participant Svc as "Service"
-Ext->>WS : executeAgent(command)
-loop Progress Updates
-WS-->>Ext : generation_progress
+subgraph "HTTP surface"
+  MAIN["main.py"]
+  R1["routers/react_agent.py"]
+  R2["routers/browser_runtime.py"]
+  R3["routers/integrations.py"]
+  R4["memory/api/router.py"]
+  R5["routers/debug.py"]
 end
-WS->>API : HTTP Request (optional)
-API->>Svc : Invoke Service
-Svc-->>API : Result
-API-->>WS : Response
-WS-->>Ext : agent_result
+subgraph "Bridge surface"
+  BR["mcp_server/bridge.py"]
+  SRV["mcp_server/server.py"]
+  WS["extension websocket"]
+end
+subgraph "Background"
+  TG["services/telegram_bot_runner.py"]
+  SCH["APScheduler jobs"]
+  BG["memory ingestion tasks"]
+end
+subgraph "Storage"
+  PG[("Postgres")]
+  NEO[("Neo4j")]
+  OS[("OpenSearch")]
+end
+MAIN --> R1
+MAIN --> R2
+MAIN --> R3
+MAIN --> R4
+MAIN --> R5
+MAIN --> BR
+BR --> SRV
+BR --> WS
+MAIN --> TG
+MAIN --> SCH
+R1 --> BG
+R1 --> PG
+R4 --> NEO
+R4 --> OS
 ```
 
-## Troubleshooting guide
-Common issues and diagnostics:
-- Missing API keys or base URLs: LLM initialization raises explicit errors when required environment variables are absent
-- WebSocket connectivity: Client logs connection/disconnection events and retries automatically
-- MCP tool errors: MCP returns error text for unknown tools or exceptions during execution
-- FastAPI validation: Requests are validated by Pydantic models; invalid requests return structured errors
+## Building blocks
 
-## Conclusion
-Frontend and backend split cleanly. The ReAct agent orchestrates tools; services own domain logic; MCP standardizes execution. Async keeps the UI usable.
+- `main.py`: creates the app, registers middleware, includes routers, defines `lifespan` and `run()`.
+- `routers/__init__.py`: re-exports every router under a stable alias. `main.py` imports the aliases, not the modules.
+- `mcp_server/bridge.py`: `BridgeManager` decides host or relay. `LocalBridge` owns extension WebSockets; `RemoteBridge` posts to another process.
+- `services/telegram_bot_runner.py`: optional polling task started from `lifespan` when a token resolves.
+- `memory/maintenance/consolidation.py`: `ConsolidationRunner` with `hourly`, `nightly` and `weekly` entry points, scheduled by APScheduler.
+- `core/request_model.py`: ASGI middleware that swaps the model for one request from headers.
 
+## How it fits together
+
+Startup is a sequence of guarded steps. Each one is optional except the app object itself.
+
+```mermaid
+sequenceDiagram
+  participant Process as "python main.py"
+  participant FastAPI as "FastAPI"
+  participant DB as "init_db"
+  participant Neo as "Neo4j"
+  participant OS as "OpenSearch"
+  participant LLM as "reload_default_llm"
+  participant Bot as "Telegram task"
+  participant Sched as "APScheduler"
+  participant Bridge as "BridgeManager"
+  Process->>FastAPI: "create app with lifespan"
+  FastAPI->>DB: "create tables + migrations"
+  FastAPI->>Neo: "connect + constraints"
+  FastAPI->>OS: "connect + ensure_indices"
+  FastAPI->>LLM: "resolve DB override"
+  FastAPI->>Bot: "asyncio.create_task(run_telegram_bot)"
+  FastAPI->>Sched: "add hourly, nightly, weekly jobs"
+  FastAPI->>Bridge: "ensure_started()"
+  Bridge-->>FastAPI: "host or relay"
+  FastAPI-->>Process: "serve on 5454"
+```
+
+On shutdown the order reverses: bridge stop, scheduler shutdown, bot cancel, Neo4j close, OpenSearch close.
+
+## Router mounts
+
+| Prefix | Router | Main routes |
+| --- | --- | --- |
+| `/api/mcp` | `routers/mcp_settings.py` | settings read/write, restart |
+| `/api/genai/health` | `routers/health.py` | health |
+| `/api/genai/github` | `routers/github.py` | repo question, private archive upload |
+| `/api/genai/website` | `routers/website.py` | page question |
+| `/api/genai/youtube` | `routers/youtube.py` | video question |
+| `/api/google-search` | `routers/google_search.py` | search |
+| `/api/gmail` | `routers/gmail.py` | unread, latest, mark read, send |
+| `/api/calendar` | `routers/calendar.py` | events, create |
+| `/api/pyjiit` | `routers/pyjiit.py` | login, semesters, attendance |
+| `/api/genai/react` | `routers/react_agent.py` | chat, chat stream |
+| `/api/validator` | `routers/website_validator.py` | website validation |
+| `/api/agent` | `routers/browser_use.py` | generate script |
+| `/api/upload` | `routers/file_upload.py` | upload, download |
+| `/api/skills` | `routers/skills.py` | list, execute, execute stream |
+| `/api/auth` | `routers/auth.py` | OAuth exchange, status, callbacks |
+| `/api/state` | `routers/state.py` | sessions, settings keys |
+| `/api` | `routers/conversations.py` | conversations, messages, runs |
+| `/api/voice` | `routers/voice.py` | transcribe, models, speak |
+| `/api/memory` | `memory/api/router.py` | search, context, tools, ingest, maintenance |
+| `/api/browser/automation` | `routers/automation.py` | legacy one-step planner |
+| `/api/browser/runtime` | `routers/browser_runtime.py` | start, step |
+| `/api/debug` | `routers/debug.py` | stats, timeseries, runs, memory, maintenance |
+| `/api/integrations` | `routers/integrations.py` | settings, Composio, runtimes, secrets |
+
+The conversations router is mounted at `/api`, so its paths are `/api/conversations` and `/api/runs/{run_id}`.
+
+## Request path
+
+The mounted routers share one path through the process. A request is validated in the route, orchestrated in a service, executed by an agent or a browser planner, and persisted through `core/db.py`.
+
+```mermaid
+sequenceDiagram
+  participant Client as "client"
+  participant MW as "RequestModelMiddleware"
+  participant Route as "router"
+  participant Service as "service"
+  participant Agent as "agent or planner"
+  participant DB as "Postgres"
+  Client->>MW: "HTTP request"
+  MW->>MW: "optional model headers"
+  MW->>Route: "scope"
+  Route->>Route: "pydantic validation"
+  Route->>Service: "call"
+  Service->>DB: "read history and settings"
+  Service->>Agent: "run with context"
+  Agent-->>Service: "answer or action"
+  Service->>DB: "write message and trace"
+  Service-->>Route: "result"
+  Route-->>Client: "JSON or SSE"
+```
+
+## Bridge election
+
+Only one process can own `127.0.0.1:5455`. `BridgeManager.ensure_started()` tries to bind. Success makes it the host. A bind failure puts it in relay mode, where calls go through `POST /bridge/call` with the shared token.
+
+```mermaid
+stateDiagram-v2
+  [*] --> Starting
+  Starting --> Host : "bind port 5455 succeeds"
+  Starting --> Relay : "bind fails with OSError"
+  Host --> Serving : "uvicorn server on the socket"
+  Relay --> Forwarding : "POST /bridge/call with token"
+  Forwarding --> Host : "relay unavailable, retry bind"
+  Serving --> Host : "extension attaches"
+  Serving --> Stopped : "stop()"
+  Relay --> Stopped : "stop()"
+```
+
+The host creates `~/.agentic-browser/bridge-token` if missing. The relay reads it. If the previous host dies, `BridgeManager.call` catches `BridgeUnavailable`, re-runs `ensure_started()` and retries once.
+
+## Process and port map
+
+| Process | Port | Protocol | Owner |
+| --- | --- | --- | --- |
+| Backend | 5454 | HTTP, SSE | `main.py` |
+| Bridge host | 5455 | HTTP, WebSocket | backend or `agentic-mcp` |
+| MCP HTTP | 5455 | streamable HTTP at `/mcp` | bridge host |
+| Postgres | 5433 host | Postgres wire | Docker |
+| Neo4j | 7474, 7687 | HTTP, Bolt | Docker |
+| OpenSearch | 9201 host | HTTP | Docker |
+| Dashboards | 5602 host | HTTP | Docker |
+
+## Background work
+
+- Post-turn memory ingestion is an `asyncio.create_task` held in `_BACKGROUND_TASKS` so it cannot be garbage collected mid-run.
+- Telegram polling is a task created in `lifespan`.
+- APScheduler runs memory maintenance.
+- The MCP settings watcher polls the settings file every 2 seconds.
+
+None of these have a durable queue. A process restart loses an in-flight ingestion or maintenance pass; the next turn or schedule retries.
+
+## Dependencies
+
+```mermaid
+graph TB
+  Main["main.py"] --> Routers["routers/__init__.py"]
+  Main --> Bridge["mcp_server/bridge.py"]
+  Main --> Middleware["core/request_model.py"]
+  Bridge --> Server["mcp_server/server.py"]
+  Bridge --> Config["mcp_server/config.py"]
+  Routers --> Services["services/"]
+  Services --> Agents["agents/"]
+  Services --> Memory["memory/"]
+  Memory --> Neo["core/clients/neo4j.py"]
+  Memory --> OS["core/clients/opensearch.py"]
+  Memory --> DB["core/db.py"]
+```
+
+## Performance
+
+- The bridge waits up to 3 seconds for a browser to attach (`_pick(browser, wait=3.0)`) and adds 2 seconds to each call timeout.
+- API call timeouts clamp between 1 second and 1800 seconds (`MAX_TIMEOUT`).
+- The backend has no worker pool; one uvicorn process handles all routes and background tasks.
+- Telegram polling runs in the same event loop. A slow bot handler competes with HTTP work.
+- Scheduler jobs run in-process. APScheduler uses the asyncio scheduler, so a long nightly pass does not block HTTP.
+
+## Troubleshooting
+
+- Port 5454 in use: another backend is running. `lsof -nP -iTCP:5454 -sTCP:LISTEN`.
+- Port 5455 in use by an unrelated process: the backend starts in relay mode and fails calls to the wrong service. Stop the other process or set `AGENTIC_BROWSER_BRIDGE_PORT`.
+- Bridge role flips between host and relay: every new `agentic-mcp` process tries to bind first. Whichever starts first owns it. `/api/mcp/settings` shows the current role.
+- Telegram bot never starts: no token resolved, or `python-telegram-bot` failed to import. The startup guard logs `Telegram bot init skipped`.
+- Scheduler missing: APScheduler import or job registration failed. The guard logs `Scheduler init skipped`.
+- API returns a CORS error from a custom frontend: add the origin to `CORS_ORIGINS`; the regex only covers extension schemes and localhost.
+
+## Appendix
+
+### Implementation examples
+- Run: `uv run agentic-api-run`, or `python main.py` (reload enabled).
+- Root: `GET /` returns `{"name": "Agentic Browser API", "version": "0.1.0"}`.
+- Bridge: `GET http://127.0.0.1:5455/bridge/status`.
+- Settings: `GET /api/mcp/settings` reports bridge role, URL and attached browsers.
+
+### Source files
+- `main.py`
+- `core/config.py`
+- `routers/__init__.py`
+- `mcp_server/bridge.py`
+- `mcp_server/server.py`
+- `mcp_server/config.py`
+- `services/telegram_bot_runner.py`
+- `memory/maintenance/consolidation.py`

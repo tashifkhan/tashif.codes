@@ -1,290 +1,267 @@
 # Browser extension architecture
 
-## Introduction
-WXT + React extension architecture: side panel, background, content scripts, messaging, WebSocket to backend, auth, packaging.
+The frontend is a pnpm workspace with three packages and four extension surfaces. `clients/browser-extension` is a WXT MV3 extension with a side panel, popup, background service worker, content script and voice setup page. `clients/debug-web` is a Vite single-page console. `clients/shared` holds the API client, query hooks, settings UI, markdown renderer and design system.
 
-## Project structure
-Entrypoints cover background, content, and side panel, plus shared utilities and hooks. WXT manages build, manifest generation, and browser-specific targets.
+Both apps render React 19. The console uses TanStack Router and Query. The extension uses TanStack Query only where it helps; most of its state is React state plus `browser.storage.local`.
 
-```mermaid
-graph TB
-subgraph "Extension Root"
-CFG["wxt.config.ts"]
-PKG["package.json"]
-TSC["tsconfig.json"]
-end
-subgraph "Entry Points"
-BG["background.ts"]
-CT["content.ts"]
-SP_IDX["sidepanel/index.tsx"]
-SP_MAIN["sidepanel/main.tsx"]
-APP["sidepanel/App.tsx"]
-AE["sidepanel/AgentExecutor.tsx"]
-end
-subgraph "Utilities"
-WS_CLIENT["utils/websocket-client.ts"]
-EXEC_AGENT["utils/executeAgent.ts"]
-EXEC_ACTIONS["utils/executeActions.ts"]
-PARSE_CMD["utils/parseAgentCommand.ts"]
-end
-subgraph "Hooks"
-AUTH["hooks/useAuth.ts"]
-WS_HOOK["hooks/useWebSocket.ts"]
-TABS["hooks/useTabManagement.ts"]
-end
-CFG --> BG
-CFG --> CT
-CFG --> SP_IDX
-SP_IDX --> APP
-APP --> AE
-APP --> AUTH
-APP --> WS_HOOK
-APP --> TABS
-AE --> WS_CLIENT
-AE --> EXEC_AGENT
-AE --> EXEC_ACTIONS
-AE --> PARSE_CMD
-AUTH --> WS_CLIENT
-```
+Key capabilities:
+- WXT multi-entrypoint extension with one shared design system
+- Side panel as the primary chat surface
+- Background service worker owning the bridge socket and action execution
+- Console with a persistent shell and eight routes
+- Shared API client and query keys
+- Theme driven by a `data-theme` attribute
+- Local session cache linked to server conversation ids
 
-## Core components
-- Side Panel (React): Hosted inside a shadow root UI, renders the main app, manages authentication, WebSocket connectivity, tab management, and the agent executor.
-- Background Script: Handles cross-tab messaging, executes agent tools, performs browser-level actions, and manages Gemini requests.
-- Content Script: Injects UI overlays and performs page-level actions when instructed by the background script.
-- Messaging System: Uses browser runtime messaging for background ↔ side panel and background ↔ content script communication.
-- WebSocket Client: Provides a minimal client for real-time agent execution updates and statistics retrieval.
-- Utilities: Command parsing, agent execution, and browser action execution.
-
-## Architecture overview
-Extension pieces:
-- UI Layer: Side panel React app with hooks for auth, WebSocket, and tab management.
-- Control Layer: Side panel orchestrates agent execution and displays progress.
-- Communication Layer: WebSocket client for real-time updates; browser messaging for background ↔ side panel and background ↔ content script.
-- Execution Layer: Background script handles browser APIs and dispatches actions; content script executes DOM-level actions.
+## Repository layout
 
 ```mermaid
 graph TB
-SP["Side Panel (React)"]
-BG["Background Script"]
-CS["Content Script"]
-WS["WebSocket Server"]
-BA["Browser APIs"]
-SP --> BG
-BG --> BA
-SP --> WS
-SP --> BA
-BG --> CS
-CS --> BA
+subgraph "workspace"
+  ROOT["package.json<br/>pnpm-workspace.yaml"]
+  EXT["clients/browser-extension"]
+  CON["clients/debug-web"]
+  SH["clients/shared"]
+end
+subgraph "extension entrypoints"
+  BG["background.ts"]
+  CS["content.ts"]
+  SP["sidepanel/App.tsx"]
+  PU["popup/popup.tsx"]
+  VS["voice-setup/VoiceSetup.tsx"]
+end
+subgraph "console"
+  APP["App.tsx shell"]
+  ROUTER["router.tsx"]
+  FEAT["features/*"]
+end
+subgraph "shared"
+  API["utils/http.ts"]
+  Q["query/"]
+  UI["ui/"]
+  SET["settings-ui/"]
+  MD["markdown/"]
+end
+ROOT --> EXT
+ROOT --> CON
+ROOT --> SH
+EXT --> SH
+CON --> SH
+SP --> UI
+SP --> API
+FEAT --> Q
+FEAT --> UI
+Q --> API
+SET --> API
 ```
 
-## Detailed component analysis
+## Building blocks
 
-### Side panel React application
-The side panel is a React app mounted inside a shadow root UI. It initializes the app, sets up authentication, WebSocket connectivity, and tab management. It renders the agent executor and unified settings menu.
+### Extension
 
-```mermaid
-classDiagram
-class App {
-+user
-+authLoading
-+tokenStatus
-+browserInfo
-+handleLogin()
-+handleGitHubLogin()
-+handleLogout()
-+getTokenAge()
-+getTokenExpiry()
-+handleManualRefresh()
-+loadApiKey()
-+saveApiKey()
-+loadConversationStats()
-}
-class AgentExecutor {
-+goal
-+isExecuting
-+progress
-+result
-+error
-+sessions
-+activeSessionId
-+openTabs
-+handleExecute()
-+handleStop()
-+handleNewChat()
-+handleDeleteSession()
-}
-class useAuth {
-+user
-+authLoading
-+tokenStatus
-+shouldRedirectToSettings
-+handleLogin()
-+handleGitHubLogin()
-+handleLogout()
-+getTokenAge()
-+getTokenExpiry()
-+handleManualRefresh()
-}
-class useWebSocket {
-+wsConnected
-+useWebSocket
-+autoConnectEnabled
-+setupWebSocket()
-}
-class useTabManagement {
-+tabs
-+activeTab
-+loadTabs()
-}
-App --> AgentExecutor : "renders"
-App --> useAuth : "uses"
-App --> useWebSocket : "uses"
-App --> useTabManagement : "uses"
-```
+- `wxt.config.ts`: manifest name, 22 permissions, `<all_urls>` host permission, side panel path, and the React module.
+- `entrypoints/background.ts`: 1780 lines. Owns tab tracking, the bridge socket start, context menus, action execution, screenshots and the remote task loop. MV3 workers sleep, so the bridge client keeps a ping every 20 seconds.
+- `entrypoints/content.ts`: a content script on every URL. Most of its overlay code is commented out; the active path sets up page glow and message listeners.
+- `entrypoints/sidepanel/App.tsx`: auth gate, theme handling, and the `AgentExecutor` plus settings menu.
+- `entrypoints/sidepanel/AgentExecutor.tsx`: the chat shell: header, message list, composer and work log.
+- `entrypoints/popup/popup.tsx`: a small tab switcher and bridge status view.
+- `entrypoints/voice-setup/VoiceSetup.tsx`: a standalone voice configuration page.
 
-### Authentication flow
-The authentication hook integrates with browser identity and a backend service to exchange OAuth codes for tokens, persist user data, and manage token refresh. It supports both Google OAuth and a demo GitHub flow.
+### Console
+
+- `src/App.tsx`: `AppShell` with a collapsible left nav grouped Operate, Inspect and Configure, plus a telemetry header, theme toggle and keyboard shortcuts.
+- `src/router.tsx`: TanStack Router tree for `/dashboard`, `/runs`, `/runs/$runId`, `/memory`, `/diagnostics`, `/diagnostics/$runId`, `/settings`, `/chat` and `/chat/$conversationId`.
+- `src/lib/api.ts`: shared API plus console-only ingestion and chat streaming.
+- `src/features/`: one folder per page: overview, runs, memory, diagnostics, chat, common.
+
+### Shared
+
+- `utils/http.ts`: the API client.
+- `query/`: query keys, option factories, hooks, provider, default client.
+- `ui/`: primitives and composite widgets.
+- `settings-ui/`: sections and forms used by both apps.
+- `markdown/`: markdown-it renderer with syntax highlighting and Mermaid support.
+- `theme/theme.css`: CSS variables for both themes.
+
+## How it fits together
+
+The extension has a fan-out problem: one service worker serves the side panel, popup, content scripts and the bridge. Messages between them use `browser.runtime.sendMessage` and `browser.tabs.sendMessage`, with the background worker as the coordinator.
 
 ```mermaid
 sequenceDiagram
-participant UI as "Side Panel UI"
-participant Hook as "useAuth"
-participant Identity as "browser.identity"
-participant Backend as "Backend Service"
-UI->>Hook : "handleLogin()"
-Hook->>Identity : "launchWebAuthFlow(authUrl)"
-Identity-->>Hook : "redirectResponse(code)"
-Hook->>Backend : "POST /exchange-code {code, redirect_uri}"
-Backend-->>Hook : "{access_token, refresh_token, expires_in}"
-Hook->>Backend : "GET /userinfo?access_token"
-Backend-->>Hook : "user info"
-Hook->>Hook : "persist googleUser in storage"
-Hook-->>UI : "set user state"
+  participant Panel as "side panel"
+  participant BG as "background worker"
+  participant Bridge as "bridge ws"
+  participant Page as "content script"
+  participant Tab as "tab"
+  Panel->>BG: "execute browser actions"
+  BG->>Tab: "chrome.tabs / chrome.debugger"
+  Tab-->>BG: "result"
+  BG-->>Panel: "execution result"
+  Bridge->>BG: "page.act / page.snapshot"
+  BG->>Tab: "scripting.executeScript(pageAgent)"
+  Tab-->>BG: "envelope"
+  BG-->>Bridge: "response"
+  BG->>Page: "page glow start/stop"
 ```
 
-### WebSocket integration and real-time updates
-The WebSocket client encapsulates connection management, event emission, and agent execution. The side panel hook subscribes to connection status and progress updates, displaying real-time feedback.
-
-```mermaid
-sequenceDiagram
-participant SP as "Side Panel"
-participant Hook as "useWebSocket"
-participant WSClient as "wsClient"
-participant Server as "WebSocket Server"
-SP->>Hook : "setupWebSocket()"
-Hook->>WSClient : "subscribe to connection_status"
-WSClient->>Server : "connect()"
-Server-->>WSClient : "connect"
-WSClient-->>Hook : "emit {connected : true}"
-Hook-->>SP : "set wsConnected=true"
-SP->>WSClient : "executeAgent(command, onProgress)"
-WSClient->>Server : "emit execute_agent {command}"
-Server-->>WSClient : "generation_progress"
-WSClient-->>SP : "onProgress(message)"
-Server-->>WSClient : "agent_result"
-WSClient-->>SP : "resolve result"
-```
-
-### Agent executor pattern and action execution
-The agent executor parses slash commands, executes agents either via WebSocket or HTTP, and triggers browser actions. It maintains chat sessions and displays formatted responses.
+The console is simpler. One `ApiProvider` supplies the base URL to every hook, and the router swaps page components inside a fixed shell.
 
 ```mermaid
 flowchart TD
-Start(["User submits command"]) --> Parse["Parse command (/agent-action ...)"]
-Parse --> Stage{"Stage complete?"}
-Stage --> |No| Suggestions["Show suggestions or partial matches"]
-Suggestions --> WaitInput["Wait for user refinement"]
-WaitInput --> Parse
-Stage --> |Yes| Prepare["Prepare payload with context<br/>tabs, chat history, attachments"]
-Prepare --> Mode{"WebSocket connected?"}
-Mode --> |Yes| WSExec["wsClient.executeAgent()"]
-Mode --> |No| HTTPExec["fetch() to backend endpoint"]
-WSExec --> Actions{"Has action plan?"}
-HTTPExec --> Actions
-Actions --> |Yes| ExecActions["executeBrowserActions()"]
-Actions --> |No| Display["Format and display response"]
-ExecActions --> Display
-Display --> Persist["Persist sessions to storage"]
-Persist --> End(["Done"])
+  Main["main.tsx"] --> QC["QueryClientProvider"]
+  QC --> AP["ApiProvider baseUrl=''"]
+  AP --> RP["RouterProvider"]
+  RP --> Shell["AppShell"]
+  Shell --> Nav["sidebar + telemetry"]
+  Shell --> Outlet["Outlet"]
+  Outlet --> Dash["DashboardPanel"]
+  Outlet --> Runs["RunsPanel"]
+  Outlet --> Run["RunDetailPanel"]
+  Outlet --> Mem["MemoryPanel"]
+  Outlet --> Diag["MaintenancePanel"]
+  Outlet --> Set["SettingsPanel"]
+  Outlet --> Chat["ChatPanel"]
 ```
 
-### Background script functionality and messaging
-The background script listens for messages from the side panel and content script, executes agent tools, manages tabs, and performs browser-level actions. It injects content scripts and coordinates cross-tab communication.
+## Package boundaries
+
+`clients/shared` exports subpaths, not one barrel. Each app imports only what it needs:
+
+```json
+{
+  "./api": "./src/api/index.ts",
+  "./query": "./src/query/index.ts",
+  "./markdown": "./src/markdown/index.ts",
+  "./settings-ui": "./src/settings-ui/index.ts",
+  "./ui": "./src/ui/index.ts",
+  "./icons": "./src/icons/index.ts",
+  "./format": "./src/format/index.ts",
+  "./theme.css": "./src/theme/theme.css",
+  "./agent": "./src/agent/index.ts"
+}
+```
+
+The extension's side panel uses `api`, `ui`, `settings-ui` and `theme.css`. The console uses `query`, `ui` and `settings-ui`. Markdown rendering is shared so chat answers look the same in both surfaces.
+
+## Design system
+
+`theme/theme.css` defines a warm graphite dark theme and a paper light theme. The contract is `[data-theme="light"]` or `[data-theme="dark"]` on `<html>`. Both apps set it and persist the choice:
+
+- Extension: `localStorage.theme` with `dark`, `light` or `system`; system listens to `prefers-color-scheme`.
+- Console: `localStorage.theme` with `dark` or `light`; no system mode.
+
+Type is Bricolage Grotesque for display, Hanken Grotesk for body, Geist Mono for telemetry. The accent is an ember orange. `ab-` classes (`ab-pill`, `ab-btn`, `ab-mono`, `ab-eyebrow`) are the shared vocabulary layered over the CSS variables.
+
+## Surface lifecycle
+
+The extension has one worker and several renderers. The worker owns the socket and the action queue; renderers come and go as the user opens the panel, popup or a tab.
+
+```mermaid
+stateDiagram-v2
+  [*] --> WorkerStart
+  WorkerStart --> BridgeConnect : "startBridge()"
+  BridgeConnect --> Ready : "hello accepted"
+  BridgeConnect --> Retrying : "socket closed"
+  Retrying --> BridgeConnect : "backoff or alarm"
+  Ready --> Executing : "bridge call"
+  Executing --> Ready : "response sent"
+  Ready --> PanelOpen : "user opens side panel"
+  PanelOpen --> Ready : "panel closes"
+  Ready --> PopupOpen : "toolbar click"
+  PopupOpen --> Ready : "popup closes"
+```
+
+## State ownership
+
+| State | Owner | Persistence |
+| --- | --- | --- |
+| Auth profile | `useAuth` | `browser.storage.local.googleUser` |
+| Chat sessions and messages | `useSessions` | `browser.storage.local` plus server conversation id |
+| Server conversations | Postgres | `/api/conversations` |
+| Settings | `AppSetting` rows | backend, read through `/api/integrations/status` |
+| Theme | app shell | `localStorage.theme` |
+| Bridge status | bridge client | `browser.storage.local.bridgeStatus` |
+| Query cache | TanStack Query | memory only |
+
+The extension keeps local session state so the panel loads instantly, then links each session to a server conversation id. The console does not keep local chat state; it reads conversations and messages from the API.
+
+## Message flow to the backend
+
+The side panel has two paths. Chat goes over HTTP or SSE to `/api/genai/react` and `/api/genai/react/stream`. Browser actions go through the background worker, which either executes locally or receives a bridge call from the MCP side. The panel calls `continueBrowserRuntimeSession` when a `subagent_tool_result` for `runtime_step` arrives, which is how a planned action becomes an observation.
 
 ```mermaid
 sequenceDiagram
-participant SP as "Side Panel"
-participant BG as "Background Script"
-participant CS as "Content Script"
-participant Tabs as "Tabs API"
-SP->>BG : "runtime.sendMessage {type : EXECUTE_AGENT_TOOL, payload}"
-BG->>BG : "handleExecuteAgentTool()"
-BG-->>SP : "sendResponse(result)"
-SP->>BG : "runtime.sendMessage {type : EXECUTE_ACTION, payload}"
-BG->>Tabs : "scripting.executeScript(files : [...])"
-BG->>Tabs : "tabs.sendMessage(tabId, {type : PERFORM_ACTION, action})"
-BG-->>SP : "sendResponse(response)"
-SP->>BG : "runtime.sendMessage {type : GET_ACTIVE_TAB}"
-BG->>Tabs : "tabs.query({active : true,currentWindow : true})"
-BG-->>SP : "sendResponse({success, tab})"
-SP->>BG : "runtime.sendMessage {type : GET_ALL_TABS}"
-BG->>Tabs : "tabs.query({})"
-BG-->>SP : "sendResponse({success, tabs})"
+  participant UI as "AgentExecutor"
+  participant Hook as "useAgentRun"
+  participant API as "backend :5454"
+  participant BG as "background.ts"
+  participant Tab as "tab"
+  UI->>API: "POST /api/genai/react/stream"
+  API-->>UI: "answer_delta, tool events"
+  API-->>UI: "subagent_tool_result runtime_step"
+  Hook->>API: "continueBrowserRuntimeSession"
+  Hook->>BG: "execute the returned action"
+  BG->>Tab: "DOM or CDP action"
+  Tab-->>BG: "observation"
+  Hook->>API: "next /browser/runtime step"
 ```
 
-### Content script integration
-The content script runs on all URLs and can be extended to perform page-level actions. It listens for messages from the background script and executes DOM operations.
-
-## Dependency analysis
-The extension relies on WXT for build and manifest generation, React for UI, and Socket.IO for real-time communication. Dependencies are declared in package.json and TypeScript configuration extends WXT's generated tsconfig.
+## Dependencies
 
 ```mermaid
 graph TB
-WXT["WXT Build System"]
-React["React + ReactDOM"]
-SocketIO["Socket.IO Client"]
-Tailwind["Tailwind Merge / Animate CSS"]
-Radix["Radix UI Select"]
-Markdown["React Markdown + KaTeX"]
-WXT --> AppTSX["App.tsx"]
-React --> AppTSX
-SocketIO --> WSClient["websocket-client.ts"]
-Tailwind --> AppTSX
-Radix --> AppTSX
-Markdown --> AppTSX
+  Ext["browser-extension"] --> WXT["wxt ^0.21.5"]
+  Ext --> React["react ^19.3.1"]
+  Ext --> Shared["@agentic-browser/shared"]
+  Ext --> Socket["socket.io-client ^4.8.4"]
+  Ext --> Generative["@google/generative-ai ^0.24.1"]
+  Con["debug-web"] --> Vite["vite ^8.3.8"]
+  Con --> Router["@tanstack/react-router ^1.170.46"]
+  Con --> ForceGraph["react-force-graph-2d ^1.29.2"]
+  Con --> Shared
+  Shared --> Query["@tanstack/react-query ^5.108.1"]
+  Shared --> MarkdownIt["markdown-it ^15.0.3"]
+  Shared --> Mermaid["mermaid ^12.3.0"]
+  Shared --> Radix["@radix-ui/react-select"]
 ```
 
-## Performance considerations
-- Debounce or throttle frequent UI updates (e.g., tab list refresh) to reduce re-renders.
-- Batch browser API calls (tabs.query, scripting.executeScript) and cache results where appropriate.
-- Use lazy loading for heavy components and defer non-critical computations.
-- Limit DOM extraction sizes (e.g., HTML capture) and apply timeouts to prevent long-running operations.
-- Prefer polling fallbacks for stats retrieval when WebSocket is unavailable.
+## Performance
 
-## Troubleshooting guide
-Common issues and resolutions:
-- WebSocket not connecting: Verify VITE_API_URL and server availability; check connection events and fallback to HTTP stats.
-- Authentication failures: Ensure backend is running and identity API is available; confirm OAuth redirect URI and scopes.
-- Content script injection errors: Confirm permissions and that the content script path is correct; verify target tab exists.
-- Tab management inconsistencies: Ensure listeners are registered/unregistered on mount/unmount; use query results before acting.
-- Cross-origin limitations: Use host_permissions and appropriate permissions; avoid unsafe inline styles in injected UI.
+- The extension bundle is split by WXT entrypoint. The background worker loads separately from the side panel.
+- The bridge pings every 20 seconds to keep the MV3 worker alive; Chrome 116+ keeps a worker with an open socket alive while traffic flows.
+- The console uses `keepPreviousData` on paged lists and a 1.5 second poll only while a run is live.
+- Charts are SVG and canvas, not a charting library, so the dashboard has no heavy dependency.
+- Fonts are bundled via Fontsource and subset by weight, not loaded from a CDN.
 
-## Conclusion
-Host permissions are broad by design for automation. OAuth uses `browser.identity`. Point the client at the API base URL through env, not hardcoded strings.
+## Troubleshooting
 
-## Appendices
+- Side panel blank after a build: check the browser console for a React error. A stale `.output` folder after dependency changes usually needs `pnpm build:extension`.
+- Theme flashes light on load: the extension's `public/theme-boot.js` sets `data-theme` before React mounts. If it is missing from the build, the default dark theme applies after hydration.
+- Console deep link 404s on refresh: the host must rewrite unknown paths to `index.html`.
+- Bridge status stuck at `disconnected`: the service worker was suspended and the socket has not reconnected. Open the popup or side panel to wake it, or reload the extension.
+- Settings UI renders in one app but not the other: `settings-ui` expects an `ApiProvider` and a TanStack Query client above it.
+- Fonts fall back to system: the theme CSS imports Fontsource packages; a build that strips CSS imports loses them.
+- A planned browser action never runs: the `runtime_step` handler did not call `continueBrowserRuntimeSession`. Check the work log for the `browser_action_agent` row.
 
-### WXT configuration and permissions
-- Manifest permissions include activeTab, tabs, storage, scripting, identity, sidePanel, webNavigation, webRequest, cookies, bookmarks, history, clipboard, notifications, contextMenus, downloads.
-- Host permissions grant access to all URLs.
-- Scripts support development and build targets for Chrome and Firefox.
+## Appendix
 
-### Browser compatibility and packaging
-- Use WXT scripts to build and package for Chrome and Firefox.
-- Shadow DOM UI ensures isolation and compatibility across pages.
-- Feature detection for browser APIs (e.g., speech recognition) prevents runtime errors.
+### Implementation examples
+- Extension entry: `defineBackground(() => { startBridge(); ... })`.
+- Side panel: `App` renders `AgentExecutor` after `useAuth` resolves.
+- Console route tree: `rootRoute.addChildren([...])`.
+- Shared theme: `<html data-theme="dark">`.
+- Query client: `createDefaultQueryClient()` from `shared/query`.
 
-### Cross-Origin communication
-- Use host_permissions for broad access.
-- For OAuth, rely on browser.identity and secure redirects.
-- For backend communication, configure CORS and environment variables for API base URL.
+### Source files
+- `clients/browser-extension/wxt.config.ts`
+- `clients/browser-extension/entrypoints/background.ts`
+- `clients/browser-extension/entrypoints/content.ts`
+- `clients/browser-extension/entrypoints/sidepanel/App.tsx`
+- `clients/browser-extension/entrypoints/popup/popup.tsx`
+- `clients/debug-web/src/App.tsx`
+- `clients/debug-web/src/router.tsx`
+- `clients/debug-web/src/main.tsx`
+- `clients/shared/src/utils/http.ts`
+- `clients/shared/src/theme/theme.css`
+- `pnpm-workspace.yaml`

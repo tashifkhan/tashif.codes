@@ -1,330 +1,233 @@
 # YouTube integration
 
-## Introduction
-yt-dlp metadata/subtitles, Whisper when needed, transcript cleaning, and LangChain answer generation over video text.
+The YouTube integration answers questions about a video from its transcript. `POST /api/genai/youtube/` takes a video URL and a question, fetches subtitles with `yt-dlp`, cleans the caption text, and sends the result through a prompt chain. If no subtitle track exists, it downloads the audio and transcribes it with local Whisper.
 
-## Project structure
-The YouTube integration spans several modules:
-- Router: Exposes a FastAPI endpoint to ask questions about a YouTube video.
-- Service: Orchestrates LLM-based answer generation using either a local transcript or an attached file via a generative AI SDK.
-- Tools: Provides utilities for extracting video IDs, retrieving video metadata and subtitles, and generating transcripts.
-- Transcript Generator: Applies cleaning, timestamp normalization, and duplicate removal to produce a readable transcript.
-- Models: Defines request/response schemas for video info and subtitles.
+The prompt is strict about grounding. It tells the model to use only the supplied context, reply `Data not available.` for anything outside it, and avoid inventing titles or statistics. The service catches every error and returns an apology string, so a failed transcript fetch usually arrives as HTTP 200 with a message rather than a 500.
+
+Key capabilities:
+- Subtitle download through `yt-dlp` in the preferred language.
+- Alternative-language and Whisper fallbacks.
+- Caption cleaning: cue tags, timestamps, duplicates, repeated sentences.
+- A per-request chain so the current model picker applies.
+- Optional file attachments alongside the transcript.
+- A route that accepts a URL, question, history, and attachment path.
+
+## Repository layout
+
+The route module validates and flattens history. The service picks the attachment or chain path. The prompt module owns transcript fetching and cleanup wiring. The tools package owns subtitle download and caption cleaning.
 
 ```mermaid
 graph TB
-subgraph "API Layer"
-R["routers/youtube.py"]
-end
-subgraph "Service Layer"
-S["services/youtube_service.py"]
-end
-subgraph "Tools"
-U1["tools/youtube_utils/extract_id.py"]
-U2["tools/youtube_utils/get_info.py"]
-U3["tools/youtube_utils/get_subs.py"]
-TG["tools/youtube_utils/transcript_generator/*"]
-end
-subgraph "Prompts & LLM"
-P["prompts/youtube.py"]
-end
-subgraph "Models"
-M1["models/yt.py"]
-M2["models/requests/video_info.py"]
-M3["models/requests/subtitles.py"]
-M4["models/response/subtitles.py"]
-end
-R --> S
-S --> P
-S --> U1
-S --> U2
-S --> U3
-U2 --> U3
-U3 --> TG
-P --> TG
-S --> M1
-R --> M2
-R --> M3
-R --> M4
+  subgraph Routes
+    R["routers/youtube.py<br/>POST /"]
+  end
+  subgraph Service
+    S["services/youtube_service.py<br/>YouTubeService"]
+  end
+  subgraph Prompt
+    P["prompts/youtube.py<br/>get_chain, get_context, prompt"]
+  end
+  subgraph Tools
+    Subs["tools/youtube_utils/get_subs.py<br/>get_subtitle_content"]
+    Gen["tools/youtube_utils/transcript_generator<br/>processed_transcript"]
+    Clean["clean.py, srt.py, timestamp.py, duplicate.py"]
+  end
+  subgraph External
+    YT["YouTube"]
+    Whisper["faster-whisper"]
+  end
+  R --> S
+  S --> P
+  P --> Subs
+  Subs --> YT
+  Subs --> Whisper
+  Subs --> Gen
+  Gen --> Clean
+  P --> LLM["core/llm.py"]
 ```
 
-## Core components
-- YouTubeService: Implements the primary workflow for answering questions about a YouTube video. It supports two modes:
- - Attached file mode: Uploads a local file to a generative AI SDK and optionally augments the prompt with a YouTube transcript and chat history.
- - Prompt-driven mode: Builds a context from the video transcript and passes it to a LangChain chain that invokes an LLM.
-- Router: Validates inputs, constructs a chat history string, and delegates to the service.
-- Tools:
- - extract_video_id: Parses YouTube URLs to extract the video ID from both www.youtube.com and youtu.be domains.
- - get_info: Retrieves video metadata via yt-dlp and optionally attaches a cleaned transcript if available.
- - get_subs: Downloads subtitles in preferred language, falls back to alternative languages, and finally to audio transcription via Whisper if needed.
-- Transcript Generator: Cleans and normalizes subtitles/transcripts by removing timestamps, cue tags, speaker tags, and align directives; deduplicates lines; and merges into coherent paragraphs.
-- Models: Define typed request/response structures for video info and subtitles.
+## Building blocks
 
-## Architecture overview
-The system integrates a FastAPI router with a service layer and a prompt-driven LLM chain. The service can operate in two modes:
-- With an attached file: Uses a generative AI SDK to generate answers directly from the file and optional transcript/chat context.
-- Without an attached file: Builds a transcript-based context and passes it to the LLM chain.
+- `AskRequest`: `url`, `question`, `chat_history`, and `attached_file_path`.
+- `YouTubeService.generate_answer`: async method that returns a string.
+- `get_context`: reads `url` from the input dict and returns cleaned transcript text or an empty string.
+- `fetch_transcript`: calls `get_subtitle_content`, detects known error strings, and cleans a real transcript.
+- `get_chain`: builds `main_chain2 | prompt | _current_client() | StrOutputParser` on each call.
+- `main_chain2`: `RunnableParallel` that maps `url` to context and passes question and history through.
+- `get_subtitle_content`: `yt-dlp` subtitle download with language and Whisper fallbacks.
+- `processed_transcript`: runs four cleaning passes in a fixed order.
+- `download_audio_and_transcribe`: downloads audio and runs `faster_whisper.WhisperModel`.
+
+## How it fits together
+
+The route flattens `chat_history` entries into `role: content` lines before calling the service. That means the service and prompt only deal with a string. The service then chooses between a normal chain call and an attachment call.
 
 ```mermaid
 sequenceDiagram
-participant C as "Client"
-participant R as "Router (youtube.py)"
-participant S as "YouTubeService"
-participant P as "Prompt Chain (youtube.py)"
-participant T as "Transcript Utils (get_subs.py)"
-participant G as "LLM"
-C->>R : POST "/" with url, question, chat_history, attached_file_path
-R->>S : generate_answer(url, question, chat_history, attached_file_path)
-alt attached_file_path provided
-S->>S : Upload file to generative AI SDK
-S->>T : get_transcript_text(url) (fallback)
-S->>G : generate_content(contents)
-G-->>S : response.text
-else no attached file
-S->>P : invoke(chain)
-P->>T : fetch_transcript(url)
-T-->>P : cleaned transcript
-P->>G : invoke(prompt + context)
-G-->>P : response
-P-->>S : response
-end
-S-->>R : answer
-R-->>C : {"answer" : ...}
+  participant C as Client
+  participant R as routers/youtube.py
+  participant S as YouTubeService
+  participant P as prompts/youtube.py
+  participant Y as yt-dlp
+  participant W as faster-whisper
+  participant L as LLM
+  C->>R: POST /api/genai/youtube/ with url, question
+  R->>R: require url and question
+  R->>R: flatten chat_history
+  R->>S: generate_answer(url, question, history, attachment)
+  alt attachment path set
+    S->>P: get_context({"url": url}) in a thread
+    P->>Y: subtitle request
+    Y-->>P: captions or error
+    P-->>S: cleaned transcript
+    S->>L: answer_with_attachment(rendered prompt, path)
+  else no attachment
+    S->>P: get_chain().ainvoke({url, question, chat_history})
+    P->>Y: subtitle request
+    Y-->>P: captions, alternative language, or Whisper
+    P->>L: prompt with context
+  end
+  L-->>S: answer text
+  S-->>R: answer
+  R-->>C: answer field
 ```
 
-## Detailed component analysis
+The service logs the question at info level and the model response at debug level. A chain error is logged and replaced with: `I apologize, but I encountered an error processing your question about the video. Please try again.`
 
-### Router: YouTube endpoint
-- Validates presence of url and question.
-- Converts chat history entries into a formatted string.
-- Delegates to YouTubeService.generate_answer and returns a JSON response with the answer.
+## Transcript retrieval
+
+`get_subtitle_content` makes one `yt-dlp` pass that asks for manual subtitles, automatic captions, and auto-translated captions in `en` by default. It writes VTT, SRT, or the best available format into `tools/youtube_utils/temp_subs`, reads `requested_subtitles`, and removes the temp directory in a `finally` block.
+
+If the preferred language is missing, it picks an alternative. Manual subtitles win over automatic captions, and the first language that is not the preferred one is chosen. It tries the already-downloaded requested subtitles first, then makes one more request for that language.
 
 ```mermaid
 flowchart TD
-Start(["POST /"]) --> Validate["Validate url and question"]
-Validate --> Valid{"Valid?"}
-Valid --> |No| Error["HTTP 400 Bad Request"]
-Valid --> |Yes| BuildHistory["Build chat history string"]
-BuildHistory --> CallService["Call YouTubeService.generate_answer"]
-CallService --> Return["Return {answer}"]
+  A["get_subtitle_content(url, lang=en)"] --> B["yt-dlp subtitle request"]
+  B --> C{"video info?"}
+  C -- no --> D["Video unavailable."]
+  C -- yes --> E{"preferred lang in requested_subtitles?"}
+  E -- yes --> F["read subtitle file or data"]
+  F --> G{"content?"}
+  G -- yes --> H["return raw captions"]
+  G -- no --> I["find alternative language"]
+  E -- no --> I
+  I --> J{"manual subtitle language?"}
+  J -- yes --> K["use it"]
+  J -- no --> L{"automatic caption language?"}
+  L -- yes --> K
+  L -- no --> M["Whisper fallback"]
+  K --> N["download that language once"]
+  N --> O{"content?"}
+  O -- yes --> H
+  O -- no --> M
+  M --> P["download audio, transcribe with Whisper"]
 ```
 
-### Service: YouTubeService
-- Two execution paths:
- - Attached file mode: Uploads the file to a generative AI SDK, optionally appends a YouTube transcript and chat history, and generates content using a configured model.
- - Prompt-driven mode: Uses a LangChain chain to build a context from the transcript and pass it to the LLM.
-- Error handling: catches exceptions during file processing and returns plain messages.
+The exception path is narrow but important. A `DownloadError` containing `video unavailable` returns that message. A 429, `too many requests`, `subtitles not available`, or `no closed captions found` goes to Whisper. Any other download error returns `Error downloading subtitles: ...`. Unexpected exceptions return `An unexpected error occurred while fetching subtitles: ...`.
+
+The Whisper fallback downloads the best audio stream to `tools/youtube_utils/temp_audio` and runs `faster_whisper.WhisperModel`. It runs as a blocking call inside the request path, so the first transcription pays the model load and the audio decode.
+
+## Transcript cleaning
+
+`processed_transcript` applies four passes. The order matters because each pass assumes the previous one has removed a class of noise.
 
 ```mermaid
-flowchart TD
-AStart(["generate_answer"]) --> CheckFile{"attached_file_path?"}
-CheckFile --> |Yes| Upload["Upload file to generative AI SDK"]
-Upload --> FetchTranscript["Fetch transcript via get_transcript_text"]
-FetchTranscript --> BuildContents["Build contents list (file, transcript, chat history, question)"]
-BuildContents --> GenContent["Generate content with model"]
-GenContent --> AReturn["Return response.text"]
-CheckFile --> |No| InvokeChain["Invoke youtube_chain"]
-InvokeChain --> ParseResp{"Response is str?"}
-ParseResp --> |Yes| AReturn
-ParseResp --> |No| ReturnContent["Return response.content"]
+flowchart LR
+  A["raw captions"] --> B["clean_transcript<br/>drop cue timestamps, headers, tags"]
+  B --> C["clean_srt_text<br/>remove arrow ranges and literal backslash n"]
+  C --> D["clean_timestamps_and_dedupe<br/>strip arrows, inline cues, duplicate lines"]
+  D --> E["remove_sentence_repeats<br/>collapse a line that prefixes the next"]
+  E --> F["clean transcript text"]
 ```
 
-### Tools: YouTube utilities
+`clean_transcript` also removes speaker tags such as `<v Name>`, VTT metadata lines, and alignment artifacts. It merges cue lines into paragraphs separated by blank lines. `clean_srt_text` handles the literal `\n` sequences that some caption files contain. The dedupe pass keeps first-seen lines in order. The final pass handles captions that repeat a prefix of the next line, a common rolling-caption artifact.
 
-#### Video ID extraction
-- Supports youtube.com and youtu.be domains.
-- Extracts the v parameter for youtube.com or the path fragment for youtu.be.
+## The prompt and its context
 
-```mermaid
-flowchart TD
-EStart(["extract_video_id"]) --> Parse["Parse URL"]
-Parse --> Host{"Host?"}
-Host --> |youtube.com| GetV["Read query param 'v'"]
-Host --> |youtu.be| GetPath["Read path after '/'"]
-Host --> |Other| None["Return None"]
-GetV --> ReturnID["Return ID or None"]
-GetPath --> ReturnID
-None --> End(["End"])
-ReturnID --> End
-```
+The prompt names the model `YTVideoChat` and gives it seven rules. Summaries use description and transcript and stay under 150 words. Durations convert from seconds to `X min Y sec`. Statistics quote `view_count`, `like_count`, `upload_date`, and `uploader`. Themes use tags, categories, and transcript. Sentiment uses captions or transcript. Related videos become topic suggestions, never invented titles. Out-of-scope questions get `Data not available.`
 
-#### Video info retrieval
-- Uses yt-dlp to extract metadata.
-- Attempts to fetch subtitles and attach a cleaned transcript if available.
-- Handles known error conditions and logs appropriate messages.
-
-```mermaid
-flowchart TD
-IStart(["get_video_info"]) --> YTDLP["yt-dlp extract_info"]
-YTDLP --> BuildMap["Build YTVideoInfo fields"]
-BuildMap --> FetchSubs["get_subtitle_content(url)"]
-FetchSubs --> KnownErr{"Known error?"}
-KnownErr --> |Yes| Skip["Skip transcript"]
-KnownErr --> |No| Clean["processed_transcript"]
-Clean --> Attach["Attach transcript to YTVideoInfo"]
-Skip --> ReturnInfo["Return YTVideoInfo"]
-Attach --> ReturnInfo
-```
-
-#### Subtitle extraction and fallback
-- Single-pass attempt for preferred language subtitles (manual, auto-generated, auto-translated).
-- If unavailable, finds an alternative language from available tracks and retries.
-- Falls back to audio download and Whisper transcription if no subtitles are found.
-- Handles rate limits and unavailable videos with explicit errors.
-
-```mermaid
-flowchart TD
-SStart(["get_subtitle_content"]) --> FirstPass["Single-pass preferred language"]
-FirstPass --> Found{"Found content?"}
-Found --> |Yes| ReturnFirst["Return content"]
-Found --> |No| AltLang["Find alternative language"]
-AltLang --> AltFound{"Alternative found?"}
-AltFound --> |Yes| RetryAlt["Retry with alternative language"]
-RetryAlt --> FoundAlt{"Found content?"}
-FoundAlt --> |Yes| ReturnAlt["Return content"]
-FoundAlt --> |No| Whisper["Fallback to audio + faster-whisper"]
-AltFound --> |No| Whisper
-Whisper --> ReturnWhisper["Return transcript"]
-```
-
-### Transcript processing pipeline
-The transcript generator applies a series of transformations to normalize and clean the text:
-- Remove full SRT/VTT timestamps and cue tags.
-- Strip speaker tags and alignment directives.
-- Normalize inline timestamps and collapse literal newline sequences.
-- Deduplicate consecutive repeated lines.
-- Merge into coherent paragraphs.
-
-```mermaid
-flowchart TD
-TStart(["processed_transcript"]) --> CleanSRT["clean_srt_text"]
-CleanSRT --> CleanTimestamps["clean_timestamps_and_dedupe"]
-CleanTimestamps --> CleanTranscript["clean_transcript"]
-CleanTranscript --> RemoveDupes["remove_sentence_repeats"]
-RemoveDupes --> TEnd["Return cleaned transcript"]
-```
-
-### Prompt chain and LLM integration
-- The prompt defines strict guidelines for answering questions using only the video's metadata and transcript.
-- A LangChain chain composes:
- - A context builder that fetches and cleans the transcript.
- - The prompt template.
- - An LLM client.
- - A string output parser.
-- The service can bypass this chain when using an attached file.
-
-```mermaid
-sequenceDiagram
-participant P as "Prompt Chain"
-participant T as "Transcript Utils"
-participant L as "LLM"
-P->>T : fetch_transcript(url)
-T-->>P : cleaned transcript
-P->>L : invoke(prompt + context + question)
-L-->>P : response
-```
-
-### Models and schemas
-- YTVideoInfo: Typed representation of video metadata and optional transcript/captions.
-- VideoInfoRequest: Minimal request schema for video info endpoints.
-- SubtitlesRequest: Request schema for subtitle extraction with optional language.
-- SubtitlesResponse: Response schema for returning subtitle text.
-
-```mermaid
-classDiagram
-class YTVideoInfo {
-+string title
-+string description
-+int duration
-+string uploader
-+string upload_date
-+int view_count
-+int like_count
-+string[] tags
-+string[] categories
-+string captions
-+string transcript
-}
-class VideoInfoRequest {
-+string url
-}
-class SubtitlesRequest {
-+string url
-+string lang
-}
-class SubtitlesResponse {
-+string subtitles
-}
-```
-
-## Dependency analysis
-- Router depends on YouTubeService.
-- YouTubeService depends on:
- - Prompt chain (LangChain) for non-file mode.
- - Generative AI SDK for file mode.
- - Tools for video ID extraction, info retrieval, and subtitle fetching.
-- Tools depend on yt-dlp for metadata and subtitle retrieval, and optionally on Whisper for transcription.
-- Transcript generator utilities are composed into a single processing function.
+The current code only supplies a transcript. `get_context` returns `fetch_transcript(url)`, and no video metadata object is inserted into the prompt. Questions about view counts, upload date, or duration therefore usually hit the out-of-scope rule unless the transcript happens to mention them. This is a gap between the prompt text and the context the chain actually builds.
 
 ```mermaid
 graph LR
-R["routers/youtube.py"] --> S["services/youtube_service.py"]
-S --> P["prompts/youtube.py"]
-S --> U["tools/youtube_utils/*"]
-U --> TG["transcript_generator/*"]
-U --> YTDLP["yt-dlp"]
-U --> WHISPER["faster-whisper"]
+  URL["url"] --> Context["get_context"]
+  Context --> Transcript["cleaned transcript"]
+  Q["question"] --> Chain["main_chain2 | prompt | client | parser"]
+  H["chat_history string"] --> Chain
+  Transcript --> Chain
+  Chain --> Answer["markdown answer"]
 ```
 
-## Performance considerations
-- Subtitle retrieval strategy:
- - Single-pass preferred language request minimizes API calls and avoids rate limiting.
- - Alternative language selection reduces retries.
- - Whisper runs when no subtitles are available.
-- Transcript processing:
- - Efficient regex-based cleaning and deduplication reduce memory overhead.
- - Paragraph merging improves readability without heavy computation.
-- Audio transcription:
- - Lightweight model size and CPU execution optimize resource usage.
- - Temporary file cleanup prevents disk accumulation.
-- Router and service:
- - Early validation and minimal string processing keep latency low.
- - Logging helps identify bottlenecks without impacting performance.
+## Attachments
 
-## Troubleshooting guide
-- API access issues:
- - Rate limiting: The subtitle utility handles 429 errors by falling back to Whisper. Monitor logs for rate limit warnings.
- - Video unavailable: Errors are normalized and surfaced to the caller; verify the video URL and privacy settings.
-- Transcript generation problems:
- - Empty or malformed transcripts: The processing pipeline removes timestamps and cue tags; confirm the source format.
- - Repeated lines: Deduplication is applied; check for repeated segments in the original content.
-- Content availability concerns:
- - No subtitles: The system attempts alternative languages and falls back to audio transcription.
- - Language mismatch: Specify the desired language in the subtitles request schema.
-- Service-level errors:
- - Validation failures: Ensure url and question are provided in the request.
- - Generative AI SDK errors: Confirm API keys and file upload permissions.
+With `attached_file_path`, the service fetches the transcript in a worker thread, formats the prompt with the transcript, question, and history, then calls `answer_with_attachment`. That helper adds the file to the model input and makes one call. The attachment path must be under `uploads/`.
 
-## Conclusion
-Prefer captions; fall back to Whisper when you must. Clean transcripts before prompting. Quota and download failures should surface as clear errors.
+The attachment branch uses `prompt.format`, not `get_answer`, so the module-level prompt is the source of truth. If the prompt template changes, both branches see the change.
 
-## Appendices
+## Dependencies
 
-### Example workflows
+```mermaid
+graph TB
+  Router["routers/youtube.py"] --> Service["services/youtube_service.py"]
+  Service --> Prompt["prompts/youtube.py"]
+  Service --> Attach["services/attachments.py"]
+  Prompt --> Subs["tools/youtube_utils/get_subs.py"]
+  Prompt --> Gen["transcript_generator"]
+  Prompt --> LLM["core/llm.py"]
+  Subs --> YTDLP["yt-dlp"]
+  Subs --> Faster["faster-whisper"]
+  Subs --> FS["temp_subs and temp_audio"]
+  Gen --> Regex["re and string passes"]
+```
 
-- Video analysis workflow (prompt-driven):
- - Client sends a question and URL.
- - Router validates inputs and calls the service.
- - Service builds a transcript-based context and invokes the LLM chain.
- - Response is returned to the client.
+## Performance and limits
 
-- Content extraction pattern (subtitle retrieval):
- - Attempt single-pass preferred language.
- - Select alternative language if available.
- - Fall back to audio transcription if no subtitles exist.
+- Subtitle retrieval is one `yt-dlp` request in the common case and two when an alternative language is needed.
+- Temp subtitle and audio directories are removed in `finally` blocks. A crash before cleanup can leave files behind.
+- Whisper runs locally and blocks the request. The first call loads the model.
+- The chain is rebuilt per request. That is cheap next to the download but avoids a stale model client.
+- The whole transcript goes into the prompt with no clipping. Long videos can exceed the model context.
+- The route awaits `ainvoke`, so the event loop is not blocked while the model answers.
+- There is no transcript cache. Asking twice downloads twice.
 
-- Transcript processing:
- - Clean SRT/VTT artifacts.
- - Remove timestamps and cue tags.
- - Deduplicate and merge into paragraphs.
+## Troubleshooting
 
+- Answer is the apology string: the chain raised. Check the server log for the transcript or model error.
+- `Video unavailable.`: `yt-dlp` could not extract the video. Check the URL and region restrictions.
+- Answers about duration or views say `Data not available.`: the prompt asks for metadata, but the chain only passes a transcript.
+- Empty answer: the transcript was empty and the model returned nothing. Try a video with captions or enable the Whisper fallback.
+- 429 from YouTube: the subtitle request was rate limited. The code should fall back to Whisper, which also downloads audio and can hit the same limit.
+- Wrong language: the default is `en`. `get_subtitle_content` accepts a `lang` argument, but the route does not expose it.
+- First Whisper call is slow: the model loads inside the request and is not cached at module level here.
+- A very long video overflows the context: the transcript is not clipped. Ask a narrower question or add clipping before the prompt.
+- Attachment ignored: the file path was outside `uploads/`, and the attachment helper refused it.
+
+## Appendix
+
+### API endpoint
+
+| Method | Path | Body | Response |
+| --- | --- | --- | --- |
+| POST | `/api/genai/youtube/` | `AskRequest` | `{"answer": str}` |
+
+`AskRequest` carries `url`, `question`, `chat_history`, and `attached_file_path`.
+
+### Implementation examples
+
+- `get_subtitle_content(url)` returns raw VTT or SRT text, an error string, or a Whisper transcript.
+- `processed_transcript(raw)` returns cleaned paragraph text.
+- `get_chain()` returns a runnable that accepts `{url, question, chat_history}`.
+- `get_context({"url": url})` returns the cleaned transcript or `""`.
+- `YouTubeService.generate_answer(url, question, history)` returns the answer string.
+
+### Source files
+
+- `routers/youtube.py`
+- `services/youtube_service.py`
+- `prompts/youtube.py`
+- `tools/youtube_utils/get_subs.py`
+- `tools/youtube_utils/transcript_generator/__init__.py`
+- `tools/youtube_utils/transcript_generator/clean.py`
+- `tools/youtube_utils/transcript_generator/srt.py`
+- `tools/youtube_utils/transcript_generator/timestamp.py`
+- `tools/youtube_utils/transcript_generator/duplicate.py`

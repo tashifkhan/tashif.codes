@@ -1,315 +1,264 @@
 # YouTube data models
 
-## Introduction
-YouTube metadata and transcript models, URL parsing, transcript cleaning, and error shapes for missing captions.
+YouTube question answering is a single stateless call. `POST /api/genai/youtube/` takes a video URL and a question, fetches the video metadata and transcript, sends both to a prompt chain, and returns one answer string. No conversation row, run row or memory claim is written by this route.
 
-## Project structure
-The YouTube processing stack spans models, tools, prompts, services, and routers:
-- Data models define typed structures for video info and request/response payloads
-- Tools implement URL parsing, metadata extraction, subtitle retrieval, and transcript cleaning
-- Prompts orchestrate context assembly and LLM prompting
-- Services coordinate processing and integrate with external APIs
-- Routers expose endpoints for YouTube queries
+That makes the YouTube page a useful counterexample to the schema pages: `YTVideoInfo` is a Pydantic model that never reaches Postgres. The transcript is cleaned in memory, used as prompt context and discarded.
+
+Key capabilities:
+- One request model, `AskRequest`, shared by the route and the service
+- An optional `attached_file_path` that switches to the attachment path
+- A `YTVideoInfo` metadata shape filled from `yt-dlp`
+- Transcript retrieval with language fallback and Whisper as the last resort
+- A four step cleaning pipeline for raw subtitle text
+- A prompt chain rebuilt per request so the model picker applies
+- No database rows and no trace rows
+
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Models"
-YT["YTVideoInfo<br/>video metadata"]
-ReqVI["VideoInfoRequest<br/>url"]
-ReqSub["SubtitlesRequest<br/>url, lang"]
-ResSub["SubtitlesResponse<br/>subtitles"]
+subgraph "Route"
+  RT["routers/youtube.py<br/>POST /"]
+  REQ["models/requests/ask.py<br/>AskRequest"]
+end
+subgraph "Service"
+  SVC["services/youtube_service.py<br/>YouTubeService.generate_answer"]
+  ATT["services/attachments.py<br/>answer_with_attachment"]
+end
+subgraph "Prompt"
+  PR["prompts/youtube.py<br/>prompt, get_chain, get_context"]
+  LLM["core/llm.py<br/>get_default_llm"]
 end
 subgraph "Tools"
-ExtractID["extract_id.py<br/>extract_video_id(url)"]
-GetInfo["get_info.py<br/>get_video_info(url)"]
-GetSubs["get_subs.py<br/>get_subtitle_content(url, lang)"]
-TGInit["transcript_generator/__init__.py<br/>processed_transcript(text)"]
-TGClean["clean.py<br/>clean_transcript(text)"]
-TGDup["duplicate.py<br/>remove_sentence_repeats(text)"]
-TGSRT["srt.py<br/>clean_srt_text(raw)"]
-TGTs["timestamp.py<br/>clean_timestamps_and_dedupe(text)"]
+  ID["extract_id.py"]
+  INFO["get_info.py"]
+  SUBS["get_subs.py"]
+  TG["transcript_generator/processed_transcript"]
 end
-subgraph "Prompts"
-YTChain["youtube.py<br/>youtube_chain, fetch_transcript()"]
+subgraph "Models"
+  YT["models/yt.py<br/>YTVideoInfo"]
 end
-subgraph "Services"
-YTSvc["youtube_service.py<br/>YouTubeService.generate_answer(...)"]
-end
-subgraph "Routers"
-YTAPI["routers/youtube.py<br/>POST /"]
-end
-ReqVI --> GetInfo
-ReqSub --> GetSubs
-GetInfo --> YT
-GetSubs --> TGInit
-TGInit --> TGClean
-TGInit --> TGDup
-TGInit --> TGSRT
-TGInit --> TGTs
-YTChain --> GetSubs
-YTChain --> TGInit
-YTSvc --> YTChain
-YTAPI --> YTSvc
+RT --> REQ
+RT --> SVC
+SVC --> PR
+SVC --> ATT
+PR --> SUBS
+PR --> TG
+PR --> LLM
+INFO --> YT
+INFO --> SUBS
+ID --> INFO
 ```
 
-## Core components
-- YTVideoInfo: Typed container for YouTube video metadata and optional transcript
-- VideoInfoRequest: Minimal request for video info endpoint
-- SubtitlesRequest: Request specifying URL and preferred subtitle language
-- SubtitlesResponse: Response containing extracted subtitles
-- extract_video_id: Utility to extract YouTube video IDs from supported URL forms
-- get_video_info: Orchestrates metadata extraction and optional transcript assembly
-- get_subtitle_content: Retrieves subtitles with fallback to audio transcription
-- processed_transcript: Pipeline of transcript cleaning and normalization
-- youtube_chain: Prompt chain assembling context and invoking the LLM
+## Building blocks
 
-## Architecture overview
-YouTube processing flow:
-- Router validates inputs and delegates to YouTubeService
-- Service either uses a direct file-based path (with Google GenAI) or invokes the prompt chain
-- Prompt chain fetches transcript via get_subtitle_content and processed_transcript
-- get_video_info enriches metadata and optionally attaches cleaned transcript
-- Tools handle URL parsing, subtitle retrieval, and fallbacks when captions are missing
+- `routers/youtube.py`: `ask`, the only handler, with `response_model=dict`.
+- `models/requests/ask.py`: `AskRequest`, four optional fields plus `url` and `question`.
+- `services/youtube_service.py`: `YouTubeService.generate_answer`, which returns a string and never raises to the route.
+- `prompts/youtube.py`: `prompt` (`PromptTemplate`), `main_chain2` (`RunnableParallel`), `get_chain()`, `fetch_transcript()` and `get_context()`.
+- `tools/youtube_utils/get_subs.py`: `get_subtitle_content(video_url, lang="en")`.
+- `tools/youtube_utils/get_info.py`: `get_video_info(video_url)` returns `YTVideoInfo | None`.
+- `tools/youtube_utils/transcript_generator/__init__.py`: `processed_transcript`.
+- `models/yt.py`: `YTVideoInfo`.
+
+## Request shape
+
+`AskRequest`:
+
+| Field | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `url` | str | required | any YouTube URL form |
+| `question` | str | required | the route checks both fields |
+| `chat_history` | list[dict] | `[]` | flattened to `role: content` lines |
+| `attached_file_path` | str or null | null | path from `/api/upload` |
+
+The handler flattens each history entry into `role: content` and joins with newlines. It then checks `url` and `question` and raises 400 `url and question are required` when either is empty. A service exception becomes 500 `Internal server error \n<exception>`, but the service catches its own errors first, so the usual failure is a 200 with an apology string.
 
 ```mermaid
 sequenceDiagram
-participant Client as "Client"
-participant Router as "routers/youtube.py"
-participant Service as "services/youtube_service.py"
-participant Chain as "prompts/youtube.py"
-participant Subs as "tools/youtube_utils/get_subs.py"
-participant TG as "transcript_generator/__init__.py"
-Client->>Router : POST "/" with url, question
-Router->>Service : generate_answer(url, question, chat_history, attached_file_path)
-alt attached_file_path present
-Service->>Service : upload file and call GenAI generate_content
-Service-->>Client : response.text
-else no attached file
-Service->>Chain : invoke youtube_chain({url, question, chat_history})
-Chain->>Subs : get_subtitle_content(url, lang)
-Subs-->>Chain : raw subtitles or fallback text
-Chain->>TG : processed_transcript(text)
-TG-->>Chain : cleaned transcript
-Chain-->>Service : response content
-Service-->>Client : answer
-end
+  participant C as Client
+  participant R as youtube router
+  participant S as YouTubeService
+  participant P as get_chain
+  participant T as get_subtitle_content
+  participant M as model
+  C->>R: "POST /api/genai/youtube/ {url, question}"
+  R->>R: "flatten chat_history, require url and question"
+  R->>S: "generate_answer(url, question, history, path)"
+  S->>P: "get_chain().ainvoke(...)"
+  P->>T: "fetch_transcript(url)"
+  T-->>P: "cleaned transcript or empty string"
+  P->>M: "prompt with {context, question, chat_history}"
+  M-->>P: "answer"
+  P-->>S: "string or AIMessage"
+  S-->>R: "answer"
+  R-->>C: "200 {answer}"
 ```
 
-## Detailed component analysis
+## YTVideoInfo
 
-### Data model: YTVideoInfo
-YTVideoInfo defines the canonical video metadata structure used across the system. It includes:
-- title: Video title with default fallback
-- description: Video description
-- duration: Video duration in seconds
-- uploader: Channel or uploader name
-- upload_date: ISO-like date string
-- view_count: Number of views
-- like_count: Number of likes
-- tags: List of tags
-- categories: List of categories
-- captions: Optional caption content
-- transcript: Optional cleaned transcript
+`models/yt.py` declares the metadata shape:
 
-```mermaid
-classDiagram
-class YTVideoInfo {
-+string title
-+string description
-+int duration
-+string uploader
-+string upload_date
-+int view_count
-+int like_count
-+string[] tags
-+string[] categories
-+string captions
-+string transcript
-}
-```
+| Field | Type | Default |
+| --- | --- | --- |
+| `title` | str | `Unknown` |
+| `description` | str | empty |
+| `duration` | int | 0 |
+| `uploader` | str | `Unknown` |
+| `upload_date` | str | empty |
+| `view_count` | int | 0 |
+| `like_count` | int | 0 |
+| `tags` | list[str] | `[]` |
+| `categories` | list[str] | `[]` |
+| `captions` | str or null | null |
+| `transcript` | str or null | null |
 
-### Data model: requests and responses
-- VideoInfoRequest: Minimal payload requiring a URL for video info retrieval
-- SubtitlesRequest: Payload requiring a URL and optional language preference
-- SubtitlesResponse: Response carrying the extracted subtitles
-
-```mermaid
-classDiagram
-class VideoInfoRequest {
-+string url
-}
-class SubtitlesRequest {
-+string url
-+string lang
-}
-class SubtitlesResponse {
-+string subtitles
-}
-```
-
-### URL parsing and validation: extract_video_id
-The extract_video_id utility parses YouTube URLs and supports:
-- youtube.com/watch?v=VIDEO_ID
-- youtu.be/VIDEO_ID
-It returns the extracted video ID or None on failure.
+`get_video_info` builds this object from a `yt_dlp.YoutubeDL(...).extract_info(url, download=False)` call. It defaults every missing key rather than raising, and it attaches a cleaned transcript when subtitles exist. The chat route does not call `get_video_info`; it only needs the transcript, so the metadata shape is used by tooling and by callers that want a full record.
 
 ```mermaid
 flowchart TD
-Start(["Input URL"]) --> Parse["Parse URL and host"]
-Parse --> HostCheck{"Host is youtube.com or youtu.be?"}
-HostCheck --> |No| ReturnNone["Return None"]
-HostCheck --> |Yes| Params["Extract query params or path tail"]
-Params --> ReturnID["Return VIDEO_ID or None"]
+  A["video_url"] --> B["yt_dlp extract_info<br/>download=False"]
+  B --> C{"info present?"}
+  C -->|"no"| D["return None"]
+  C -->|"yes"| E["map title, description, duration,<br/>uploader, counts, tags, categories"]
+  E --> F["get_subtitle_content(url)"]
+  F --> G{"known error string?"}
+  G -->|"yes"| H["transcript = None"]
+  G -->|"no"| I["processed_transcript(raw)"]
+  I --> J["transcript = cleaned"]
+  H --> K["YTVideoInfo"]
+  J --> K
 ```
 
-### Metadata extraction: get_video_info
-get_video_info uses yt-dlp to extract metadata and optionally attach a cleaned transcript:
-- Builds yt-dlp options to avoid downloads and warnings
-- Extracts metadata fields into YTVideoInfo-compatible dictionary
-- Attempts subtitle retrieval and applies error detection
-- Applies processed_transcript to normalize and clean the transcript
-- Returns YTVideoInfo with optional transcript
+## Transcript retrieval
+
+`get_subtitle_content` uses `yt-dlp` to request `subtitleslangs=[lang]` with `writeautomaticsub`, `subtitlesformat="vtt/srt/best"` and `skip_download`. The priority order is written in the module docstring:
+
+1. Manual, auto-generated or auto-translated subtitles in the preferred language, in one request.
+2. The original language or any available subtitle, with one retry.
+3. Whisper audio transcription.
+
+It writes subtitle files into `tools/youtube_utils/temp_subs` and removes the directory in a `finally` block. The error vocabulary is part of the contract, because `prompts/youtube.py` checks for exact strings:
+
+- `Video unavailable.`
+- `Subtitles not available for the specified language.`
+- `Subtitles were requested but could not be retrieved from file.`
+- `Subtitles not available for the specified language or download failed.`
+- `Error downloading subtitles: ...` prefix
+- `An unexpected error occurred while fetching subtitles: ...` prefix
+
+`fetch_transcript` treats those strings as "no transcript" and returns an empty string. A missing transcript is not an error at the chain level: the prompt still runs with an empty context, and the model is told to answer only from the data it has.
+
+## Cleaning pipeline
+
+`processed_transcript` composes four functions in a fixed order:
 
 ```mermaid
-flowchart TD
-Start(["URL"]) --> YTDLP["yt-dlp extract_info"]
-YTDLP --> InfoOK{"Info extracted?"}
-InfoOK --> |No| ReturnNone["Return None"]
-InfoOK --> |Yes| BuildMap["Build YTVideoInfo map"]
-BuildMap --> FetchSubs["get_subtitle_content(url)"]
-FetchSubs --> IsError{"Known error?"}
-IsError --> |Yes| NoTranscript["Leave transcript None"]
-IsError --> |No| Clean["processed_transcript(text)"]
-Clean --> Attach["Attach transcript to map"]
-NoTranscript --> Attach
-Attach --> Return["Return YTVideoInfo"]
+flowchart LR
+  A["raw VTT or SRT"] --> B["clean_transcript"]
+  B --> C["clean_srt_text"]
+  C --> D["clean_timestamps_and_dedupe"]
+  D --> E["remove_sentence_repeats"]
+  E --> F["cleaned transcript"]
 ```
 
-### Subtitle retrieval and fallback: get_subtitle_content
-Subtitle retrieval follows a prioritized strategy:
-- Single-pass attempt for preferred language (manual + auto-generated + auto-translated)
-- Alternative language selection from available tracks
-- One retry for alternative language if needed
-- Fallback to audio download and transcription via faster-whisper
+- `clean.py`: strips markup and normalises whitespace.
+- `srt.py`: removes SRT cue numbers and timing lines.
+- `timestamp.py`: removes leftover timestamps and dedupes adjacent lines.
+- `duplicate.py`: removes repeated sentences, which auto-captions produce in long runs.
+
+The order matters. Removing timestamps before dedupe keeps two identical lines from different moments distinguishable, and the final sentence pass cleans up what the earlier passes exposed.
+
+## Prompt chain
+
+`prompts/youtube.py` builds a `RunnableParallel` with three inputs: `context` from `RunnableLambda(get_context)`, `question`, and `chat_history`. That feeds `prompt`, then `_current_client()`, then `StrOutputParser`.
+
+`_current_client()` calls `get_default_llm().client` at request time. `get_chain()` returns a fresh chain per call for exactly that reason: a module-level chain would pin the model that was configured at import time and ignore the per-request picker.
+
+The system text names the assistant YTVideoChat and tells it to answer only from a `YTVideoInfo` object, reply "Data not available." for anything outside the schema, keep summaries under 150 words, convert duration from seconds, quote counts and dates, and base sentiment only on captions or transcript.
+
+If `attached_file_path` is set, `generate_answer` takes the other branch. It calls `get_context({"url": url})` in a worker thread, renders the same prompt with `prompt.format(context=..., question=..., chat_history=...)`, and passes the result to `services.attachments.answer_with_attachment`. That path sends the file as a message part to the picked model.
+
+## Where it fits in the schema
+
+The YouTube route writes nothing. It does not call `ConversationService` or `RunTraceService`, so there is no `conversations` row, no `agent_runs` row and no `agent_events` row. Compare that with the chat route, which creates a conversation, a user message, a run and an assistant message for the same kind of question.
 
 ```mermaid
-flowchart TD
-Start(["URL, lang"]) --> SinglePass["Single-pass requested_subtitles"]
-SinglePass --> Found{"Found preferred?"}
-Found --> |Yes| ReturnPref["Return content"]
-Found --> |No| AltLang["_find_alternative_language(info, lang)"]
-AltLang --> HasAlt{"Alternative found?"}
-HasAlt --> |No| Fallback["download_audio_and_transcribe"]
-HasAlt --> |Yes| Retry["Download alt-lang subtitles"]
-Retry --> GotAlt{"Got alt content?"}
-GotAlt --> |Yes| ReturnAlt["Return alt content"]
-GotAlt --> |No| Fallback
-Fallback --> ReturnWhisper["Return whisper transcript"]
+erDiagram
+  CONVERSATIONS ||--o{ CONVERSATION_MESSAGES : "chat route only"
+  CONVERSATIONS ||--o{ AGENT_RUNS : "chat route only"
+  AGENT_RUNS ||--o{ AGENT_EVENTS : "chat route only"
+  CONVERSATIONS {
+    text conversation_id PK
+    text title
+  }
+  CONVERSATION_MESSAGES {
+    text message_id PK
+    text role
+    text content
+  }
+  AGENT_RUNS {
+    text run_id PK
+    text entrypoint
+    text status
+  }
 ```
 
-### Transcript cleaning pipeline: processed_transcript
-The processed_transcript pipeline normalizes and cleans raw subtitle text:
-- clean_srt_text: Removes SRT/VTT timestamp lines and artifacts
-- clean_timestamps_and_dedupe: Strips arrow-based timestamps and inline cues, deduplicates lines
-- clean_transcript: Paragraphizes and removes cue/spkr tags
-- remove_sentence_repeats: Collapses repeated sentences
+The `entrypoint` value `react_agent` appears on runs from the chat path. A YouTube question never produces one. If a feature needs history or an audit trail for video questions, the request has to go through `/api/genai/react` with the URL in the question, not through this route.
+
+## Dependencies
 
 ```mermaid
-flowchart TD
-Raw(["Raw text"]) --> SRT["clean_srt_text(raw)"]
-SRT --> TS["clean_timestamps_and_dedupe(text)"]
-TS --> Clean["clean_transcript(text)"]
-Clean --> Dup["remove_sentence_repeats(text)"]
-Dup --> Out(["Cleaned transcript"])
+graph TB
+  RT["routers/youtube.py"] --> FAST["fastapi"]
+  RT --> SVC["YouTubeService"]
+  SVC --> PR["prompts/youtube.py"]
+  SVC --> ATT["services/attachments.py"]
+  PR --> LC["langchain_core"]
+  PR --> LLM["core/llm.py"]
+  PR --> SUBS["get_subs.py"]
+  PR --> TG["transcript_generator"]
+  SUBS --> YDL["yt-dlp >=2026.3.3"]
+  SUBS --> WH["Whisper fallback"]
+  INFO["get_info.py"] --> YDL
+  INFO --> YT["models/yt.py"]
 ```
 
-### Prompt chain and answer generation: youtube_chain
-The prompt chain composes context from fetched transcripts and invokes the LLM:
-- fetch_transcript: Retrieves and cleans transcript, handling known error conditions
-- get_context: Supplies transcript to the chain
-- youtube_chain: Assembles prompt with context, question, and chat history
-- youtube_service: Invokes chain or uses file-based path depending on attachment
+`yt-dlp` is pinned at `>=2026.3.3` in the backend dependencies. `langchain-core` supplies `PromptTemplate`, `RunnableParallel`, `RunnableLambda` and `StrOutputParser`.
 
-```mermaid
-sequenceDiagram
-participant Chain as "youtube.py"
-participant Subs as "get_subs.py"
-participant TG as "transcript_generator/__init__.py"
-Chain->>Subs : get_subtitle_content(url, lang)
-Subs-->>Chain : raw or error text
-Chain->>TG : processed_transcript(text)
-TG-->>Chain : cleaned transcript
-Chain-->>Chain : prompt template + LLM invocation
-```
+## Performance
 
-## Dependency analysis
-- Router depends on YouTubeService for processing
-- YouTubeService depends on the prompt chain and optional GenAI SDK
-- Prompt chain depends on get_subtitle_content and processed_transcript
-- get_video_info depends on get_subtitle_content and processed_transcript
-- get_subtitle_content depends on yt-dlp and faster-whisper for fallback
+- The transcript fetch happens inside the request and can take seconds on a long video. The chat route is not involved, so there is no run row to watch while it happens.
+- `get_chain()` is rebuilt per request. That is one small object graph, not a network call; the model client itself is cached by `core/llm.py`.
+- `get_subtitle_content` cleans its temp directory in `finally`, so a failed fetch does not leave files behind.
+- Auto-generated captions are much larger than manual ones, and the cleaning passes are linear in transcript length.
+- Whisper fallback is the slow path. It downloads audio and transcribes locally, so a request that hits it can run for minutes.
 
-```mermaid
-graph LR
-Router["routers/youtube.py"] --> Service["services/youtube_service.py"]
-Service --> Chain["prompts/youtube.py"]
-Chain --> Subs["tools/youtube_utils/get_subs.py"]
-Chain --> TG["transcript_generator/__init__.py"]
-GetInfo["tools/youtube_utils/get_info.py"] --> Subs
-GetInfo --> TG
-```
+## Troubleshooting
 
-## Performance considerations
-- Minimize redundant subtitle downloads by preferring single-pass retrieval and caching cleaned transcripts where appropriate
-- Use language prioritization to reduce fallback attempts
-- Favor CPU-based whisper models for resource-constrained environments
-- Avoid unnecessary file writes by cleaning temporary directories promptly after processing
+- A 200 with an apology string: `generate_answer` caught an exception and logged it. Read the backend log for the provider or chain error.
+- `url and question are required`: one of the two fields was empty after Pydantic parsing.
+- Answers are empty or generic: the transcript fetch returned one of the known error strings, `fetch_transcript` turned it into an empty context, and the model had only the URL.
+- A private or age-restricted video fails: `yt-dlp` cannot extract it without cookies. This route has no cookie configuration.
+- The answer ignores the attached file: `attached_file_path` must be the exact `path` returned by `/api/upload`, and the resolved file must sit under `uploads/`.
+- The model picker has no effect: check that `get_chain()` is the path being used. A cached module-level chain would pin the old model.
+- Subtitles exist but the transcript is empty: check the four cleaning functions against the subtitle format. A new format can survive one pass and be eaten by the next.
 
-## Troubleshooting guide
-Common issues and resolutions:
-- Video unavailable: Detected by known error messages and DownloadError variants; fallback to whisper transcription is triggered
-- Rate limiting (429): Detected and triggers whisper fallback
-- No subtitles available: Falls back to audio download and transcription
-- Known error prefixes: Recognized and treated as non-transcript errors
-- Cleanup failures: Temporary directories are removed with logging on cleanup errors
+## Appendix
 
-Operational checks:
-- Verify GOOGLE_API_KEY or GEMINI_API_KEY for file-based processing
-- Confirm yt-dlp and faster-whisper availability and permissions for temp directories
-- Validate URL formats supported by extract_video_id
+### Implementation examples
+- Route: `await service.generate_answer(url, question, chat_history_str, request.attached_file_path)`.
+- Chain: `main_chain2 | prompt | _current_client() | parser`.
+- Context: `get_context({"url": url})` returns `processed_transcript(raw)` or `""`.
+- Video id: `extract_video_id("https://youtu.be/<id>")` returns `<id>`; `watch?v=` is read from the query string.
 
-## Conclusion
-Accept `youtube.com/watch?v=` and `youtu.be/` forms. Clean timestamps and cue tags before prompting. Treat empty transcripts as a first-class error.
-
-## Appendices
-
-### Data model reference
-
-- YTVideoInfo
- - title: string, default "Unknown"
- - description: string, default empty
- - duration: integer, default 0
- - uploader: string, default "Unknown"
- - upload_date: string, default empty
- - view_count: integer, default 0
- - like_count: integer, default 0
- - tags: array of strings, default empty
- - categories: array of strings, default empty
- - captions: string or null, default null
- - transcript: string or null, default null
-
-- VideoInfoRequest
- - url: string
-
-- SubtitlesRequest
- - url: string
- - lang: string, default "en"
-
-- SubtitlesResponse
- - subtitles: string
-
-Validation and normalization rules:
-- URL parsing supports youtube.com/watch?v=VIDEO_ID and youtu.be/VIDEO_ID
-- Transcript cleaning removes timestamps, cue tags, speaker tags, and duplicate lines
-- Error detection treats specific messages and prefixes as non-transcript errors
-- Fallback to Whisper when captions are missing
+### Source files
+- `routers/youtube.py`
+- `models/requests/ask.py`
+- `models/yt.py`
+- `services/youtube_service.py`
+- `prompts/youtube.py`
+- `tools/youtube_utils/get_subs.py`
+- `tools/youtube_utils/get_info.py`
+- `tools/youtube_utils/extract_id.py`
+- `tools/youtube_utils/transcript_generator/__init__.py`

@@ -1,240 +1,236 @@
 # Agent system API
 
-## Introduction
-HTTP API for the reactive agent and for generating browser action plans from a goal plus DOM context. Schemas, errors, and how the extension calls these endpoints.
+These routes turn a user question into an agent run. The chat route accepts a question plus optional page HTML and attachments, picks a planner (subscription runtime, ReAct agent or supervisor harness), records the run, and returns an answer either as JSON or as a stream of SSE frames.
 
-## Project structure
-The API is implemented as a FastAPI application that mounts multiple routers under standardized prefixes. The routers delegate to service classes that orchestrate agent workflows and tool integrations.
+Chat is mounted at `/api/genai/react`, script generation at `/api/agent`, and skills at `/api/skills`. Conversation and run records are documented on [Conversations and runs API](Conversations%20and%20Runs%20API). One-step planning is documented on [Browser runtime API](Browser%20Runtime%20API).
+
+Key capabilities:
+- REST and SSE chat with the same request model
+- Model choice per request, including subscription runtimes
+- Prompt construction with durable memory, compaction summaries and page markdown
+- Run trace creation, assistant message persistence and post-turn memory ingestion
+- Skill execution that wraps a `SKILL.md` in an agent prompt
+- Script generation that returns one planned browser action
+
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "FastAPI Application"
-A["main.py<br/>Registers routers under /api/*"]
-end
-subgraph "Routers"
-R1["/api/genai/react<br/>react_agent.py"]
-R2["/api/agent/generate-script<br/>browser_use.py"]
-R3["/api/genai/health<br/>health.py"]
-end
-subgraph "Services"
-S1["services/react_agent_service.py"]
-S2["services/browser_use_service.py"]
-end
-subgraph "Models"
-M1["models/requests/*.py"]
-M2["models/response/*.py"]
-end
-A --> R1
-A --> R2
-A --> R3
-R1 --> S1
-R2 --> S2
-R1 --> M1
-R2 --> M1
-S1 --> M2
-S2 --> M2
+  subgraph "HTTP"
+    RA["routers/react_agent.py<br/>/api/genai/react"]
+    BU["routers/browser_use.py<br/>/api/agent"]
+    SK["routers/skills.py<br/>/api/skills"]
+  end
+  subgraph "Services"
+    RAS["services/react_agent_service.py"]
+    BUS["services/browser_use_service.py"]
+    SKS["services/skills_service.py"]
+    CONV["services/conversations.py"]
+    TRACE["services/run_traces.py"]
+    COMP["services/compaction.py"]
+  end
+  subgraph "Agents"
+    REACT["agents/react_agent.py"]
+    HARNESS["agents/while_loop_harness.py"]
+  end
+  subgraph "Models"
+    CR["models/requests/crawller.py"]
+    SR["models/requests/skills.py"]
+    GS["models/response/agent.py"]
+  end
+  RA --> CR
+  RA --> RAS
+  BU --> BUS
+  SK --> SKS
+  SK --> SR
+  RAS --> REACT
+  RAS --> HARNESS
+  RAS --> CONV
+  RAS --> TRACE
+  RAS --> COMP
+  BUS --> RAS
+  GS --> BU
 ```
 
-## Core components
-- Reactive Agent Endpoint: Processes natural language queries with optional chat history, Google access tokens, PyJIIT login payloads, client HTML context, and optional file attachments. Returns a plain text answer.
-- Browser Automation Script Generator: Accepts a goal, optional target URL, DOM structure, and constraints. Returns a validated JSON action plan or structured errors.
-- Health Endpoint: Lightweight health check returning a simple status object.
+## Building blocks
 
-## Architecture overview
-Stack from the outside in:
-- API Layer: FastAPI routers expose endpoints and handle request validation.
-- Service Layer: Business logic orchestrates agent workflows and tool integrations.
-- Agent Layer: LangGraph-based reactive agent with tool invocation.
-- Tools Layer: Structured tools for web search, websites, GitHub, YouTube, Gmail, Calendar, PyJIIT, and browser actions.
-- Client Layer: Extension and external clients send requests and receive responses.
+- `routers/react_agent.py`: `agent_bhai` (`POST /`) and `agent_bhai_stream` (`POST /stream`), plus `_sse_event`. The service is injected through `get_react_agent_service`.
+- `models/requests/crawller.py`: `CrawlerRequest` with `question`, `chat_history`, `google_access_token`, `pyjiit_login_response`, `client_html`, `attached_file_path`, `conversation_id`, `client_id` and `client_context`. The Google and PyJIIT fields accept legacy misspellings through `AliasChoices`.
+- `models/response/crawller.py`: `CrawllerResponse`, one field `answer`.
+- `services/react_agent_service.py`: the orchestration layer. `generate_answer` returns a string. `stream_answer` is an async generator of event dicts.
+- `routers/browser_use.py`: `generate_script`, which validates `goal` and calls `AgentService.generate_script`.
+- `services/browser_use_service.py`: builds a `PageSnapshot` from posted DOM data, calls `BrowserRuntimeService.start_session` with `max_steps=8`, and returns `ok`, `message`, `reason`, `runtime_step` and `action_plan`.
+- `routers/skills.py`: `get_skills`, `execute_skill`, `execute_skill_stream` and `_build_skill_execution_prompt`.
+- `services/skills_service.py`: `list_all_skills`, `get_skill_content_by_name`, `get_skill_metadata_by_name`. Skills are read from `skills/` and `.agents/skills`, one folder per skill with a `SKILL.md` and optional YAML frontmatter.
 
-```mermaid
-sequenceDiagram
-participant Client as "Client"
-participant API as "FastAPI Router"
-participant Service as "Service"
-participant Agent as "Reactive Agent"
-participant Tools as "Tools"
-Client->>API : POST /api/genai/react
-API->>Service : generate_answer(question, chat_history, tokens, ...)
-Service->>Agent : invoke graph with messages
-Agent->>Tools : tool calls (optional)
-Tools-->>Agent : tool results
-Agent-->>Service : final answer
-Service-->>API : answer
-API-->>Client : answer
-```
+## How it fits together
 
-## Detailed component analysis
-
-### Reactive agent endpoint
-- Method: POST
-- URL: /api/genai/react
-- Purpose: Answer natural language questions with optional chat history, Google access tokens, PyJIIT session, client HTML context, and optional file attachments.
-- Authentication: Not enforced at the API level; however, optional tokens enable richer tool usage.
-- Request Schema: `models/requests/crawller.py`
- - question: Required string
- - chat_history: Optional list of {role, content}
- - google_access_token: Optional string
- - pyjiit_login_response: Optional PyJIIT login payload
- - client_html: Optional raw HTML from the active browser tab
- - attached_file_path: Optional absolute path to a file to process via Google GenAI SDK
-- Response Schema: `models/response/crawller.py`
- - answer: Plain text string
-- Behavior:
- - Validates presence of question.
- - Optionally attaches a file via Google GenAI SDK and returns model-generated text.
- - Builds a LangGraph state with system, human, and optional page-context messages.
- - Executes the reactive agent graph and returns the final assistant message content.
-- Error Handling:
- - Raises HTTP 400 for missing question.
- - Raises HTTP 500 for unhandled exceptions during processing.
-- Example Usage:
- - Client composes a request payload with question, optional chat_history, and optional tokens.
- - Client sends POST to /api/genai/react.
- - Server responds with answer.
+`generate_answer` does five things in order: prepare the conversation and trace, open any attachment, assemble context, pick a runner, then persist the answer and queue memory ingestion. The runner choice is the branch that matters.
 
 ```mermaid
 flowchart TD
-Start(["POST /api/genai/react"]) --> Validate["Validate 'question'"]
-Validate --> QuestionOK{"Present?"}
-QuestionOK -- No --> Err400["HTTP 400 Bad Request"]
-QuestionOK -- Yes --> FileCheck{"attached_file_path?"}
-FileCheck -- Yes --> Upload["Upload file to Google GenAI"]
-Upload --> GenText["Generate content with model"]
-GenText --> ReturnAnswer["Return answer"]
-FileCheck -- No --> BuildState["Build LangGraph state"]
-BuildState --> Invoke["Invoke reactive agent graph"]
-Invoke --> ReturnAnswer
+  A["generate_answer(question, ...)"] --> B["_prepare_conversation<br/>get_or_create + add_message + compact"]
+  B --> C["RunTraceService.create_run"]
+  C --> D["_open_attachment"]
+  D -->|"refusal"| E["persist refusal as assistant message<br/>complete run"]
+  D -->|"attachment or none"| F["_build_context<br/>memory, page markdown, pyjiit, google token"]
+  F --> G{"runtimes.current_pick()"}
+  G -->|"subscription runtime"| H["_runtime_turn"]
+  G -->|"none"| I{"attachment or question lacks<br/>supervisor keywords?"}
+  I -->|"yes"| J["run_react_agent"]
+  I -->|"no"| K["run_supervisor_harness"]
+  H --> L["assistant message + complete_run"]
+  J --> L
+  K --> L
+  L --> M["_queue_memory_ingestion"]
 ```
 
-### Browser automation script generator
-- Method: POST
-- URL: /api/agent/generate-script
-- Purpose: Generate a JSON action plan for automating browser tasks based on a goal, optional target URL, DOM structure, and constraints.
-- Authentication: Not enforced at the API level.
-- Request Schema: `models/requests/agent.py`
- - goal: Required string
- - target_url: Optional string
- - dom_structure: Optional dict with keys: url, title, interactive[]
- - constraints: Optional dict
-- Response Schema: `models/response/agent.py`
- - ok: Boolean
- - action_plan: Optional dict
- - error: Optional string
- - problems: Optional list of validation problem strings
- - raw_response: Optional raw LLM output snippet
-- Behavior:
- - Formats DOM info and constructs a prompt for the LLM.
- - Invokes the LLM to produce a JSON action plan.
- - Sanitizes and validates the JSON action plan.
- - Returns either ok=true with action_plan or ok=false with error/problems/raw_response.
-- Error Handling:
- - Returns structured error fields when validation fails.
- - Returns HTTP 500 for unexpected exceptions.
-
-```mermaid
-flowchart TD
-Start(["POST /api/agent/generate-script"]) --> CheckGoal{"goal present?"}
-CheckGoal -- No --> Err400["HTTP 400 Bad Request"]
-CheckGoal -- Yes --> BuildPrompt["Format DOM info and build prompt"]
-BuildPrompt --> CallLLM["Invoke LLM to generate JSON"]
-CallLLM --> Sanitize["Sanitize and validate JSON"]
-Sanitize --> Valid{"Valid?"}
-Valid -- Yes --> OkResp["Return {ok: true, action_plan}"]
-Valid -- No --> ErrResp["Return {ok: false, error/problems}"]
-```
-
-### Health endpoint
-- Method: GET
-- URL: /api/genai/health
-- Purpose: Verify service availability.
-- Authentication: Not enforced.
-- Response Schema: `models/response/health.py`
- - status: String
- - message: String
-
-### Agent execution workflow (extension client)
-The extension composes requests for various agents and executes them. It captures active tab HTML, resolves URLs, and builds payloads tailored to each endpoint.
+The supervisor decision is a regex, not a classifier. `_SUPERVISOR_REQUEST_RE` matches words such as `browse`, `click`, `navigate`, `open`, `fill`, `plan`, `subagent`, `workflow`, `multi-step` and `use the page`. A question with none of those goes to the ReAct agent. An attachment also forces the ReAct path because the supervisor passes plain text between subagents.
 
 ```mermaid
 sequenceDiagram
-participant Ext as "Extension Client"
-participant Exec as "executeAgent.ts"
-participant API as "FastAPI"
-participant Svc as "Service"
-Ext->>Exec : executeAgent(fullCommand, prompt, chatHistory, attachedFilePath?)
-Exec->>Exec : Parse command and resolve endpoint
-Exec->>Exec : Capture active tab HTML (optional)
-Exec->>Exec : Build payload per endpoint
-Exec->>API : POST /api/genai/react or /api/agent/generate-script
-API->>Svc : Delegate to service
-Svc-->>API : Result
-API-->>Exec : JSON response
-Exec-->>Ext : Render result
+  participant C as Client
+  participant R as agent_bhai
+  participant S as ReactAgentService
+  participant DB as ConversationService
+  participant T as RunTraceService
+  participant A as agent
+  C->>R: "POST /api/genai/react/"
+  R->>R: "resolve_google_token_optional"
+  R->>S: "generate_answer"
+  S->>DB: "get_or_create_conversation"
+  S->>DB: "add_message(role=user)"
+  S->>T: "create_run(entrypoint=react_agent)"
+  S->>S: "_build_memory_prompt(token_budget=1200)"
+  S->>A: "run_react_agent or run_supervisor_harness"
+  A-->>S: "answer"
+  S->>DB: "add_message(role=assistant)"
+  S->>T: "complete_run(final_answer, final_message_id)"
+  S-->>R: "answer"
+  R-->>C: "200 {answer}"
 ```
 
-## Dependency analysis
-The API depends on routers, services, and models. The reactive agent integrates with LangGraph and a set of structured tools.
+On an exception inside `generate_answer`, the service logs, marks the run failed with `complete_run(status="failed", error=...)` when a trace exists, and returns the fixed string `I apologize, but I encountered an error processing your question. Please try again.` The HTTP status is still 200.
+
+## Chat endpoints
+
+### POST /api/genai/react/
+
+Handler `agent_bhai`. Auth: none. Google access is resolved server side. Body: `CrawlerRequest`. Response: `CrawllerResponse`.
+
+| Field | Notes |
+| --- | --- |
+| `question` | required; empty string returns 400 `question is required` |
+| `chat_history`, `client_html`, `attached_file_path` | optional transcript, raw page HTML and uploaded file path |
+| `google_access_token`, `pyjiit_login_response` | optional; the legacy misspellings `google_acces_token` and `pyjiit_login_responce` are accepted |
+| `conversation_id`, `client_context` | server creates a conversation when the id is omitted; context is stored as a snapshot |
+| `client_id` | default `browser-extension`, stored on messages and runs |
+
+Statuses: 200 for a string answer, 400 when `question` is empty, 422 for a body mismatch, 500 when the service catch is escaped. `chat_history` is ignored when the server has stored history for the conversation.
+
+### POST /api/genai/react/stream
+
+Handler `agent_bhai_stream`. Same body, returns `text/event-stream`. The route validates `question` before the generator starts, so an empty question is a real 400. Errors after that point arrive as an `error` frame.
+
+`_sse_event(event_name, payload)` writes `event: <name>` plus `data: <json>` and a blank line, so a delta frame is `event: answer_delta` with `{"event": "answer_delta", "delta": "..."}`.
+
+The stream emits `conversation` early with `conversation_id`, `run_id` and `title`, so the client can switch from a local placeholder session to the server id. Answer text is emitted per model step as `answer_delta`. Step text is joined with blank lines into the final answer. Token-level deltas are sent to the client but not written to the trace.
+
+Event names produced by `ReactAgentService.stream_answer` and the agents behind it: `run_started`, `conversation`, `compaction`, `subagent_started`, `thinking_delta`, `answer_delta`, `subagent_completed`, `tool_started` and related tool events, `final`, and `error`.
 
 ```mermaid
-graph LR
-RAct["routers/react_agent.py"] --> SAct["services/react_agent_service.py"]
-RBot["routers/browser_use.py"] --> SBot["services/browser_use_service.py"]
-SAct --> MReqCrawl["models/requests/crawller.py"]
-SAct --> MResCrawl["models/response/crawller.py"]
-SBot --> MReqAgent["models/requests/agent.py"]
-SBot --> MResAgent["models/response/agent.py"]
-SAct --> ARaw["agents/react_agent.py"]
-ARaw --> ATools["agents/react_tools.py"]
+sequenceDiagram
+  participant C as Client
+  participant R as agent_bhai_stream
+  participant S as stream_answer
+  participant Q as asyncio.Queue
+  participant T as RunTraceService
+  C->>R: "POST /stream"
+  R->>S: "iterate generator"
+  S->>Q: "run_started"
+  S->>T: "create_run"
+  S->>Q: "conversation"
+  S->>Q: "subagent_started"
+  S->>Q: "answer_delta (live only)"
+  S->>T: "tool and subagent events"
+  S->>Q: "final"
+  Q-->>R: "yield frames"
+  R-->>C: "SSE"
 ```
 
-## Performance considerations
-- Token Limits: The script generator limits interactive DOM elements to reduce prompt size and avoid excessive tokens.
-- Async I/O: Services use async LLM invocation and thread pools for tool operations to prevent blocking.
-- Caching: The reactive agent graph is cached to avoid repeated compilation overhead.
-- Validation Early Exit: Script generation validates and sanitizes JSON early to fail fast on malformed plans.
+Streaming failure handling is inside the generator. Any exception becomes one `error` frame with `{"event": "error", "message": str(exc)}`, and the HTTP status stays 200 because headers were already sent.
 
-## Troubleshooting guide
-- HTTP 400 Bad Request
- - Cause: Missing required field (e.g., question or goal).
- - Resolution: Ensure the payload includes the required fields.
-- HTTP 500 Internal Server Error
- - Cause: Unexpected exception in service or agent execution.
- - Resolution: Inspect server logs; the service returns a generic error message to the client.
-- Validation Failures for Script Generation
- - Cause: Generated JSON action plan fails validation.
- - Resolution: Review problems list in the response and adjust goal/target URL/DOM structure.
-- Missing Tokens for Tool Access
- - Cause: Tools requiring Google access tokens or PyJIIT sessions are not usable without proper context.
- - Resolution: Provide google_access_token or pyjiit_login_response in the request.
+## Script endpoint
 
-## Conclusion
-Two jobs: answer with the ReAct agent, or emit a sanitized browser plan. The extension's `executeAgent` helper shows the real client path.
+### POST /api/agent/generate-script
 
-## Appendices
+Handler `generate_script` in `routers/browser_use.py`. Body `GenerateScriptRequest`: `goal` (required), `target_url`, `dom_structure`, `constraints`. Response `GenerateScriptResponse`:
 
-### Endpoint reference
+- `ok`: `step.status != "failed"`.
+- `action_plan`: `{"actions": [action]}` when a step action exists.
+- `runtime_step`: the full `BrowserRuntimeStepResponse` dump.
+- `message`, `reason` and `error`: planner text, guard reason and caught service error.
+- `problems` and `raw_response`: declared but not populated by this path.
 
-- POST /api/genai/react
- - Request: `models/requests/crawller.py`
- - Response: `models/response/crawller.py`
- - Notes: Supports optional Google access token, PyJIIT session, client HTML, and file attachment.
+Status codes: 200 for a step, including a blocked step and a caught service error. 400 when `goal` is missing, 422 for a body mismatch, 500 when the route itself raises.
 
-- POST /api/agent/generate-script
- - Request: `models/requests/agent.py`
- - Response: `models/response/agent.py`
- - Notes: Returns ok=true with action_plan or ok=false with error and problems.
+The service builds a `PageSnapshot` with `build_page_snapshot_from_dom`, starts a runtime session with `max_steps=8`, and stores `target_url`, `constraints` and `source: "generate_script_api"` in the session context. `ok` only reflects `status != "failed"`, so a blocked step still returns `ok: true`.
 
-- GET /api/genai/health
- - Response: `models/response/health.py`
+## Skills endpoints
 
-### Agent message payload model
-- Request: `models/requests/react_agent.py`
-- Response: `models/response/react_agent.py`
+| Method | Path | Handler | Body | Response |
+| --- | --- | --- | --- | --- |
+| GET | `/api/skills/` | `get_skills` | none | `{"skills": [{id, name, description}]}` |
+| POST | `/api/skills/execute` | `execute_skill` | `ExecuteSkillRequest` | `{"answer": str}` |
+| POST | `/api/skills/execute/stream` | `execute_skill_stream` | `ExecuteSkillRequest` | SSE frames |
 
-### PyJIIT login payload model
-- Request: `models/requests/pyjiit.py`
+`ExecuteSkillRequest` fields: `skill_name`, `prompt`, `chat_history`, `google_access_token`, `pyjiit_login_response`, `client_html`, `attached_file_path`, `conversation_id`, `client_id` (default `browser-extension`) and `client_context`.
 
-### Client integration patterns
-- Extension Client: See `clients/browser-extension/entrypoints/utils/executeAgent.ts` for command parsing, tab context capture, and endpoint routing.
+Skill discovery scans `skills/` and `.agents/skills`, takes folders that contain `SKILL.md`, and reads optional YAML frontmatter for `name` and `description`. The folder name is the id. The first directory in the list wins for duplicate ids because `list_all_skills` keeps a `seen_ids` set.
+
+Execution builds one prompt: the `SKILL.md` body between `=== SKILL INSTRUCTIONS START ===` and `=== SKILL INSTRUCTIONS END ===`, execution notes naming the skill directory and `uploads/generated` as the output folder, then the user's prompt. That combined text is passed to `ReactAgentService.generate_answer` as the question.
+
+Status codes: 404 when the skill name is unknown (`Skill '<name>' not found.`), 500 on any other failure. The list route returns 500 `Failed to list skills.` if the directory scan raises.
+
+## Dependencies
+
+The chat service sits on `core/llm.py` for the model client, `agents/react_agent.py` and `agents/while_loop_harness.py` for the two runners, `memory/service.py` and `memory/retrieval/context_assembler.py` for recall, `services/attachments.py`, `services/compaction.py`, `core/runtimes.py` and `services/run_traces.py`. Script generation goes through `BrowserRuntimeService`. Skills read `skills/` and `.agents/skills`. Traces land in Postgres.
+
+External packages used directly here: `fastapi>=0.115.0`, `pydantic>=2.9.0`, `langchain-core` through the agent modules, and `sqlalchemy[asyncio]>=2.0` below the trace service.
+
+## Performance
+
+- `_build_memory_prompt` uses a 1200 token budget. Memory retrieval failures are logged and skipped, so chat still runs without memory.
+- The history load reads up to `max_history` messages, default 400, from compaction settings, then `compact_history` replaces older turns with a summary message whose role is `compaction.SUMMARY_ROLE`.
+- `client_html` is converted to markdown and truncated to 12,000 characters before it enters a prompt.
+- Post-turn ingestion runs in a fire-and-forget task held in `_BACKGROUND_TASKS` so the event loop cannot garbage collect it. It retries once after `asyncio.sleep(15)` when extraction fails.
+- The stream uses one queue and one background task. Cancelling the client cancels the producer task.
+- Script generation and the automation route both cap a runtime session at 8 steps. The runtime service itself has no step cap when called directly.
+
+## Troubleshooting
+
+- A browser request is answered by the plain ReAct agent: the question did not match `_SUPERVISOR_REQUEST_RE`, or it carried an attachment, which forces the direct path.
+- The answer ignores the current page: page HTML only enters the prompt through `client_html`. For the direct ReAct path it is added to the question content only when the supervisor regex matches, and separately as `client_markdown` in the context.
+- `generate_answer` returns the apology string and the run is marked failed: read the run's `error` column through `GET /api/runs/{run_id}`.
+- Skill execution writes files to the wrong place: the prompt tells the model to save under `uploads/generated` and cite `/api/upload/files/generated/<filename>`. The directory is created by `routers/file_upload.py` at import time.
+- A skill is listed but `execute` returns 404: lookup matches the frontmatter `name` or the folder id case-insensitively. A renamed folder with a stale frontmatter name needs one of the two to match exactly.
+- `/api/agent/generate-script` always returns `ok: true` with a blocked message: `ok` only reflects `status != "failed"`, and `blocked` counts as not failed.
+- History sent by the client is ignored: once a conversation id exists, `generate_answer` and `stream_answer` use `server_history` from Postgres and only fall back to `chat_history` when the server has none.
+
+## Appendix
+
+### Implementation examples
+- Chat entry: `agent_bhai` calls `service.generate_answer(...)` with nine keyword arguments and wraps the string in `CrawllerResponse`.
+- Runner selection: `ReactAgentService._should_use_supervisor_harness` uses `_SUPERVISOR_REQUEST_RE`.
+- Runtime pick: `runtimes.current_pick()` returns a `Pick(runtime, model)` bound by `RequestModelMiddleware`.
+- Skill prompt: `_build_skill_execution_prompt` in `routers/skills.py`.
+- Script bridge: `AgentService.generate_script` maps `dom_structure` and `constraints` onto a runtime start request.
+
+### Source files
+- `routers/react_agent.py`
+- `routers/browser_use.py`
+- `routers/skills.py`
+- `models/requests/crawller.py`
+- `models/response/crawller.py`
+- `services/react_agent_service.py`
+- `services/browser_use_service.py`

@@ -1,342 +1,255 @@
 # Getting started
 
-## Introduction
-Agentic Browser pairs a Python FastAPI and MCP backend with a WXT/React extension. Point it at an LLM provider, load the extension, and you can ask for page actions that run through a declarative, reviewed plan.
+Agentic Browser is a browser extension, a FastAPI backend and an optional debug console. The extension reads the page you are on, sends it to the backend, and runs one checked browser action at a time until the task is done. Memory, MCP access and subscription runtimes are optional layers on top.
 
-Source: [github.com/tashifkhan/agentic-browser](https://github.com/tashifkhan/agentic-browser)
+This page takes a fresh checkout to a working side panel: databases, backend, extension build, model key, and the first connected browser.
 
-## Project structure
-The repo is a monorepo:
-- Backend (Python >=3.12): FastAPI app in `main.py`, MCP in `mcp_server/`, agents, routers, tools, services, skills, and memory (sqlmodel/asyncpg, Neo4j, OpenSearch)
-- Frontend workspace (pnpm): `clients/browser-extension` (WXT), `clients/debug-web` (Vite dashboard), `clients/shared`
+Key capabilities:
+- One-command installer for macOS and Linux
+- Manual setup path for a checkout you want to control
+- Every environment variable the backend reads
+- Port map for the backend, bridge and three databases
+- First-run checks for the model, the extension and the MCP bridge
+
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Backend"
-A["FastAPI Server<br/>main.py"]
-B["MCP Server<br/>mcp_server/server.py"]
-C["Core Config and LLM<br/>core/config.py, core/llm.py"]
-MEM["Memory<br/>sqlmodel, asyncpg, neo4j, opensearch"]
+subgraph "Entry points"
+  INSTALL["install.sh"]
+  SETUP["scripts/install.py"]
+  MAIN["main.py"]
 end
-subgraph "Frontend workspace"
-D["WXT Config<br/>clients/browser-extension/wxt.config.ts"]
-E["Background Script<br/>clients/browser-extension/entrypoints/background.ts"]
-F["Content Script<br/>clients/browser-extension/entrypoints/content.ts"]
-G["Agent Utils<br/>clients/browser-extension/entrypoints/utils/*"]
-DBG["Debug dashboard<br/>clients/debug-web"]
-SHR["Shared client lib<br/>clients/shared"]
+subgraph "Runtime"
+  API["FastAPI app<br/>/api/*"]
+  BRIDGE["MCP bridge<br/>127.0.0.1:5455"]
+  MEM["memory stores<br/>postgres, neo4j, opensearch"]
 end
-A --> C
-B --> C
-A --> MEM
-D --> E
-D --> F
-E --> F
-G --> A
-DBG --> A
-SHR --> D
+subgraph "Clients"
+  EXT["clients/browser-extension"]
+  CONSOLE["clients/debug-web"]
+  SHARED["clients/shared"]
+end
+subgraph "Config"
+  ENV[".env.example"]
+  PY["pyproject.toml"]
+  PKG["package.json"]
+  COMPOSE["docker-compose.yml"]
+end
+INSTALL --> SETUP
+SETUP --> COMPOSE
+SETUP --> EXT
+SETUP --> BRIDGE
+CONSOLE --> API
+EXT --> API
+EXT --> BRIDGE
+EXT --> SHARED
+CONSOLE --> SHARED
+API --> MEM
 ```
 
 ## Prerequisites
-Before installing Agentic Browser, ensure your environment meets the following requirements:
 
-- Python
- - Version requirement: Python >= 3.12
- - Package manager: uv (recommended) or pip
- - Virtual environment recommended
+| Tool | Version used | Where it is required |
+| --- | --- | --- |
+| Python | `>=3.12` (`pyproject.toml`) | backend, MCP server, installer |
+| uv | any current release | `uv sync`, `uv run agentic-api-run` |
+| Node | 20 or newer | WXT and Vite builds |
+| pnpm | `9.0.0` (`package.json` `packageManager`) | extension and console workspace |
+| Docker | Compose v2 | Postgres, Neo4j and OpenSearch |
+| Chrome, Brave, Edge, Arc, Firefox or a Chromium fork | current | loading the unpacked extension |
 
-- Node.js and pnpm
- - Workspace `packageManager` is `pnpm@9.0.0` in the root `package.json`
- - TypeScript is configured in the client packages
+The installer checks the first four and offers Homebrew installs on macOS. Windows is not supported. Linux works, including containers, where login-service setup is skipped when there is no systemd user session.
 
-- Browser extension development
- - Chromium-based browsers (Chrome, Edge, Brave) or Firefox
- - Permissions and manifest live in `clients/browser-extension/wxt.config.ts`
- - WebExtensions API support for background scripts, content scripts, and side panel
+## Install with the script
 
-- LLM provider keys (optional for initial setup)
- - Supported providers include Google, OpenAI, Anthropic, Ollama, DeepSeek, OpenRouter
- - API keys or base URLs configured via environment variables or UI
+```sh
+bash <(curl -fsSL https://raw.githubusercontent.com/tashifkhan/agentic-browser/main/install.sh)
+# or from a checkout
+./install.sh
+```
 
-## Installation
-Install the backend and the pnpm workspace.
+`install.sh` delegates to `scripts/install.py`. The installer runs seven steps and asks before anything that changes the machine:
 
-### Backend (Python)
-1. Clone the repository and stay at the project root.
-2. Create and activate a Python virtual environment (recommended).
-3. Install dependencies using uv:
- - Run: `uv pip install -e .`
-4. Verify packages from `pyproject.toml`.
+1. checks docker, uv, node and pnpm
+2. writes `.env`, asks for a model key, generates `OAUTH_ENCRYPTION_KEY`
+3. starts postgres, neo4j and opensearch with Compose
+4. runs `uv sync`, `pnpm install` and builds the extension
+5. starts the backend at login or just for now
+6. finds installed browsers and walks through loading the extension
+7. registers `agentic-mcp` with local coding agents
 
-Notes:
-- The project uses uv for dependency resolution (`uv.lock`).
-- FastAPI and MCP share the same Python package. CLI aliases in `pyproject.toml` are `agentic-api-run` (`main:run`) and `agentic-mcp` (`mcp_server.server:run`).
+Useful flags:
 
-### Frontend (pnpm workspace)
-From the repository root:
+```sh
+./install.sh --yes
+./install.sh --dry-run
+./install.sh --firefox
+./install.sh --browser PATH
+./install.sh --skip-docker
+./install.sh --skip-browsers
+./install.sh --skip-mcp
+```
 
-```bash
+Browsers do not let a script install an unpacked extension silently. Step 6 opens each browser with the build folder on the clipboard and waits while you turn on developer mode, choose Load unpacked, and paste the path.
+
+## Manual setup
+
+```sh
+docker compose up -d
+cp .env.example .env
+uv sync
+uv run agentic-api-run
+
 pnpm install
-pnpm dev:extension
 pnpm build:extension
 pnpm dev:debug
 ```
 
-Those scripts filter the workspace packages:
+Load `clients/browser-extension/.output/chrome-mv3` unpacked. `pnpm dev:extension` rebuilds on change. The Firefox build uses `pnpm build:extension:firefox` and outputs `firefox-mv2`.
 
-```bash
-pnpm --filter @agentic-browser/browser-extension dev
-pnpm --filter @agentic-browser/browser-extension build
-pnpm --filter @agentic-browser/browser-extension dev:firefox
-pnpm --filter @agentic-browser/debug-web dev
-```
+## Environment variables
 
-You can also run the same scripts inside `clients/browser-extension/` after a root `pnpm install`. Do not `cd extension`; that directory is gone.
+`core/config.py` defines a pydantic `Settings` model read from `.env` with case-insensitive names. Values saved through the console win over env values for secrets and OAuth clients.
 
-Manifest and permissions:
-- The extension manifest defines permissions for tabs, storage, scripting, identity, side panel, web navigation, web request, cookies, bookmarks, history, clipboard, notifications, context menus, and downloads.
-- Host permissions include `<all_urls>`.
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `ENV` | `development` | `development`, `production` or `test` |
+| `DEBUG` | `True` | debug logging level |
+| `BACKEND_HOST` | `0.0.0.0` | bind address for `main.run()` |
+| `BACKEND_PORT` | `5454` | backend port |
+| `GOOGLE_API_KEY` | empty | Gemini and Google embeddings |
+| `OPENAI_API_KEY` | empty | OpenAI models and embeddings |
+| `ANTHROPIC_API_KEY` | empty | Claude models |
+| `DEEPSEEK_API_KEY` | empty | DeepSeek |
+| `OPENROUTER_API_KEY` | empty | OpenRouter |
+| `OPENCODE_API_KEY` | empty | OpenCode Zen and Go |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | local Ollama |
+| `OPENAI_BASE_URL`, `ANTHROPIC_BASE_URL`, `GOOGLE_BASE_URL` | empty | gateways or vLLM |
+| `CHAT_TITLE_LLM_PROVIDER` | `google` | chat title model |
+| `CHAT_TITLE_LLM_MODEL` | `gemini-3.1-flash-lite` | chat title model name |
+| `POSTGRES_HOST` | `localhost` | Postgres host |
+| `POSTGRES_PORT` | `5433` | host port |
+| `POSTGRES_DB` | `agentic_memory` | database |
+| `POSTGRES_USER` | `agentic` | user |
+| `POSTGRES_PASSWORD` | `agentic_secret` | password |
+| `NEO4J_URI` | `bolt://localhost:7687` | graph connection |
+| `NEO4J_USER` | `neo4j` | graph user |
+| `NEO4J_PASSWORD` | `neo4j_secret` | graph password |
+| `OPENSEARCH_HOST` | `localhost` | search host |
+| `OPENSEARCH_PORT` | `9201` | host port |
+| `OAUTH_ENCRYPTION_KEY` | generated file | 32-byte base64-url AES key |
+| `GOOGLE_CLIENT_SECRET` | empty | Google OAuth exchange |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | empty | GitHub OAuth |
+| `COMPOSIO_API_KEY`, `COMPOSIO_USER_ID` | empty | Composio |
+| `TELEGRAM_BOT_TOKEN` | empty | starts the Telegram bot |
+| `TELEGRAM_ALLOWED_USERS` | empty | allowed Telegram ids |
+| `TAVILY_API_KEY` | empty | search provider |
+| `ELEVENLABS_API_KEY`, `CARTESIA_API_KEY` | empty | read-aloud |
+| `CORS_ORIGINS` | empty | extra allowed origins |
 
-## Initial setup
-Configure environment variables and basic settings before launching the servers.
+If `OAUTH_ENCRYPTION_KEY` is missing, `core/crypto.py` writes `.oauth_encryption_key` beside `main.py` with mode 0600. Set a stable value for anything beyond a single-user dev machine.
 
-### Environment configuration
-- Backend host and port defaults are configurable via environment variables.
-- Debug logging level is controlled by environment variables.
+## Ports
 
-Key variables:
-- BACKEND_HOST: Server host binding (default: 0.0.0.0)
-- BACKEND_PORT: Server port (default: 5454)
-- DEBUG: Enable debug logging (default depends on environment)
-- GOOGLE_API_KEY: Google provider API key (required for Google provider)
-- OPENAI_API_KEY, ANTHROPIC_API_KEY, OLLAMA_BASE_URL, DEEPSEEK_API_KEY, OPENROUTER_API_KEY: Additional provider keys and base URLs
+| Service | Host port | Container port |
+| --- | --- | --- |
+| FastAPI backend | 5454 | none |
+| MCP bridge and HTTP MCP | 5455 | none |
+| Postgres | 5433 | 5432 |
+| Neo4j Browser | 7474 | 7474 |
+| Neo4j Bolt | 7687 | 7687 |
+| OpenSearch REST | 9201 | 9200 |
+| OpenSearch Dashboards | 5602 | 5601 |
 
-Note: The backend loads environment variables from a `.env` file automatically.
+The backend and bridge bind loopback for the bridge and all interfaces for the API by default. Set `BACKEND_HOST=127.0.0.1` on a network you do not trust. The API has no login; CORS only admits extension origins and localhost.
 
-### API key setup for LLM providers
-- For Google provider, set GOOGLE_API_KEY.
-- For OpenAI, Anthropic, DeepSeek, and OpenRouter, set the respective API keys.
-- For Ollama, configure OLLAMA_BASE_URL if using a custom endpoint.
-- Keys can be provided directly to the LLM client or via environment variables.
-
-UI-based key management:
-- The extension includes a UI component for saving API keys locally in extension storage.
-
-### Basic configuration options
-- Backend host/port: Controlled by environment variables.
-- Debug logging: Controlled by environment variables.
-- Provider selection and model defaults are defined in the LLM configuration.
-
-## Quick start
-Launch the API (and optional MCP stdio server), install the browser extension, and try a slash command.
-
-### Launch the API and MCP
-1. From the project root, start FastAPI (Uvicorn on port 5454 by default):
- - Command: `python main.py`
- - Alias: `agentic-api-run`
-2. MCP is mounted on the same app at `/mcp`. For stdio MCP, use the script alias:
- - Command: `agentic-mcp`
-
-Verification:
-- The FastAPI app serves health and agent routes under `/api/*`.
-- The MCP server exposes tools for LLM generation, GitHub Q&A, and website content conversion.
-
-### Install the browser extension
-1. From the repo root, build or develop the extension:
- - Development: `pnpm dev:extension`
- - Production: `pnpm build:extension`
- - Firefox: `pnpm dev:extension:firefox` or `pnpm build:extension:firefox`
-2. Load the unpacked extension in your browser:
- - Chrome/Edge: Load unpacked from `clients/browser-extension/.output/`
- - Firefox: Use the Firefox developer loading path for the Firefox build output
-
-Permissions:
-- The extension requests broad permissions for tabs, storage, scripting, identity, side panel, web navigation, web request, cookies, bookmarks, history, clipboard, notifications, context menus, and downloads.
-
-### Perform basic browser automation tasks
-- Use slash commands in the extension UI to trigger agent workflows.
-- Example slash commands include:
- - /browser-action: Execute browser automation tasks (navigate, click, type, scroll)
- - /react-ask: Chat with the React ReAct agent
- - /google-search: Perform a quick web search
- - /gmail-unread: Check unread emails
- - /calendar-events: View upcoming schedule
- - /youtube-ask: Q&A with YouTube videos
-
-Execution flow:
-- The extension parses slash commands and routes them to the backend via HTTP requests.
-- The background script handles messaging and action execution, including tab/window control and DOM manipulation.
-
-## Architecture overview
-Agentic Browser integrates a Python FastAPI/MCP backend with a React-based browser extension. The extension talks HTTP and WebSocket to the API. MCP is available over stdio or at `/mcp` on the FastAPI process.
-
-```mermaid
-graph TB
-subgraph "Browser Extension"
-BG["Background Script<br/>clients/browser-extension/entrypoints/background.ts"]
-CT["Content Script<br/>clients/browser-extension/entrypoints/content.ts"]
-UI["Side Panel and UI"]
-end
-subgraph "Backend"
-MCP["MCP Server<br/>mcp_server/server.py"]
-API["FastAPI Server<br/>main.py"]
-CFG["Config and LLM<br/>core/config.py, core/llm.py"]
-end
-UI --> BG
-BG <--> API
-BG <--> MCP
-MCP --> CFG
-API --> CFG
-CT --> BG
-```
-
-## Detailed component analysis
-
-### Backend servers
-- FastAPI Server
- - Starts with configurable host and port from `main.py` (`run()` uses Uvicorn).
- - Provides endpoints for agent workflows, memory, skills, and tools.
-- MCP Server
- - Exposes tools for LLM generation, GitHub Q&A, and website content conversion.
- - Supports multiple providers with dynamic configuration.
-
-```mermaid
-sequenceDiagram
-participant Client as "Extension UI"
-participant BG as "Background Script"
-participant API as "FastAPI Server"
-participant MCP as "MCP Server"
-Client->>BG : "Slash command or action"
-BG->>API : "HTTP request to agent endpoint"
-API-->>BG : "Response data"
-BG-->>Client : "Render results"
-Note over BG,MCP : "Alternative: BG can call MCP tools"
-```
-
-### LLM configuration and provider support
-- Provider configurations define default models, API key environment variables, and base URLs.
-- The LLM client validates keys and base URLs and raises descriptive errors if missing.
+## First run
 
 ```mermaid
 flowchart TD
-Start(["Initialize LLM"]) --> CheckProvider["Select Provider"]
-CheckProvider --> ValidateKey{"API Key Present?"}
-ValidateKey --> |Yes| UseKey["Use Provided or Env Key"]
-ValidateKey --> |No| RaiseError["Raise Configuration Error"]
-UseKey --> CheckBaseUrl{"Base URL Required?"}
-CheckBaseUrl --> |Yes| ValidateBaseUrl["Validate Base URL"]
-CheckBaseUrl --> |No| InitClient["Initialize Provider Client"]
-ValidateBaseUrl --> InitClient
-InitClient --> Done(["Ready"])
-RaiseError --> Done
+  Start(["uv run agentic-api-run"]) --> DB["init_db()<br/>create tables, run migrations"]
+  DB --> Graph["Neo4j connect + constraints"]
+  Graph --> Search["OpenSearch connect + indices"]
+  Search --> LLM["reload_default_llm()"]
+  LLM --> Bot{"TELEGRAM_BOT_TOKEN set?"}
+  Bot -- yes --> TG["start polling"]
+  Bot -- no --> Sched["APScheduler<br/>hourly, nightly, weekly"]
+  TG --> Sched
+  Sched --> Bridge["browser_bridge.ensure_started()"]
+  Bridge --> Ready(["GET / returns name and version"])
 ```
 
-### Extension components
-- Background Script
- - Handles messaging, tab/window control, and action execution.
- - Injects content scripts and performs DOM manipulation.
-- Content Script
- - Provides lightweight page interaction helpers.
-- Agent Utilities
- - Parse slash commands and route to backend endpoints.
- - Capture page context and construct payloads for agent workflows.
+1. Start the backend and check `curl http://127.0.0.1:5454/`.
+2. Open the side panel. Sign in with Google or GitHub, or skip and use a model key.
+3. Open the console, go to Settings, confirm the model row.
+4. Ask a page question. No tool rows means the model key is wrong. No page access means the extension or runtime is the problem.
+5. For MCP, run `agentic-mcp status`, then `agentic-mcp install --dry-run`.
+
+## Verification
+
+```sh
+curl http://127.0.0.1:5454/api/genai/health/
+curl http://127.0.0.1:5454/api/auth/status
+curl http://127.0.0.1:5455/bridge/status
+uv run agentic-mcp status
+pnpm typecheck:extension
+```
+
+## Dependencies
 
 ```mermaid
-sequenceDiagram
-participant User as "User"
-participant UI as "Extension UI"
-participant BG as "Background Script"
-participant CT as "Content Script"
-participant API as "Backend"
-User->>UI : "Type slash command"
-UI->>BG : "Parse and dispatch"
-BG->>CT : "Inject and execute action"
-CT-->>BG : "Action result"
-BG->>API : "HTTP request with payload"
-API-->>BG : "Response"
-BG-->>UI : "Display results"
+graph TB
+  Installer["scripts/install.py"] --> Docker["docker compose"]
+  Installer --> UV["uv sync"]
+  Installer --> PNPM["pnpm install"]
+  Installer --> Build["wxt build"]
+  Installer --> MCP["agentic-mcp install"]
+  API["main.py"] --> FastAPI["fastapi"]
+  API --> LangGraph["langgraph"]
+  API --> SQL["sqlalchemy"]
+  Extension["browser-extension"] --> WXT["wxt"]
+  Extension --> React["react"]
+  Console["debug-web"] --> Router["tanstack router"]
 ```
 
-## Dependency analysis
-- Backend dependencies are declared in `pyproject.toml` and include FastAPI, Uvicorn, LangChain, LangGraph, MCP, sqlmodel, asyncpg, neo4j, and opensearch-py.
-- Frontend dependencies are declared in `clients/browser-extension/package.json` and include React, WXT, socket.io-client, and `@agentic-browser/shared`.
+## Performance
 
-```mermaid
-graph LR
-subgraph "Backend Dependencies"
-P["pyproject.toml"]
-F["FastAPI"]
-U["Uvicorn"]
-L["LangChain/LangGraph"]
-M["MCP"]
-end
-subgraph "Frontend Dependencies"
-N["clients/browser-extension/package.json"]
-R["React"]
-W["WXT"]
-S["Socket.io Client"]
-end
-P --> F
-P --> U
-P --> L
-P --> M
-N --> R
-N --> W
-N --> S
-```
+- Compose health checks gate the installer: Postgres every 10 s, Neo4j every 15 s, OpenSearch every 15 s.
+- The backend pool is 10 connections with 20 overflow.
+- `init_db()` runs `create_all` then numbered migrations. Re-running is safe.
+- The bridge waits 3 seconds for a browser before a call fails.
+- Extension builds land in `.output/`; reload the unpacked folder after a rebuild.
 
-## Performance considerations
-- Use uv for faster dependency resolution and installation compared to pip.
-- Prefer production builds for the extension to minimize bundle size.
-- Minimize repeated DOM queries and injections; batch actions when possible.
-- Configure logging appropriately (DEBUG vs INFO) to reduce overhead during production runs.
+## Troubleshooting
 
-## Troubleshooting guide
-Common setup and runtime issues:
+- `Postgres init skipped`: Docker is down or the password differs. Run `docker compose ps`.
+- `Neo4j init skipped` or `OpenSearch init skipped`: the API still starts, but memory degrades.
+- `API key for 'google' not found`: add a key in Settings or `.env`.
+- Side panel says the backend is offline: check `BACKEND_PORT`, `VITE_API_URL`, and `baseUrl`.
+- Extension missing: load `.output/chrome-mv3`, not the source folder.
+- `agentic-mcp status` says no bridge: start the backend or run `agentic-mcp serve`.
+- `OAUTH_ENCRYPTION_KEY` errors: the key must decode to 32 bytes.
+- Login works but tools report `needs_reauth`: disconnect and sign in again.
 
-- Missing Python version
- - Ensure Python >= 3.12 is installed and selected in your environment.
+## Appendix
 
-- Missing Node.js or pnpm
- - Install Node.js and pnpm 9; run `pnpm install` at the repo root.
+### Implementation examples
+- Server entry: `main.run(host="0.0.0.0", port=5454, reload=True)`.
+- Installer entry: `install.sh` execs `python3 scripts/install.py`.
+- Health: `GET /api/genai/health/`.
+- Console scripts: `pnpm dev:debug`, `pnpm build:debug`, `pnpm screenshots`.
 
-- Backend server startup
- - Use `python main.py` or `agentic-api-run` for the API.
- - Use `agentic-mcp` for stdio MCP.
- - Verify host and port settings via environment variables.
-
-- LLM provider configuration errors
- - Ensure required API keys or base URLs are set for the chosen provider.
- - Check for typos in environment variable names.
-
-- Extension not loading
- - Confirm permissions in `clients/browser-extension/wxt.config.ts` and load the unpacked build from `.output/`.
- - Check browser developer tools for errors.
-
-- Action execution failures
- - Verify that the active tab is reachable and not blocked by CORS or privacy restrictions.
- - Review background script logs for detailed error messages.
-
-## Conclusion
-Backend is Python (FastAPI + MCP). Frontend is the WXT package under `clients/browser-extension/`. Once both are running and a provider key is set, slash commands and the side panel are enough to try a real task.
-
-## Appendices
-
-### Appendix A: environment variables reference
-- BACKEND_HOST: Backend host binding (default: 0.0.0.0)
-- BACKEND_PORT: Backend port (default: 5454)
-- DEBUG: Enable debug logging
-- GOOGLE_API_KEY: Google provider API key
-- OPENAI_API_KEY: OpenAI provider API key
-- ANTHROPIC_API_KEY: Anthropic provider API key
-- OLLAMA_BASE_URL: Ollama base URL
-- DEEPSEEK_API_KEY: DeepSeek provider API key
-- OPENROUTER_API_KEY: OpenRouter provider API key
-
-### Appendix B: example slash commands
-  - /browser-action: Execute browser automation tasks (navigate, click, type, scroll)
-  - /react-ask: Chat with the React ReAct agent
-  - /google-search: Perform a quick web search
-  - /gmail-unread: Check unread emails
-  - /calendar-events: View upcoming schedule
-  - /youtube-ask: Q&A with YouTube videos
+### Source files
+- `README.md`
+- `pyproject.toml`
+- `package.json`
+- `docker-compose.yml`
+- `.env.example`
+- `install.sh`
+- `scripts/install.py`
+- `main.py`
+- `core/config.py`
+- `core/db.py`
+- `core/crypto.py`
+- `mcp_server/bridge.py`

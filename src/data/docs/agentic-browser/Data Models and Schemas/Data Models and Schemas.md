@@ -1,479 +1,169 @@
 # Data models and schemas
 
-## Introduction
-Pydantic request/response models across agents, browser actions, service integrations, and YouTube. Fields, validation, aliases, and how errors surface.
+The backend keeps its durable state in one Postgres database with two families of tables. Application tables (conversations, runs, sessions, settings, credentials) are SQLModel classes in `models/db/app.py`. Memory tables (sources, artifacts, entities, claims, evidence) are SQLAlchemy declarative classes in `models/db/memory.py`. Both share the async engine and session factory in `core/db.py`.
 
-## Project structure
-The data models are organized under a dedicated models package with two subpackages:
-- models/requests: request schemas for various services and endpoints
-- models/response: response schemas for the same services and endpoints
-- models/yt.py: shared YouTube metadata model
+A numbered migration runner in `core/migrations.py` creates the application tables and the memory indexes. The memory tables themselves are created from model metadata on every startup.
+
+This page is the folder index. It describes the two schemas, the shared persistence rules, and every page in this folder.
+
+Key capabilities:
+- Two model modules, one engine, one session factory
+- String ids for app rows, UUID ids for memory rows
+- JSONB for metadata, settings values and credential payloads
+- Timezone-aware timestamps on every table
+- A lightweight migration ledger in `schema_migrations`
+- Cascading deletes from conversations down to events and tool calls
+
+## Repository layout
 
 ```mermaid
 graph TB
 subgraph "Models"
-RQ["requests/"]
-RS["response/"]
-YT["yt.py"]
+  APP["models/db/app.py<br/>SQLModel tables"]
+  MEM["models/db/memory.py<br/>Declarative Base tables"]
 end
-subgraph "Requests"
-AG["agent.py"]
-RA["react_agent.py"]
-ST["subtitles.py"]
-VI["video_info.py"]
-WS["website.py"]
-CR["crawller.py"]
-GH["github.py"]
-PJ["pyjiit.py"]
-ASK["ask.py"]
+subgraph "Runtime"
+  DB["core/db.py<br/>engine, get_session, init_db"]
+  MIG["core/migrations.py<br/>run_migrations"]
 end
-subgraph "Responses"
-GAR["agent.py"]
-RAR["react_agent.py"]
-STR["subtitles.py"]
-HR["health.py"]
-WSR["website.py"]
+subgraph "Support"
+  SCH["models/memory.py<br/>enums and schemas"]
+  TR["services/run_traces.py"]
+  ST["services/app_state.py"]
+  WR["memory/ingestion/writer.py"]
 end
-RQ --> AG
-RQ --> RA
-RQ --> ST
-RQ --> VI
-RQ --> WS
-RQ --> CR
-RQ --> GH
-RQ --> PJ
-RQ --> ASK
-RS --> GAR
-RS --> RAR
-RS --> STR
-RS --> HR
-RS --> WSR
-YT --> RA
-PJ --> RA
-PJ --> CR
+DB --> APP
+DB --> MEM
+DB --> MIG
+SCH --> MEM
+SCH --> WR
+TR --> APP
+ST --> APP
+WR --> MEM
 ```
 
-## Core components
-This section summarizes the primary data models and their roles.
+## Pages in this folder
 
-- YouTube metadata model
- - Purpose: Encapsulates YouTube video metadata and optional captions/transcript.
- - Fields: title, description, duration, uploader, upload_date, view_count, like_count, tags, categories, captions, transcript.
- - Types: str, int, List[str], Optional[str].
- - Defaults: sensible defaults for strings and integers; empty lists for collections; None for optional text fields.
+| Page | One line |
+| --- | --- |
+| [Schema Overview](Schema%20Overview) | both table families, column types, keys and indexes |
+| [Conversations and Run Traces](Conversations%20and%20Run%20Traces) | messages, runs, events, subagent runs and tool calls |
+| [Application State and Credentials](Application%20State%20and%20Credentials) | sessions, JSONB settings and encrypted credential payloads |
+| [Memory Entities and Claims](Memory%20Entities%20and%20Claims) | sources, artifacts, entities, claims, evidence and relations |
+| [Memory Search and Graph Stores](Memory%20Search%20and%20Graph%20Stores) | the OpenSearch and Neo4j stores and how they mirror Postgres |
+| [Data Migration Strategy](Data%20Migration%20Strategy) | discovery, ledger, idempotency, extensions and triggers |
+| [Agent Communication Models](Agent%20Communication%20Models) | conversation and run HTTP payloads, SSE frames and state routes |
+| [Service Integration Models](Service%20Integration%20Models) | the mounted route groups and the request bodies they accept |
+| [Validation and Error Handling](Validation%20and%20Error%20Handling) | gate rules, reconcile decisions and the validation error map |
+| [YouTube Data Models](YouTube%20Data%20Models) | video metadata, transcript cleanup and the stateless YouTube route |
+| [Data Models and Schemas](Data%20Models%20and%20Schemas) | this folder map and the shared persistence rules |
 
-- Agent messaging model
- - Purpose: Represents a single message in an agent conversation with support for tool calls.
- - Fields: role (enum-like literal), content (validated non-empty), name, tool_call_id, tool_calls.
- - Validation: minimum length for content; alias handling for toolCalls/toolCallId; whitespace stripping configured.
+## Shared concepts
 
-- React agent request
- - Purpose: Top-level request carrying conversation history and optional authentication context.
- - Fields: messages (non-empty list), google_access_token (alias handling), pyjiit_login_response (optional nested model).
- - Aliases: validation and serialization aliases for token and login response fields.
+- One engine. `create_async_engine(get_settings().postgres_dsn, pool_size=10, max_overflow=20, pool_pre_ping=True)`. The DSN points at `postgres_host`, port 5433, database `agentic_memory`.
+- One session pattern. `get_session()` commits on clean exit and rolls back on exception. Services open their own sessions; routers do not receive one.
+- Two id styles. App tables use prefixed strings (`conv_`, `msg_`, `run_`, `subrun_`, `tool_`, `evt_`, `ctx_`). Memory tables use `UUID(as_uuid=True)` with `default=uuid.uuid4`.
+- JSONB naming. SQLModel fields named `metadata_` map to a physical column `metadata`, because `metadata` is reserved on SQLAlchemy classes.
+- Timestamps. App models default to `utcnow()` and declare `DateTime(timezone=True)`. Memory models use `server_default=func.now()`, with `onupdate` and triggers on entities and claims.
+- Delete rules. Conversation and run children cascade. Optional links (`user_message_id`, `final_message_id`, `subagent_run_id`, `client_context_snapshots.conversation_id`) set null.
+- Index style. App indexes come from `Field(index=True)` and migrations 0001 and 0002. Memory indexes come from migration 0003, including GIN and trigram indexes.
 
-- Crawler request
- - Purpose: Request for content crawling with optional chat history, OAuth token, PyJIIT login context, client HTML snapshot, and attached file path.
- - Validation: chat_history defaults to empty list; aliases for token; populated by name behavior.
+```mermaid
+erDiagram
+  CONVERSATIONS ||--o{ CONVERSATION_MESSAGES : "cascade"
+  CONVERSATIONS ||--o{ AGENT_RUNS : "cascade"
+  AGENT_RUNS ||--o{ SUBAGENT_RUNS : "cascade"
+  AGENT_RUNS ||--o{ AGENT_EVENTS : "cascade"
+  AGENT_RUNS ||--o{ TOOL_CALLS : "cascade"
+  SOURCES ||--o{ ARTIFACTS : "cascade"
+  SOURCES ||--o{ EVIDENCE : "cascade"
+  CLAIMS ||--o{ EVIDENCE : "cascade"
+  ENTITIES ||--o{ CLAIMS : "subject and object"
+```
 
-- Website request
- - Purpose: Query for website QA with optional client HTML and attached file.
- - Fields: url, question, chat_history (default empty), client_html (optional), attached_file_path (optional).
+## Building blocks
 
-- Subtitles request
- - Purpose: Fetch subtitles for a given URL with optional language.
- - Fields: url, lang (defaults to English).
+- `models/db/app.py`, `models/db/memory.py`, `core/db.py` and `core/migrations.py` are the whole persistence layer.
+- `models/memory.py` holds the memory enums (`MemoryClass`, `MemoryTier`, `MemorySegment`, `ClaimStatus`) and the Pydantic shapes used at service boundaries.
+- `services/app_state.py` and `services/run_traces.py` are the only writers for most app rows.
+- `memory/ingestion/writer.py` is the only writer for claims and evidence.
 
-- Video info request
- - Purpose: Retrieve basic video metadata by URL.
- - Fields: url.
+## How it fits together
 
-- GitHub request
- - Purpose: Query GitHub resources with validated URL type.
- - Fields: url (HttpUrl), question, chat_history (default empty), attached_file_path (optional).
+Startup order matters. `init_db()` creates the memory tables from metadata, then runs migrations for the app schema, memory indexes and triggers.
 
-- Ask request
- - Purpose: General-purpose question-answering request with optional attachments.
- - Fields: url, question, chat_history (default empty), attached_file_path (optional).
+```mermaid
+sequenceDiagram
+  participant L as lifespan
+  participant DB as core/db.py
+  participant MIG as run_migrations
+  participant PG as Postgres
+  L->>DB: "await init_db()"
+  DB->>PG: "create_all(memory Base)"
+  DB->>MIG: "run_migrations(engine)"
+  MIG->>PG: "schema_migrations ledger"
+  MIG->>PG: "apply pending 0001, 0002, 0003"
+  MIG-->>DB: "list of applied names"
+  DB-->>L: "ready"
+```
 
-- PyJIIT nested models
- - Purpose: Represent authentication and session metadata from the PyJIIT portal.
- - Includes: PyjiitInstituteEntry, PyjiitRegData, PyjiitRawResponse, PyjiitLoginResponse.
- - Notable validations: typed fields with descriptions; optional fields for DOB, member type, enrollment, tokens, timestamps; institute list as a collection.
+If Postgres is unreachable, `main.py` logs `Postgres init skipped: ...` and the API still starts. Routes that need the database then fail at request time.
 
-- Response models
- - GenerateScriptResponse: ok flag, optional structured action plan, error message, problem list, raw response.
- - ReactAgentResponse: final messages list and output content string.
- - SubtitlesResponse: subtitles text.
- - HealthResponse: status and message.
- - WebsiteResponse: answer text.
+```mermaid
+flowchart TD
+  A["get_session()"] --> B["AsyncSessionLocal()"]
+  B --> C["yield session"]
+  C --> D{"exception?"}
+  D -->|"no"| E["commit"]
+  D -->|"yes"| F["rollback then re-raise"]
+  E --> G["close"]
+  F --> G
+```
 
-## Architecture overview
-The data model layer is consumed by routers and services to validate incoming requests and produce standardized responses. Authentication contexts (Google OAuth and PyJIIT login) are embedded as optional fields in several requests to enable downstream service integrations.
+## Table families
+
+Application tables hold product state and traces: `app_settings`, `browser_sessions`, `browser_session_messages`, `browser_credentials`, `browser_snapshots`, `conversations`, `conversation_messages`, `agent_runs`, `subagent_runs`, `agent_events`, `tool_calls` and `client_context_snapshots`.
+
+Memory tables hold extracted knowledge: `sources`, `artifacts`, `entities`, `claims`, `evidence`, `claim_relations`, `retrieval_log`, `feedback_events` and `maintenance_runs`.
+
+## Dependencies
 
 ```mermaid
 graph TB
-Client["Client"]
-Router["Routers"]
-Service["Services"]
-ModelReq["Request Models"]
-ModelRes["Response Models"]
-Client --> Router
-Router --> ModelReq
-Router --> Service
-Service --> ModelRes
-Service --> Router
-Router --> Client
+  MODELS["models/db/*.py"] --> SA["sqlalchemy >=2.0"]
+  MODELS --> SM["sqlmodel >=0.0.22"]
+  DB["core/db.py"] --> AP["asyncpg >=0.29"]
+  DB --> CFG["core/config.py get_settings"]
+  DB --> MODELS
+  DB --> MIG["core/migrations.py"]
+  SERVICES["services/*.py"] --> DB
+  ROUTERS["routers/*.py"] --> SERVICES
+  MEM["memory/*.py"] --> DB
+  DB --> PG["Postgres localhost:5433"]
 ```
 
-## Detailed component analysis
+## Performance
 
-### YouTube metadata model (YTVideoInfo)
-- Purpose: Standardized representation of YouTube video metadata and optional captions/transcript.
-- Fields and types:
- - title: str (default "Unknown")
- - description: str (default "")
- - duration: int (default 0)
- - uploader: str (default "Unknown")
- - upload_date: str (default "")
- - view_count: int (default 0)
- - like_count: int (default 0)
- - tags: List[str] (default [])
- - categories: List[str] (default [])
- - captions: Optional[str] (default None)
- - transcript: Optional[str] (default None)
-- Validation and behavior:
- - No explicit validators; relies on Pydantic type coercion and defaults.
-- Usage:
- - Imported via models/__init__.py and used by YouTube-related services and routers.
+- Pool size 10 with `max_overflow=20` gives at most 30 concurrent connections per process. `pool_pre_ping=True` costs a round trip after idle time.
+- Memory claims carry descending indexes on `base_importance` and `last_accessed_at`, plus a GIN trigram index on `claim_text`.
+- JSONB columns are not indexed. Settings lookups use the `(user_id, key)` unique constraint.
 
-```mermaid
-classDiagram
-class YTVideoInfo {
-+string title
-+string description
-+int duration
-+string uploader
-+string upload_date
-+int view_count
-+int like_count
-+string[] tags
-+string[] categories
-+string captions
-+string transcript
-}
-```
+## Troubleshooting
 
-### Agent messaging payload (AgentMessage)
-- Purpose: Represents a single message in an agent conversation, including optional tool call metadata.
-- Fields and types:
- - role: Literal["system","user","assistant","tool"]
- - content: str (required, minimum length enforced)
- - name: Optional[str]
- - tool_call_id: Optional[str] (alias "toolCallId")
- - tool_calls: Optional[List[Dict[str, Any]]] (alias "toolCalls"; description indicates optional tool call payloads)
-- Validation and behavior:
- - populate_by_name enabled for consistent alias handling.
- - Strips whitespace from string fields globally.
-- Usage:
- - Used within ReactAgentRequest and ReactAgentResponse.
+- Relation does not exist for `conversations` or `agent_runs`: migrations did not run because Postgres was down during startup. Restart with Postgres reachable.
+- Relation does not exist for `claims` or `sources`: `create_all` did not run. Check for the `Postgres init skipped` line.
+- A model field named `metadata` raises `InvalidRequestError`: SQLAlchemy reserves the name. Use `metadata_` with `Column("metadata", JSONB)`.
+- A page here describes an API or a gate rather than a table. Those pages cover the shapes and rules that sit above these tables, and each one names its own source files.
 
-```mermaid
-classDiagram
-class AgentMessage {
-+Literal~["system","user","assistant","tool"]~ role
-+string content
-+string name
-+string tool_call_id
-+Dict[] tool_calls
-}
-```
+## Appendix
 
-### React agent request (ReactAgentRequest)
-- Purpose: Top-level request for the React agent containing conversation history and optional authentication context.
-- Fields and types:
- - messages: List[AgentMessage] (required, minimum length 1)
- - google_access_token: Optional[str] (alias "google_access_token" and a misspelled variant; serialized as "google_access_token")
- - pyjiit_login_response: Optional[PyjiitLoginResponse]
-- Validation and behavior:
- - populate_by_name enabled.
- - Aliasing supports tolerant parsing and stable serialization.
+### Implementation examples
+- Engine: `create_async_engine(get_settings().postgres_dsn, pool_size=10, max_overflow=20, pool_pre_ping=True, echo=False)`.
+- Startup: `conn.run_sync(Base.metadata.create_all)` then `run_migrations(engine)`.
+- Base: `class Base(DeclarativeBase)` in `models/db/memory.py`; SQLModel subclasses in `models/db/app.py`.
 
-```mermaid
-classDiagram
-class ReactAgentRequest {
-+AgentMessage[] messages
-+string google_access_token
-+PyjiitLoginResponse pyjiit_login_response
-}
-class AgentMessage
-class PyjiitLoginResponse
-ReactAgentRequest --> AgentMessage : "contains"
-ReactAgentRequest --> PyjiitLoginResponse : "optional"
-```
-
-### Crawler request (CrawlerRequest)
-- Purpose: Request for content crawling with optional context and authentication.
-- Fields and types:
- - question: str
- - chat_history: Optional[list[dict[str, Any]]] (default empty list)
- - google_access_token: Optional[str] (alias "google_access_token" and a misspelled variant; serialized consistently)
- - pyjiit_login_response: Optional[PyjiitLoginResponse]
- - client_html: Optional[str]
- - attached_file_path: Optional[str]
-- Validation and behavior:
- - populate_by_name enabled.
- - Defaults cover optional fields when they are absent.
-
-```mermaid
-classDiagram
-class CrawlerRequest {
-+string question
-+Dict[] chat_history
-+string google_access_token
-+PyjiitLoginResponse pyjiit_login_response
-+string client_html
-+string attached_file_path
-}
-class PyjiitLoginResponse
-CrawlerRequest --> PyjiitLoginResponse : "optional"
-```
-
-### Website request (WebsiteRequest)
-  - Purpose: Query for website QA with optional client HTML and attached file.
-- Fields and types:
- - url: str
- - question: str
- - chat_history: Optional[list[dict]] (default empty)
- - client_html: Optional[str]
- - attached_file_path: Optional[str]
-- Validation and behavior:
- - Minimal validation; defaults fill gaps.
-
-```mermaid
-classDiagram
-class WebsiteRequest {
-+string url
-+string question
-+Dict[] chat_history
-+string client_html
-+string attached_file_path
-}
-```
-
-### Subtitles request (SubtitlesRequest)
-  - Purpose: Fetch subtitles for a given URL with optional language.
-- Fields and types:
- - url: str
- - lang: Optional[str] (default "en")
-- Validation and behavior:
- - No explicit validators; relies on type coercion.
-
-```mermaid
-classDiagram
-class SubtitlesRequest {
-+string url
-+string lang
-}
-```
-
-### Video info request (VideoInfoRequest)
-  - Purpose: Retrieve basic video metadata by URL.
-- Fields and types:
- - url: str
-- Validation and behavior:
- - No explicit validators; relies on type coercion.
-
-```mermaid
-classDiagram
-class VideoInfoRequest {
-+string url
-}
-```
-
-### GitHub request (GitHubRequest)
-  - Purpose: Query GitHub resources with validated URL type.
-- Fields and types:
- - url: HttpUrl
- - question: str
- - chat_history: list[dict] (default empty)
- - attached_file_path: str | None
-- Validation and behavior:
- - HttpUrl ensures strict URL validation.
-
-```mermaid
-classDiagram
-class GitHubRequest {
-+HttpUrl url
-+string question
-+Dict[] chat_history
-+string attached_file_path
-}
-```
-
-### Ask request (AskRequest)
-  - Purpose: General-purpose question-answering request with optional attachments.
-- Fields and types:
- - url: str
- - question: str
- - chat_history: Optional[List[Dict]] (default empty)
- - attached_file_path: Optional[str]
-- Validation and behavior:
- - Minimal validation; defaults fill gaps.
-
-```mermaid
-classDiagram
-class AskRequest {
-+string url
-+string question
-+Dict[] chat_history
-+string attached_file_path
-}
-```
-
-### PyJIIT nested models (PyjiitInstituteEntry, PyjiitRegData, PyjiitRawResponse, PyjiitLoginResponse)
-  - Purpose: Represent authentication and session metadata from the PyJIIT portal.
-- Fields and types:
- - PyjiitInstituteEntry: label (str), value (str)
- - PyjiitRegData: bypass (str), clientid (str), userDOB (Optional[str]), name (Optional[str]), lastvisitdate (Optional[str]), membertype (Optional[str]), enrollmentno (Optional[str]), userid (Optional[str]), expiredpassword (Optional[str]), institutelist (List[PyjiitInstituteEntry]), memberid (Optional[str]), token (Optional[str])
- - PyjiitRawResponse: regdata (PyjiitRegData), clientidforlink (Optional[str])
- - PyjiitLoginResponse: raw_response (PyjiitRawResponse), regdata (PyjiitRegData), institute (Optional[str]), instituteid (Optional[str]), memberid (Optional[str]), userid (Optional[str]), token (Optional[str]), expiry (Optional[datetime]), clientid (Optional[str]), membertype (Optional[str]), name (Optional[str])
-- Validation and behavior:
- - populate_by_name enabled for PyjiitLoginResponse.
- - Descriptions annotate intent and semantics of fields.
-
-```mermaid
-classDiagram
-class PyjiitInstituteEntry {
-+string label
-+string value
-}
-class PyjiitRegData {
-+string bypass
-+string clientid
-+string userDOB
-+string name
-+string lastvisitdate
-+string membertype
-+string enrollmentno
-+string userid
-+string expiredpassword
-+PyjiitInstituteEntry[] institutelist
-+string memberid
-+string token
-}
-class PyjiitRawResponse {
-+PyjiitRegData regdata
-+string clientidforlink
-}
-class PyjiitLoginResponse {
-+PyjiitRawResponse raw_response
-+PyjiitRegData regdata
-+string institute
-+string instituteid
-+string memberid
-+string userid
-+string token
-+datetime expiry
-+string clientid
-+string membertype
-+string name
-}
-PyjiitRegData --> PyjiitInstituteEntry : "contains"
-PyjiitRawResponse --> PyjiitRegData : "has"
-PyjiitLoginResponse --> PyjiitRawResponse : "has"
-PyjiitLoginResponse --> PyjiitRegData : "has"
-```
-
-### Response models
-- GenerateScriptResponse: ok (bool), action_plan (Optional[Dict[str, Any]]), error (Optional[str]), problems (Optional[List[str]]), raw_response (Optional[str])
-- ReactAgentResponse: messages (List[AgentMessage]), output (str)
-- SubtitlesResponse: subtitles (str)
-- HealthResponse: status (str), message (str)
-- WebsiteResponse: answer (str)
-
-```mermaid
-classDiagram
-class GenerateScriptResponse {
-+bool ok
-+Dict~Any~ action_plan
-+string error
-+string[] problems
-+string raw_response
-}
-class ReactAgentResponse {
-+AgentMessage[] messages
-+string output
-}
-class SubtitlesResponse {
-+string subtitles
-}
-class HealthResponse {
-+string status
-+string message
-}
-class WebsiteResponse {
-+string answer
-}
-class AgentMessage
-ReactAgentResponse --> AgentMessage : "contains"
-```
-
-## Dependency analysis
-- ReactAgentRequest depends on AgentMessage and PyjiitLoginResponse.
-- CrawlerRequest optionally depends on PyjiitLoginResponse.
-- PyjiitLoginResponse composes PyjiitRawResponse and PyjiitRegData.
-- Response models are standalone and used to serialize service outputs.
-
-```mermaid
-graph LR
-RA["ReactAgentRequest"] --> AM["AgentMessage"]
-RA --> PLR["PyjiitLoginResponse"]
-CR["CrawlerRequest"] --> PLR
-PLR --> PRR["PyjiitRawResponse"]
-PRR --> PRD["PyjiitRegData"]
-PRD --> PIE["PyjiitInstituteEntry"]
-```
-
-## Performance considerations
-- Prefer minimal validation overhead: most models rely on type coercion and defaults; avoid expensive validators.
-- Use Optional fields judiciously to reduce unnecessary allocations when data is absent.
-- For large payloads (e.g., tool_calls), keep payloads compact and avoid redundant copies.
-- Use alias normalization to reduce parsing ambiguity and improve throughput.
-
-## Troubleshooting guide
-- Validation errors:
- - Non-empty content in AgentMessage triggers validation failures if missing or blank after trimming.
- - Missing required fields in requests cause validation errors; ensure presence of required fields or provide defaults.
-- Alias mismatches:
- - Google access token and PyJIIT login response accept alternative spellings during validation but serialize consistently under specified aliases.
-- Type coercion:
- - HttpUrl in GitHubRequest enforces strict URL validation; invalid URLs will fail early.
-- Serialization differences:
- - ToolCalls/toolCallId and similar fields use aliases; ensure clients send the appropriate keys to pass validation.
-
-## Conclusion
-Schemas are the contract. Change them deliberately, keep aliases for compatibility, and let validation failures return clear 4xx bodies.
-
-## Appendices
-
-### Data lifecycle and transformation
-- Deserialization: Requests are parsed from JSON into Pydantic models; aliases resolve to canonical field names; defaults fill missing optional fields.
-- Validation: Pydantic enforces types, lengths, and optional constraints; custom descriptions clarify intent.
-- Processing: Services operate on validated models; nested models propagate context (e.g., PyJIIT login).
-- Serialization: Responses are serialized back to JSON; aliases ensure consistent field names for clients.
-
-### Security and privacy considerations
-- Token handling:
- - Google access tokens and PyJIIT tokens are optional fields; ensure they are transmitted securely and handled with least privilege.
-- Sensitive data:
- - Avoid logging raw tokens or personal data; sanitize logs and audit access.
-- URL validation:
- - Use HttpUrl for external resource access to prevent malformed inputs.
-
-### Schema evolution and backwards compatibility
-- Add new optional fields with defaults to preserve backward compatibility.
-- Introduce aliases for renamed fields to accept legacy clients while serializing under new names.
-- Avoid removing required fields; deprecate with migration paths.
-- Keep nested models versioned so changes do not surprise clients.
-
+### Source files
+- `models/db/app.py`
+- `models/db/memory.py`
+- `core/db.py`
+- `core/migrations.py`

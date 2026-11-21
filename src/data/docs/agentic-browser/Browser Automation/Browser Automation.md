@@ -1,220 +1,186 @@
 # Browser automation
 
-## Introduction
-Declarative browser actions inside the extension. Agents emit plans (click, fill, extract, navigate); the background worker and content script execute them in the active tab with logging and approval.
+Browser automation in this project is a loop between a planner and a real Chrome tab. The backend plans exactly one action per request, the extension executes it against the live page, and the extension posts the resulting page snapshot and `ActionExecutionResult` back. `services/browser_runtime_service.py` owns the session state and the planner call, `clients/browser-extension/entrypoints/utils/executeActions.ts` owns execution, and `core/loop_guard.py` decides when the loop is going in circles.
 
-## Project structure
-Extension layout:
-- Background service worker for tab control, tool dispatch, and message handling
-- Content script for lightweight page-side actions and overlays
-- Side panel React app for user interaction, agent orchestration, and command parsing
-- Utility modules for action execution, agent command parsing, and agent mapping
-- Build configuration for permissions and manifest
+The side panel drives the loop itself through `/api/browser/runtime/start` and `/api/browser/runtime/step`. Other clients (Telegram, the debug console, any MCP client) have no executor, so they call `browser_task`, which reaches the extension's `task.run` bridge method and runs the same loop inside the service worker.
+
+Key capabilities:
+- One action per model turn, with `done`, `message`, `expected_state`, `verification`, and `notes` in the reply.
+- A page snapshot built in the page: accessibility roles, refs such as `[ref=e12]`, visible text, and media state.
+- Login, captcha, and permission walls detected before planning, returned as `status="blocked"` with `requires_user_input=True`.
+- Progress-based loop protection instead of a hard step cap.
+- Remote tasks from the bridge, Telegram, or the console that reuse the same planner.
+- An extension layer that handles both tab control and DOM actions through `browser.scripting`.
+
+## Pages in this folder
+
+| Page | What it covers |
+| --- | --- |
+| [Dynamic Script Generation](Dynamic%20Script%20Generation) | The runtime planner: sessions, prompt payload, JSON parsing, notes, tracing. |
+| [DOM Manipulation and Element Targeting](DOM%20Manipulation%20and%20Element%20Targeting) | The action executor: selectors, refs, typing, clicks, verification. |
+| [Page Snapshot and Refs](Page%20Snapshot%20and%20Refs) | The in-page outline: roles, visibility, ref lifetime, frame stitching. |
+| [Security and Safety Mechanisms](Security%20and%20Safety%20Mechanisms) | The loop guard signals and the captcha, login, and permission blockers. |
+| [Remote Browser Tasks](Remote%20Browser%20Tasks) | `browser_task`, the bridge transport, `task.run`, and the worker loop. |
+| [Extension Architecture and Components](Extension%20Architecture%20and%20Components) | WXT entrypoints, runtime messages, the bridge client, permissions. |
+
+## Repository layout
+
+The route layer is thin. `routers/browser_runtime.py` exposes the two POST handlers. The service layer holds the session dict, prompt assembly, JSON parsing, and trace writes. The extension side is split between the executor, the message worker, and the bridge handlers.
 
 ```mermaid
 graph TB
-subgraph "Extension"
-BG["Background Service Worker<br/>background.ts"]
-CS["Content Script<br/>content.ts"]
-UI["Side Panel (React)<br/>AgentExecutor.tsx"]
-UTILS["Utilities<br/>executeAgent.ts / executeActions.ts / parseAgentCommand.ts"]
-MAP["Agent Map<br/>agent-map.ts"]
-CFG["Build Config<br/>wxt.config.ts"]
-end
-subgraph "Web Page"
-PAGE["Web Page DOM"]
-end
-UI --> BG
-UI --> UTILS
-UTILS --> BG
-BG --> CS
-CS --> PAGE
-BG --> PAGE
-UI --> MAP
-CFG --> BG
-CFG --> UI
+  subgraph Routes
+    RuntimeRoute["routers/browser_runtime.py<br/>/start and /step"]
+    AutomationRoute["routers/automation.py<br/>plan_step wrapper"]
+  end
+  subgraph Services
+    Planner["services/browser_runtime_service.py<br/>BrowserRuntimeService"]
+    Automation["services/browser_automation_service.py"]
+    PageBuilder["services/browser_runtime_page.py"]
+  end
+  subgraph Models
+    Req["models/requests/automation.py<br/>PageSnapshot, BrowserAction"]
+    RuntimeReq["models/requests/browser_runtime.py"]
+    RuntimeRes["models/response/browser_runtime.py"]
+  end
+  subgraph Extension
+    Exec["executeActions.ts"]
+    AgentLoop["executeAgent.ts"]
+    Background["background.ts"]
+    Handlers["utils/bridge/handlers.ts"]
+    PageAgent["utils/bridge/page-agent.ts"]
+  end
+  RuntimeRoute --> Planner
+  AutomationRoute --> Automation --> Planner
+  Planner --> Req
+  Planner --> RuntimeReq
+  Planner --> RuntimeRes
+  Planner --> PageBuilder
+  AgentLoop --> Exec
+  AgentLoop --> RuntimeRoute
+  Handlers --> AgentLoop
+  Handlers --> PageAgent
+  Background --> Handlers
 ```
 
-## Core components
-- Declarative Action System: Agents declare actions (e.g., OPEN_TAB, CLICK, TYPE, SCROLL, WAIT, SELECT, EXECUTE_SCRIPT). The background service worker routes these to specialized handlers that inject safe scripts into the active tab or operate at the browser/tab level.
-- Dynamic Script Generation: For DOM-centric actions, the system generates and executes safe JavaScript within the page context using browser.scripting.executeScript. This ensures actions run with page privileges and visibility.
-- Content Script Architecture: Provides optional page-side helpers and UI overlays. It listens for commands and performs simple actions directly in-page.
-- Background Coordination: Manages tab lifecycle, navigation, cookie/localStorage access, and orchestrates complex multi-step automation plans returned by agents.
-- Message Passing: React side panel communicates with the background via browser.runtime/onMessage and browser.tabs.sendMessage to coordinate actions and receive results.
-- Agent Orchestration: The side panel parses slash commands, resolves endpoints, captures page context, and executes agent workflows that may include generated action plans.
+## How the loop is split
 
-## Architecture overview
-Stack from the outside in:
-- UI Layer (Side Panel): Parses user intent, resolves agent actions, and triggers execution.
-- Orchestration Layer: Executes agent workflows, captures page context, and coordinates action plans.
-- Control Layer (Background): Dispatches tools/actions to appropriate handlers, manages tabs, and injects scripts.
-- Execution Layer (Content/Injected Scripts): Performs DOM manipulation and page-level operations.
+The sequence is the same for a side-panel run and a remote run, only the caller differs.
 
 ```mermaid
 sequenceDiagram
-participant User as "User"
-participant UI as "AgentExecutor.tsx"
-participant BG as "background.ts"
-participant CS as "content.ts"
-participant Page as "Web Page"
-User->>UI : Enter command or prompt
-UI->>BG : executeAgent(...) / executeBrowserActions(...)
-BG->>BG : parseAgentCommand(...)
-BG->>BG : executeAgentTool(actionType, params)
-alt DOM action
-BG->>CS : browser.scripting.executeScript(...)
-CS->>Page : Inject and run safe script
-Page-->>CS : Result
-CS-->>BG : Result
-else Tab/browser action
-BG->>Page : browser.tabs.* operations
-Page-->>BG : Result
-end
-BG-->>UI : Final result
-UI-->>User : Render response
+  participant UI as executeAgent.ts
+  participant API as routers/browser_runtime.py
+  participant S as BrowserRuntimeService
+  participant M as LLM
+  participant X as executeActions.ts
+  UI->>X: capturePageSnapshot()
+  UI->>API: POST /api/browser/runtime/start
+  API->>S: start_session(goal, page)
+  S->>M: llm.ainvoke(system + payload)
+  M-->>S: JSON with one action
+  S-->>UI: BrowserRuntimeStepResponse(done=false)
+  UI->>X: executeAutomationActions([action])
+  X-->>UI: ActionExecutionResult
+  UI->>API: POST /api/browser/runtime/step
+  API->>S: continue_session(session_id, page, result)
+  S->>S: _record_progress(guard.record)
+  S->>M: next plan
+  S-->>UI: next action or final message
 ```
 
-## Detailed component analysis
+A remote run replaces the first and last participant with `runRemoteBrowserTask`, which posts the same requests from the service worker. The planner cannot tell the difference, and the action vocabulary is identical.
 
-### Declarative action system and tool dispatch
-Agents declare actions that the extension converts into safe, executable operations. The background service worker routes these actions to dedicated handlers:
-- Browser-level actions: OPEN_TAB, CLOSE_TAB, SWITCH_TAB, NAVIGATE, RELOAD_TAB, DUPLICATE_TAB
-- DOM-level actions: CLICK, TYPE, SCROLL, SELECT, EXECUTE_SCRIPT
-- Inspection actions: GET_PAGE_INFO, EXTRACT_DOM, FIND_ELEMENTS, GET_ELEMENT_TEXT, GET_ELEMENT_ATTRIBUTES
-- Storage and cookies: GET/SET_LOCAL_STORAGE, GET/SET_COOKIE
-- Navigation history: GO_BACK, GO_FORWARD
-- Synchronization: WAIT, HOVER
+## Shared concepts
+
+- `PageSnapshot`: `url`, `title`, `visible_text`, `active_element`, `interactive`, `media`, `screenshot`. Defined in `models/requests/automation.py` and mirrored as a TypeScript type in `executeActions.ts`.
+- `BrowserAction`: `type` plus optional `selector`, `text`, `role`, `value`, `url`, `active`, `key`, `command`, `direction`, `amount`, `ms`, and `description`.
+- `ActionExecutionResult`: `action`, `success`, `error`, `verification`, `before`, `after`.
+- `BrowserRuntimeStepResponse`: `session_id`, `step`, `done`, `status`, `message`, `action`, `expected_state`, `verification`, `reason`, `requires_user_input`, `conversation_id`, `run_id`, `loop_check`.
+- `LoopGuard`: a per-session `record(call, outcome)` accumulator whose verdict is fed into the next prompt.
+
+The `PageSnapshot` fields are the planner's whole view of the page. The executor fills `before` and `after` on every result, even a failed one, so the next plan sees what actually happened.
+
+## Dependencies
+
+Upstream callers are the two routes and the tools that start sessions (`tools/browser_use/tool.py`, `tools/remote_actions.py`). Downstream, the planner needs the configured chat model, the conversation and trace services, and Postgres when `persist` is true. The extension needs `chrome.scripting`, `chrome.tabs`, and optionally `chrome.debugger`.
 
 ```mermaid
-flowchart TD
-Start(["Agent declares action"]) --> Route{"Action type?"}
-Route --> |Tab/Browser| TabOps["Tab/Window Ops<br/>OPEN/CLOSE/SWITCH/NAVIGATE/RELOAD"]
-Route --> |DOM| DOMOps["DOM Ops<br/>CLICK/TYPE/SCROLL/SELECT/EXECUTE_SCRIPT"]
-Route --> |Inspect| InspectOps["Inspect Ops<br/>GET_PAGE_INFO/EXTRACT_DOM/FIND_ELEMENTS"]
-Route --> |Storage| StorageOps["Storage Ops<br/>LOCAL_STORAGE/COOKIE"]
-Route --> |History| NavOps["Nav Ops<br/>GO_BACK/GO_FORWARD/HOVER"]
-TabOps --> BGExec["Background handler"]
-DOMOps --> BGExec
-InspectOps --> BGExec
-StorageOps --> BGExec
-NavOps --> BGExec
-BGExec --> Inject["Inject safe script<br/>browser.scripting.executeScript"]
-BGExec --> Direct["Direct browser.tabs.*"]
-Inject --> Page["Page context"]
-Direct --> Page
-Page --> Result(["Return result"])
+graph TB
+  subgraph Callers
+    Panel["side panel<br/>executeAgent.ts"]
+    Bridge["bridge task.run"]
+    Tool["browser_action_agent"]
+    OldRoute["/api/browser/automation"]
+  end
+  subgraph Backend
+    Svc["BrowserRuntimeService"]
+    LLM["core/llm.py llm"]
+    Convs["ConversationService"]
+    Traces["RunTraceService"]
+    Guard["core/loop_guard.py"]
+  end
+  subgraph Browser
+    Scripting["browser.scripting.executeScript"]
+    Tabs["browser.tabs"]
+    Debugger["chrome.debugger (optional)"]
+  end
+  Panel --> Svc
+  Bridge --> Panel
+  Tool --> Svc
+  OldRoute --> Svc
+  Svc --> LLM
+  Svc --> Convs
+  Svc --> Traces
+  Svc --> Guard
+  Panel --> Scripting
+  Panel --> Tabs
+  Panel --> Debugger
 ```
 
-### DOM inspection and manipulation
-DOM inspection and manipulation:
-- Element targeting: CLICK, TYPE, SELECT, GET_ELEMENT_TEXT, GET_ELEMENT_ATTRIBUTES, FIND_ELEMENTS
-- Form filling: TYPE supports contenteditable and standard inputs; FILL_FORM supports multiple fields and optional submission
-- Scrolling: SCROLL supports direction, amount, and scrolling to an element
-- Visibility checks: WAIT_FOR_ELEMENT supports existence, visible, hidden conditions
-- Dynamic script execution: EXECUTE_SCRIPT runs arbitrary scripts safely in page context
+## Reading order
 
-```mermaid
-sequenceDiagram
-participant BG as "background.ts"
-participant CS as "Injected Script"
-participant Page as "Page DOM"
-BG->>CS : browser.scripting.executeScript(func, args)
-CS->>Page : Query/modify DOM
-Page-->>CS : Element(s) / state
-CS-->>BG : Result
-BG-->>BG : Post-process and return
-```
-
-### Dynamic script generation for safe execution
-The extension generates and executes safe JavaScript for DOM actions:
-- Injection: browser.scripting.executeScript runs a function in the page context with provided arguments
-- Safety: Actions validate selectors and dispatch realistic events (input/change/keydown/keyup) to mimic user interactions
-- Flexibility: EXECUTE_SCRIPT allows running custom scripts with optional arguments
-
-```mermaid
-flowchart TD
-Plan["Agent generates action plan"] --> Build["Build safe script args"]
-Build --> Inject["browser.scripting.executeScript"]
-Inject --> Run["Run in page context"]
-Run --> Events["Dispatch realistic events"]
-Events --> Done["Return result"]
-```
-
-### Content script architecture and message passing
-- Content script lifecycle: Loads on all URLs and can optionally create overlays or handle simple actions
-- Message handling: Receives PERFORM_ACTION messages and executes lightweight actions directly in-page
-- Background coordination: The background service worker injects content scripts when needed and forwards action messages
-
-```mermaid
-sequenceDiagram
-participant BG as "background.ts"
-participant CS as "content.ts"
-participant Page as "Page"
-BG->>CS : browser.scripting.executeScript(...)
-CS->>Page : Inject overlay / helpers
-BG->>Page : browser.tabs.sendMessage(tabId, {type : "PERFORM_ACTION", action})
-Page-->>BG : Result
-```
-
-### Agent orchestration and command parsing
-- Slash command parsing: parseAgentCommand resolves agent and action, suggests completions, and validates inputs
-- Agent mapping: agent-map defines endpoints for each agent/action pair
-- Execution pipeline: AgentExecutor orchestrates execution, captures page context, and executes generated action plans
-
-```mermaid
-flowchart TD
-Input["User input"] --> Parse["parseAgentCommand"]
-Parse --> Map["agent-map lookup"]
-Map --> Exec["executeAgent(...)"]
-Exec --> Plan["Action plan (optional)"]
-Plan --> Run["executeBrowserActions"]
-```
-
-## Dependency analysis
-The extension relies on WebExtensions APIs and a React-based UI:
-- Permissions: activeTab, tabs, storage, scripting, identity, sidePanel, webNavigation, webRequest, cookies, bookmarks, history, clipboard, notifications, contextMenus, downloads
-- Host permissions: <all_urls>
-- Runtime dependencies: browser.runtime, browser.tabs, browser.scripting, browser.cookies, browser.storage, browser.windows
+Start with the snapshot if you need to understand what the model sees. Read the planner next, then the executor. The loop guard and the blockers explain why a run stops. The remote page explains the transport that makes the same loop available outside the side panel. The extension page explains where the code lives and how messages reach it.
 
 ```mermaid
 graph LR
-BG["background.ts"] --> API["WebExtensions APIs"]
-CS["content.ts"] --> API
-UI["AgentExecutor.tsx"] --> BG
-UTILS["executeAgent.ts / executeActions.ts"] --> BG
-MAP["agent-map.ts"] --> UI
-CFG["wxt.config.ts"] --> BG
-CFG --> UI
+  Snap["Page Snapshot and Refs"] --> Plan["Dynamic Script Generation"]
+  Plan --> Exec["DOM Manipulation and Element Targeting"]
+  Exec --> Guard["Security and Safety Mechanisms"]
+  Plan --> Guard
+  Guard --> Remote["Remote Browser Tasks"]
+  Remote --> Ext["Extension Architecture and Components"]
+  Exec --> Ext
 ```
 
-## Performance considerations
-- Minimize DOM queries: Prefer targeted selectors and cache results when feasible.
-- Debounce rapid actions: Introduce small delays between actions to avoid overwhelming the page.
-- Limit payload sizes: When capturing DOM or HTML, truncate text and limit element counts to reduce overhead.
-- Use selective waits: WAIT_FOR_ELEMENT with specific conditions reduces polling overhead.
-- Efficient event dispatch: Dispatch only necessary events (input/change/keydown) to reduce reflows.
-- Lazy injection: Inject content scripts only when required to reduce startup cost.
+## Performance
 
-## Security measures
-- User approval workflows: Every actionable operation should require explicit user consent before execution.
-- Activity logging: Maintain detailed logs of all actions performed, including timestamps and outcomes.
-- Intelligent content filtering: Filter sensitive data (cookies, localStorage) and restrict access to authenticated domains.
-- Safe domain allowlisting: Restrict automation to trusted domains and enforce IPI protections.
-- Code sanitization: Validate and sanitize generated scripts to prevent unsafe patterns.
-- Permission minimization: Request only necessary permissions and avoid broad scopes.
+Sessions are an in-process class dict, so no database read is needed between steps. The planner sends at most 5000 characters of visible text, 80 interactive elements, four history entries, and 40 notes. Screenshots are downscaled to 1280 pixels wide at JPEG quality 0.55. The executor waits 350 ms after DOM actions and 150 ms after media actions. Remote trails keep the last 25 entries.
 
-Implementation references:
-- Guardrails and transparency: User approval, activity logs, intelligent filtering, allowlisting
-- Sanitization utilities: Disallow eval/new Function/fs/require/XMLHttpRequest/importScripts patterns
+## Troubleshooting
 
-## Troubleshooting guide
-Common issues and resolutions:
-- Element not found: Ensure selectors are correct and the element is present. Use WAIT_FOR_ELEMENT before CLICK/TYPE.
-- Action timeouts: Increase wait times or adjust conditions. Verify page readiness before automation.
-- Permission errors: Confirm required permissions are granted and host permissions include target URLs.
-- Content script injection failures: Verify matches and injection timing. Retry injection if needed.
-- Cross-browser differences: Some APIs behave differently across engines; test on target browsers and adjust accordingly.
+- `404 Unknown browser runtime session`: the backend restarted, or `/step` was sent to a different worker process. Start a new session.
+- `400 goal is required`: `start_browser_runtime` rejects a blank or whitespace goal before the service runs.
+- `status="blocked"` with a captcha message: the page text contains `captcha` or `I'm not a robot`. The service refuses to plan around it.
+- Planning failed with `Browser runtime planner returned no JSON object`: the model replied with prose or markdown. Check the configured model and temperature.
+- An action is rejected silently as `action=None`: the type was not in `allowed_actions`, so `_parse_action` returned `None` and the run finished as blocked.
+- The extension executes nothing: confirm the side panel is the caller. A non-side-panel client receives `browser_task`, not `browser_action_agent`.
+- A remote task never returns: check the extension popup for bridge status and send `task.stop` before retrying.
 
-## Conclusion
-Background dispatches, content scripts touch the DOM, the side panel shows what will run. Permissions, logs, and sanitization are the real product, not the click helpers.
+## Appendix
 
+### Implementation examples
+
+- `POST /api/browser/runtime/start`: accepts `BrowserRuntimeStartRequest`, returns the first planned action or a final response.
+- `POST /api/browser/runtime/step`: accepts `BrowserRuntimeStepRequest`, records progress, returns the next action.
+- `BrowserRuntimeService._plan_next_step`: builds the prompt, calls `llm.ainvoke`, parses JSON, applies the guard verdict.
+- `executeAutomationActions`: runs one action, captures before and after snapshots, verifies, and stops on the first failure.
+
+### Source files
+
+- `routers/browser_runtime.py`
+- `services/browser_runtime_service.py`
+- `services/browser_automation_service.py`
+- `clients/browser-extension/entrypoints/utils/executeActions.ts`
+- `clients/browser-extension/entrypoints/utils/bridge/page-agent.ts`
+- `agents/react_tools.py`

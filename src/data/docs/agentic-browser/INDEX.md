@@ -1,209 +1,167 @@
 # Agentic browser documentation index
 
-Index for Agentic Browser docs. Topical folders are the primary layout; older numbered guides are folded into the same tree.
+This is the entry point for the Agentic Browser docs. The tree keeps its original folders: AI Agent System, API Server, Browser Automation, Browser Extension, Data Models and Schemas, Prompts and Prompt Engineering, Service Integrations, System Architecture and Tool System. New pages for memory, MCP, chat and the console live inside those folders or in the Chat Experience section.
 
-## Quick navigation
+Start with Project Overview if you are new, or Getting Started if you want to run it.
 
-### Core documentation
-- **[Project Overview](Project%20Overview .md)** - System architecture, core components, and capabilities
-- **[Getting Started](Getting%20Started .md)** - Installation, setup, and quick start guide
+## Repository layout
 
-### System components
+```mermaid
+graph TB
+  subgraph "Entry"
+    IDX["INDEX.md"]
+    PO["Project Overview.md"]
+    GS["Getting Started.md"]
+  end
+  subgraph "Core sections"
+    AI["AI Agent System/"]
+    API["API Server/"]
+    BA["Browser Automation/"]
+    BE["Browser Extension/"]
+  end
+  subgraph "Data and operations"
+    DM["Data Models and Schemas/"]
+    SA["System Architecture/"]
+    SI["Service Integrations/"]
+    TS["Tool System/"]
+    PR["Prompts and Prompt Engineering/"]
+  end
+  subgraph "New sections"
+    CH["Chat Experience/"]
+  end
+  IDX --> PO
+  IDX --> GS
+  IDX --> AI
+  IDX --> API
+  IDX --> BA
+  IDX --> BE
+  IDX --> DM
+  IDX --> SA
+  IDX --> SI
+  IDX --> TS
+  IDX --> PR
+  IDX --> CH
+```
 
-#### Backend architecture
-- **[API Server](API%20Server)** - FastAPI router-service-tool architecture
- - API endpoints and route definitions
- - Service layer business logic
- - Tool layer for external integrations
+## Start here
 
-#### Agent system
-- **[AI Agent System](AI%20Agent%20System)** - LangGraph-based agent orchestration
- - React agent for conversational AI
- - Browser Use agent for script generation
- - Tool system and orchestration
- - Context management and state handling
+| Page | What it covers |
+| --- | --- |
+| [Project Overview](Project%20Overview) | problem, approach, features, architecture at a glance |
+| [Getting Started](Getting%20Started) | prerequisites, install, env vars, first run |
+| [Testing Strategy](Testing%20Strategy) | what verification exists, manual QA, first tests |
+| [Troubleshooting and FAQ](Troubleshooting%20and%20FAQ) | startup, model, bridge, browser and memory failures |
 
-#### Browser extension
-- **[Browser Extension](Browser%20Extension)** - WebExtensions-based UI and automation
- - Extension architecture and messaging
- - Background and content scripts
- - Side panel UI components
- - Agent execution engine
- - WebSocket communication
- - Authentication system
+## AI and agents
 
-#### MCP server
-- **[MCP Server](MCP%20Server .md)** - Model Context Protocol implementation
- - Tool definitions and standardization
- - LLM integration through MCP
- - Integration with external clients
+| Page | What it covers |
+| --- | --- |
+| [AI Agent System](AI%20Agent%20System/AI%20Agent%20System) | ReAct agent, supervisor, tools, subscriptions, memory |
+| [Reactive Agent Architecture](AI%20Agent%20System/Reactive%20Agent%20Architecture) | LangGraph graph, tool loop, loop guard |
+| [While-Loop Supervisor](AI%20Agent%20System/While-Loop%20Supervisor) | supervisor, subagents, quality checks |
+| [Tool Integration System](AI%20Agent%20System/Tool%20Integration%20System) | typed tool registry and conditional tools |
+| [Subscription Runtimes](AI%20Agent%20System/Subscription%20Runtimes) | Claude, Codex, Antigravity and OpenCode plans |
+| [Long-Term Memory](AI%20Agent%20System/Long-Term%20Memory) | three-store memory model |
+| [Memory Ingestion](AI%20Agent%20System/Memory%20Ingestion) | extraction, gate, reconciliation |
+| [Memory Retrieval](AI%20Agent%20System/Memory%20Retrieval) | hybrid search and context assembly |
+| [Memory Maintenance](AI%20Agent%20System/Memory%20Maintenance) | decay, dedup, repair, promotion |
+| [LLM Provider Abstraction](AI%20Agent%20System/LLM%20Provider%20Abstraction) | providers, keys, base URLs, per-request model |
+| [Model Catalog](AI%20Agent%20System/Model%20Catalog) | models.dev, context windows, endpoint discovery |
+| [Prompt Engineering System](AI%20Agent%20System/Prompt%20Engineering%20System) | prompts for planning, memory, website, YouTube |
+| [Compaction and Context Management](AI%20Agent%20System/Compaction%20and%20Context%20Management) | long chats and tool output trimming |
 
-### Features & integrations
+## API and data
 
-#### Service integrations
-- **[Service Integrations](Service%20Integrations)** - External service connectivity
- - Gmail integration for email operations
- - Google Calendar integration for scheduling
- - GitHub integration for repository analysis
- - YouTube integration for video processing
- - Website analysis and content extraction
- - Academic portal integration
+| Page | What it covers |
+| --- | --- |
+| [API Server](API%20Server/API%20Server) | every mounted route group |
+| [API Overview](API%20Server/API%20Overview) | base paths, errors, SSE, model headers |
+| [Agent System API](API%20Server/Agent%20System%20API) | chat and stream endpoints |
+| [Conversations and Runs API](API%20Server/Conversations%20and%20Runs%20API) | conversations, messages, runs, traces |
+| [Browser Runtime API](API%20Server/Browser%20Runtime%20API) | one-step browser planning |
+| [Memory API](API%20Server/Memory%20API) | search, context, tools, ingest, maintenance |
+| [Integrations and Settings API](API%20Server/Integrations%20and%20Settings%20API) | settings, Composio, runtimes, secrets |
+| [Authentication and Security](API%20Server/Authentication%20and%20Security) | OAuth exchange and credential status |
+| [Gmail Integration API](API%20Server/Gmail%20Integration%20API) | Gmail routes |
+| [Calendar Integration API](API%20Server/Calendar%20Integration%20API) | Calendar routes |
+| [GitHub Integration API](API%20Server/GitHub%20Integration%20API) | repo question and archive upload |
+| [YouTube Integration API](API%20Server/YouTube%20Integration%20API) | video question route |
+| [Website Processing API](API%20Server/Website%20Processing%20API) | page and validator routes |
+| [Academic Portal API](API%20Server/Academic%20Portal%20API) | PyJIIT login, semesters, attendance |
+| [Data Models and Schemas](Data%20Models%20and%20Schemas/Data%20Models%20and%20Schemas) | app and memory schema |
+| [Schema Overview](Data%20Models%20and%20Schemas/Schema%20Overview) | tables, columns, keys |
+| [Memory Entities and Claims](Data%20Models%20and%20Schemas/Memory%20Entities%20and%20Claims) | claims, evidence, relations |
+| [Data Migration Strategy](Data%20Models%20and%20Schemas/Data%20Migration%20Strategy) | numbered migrations |
 
-#### Data & models
-- **[Data Models and Schemas](Data%20Models%20and%20Schemas)** - API contracts and schemas
- - Request and response models
- - Service integration data structures
- - Agent communication formats
- - Validation and error handling
+## Browser and frontend
 
-### Configuration & operations
-- **[Configuration Management](Configuration%20Management .md)** - Environment setup and configuration
-- **[Deployment and Operations](Deployment%20and%20Operations .md)** - Production deployment
-- **[Development Guidelines](Development%20Guidelines .md)** - Contribution and development practices
-- **[Testing Strategy](Testing%20Strategy .md)** - Testing approach and utilities
+| Page | What it covers |
+| --- | --- |
+| [Browser Automation](Browser%20Automation/Browser%20Automation) | planner, executor, snapshots, loop guard |
+| [Browser Runtime Planner](Browser%20Automation/Dynamic%20Script%20Generation) | one action per step |
+| [DOM Manipulation and Element Targeting](Browser%20Automation/DOM%20Manipulation%20and%20Element%20Targeting) | selectors, refs, input |
+| [Page Snapshot and Refs](Browser%20Automation/Page%20Snapshot%20and%20Refs) | accessibility outline |
+| [Remote Browser Tasks](Browser%20Automation/Remote%20Browser%20Tasks) | `task.run` from Telegram and MCP |
+| [Browser Extension](Browser%20Extension/Browser%20Extension) | side panel, popup, worker, console |
+| [Extension Architecture](Browser%20Extension/Extension%20Architecture) | WXT entrypoints and bridge socket |
+| [Side Panel UI Components](Browser%20Extension/Side%20Panel%20UI%20Components) | chat shell, composer, settings |
+| [Console Architecture](Browser%20Extension/Console%20Architecture) | routes, shell, telemetry |
+| [State Management](Browser%20Extension/State%20Management) | sessions, settings, query cache |
+| [UI Component Library](Browser%20Extension/UI%20Component%20Library) | primitives and composites |
+| [Work Log and Chat Rendering](Browser%20Extension/Work%20Log%20and%20Chat%20Rendering) | streamed events and markdown |
 
-### Reference
-- **[System Architecture](System%20Architecture)** - Detailed system design
-- **[Tool System](Tool%20System)** - Tool definitions and framework
-- **[Prompts and Prompt Engineering](Prompts%20and%20Prompt%20Engineering)** - LLM prompt strategies
-- **[Security Considerations](Security%20Considerations .md)** - Threat model, approvals, and key handling
-- **[Troubleshooting and FAQ](Troubleshooting%20and%20FAQ .md)** - Common issues and solutions
+## Integrations and operations
 
----
+| Page | What it covers |
+| --- | --- |
+| [Service Integrations](Service%20Integrations/Service%20Integrations) | Google, GitHub, PyJIIT, Composio, skills |
+| [Composio Toolkit Actions](Service%20Integrations/Composio%20Toolkit%20Actions) | connected apps and actions |
+| [Skills Execution](Service%20Integrations/Skills%20Execution) | docx, pptx, xlsx, system info |
+| [Secret Storage](Service%20Integrations/Secret%20Storage) | encrypted settings and OAuth clients |
+| [Telegram Bot](Service%20Integrations/Telegram%20Bot) | remote tasks and allow list |
+| [System Architecture](System%20Architecture/System%20Architecture) | process topology and ports |
+| [Backend Server Design](System%20Architecture/Backend%20Server%20Design) | routes, services, agents, core |
+| [Component Interactions and Data Flow](System%20Architecture/Component%20Interactions%20and%20Data%20Flow) | chat, browser, memory and trace flows |
+| [MCP Protocol Implementation](System%20Architecture/MCP%20Protocol%20Implementation) | bridge and MCP transport |
+| [AI_ML Architecture](System%20Architecture/AI_ML%20Architecture) | model layer, graphs, retrieval |
+| [Deployment Architecture](System%20Architecture/Deployment%20Architecture) | processes, volumes, exposure |
+| [MCP Server](MCP%20Server) | server tools, code mode, installation |
+| [Configuration Management](Configuration%20Management) | env, settings, providers, secrets |
+| [Deployment and Operations](Deployment%20and%20Operations) | compose, installer, services, rollback |
+| [Development Guidelines](Development%20Guidelines) | layout, tooling, type checks, review |
+| [Security Considerations](Security%20Considerations) | auth, origins, bridge token, memory gate |
+| [Chat Experience](Chat%20Experience/Chat%20Experience) | streaming, compaction, attachments, voice |
+| [API Client Libraries](API%20Client%20Libraries) | shared HTTP client, query hooks, SSE |
 
-## Documentation structure
+## How the documentation fits together
 
-Two ways to browse the same material:
+```mermaid
+graph LR
+  Start["Start"] --> Overview["Project Overview"]
+  Start --> Getting["Getting Started"]
+  Overview --> Arch["System Architecture"]
+  Getting --> API["API Server"]
+  Arch --> Flow["Data Flow"]
+  Flow --> Memory["Long-Term Memory"]
+  API --> Browser["Browser Runtime"]
+  Browser --> Extension["Browser Extension"]
+  Memory --> Models["Data Models"]
+  Extension --> Chat["Chat Experience"]
+```
 
-### Topical organization (primary)
-Primary layout is by topic/component:
-- Overview and getting started materials at the top level
-- Component-specific sections in dedicated folders
-- Detailed guides and reference material within each component
+## Dependencies
 
-### Historical reference (numbered sections)
-The original numbered documentation structure is preserved for reference:
-- **Section 1**: Overview and system architecture
-- **Section 2**: Installation and getting started
-- **Section 3**: Python backend API
-- **Section 4**: Agent intelligence system
-- **Section 5**: Browser extension
-- **Section 6**: Data models and API contracts
+```mermaid
+graph TB
+  Index["INDEX"] --> Overview["Project Overview"]
+  Index --> Getting["Getting Started"]
+  Index --> Sections["section indexes"]
+  Sections --> Leaves["leaf pages"]
+  Leaves --> Sources["source files in the repo"]
+  Leaves --> Diagrams["Mermaid diagrams"]
+```
 
-Both structures provide the same information, choose whichever navigation style works best for you.
-
----
-
-## Getting started paths
-
-### For first-time users
-1. Start with **[Project Overview](Project%20Overview .md)** to understand the system
-2. Follow **[Getting Started](Getting%20Started .md)** for installation and setup
-3. Explore **[System Architecture](System%20Architecture)** to understand how components interact
-
-### For developers
-1. Review **[Development Guidelines](Development%20Guidelines .md)** for contribution process
-2. Study relevant component documentation:
- - Backend: **[API Server](API%20Server)** and **[AI Agent System](AI%20Agent%20System)**
- - Frontend: **[Browser Extension](Browser%20Extension)**
-3. Reference **[Data Models and Schemas](Data%20Models%20and%20Schemas)** for API contracts
-
-### For operators
-1. Read **[Configuration Management](Configuration%20Management .md)** to set up your environment
-2. Review **[Deployment and Operations](Deployment%20and%20Operations .md)** for production setup
-3. Use **[Troubleshooting and FAQ](Troubleshooting%20and%20FAQ .md)** for common issues
-
-### For integration
-1. Review **[MCP Server](MCP%20Server .md)** for protocol-level integration
-2. Study **[Service Integrations](Service%20Integrations)** for available features
-3. Check **[Data Models and Schemas](Data%20Models%20and%20Schemas)** for API contracts
-
----
-
-## Key concepts
-
-### Model-Agnostic design
-The system supports multiple LLM providers (Google Gemini, OpenAI, Anthropic, Ollama, DeepSeek, OpenRouter) through a unified abstraction layer. Users supply their own API keys via environment variables (BYOK - Bring Your Own Keys).
-
-### Stack
-- **Frontend**: Browser extension with background and content scripts
-- **Backend**: FastAPI server with service-oriented architecture
-- **Agent Runtime**: LangGraph-based agent orchestration
-- **LLM Layer**: Model-agnostic provider adapters
-- **Safety Layer**: Guardrails, logging, and user consent
-
-### Tool system
-The system provides 11+ specialized tools for web automation, content processing, and external service integration. Tools are dynamically constructed based on context and user authentication.
-
-### Declarative action system
-Browser automation uses JSON action plans from the LLM. Plans are visible and require approval before they run.
-
----
-
-## Technology stack
-
-- **Language**: Python 3.12+ (backend), TypeScript/React (frontend)
-- **Agent Framework**: LangChain, LangGraph
-- **Web Framework**: FastAPI, Uvicorn
-- **Extension Framework**: WXT (Web eXtension Tooling)
-- **Browser APIs**: WebExtensions API
-- **Communication**: MCP (Model Context Protocol), WebSocket, HTTP/REST
-- **Content Processing**: BeautifulSoup, html2text, yt-dlp
-- **Security**: python-dotenv, pycryptodome
-
----
-
-## Common tasks
-
-### Setting up the development environment
-See: [Getting Started](Getting%20Started .md#installation) and [Development Guidelines](Development%20Guidelines .md)
-
-### Configuring API keys and environment
-See: [Configuration Management](Configuration%20Management .md)
-
-### Adding a new service integration
-See: [Service Integrations](Service%20Integrations) and [Development Guidelines](Development%20Guidelines .md)
-
-### Understanding agent behavior
-See: [AI Agent System](AI%20Agent%20System) and [Prompts and Prompt Engineering](Prompts%20and%20Prompt%20Engineering)
-
-### Debugging and troubleshooting
-See: [Troubleshooting and FAQ](Troubleshooting%20and%20FAQ .md) and [System Architecture](System%20Architecture)
-
-### Deploying to production
-See: [Deployment and Operations](Deployment%20and%20Operations .md)
-
-### Integrating with external tools
-See: [MCP Server](MCP%20Server .md) and [Data Models and Schemas](Data%20Models%20and%20Schemas)
-
----
-
-## Contributing
-
-Before contributing, please review:
-1. **[Development Guidelines](Development%20Guidelines .md)** - Contribution process and standards
-2. **[Testing Strategy](Testing%20Strategy .md)** - Testing requirements
-3. **[Security Considerations](Security%20Considerations .md)** - Threat model, approvals, and key handling
-
----
-
-## Version history
-
-This consolidated documentation combines:
-- **New Documentation**: Topical organization with component-based structure
-- **Previous Documentation**: Detailed numbered guides with implementation specifics
-
-Both sources have been merged to provide detailed coverage of all aspects of the Agentic Browser system.
-
----
-
-## Additional resources
-
-- **GitHub Repository**: https://github.com/tashifkhan/agentic-browser
-- **Issue Tracker**: https://github.com/tashifkhan/agentic-browser/issues
-- **Discussions**: https://github.com/tashifkhan/agentic-browser/discussions
-
----
-
-*Last Updated: 2026*
-
+## Source files
+- `README.md`
+- `main.py`
+- `AGENTS.md` if the repo adds one

@@ -1,225 +1,219 @@
 # LLM provider abstraction
 
-## Introduction
-One client interface over OpenAI, Anthropic, Google, Ollama, DeepSeek, and OpenRouter. Config, keys, model pick, tool binding, and what happens when you switch providers.
+`core/llm.py` is the only place that knows how to build a model client. `PROVIDER_CONFIGS` maps eight provider names to LangChain chat classes, key variables, base URLs and default models. `LargeLanguageModel` wraps a client, `resolve_provider_secrets` finds credentials, and `llm_for` caches one client per provider, model, key and endpoint.
 
-## Project structure
-The LLM abstraction spans three main areas:
-- Core provider abstraction and configuration
-- MCP server integration for tool-based invocation
-- Agent orchestration with tool binding and function calling
+Key capabilities:
+- Eight providers on four LangChain classes.
+- Secrets resolved from the database first, then the environment, then settings.
+- One cached client per distinct provider, model, key and base URL.
+- A default model stored in `AppSetting` and a per-request pick sent as headers.
+- Two import-safe proxies, `llm` and `_model`, that follow a reload.
 
-```mermaid
-graph TB
-subgraph "Core"
-LLM["LargeLanguageModel<br/>core/llm.py"]
-CFG["Config loader<br/>core/config.py"]
-end
-subgraph "MCP Server"
-MCP["MCP Tool Registry<br/>mcp_server/server.py"]
-end
-subgraph "Agents"
-REACT["ReAct Agent Graph<br/>agents/react_agent.py"]
-TOOLS["Agent Tools Library<br/>agents/react_tools.py"]
-end
-subgraph "Extension UI"
-UI["Unified Settings Menu<br/>clients/browser-extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx"]
-end
-CFG --> LLM
-MCP --> LLM
-REACT --> LLM
-REACT --> TOOLS
-UI --> MCP
-```
-
-## Core components
-- LargeLanguageModel: Central abstraction that encapsulates provider selection, credential resolution, base URL handling, and model instantiation. It exposes a simple generate_text method for text generation and preserves provider-specific parameters via kwargs.
-- Provider configuration registry: A centralized PROVIDER_CONFIGS mapping that defines provider class, environment variables, default models, and parameter mappings.
-- MCP tool integration: The MCP server registers a llm.generate tool that constructs a LargeLanguageModel instance with runtime parameters and executes generation.
-- Agent orchestration: The ReAct agent binds tools to the LLM client and routes between agent steps and tool execution nodes.
-
-Key responsibilities:
-- Provider switching: Choose provider at runtime via provider parameter.
-- Credential management: Prefer environment variables; optionally accept API keys directly.
-- Model selection: Allow explicit model override or use provider defaults.
-- Function calling: Bind tools to the LLM client for structured tool invocation.
-
-## Architecture overview
-The abstraction maintains a model-agnostic interface while delegating provider-specific behavior to LangChain wrappers. The MCP server and agent pipeline consume this abstraction uniformly.
-
-```mermaid
-sequenceDiagram
-participant UI as "Extension UI<br/>UnifiedSettingsMenu.tsx"
-participant MCP as "MCP Server<br/>mcp_server/server.py"
-participant LLM as "LargeLanguageModel<br/>core/llm.py"
-participant LC as "LangChain Provider"
-UI->>MCP : "llm.generate" with provider, model, api_key, base_url
-MCP->>LLM : Construct with arguments
-LLM->>LC : Instantiate provider client with mapped params
-MCP->>LLM : generate_text(prompt, system_message)
-LLM->>LC : invoke(messages)
-LC-->>LLM : Response
-LLM-->>MCP : Text content
-MCP-->>UI : Tool result
-```
-
-## Detailed component analysis
-
-### LargeLanguageModel abstraction
-The LargeLanguageModel class centralizes provider configuration and client creation. It:
-- Validates provider selection against a registry of supported providers.
-- Resolves API keys from environment variables or direct parameters.
-- Applies base URL precedence: explicit base_url > base_url_override > base_url_env.
-- Supports provider-specific parameter mapping via param_map.
-- Initializes the underlying LangChain client and exposes generate_text.
-
-```mermaid
-classDiagram
-class LargeLanguageModel {
-+string provider
-+string model_name
-+generate_text(prompt, system_message) str
-+summarize_text(text) str
-}
-class ProviderConfig {
-+class client_class
-+str api_key_env
-+str base_url_env
-+str base_url_override
-+str default_model
-+dict param_map
-}
-LargeLanguageModel --> ProviderConfig : "uses registry"
-```
-
-### Provider configuration system
-The PROVIDER_CONFIGS registry defines:
-- Provider class: LangChain client class to instantiate.
-- Environment variables: Names for API keys and base URLs.
-- Defaults: Default model per provider.
-- Parameter mapping: How internal parameter names map to provider-specific constructor parameters.
-
-Supported providers include Google, OpenAI, Anthropic, Ollama, DeepSeek, and OpenRouter. Each entry controls credential and URL resolution behavior.
-
-### Credential management and environment variables
-- API keys: Loaded from environment variables when configured for the provider. If missing, initialization raises a clear error instructing how to provide the key.
-- Base URLs: Explicit base_url overrides provider-specific defaults; base_url_override exists for providers like DeepSeek/OpenRouter; base_url_env is used for providers like Ollama.
-- Default API key: The core configuration module exports a default Google API key for convenience, but provider-specific keys are preferred.
-
-Security considerations:
-- API keys are handled via environment variables and optional direct parameters.
-- The abstraction prints warnings when an API key is provided for a provider that does not require one.
-- The MCP server accepts api_key and base_url at runtime; ensure these are transmitted securely and not logged.
-
-### Model selection patterns
-- Explicit model override: Pass model_name to LargeLanguageModel to override provider defaults.
-- Provider defaults: If no model_name is provided, the provider's default is used.
-- MCP tool: The llm.generate tool accepts a model parameter to override defaults at runtime.
-
-Notes:
-- Pin models explicitly in production for reproducibility.
-- Use provider defaults for experimentation; switch to explicit models for stability.
-
-### Binding mechanism for function calling
-The ReAct agent binds tools to the LLM client using LangGraph's bind_tools. This enables the LLM to produce structured tool calls that the agent's ToolNode executes.
-
-```mermaid
-sequenceDiagram
-participant Agent as "Agent Node<br/>react_agent.py"
-participant Bound as "Bound LLM<br/>bind_tools()"
-participant Tool as "ToolNode<br/>react_agent.py"
-participant LLM as "LargeLanguageModel<br/>core/llm.py"
-Agent->>Bound : invoke(messages)
-Bound->>LLM : invoke(messages)
-LLM-->>Bound : Response with tool_calls
-Bound-->>Agent : Response
-Agent->>Tool : Execute tool_calls
-Tool-->>Agent : Tool results
-Agent-->>Agent : Continue loop
-```
-
-### Tool definitions and contextual binding
-The agent tools library builds a dynamic tool set based on context (e.g., Google access tokens, PyJIIT session payloads). Tools are wrapped as StructuredTool instances with typed schemas. The GraphBuilder compiles the workflow and caches it.
-
-- Dynamic tool augmentation: Tools requiring credentials are conditionally included based on context.
-- Structured schemas: Inputs are validated using Pydantic models.
-- Caching: The compiled graph is cached to avoid repeated compilation overhead.
-
-### MCP tool integration
-The MCP server exposes a llm.generate tool that:
-- Accepts provider, model, api_key, base_url, temperature, and prompt/system_message.
-- Constructs a LargeLanguageModel instance with these parameters.
-- Invokes generate_text and returns the result as text content.
-
-This enables external clients (e.g., the extension UI) to request LLM generation with provider flexibility.
-
-### Provider switching examples
-- Runtime switching: The MCP tool accepts a provider parameter; pass "openai", "anthropic", "google", "ollama", "deepseek", or "openrouter".
-- UI-driven switching: The extension settings menu enumerates LLM options and persists selections in local storage.
-- Environment-driven defaults: The core configuration loads environment variables; providers without API keys (e.g., Ollama) rely on base_url_env.
-
-### Fallback mechanisms
-- Model fallback: If no model_name is provided, the provider's default is used.
-- Base URL fallback: base_url_override is applied when present; otherwise base_url_env is required for providers that need it.
-- Initialization errors: Clear error messages guide users to set environment variables or pass parameters directly.
-
-Note: There is no automatic provider fallback chain in the current implementation. If a provider fails to initialize, the caller should explicitly retry with another provider.
-
-### Performance considerations
-- Client reuse: The default LLM instance is created once and reused across the app. Consider similar caching for MCP-invoked LLM instances if used frequently.
-- Message composition: The abstraction composes system and human messages; keep prompts concise to reduce latency.
-- Temperature tuning: Lower temperature improves determinism; higher temperature increases creativity.
-- Tool execution: ToolNode execution adds latency; batch related tool calls when possible.
-
-### Security considerations
-- API key handling: Prefer environment variables over hardcoding. The abstraction validates presence for providers that require keys.
-- Base URL exposure: Ensure base_url_env is set appropriately for local/private endpoints.
-- UI transmission: The extension UI sends api_key and base_url to the MCP server; ensure transport security and avoid logging sensitive values.
-- Least privilege: Use provider-specific keys and restrict scopes to the minimum required.
-
-## Dependency analysis
-The LLM abstraction relies on LangChain providers and is integrated into the MCP server and agent pipeline.
+## Repository layout
 
 ```mermaid
 graph TB
-PY["pyproject.toml"]
-LLM["core/llm.py"]
-MCP["mcp_server/server.py"]
-REACT["agents/react_agent.py"]
-PY --> LLM
-PY --> MCP
-PY --> REACT
-MCP --> LLM
-REACT --> LLM
+  subgraph Core
+    LLM["core/llm.py"]
+    CFG["core/config.py"]
+    RM["core/request_model.py"]
+  end
+  subgraph Services
+    SEC["services/secrets_service.py"]
+    APP["services/app_state.py"]
+  end
+  subgraph Routers
+    RI["routers/integrations.py"]
+  end
+  subgraph Providers
+    G["ChatGoogleGenerativeAI"]
+    O["ChatOpenAI"]
+    A["ChatAnthropic"]
+    L["ChatOllama"]
+  end
+  LLM --> CFG
+  LLM --> SEC
+  LLM --> APP
+  LLM --> G
+  LLM --> O
+  LLM --> A
+  LLM --> L
+  RI --> LLM
+  RI --> SEC
+  RM --> LLM
+  RM --> APP
 ```
 
-## Performance considerations
-- Initialization cost: Creating a provider client is relatively expensive; reuse instances where possible.
-- Prompt size: Keep prompts succinct to minimize latency and token usage.
-- Tool batching: Group related tool calls to reduce round-trips.
-- Concurrency: Use async patterns (as in the agent pipeline) to overlap I/O-bound operations.
+## Building blocks
 
-## Troubleshooting guide
-Common issues and resolutions:
-- Unsupported provider: Ensure the provider is one of the supported values; the abstraction raises a clear error with allowed options.
-- Missing API key: For providers requiring keys, set the appropriate environment variable or pass api_key directly.
-- Missing base URL: Some providers require base_url_env; set it or pass base_url explicitly.
-- Initialization failures: The abstraction surfaces detailed error messages; check API keys, base URLs, and model names.
+- `core/llm.py`: `PROVIDER_CONFIGS`, `LargeLanguageModel`, `_PROVIDER_TO_SECRET`, `PROVIDER_TO_BASE_URL`, `resolve_provider_secrets`, `llm_for`, `_build_default`, `get_default_llm`, `reload_default_llm`, `set_request_llm`, and the `llm` and `_model` proxies.
+- `services/secrets_service.py`: `SECRET_REGISTRY`, `SecretsService.resolve`, `resolve_sync`, `get_raw`, `set`, `clear` and `list_status`.
+- `routers/integrations.py`: the `/llm` routes and the secret routes that rebuild the default after a change.
+- `core/request_model.py`: `RequestModelMiddleware`, which reads `x-agentic-provider` and `x-agentic-model` and scopes a client to one request.
 
-## Conclusion
-Env vars and the config registry pick the backend. Function calling stays structured. Do not hardcode keys; pass them explicitly or from the environment.
+## Provider table
 
-## Appendices
+| Name | Class | Key env | Default model | Base URL |
+| --- | --- | --- | --- | --- |
+| `google` | `ChatGoogleGenerativeAI` | `GOOGLE_API_KEY` | `gemini-4-hydrogen` | `google_base_url` |
+| `openai` | `ChatOpenAI` | `OPENAI_API_KEY` | `gpt-5-mini` | `openai_base_url` |
+| `anthropic` | `ChatAnthropic` | `ANTHROPIC_API_KEY` | `claude-4-sonnet` | `anthropic_base_url` |
+| `ollama` | `ChatOllama` | none | `llama3` | `OLLAMA_BASE_URL` |
+| `deepseek` | `ChatOpenAI` | `DEEPSEEK_API_KEY` | `deepseek-chat` | fixed `https://api.deepseek.com/v1` |
+| `opencode` | `ChatOpenAI` | `OPENCODE_API_KEY` | `claude-sonnet-5` | fixed `https://opencode.ai/inference/openai/v1` |
+| `opencode-go` | `ChatOpenAI` | `OPENCODE_API_KEY` | `minimax-m2.7` | fixed `https://opencode.ai/inference/go/openai/v1` |
+| `openrouter` | `ChatOpenAI` | `OPENROUTER_API_KEY` | `mistralai/mistral-7b-instruct` | fixed `https://openrouter.ai/api/v1` |
 
-### Provider configuration reference
-- Google: Requires GOOGLE_API_KEY; default model gemini-2.5-flash.
-- OpenAI: Requires OPENAI_API_KEY; default model gpt-5-mini.
-- Anthropic: Requires ANTHROPIC_API_KEY; default model claude-4-sonnet.
-- Ollama: No API key; requires OLLAMA_BASE_URL; default model llama3.
-- DeepSeek: Requires DEEPSEEK_API_KEY; uses base_url_override.
-- OpenRouter: Requires OPENROUTER_API_KEY; uses base_url_override.
+`param_map` translates generic argument names into the keyword each class expects, so `api_key` becomes `google_api_key` or `openai_api_key`. DeepSeek, OpenCode and OpenRouter reuse `ChatOpenAI` with a fixed URL and therefore speak the OpenAI format. Ollama is the only provider with no key. It needs a base URL instead.
 
-### MCP tool schema summary
-- Tool: llm.generate
-- Properties: prompt (required), system_message, provider (enum), model, api_key, base_url, temperature (default 0.4)
-- Behavior: Creates a LargeLanguageModel with provided parameters and returns generated text
+```mermaid
+graph LR
+  P["provider name"] --> C{"PROVIDER_CONFIGS"}
+  C -->|google| G["ChatGoogleGenerativeAI<br/>google_api_key"]
+  C -->|openai| O["ChatOpenAI<br/>openai_api_key"]
+  C -->|anthropic| A["ChatAnthropic<br/>anthropic_api_key"]
+  C -->|ollama| L["ChatOllama<br/>base_url only"]
+  C -->|deepseek| D["ChatOpenAI<br/>api.deepseek.com/v1"]
+  C -->|opencode| Z["ChatOpenAI<br/>inference/openai/v1"]
+  C -->|opencode-go| GO["ChatOpenAI<br/>inference/go/openai/v1"]
+  C -->|openrouter| R["ChatOpenAI<br/>openrouter.ai/api/v1"]
+```
+
+## Secret resolution
+
+`resolve_provider_secrets(provider)` asks `SecretsService.resolve` for the key name and the base URL name. `resolve` checks the encrypted `AppSetting` row, then `os.environ`, then the settings attribute, and returns an empty string instead of raising. A key entered in the settings UI therefore wins over `.env`, and clearing it falls back.
+
+```mermaid
+flowchart TD
+  A["resolve name"] --> R{"registry entry?"}
+  R -->|no| E["empty string"]
+  R -->|yes| D{"AppSetting row with value?"}
+  D -->|yes| DEC["decrypt and return"]
+  D -->|no| ENV{"os.environ set?"}
+  ENV -->|yes| EV["return env value"]
+  ENV -->|no| ST{"settings attribute set?"}
+  ST -->|yes| SV["return settings value"]
+  ST -->|no| E
+```
+
+`mask` shows the first three and last four characters when a value is longer than eight characters, and dots otherwise. `list_status` reports `db_set`, `env_set`, `source` and `masked`, which the settings UI uses to show where a key came from.
+
+## How it fits together
+
+`LargeLanguageModel.__init__` lowercases the provider, looks up the config, and picks `model_name` or the provider default. It raises `ValueError` when neither exists. It adds `temperature` only when the value is not `None`. For providers with a key it takes the argument or `os.getenv(api_key_env)`. Base URL precedence is the explicit argument, then `base_url_override`, then `base_url_env`. Constructor errors are wrapped in a `RuntimeError` that names the provider, model and cause.
+
+```mermaid
+sequenceDiagram
+  participant Caller as llm_for
+  participant SEC as resolve_provider_secrets
+  participant CACHE as _request_cache
+  participant APP as AppStateService
+  participant CAT as model_info
+  participant LLM as LargeLanguageModel
+  Caller->>SEC: key and base url
+  SEC-->>Caller: db or env value
+  Caller->>CACHE: key provider, model, key, url
+  CACHE-->>Caller: hit, return client
+  Caller->>APP: llm.default temperature
+  Caller->>CAT: temperature support
+  CAT-->>Caller: false drops the parameter
+  Caller->>LLM: construct client
+  LLM-->>Caller: client
+  Caller->>CACHE: store, clear above 32
+```
+
+`llm_for` uses `get_settings().default_llm_temperature` unless the saved `llm.default` setting carries a temperature. It then asks `model_info` whether the model rejects that parameter. The cache key is `(provider, model, api_key, base_url)`, so a changed key or endpoint builds a new client. Above 32 entries the cache is cleared wholesale.
+
+## The default model and its proxies
+
+`_build_default` is the synchronous path used at import time and as a fallback. It reads settings for provider, model and temperature, resolves secrets with `resolve_sync` (environment and settings only, no database), and constructs the client. `get_default_llm()` returns the request-scoped client when one is set, then lazily builds and keeps the global default.
+
+`reload_default_llm` is the async path. It reads `AppSetting` key `llm.default`, resolves the provider, resolves secrets from the database, clears the client cache, and rebuilds. If the override cannot build, it logs and falls back to environment defaults. `__getattr__` makes `llm` and `_model` proxies, so a module that captured them at import time still reaches the current default.
+
+## Per-request model
+
+`RequestModelMiddleware` is plain ASGI rather than `BaseHTTPMiddleware`, so the context variable stays set while a streaming response body is generated. It reads the raw headers `x-agentic-provider` and `x-agentic-model`. If either is missing, the request passes through unchanged.
+
+```mermaid
+sequenceDiagram
+  participant C as client
+  participant MW as RequestModelMiddleware
+  participant RT as core.runtimes
+  participant LLM as llm_for
+  participant APP as app
+  C->>MW: headers provider and model
+  MW->>RT: load_all
+  alt provider is a runtime
+    MW->>RT: set_pick Pick
+    MW->>APP: call
+    APP-->>MW: response
+    MW->>RT: reset_pick
+  else built-in provider
+    MW->>LLM: llm_for
+    LLM-->>MW: client or error
+    MW->>MW: set_request_llm
+    MW->>APP: call
+    APP-->>MW: response
+    MW->>MW: reset token
+  end
+```
+
+When the provider is a subscription runtime, the middleware does not build a client. It checks `enabled`, sets a pick, and resets it in `finally`. A disabled runtime gets a 400 with "turned off. Turn it on in Settings -> Subscriptions." A failed `llm_for` gets a 400 with `Can't use <provider>/<model>: <reason>`.
+
+## Settings routes
+
+`routers/integrations.py` exposes the model settings. `GET /llm/model` returns the effective model, provider flags and the environment default. `PUT /llm/model` requires at least one of provider, model or temperature, merges the payload into `llm.default`, saves it, and calls `reload_default_llm`. `DELETE` removes the key and reloads. The `/llm/chat-title` routes do the same for `llm.chat_title`.
+
+`_llm_env_status` resolves each provider's secret and reports a boolean, so `opencode` and `opencode-go` both reflect `opencode_api_key`, and `ollama` reflects `ollama_base_url`. Secret `PUT` and `DELETE` routes also reload the default, because changing the active key must rebuild it.
+
+## Dependencies
+
+```mermaid
+graph LR
+  LLM["core/llm.py"] --> LC["langchain-core"]
+  LLM --> GOOG["langchain-google-genai"]
+  LLM --> OAI["langchain-openai"]
+  LLM --> ANT["langchain-anthropic"]
+  LLM --> OLL["langchain-ollama"]
+  LLM --> SEC["services/secrets_service"]
+  SEC --> CR["core/crypto"]
+  RI["routers/integrations"] --> LLM
+  RI --> SEC
+  RM["request_model"] --> LLM
+  RM --> RUN["core/runtimes"]
+```
+
+`core/crypto` supplies `encrypt`, `decrypt` and `CryptoNotConfigured`. Without encryption, `get_raw` logs a warning and returns `None`, so resolution falls through to the environment instead of crashing.
+
+## Performance
+
+- `llm_for` caches clients by provider, model, key and base URL, so a repeated pick costs a dictionary lookup.
+- The cache is cleared above 32 entries, which bounds memory and connection pools.
+- `reload_default_llm` clears the cache only when the default changes.
+- The request middleware resets its context token and runtime pick in `finally`, so a streamed response cannot leak a pick into the next request.
+
+## Troubleshooting
+
+- Symptom: `API key for 'openai' not found`. Cause: no database row, no environment variable and no settings value. Fix: add the key in Settings or `.env`.
+- Symptom: `Base URL for 'ollama' not found`. Cause: Ollama has no key variable and requires `OLLAMA_BASE_URL`. Fix: set the URL in Settings.
+- Symptom: a saved model override is ignored. Cause: `reload_default_llm` failed and fell back to environment defaults. Fix: read the server log for the fallback warning.
+- Symptom: `Can't use openrouter/qwen`. Cause: `llm_for` raised, often because of a bad model id or a missing key. Fix: verify the model in the catalog and the key.
+- Symptom: a client uses an old key after a settings change. Cause: the secret route did not reload the default. Fix: save the key through the settings route, or call `reload_default_llm`.
+
+## Appendix
+
+### Implementation examples
+
+- Provider lookup and error wrapping, `LargeLanguageModel.__init__`.
+- Database then environment resolution, `resolve_provider_secrets` and `SecretsService.resolve`.
+- Cached build, `llm_for`.
+- Default rebuild, `reload_default_llm`.
+- Header scoping, `RequestModelMiddleware`.
+- Settings writes, `llm_set` and `llm_clear`.
+
+### Source files
+
+- `core/llm.py`
+- `services/secrets_service.py`
+- `routers/integrations.py`
+- `core/request_model.py`

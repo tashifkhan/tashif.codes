@@ -1,303 +1,208 @@
 # Testing strategy
 
-## Introduction
-How we test Agentic Browser: unit and integration for Python, API checks, extension messaging, and the awkward bits (async agents, MCP, WebSockets). Mock external APIs; do not hit real Gmail in CI.
+The repository has no automated test suite. There is no pytest configuration and no Vitest or Jest setup. `README.md` says it directly in the roadmap: "tests and ci. there are none. yes, really." This page documents the verification that does exist, the fixtures and scripts that make manual checks repeatable, and a concrete plan for the first tests worth adding.
 
-## Project structure
-Agentic Browser comprises:
-- A Python MCP server that exposes tools and orchestrates LLM-based actions
-- A FastAPI-based HTTP API server
-- An agent runtime built on LangGraph and LangChain
-- A browser extension (React + Vite) with WebExtensions APIs and WebSocket client
-- Services and tools that integrate with external providers (Gmail, Calendar, GitHub, YouTube, PyJIIT, web search)
-- Configuration and environment management
+Key capabilities:
+- TypeScript compile checks for the extension and shared package
+- A repeatable demo seed with `--reset`
+- A Playwright screenshot harness with recorded fixtures
+- Health and bridge probes for a running stack
+- A manual QA matrix derived from real failure paths
+- Named first targets for a real suite
+
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Backend"
-MCP["MCP Server<br/>mcp_server/server.py"]
-API["FastAPI Server<br/>main.py"]
-CFG["Config & Env<br/>core/config.py"]
-LLM["LLM Adapter<br/>core/llm.py"]
-AG["React Agent<br/>agents/react_agent.py"]
-RT["Agent Tools<br/>agents/react_tools.py"]
-BRSVC["Browser Use Service<br/>services/browser_use_service.py"]
+subgraph "Checks that exist"
+  TSC["pnpm typecheck:extension"]
+  TSC2["clients/shared tsc --noEmit"]
+  SHOT["scripts/screenshots/shoot.mjs"]
+  SEED["scripts/seed_demo.py"]
+  HEALTH["GET /api/genai/health/"]
+  BRIDGE["GET /bridge/status"]
 end
-subgraph "Extension"
-EXT["React Extension<br/>clients/browser-extension/*"]
-WS["WebSocket Client<br/>clients/browser-extension/entrypoints/utils/websocket-client.ts"]
+subgraph "Fixtures"
+  FIX["scripts/screenshots/fixtures/"]
+  DEMO["scripts/screenshots/demo.mjs"]
+  ASSETS["scripts/screenshots/assets/"]
 end
-subgraph "External"
-GAPI["Gmail API"]
-CGAPI["Calendar API"]
-GHAPI["GitHub API"]
-YTAPI["YouTube API"]
-WEB["Web Search / Websites"]
+subgraph "Surfaces"
+  EXT["extension UI"]
+  CON["console UI"]
+  API["FastAPI backend"]
+  MEM["memory stores"]
 end
-EXT --> WS
-WS --> MCP
-WS --> API
-MCP --> LLM
-MCP --> RT
-RT --> GAPI
-RT --> CGAPI
-RT --> GHAPI
-RT --> YTAPI
-RT --> WEB
-BRSVC --> LLM
-AG --> RT
+TSC --> EXT
+TSC2 --> EXT
+SHOT --> EXT
+SHOT --> CON
+SHOT --> FIX
+SHOT --> DEMO
+SEED --> MEM
+HEALTH --> API
+BRIDGE --> API
 ```
 
-## Core components
-- MCP Server: Exposes tools (LLM generation, GitHub QA, website markdown fetch/convert) and routes tool calls to implementations. It runs via stdio and integrates with LangChain LLM clients.
-- FastAPI Server: Runs uvicorn and serves the HTTP API.
-- Config and Environment: Loads environment variables and sets logging levels.
-- LLM Adapter: Provider-agnostic LLM client factory supporting multiple providers and base URLs.
-- React Agent: LangGraph-based agent that decides when to use tools and executes them asynchronously.
-- Agent Tools: Structured tools for GitHub, web search, website QA, YouTube QA, Gmail, Calendar, PyJIIT, and browser action generation.
-- Browser Use Service: Generates JSON action plans from goals and DOM context using LLMs and sanitizes outputs.
-- Extension: React app with sidepanel, multi-session chat, and WebSocket client for real-time communication with the backend.
+## Building blocks
 
-## Architecture overview
-The system is composed of:
-- CLI entrypoint: FastAPI via `main.py` / `agentic-api-run`, stdio MCP via `agentic-mcp`
-- MCP server exposing tools and invoking LLM adapters
-- Agent runtime orchestrating tool use and execution
-- Services and tools integrating with external APIs
-- Extension communicating with backend via WebSocket and UI
+- `package.json`: `typecheck:extension` delegates to the extension's `compile` script, which runs `tsc --noEmit`.
+- `clients/shared/package.json`: has its own `typecheck` script, but the root does not call it.
+- `scripts/seed_demo.py`: inserts a month of demo runs, events, tool calls, conversations and memory rows through the real services. `--reset` deletes only ids it recorded.
+- `scripts/screenshots/shoot.mjs`: builds and serves the console, launches the extension, answers API calls from fixtures, and writes PNGs to `docs/screenshots/`.
+- `scripts/screenshots/demo.mjs`: scripted SSE streams for chat screenshots.
+- `scripts/screenshots/fixtures/`: recorded JSON responses named by method and sanitized URL.
+
+## How it fits together
+
+The only executable verification is the screenshot harness. It serves the built console, opens the extension, and intercepts every request. Writes are never forwarded. `--record` refreshes fixtures by proxying GETs to a real backend on `127.0.0.1:5454`.
 
 ```mermaid
 sequenceDiagram
-participant User as "User"
-participant Ext as "Extension UI"
-participant WS as "WebSocket Client"
-participant MCP as "MCP Server"
-participant LLM as "LLM Adapter"
-participant Tools as "Agent Tools"
-User->>Ext : "Issue command"
-Ext->>WS : "Send command via WebSocket"
-WS->>MCP : "Forward command"
-MCP->>LLM : "Invoke provider"
-LLM-->>MCP : "Provider response"
-MCP->>Tools : "Execute tool(s)"
-Tools-->>MCP : "Tool results"
-MCP-->>WS : "Return results"
-WS-->>Ext : "Display results"
-Ext-->>User : "Render response"
+  participant Script as "shoot.mjs"
+  participant Server as "local http server"
+  participant Chromium as "Playwright Chromium"
+  participant Ext as "extension build"
+  participant Console as "console dist"
+  Script->>Server : "serve console dist and fixtures"
+  Script->>Chromium : "launch with extension loaded"
+  Script->>Console : "open route"
+  Console->>Server : "GET /api/debug/stats"
+  Server-->>Console : "fixture JSON"
+  Script->>Ext : "open side panel"
+  Ext->>Server : "POST /api/genai/react/stream"
+  Server-->>Ext : "scripted SSE"
+  Script->>Script : "screenshot to docs/screenshots"
 ```
 
-## Detailed component analysis
-
-### MCP server testing
-Approach:
-- Unit tests for tool discovery and tool invocation handlers
-- Mock provider clients to isolate LLM behavior and external API calls
-- Test error propagation and invalid tool names
-- Validate input schemas and required fields
-
-Frameworks and patterns:
-- Use pytest for unit tests
-- Use unittest.mock or pytest-mock for mocking provider clients and external services
-- Parameterized tests for supported providers and input variations
-
-Mock strategies:
-- Replace provider clients with mocks that return deterministic responses
-- Stub external tool dependencies (e.g., GitHub markdown fetcher) to controlled fixtures
-- Simulate network errors and timeouts to validate error handling
+The seed script exercises persistence without a browser. It calls `RunTraceService` with `_now` patched, inserts memory rows directly, mirrors them into OpenSearch and Neo4j, and records every id so `--reset` is safe.
 
 ```mermaid
 flowchart TD
-Start(["Call Tool Handler"]) --> Parse["Parse tool name and arguments"]
-Parse --> Known{"Known Tool?"}
-Known --> |No| Unknown["Return error: unknown tool"]
-Known --> |Yes| Dispatch["Dispatch to tool implementation"]
-Dispatch --> Validate["Validate inputs and required fields"]
-Validate --> Valid{"Valid?"}
-Valid --> |No| ReturnErr["Return validation error"]
-Valid --> |Yes| Execute["Execute tool logic"]
-Execute --> Success{"Execution OK?"}
-Success --> |No| ReturnExecErr["Return execution error"]
-Success --> |Yes| ReturnOk["Return tool result"]
-Unknown --> End(["Exit"])
-ReturnErr --> End
-ReturnExecErr --> End
-ReturnOk --> End
+  Start(["uv run python scripts/seed_demo.py"]) --> Reset{"--reset?"}
+  Reset -- yes --> Read["read the demo manifest"]
+  Read --> Delete["delete listed rows only"]
+  Reset -- no --> Init["init_db()"]
+  Init --> Runs["create conversations and runs"]
+  Runs --> Events["record events, tool calls, subagents"]
+  Events --> Claims["insert memory rows"]
+  Claims --> Mirror["index in OpenSearch and Neo4j"]
+  Mirror --> Manifest["write manifest"]
+  Delete --> Done(["done"])
+  Manifest --> Done
 ```
 
-### LLM adapter testing
-Approach:
-- Unit tests for provider selection and parameter mapping
-- Tests for missing API keys and base URLs
-- Tests for model initialization failures and fallback behavior
-- Validation of default model selection and provider-specific overrides
+## What is not covered
 
-Mock strategies:
-- Patch provider client constructors to avoid network calls
-- Inject environment variables for API keys and base URLs
-- Simulate provider-specific exceptions to validate error handling
+| Area | Risk | Why it matters |
+| --- | --- | --- |
+| ReAct graph | Tool loops, message conversion, loop guard | Every chat turn goes through it |
+| Browser runtime planner | Invalid JSON, disallowed actions, blockers | A bad plan clicks the wrong thing |
+| Bridge handlers | Ref resolution, frame routing, dialogs | MCP clients depend on exact selectors |
+| Memory reconciliation | Duplicate, update, contradiction | A wrong supersede loses a fact |
+| Compaction | Summary boundaries, token budget | Long chats silently lose context |
+| OAuth refresh | Expiry, revocation, rotation | Tools fail with no clear cause |
+| Migrations | Ordering, idempotence | Startup fails on an existing database |
+| Extension build | Manifest permissions | The extension will not load |
 
-Notes:
-- Keep provider-specific logic isolated behind a configuration map
-- Validate inputs early and fail fast with clear error messages
+The README names the first three as intended starting points: the memory reconciler, the browser-runtime parser and the bridge handlers.
 
-### Agent runtime testing
-Approach:
-- Unit tests for message normalization and payload conversion
-- Integration tests for the compiled LangGraph workflow
-- Tests for tool binding and conditional edges
-- Async execution tests for tool calls and agent steps
+## Manual QA matrix
 
-Mock strategies:
-- Replace LLM client with a deterministic mock that returns fixed responses
-- Mock tool implementations to return controlled outputs
-- Use asyncio event loop controls to manage concurrency
+| Check | Steps | Pass condition |
+| --- | --- | --- |
+| Chat stream | Ask "summarise this page" | Answer streams, work log shows tool rows, `final` arrives |
+| Browser action | Ask "open example.com and read the title" | One action planned, executed, observation returns |
+| Loop guard | Ask for a task that repeats a failing click | Warning, then a stop with findings |
+| Memory write | Say "remember I prefer dark mode", reload, ask again | Recall includes the preference |
+| Memory forget | Forget the claim in the console | Claim gone, chat turn redacted |
+| Compaction | Lower the budget, send a long chat | Summary event, recent messages verbatim |
+| Attachment | Upload a PNG, ask about it | Image reaches the model, or a refusal |
+| MCP | `agentic-mcp status`, then `browser_snapshot` | Outline with `[ref=eN]` |
+| Code mode | Run a two-step `browser_execute` | Returns only the value, `while(true)` dies |
+| Restart | Restart the backend | `/bridge/status` shows the extension reattached |
+
+## A first test suite
 
 ```mermaid
-sequenceDiagram
-participant Test as "Test Harness"
-participant Graph as "Compiled Graph"
-participant LLM as "Mock LLM"
-participant Tools as "Mock Tools"
-Test->>Graph : "Invoke with messages"
-Graph->>LLM : "Bind tools and invoke"
-LLM-->>Graph : "AI response with tool calls"
-Graph->>Tools : "Execute tool nodes"
-Tools-->>Graph : "Tool results"
-Graph-->>Test : "Final messages"
+graph TB
+  Suite["pytest suite"] --> LG["test_loop_guard.py"]
+  Suite --> BR["test_browser_parser.py"]
+  Suite --> MC["test_message_conversion.py"]
+  Suite --> CP["test_compaction.py"]
+  Suite --> MI["test_migrations.py"]
+  LG --> LGF["core/loop_guard.py"]
+  BR --> BRF["BrowserRuntimeService._parse_action"]
+  MC --> MCF["agents/react_agent._payload_to_langchain"]
+  CP --> CPF["services/compaction._clip_message"]
+  MI --> MIF["core/migrations.py"]
 ```
 
-### Agent tools testing
-Approach:
-- Unit tests for each tool's input schema validation
-- Integration tests for tool execution with mocked external services
-- Tests for optional credentials and default token/session handling
-- Tests for error handling and informative error messages
+Cases worth writing first:
 
-Mock strategies:
-- Replace external API calls with fixtures and controlled responses
-- Use partial application to inject default tokens/sessions
-- Simulate OAuth failures and rate limits
+- `LoopGuard.record` warns on the second identical `(call, outcome)` pair, then stops after `grace`.
+- `LoopGuard._cycle` detects A, B, A, B and not a three-item unique sequence.
+- `fingerprint(mask_digits=True)` maps `12` and `99` to the same outcome hash.
+- `_parse_action` rejects types outside `allowed_actions`.
+- `_extract_json` reads the first object and ignores trailing prose.
+- `_payload_to_langchain` keeps non-text blocks for a user message.
+- `_normalise_content` drops thinking-only blocks instead of dumping JSON.
+- `estimate_tokens` and `_clip_message` preserve head and tail.
+- Migration discovery returns `0001`, `0002`, `0003` in order.
+- `mcp_server/settings.enabled_tools` removes the right tools per mode.
+
+For the frontend, a Vitest setup over `clients/shared` would cover `withBase`, `readError`, `qs` and the SSE line parser in `clients/debug-web/src/lib/api.ts`.
+
+## Dependencies
 
 ```mermaid
-flowchart TD
-TStart(["Tool Invocation"]) --> Schema["Validate input schema"]
-Schema --> Valid{"Valid?"}
-Valid --> |No| TErr["Return schema error"]
-Valid --> |Yes| Exec["Execute tool logic"]
-Exec --> ExtAPI["Call external API"]
-ExtAPI --> Resp{"Response OK?"}
-Resp --> |No| TErr2["Return API error"]
-Resp --> |Yes| TDone["Return tool result"]
-TErr --> TEnd(["Exit"])
-TErr2 --> TEnd
-TDone --> TEnd
+graph TB
+  Screenshots["shoot.mjs"] --> Playwright["playwright"]
+  Screenshots --> Node["node http, fs, path"]
+  Screenshots --> Build["pnpm build:debug"]
+  Screenshots --> ExtBuild["pnpm build:extension"]
+  Seed["seed_demo.py"] --> SQLAlchemy["sqlalchemy"]
+  Seed --> Traces["services/run_traces.py"]
+  Seed --> Memory["memory ingestion mirrors"]
+  Typecheck["tsc --noEmit"] --> TS["typescript"]
+  Health["health probe"] --> FastAPI["fastapi"]
 ```
 
-### Browser use service testing
-Approach:
-- Unit tests for prompt construction and LLM invocation
-- Tests for DOM info formatting and constraints handling
-- Tests for action plan sanitization and validation
-- Error handling for LLM failures and sanitizer issues
+## Performance
 
-Mock strategies:
-- Mock the LLM chain to return deterministic outputs
-- Provide synthetic DOM structures and constraints
-- Validate sanitized outputs meet expected schema
+- The screenshot run builds both frontends first; a cold run is dominated by Vite and WXT.
+- Playwright runs one Chromium profile; the harness is serial.
+- `seed_demo.py` writes a month of activity and is not batched.
+- Type checking is incremental only within one `tsc` invocation.
+- Fixtures make screenshot runs deterministic and offline; `--record` is the only mode that touches a live backend.
 
-### Extension messaging and WebSocket testing
-Approach:
-- Unit tests for WebSocket client initialization and connection handling
-- Integration tests simulating message exchange between extension and backend
-- Tests for UI components that depend on WebSocket state
-- Mock backend responses to validate UI rendering and error handling
+## Troubleshooting
 
-Frameworks and patterns:
-- Use pytest for unit tests
-- Use pytest-asyncio for async WebSocket operations
-- Use mocking to simulate backend MCP/API responses
+- `pnpm typecheck:extension` fails before any source error: run `pnpm install`; WXT generates `.wxt/types` in `postinstall`.
+- Screenshots show empty charts: a fixture is missing. Re-run with `--record` against a seeded backend.
+- Seed reset deletes nothing: the manifest under `~/.agentic-browser/` was removed or the run was interrupted.
+- Playwright cannot launch Chromium: run `pnpm exec playwright install chromium`.
+- Tests cannot import backend modules: run pytest through `uv run pytest`.
+- A manual check passes in the console but fails in the extension: the extension uses `chrome-extension://` and depends on the CORS regex.
 
-### API testing
-Approach:
-- Unit tests for server startup and configuration loading
-- Integration tests for FastAPI endpoints (if present)
-- Tests for environment-driven configuration and logging
+## Appendix
 
-Frameworks and patterns:
-- Use pytest with FastAPI test client
-- Mock external dependencies during API tests
+### Implementation examples
+- Type check: `pnpm typecheck:extension`.
+- Seed: `uv run python scripts/seed_demo.py`, reset with `--reset`.
+- Screenshots: `pnpm screenshots`, refresh with `--record`.
+- Health: `curl http://127.0.0.1:5454/api/genai/health/`.
+- Bridge: `curl http://127.0.0.1:5455/bridge/status`.
 
-## Dependency analysis
-Key dependencies and testing implications:
-- MCP server depends on LLM adapter and agent tools
-- Agent runtime depends on LLM adapter and tools
-- Browser use service depends on LLM adapter and sanitizer
-- Extension depends on WebSocket client and backend servers
-
-```mermaid
-graph LR
-MCP["MCP Server"] --> LLM["LLM Adapter"]
-MCP --> Tools["Agent Tools"]
-AG["React Agent"] --> Tools
-BRSVC["Browser Use Service"] --> LLM
-EXT["Extension"] --> WS["WebSocket Client"]
-WS --> MCP
-WS --> API["FastAPI Server"]
-```
-
-## Performance considerations
-- Asynchronous tool execution: Ensure tests capture latency and concurrency behavior
-- LLM cost and rate limits: Use throttling and caching in tests; mock providers to avoid quota issues
-- Browser automation: Limit DOM size and action plan complexity; validate sanitization overhead
-- WebSocket throughput: Test message batching and reconnection logic
-
-## Troubleshooting guide
-Common issues and remedies:
-- Missing environment variables for API keys or base URLs: Validate configuration loading and provide clear error messages
-- Provider client initialization failures: Add fallbacks and logging; test with invalid configurations
-- Tool execution errors: Capture and propagate errors with context; validate input schemas
-- WebSocket connection drops: Implement retry logic and UI feedback; test disconnection/reconnection flows
-
-## Conclusion
-Isolate providers and browsers behind fakes, cover async paths on purpose, and keep fixtures small. If a test needs a live network, it does not belong in the default suite.
-
-## Appendices
-
-### Testing asynchronous operations
-- Use pytest-asyncio for async tests
-- Prefer deterministic mocks over real network calls
-- Test timeout and cancellation paths
-- Validate concurrency and resource cleanup
-
-### Browser automation scenarios
-- Simulate DOM structures and constraints
-- Validate action plan generation and sanitization
-- Test navigation, click, and type actions
-- Verify tab management commands
-
-### External API interactions
-- Mock OAuth flows and API responses
-- Validate error propagation and plain messages
-- Test optional credentials and default session handling
-
-### Continuous integration setup
-- Separate jobs for backend and extension
-- Backend job: run Python unit tests and integration tests
-- Extension job: run TypeScript checks and build verification
-- Cache dependencies and reuse virtual environments
-
-### Automated testing workflows
-- Pre-submit checks: lint, type checks, unit tests
-- Post-submit checks: integration tests against staging
-- Nightly smoke tests: MCP and WebSocket flows
-
-### Security testing approaches
-- Input validation and sanitization for agent inputs and DOM structures
-- Authorization checks for tools requiring credentials
-- Audit logs for all tool invocations and browser actions
-
-### User acceptance testing
-- Define scenarios for agent workflows and browser automation
-- Validate UI rendering and user feedback for WebSocket status
-- Collect regression tests from real-world usage
-
+### Source files
+- `README.md`
+- `scripts/seed_demo.py`
+- `scripts/screenshots/shoot.mjs`
+- `scripts/screenshots/demo.mjs`
+- `package.json`
+- `clients/browser-extension/package.json`
+- `clients/debug-web/package.json`
+- `clients/shared/package.json`
+- `core/loop_guard.py`
+- `services/browser_runtime_service.py`
+- `services/compaction.py`

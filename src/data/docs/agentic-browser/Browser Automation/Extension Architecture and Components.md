@@ -1,294 +1,222 @@
 # Extension architecture and components
 
-## Introduction
-Extension pieces that back automation: background worker, content script, messaging, permissions, and how they connect to the agent.
+`clients/browser-extension` is a WXT project with five entrypoints. The background service worker owns the local bridge socket, executes browser actions, tracks tabs for the popup, and answers every runtime message. The side panel is the main UI. The popup is a tab switcher, the content script carries page overlay code, and the voice setup page asks for microphone permission once.
 
-## Project structure
-Entrypoints cover background, content, and side panel UI, plus shared utilities for agent orchestration and messaging.
+This page covers how those pieces connect and where automation enters. The action-level detail, including target resolution and verification, is in [DOM Manipulation and Element Targeting](DOM%20Manipulation%20and%20Element%20Targeting). The planner that feeds the executor is in [Dynamic Script Generation](Dynamic%20Script%20Generation).
+
+Key capabilities:
+- An MV3 service worker with a runtime message router and a bridge WebSocket to the local `agentic-mcp` process.
+- An action executor for tab control and DOM work through `browser.scripting.executeScript`.
+- A side panel auth gate with theme resolution and chat hooks.
+- A bridge request table for tabs, snapshots, actions, evaluation, screenshots, repo downloads, and remote tasks.
+- Tab inventory in `browser.storage.local` for the popup.
+
+## Repository layout
+
+WXT discovers entrypoints by folder. `background.ts` and `content.ts` are top-level scripts, while `popup/`, `sidepanel/`, and `voice-setup/` each own an HTML file and a React mount. `entrypoints/utils/` holds shared browser code, including `bridge/client.ts` and `bridge/handlers.ts`.
 
 ```mermaid
 graph TB
-subgraph "Extension Entry Points"
-BG["background.ts"]
-CT["content.ts"]
-SP["sidepanel/App.tsx"]
-AE["sidepanel/AgentExecutor.tsx"]
-end
-subgraph "Utilities"
-EA["utils/executeAgent.ts"]
-EAct["utils/executeActions.ts"]
-PAC["utils/parseAgentCommand.ts"]
-AM["sidepanel/lib/agent-map.ts"]
-WS["utils/websocket-client.ts"]
-end
-subgraph "Manifest & Config"
-WC["wxt.config.ts"]
-PKG["package.json"]
-end
-SP --> AE
-AE --> EA
-AE --> EAct
-AE --> PAC
-AE --> AM
-AE --> WS
-SP --> BG
-AE --> BG
-CT -. "DOM actions" .-> BG
-WC --> BG
-WC --> CT
-WC --> SP
-PKG --> AE
-PKG --> WS
+  subgraph Entrypoints
+    BG["entrypoints/background.ts<br/>service worker"]
+    CT["entrypoints/content.ts<br/>content script"]
+    PU["entrypoints/popup/popup.tsx"]
+    SP["entrypoints/sidepanel/App.tsx"]
+    VS["entrypoints/voice-setup/VoiceSetup.tsx"]
+  end
+  subgraph Utils["entrypoints/utils"]
+    BC["bridge/client.ts"]
+    BH["bridge/handlers.ts"]
+    PG["pageGlow.ts"]
+    EX["executeAgent.ts"]
+    EA["executeActions.ts"]
+  end
+  subgraph Manifest["wxt.config.ts"]
+    MP["permissions"]
+    HP["host_permissions all_urls"]
+    SPP["side_panel.default_path"]
+  end
+  BG --> BC
+  BG --> BH
+  BG --> PG
+  BG --> EA
+  BC --> BH
+  SP --> EX
+  SP --> EA
+  MP --> BG
+  HP --> CT
+  SPP --> SP
 ```
 
-## Core components
-- Background script: Central coordinator for cross-tab communication, tab state, and action dispatch. Handles message routing and executes browser-level commands.
-- Content script: Runs in-page to manipulate DOM and respond to action requests scoped to the active tab.
-- Side panel UI: React-based interface that orchestrates agent execution, manages sessions, and coordinates with background and content scripts.
-- Agent utilities: Parse slash commands, map agents/actions to endpoints, and execute agent requests with contextual page data.
-- WebSocket client: Provides a minimal client for real-time agent execution and progress updates.
+## Building blocks
 
-## Architecture overview
-The extension follows a message-passing architecture:
-- Side panel initiates agent execution and sends commands to the background script.
-- Background script resolves actions, injects content scripts when needed, and coordinates tab-level operations.
-- Content script performs DOM-level actions within the active tab.
-- Utilities parse commands, construct payloads, and capture page context for agent execution.
+- `wxt.config.ts`: WXT and the MV3 manifest. Permissions include `activeTab`, `tabs`, `storage`, `scripting`, `identity`, `sidePanel`, `webNavigation`, `webRequest`, `cookies`, `bookmarks`, `history`, `downloads`, `microphone`, `debugger`, `alarms`, and `tabGroups`. Host access is `<all_urls>`.
+- `entrypoints/background.ts`: defines the worker, starts the bridge, sets `openPanelOnActionClick`, creates the `open-popup` context menu, routes messages, and implements `executeAction`, `executeAgentTool`, and `storeTabsInfo`.
+- `entrypoints/content.ts`: matches `<all_urls>`, keeps `aiFrame` and `glowOverlay` references, exposes `removeAIFrame()` and a keyword-based `performAction()`. The overlay builder and runtime listener are commented out, so the script currently loads and logs.
+- `entrypoints/popup/popup.tsx`: lists tabs for the current window, with a filter and a bridge status pill. "Open assistant" calls `browser.sidePanel.open({ windowId })`.
+- `entrypoints/sidepanel/App.tsx`: theme resolution, `useAuth`, `useTabManagement`, `useWebSocket`, and the settings sheet.
+- `entrypoints/voice-setup/VoiceSetup.tsx`: requests `getUserMedia` audio, stops the tracks, and reports success or a `NotAllowedError` message.
+
+## How it fits together
+
+The side panel does not talk to tabs directly. It calls background helpers with `browser.runtime.sendMessage`, the worker resolves a target tab, injects a function with `browser.scripting.executeScript`, and the resolved value travels back as the message response. Messages that do async work return `true` from the listener to keep the channel open.
 
 ```mermaid
 sequenceDiagram
-participant UI as "Side Panel UI"
-participant BG as "Background Script"
-participant CS as "Content Script"
-participant WS as "WebSocket Client"
-UI->>BG : "Send agent command"
-BG->>BG : "Parse and route"
-BG->>CS : "Inject content script (if needed)"
-BG->>CS : "Dispatch action to page context"
-CS-->>BG : "Action result"
-BG-->>UI : "Execution summary"
-UI->>WS : "Optional real-time execution"
-WS-->>UI : "Progress updates"
+  participant SP as "side panel chat"
+  participant BG as "background.ts"
+  participant Tabs as "browser.tabs"
+  participant Page as "page DOM"
+  SP->>BG: GET_ACTIVE_TAB
+  BG->>Tabs: query active currentWindow
+  Tabs-->>BG: tab
+  BG-->>SP: success and tab
+  SP->>BG: EXECUTE_AGENT_TOOL action_type CLICK
+  BG->>Tabs: query active currentWindow
+  BG->>Page: scripting.executeScript click
+  Page-->>BG: Clicked selector
+  BG-->>SP: success and message
 ```
 
-## Detailed component analysis
+The content script is deliberately thin. `createAIFrame` and the `runtime.onMessage` listener are commented out, leaving `removeAIFrame`, `findElement`, and `performAction`. `performAction` matches keywords: play or pause a `<video>`, click a matching button, fill the first text input, scroll by 500 px, or return page info. Automation that matters goes through the worker's injected functions, not the content script.
 
-### Background script coordination
-Responsibilities:
-- Listens for messages from side panel and content script
-- Coordinates tab state and cross-tab communication
-- Executes browser-level actions (tabs, navigation, scripting injection)
-- Routes agent tool execution to handlers
+## The runtime message bus
 
-Key message types:
-- ACTIVATE_AI_FRAME / DEACTIVATE_AI_FRAME: Manage overlay frames per tab
-- GET_ACTIVE_TAB / GET_ALL_TABS: Tab discovery and state
-- EXECUTE_ACTION: Dispatch actions to content script
-- GEMINI_REQUEST: Perform local LLM inference
-- RUN_GENERATED_AGENT: Execute generated action plans
-- EXECUTE_AGENT_TOOL: Invoke agent tools with structured payloads
+`browser.runtime.onMessage` in `background.ts` checks `message.type` in order. `EXECUTE_AGENT_TOOL` is handled first because it is the hot path from the agent. Every handler wraps its work in `.then(sendResponse).catch(...)` and returns `{ success: false, error }` on failure. An unknown type logs the available list and responds with `Unknown message type`. `BRIDGE_STATUS` and the unknown-type branch return `false`, since no async work is pending.
 
 ```mermaid
 flowchart TD
-Start(["Message Received"]) --> Type{"Message Type?"}
-Type --> |ACTIVATE_AI_FRAME| Activate["Activate AI Frame"]
-Type --> |DEACTIVATE_AI_FRAME| Deactivate["Deactivate AI Frame"]
-Type --> |GET_ACTIVE_TAB| GetActive["Query Active Tab"]
-Type --> |GET_ALL_TABS| GetAll["Query All Tabs"]
-Type --> |EXECUTE_ACTION| ExecAction["Inject Content Script<br/>and Send Action"]
-Type --> |GEMINI_REQUEST| Gemini["Local LLM Request"]
-Type --> |RUN_GENERATED_AGENT| RunPlan["Execute Action Plan"]
-Type --> |EXECUTE_AGENT_TOOL| Tool["Execute Agent Tool"]
-Type --> |Other| Unknown["Unknown Type"]
-Activate --> End(["Response Sent"])
-Deactivate --> End
-GetActive --> End
-GetAll --> End
-ExecAction --> End
-Gemini --> End
-RunPlan --> End
-Tool --> End
-Unknown --> End
+  M["runtime message"] --> T{"message.type"}
+  T -->|EXECUTE_AGENT_TOOL| A["handleExecuteAgentTool"]
+  T -->|BRIDGE_STATUS| B["getBridgeStatus, sync"]
+  T -->|BRIDGE_RECONNECT| C["connectBridge(true)"]
+  T -->|ACTIVATE_AI_FRAME| D["setPageGlow tab true"]
+  T -->|DEACTIVATE_AI_FRAME| E["setPageGlow tab false"]
+  T -->|GET_ACTIVE_TAB| F["tabs.query active"]
+  T -->|GET_ALL_TABS| G["tabs.query all"]
+  T -->|EXECUTE_ACTION| H["handleExecuteAction"]
+  T -->|GEMINI_REQUEST| I["GoogleGenerativeAI gemini-2.5-flash"]
+  T -->|RUN_GENERATED_AGENT| J["loop over action_plan.actions"]
+  T -->|anything else| K["Unknown message type"]
 ```
 
-### Content script execution environment
-Role:
-- Runs in-page to perform DOM-level actions
-- Responds to action requests from background script
-- Provides simple page interaction helpers (play/pause video, click, fill, scroll, info)
+`RUN_GENERATED_AGENT` still exists for generated action plans. It runs actions in sequence, keeps going after a failure, and returns `{ success: allSucceeded, message, results }`. `GEMINI_REQUEST` imports `@google/generative-ai` dynamically so the SDK stays out of the worker startup path.
 
-Current capabilities:
-- Keyword-based action parsing for simple commands
-- DOM queries and synthetic events for input and click
-- Basic page information extraction
+## The action executor
+
+`handleExecuteAction` normalises the payload before dispatch. It accepts either `payload.action` or the payload itself, uppercases `action.type`, aliases `element` to `selector` and `text` to `value`, and resolves a tab id from `payload.tabId`, `action.tabId`, or the active tab. Only `OPEN_TAB` may run with no tab, which is represented as `-1`. Tab actions go to `browser.tabs` calls; DOM actions go through `browser.scripting.executeScript` with a function that supports `:has-text()`, `xpath=`, and CSS selectors. `EXECUTE_SCRIPT` wraps `new Function(action.script)` and `WAIT` sleeps `action.time` or 1000 ms.
+
+`executeAgentTool` is the richer path used by the agent. It resolves the active tab, switches on `actionType`, and calls one helper per tool: `getPageInfo`, `extractDomStructure`, `clickElement`, `typeText`, `fillFormFields`, `selectDropdownOption`, `waitForElement`, `scrollPage`, `openNewTab`, `closeCurrentTab`, `switchTab`, `navigateToUrl`, `getAllTabs`, `takeScreenshot`, `getElementText`, `getElementAttributes`, `executeCustomScript`, `getCookies`, `setCookie`, `getLocalStorage`, `setLocalStorage`, `hoverElement`, `reloadTab`, `goBack`, `goForward`, and `findElements`. An unknown name returns `Unknown tool: <name>`.
+
+`waitForElement` polls every 100 ms until `params.timeout` (default 10000 ms) for `exists`, `visible`, or `hidden`. `getCookies` keeps auth-looking names capped at 10, otherwise the first 5 cookies. The planner loop does not use this path; it calls `executeAutomationActions` with one typed action.
+
+## The bridge client
+
+`utils/bridge/client.ts` connects to `ws://127.0.0.1:5455/bridge/ws` (`DEFAULT_BRIDGE_URL`). The socket exists so MCP clients can drive the browser while the service worker stays awake. On open it sends a `hello` with browser brand and version, extension version and id, and capabilities `tabs`, `snapshot`, `act`, `evaluate`, `screenshot`, plus `cdp` when available. It pings every 20 seconds (`PING_MS`). An alarm named `agentic-bridge-keepalive` fires every 0.5 minutes to reconnect after the worker sleeps.
 
 ```mermaid
-flowchart TD
-CSLoad["Content Script Loaded"] --> WaitMsg["Wait for Action"]
-WaitMsg --> Action{"Action Type?"}
-Action --> |Play/Pause Video| Video["Find video element<br/>Trigger play/pause"]
-Action --> |Click| Click["Find matching button<br/>Dispatch click"]
-Action --> |Type/Fill| Type["Find input/textarea<br/>Set value and events"]
-Action --> |Scroll| Scroll["Scroll window by amount"]
-Action --> |Info| Info["Collect page metadata"]
-Video --> Done["Return result"]
-Click --> Done
-Type --> Done
-Scroll --> Done
-Info --> Done
+stateDiagram-v2
+  [*] --> connecting: startBridge
+  connecting --> connected: welcome
+  connecting --> disconnected: socket error
+  connected --> disconnected: onclose
+  disconnected --> connecting: retry timer
+  disconnected --> disabled: bridgeEnabled false
+  disabled --> connecting: settings change
+  connected --> connected: ping every 20s
 ```
 
-### Side panel UI integration and AgentExecutor
-Responsibilities:
-- Manages sessions, chat history, and UI state
-- Parses slash commands and maps to agent/action endpoints
-- Executes agent requests and triggers browser actions
-- Integrates with WebSocket client for real-time execution
+Incoming `request` messages carry `{ id, method, params }`. `handleRequest` looks up `handlers[msg.method]`, sets the action badge to `RUN`, and replies `{ type: "response", id, result }` or `{ type: "response", id, error }`. Unknown methods fail with `Unknown bridge method <name>. Update the extension.` The handler table covers `tabs.list`, `tabs.open`, `tabs.close`, `tabs.focus`, `page.snapshot`, `page.screenshot`, `page.act`, `page.evaluate`, `page.waitFor`, `page.read`, `repo.download`, `task.run`, and `task.stop`.
 
-Key flows:
-- Slash command parsing routes to appropriate agent endpoints
-- Agent execution captures page context (HTML, URL, title) when needed
-- Action plan execution dispatches actions to background/content scripts
-- Settings and authentication screens integrate with browser storage
+`setStatus` writes `BridgeStatus` to `browser.storage.local` under `bridgeStatus`, and the popup subscribes to that key. A close code of 4403 means the bridge rejected this extension (check `AGENTIC_BROWSER_EXTENSION_IDS`). Retries start at 1 second and double to a 30 second cap.
 
-```mermaid
-sequenceDiagram
-participant UI as "Side Panel UI"
-participant Parser as "parseAgentCommand"
-participant Executor as "executeAgent"
-participant BG as "Background Script"
-participant CS as "Content Script"
-UI->>Parser : "Parse slash command"
-Parser-->>UI : "Agent/Action mapping"
-UI->>Executor : "Execute agent with context"
-Executor->>BG : "Fetch active tab context"
-BG-->>Executor : "Tab info"
-Executor->>BG : "Optionally capture page HTML"
-BG->>CS : "Execute DOM capture"
-CS-->>BG : "HTML result"
-BG-->>Executor : "Page context"
-Executor-->>UI : "Agent response"
-UI->>BG : "Execute action plan"
-BG->>CS : "Dispatch actions"
-CS-->>BG : "Action results"
-BG-->>UI : "Summary"
-```
+## Side panel mount
 
-### Agent utilities and mapping
-- Command parsing: Supports agent selection, action selection, and completion stages
-- Endpoint mapping: Maps agent-action pairs to backend endpoints
-- Execution: Builds payloads with page context, chat history, and optional attachments
-
-```mermaid
-classDiagram
-class AgentMap {
-+map : Map
-+labels : Map
-}
-class CommandParser {
-+parse(input) Result
-}
-class AgentExecutor {
-+execute(fullCommand, prompt, history, file) Promise
-}
-AgentExecutor --> CommandParser : "parses"
-AgentExecutor --> AgentMap : "maps"
-```
-
-### WebSocket client integration
-- Provides a simple API for real-time agent execution and progress updates
-- Emits connection status, progress, and result/error events
-- Used by the side panel to improve agent execution UX
-
-```mermaid
-sequenceDiagram
-participant UI as "Side Panel UI"
-participant WS as "WebSocket Client"
-participant Server as "Agent Server"
-UI->>WS : "executeAgent(command, onProgress)"
-WS->>Server : "emit execute_agent"
-Server-->>WS : "generation_progress"
-WS-->>UI : "onProgress(data)"
-Server-->>WS : "agent_result"
-WS-->>UI : "resolve(data)"
-UI->>WS : "stopAgent()"
-WS->>Server : "emit stop_agent"
-```
-
-## Dependency analysis
-External dependencies and their roles:
-- React: UI rendering and state management
-- Socket.IO client: Real-time communication with agent server
-- Google Generative AI SDK: Local LLM inference
-- Tailwind/KaTeX: UI styling and math rendering
+`entrypoints/sidepanel/App.tsx` is the auth gate. It reads `theme` from `localStorage`, sets `data-theme` on `<html>`, and follows `prefers-color-scheme` while the preference is `system`. `useAuth` chooses between `LoadingScreen`, `SignInScreen`, and `AgentExecutor`, which wraps chat hooks in `ApiProvider` with `localStorage.baseUrl || VITE_API_URL`.
 
 ```mermaid
 graph LR
-AE["AgentExecutor.tsx"] --> EA["executeAgent.ts"]
-AE --> EAct["executeActions.ts"]
-AE --> PAC["parseAgentCommand.ts"]
-AE --> AM["agent-map.ts"]
-AE --> WS["websocket-client.ts"]
-AE --> BG["background.ts"]
-AE --> CT["content.ts"]
-WS --> IO["socket.io-client"]
-EA --> GA["GoogleGenerativeAI"]
-AE --> React["react/react-dom"]
-AE --> MD["react-markdown/katex"]
+  LS["localStorage theme"] --> TH["resolveTheme"]
+  TH --> AT["document data-theme"]
+  AUTH["useAuth"] --> GATE{"user?"}
+  GATE -->|loading| L["LoadingScreen"]
+  GATE -->|null| S["SignInScreen"]
+  GATE -->|user| AX["AgentExecutor"]
+  AX --> AP["ApiProvider"]
+  SET["UnifiedSettingsMenu"] --> AX
 ```
 
-## Performance considerations
-- Minimize DOM queries and synthetic event dispatches; batch actions when possible
-- Use timeouts and listeners for tab operations to avoid blocking
-- Cache page context only when necessary; avoid large payloads
-- Debounce UI updates and progress reporting to reduce re-renders
-- Prefer browser APIs (tabs, scripting) over frequent polling
+`App` also keeps a `geminiApiKey` in `browser.storage.local` for the legacy `GEMINI_REQUEST` path and listens for storage changes. Conversation stats come from `wsClient.getStats()` when the socket is connected; otherwise the panel calls `/api/genai/health/` and keeps zeroed counters.
 
-## Troubleshooting guide
-Common issues and resolutions:
-- Action not executing in content script:
- - Ensure the content script is injected and the tab is active
- - Verify message routing from background to content script
-- Tab operations failing:
- - Confirm tab IDs and window context
- - Check for navigation completion before performing actions
-- WebSocket connectivity:
- - Validate server availability and CORS
- - Use fallback HTTP stats when WebSocket is disconnected
-- Permission errors:
- - Review manifest permissions and host permissions
- - Reinstall the extension after permission changes
+## Popup and voice setup
 
-## Conclusion
-Manifest permissions should match real needs. Background owns coordination; content scripts own DOM. Keep message types explicit.
+The popup lists tabs in the current window and refreshes on `tabs.onUpdated`, `onRemoved`, `onActivated`, and `onCreated`. Filtering is client side over `title` and `url`; Enter focuses the first match, Escape clears the field.
 
-## Appendices
+The voice setup page asks for microphone permission, stops every track, and shows success or the browser error. It is a one-time permission page, not part of the automation loop.
 
-### Message passing protocols
-- Side panel to background:
- - Types: ACTIVATE_AI_FRAME, DEACTIVATE_AI_FRAME, GET_ACTIVE_TAB, GET_ALL_TABS, EXECUTE_ACTION, GEMINI_REQUEST, RUN_GENERATED_AGENT, EXECUTE_AGENT_TOOL
-- Background to content:
- - Types: PERFORM_ACTION (via tabs.sendMessage)
-- Background to side panel:
- - Responses to all requests with success/error payloads
+## Dependencies
 
-### Lifecycle management and security boundaries
-- Lifecycle:
- - Background script initializes listeners and tab tracking
- - Side panel activates/deactivates AI frames and manages sessions
- - Content script loads per-page and responds to actions
-- Security:
- - Content scripts run in page context with limited permissions
- - Background script bridges privileged APIs with page contexts
- - Manifest permissions define scope; host permissions grant broad access
+`wxt` supplies `defineBackground`, `defineContentScript`, and `wxt/browser`, which normalises `chrome.*` and `browser.*`. `@wxt-dev/module-react` wires the React plugin, and `wxt prepare` on postinstall creates the `.wxt/` types that `tsc --noEmit` needs. The side panel also uses `@agentic-browser/shared`, React 19, TanStack Query, Radix select, and `socket.io-client`.
 
-### Cross-Browser compatibility
-- Build targets:
- - Chrome MV3 and Firefox via WXT build flags
-- Differences:
- - Some APIs differ between browsers; use feature detection
- - Manifest keys and permissions may vary slightly
+```mermaid
+graph TB
+  subgraph Extension
+    BG["background.ts"]
+    SP["sidepanel/App.tsx"]
+    PU["popup/popup.tsx"]
+    BR["utils/bridge/client.ts"]
+    HD["utils/bridge/handlers.ts"]
+  end
+  subgraph Platform
+    WXT["wxt/browser"]
+    Tabs["browser.tabs"]
+    Scripting["browser.scripting"]
+    Storage["browser.storage.local"]
+  end
+  subgraph Local
+    Bridge["agentic-mcp bridge<br/>127.0.0.1:5455"]
+    API["Agentic Browser API<br/>localhost:5454"]
+  end
+  BG --> WXT
+  BG --> Tabs
+  BG --> Scripting
+  BG --> Storage
+  BG --> BR
+  BR --> Bridge
+  BR --> HD
+  SP --> API
+  SP --> Storage
+  PU --> Storage
+```
 
-### Extension manifest configuration
-- Name, description, permissions, host permissions
-- Permissions include tabs, storage, scripting, identity, sidePanel, webNavigation, webRequest, cookies, bookmarks, history, clipboard, notifications, contextMenus, downloads
+## Performance
+
+The bridge ping every 20 seconds keeps the MV3 worker alive on Chrome 116 and later, and the 0.5 minute alarm is the fallback wakeup (`utils/bridge/client.ts`). `executeAction` waits for navigation `complete` with a 10 second timeout and for a reload with 5 seconds. `waitForElement` polls every 100 ms instead of observing the DOM. Tab inventory is written on four tab events plus startup, not on a timer. The executor's own settle delays are 350 ms for DOM actions and 150 ms for media.
+
+## Troubleshooting
+
+- The popup shows "MCP waiting": the bridge socket is closed and retrying. Run `agentic-mcp serve` or let the MCP client start it.
+- Close code 4403: the extension id is not in `AGENTIC_BROWSER_EXTENSION_IDS`. Add the id and restart the bridge.
+- `Element not found: <selector>`: a DOM helper could not resolve the selector. Use an id, `name`, `aria-label`, or `:has-text()`.
+- The content script seems idle: the overlay and message listener are commented out in `content.ts`. Use the side panel or bridge actions instead.
+- `Unknown message type`: the caller sent a type the worker does not route. Check the list in the worker log.
+- Bridge method fails with "Update the extension": the worker's handler table is older than the caller. Reload the unpacked extension.
+
+## Appendix
+
+### Implementation examples
+
+- Worker startup and panel behavior: `defineBackground` in `background.ts`.
+- Action normalisation: `handleExecuteAction`, `executeAction`.
+- Tool dispatch table: `executeAgentTool`.
+- Bridge handshake and retry: `connectBridge`, `scheduleRetry`, `startBridge`.
+- Popup side panel open: `openPanel` in `popup.tsx`.
+
+### Source files
+
+- `clients/browser-extension/wxt.config.ts`
+- `clients/browser-extension/entrypoints/background.ts`
+- `clients/browser-extension/entrypoints/content.ts`
+- `clients/browser-extension/entrypoints/popup/popup.tsx`
+- `clients/browser-extension/entrypoints/sidepanel/App.tsx`
+- `clients/browser-extension/entrypoints/voice-setup/VoiceSetup.tsx`

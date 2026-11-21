@@ -1,290 +1,243 @@
 # Configuration management
 
-## Introduction
-Where config comes from: env vars for the Python servers, provider registries in `core/`, and UI-stored tokens in the extension. Hierarchy, fallbacks, and how secrets should move between environments.
+Configuration comes from three places: `.env` for process settings, encrypted rows in `app_settings` for values set in the console, and `browser.storage.local` for client-side display state. The backend reads env through pydantic settings and resolves secrets from the database first, then the environment.
 
-## Project structure
-Configuration spans three primary areas:
-- Backend core configuration and LLM provider selection
-- API server bootstrap and routing
-- Extension-side authentication, token lifecycle, and UI-driven configuration inputs
+This page explains the hierarchy, what lives where, how provider endpoints are selected, and how to change configuration without restarting everything.
+
+Key capabilities:
+- One pydantic settings model for every env var
+- Database overrides for model, secrets, OAuth clients and runtime settings
+- Encrypted secret storage with a masked read API
+- Per-request model selection from headers
+- Custom base URLs for OpenAI, Anthropic and Google formats
+- Client-side base URL and theme storage
+
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Backend"
-CFG["core/config.py<br/>Environment variables, logging"]
-LLM["core/llm.py<br/>Provider configs, validation, client init"]
-API["main.py<br/>FastAPI app, router mounts"]
-MAIN["main.py<br/>Entry point"]
-end
-subgraph "Extension"
-WXT["clients/browser-extension/wxt.config.ts<br/>Permissions, manifest"]
-AUTH["useAuth.ts<br/>OAuth, token refresh, storage"]
-KEYUI["ApiKeySection.tsx<br/>UI for API key input"]
-MAP["agent-map.ts<br/>Service endpoints"]
-end
-MAIN --> LLM
-CFG --> API
-CFG --> LLM
-AUTH --> API
-KEYUI --> LLM
-MAP --> API
-WXT --> AUTH
+  subgraph "Sources"
+    ENV[".env"]
+    DB[("app_settings")]
+    STORE["browser.storage.local"]
+  end
+  subgraph "Backend"
+    CFG["core/config.py"]
+    SEC["services/secrets_service.py"]
+    STATE["services/app_state.py"]
+    LLM["core/llm.py"]
+  end
+  subgraph "Clients"
+    PANEL["side panel settings"]
+    CONSOLE["console settings"]
+  end
+  ENV --> CFG
+  DB --> STATE
+  DB --> SEC
+  CFG --> LLM
+  SEC --> LLM
+  STATE --> LLM
+  PANEL --> STORE
+  CONSOLE --> SEC
+  CONSOLE --> STATE
 ```
 
-## Core components
-- Environment configuration loader and defaults
- - Loads environment variables from a .env file and sets defaults for environment, debug mode, backend host/port, and Google API key.
- - Provides a logger factory that respects the computed log level.
- - Reference: `core/config.py`
+## Building blocks
 
-- LLM provider configuration and initialization
- - Centralized provider registry with per-provider class, environment variable names, default models, and parameter mappings.
- - Validation logic ensures required keys/base URLs are present depending on provider.
- - Supports multiple backends: Google, OpenAI-compatible, Anthropic, Ollama, DeepSeek, OpenRouter.
- - Reference: `core/llm.py`, `core/llm.py`
+- `core/config.py`: `Settings(BaseSettings)` with `env_file=".env"`, case-insensitive keys and `extra="ignore"`. Exposes `get_settings()` and `get_logger()`.
+- `services/app_state.py`: CRUD over `app_settings`, keyed by `(user_id, key)`, with JSONB values.
+- `services/secrets_service.py`: registry of API keys, base URLs and OAuth clients. Encrypts values with `core/crypto.py`.
+- `core/llm.py`: provider registry, key and base URL resolution, default model, per-request model.
+- `core/request_model.py`: reads `X-Agentic-Provider` and `X-Agentic-Model` for one request.
+- `clients/browser-extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx`: extension settings UI.
+- `clients/shared/src/settings-ui/`: shared settings sections used by both frontends.
 
-- API server bootstrap and routing
- - FastAPI application definition and router mounts for various services.
- - Reference: `main.py`
+## How it fits together
 
-- Entry point
- - `main.py` starts FastAPI and mounts MCP at `/mcp`. Stdio MCP is `agentic-mcp`.
- - Reference: `main.py`
+Precedence is database first, then environment, then code defaults. A model key saved in Settings wins over `GOOGLE_API_KEY`. A base URL saved in Settings wins over `OPENAI_BASE_URL`. If both are absent, the provider's default applies.
 
-- Extension configuration and permissions
- - Manifest defines permissions and host permissions for the extension.
- - Reference: `clients/browser-extension/wxt.config.ts`
+```mermaid
+flowchart TD
+  Read(["read a setting"]) --> DB{"row in app_settings?"}
+  DB -- yes --> Decrypt["decrypt and return"]
+  DB -- no --> Env{"env var set?"}
+  Env -- yes --> Return["return env value"]
+  Env -- no --> Default["code default"]
+  Default --> Return
+  Decrypt --> Return
+```
 
-## Architecture overview
-Config comes from a few places:
-- Environment variables are loaded early in the process and influence logging, backend host/port, and default Google API key.
-- LLM configuration is provider-centric with explicit environment variable requirements and fallbacks.
-- The extension manages service credentials via OAuth and local storage, exposing UI controls for API key input and provider/model selection.
-- Service endpoints are declared in the extension and mounted in the API server.
+Secret reads happen per request for providers and OAuth clients. The service caches nothing by default; the LLM client cache is the exception.
 
 ```mermaid
 sequenceDiagram
-participant Env as "Environment (.env)"
-participant CoreCfg as "core/config.py"
-participant LLM as "core/llm.py"
-participant ExtAuth as "useAuth.ts"
-participant ExtKeyUI as "ApiKeySection.tsx"
-participant API as "main.py"
-Env-->>CoreCfg : "Load variables"
-CoreCfg-->>LLM : "Provide defaults (e.g., GOOGLE_API_KEY)"
-ExtAuth->>ExtAuth : "OAuth flow, token refresh"
-ExtKeyUI->>LLM : "User-selected provider/model"
-API-->>LLM : "Invoke LLM client for requests"
+  participant Route as "route"
+  participant MW as "RequestModelMiddleware"
+  participant LLM as "core.llm"
+  participant Sec as "SecretsService"
+  participant DB as "app_settings"
+  Route->>MW : "request with model headers"
+  MW->>LLM : "llm_for(provider, model)"
+  LLM->>Sec : "resolve(api_key, base_url)"
+  Sec->>DB : "select secrets.*"
+  DB-->>Sec : "encrypted value"
+  Sec-->>LLM : "plaintext"
+  LLM-->>MW : "cached or new client"
+  MW-->>Route : "request model set"
 ```
 
-## Detailed component analysis
+## Environment variables
 
-### Environment configuration system
-- Variable loading
- - Loads .env variables at import time.
- - Sets environment and debug flags with sensible defaults.
- - Defines backend host and port with defaults suitable for local development.
- - Extracts a default Google API key for convenience.
- - Reference: `core/config.py`
+`Settings` groups variables by concern. Defaults match `docker-compose.yml`.
 
-- Logging configuration
- - Computes logging level based on debug flag and applies it globally.
- - Exposes a logger factory to ensure consistent logging across modules.
- - Reference: `core/config.py`
+| Group | Variables |
+| --- | --- |
+| App | `ENV`, `DEBUG`, `BACKEND_HOST`, `BACKEND_PORT` |
+| Default model | `DEFAULT_LLM_PROVIDER`, `DEFAULT_LLM_MODEL`, `DEFAULT_LLM_TEMPERATURE` |
+| Chat title model | `CHAT_TITLE_LLM_PROVIDER`, `CHAT_TITLE_LLM_MODEL`, `CHAT_TITLE_LLM_TEMPERATURE` |
+| Provider keys | `GOOGLE_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `DEEPSEEK_API_KEY`, `OPENROUTER_API_KEY`, `OPENCODE_API_KEY` |
+| Provider endpoints | `OPENAI_BASE_URL`, `ANTHROPIC_BASE_URL`, `GOOGLE_BASE_URL`, `OLLAMA_BASE_URL`, `BASE_URL` |
+| Web and voice | `TAVILY_API_KEY`, `ELEVENLABS_API_KEY`, `CARTESIA_API_KEY`, `GROQ_API_KEY`, `XAI_API_KEY` |
+| Composio | `COMPOSIO_API_KEY`, `COMPOSIO_USER_ID` |
+| Telegram | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ALLOWED_USERS` |
+| OAuth | `OAUTH_ENCRYPTION_KEY`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` |
+| Postgres | `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` |
+| Neo4j | `NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD` |
+| OpenSearch | `OPENSEARCH_HOST`, `OPENSEARCH_PORT` |
 
-- Development vs Production differences
- - Debug mode toggles logging verbosity.
- - Host/port defaults target local development; adjust for production deployments.
- - Reference: `core/config.py`
+`ENV` accepts `development`, `production` or `test`. `DEBUG` sets the logging level.
 
-- Configuration validation
- - Logging level is derived from environment variables; misconfiguration affects observability.
- - Reference: `core/config.py`
+## Database settings
 
-### LLM provider configuration and fallback mechanisms
-- Provider registry
- - Centralized mapping of provider identifiers to LangChain classes, environment variables, default models, and parameter mappings.
- - Includes support for Google, OpenAI-compatible, Anthropic, Ollama, DeepSeek, and OpenRouter.
- - Reference: `core/llm.py`
+The console writes JSONB rows keyed by name. Important keys:
 
-- Initialization logic
- - Validates provider existence and model availability.
- - Resolves API key from constructor argument or environment variable depending on provider requirements.
- - Resolves base URL from constructor, override, or environment variable; raises explicit errors if missing.
- - Builds parameter dictionary and initializes the underlying LLM client.
- - Reference: `core/llm.py`
+| Key | Contents |
+| --- | --- |
+| `llm.default` | provider, model, temperature |
+| `llm.chat_title` | provider, model, temperature |
+| `chat.compaction` | enabled, trigger ratio, budget tokens, keep recent, max history |
+| `runtimes` | Claude, Codex, Antigravity, OpenCode and custom ACP configs |
+| `voice.config` | route, provider, model, cleanup, TTS |
+| `secrets.*` | encrypted API keys and base URLs |
+| `oauth_clients.*` | encrypted client id and secret |
+| `pyjiit.credentials` | encrypted username and password |
+| `composio.config` | encrypted API key and user id |
 
-- Fallback mechanisms
- - Uses provider-specific defaults for model names.
- - Applies base URL overrides for certain providers (e.g., DeepSeek, OpenRouter).
- - Raises descriptive errors when required credentials or URLs are missing.
- - Reference: `core/llm.py`
+`GET /api/state/settings/{key}` reads any key. `PUT` writes one. The typed integration routes validate before writing.
 
-- BYOKeys approach
- - Supports passing API keys directly to the constructor for providers that require them.
- - For providers that do not require API keys (e.g., Ollama), passing an API key is tolerated with a warning.
- - Reference: `core/llm.py`
+## Provider selection
 
-- Example provider selection flow
-```mermaid
-flowchart TD
-Start(["Initialize LLM"]) --> CheckProvider["Lookup provider config"]
-CheckProvider --> ProviderFound{"Provider supported?"}
-ProviderFound --> |No| ErrorProvider["Raise error: unsupported provider"]
-ProviderFound --> |Yes| SetModel["Set model name (arg or default)"]
-SetModel --> ModelValid{"Model name valid?"}
-ModelValid --> |No| ErrorModel["Raise error: no model"]
-ModelValid --> |Yes| ResolveKey["Resolve API key (env or arg)"]
-ResolveKey --> KeyProvided{"Key available?"}
-KeyProvided --> |No| ErrorKey["Raise error: missing API key"]
-KeyProvided --> |Yes| ResolveBaseURL["Resolve base URL (arg/override/env)"]
-ResolveBaseURL --> URLValid{"Base URL valid?"}
-URLValid --> |No| ErrorURL["Raise error: missing base URL"]
-URLValid --> |Yes| BuildParams["Build client params"]
-BuildParams --> InitClient["Initialize LLM client"]
-InitClient --> Done(["Ready"])
-```
-
-### Service credentials, authentication, and token management
-- Extension OAuth and token lifecycle
- - Uses browser identity APIs to initiate OAuth with Google, exchange authorization code for tokens, and persist user data in local storage.
- - Implements automatic token refresh when nearing expiration and manual refresh capability.
- - Handles token status display and user feedback.
- - Reference: `clients/browser-extension/entrypoints/sidepanel/hooks/useAuth.ts`
-
-- Service endpoint mapping
- - Declares service endpoints for Gmail, Calendar, Google Search, YouTube, Website, GitHub, JIIT portal, React AI, Browser Agent, and File Upload.
- - Reference: `clients/browser-extension/entrypoints/sidepanel/lib/agent-map.ts`
-
-- UI-driven API key input
- - Provides a password-protected input component for API keys and a save action.
- - Reference: `clients/browser-extension/entrypoints/sidepanel/components/ApiKeySection.tsx`
-
-- Permissions and host access
- - Manifest defines broad permissions and host permissions required by the extension.
- - Reference: `clients/browser-extension/wxt.config.ts`
-
-### Configuration hierarchy: environment variables to runtime UI inputs
-- Backend
- - Environment variables loaded via dotenv and applied to logging and defaults.
- - LLM provider selection and initialization consume environment variables for API keys and base URLs.
- - Reference: `core/config.py`, `core/llm.py`
-
-- Frontend
- - UI components allow users to change provider and model selections and save API keys.
- - These selections influence how the LLM client is constructed and invoked downstream.
- - Reference: `clients/browser-extension/entrypoints/sidepanel/components/ApiKeySection.tsx`, `core/llm.py`
-
-- API server
- - Routers mount service endpoints; the extension's agent map aligns with these routes.
- - Reference: `main.py`, `clients/browser-extension/entrypoints/sidepanel/lib/agent-map.ts`
-
-### Configuration validation and error handling
-- LLM initialization validation
- - Explicit checks for unsupported providers, missing model names, missing API keys, and missing base URLs.
- - Descriptive error messages guide users to set environment variables or pass arguments.
- - Reference: `core/llm.py`
-
-- Logging and diagnostics
- - Logger factory ensures consistent logging levels derived from environment variables.
- - Reference: `core/config.py`
-
-- Frontend error handling
- - OAuth failures and token refresh errors are surfaced to the user with actionable messages.
- - Reference: `clients/browser-extension/entrypoints/sidepanel/hooks/useAuth.ts`
-
-### Configuration hot-reloading and dynamic updates
-- Environment variables
- - The backend loads .env at import time; changes require restarting the process to take effect.
- - Reference: `core/config.py`, `main.py`
-
-- Extension UI updates
- - Local storage changes trigger UI updates; token refresh occurs automatically when needed.
- - Reference: `clients/browser-extension/entrypoints/sidepanel/hooks/useAuth.ts`
-
-## Dependency analysis
-- Backend dependencies
- - FastAPI application depends on core configuration for logging and on LLM provider configuration for model selection.
- - Reference: `main.py`, `core/config.py`, `core/llm.py`
-
-- Frontend dependencies
- - Authentication hook depends on browser identity APIs and local storage.
- - UI components depend on provider/model choices and local storage persistence.
- - Reference: `clients/browser-extension/entrypoints/sidepanel/hooks/useAuth.ts`, `clients/browser-extension/entrypoints/sidepanel/components/ApiKeySection.tsx`
+`PROVIDER_CONFIGS` in `core/llm.py` maps each provider to its LangChain class, key env var, default model and parameter names. Supported values: `google`, `openai`, `anthropic`, `ollama`, `deepseek`, `opencode`, `opencode-go`, `openrouter`.
 
 ```mermaid
 graph LR
-DOTENV[".env"] --> CFG["core/config.py"]
-CFG --> API["main.py"]
-CFG --> LLM["core/llm.py"]
-AUTH["useAuth.ts"] --> API
-KEYUI["ApiKeySection.tsx"] --> LLM
-MAP["agent-map.ts"] --> API
+  subgraph "API formats"
+    Google["Google"]
+    OpenAI["OpenAI-compatible"]
+    Anthropic["Anthropic"]
+    Ollama["Ollama"]
+  end
+  subgraph "Providers"
+    G["google"]
+    O["openai"]
+    D["deepseek"]
+    R["openrouter"]
+    OC["opencode / opencode-go"]
+    A["anthropic"]
+    L["ollama"]
+  end
+  G --> Google
+  O --> OpenAI
+  D --> OpenAI
+  R --> OpenAI
+  OC --> OpenAI
+  A --> Anthropic
+  L --> Ollama
 ```
 
-## Performance considerations
-- Avoid repeated environment parsing: load .env once at startup and reuse cached values.
-- Minimize LLM client reinitialization: cache the LLM instance and reuse it across requests.
-- Reduce network calls: batch token refreshes and avoid unnecessary re-authentication.
-- Logging overhead: tune logging level in production to reduce I/O.
+A custom base URL points a provider at a gateway or local server. For OpenAI-compatible servers the URL usually ends in `/v1`. `llm_for` caches clients by provider, model, key and base URL.
 
-## Troubleshooting guide
-- Missing API key for a provider
- - Symptom: Initialization error indicating missing API key for the selected provider.
- - Resolution: Set the appropriate environment variable or pass the key directly to the LLM constructor.
- - Reference: `core/llm.py`
+## Per-request model
 
-- Missing base URL for a provider
- - Symptom: Initialization error indicating missing base URL for the selected provider.
- - Resolution: Set the provider's base URL environment variable or pass it explicitly.
- - Reference: `core/llm.py`
+A client can override the saved model for one request:
 
-- Unsupported provider
- - Symptom: Error indicating an unsupported provider identifier.
- - Resolution: Choose a supported provider from the registry.
- - Reference: `core/llm.py`
+```
+X-Agentic-Provider: openrouter
+X-Agentic-Model: qwen/qwen4-max
+```
 
-- OAuth failure in extension
- - Symptom: Authentication failed alerts and inability to exchange code for tokens.
- - Resolution: Ensure the backend is running, verify redirect URI, and confirm required scopes.
- - Reference: `clients/browser-extension/entrypoints/sidepanel/hooks/useAuth.ts`
+`RequestModelMiddleware` resolves the provider. If the id is a subscription runtime, it sets a runtime pick instead of an LLM. Otherwise it calls `llm_for` and stores the client in a context variable for the request. Background work keeps the default.
 
-- Token refresh issues
- - Symptom: Token expired or failed to refresh.
- - Resolution: Use manual refresh or re-authenticate; ensure refresh token is available.
- - Reference: `clients/browser-extension/entrypoints/sidepanel/hooks/useAuth.ts`
+```mermaid
+sequenceDiagram
+  participant Client
+  participant MW as "RequestModelMiddleware"
+  participant RT as "runtimes"
+  participant LLM as "llm_for"
+  Client->>MW : "headers"
+  MW->>RT : "is this a runtime id?"
+  alt runtime
+    MW->>RT : "set_pick(runtime, model)"
+  else provider
+    MW->>LLM : "llm_for(provider, model)"
+    MW->>MW : "set_request_llm(client)"
+  end
+  MW->>Client : "run request"
+  MW->>MW : "reset context"
+```
 
-- Logging verbosity
- - Symptom: Too verbose or too quiet logs.
- - Resolution: Adjust debug flag to toggle logging level.
- - Reference: `core/config.py`
+## Client-side settings
 
-## Conclusion
-Put secrets in env or extension storage, never in git. Prefer provider-specific variables, and only grant the extension permissions it actually uses.
+The extension keeps `baseUrl`, `theme`, `bridgeUrl`, `bridgeEnabled`, `googleUser` and session data in `browser.storage.local`. The console keeps `theme` and `nav-collapsed` in `localStorage`. Neither stores API keys or OAuth tokens; those live on the backend encrypted.
 
-## Appendices
+The side panel's base URL defaults to `http://localhost:5454`. The stream path reads `VITE_API_URL` at build time, while the API object reads storage, so the two can disagree after a host change.
 
-### Environment variables and defaults
-- Environment and debug flags
- - Reference: `core/config.py`
-- Backend host and port
- - Reference: `core/config.py`
-- Google API key default
- - Reference: `core/config.py`
-- LLM provider environment variables
- - Reference: `core/llm.py`
+## Dependencies
 
-### Deployment scenarios and examples
-- Development
- - Run the API server locally with default host/port and enable debug logging.
- - Reference: `core/config.py`, `main.py`
-- Production
- - Set environment variables for production host/port and credentials.
- - Reference: `core/config.py`, `core/llm.py`
+```mermaid
+graph TB
+  CFG["core/config.py"] --> Pydantic["pydantic-settings"]
+  SEC["services/secrets_service.py"] --> Crypto["core/crypto.py"]
+  SEC --> State["services/app_state.py"]
+  Crypto --> PyCrypto["pycryptodome"]
+  LLM["core/llm.py"] --> LangChain["langchain providers"]
+  LLM --> Catalog["core/model_catalog.py"]
+  UI["settings-ui"] --> API["/api/integrations"]
+```
 
-### Sensitive configuration
-- Store API keys and secrets in environment variables; avoid committing them to source control.
-- Use provider-specific environment variables and avoid embedding secrets in code.
-- Limit extension permissions to those required for functionality.
-- Reference: `core/llm.py`, `clients/browser-extension/wxt.config.ts`
+## Performance
+
+- `get_settings()` is cached with `lru_cache(maxsize=1)`.
+- `_key()` in `core/crypto.py` is cached, so AES setup happens once per process.
+- LLM clients are cached up to 32 entries; the cache clears when it grows past that.
+- Secret reads are one indexed query per key. There is no cache across requests.
+- `reload_default_llm()` clears the provider cache and rebuilds the default after a settings change.
+
+## Troubleshooting
+
+- A key saved in Settings is ignored: the provider name may not match. `resolve_provider_secrets` uses `_PROVIDER_TO_SECRET`, which has `opencode` and `opencode-go` mapped to `opencode_api_key`.
+- A base URL is ignored: only `google`, `openai`, `anthropic` and `ollama` have editable base URLs. DeepSeek, OpenRouter and OpenCode use fixed endpoints.
+- `OAUTH_ENCRYPTION_KEY` errors: the key must decode to 32 bytes. A generated `.oauth_encryption_key` is fine for one machine.
+- Settings changed but the model did not: the default is cached. Call `reload_default_llm()` or restart. Per-request headers bypass the cache.
+- Extension points at the wrong backend: clear `baseUrl` in storage or set it to the right origin, then reload the panel.
+- Console settings fail with 500: the secret store cannot decrypt. Check the encryption key.
+
+## Appendix
+
+### Implementation examples
+- Read env: `get_settings().backend_port`.
+- Read a DB setting: `await AppStateService().get_setting("llm.default")`.
+- Resolve a secret: `await get_secrets_service().resolve("openai_api_key")`.
+- Set a secret: `PUT /api/integrations/secrets/openai_api_key` with `{"value": "..."}`.
+- Set the default model: `PUT /api/integrations/llm/model`.
+
+### Source files
+- `core/config.py`
+- `core/llm.py`
+- `core/request_model.py`
+- `core/crypto.py`
+- `services/app_state.py`
+- `services/secrets_service.py`
+- `routers/integrations.py`
+- `clients/browser-extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx`
+- `clients/shared/src/settings-ui/hooks.ts`

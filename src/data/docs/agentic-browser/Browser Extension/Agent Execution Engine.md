@@ -1,310 +1,225 @@
 # Agent execution engine
 
-## Introduction
-From side-panel command to backend agent: parsing, HTTP vs WebSocket modes, conversation state, and handing browser plans to the extension runtime.
+A chat turn leaves the panel as one HTTP request and comes back as a sequence of server-sent events. The route frames them, the service decides which ones to persist, the agent produces the token-level ones, and the panel reduces the list into a reply plus a collapsible work log. This page follows that path from `useAgentRun` to the rendered `WorkLog`.
 
-## Project structure
-The Agent Execution Engine spans the extension UI, utilities, and the backend API:
-- Frontend: React UI (AgentExecutor), command parsing, agent execution, WebSocket client, and browser automation helpers
-- Backend: FastAPI application routing to specialized agent services and tools
+Key capabilities:
+- One framing function for every event, with the name on an `event:` line and the payload on `data:`.
+- Stable event names across the ReAct agent, the supervisor, and the browser runtime loop.
+- Per-step answer assembly so text before a tool call is not lost.
+- A client reducer that merges thinking deltas and pairs tool calls with results.
+- A work log that stays open while running, collapses after success, and stays open on failure.
 
-```mermaid
-graph TB
-subgraph "Extension Frontend"
-UI["AgentExecutor.tsx"]
-Parser["parseAgentCommand.ts"]
-Executor["executeAgent.ts"]
-WS["websocket-client.ts"]
-Actions["executeActions.ts"]
-Map["agent-map.ts"]
-BG["background.ts"]
-CT["content.ts"]
-end
-subgraph "Backend API"
-API["main.py"]
-REACT_SVC["services/react_agent_service.py"]
-REACT_GRAPH["agents/react_agent.py"]
-REACT_TOOLS["agents/react_tools.py"]
-end
-UI --> Parser
-UI --> Executor
-UI --> WS
-UI --> Actions
-UI --> Map
-BG --> CT
-WS --> API
-Executor --> API
-API --> REACT_SVC
-REACT_SVC --> REACT_GRAPH
-REACT_GRAPH --> REACT_TOOLS
-```
+## Repository layout
 
-## Core components
-- AgentExecutor: The React component that renders the chat UI, manages sessions/history, parses commands, executes agent workflows, streams progress, and triggers browser actions.
-- parseAgentCommand: Parses slash commands into agent/action stages and validates against AGENT_MAP.
-- executeAgent: Builds payloads, resolves tab context, captures page HTML, normalizes URLs, and invokes backend endpoints via HTTP or WebSocket depending on the command.
-- websocket-client: Provides a WebSocket client to execute agents in real-time with progress streaming and error propagation.
-- executeActions: Executes browser automation actions (open tab, click, type) by messaging the active tab's content script.
-- agent-map: Central registry of agents and their endpoints.
-- background.ts and content.ts: Extension background and content scripts that support tab management and DOM manipulation actions.
-
-## Architecture overview
-The engine supports two execution modes:
-- Direct HTTP execution: executeAgent constructs payloads and sends POST/GET requests to backend endpoints.
-- WebSocket execution: AgentExecutor uses wsClient to emit "execute_agent" and receive "generation_progress", "agent_result", and "agent_error".
-
-```mermaid
-sequenceDiagram
-participant User as "User"
-participant UI as "AgentExecutor.tsx"
-participant Parser as "parseAgentCommand.ts"
-participant Exec as "executeAgent.ts"
-participant WS as "websocket-client.ts"
-participant API as "main.py"
-participant Svc as "services/react_agent_service.py"
-participant Graph as "agents/react_agent.py"
-participant Tools as "agents/react_tools.py"
-User->>UI : Enter slash command and prompt
-UI->>Parser : parseAgentCommand(command)
-alt Command complete
-UI->>Exec : executeAgent(command, prompt, history, file)
-Exec->>API : HTTP request to mapped endpoint
-API->>Svc : Route to service
-Svc->>Graph : Invoke LangGraph workflow
-Graph->>Tools : Tool execution
-API-->>UI : JSON response
-else WebSocket mode
-UI->>WS : wsClient.executeAgent(command, onProgress)
-WS->>API : emit execute_agent
-API-->>WS : generation_progress xN
-API-->>WS : agent_result or agent_error
-WS-->>UI : result or error
-end
-UI->>UI : addMessageToActive() and formatResponseToText()
-```
-
-## Detailed component analysis
-
-### AgentExecutor component
-Responsibilities:
-- Manages sessions and conversation history persisted in browser storage
-- Renders chat UI, handles voice input, file attachments, and slash-command suggestions
-- Parses commands and decides between direct HTTP execution and WebSocket execution
-- Streams progress updates and displays formatted responses
-- Executes browser actions when agent responses include structured action plans
-
-Key behaviors:
-- Session lifecycle: load/save sessions, migrate legacy chat history, auto-scroll to latest message
-- Slash command UX: dynamic suggestions for agents/actions, mention menu for tabs
-- Execution flow: default to "react-ask" when no slash command; otherwise route to mapped endpoint
-- Response handling: supports both JSON action plans and textual answers with embedded JSON blocks
-
-```mermaid
-flowchart TD
-Start(["User submits goal"]) --> Parse["parseAgentCommand()"]
-Parse --> Stage{"Stage"}
-Stage --> |complete| Direct["executeAgent()"]
-Stage --> |other| WSMode["wsClient.executeAgent()"]
-Direct --> BuildPayload["Build payload<br/>+ tab context + HTML capture"]
-BuildPayload --> Endpoint{"Endpoint type"}
-Endpoint --> |GET| GETReq["fetch(..., {method:'GET'})"]
-Endpoint --> |POST| POSTReq["fetch(..., {method:'POST', body:JSON})"]
-GETReq --> Resp["Parse response"]
-POSTReq --> Resp
-WSMode --> Stream["Receive generation_progress"]
-Stream --> Result["agent_result or agent_error"]
-Resp --> Actions{"Action plan?"}
-Result --> Actions
-Actions --> |Yes| ExecAct["executeBrowserActions()"]
-Actions --> |No| Done(["Display formatted text"])
-ExecAct --> Done
-```
-
-### parseAgentCommand utility
-Purpose:
-- Normalize slash commands by trimming and taking the first token
-- Resolve agent/action stages: agent_select, action_select, agent_partial, action_partial, unknown_agent, complete
-- Validate against AGENT_MAP keys and action keys
-
-Behavior highlights:
-- If no "-" in the agent token, treat as agent match or partial match
-- If "agent-action" present, validate both agent and action exist in AGENT_MAP
-- Return structured stages to guide UI suggestions and execution
-
-```mermaid
-flowchart TD
-A["Input starts with '/'?"] --> |No| Null["Return null"]
-A --> |Yes| B["Trim and split by whitespace"]
-B --> C{"Contains '-'?"}
-C --> |No| D["Check full agent match or partial matches"]
-C --> |Yes| E["Split into agent and action"]
-E --> F{"Agent in AGENT_MAP?"}
-F --> |No| G["stage=unknown_agent"]
-F --> |Yes| H{"Action exists?"}
-H --> |Yes| I["stage=complete"]
-H --> |No| J["stage=action_partial"]
-D --> K{"Agent exists?"}
-K --> |Yes| L["stage=action_select"]
-K --> |No| M["stage=agent_partial"]
-```
-
-### executeAgent utility
-Purpose:
-- Translate parsed commands into backend requests
-- Resolve tab context, capture page HTML, normalize URLs, and attach files
-- Construct payloads tailored to each endpoint
-- Handle special endpoints with GET vs POST semantics
-
-Key processing steps:
-- Parse prompt input to extract explicit URLs and clean text
-- Resolve @mentions to active tab or matching tab title/url
-- Capture client HTML for context-aware agents
-- Normalize GitHub URLs to repository base when appropriate
-- Build payloads for:
- - React agent: question + chat_history + tokens + optional HTML + file path
- - YouTube/Website/GitHub: url + question + chat_history + optional HTML + file path
- - Browser action script generator: goal + target_url + DOM structure + constraints
- - Skills execution: skill_name + prompt + chat_history + tokens + optional HTML + file path
- - JIIT login/attendance: credentials/session payloads
-- Dispatch GET for health endpoint, otherwise POST with JSON body
-- Return parsed JSON or throw formatted HTTP errors
-
-```mermaid
-sequenceDiagram
-participant UI as "AgentExecutor.tsx"
-participant Exec as "executeAgent.ts"
-participant Tab as "Tabs API"
-participant Script as "scripting.executeScript"
-participant Net as "fetch()"
-UI->>Exec : executeAgent(fullCommand, prompt, history, filePath)
-Exec->>Exec : parsePromptInput(prompt)
-Exec->>Tab : query active/open tabs
-Tab-->>Exec : tab info
-Exec->>Script : capture page HTML
-Script-->>Exec : HTML content
-Exec->>Exec : build payload per endpoint
-Exec->>Net : fetch(url, {method : GET/POST, headers, body})
-Net-->>Exec : response JSON or error
-Exec-->>UI : data
-```
-
-### WebSocket communication
-The wsClient encapsulates:
-- Connection lifecycle with automatic reconnection
-- Event-driven progress streaming ("generation_progress")
-- Request/response pairing via "execute_agent" and "agent_result"
-- Error propagation via "agent_error"
-
-AgentExecutor integrates wsClient when the command is not yet complete or when WebSocket mode is preferred.
-
-```mermaid
-sequenceDiagram
-participant UI as "AgentExecutor.tsx"
-participant WS as "websocket-client.ts"
-participant API as "main.py"
-UI->>WS : executeAgent(command, onProgress)
-WS->>API : emit execute_agent {command}
-API-->>WS : on generation_progress : {status,message}
-WS-->>UI : progress updates
-API-->>WS : agent_result {data}
-WS-->>UI : resolve(data)
-API-->>WS : agent_error {message}
-WS-->>UI : reject(error)
-```
-
-### Browser automation actions
-When agent responses include structured action plans, AgentExecutor executes them:
-- OPEN_TAB: create a new tab with a given URL
-- SWITCH_TAB: switch to a specific tab (placeholder)
-- CLICK/TYPE: message the active tab's content script to perform DOM interactions
-
-```mermaid
-flowchart TD
-Plan["Action Plan"] --> ForEach["For each action"]
-ForEach --> Type{"type"}
-Type --> |OPEN_TAB| Open["browser.tabs.create(url)"]
-Type --> |SWITCH_TAB| Switch["Log placeholder (not fully implemented)"]
-Type --> |CLICK| Click["tabs.sendMessage(EXECUTE_ACTION, {type:'CLICK',...})"]
-Type --> |TYPE| TypeAct["tabs.sendMessage(EXECUTE_ACTION, {type:'TYPE',...})"]
-Click --> Delay["Artificial delay"]
-TypeAct --> Delay
-Open --> Delay
-Delay --> Next["Next action"]
-Switch --> Next
-Next --> ForEach
-```
-
-### Backend orchestration
-The backend routes requests to specialized services:
-- FastAPI app includes routers for React agent, tools, calendars, Gmail, YouTube, websites, GitHub, JIIT portal, file upload, and skills
-- React agent service builds a LangGraph workflow, converts chat history to LangChain messages, optionally injects page context, and invokes the compiled graph
-- Tools are dynamically built from context (Google token, PyJIIT session) and include GitHub, web search, website QA, YouTube QA, Gmail operations, calendar operations, and browser/python/bash agents
+The stream starts in the route, is produced in the service and agent, and is consumed twice: once by the extension side panel and once by the shared work log component.
 
 ```mermaid
 graph TB
-API["main.py"] --> Router["Routers"]
-Router --> React["/api/genai/react"]
-Router --> Tools["/api/* (tools, gmail, calendar, pyjiit, upload, skills)"]
-React --> Svc["services/react_agent_service.py"]
-Svc --> Graph["agents/react_agent.py"]
-Graph --> ToolsList["agents/react_tools.py"]
+  subgraph Server
+    Route["routers/react_agent.py<br/>_sse_event"]
+    Service["services/react_agent_service.py<br/>stream_answer"]
+    Agent["agents/react_agent.py<br/>astream_react_agent"]
+    Harness["agents/while_loop_harness.py<br/>run_supervisor_harness"]
+    Trace["services/run_traces.py<br/>record_event"]
+  end
+  subgraph Client
+    Exec["executeAgent.ts<br/>consumeSseStream"]
+    Hook["useAgentRun.ts<br/>onEvent"]
+    Sessions["useSessions.ts<br/>pushAgentEvent"]
+    TraceUI["AgentTrace.tsx"]
+    Log["clients/shared/src/ui/WorkLog.tsx"]
+    Reduce["clients/shared/src/agent/index.ts<br/>appendEvent, buildWorkLog"]
+  end
+  Route --> Service
+  Service --> Agent
+  Service --> Harness
+  Service --> Trace
+  Agent -- "async events" --> Service
+  Route -- "SSE bytes" --> Exec
+  Exec --> Hook
+  Hook --> Sessions
+  Sessions --> TraceUI
+  TraceUI --> Log
+  Log --> Reduce
 ```
 
-## Dependency analysis
-- AgentExecutor depends on:
- - parseAgentCommand for command interpretation
- - executeAgent for HTTP execution
- - wsClient for WebSocket execution
- - executeActions for browser automation
- - agent-map for endpoint resolution
-- executeAgent depends on:
- - AGENT_MAP for endpoint mapping
- - browser APIs for tabs, scripting, storage
- - URL normalization and HTML capture
-- wsClient depends on:
- - Socket.IO client and emits/receives events
-- Backend depends on:
- - LangGraph workflow and tool registry
- - Tool implementations for external integrations
+## Building blocks
+
+- `routers/react_agent.py`: `_sse_event(event_name, payload)` returns `event: <name>\ndata: <json>\n\n`; `agent_bhai_stream` wraps the generator in `StreamingResponse` with `Cache-Control: no-cache`, `Connection: keep-alive`, and `X-Accel-Buffering: no`.
+- `services/react_agent_service.py`: `stream_answer` runs the turn in an `asyncio.Task` and feeds an `asyncio.Queue`, so the route yields events as they arrive; closing the response cancels the task.
+- `agents/react_agent.py`: `astream_react_agent` consumes `graph.astream_events(..., version="v2")` and yields typed dictionaries.
+- `clients/browser-extension/entrypoints/utils/executeAgent.ts`: `consumeSseStream` splits blocks on blank lines, reads `event:` and `data:` prefixes, and JSON-parses each payload.
+- `clients/browser-extension/entrypoints/sidepanel/chat/hooks/useAgentRun.ts`: `onEvent` switches on the event name and updates the reply message.
+- `clients/shared/src/agent/index.ts`: `appendEvent` stores events compactly, `buildWorkLog` turns them into thinking, tool, note, and error items.
+- `clients/shared/src/ui/WorkLog.tsx`: renders the log header, timers, thought bodies, and expandable tool rows.
+
+## How it fits together
+
+The service creates the conversation and run before any model call, so the first events the client sees are `run_started` and `conversation`. It then picks a path and forwards events through `emit_and_record`, which writes to the trace and to the queue.
 
 ```mermaid
-graph LR
-UI["AgentExecutor.tsx"] --> Parser["parseAgentCommand.ts"]
-UI --> Exec["executeAgent.ts"]
-UI --> WS["websocket-client.ts"]
-UI --> Actions["executeActions.ts"]
-Exec --> Map["agent-map.ts"]
-WS --> API["main.py"]
-API --> Svc["services/react_agent_service.py"]
-Svc --> Graph["agents/react_agent.py"]
-Graph --> Tools["agents/react_tools.py"]
+sequenceDiagram
+  participant C as Client
+  participant R as agent_bhai_stream
+  participant S as stream_answer
+  participant Q as asyncio.Queue
+  participant A as astream_react_agent
+  participant T as RunTraceService
+  C->>R: POST /api/genai/react/stream
+  R->>S: iterate stream_answer(...)
+  S->>Q: run_started
+  S->>Q: conversation event with conversation_id and run_id
+  S->>T: create_run
+  S->>A: astream_react_agent(messages, context)
+  loop each model step
+    A-->>S: answer_delta with step and delta
+    S->>Q: answer_delta, live only
+    A-->>S: thinking with step and text
+    S->>T: record_event thinking
+    S->>Q: thinking
+  end
+  A-->>S: subagent_tool_call and subagent_tool_result
+  S->>T: record_event tool event
+  S->>Q: tool event
+  S->>Q: final with answer, iterations, satisfactory, mode
+  S->>T: complete_run final_answer
+  R-->>C: event line then data line
 ```
 
-## Performance considerations
-- Payload size: Limit DOM capture and HTML payloads; the DOM extraction caps interactive elements to reduce payload size.
-- Network efficiency: Use GET for lightweight health checks; POST for richer payloads.
-- Streaming: Prefer WebSocket execution for long-running tasks to provide incremental progress updates.
-- Tab operations: Avoid unnecessary tab queries; cache active tab URL when available.
-- Tool execution: Batch actions with small delays to prevent overwhelming the page context.
+## SSE framing
 
-## Troubleshooting guide
-Common issues and strategies:
-- Command parsing failures:
- - Ensure slash commands follow the "agent-action" pattern or start with "/"
- - Use agent/action suggestions to validate spelling and availability
-- WebSocket connectivity:
- - Verify wsClient is connected; reconnect attempts are automatic
- - Inspect "connection_status" events and error messages
-- HTTP errors:
- - executeAgent throws formatted errors with HTTP status and body text
- - For file upload endpoint, use the attachment button; direct slash command without a file is rejected
-- Tab context and HTML capture:
- - If no active tab is found, fallback to empty context
- - HTML capture failures are logged; ensure permissions and tab availability
-- Browser actions:
- - CLICK/TYPE rely on content script messaging; ensure the active tab is reachable
- - SWITCH_TAB is a placeholder; implement tab lookup logic if needed
+The route does not use a library serializer. Each dictionary is serialized with `json.dumps(payload, ensure_ascii=True)`, and the event name comes from `event["event"]`, defaulting to `"message"`. Because the payload is on a single `data:` line and blocks end with a blank line, the client parser can treat the stream as newline-delimited blocks.
 
-## Conclusion
-UI parses the command, transport runs it, automation executes approved plans. Keep frontend orchestration separate from backend graph logic.
+```mermaid
+flowchart TD
+  A["event dict from stream_answer"] --> B{"event key present?"}
+  B -- yes --> C["event_name = event['event']"]
+  B -- no --> D["event_name = 'message'"]
+  C --> E["_sse_event(name, payload)"]
+  D --> E
+  E --> F["event: name<br/>data: JSON<br/><br/>"]
+  F --> G["StreamingResponse<br/>text/event-stream"]
+  G --> H["consumeSseStream<br/>split on blank line"]
+  H --> I["parse event: and data:"]
+  I --> J["JSON.parse data"]
+  J --> K["AgentStreamEvent {event, data}"]
+```
 
+Headers matter for proxies: `X-Accel-Buffering: no` stops nginx from buffering the stream, and `Connection: keep-alive` keeps the socket open while the agent runs.
+
+## Event vocabulary
+
+The ReAct stream yields the core types below. `_split_chunk` separates answer text from reasoning blocks, so a provider that returns `{"type": "thinking"}` blocks does not leak them into the answer.
+
+| Event | Payload | Source |
+| --- | --- | --- |
+| `thinking_delta` | `step`, `delta` | `_split_chunk` reasoning text |
+| `thinking` | `step`, `text` up to 6000 chars | whole reasoning block at model end |
+| `answer_delta` | `step`, `delta` | `_split_chunk` text |
+| `subagent_tool_call` | `call_id`, `tool`, `args` clipped to 600 | `on_tool_start` |
+| `subagent_tool_result` | `call_id`, `tool`, `result` | `on_tool_end` with non-error status |
+| `subagent_tool_error` | `call_id`, `tool`, `error` | `on_tool_end` error status or `on_tool_error` |
+| `loop_guard` | verdict fields | custom event named `loop_guard` |
+| `compaction` | `messages_summarised`, `kept`, `budget_tokens` | service, from summary role |
+| `final` | `answer`, `iterations`, `satisfactory`, `mode` | service or harness |
+| `error` | `message` | service exception path |
+
+The service adds lifecycle events around them: `run_started`, `conversation` with `conversation_id`, `run_id`, and `title`, `subagent_started` with `iteration`, `subagent`, `task`, and `subagent_completed` with a result clipped to 500 characters.
+
+Only events tagged `agent_turn` and attached to the `agent` node are allowed through the model filter. A tool such as `write_memory` runs its own model call for reconciliation; without the filter those tokens would appear in the user's answer.
+
+## Client reducers
+
+The extension keeps the full event list per reply and rebuilds the visible answer from `answer_delta` events grouped by `step`. Steps are joined with a blank line, which keeps text written before a tool call separate from text written after it.
+
+```mermaid
+flowchart TD
+  A["AgentStreamEvent"] --> B{"event"}
+  B -- conversation --> C["linkServerConversation"]
+  B -- answer_delta --> D["answerSteps[step] += delta"]
+  D --> E["setReply(joined steps)"]
+  B -- subagent_tool_result --> F{"tool == browser_action_agent?"}
+  F -- yes --> G["continueBrowserRuntimeSession"]
+  F -- no --> H["record event"]
+  B -- final --> I["setReply(final.answer)"]
+  B -- error --> J["setError, setReply('Error: ...')"]
+  B -- other --> K["record event for WorkLog"]
+```
+
+`appendEvent` in the shared package decides what is worth storing. It drops `answer_delta` and `conversation`, merges consecutive `thinking_delta` rows for the same step, and lets a completed `thinking` block replace its streamed pieces. That keeps a long reply's event list small enough to persist with the chat.
+
+`buildWorkLog` then walks the list:
+- A thinking event opens a thinking item; a tool call closes it.
+- A tool call opens a running row; a result or error with the same `call_id` closes it.
+- `answer_delta` closes any open thinking item.
+- `error` marks the log failed and adds an error row.
+- At the end, anything still running is marked `ok` or `error` depending on whether the run failed.
+
+```mermaid
+stateDiagram-v2
+  [*] --> running: run_started
+  running --> running: thinking_delta or tool call
+  running --> done: final
+  running --> failed: error
+  done --> [*]
+  failed --> [*]
+```
+
+## Stopping a run
+
+`stop` in `useAgentRun` calls `stopBrowserRuntime()` first, because browser tasks run over HTTP and are not owned by the socket. It then calls `wsClient.stopAgent()`, clears `isExecuting` and sets `Agent execution stopped by user`. A command the parser does not map to a known agent takes `runOverSocket`, the legacy socket path, which is also where `stopAgent` has an effect server side.
+
+## Rendering the work log
+
+`AgentTrace.tsx` is the extension wrapper: it converts `AgentLoopEvent[]` with `toAgentEvents` and renders `WorkLog` in compact mode. The console renders the same component from its own event shape, so both clients show identical rows. Header states, tool row expansion, detail clipping and the markdown pipeline are covered in `Work Log and Chat Rendering.md`; this page owns the events that feed them.
+
+## Dependencies
+
+The server stream depends on the LangGraph event API and the LLM client bound in the agent node. The clients depend on the shared agent reducer and the shared UI package.
+
+```mermaid
+graph TB
+  Route["routers/react_agent.py"] --> FastAPI["fastapi.StreamingResponse"]
+  Service["services/react_agent_service.py"] --> Agent["agents/react_agent.py"]
+  Agent --> LG["langgraph astream_events v2"]
+  Agent --> Guard["core/loop_guard.py"]
+  Agent --> Comp["services/compaction.py"]
+  Hook["useAgentRun.ts"] --> Exec["executeAgent.ts"]
+  Hook --> Shared["@agentic-browser/shared/agent"]
+  Log["WorkLog.tsx"] --> Shared
+  Log --> Icons["clients/shared/src/icons"]
+```
+
+No external streaming package is used. Framing, parsing, and buffering are all hand-written, which is why the blank-line separator logic appears on both sides.
+
+## Performance
+
+- `json.dumps(..., ensure_ascii=True)` keeps each frame single-line and ASCII-safe.
+- Tool arguments are clipped to 600 characters and results to 1500 in `_short`, so a large page snapshot cannot dominate a frame.
+- Thinking blocks are clipped to 6000 characters before leaving the agent.
+- Token deltas are not persisted; only structural events reach `agent_events`.
+- The service runs the turn in a task and yields from a queue, so a slow client does not block the agent, though the queue is unbounded.
+- `useNow` re-renders the work log once per second only while the run is live.
+
+## Troubleshooting
+
+- Events arrive but the answer is empty: the client builds text only from `answer_delta` and `final`. A provider that streams no text and returns a non-final path leaves the reply blank.
+- A tool row stays spinning after the run: `buildWorkLog` closes running rows when `live` is false or a terminal event arrived. If neither happened, the client never saw `final` or `error`.
+- Thinking text appears in the answer: the model client must be tagged `agent_turn`; an untagged nested model call is filtered out of the stream, but a provider that returns reasoning as plain text in `content` cannot be separated.
+- The stream buffers behind a proxy: confirm `X-Accel-Buffering: no` survived the deployment and that the proxy does not gzip `text/event-stream`.
+- Duplicate thinking blocks after reload: `appendEvent` merges deltas by step and replaces them with the final `thinking` block. Events stored before payloads were kept carry only a label and cannot be merged.
+
+## Appendix
+
+### Implementation examples
+- `_sse_event("answer_delta", {"event": "answer_delta", "delta": "Hi"})` produces `event: answer_delta` plus one `data:` line, `routers/react_agent.py`.
+- `astream_react_agent` yields `{"event": "subagent_tool_result", "call_id": run_id, "tool": name, "result": ...}`, `agents/react_agent.py`.
+- `appendEvent` drops `answer_delta`, merges same-step `thinking_delta`, `clients/shared/src/agent/index.ts`.
+- `WorkLog` opens on `live` or failed status and closes on the running to done transition, `clients/shared/src/ui/WorkLog.tsx`.
+
+### Source files
+- `services/react_agent_service.py`
+- `agents/react_agent.py`
+- `clients/browser-extension/entrypoints/sidepanel/chat/hooks/useAgentRun.ts`
+- `clients/shared/src/ui/WorkLog.tsx`
+- `clients/browser-extension/entrypoints/sidepanel/chat/AgentTrace.tsx`

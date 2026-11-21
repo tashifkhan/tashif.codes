@@ -1,297 +1,240 @@
 # Tool architecture and design
 
-## Introduction
-Design rules for tools: schemas, discovery, execution pipeline, errors, async, lifecycle, and how tools attach to the agent graph.
+`agents/react_tools.py` is the catalogue the built-in agents read from. It defines four research tools, six Google Workspace tools, a PyJIIT attendance tool, three memory tools, two Composio profile tools, a browser tool, and three remote tools, then imports bash and Python tools. `build_agent_tools(context)` assembles the list for one request, injecting credentials and client-specific variants.
 
-## Project structure
-The tool system is organized around:
-- Agent orchestration and tool registration in Python
-- Tool implementations under tools/ grouped by domain
-- Services that encapsulate external integrations
-- Prompts and sanitization utilities for structured outputs
-- Frontend integration utilities that prepare payloads and dispatch requests
+The registry does not implement the integrations. Its job is to present them to the model with names, descriptions, and argument schemas that match the downstream services. Everything behind a tool lives in `tools/` or `services/`.
+
+Key capabilities:
+- Context-aware assembly from one request dictionary.
+- Static, imported, and request-built layers in one ordered list.
+- Typed inputs with explicit bounds on counts and confidence values.
+- Composio fallback inside the Gmail and Calendar tools when no direct token is present.
+- One list shared by the ReAct agent and the supervisor partitions.
+- Memory tools that coerce model-supplied labels into internal enums.
+
+## Repository layout
+
+The registry imports tool modules and service entry points at module load. Some tools are created once at import; others are rebuilt per request because they close over a token or a session payload.
 
 ```mermaid
 graph TB
-subgraph "Agent Layer"
-RA["react_agent.py"]
-RT["react_tools.py"]
-end
-subgraph "Tools"
-BT["tools/browser_use/tool.py"]
-GST["tools/google_search/seach_agent.py"]
-GCAL_GET["tools/calendar/get_calender_events.py"]
-GCAL_CREATE["tools/calendar/create_calender_events.py"]
-GM_FETCH["tools/gmail/fetch_latest_mails.py"]
-GM_SEND["tools/gmail/send_email.py"]
-end
-subgraph "Services"
-BUS["services/browser_use_service.py"]
-end
-subgraph "Prompts & Utils"
-PB["prompts/browser_use.py"]
-AS["utils/agent_sanitizer.py"]
-end
-subgraph "Frontend"
-EAT["clients/browser-extension/entrypoints/utils/executeAgent.ts"]
-end
-RA --> RT
-RT --> BT
-RT --> GST
-RT --> GCAL_GET
-RT --> GCAL_CREATE
-RT --> GM_FETCH
-RT --> GM_SEND
-BT --> BUS
-BUS --> PB
-BUS --> AS
-EAT --> RA
+  subgraph Registry
+    Build["build_agent_tools(context)"]
+    Static["module-level StructuredTool objects"]
+    Dynamic["per-request wrappers"]
+    List["AGENT_TOOLS"]
+  end
+  subgraph Sources
+    Memory["tools/memory.py"]
+    Profile["tools/composio_profile.py"]
+    Remote["tools/remote_actions.py"]
+    Browser["tools/browser_use/tool.py"]
+    Bash["tools/bash_tools/bash.py"]
+    Python["tools/python_tools/python.py"]
+  end
+  subgraph Integrations
+    GitHub["tools/github_crawler/repo_agent.py"]
+    Search["tools/google_search/seach_agent.py"]
+    Site["tools/website_context.py"]
+    YouTube["prompts/youtube.py"]
+    Gmail["tools/gmail/*"]
+    Calendar["tools/calendar/*"]
+    Pyjiit["tools/pyjiit/*"]
+    Composio["services/composio_service.py"]
+  end
+  Build --> Static
+  Build --> Dynamic
+  Build --> List
+  Build --> Memory
+  Build --> Profile
+  Build --> Remote
+  Build --> Browser
+  Build --> Bash
+  Build --> Python
+  Static --> GitHub
+  Static --> Search
+  Static --> Site
+  Static --> YouTube
+  Static --> Gmail
+  Static --> Calendar
+  Static --> Pyjiit
+  Static --> Composio
 ```
 
-## Core components
-- StructuredTool wrappers: Tools are defined as StructuredTool instances with a coroutine and a Pydantic args_schema. They expose a standardized interface to the agent.
-- Tool registry and discovery: A builder function constructs tools dynamically based on runtime context (e.g., presence of tokens or session payloads).
-- Asynchronous execution: Tools are async coroutines; blocking operations are offloaded to threads to keep the event loop responsive.
-- Validation and normalization: Pydantic models define strict input schemas; outputs are normalized to strings or structured JSON and sanitized when needed.
-- Integration with agent framework: Tools are bound to the LLM, and LangGraph orchestrates tool invocation and message passing.
+## Building blocks
 
-Key implementation references:
-- StructuredTool creation and schemas: `react_tools.py`, `react_tools.py`
-- Tool builder and context injection: `react_tools.py`
-- Async tool execution patterns: `react_tools.py`
-- Agent graph and tool binding: `react_agent.py`
-- Browser action tool and service: `tool.py`, `browser_use_service.py`
-- Prompt and sanitizer for structured outputs: `prompts/browser_use.py`, `agent_sanitizer.py`
+The registry has three layers.
 
-## Architecture overview
-The tool system integrates frontend, backend, and external APIs through a consistent pattern:
-- Frontend composes tool payloads and dispatches requests to backend endpoints.
-- Backend agents bind tools to the LLM and route tool calls through LangGraph.
-- Tools execute asynchronously, delegating blocking work to threads and returning normalized results.
-- Services encapsulate domain-specific logic and prompt-driven generation when needed.
-- Validation ensures inputs conform to schemas and outputs meet expectations.
+- Module-level tools created at import: `github_agent`, `websearch_agent`, `website_agent`, `youtube_agent`, `gmail_agent`, `gmail_send_email`, `gmail_list_unread`, `gmail_mark_read`, `calendar_agent`, `calendar_create_event`, and `pyjiit_agent`.
+- Imported tool collections: `MEMORY_TOOLS` from `tools/memory.py`, `COMPOSIO_PROFILE_TOOLS` from `tools/composio_profile.py`, `REMOTE_TOOLS` from `tools/remote_actions.py`, plus `bash_agent` and `python_agent`.
+- Request-built tools: `dynamic_browser_action_agent`, and credential-bound wrappers for Gmail, Calendar, and PyJIIT.
+
+`AGENT_TOOLS = build_agent_tools()` at module scope is the no-context list. `GraphBuilder` uses it when neither an explicit tool list nor a context is supplied.
+
+## How the registry assembles a request
+
+The sequence is deterministic. Read the context, build the browser wrapper, choose the base list, decide on Google, decide on remote, then decide on PyJIIT.
 
 ```mermaid
 sequenceDiagram
-participant FE as "Frontend (executeAgent.ts)"
-participant API as "Backend API"
-participant Agent as "React Agent (react_agent.py)"
-participant Tools as "Tool Registry (react_tools.py)"
-participant Service as "Service (browser_use_service.py)"
-participant Ext as "External API"
-FE->>API : "POST /api/... with tool payload"
-API->>Agent : "Invoke compiled graph with messages"
-Agent->>Tools : "Bind tools and decide next step"
-Tools->>Service : "Execute tool coroutine"
-Service->>Ext : "Call external API or compute"
-Ext-->>Service : "Response"
-Service-->>Tools : "Normalized result"
-Tools-->>Agent : "ToolMessage with result"
-Agent-->>API : "Final LLM response"
-API-->>FE : "JSON response"
+  participant S as ReactAgentService
+  participant B as build_agent_tools
+  participant C as context dict
+  participant T as StructuredTool list
+  participant G as GraphBuilder
+  S->>B: context with token, pyjiit, markdown, client_id
+  B->>C: read google_access_token or google_acces_token
+  B->>C: read pyjiit_login_response or pyjiit_login_responce
+  B->>C: read client_markdown, client_id, remote_actions
+  B->>T: memory and composio profile tools
+  B->>T: research tools
+  B->>T: browser_action_agent when side panel
+  B->>T: bash_agent and python_agent
+  B->>T: bound or Composio Gmail and Calendar tools
+  B->>T: remote tools unless remote_actions is false
+  B->>T: pyjiit_agent when a session exists
+  T-->>G: bind_tools(list)
 ```
 
-## Detailed component analysis
-
-### StructuredTool interface and schemas
-- Each tool defines a Pydantic BaseModel schema that validates inputs and documents fields.
-- Tools are wrapped as StructuredTool with a coroutine implementing the async logic.
-- Standardized return values are normalized to strings or structured JSON.
-
-Examples of schemas and tools:
-- GitHub tool input schema and tool: `GitHubToolInput`, `github_agent`
-- Web search tool input schema and tool: `WebSearchToolInput`, `websearch_agent`
-- Website tool input schema and tool: `WebsiteToolInput`, `website_agent`
-- YouTube tool input schema and tool: `YouTubeToolInput`, `youtube_agent`
-- Gmail tools (fetch, send, list unread, mark read) with schemas and tools: `GmailToolInput`, `GmailSendEmailInput`, `GmailListUnreadInput`, `GmailMarkReadInput`, `gmail_* tools`
-- Calendar tools (fetch, create) with schemas and tools: `CalendarToolInput`, `CalendarCreateEventInput`, `calendar_* tools`
-- PyJIIT attendance tool schema and tool: `PyjiitAttendanceInput`, `pyjiit_agent`
-- Browser action tool schema and tool: `BrowserActionInput`, `browser_action_agent`
-
-Validation and normalization helpers:
-- Ensures text or JSON output: `_ensure_text`
-- Formats chat history for prompts: `_format_chat_history`
-
-### Tool registration and discovery mechanism
-- Central registry: `AGENT_TOOLS` and `build_agent_tools` assemble tools based on context.
-- Conditional inclusion: Tools requiring credentials (e.g., Gmail, Calendar, PyJIIT) are added only when context supplies tokens/payloads.
-- Dependency injection: Partial functions inject default tokens/payloads into tool coroutines.
+The context keys tolerate two historical spellings. `google_access_token` and `google_acces_token` are both read, as are `pyjiit_login_response` and `pyjiit_login_responce`. This is compatibility with existing callers, not a typo in the current code.
 
 ```mermaid
 flowchart TD
-Start(["build_agent_tools(context)"]) --> ReadCtx["Read google_access_token<br/>and pyjiit_login_response"]
-ReadCtx --> BaseTools["Add core tools:<br/>github, websearch, website, youtube,<br/>browser_action"]
-BaseTools --> HasGoogle{"Has google_access_token?"}
-HasGoogle --> |Yes| AddGmail["Add Gmail tools with default token"]
-HasGoogle --> |No| SkipGmail["Skip Gmail tools"]
-AddGmail --> HasPyjiit{"Has pyjiit_login_response?"}
-SkipGmail --> HasPyjiit
-HasPyjiit --> |Yes| AddPyjiit["Add PyJIIT tool with default payload"]
-HasPyjiit --> |No| SkipPyjiit["Skip PyJIIT tool"]
-AddPyjiit --> Done(["Return tools list"])
-SkipPyjiit --> Done
+  A["build_agent_tools(context)"] --> B["ctx = dict(context or {})"]
+  B --> C["read token, pyjiit payload, markdown"]
+  C --> D["build browser_action_agent wrapper"]
+  D --> E{"client_id in None or browser-extension?"}
+  E -->|yes| F["in_side_panel = true"]
+  E -->|no| G["in_side_panel = false"]
+  F --> H["base list with browser_action_agent"]
+  G --> I["base list without it"]
+  H --> J{"google token?"}
+  I --> J
+  J -->|yes| K["wrapped Gmail and Calendar tools"]
+  J -->|no| L["plain Gmail and Calendar tools"]
+  K --> M{"remote_actions is false?"}
+  L --> M
+  M -->|no| N["add REMOTE_TOOLS except browser_task in side panel"]
+  M -->|yes| O["skip remote tools"]
+  N --> P{"pyjiit payload?"}
+  O --> P
+  P -->|yes| Q["append pyjiit_agent wrapper"]
+  P -->|no| R["return list"]
+  Q --> R
 ```
 
-### Tool execution pipeline
-- Agent graph: `GraphBuilder` compiles a StateGraph with an agent node and a ToolNode.
-- Tool binding: `_create_agent_node` binds tools to the LLM.
-- Message conversion: `_payload_to_langchain` and `_langchain_to_payload` normalize payloads between the agent and LangChain message types.
+## Tool inventory
+
+| Name | Input model | What it calls |
+| --- | --- | --- |
+| `github_agent` | `GitHubToolInput` | `run_github_repo_agent(url, question, chat_history)` |
+| `websearch_agent` | `WebSearchToolInput` | `web_search_pipeline`, up to 10 results |
+| `website_agent` | `WebsiteToolInput` | `markdown_fetcher` then a website chain |
+| `youtube_agent` | `YouTubeToolInput` | a YouTube transcript chain |
+| `gmail_agent` | `GmailToolInput` | Composio Gmail search, or `get_latest_emails` |
+| `gmail_send_email` | `GmailSendEmailInput` | Composio send, or `send_email` |
+| `gmail_list_unread` | `GmailListUnreadInput` | Composio unread query, or `list_unread` |
+| `gmail_mark_read` | `GmailMarkReadInput` | Composio modify, or `mark_read` |
+| `calendar_agent` | `CalendarToolInput` | Composio event list, or `get_calendar_events` |
+| `calendar_create_event` | `CalendarCreateEventInput` | Composio create, or `create_calendar_event` |
+| `pyjiit_agent` | `PyjiitAttendanceInput` | `Webportal` attendance fetch |
+| `browser_action_agent` | `BrowserActionInput` | `BrowserRuntimeService.start_session` |
+| `recall_memory` | `RecallMemoryInput` | `MemoryService.search` |
+| `write_memory` | `WriteMemoryInput` | `MemoryService.store_claim` |
+| `recall_document_facts` | `RecallDocumentFactsInput` | `MemoryService.search_document_facts` |
+| `composio_linkedin_me` | `ComposioLinkedInMeInput` | `ingest_composio_linkedin_self` |
+| `composio_aeroleads_linkedin` | `ComposioAeroLeadsLinkedInInput` | `ingest_composio_aeroleads_linkedin` |
+| `browser_task` | `BrowserTaskInput` | bridge `task.run` |
+| `composio_apps` | `ComposioAppsInput` | connected accounts and toolkit actions |
+| `composio_action` | `ComposioActionInput` | `execute_toolkit_action` |
+
+`bash_agent` and `python_agent` come from `tools/bash_tools/bash.py` and `tools/python_tools/python.py` and are appended without a wrapper. Their schemas live in those modules.
+
+## Execution through the graph
+
+`GraphBuilder` compiles a StateGraph with an agent node and a `ToolNode`. `_create_agent_node` binds the list to the chat model with `bind_tools`. The model replies with `AIMessage.tool_calls`, the tool node runs each coroutine with validated arguments, and each result returns as a `ToolMessage`.
 
 ```mermaid
 sequenceDiagram
-participant Agent as "Agent"
-participant LLM as "LLM Client"
-participant Tools as "ToolNode"
-participant Tool as "StructuredTool Coroutine"
-Agent->>LLM : "Invoke with messages"
-LLM-->>Agent : "AIMessage with tool_calls"
-Agent->>Tools : "Dispatch tool_calls"
-Tools->>Tool : "Call coroutine with validated args"
-Tool-->>Tools : "Return normalized result"
-Tools-->>Agent : "ToolMessage"
-Agent-->>Agent : "Append ToolMessage and continue"
+  participant A as agent node
+  participant L as LLM
+  participant N as ToolNode
+  participant T as StructuredTool
+  A->>L: messages plus bound tools
+  L-->>A: AIMessage with tool_calls
+  A->>N: dispatch tool_calls
+  N->>T: coroutine with validated args
+  T-->>N: text or JSON
+  N-->>A: ToolMessage
+  A->>L: continue with tool results
 ```
 
-### Asynchronous operations and blocking work
-- Async coroutines: Tools are async; blocking I/O is executed in threads using `asyncio.to_thread`.
-- Service-level async: `AgentService.generate_script` runs LLM chains asynchronously and sanitizes results.
+A tool call can be replayed through the loop guard. `tool_loop_verdict(messages)` maps call ids to names and records one step per `ToolMessage`, which is how repeated identical tool results become a warning and then a stop. The guard is rebuilt from history on every model turn, so the graph state stays small.
 
-Guidelines:
-- Keep coroutines non-blocking; offload network/API calls to threads.
-- Wrap external calls with try/except and return plain error strings.
+## Supervisor partitions
 
-### Error handling patterns
-- Input validation: Pydantic schemas enforce required fields and constraints.
-- Runtime error handling: Tools catch exceptions and return informative messages.
-- Output sanitization: For browser action generation, `sanitize_json_actions` validates JSON structure and action semantics.
-
-Common patterns:
-- Token checks before invoking external APIs.
-- Graceful fallbacks when no results are found.
-- Logging and returning structured errors for downstream handling.
-
-### Tool discovery and dependency injection
-- Discovery: `build_agent_tools` builds a tool list from a context dictionary.
-- Injection: Default values are injected via partial functions to avoid requiring repeated arguments in tool calls.
-
-Notes:
-- Pass credentials and session data through context rather than hardcoding.
-- Keep tool constructors pure; defer side effects to coroutines.
-
-### Integration with the agent framework
-- LangGraph workflow: `GraphBuilder.buildgraph` wires agent and tool nodes.
-- ToolNode: Executes StructuredTool coroutines and posts ToolMessages back to the graph.
-- Message normalization: Converts between application payloads and LangChain message types.
-
-### Browser action tool and service
-- Tool schema: `BrowserActionInput`
-- Tool coroutine: `browser_action_agent`
-- Service: `AgentService.generate_script` builds a prompt with DOM info and invokes an LLM chain.
-- Prompt template: `SCRIPT_PROMPT`
-- Sanitization: `sanitize_json_actions` validates generated JSON action plans.
-
-```mermaid
-classDiagram
-class BrowserActionInput {
-+string goal
-+string target_url
-+dict dom_structure
-+dict constraints
-}
-class AgentService {
-+generate_script(goal, target_url, dom_structure, constraints) dict
-}
-class SCRIPT_PROMPT {
-+ChatPromptTemplate
-}
-BrowserActionInput <.. AgentService : "validated input"
-AgentService --> SCRIPT_PROMPT : "uses"
-AgentService --> sanitize_json_actions : "validates output"
-```
-
-### External tool implementations
-- Web search: `web_search_pipeline` wraps Tavily search and normalizes results.
-- Calendar (fetch): `get_calendar_events`
-- Calendar (create): `create_calendar_event`
-- Gmail (fetch): `get_latest_emails`
-- Gmail (send): `send_email`
-
-These tools are invoked asynchronously and return normalized JSON or strings.
-
-### Frontend integration payload construction
-- `executeAgent` prepares tool-specific payloads, resolves active tab context, captures DOM when needed, and dispatches HTTP requests to backend endpoints.
-
-Patterns:
-- Extract explicit URLs from prompts for tools that require a URL.
-- Inject tokens/session data from browser storage.
-- Normalize payloads for different endpoints.
-
-## Dependency analysis
-The tool system exhibits low coupling and high cohesion:
-- Tools depend on services and external APIs but remain thin wrappers around coroutines.
-- Services encapsulate domain logic and prompt composition.
-- Agents depend on tools via LangChain abstractions, enabling easy swapping and extension.
+`agents/while_loop_harness.py` calls `build_agent_tools(self.context or None)` and `_partition_tools(tools)`. The groups are `research`, `browser`, `productivity`, and `coding`, plus a `general` group with the full list. Memory tools are prepended to every group. A tool that appears in several groups is the same `StructuredTool` object, not a copy.
 
 ```mermaid
 graph LR
-RT["react_tools.py"] --> RTB["build_agent_tools"]
-RTB --> SA["StructuredTool instances"]
-SA --> Cor["Coroutine implementations"]
-Cor --> Svc["services/*"]
-Svc --> Ext["External APIs"]
-RA["react_agent.py"] --> SA
-EAT["executeAgent.ts"] --> RA
+  subgraph Full
+    List["build_agent_tools(context)"]
+  end
+  subgraph Groups
+    R["research: github, websearch, website, youtube"]
+    B["browser: browser_action_agent, browser_task"]
+    P["productivity: Gmail, Calendar, Composio, PyJIIT"]
+    C["coding: bash, python"]
+    G["general: all tools"]
+  end
+  List --> R
+  List --> B
+  List --> P
+  List --> C
+  List --> G
+  Mem["recall_memory, recall_document_facts, write_memory"] --> R
+  Mem --> B
+  Mem --> P
+  Mem --> C
 ```
 
-## Performance considerations
-- Offload blocking operations: Use `asyncio.to_thread` for network/API calls to prevent blocking the event loop.
-- Limit payload sizes: Browser action tools cap interactive elements and truncate long text to manage token usage.
-- Respect rate limits: External APIs (e.g., Gmail, Calendar) set timeouts; add retry/backoff when those APIs start throttling.
-- Caching: The agent graph is cached via `lru_cache` to avoid recompilation overhead.
+The partition list is by tool name. A renamed tool silently drops out of its group, which is why names should stay stable after release. `browser` includes both browser tools and relies on the registry to have removed the one the client cannot run.
 
-## Troubleshooting guide
-Common issues and resolutions:
-- Missing credentials: Tools that require tokens return explicit messages when tokens are absent. Provide tokens via context or storage.
-- Empty results: Some tools return "No results found" or "No unread messages found." Verify inputs and external service availability.
-- Validation failures: For browser actions, sanitization may fail if the LLM output is malformed. Review prompt instructions and ensure JSON-only output.
-- Network errors: External API calls may fail due to transient conditions. Wrap calls with retries and log exceptions for diagnostics.
+## Dependencies
 
-Debugging tips:
-- Log tool inputs and outputs using the project's logger.
-- Inspect ToolMessages posted back to the agent to trace execution.
-- Validate schemas locally using Pydantic models before invoking tools.
+`langchain-core` supplies `StructuredTool`, and `pydantic[email]>=2.9.0` supplies the schemas, including `EmailStr` and `HttpUrl`. The registry imports service modules at module load, so a broken optional integration import can fail the whole tool list. Tool modules in turn import their provider clients, which is why a conditional integration should defer heavy imports into the coroutine.
 
-## Conclusion
-`StructuredTool` in, validated args, async body, clean errors out. Services hold domain logic; frontend helpers only build payloads.
+## Performance
 
-## Appendices
+Tool count varies by context. The base list is three memory tools, two Composio profile tools, four research tools, bash, and Python, plus the browser tool in a side panel. A Google token adds six wrapped tools. Remote tools add three. PyJIIT adds one. The supervisor partitions this list by name and prepends memory tools to each group, so the same object can appear in several groups.
 
-### Guidelines for tool interface design
-- Define a Pydantic BaseModel schema per tool with clear descriptions and constraints.
-- Keep coroutines free of blocking I/O; use asyncio.to_thread for network/API calls.
-- Normalize outputs to strings or structured JSON; use helper functions to ensure consistent formatting.
-- Validate inputs early and return actionable error messages.
-- Encapsulate external logic in services to promote testability and reuse.
+Result sizes are capped in the tools themselves: 10 web results with 320 character summaries, 40 Composio actions, 12000 characters for a Composio action result, and 900 seconds for a remote browser task. The registry adds no caching layer; a repeated call repeats the work.
 
-### Testing strategies
-- Unit tests for schemas: Validate required fields, constraints, and edge cases using Pydantic.
-- Integration tests for tools: Mock external APIs and assert normalized outputs.
-- Agent tests: Simulate tool invocation via ToolNode and verify ToolMessage handling.
-- Full-path tests: use executeAgent.ts with real payloads.
+## Troubleshooting
 
-### Performance optimization techniques
-- Use thread pools for blocking operations; avoid synchronous network calls in coroutines.
-- Limit and truncate payloads (e.g., interactive elements count and text length).
-- Cache compiled agent graphs and frequently used resources.
-- Apply timeouts and retries for external API calls.
+- Gmail falls back to Composio: no request-level Google token was supplied. With no active account, the tool returns `Failed to fetch Gmail messages via Composio: ...`.
+- `Composio API key is not configured`: `COMPOSIO_API_KEY` is missing. `execute_toolkit_action` raises `ComposioNotConfigured`, and the Gmail wrapper turns it into tool text.
+- Wrong tools in a client: check `client_id`. Any value other than `None` or `browser-extension` removes `browser_action_agent`, and `remote_actions=False` removes all three remote tools.
+- `pyjiit_agent` is absent: no `pyjiit_login_response` or `pyjiit_login_responce` was passed in context.
+- A memory is stored in the wrong segment: the model supplied a label outside `_SEGMENT_ALIASES`, so it defaulted to `CONTEXTUAL`. Send one of the documented names.
+- Duplicate memories: `write_memory` relies on the memory service reconciliation path. Repeated facts may be merged or superseded rather than stored twice.
+- A tool schema rejects a URL: `HttpUrl` requires a scheme. Pass `https://...`, not a bare hostname.
+- Importing the registry fails: an optional integration import broke at module load. Move heavy imports inside the coroutine when the tool is conditional.
 
-### Tool lifecycle management and resource cleanup
-- Tools are stateless; rely on injected context for credentials.
-- Services may hold references to LLM clients; ensure proper initialization and reuse.
-- For long-running agents, periodically rebuild tool lists when context changes.
+## Appendix
 
-### Debugging approaches for tool development
-- Enable logging in tool coroutines and services.
-- Inspect LangChain messages and ToolMessages to trace execution.
-- Validate LLM outputs with sanitizers and adjust prompts accordingly.
-- Use small, isolated test cases to reproduce issues quickly.
+### Implementation examples
+
+- `build_agent_tools(context=None)`: returns the ordered tool list for one request.
+- `AGENT_TOOLS`: the no-context list used by `GraphBuilder`.
+- `_write_memory(...)`: coerces labels, stores a claim, returns JSON.
+- `_partition_tools(tools)`: builds the supervisor groups by name.
+
+### Source files
+
+- `agents/react_tools.py`
+- `agents/react_agent.py`
+- `agents/while_loop_harness.py`
+- `tools/memory.py`
+- `tools/remote_actions.py`
+- `tools/composio_profile.py`

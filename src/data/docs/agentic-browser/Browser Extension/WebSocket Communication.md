@@ -1,219 +1,239 @@
 # WebSocket communication
 
-## Introduction
-WebSocket client, `useWebSocket`, status UI, and HTTP fallback when the socket dies. How `AgentExecutor` streams updates.
+The extension keeps one outbound WebSocket to the local bridge at `ws://127.0.0.1:5455/bridge/ws`. MCP tool calls arrive on that socket as JSON requests, the handler map runs them against a tab, and the response goes back on the same socket. A second HTTP relay, `POST /bridge/call`, lets other local processes use the same attached browser with a bearer token.
 
-## Project structure
-The WebSocket-related logic spans three primary areas:
-- Hook and UI: useWebSocket and WebSocketStatus for connection monitoring and manual reconnect
-- Client: websocket-client for transport, event routing, and agent execution APIs
-- Executor: AgentExecutor orchestrating commands, progress updates, and fallback HTTP when WebSocket is unavailable
+Chat streaming no longer uses a socket. `executeAgent` posts to `/api/genai/react/stream` and reads server-sent events. `socket.io-client` remains in the package for the legacy `runOverSocket` path and for `stopAgent` and `getStats`.
+
+Key capabilities:
+- One host per machine, with relay for every other process.
+- Request ids and per-call futures so responses match calls.
+- Extension origin checks and a 0600 relay token.
+- Status and call HTTP endpoints.
+- Trusted input through the debugger when available.
+- Automatic reconnect with exponential backoff.
+
+## Repository layout
+
+The protocol spans the Python bridge, the extension client, the handler map and the service worker bootstrap.
 
 ```mermaid
 graph TB
-subgraph "UI Layer"
-Hook["useWebSocket.ts"]
-Status["WebSocketStatus.tsx"]
-App["App.tsx"]
-end
-subgraph "Client Layer"
-Client["websocket-client.ts"]
-end
-subgraph "Execution Layer"
-AgentExec["AgentExecutor.tsx"]
-ExecAgent["executeAgent.ts"]
-ExecActions["executeActions.ts"]
-ParseCmd["parseAgentCommand.ts"]
-AgentMap["agent-map.ts"]
-end
-subgraph "Runtime"
-BG["background.ts"]
-end
-App --> Hook
-App --> Status
-Hook --> Client
-Status --> Client
-AgentExec --> Client
-AgentExec --> ExecAgent
-ExecAgent --> AgentMap
-ExecAgent --> ParseCmd
-ExecAgent --> ExecActions
-ExecActions --> BG
+  subgraph Python["Python bridge"]
+    BR["mcp_server/bridge.py<br/>LocalBridge, RemoteBridge, BridgeManager"]
+    CFG["mcp_server/config.py<br/>host, port, token"]
+    SRV["mcp_server/server.py<br/>build_http_app, _call"]
+  end
+  subgraph Extension["Extension"]
+    BG["entrypoints/background.ts<br/>startBridge"]
+    CL["utils/bridge/client.ts<br/>connectBridge, handleRequest"]
+    HD["utils/bridge/handlers.ts<br/>method map"]
+    CDP["utils/bridge/cdp.ts"]
+    PA["utils/bridge/page-agent.ts"]
+  end
+  subgraph Peer["Peers"]
+    MCP["agentic-mcp stdio or serve"]
+    BACK["backend main.py lifespan"]
+    OTHER["relay client"]
+  end
+  MCP --> SRV
+  BACK --> BR
+  OTHER -->|"POST /bridge/call"| BR
+  SRV --> BR
+  BR --> CFG
+  BR <-->|"WebSocket /bridge/ws"| CL
+  BG --> CL
+  CL --> HD
+  HD --> CDP
+  HD --> PA
 ```
 
-## Core components
-- useWebSocket: Subscribes to connection_status and generation_progress events, tracks wsConnected, and surfaces auto-connect preferences.
-- WebSocketClient: Provides a thin wrapper over socket.io-client with event routing, agent execution APIs, and reconnection logic.
-- AgentExecutor: Orchestrates agent commands, manages conversation sessions, renders progress, and falls back to HTTP when WebSocket is down.
-- WebSocketStatus: UI indicator and manual reconnect/disconnect controls.
-- executeAgent: Parses slash commands, resolves tab context, builds payloads, and executes HTTP fallback when needed.
-- executeActions: Executes browser actions on the active tab via messaging to content scripts.
-- parseAgentCommand and agent-map: Define command parsing and endpoint mapping for agent actions.
+## Building blocks
 
-## Architecture overview
-The system uses socket.io-client for transport with automatic reconnection. The UI subscribes to connection_status and generation_progress to reflect real-time state. AgentExecutor delegates execution to WebSocketClient when connected, otherwise falls back to HTTP endpoints.
+- `bridge.py`: `BrowserConnection` stores the WebSocket, hello info, `pending` futures and a `send_lock`. `LocalBridge.handle_websocket` owns the socket loop. `LocalBridge.call` sends a request and waits on a future.
+- `RemoteBridge`: httpx client for relayed calls. `_post` reads the token, posts JSON, and turns a non-200 or an `error` field into `BridgeError`.
+- `BridgeManager`: `ensure_started` tries to bind the port. If it succeeds it builds the Starlette app and serves it on the socket. If not, it stays in relay mode. `call` retries once after a relay failure by trying to take the port.
+- `config.py`: `BRIDGE_HOST`, `BRIDGE_PORT`, `STATE_DIR`, `TOKEN_FILE`, `ALLOWED_EXTENSION_IDS`, `API_URL`, `MEMORY_TOOLS` and `TOOL_SURFACE`. `read_or_create_token` writes 32 random bytes with mode 0600.
+- `client.ts`: `connectBridge`, `disconnectBridge`, `getBridgeStatus`, `startBridge`. Settings come from `browser.storage.local` keys `bridgeEnabled` and `bridgeUrl`; status is written back to `bridgeStatus`.
+- `handlers.ts`: the method map for `tabs.*`, `page.*`, `repo.download`, `task.run` and `task.stop`.
+
+## How it fits together
+
+A host process binds the port, serves the MCP app and the bridge routes, then waits for the extension. The extension sends `hello` within 10 seconds or the socket closes with 4400.
 
 ```mermaid
 sequenceDiagram
-participant UI as "AgentExecutor.tsx"
-participant Hook as "useWebSocket.ts"
-participant Client as "websocket-client.ts"
-participant Srv as "Backend Server"
-UI->>Hook : Subscribe to wsConnected
-Hook->>Client : on("connection_status")
-Hook->>Client : on("generation_progress")
-UI->>Client : executeAgent(command, onProgress)
-Client->>Srv : emit "execute_agent" {command}
-Srv-->>Client : on "agent_progress" {status,message,...}
-Client-->>UI : onProgress updates
-Srv-->>Client : once "agent_result" {data}
-Client-->>UI : resolve(data)
-Note over UI,Srv : On failure, UI falls back to HTTP via executeAgent
+  participant MG as "BridgeManager"
+  participant LB as "LocalBridge"
+  participant CL as "extension client.ts"
+  participant HD as "handlers.ts"
+  participant SV as "MCP tool"
+  MG->>MG: bind 127.0.0.1:5455
+  MG->>LB: create LocalBridge
+  CL->>LB: WebSocket /bridge/ws, Origin check
+  CL->>LB: hello with browser, version, capabilities
+  LB-->>CL: welcome with conn id
+  loop every 20s
+    CL->>LB: ping
+    LB-->>CL: pong
+  end
+  SV->>LB: call page.act, params
+  LB->>CL: request id, method, params, timeout
+  CL->>HD: handlers[method](params)
+  HD-->>CL: result or error
+  CL-->>LB: response id, result or error
+  LB-->>SV: result
 ```
 
-## Detailed component analysis
+If the bind fails with `OSError`, `ensure_started` leaves `local` as `None`. Calls then go through `RemoteBridge`. A `BridgeUnavailable` on that path triggers one `ensure_started` and one retry, which covers a host that exited between calls.
 
-### useWebSocket hook
-- Purpose: Initialize WebSocket subscription, track connection state, and expose auto-connect preferences.
-- Behavior:
- - Subscribes to connection_status to update wsConnected and UI messages.
- - Subscribes to generation_progress to stream progress updates.
- - Loads auto-connect preference from local storage.
- - Does not disconnect on unmount to allow auto-reconnect.
+```mermaid
+stateDiagram-v2
+  [*] --> Starting
+  Starting --> Host: bind succeeds
+  Starting --> Relay: bind raises OSError
+  Host --> Host: extension connects or disconnects
+  Relay --> Relay: POST /bridge/call
+  Relay --> Host: BridgeUnavailable, rebind
+  Host --> Stopped: stop()
+  Relay --> Stopped: stop()
+  Stopped --> [*]
+```
+
+## Wire frames
+
+Every frame is JSON text. The extension answers only on the same socket, and the server matches responses by the `id` it generated.
+
+| Frame | Direction | Fields |
+| --- | --- | --- |
+| `hello` | extension to bridge | `browser`, `version`, `extension_version`, `extension_id`, `capabilities` |
+| `welcome` | bridge to extension | `id`, the short connection id |
+| `request` | bridge to extension | `id`, `method`, `params`, `timeout` |
+| `response` | extension to bridge | `id`, plus `result` or `error` |
+| `ping` | extension to bridge | none |
+| `pong` | bridge to extension | none |
+
+`handle_websocket` rejects an origin that is not `chrome-extension://` or `moz-extension://` with close code 4403. When `ALLOWED_EXTENSION_IDS` is non-empty, the extension id must be in the set. It accepts the socket, waits up to 10 seconds for the first frame, and closes with 4400 if it is not a `hello`.
+
+On disconnect, every pending future on that connection gets `BridgeError("Browser disconnected during the call")`. A response with an `error` field sets the future exception instead of a result. `_pick` chooses the connection: an explicit browser id looks that id up, otherwise it takes the most recent connection in `_order`, and if none exists it waits up to 3 seconds on an `asyncio.Event` before raising the `NO_BROWSER_MESSAGE` text that names the WebSocket URL.
+
+## HTTP endpoints
+
+`LocalBridge.routes` returns three routes. `build_http_app` inserts them ahead of the MCP mount, so `/bridge/*` wins over the catch-all MCP route.
 
 ```mermaid
 flowchart TD
-Start(["Mount"]) --> Setup["setupWebSocket()"]
-Setup --> ConnSub["Subscribe to 'connection_status'"]
-Setup --> GenSub["Subscribe to 'generation_progress'"]
-ConnSub --> Update["Update wsConnected and UI"]
-GenSub --> Progress["Update progress UI"]
-Storage["Load auto-connect preference"] --> End(["Ready"])
-Update --> End
-Progress --> End
+  A["POST /bridge/call"] --> B{"token file readable?"}
+  B -->|no| C["401 unauthorized"]
+  B -->|yes| D{"Authorization equals Bearer token?"}
+  D -->|no| C
+  D -->|yes| E{"Origin header present?"}
+  E -->|yes| F["403 forbidden"]
+  E -->|no| G{"method is __browsers__?"}
+  G -->|yes| H["result: browser list"]
+  G -->|no| I["LocalBridge.call"]
+  I --> J{"BridgeError?"}
+  J -->|yes| K["200 with error field"]
+  J -->|no| L["200 with result"]
 ```
 
-### WebSocket client
-- Transport: socket.io-client with transports ["websocket","polling"], reconnection enabled.
-- Events:
- - "connect" -> emits "connection_status" {connected:true}
- - "disconnect" -> emits "connection_status" {connected:false, reason}
- - "generation_progress" -> re-emitted to listeners
-- Execution APIs:
- - executeAgent(command, onProgress?) -> Promise resolving on "agent_result" or rejecting on "agent_error"
- - stopAgent() -> emits "stop_agent"
- - getStats() -> emits "get_stats", resolves on "stats_result" or {ok:false} after timeout
-- Utility methods: disconnect/connectSocket/enableAutoConnect/disableAutoConnect/isSocketConnected
+`GET /bridge/status` is unauthenticated and returns `{"ok": true, "service": "agentic-browser-bridge", "browsers": [...]}`. It is bound to loopback, so only local processes reach it.
+
+`POST /bridge/call` compares the header with `hmac.compare_digest` against `Bearer <token>`. The origin check exists because browsers always attach `Origin` to a cross-origin POST, so a web page cannot use the relay even if it learns the port. `__browsers__` is an internal sentinel that returns the browser list without a socket call. Relay errors keep HTTP status 200 and put the message in `error`; `RemoteBridge._post` turns that into `BridgeError`, so the MCP tool sees a normal failure string.
+
+## Extension client
+
+`client.ts` keeps one socket at module scope. `connectBridge` reads storage, closes any existing socket, and opens a new `WebSocket`. It sends `hello` on open with capabilities `tabs`, `snapshot`, `act`, `evaluate`, `screenshot`, plus `cdp` when `cdpAvailable()` is true. It starts a 20 second ping interval.
 
 ```mermaid
-classDiagram
-class WebSocketClient {
--socket : Socket
--listeners : Map~string, Set<(data)=>void>~
--autoConnect : boolean
-+connect()
-+on(event, callback)
-+off(event, callback)
-+isSocketConnected() boolean
-+executeAgent(command, onProgress) Promise
-+stopAgent() Promise~void~
-+getStats() Promise~any~
-+disconnect()
-+connectSocket()
-+enableAutoConnect()
-+disableAutoConnect()
-}
+flowchart TD
+  A["startBridge"] --> B["alarm every 0.5 min"]
+  B --> C["connectBridge"]
+  C --> D{"bridgeEnabled?"}
+  D -->|no| E["status disabled"]
+  D -->|yes| F["new WebSocket(bridgeUrl)"]
+  F --> G["onopen: send hello, start ping"]
+  G --> H{"message type"}
+  H -->|welcome| I["status connected, retryDelay 1000"]
+  H -->|request| J["handleRequest"]
+  F --> K["onclose"]
+  K --> L{"code 4403?"}
+  L -->|yes| M["extension rejected"]
+  L -->|no| N["bridge not running"]
+  M --> O["scheduleRetry"]
+  N --> O
+  O --> P["delay doubles to 30s"]
 ```
 
-### AgentExecutor integration
-- Command parsing: Uses parseAgentCommand to validate and expand slash commands into agent/action endpoints.
-- Conversation state: Maintains sessions/messages with auto-save/load from browser storage.
-- Real-time updates: Subscribes to agent_progress events during execution and appends progress entries.
-- Dynamic response rendering: Converts structured agent responses to readable text and supports action plans.
-- Fallback HTTP: When WebSocket is unavailable, AgentExecutor delegates to executeAgent which builds payloads and calls HTTP endpoints.
+Settings changes to `bridgeUrl` or `bridgeEnabled` trigger a forced reconnect and reset the retry delay. While a handler is running, the extension badge shows `RUN` with a purple background, then clears 800 milliseconds after the call finishes.
+
+`handleRequest` looks up `handlers[msg.method]`. An unknown method produces the error "Unknown bridge method ... Update the extension." The reply is sent only when the socket is still open, and `inflight` is decremented in `finally`.
+
+## Extension handlers
+
+`handlers.ts` resolves the target tab, refuses restricted URLs, and runs page work through `browser.scripting.executeScript` with the `pageAgent` function. `RESTRICTED` covers chrome, edge, brave, about, devtools, extension schemes, view-source and the Chrome Web Store.
 
 ```mermaid
-sequenceDiagram
-participant User as "User"
-participant UI as "AgentExecutor.tsx"
-participant Parser as "parseAgentCommand.ts"
-participant Exec as "executeAgent.ts"
-participant HTTP as "HTTP Endpoints"
-participant Client as "websocket-client.ts"
-User->>UI : Enter command (e.g., "/agent-action ...")
-UI->>Parser : parseAgentCommand(cmd)
-Parser-->>UI : {stage : "complete", agent, action, endpoint}
-alt WebSocket connected
-UI->>Client : executeAgent(cmd, onProgress)
-Client-->>UI : agent_progress events
-Client-->>UI : agent_result
-else WebSocket disconnected
-UI->>Exec : executeAgent(cmd, prompt, history, file)
-Exec->>HTTP : POST to mapped endpoint
-HTTP-->>Exec : JSON response
-Exec-->>UI : response data
-end
-UI->>UI : Update messages and progress
+flowchart TD
+  A["request"] --> B["resolveTab(tabId or active)"]
+  B --> C{"action needs scripting?"}
+  C -->|yes| D{"RESTRICTED url?"}
+  D -->|yes| E["error: navigate to a website first"]
+  D -->|no| F{"CDP attach ok?"}
+  F -->|yes| G["trusted mouse, key or Runtime.evaluate"]
+  F -->|no| H["DOM click, type or MAIN world eval"]
+  G --> I["fresh tab info, note, dialog"]
+  H --> I
+  C -->|no| J["dialog, navigate, back, forward, reload"]
+  J --> I
 ```
 
-### WebSocketStatus component
-- Displays connection indicator and allows manual reconnect/disconnect.
-- Toggles wsClient.connect()/disconnect() based on current state.
+Click and type prefer the debugger. `trustedClick` resolves the element to screen coordinates, checks that nothing covers it, and uses `cdp.mouseClick`. A covered element falls back to a DOM click with a note naming what covered it. Typing focuses through the page agent, then inserts text through CDP, so the page sees trusted input events.
 
-### HTTP fallback mechanism
-- App integrates fallback stats retrieval when WebSocket is disabled or unavailable.
-- AgentExecutor uses executeAgent for HTTP execution when WebSocket is not connected.
-- executeAgent resolves tab context, constructs payloads per endpoint, and performs GET/POST requests.
+`frameOf` parses refs of the form `f12e5` into a frame id. Selectors and `text=` targets go to the main frame. `pageSnapshot` collects the main frame plus up to eight http(s) subframes, skipping frames smaller than 120 by 60 pixels. `page.evaluate` uses `Runtime.evaluate` with `returnByValue`, `awaitPromise` and `userGesture`, and retries in repl mode when the expression has a top-level `await`.
 
-### Browser action execution
-- executeActions translates high-level actions into tab-level operations.
-- Sends messages to the active tab's content script for DOM manipulation.
-- Includes delays between actions to avoid overwhelming the page.
+`repo.download` is restricted to GitHub archive URLs and a local backend upload URL, with a 300 MB cap. `task.run` accepts an http(s) URL and delegates to `runRemoteBrowserTask`. `page.act` wraps the action in `setPageGlow` so the user sees which tab the agent is using.
 
-## Dependency analysis
-- UI depends on WebSocket client for real-time updates.
-- AgentExecutor depends on:
- - parseAgentCommand for command validation
- - agent-map for endpoint resolution
- - executeAgent for HTTP fallback
- - executeActions for runtime browser automation
-- background.ts handles cross-tab messaging for action execution.
+## Legacy socket path
 
-```mermaid
-graph LR
-UI["AgentExecutor.tsx"] --> Parser["parseAgentCommand.ts"]
-UI --> ExecHTTP["executeAgent.ts"]
-ExecHTTP --> Map["agent-map.ts"]
-UI --> Client["websocket-client.ts"]
-ExecHTTP --> BG["background.ts"]
-Status["WebSocketStatus.tsx"] --> Client
-Hook["useWebSocket.ts"] --> Client
-```
+`entrypoints/utils/websocket-client.ts` wraps a Socket.IO client for older agent commands. `parseAgentCommand` returns `stage: "complete"` for the agents in `AGENT_MAP`, and the panel uses the HTTP stream; anything outside the map calls `runOverSocket`, which receives `generation_progress`, `agent_result` and `agent_error` events. `stop` calls `stopAgent` on this client before it clears the busy flag.
 
-## Performance considerations
-- Reconnection strategy: Automatic reconnection with exponential backoff reduces server load and improves resilience.
-- Event-driven updates: Streaming agent_progress minimizes polling overhead and improves perceived responsiveness.
-- Payload construction: executeAgent avoids unnecessary data by capturing only required context (e.g., active tab HTML).
-- Batched UI updates: Progress updates are appended incrementally to reduce layout thrashing.
-- Fallback HTTP: When WebSocket is unavailable, HTTP requests are used to maintain functionality without blocking the UI.
+`BRIDGE_STATUS` is the panel's read of the bridge socket, not the Socket.IO socket. `useWebSocket` exposes that connection state to the UI, and the settings bridge card sends `BRIDGE_STATUS` and `BRIDGE_RECONNECT` runtime messages to the worker.
 
-## Troubleshooting guide
-Common issues and remedies:
-- WebSocket not connecting:
- - Verify VITE_API_URL and network accessibility.
- - Use WebSocketStatus to manually reconnect.
- - Check connection_status events for reasons.
-- Execution failures:
- - Inspect agent_error events and error messages.
- - Confirm command parsing via parseAgentCommand.
- - Validate endpoint mapping in agent-map.
-- HTTP fallback errors:
- - Review executeAgent error handling and HTTP status codes.
- - Ensure required credentials and context (e.g., active tab) are present.
-- Action execution not applied:
- - Confirm content script injection and messaging to active tab.
- - Check background.ts handlers for EXECUTE_ACTION.
+## Dependencies
 
-## Conclusion
-Prefer the socket for streaming; fall back to HTTP when it drops. Surface connection state in the UI so a silent hang is obvious.
+The bridge depends on Starlette for routes, uvicorn for the embedded server, httpx for relay, and the extension for the peer. The extension depends on `wxt/browser` and its own CDP and page-agent modules. `mcp_server/pyproject.toml` pins `httpx>=0.28`, `uvicorn>=0.54`, `starlette>=1.10`, `websockets>=17.0`, `mcp>=2.3.0` and `pydantic>=2.14`.
 
+## Performance
+
+- `DEFAULT_TIMEOUT` is 30 seconds and `MAX_TIMEOUT` is 1800.
+- `_pick` waits 3 seconds for a browser, then `call` waits the method timeout plus 2 seconds.
+- The extension pings every 20 seconds. The alarm runs every 0.5 minutes to reconnect after the worker sleeps.
+- Retry delay starts at 1 second and doubles to a 30 second cap.
+- Screenshots are downscaled to 1280 pixels wide and JPEG quality 0.75 before transport. Background tabs require the debugger and may fail to paint.
+- The snapshot accepts 2000 to 100000 characters and gives each subframe a third of that budget.
+
+## Troubleshooting
+
+- Symptom: the extension closes immediately with code 4403. Cause: its origin id is not in `AGENTIC_BROWSER_EXTENSION_IDS`, or the origin is not an extension scheme. Fix: add the id, or unset the variable to allow any extension origin.
+- Symptom: the socket closes with 4400. Cause: no `hello` within 10 seconds, or the first frame was not a hello. Fix: reload the extension so `client.ts` sends it.
+- Symptom: "No browser is connected to the Agentic Browser bridge". Cause: no socket in `_connections`. Fix: open the browser, check the extension's MCP Bridge status, and run `agentic-mcp status`.
+- Symptom: relay returns 401. Cause: `read_token()` is empty or the caller's token differs. Fix: restart the bridge host so `read_or_create_token` writes a new file.
+- Symptom: relay returns 403. Cause: the POST carried an `Origin` header. Fix: relay from a local process.
+- Symptom: relay returns 200 but the tool reports an error. Cause: the bridge returns `{"error": ...}` with HTTP 200, and `RemoteBridge` converts it. Fix: read the error text, not the status.
+- Symptom: a call times out after a navigation. Cause: the extension handler is waiting for a load that never completes, and the bridge adds only 2 seconds. Fix: raise the method timeout or use `waitFor`.
+- Symptom: an action fails with "A dialog is open". Cause: an alert, confirm or prompt blocks the page. Fix: call `browser_act` with `action=dialog`.
+
+## Appendix
+
+### Implementation examples
+- `LocalBridge().call("tabs.list", {})` returns the tab list from the attached extension. Reference: `LocalBridge.call`.
+- `POST /bridge/call` with `{"method": "__browsers__"}` returns the browser list without a socket call. Reference: `LocalBridge.call_endpoint`.
+- `connectBridge(true)` forces a reconnect after a settings change. Reference: `client.ts:connectBridge`.
+- `handlers["page.snapshot"]({tabId: 4, screenshot: true})` returns text, url, title and a data URL. Reference: `handlers.ts:pageSnapshot`.
+
+### Source files
+- `mcp_server/bridge.py`
+- `mcp_server/config.py`
+- `clients/browser-extension/entrypoints/utils/bridge/client.ts`
+- `clients/browser-extension/entrypoints/utils/bridge/handlers.ts`
+- `clients/browser-extension/entrypoints/background.ts`

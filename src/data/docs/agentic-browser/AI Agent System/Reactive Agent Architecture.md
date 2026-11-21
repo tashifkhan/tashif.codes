@@ -1,223 +1,228 @@
 # Reactive agent architecture
 
-## Introduction
-LangGraph state machine: `AgentState`, the reason/act loop, `GraphBuilder` compile/cache, message normalization, and edges into tool nodes.
+`agents/react_agent.py` builds a LangGraph `StateGraph` with two working nodes. `agent` calls the model with tools bound, and `tool_execution` runs the requested tools through LangGraph's `ToolNode`. The graph loops between them until the model answers without a tool call. This is the default path for interactive chat and the inner loop for every supervisor subagent.
 
-## Project structure
-The reactive agent spans Python backend services and TypeScript frontend orchestration:
-- Backend: LangGraph workflow, agent state, message normalization, tool registry, and service/router layers.
-- Frontend: Extension utilities that prepare payloads and invoke backend endpoints.
+Key capabilities:
+- A compiled graph cached per model signature.
+- Tool binding with an `agent_turn` tag, so nested model calls stay out of the answer stream.
+- Loop guard replay on every `agent` invocation.
+- Token-budgeted trimming of old tool outputs before each model call.
+- Two entry points, `run_react_agent` for a final message list and `astream_react_agent` for UI events.
+
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Extension (Frontend)"
-EXTSVC["executeAgent.ts"]
-MAP["agent-map.ts"]
-end
-subgraph "FastAPI Backend"
-ROUTER["routers/react_agent.py"]
-SERVICE["services/react_agent_service.py"]
-AGENT["agents/react_agent.py"]
-TOOLS["agents/react_tools.py"]
-LLM["core/llm.py"]
-end
-EXTSVC --> ROUTER
-MAP --> EXTSVC
-ROUTER --> SERVICE
-SERVICE --> AGENT
-AGENT --> TOOLS
-AGENT --> LLM
+  subgraph EntryPoints
+    Run["run_react_agent"]
+    Stream["astream_react_agent"]
+  end
+  subgraph Graph
+    Builder["GraphBuilder"]
+    AgentNode["_create_agent_node"]
+    ToolNode["ToolNode(tools)"]
+    Cache["_GRAPH_CACHE"]
+  end
+  subgraph Helpers
+    Convert["_payload_to_langchain<br/>_langchain_to_payload"]
+    Verdict["tool_loop_verdict"]
+    Events["agents/tool_eventing.py"]
+  end
+  subgraph External
+    LLM["core/llm.py get_default_llm"]
+    Tools["agents/react_tools.py"]
+    Compaction["services/compaction.py"]
+    Guard["core/loop_guard.py"]
+  end
+  Run --> Builder
+  Stream --> Builder
+  Builder --> Cache
+  Builder --> AgentNode
+  Builder --> ToolNode
+  AgentNode --> LLM
+  AgentNode --> Verdict
+  AgentNode --> Compaction
+  Verdict --> Guard
+  Builder --> Tools
+  Builder --> Events
+  Run --> Convert
+  Stream --> Convert
 ```
 
-## Core components
-- AgentState: TypedDict representing the conversation state with an annotated messages field that accumulates LangChain messages.
-- Message normalization: Bidirectional converters between external payloads and LangChain message types.
-- GraphBuilder: Constructs and compiles the LangGraph workflow, caching the compiled graph.
-- Tool registry: Centralized collection of structured tools, optionally augmented with contextual tokens/session data.
-- System prompt: A default system message injected at the start of the message sequence when absent.
+## Building blocks
 
-Key responsibilities:
-- State machine: Agent node produces an LLM response; conditional edges route to tool execution when tool calls are detected; tool execution returns ToolMessages; loop continues until no tool calls remain.
-- Payload conversion: Ensures consistent message roles, content, and tool call/tool call IDs across boundaries.
-- Tool binding: The agent node binds available tools to the LLM to enable tool-use prompting.
+- `AgentState`: a `TypedDict` with `messages: Annotated[Sequence[BaseMessage], add_messages]`.
+- `DEFAULT_SYSTEM_PROMPT`: a module-level `SystemMessage` that names the memory, browser and Composio tools and forbids asking for credentials.
+- `GraphBuilder(tools=None, context=None, emit=None, subagent_name="react", stream_thoughts=False)`: resolves the tool list, optionally instruments it, and compiles lazily.
+- `_create_agent_node(tools, stream_thoughts)`: closes over a bound client and a plain client, both tagged `agent_turn`.
+- `GraphBuilder.buildgraph`: wires `START`, `agent`, `tool_execution` and `END`.
+- `instrument_tools`: the `agents/tool_eventing.py` wrapper that emits `subagent_tool_call`, `subagent_tool_result` or `subagent_tool_error`.
 
-## Architecture overview
-The reactive loop is a LangGraph StateGraph :
-- Nodes: agent and tool_execution.
-- Edges: START → agent; agent → tool_execution if tool calls; tool_execution → agent; agent → END when no tool calls.
+Tool selection has a fixed precedence. An explicit `tools` argument wins. Otherwise a non-empty `context` calls `build_agent_tools(context)`. Otherwise the module-level `AGENT_TOOLS` list is used. When `emit` is supplied, every tool is wrapped in a new `StructuredTool` with the same name, description and schema but a coroutine that emits events.
 
-```mermaid
-flowchart TD
-START(["Start"]) --> AgentNode["Agent Node<br/>LLM with tools bound"]
-AgentNode --> Decision{"Has tool calls?"}
-Decision --> |Yes| ToolExec["Tool Execution Node<br/>Run selected tools"]
-ToolExec --> AgentNode
-Decision --> |No| End(["End"])
-```
-
-## Detailed component analysis
-
-### LangGraph state machine and AgentState typing
-- AgentState defines a single key messages with an annotation that merges incoming messages into the state.
-- The agent node ensures a system message is present at the head of the sequence before invoking the LLM.
-
-```mermaid
-classDiagram
-class AgentState {
-+messages : Annotated[Sequence[BaseMessage], add_messages]
-}
-class AgentNode {
-+invoke(state) -> dict
-}
-AgentNode --> AgentState : "reads/writes"
-```
-
-### Message normalization functions
-Normalization bridges external payloads and LangChain message types:
-- _payload_to_langchain: Converts external role/content/tool_call_id/tool_calls into SystemMessage, AIMessage, ToolMessage, or HumanMessage.
-- _langchain_to_payload: Serializes LangChain messages back to external payloads, preserving tool_calls and tool_call_id.
-
-```mermaid
-flowchart LR
-P["External Payload"] --> N1["_payload_to_langchain"]
-N1 --> LC["LangChain Messages"]
-LC --> N2["_langchain_to_payload"]
-N2 --> P2["External Payload"]
-```
-
-### GraphBuilder: workflow construction and caching
-- Builds a StateGraph with agent and tool_execution nodes.
-- Uses tools_condition to decide routing after agent inference.
-- Compiles the graph once and caches it for reuse.
-- Supports dynamic tool sets via context or explicit tool lists.
-
-```mermaid
-classDiagram
-class GraphBuilder {
--tools : list[StructuredTool]
--_compiled : CompiledGraph
-+buildgraph() CompiledGraph
-+__call__() CompiledGraph
-}
-GraphBuilder --> "1" StateGraph : "constructs"
-GraphBuilder --> "1" ToolNode : "wraps tools"
-```
-
-### Tool registry and dynamic tool binding
-- Tools are assembled centrally, optionally enriched with contextual tokens/session data.
-- The agent node binds the tool list to the LLM to enable tool-use prompting.
-
-```mermaid
-sequenceDiagram
-participant Caller as "Caller"
-participant GB as "GraphBuilder"
-participant AG as "Agent Node"
-participant TN as "ToolNode"
-participant LLM as "LLM Client"
-Caller->>GB : __call__()
-GB-->>Caller : CompiledGraph
-Caller->>AG : ainvoke(state)
-AG->>LLM : ainvoke(messages with tools bound)
-LLM-->>AG : AIMessage(tool_calls?)
-alt tool_calls present
-AG-->>TN : route to tool_execution
-TN-->>AG : ToolMessage
-AG->>LLM : ainvoke(updated messages)
-else no tool_calls
-AG-->>Caller : final state
-end
-```
-
-### System prompt configuration
-- A default system message is constructed and prepended to the message sequence if none exists.
-- This ensures consistent behavior and role context for the agent.
-
-```mermaid
-flowchart TD
-S["Start"] --> CheckSys{"First message is SystemMessage?"}
-CheckSys --> |No| Inject["Prepend DEFAULT_SYSTEM_PROMPT"]
-CheckSys --> |Yes| Continue["Proceed"]
-Inject --> Continue
-```
-
-### Full execution pattern
-- Frontend composes a request payload and invokes the FastAPI endpoint.
-- Router validates inputs and delegates to the service.
-- Service builds the state (optionally injecting page context) and invokes the compiled graph.
-- Graph executes the reactive loop and returns the final state.
-
-```mermaid
-sequenceDiagram
-participant Ext as "Extension"
-participant API as "FastAPI Router"
-participant Svc as "ReactAgentService"
-participant G as "Compiled Graph"
-participant Tools as "Tools"
-Ext->>API : POST "/"
-API->>Svc : generate_answer(...)
-Svc->>G : ainvoke(state)
-G->>G : agent -> tools_condition
-alt tool_calls
-G->>Tools : execute selected tools
-Tools-->>G : ToolMessage
-G->>G : agent
-else no tool_calls
-G-->>Svc : final state
-end
-Svc-->>API : answer
-API-->>Ext : response
-```
-
-## Dependency analysis
-- agents/react_agent.py depends on core/llm.py for the LLM client and agents/react_tools.py for the tool registry.
-- services/react_agent_service.py orchestrates request preparation and invokes the compiled graph.
-- routers/react_agent.py exposes the API endpoint.
-- Frontend extension utilities construct payloads and call the backend.
+## Graph shape
 
 ```mermaid
 graph LR
-EXT["executeAgent.ts"] --> RTR["routers/react_agent.py"]
-RTR --> SVC["services/react_agent_service.py"]
-SVC --> AG["agents/react_agent.py"]
-AG --> TL["agents/react_tools.py"]
-AG --> LM["core/llm.py"]
+  Start["START"] --> Agent["agent"]
+  Agent -->|"tool_calls present"| Tools["tool_execution"]
+  Tools --> Agent
+  Agent -->|"no tool calls"| End["END"]
 ```
 
-## Performance considerations
-- Graph compilation and caching:
- - GraphBuilder compiles the workflow once and stores it for reuse.
- - A process-level LRU cache wraps GraphBuilder to avoid repeated compilation.
-- Tool execution offloading:
- - Long-running tools are executed asynchronously and often offloaded to threads to prevent blocking the LLM invocation loop.
-- Payload normalization:
- - Content normalization avoids serialization errors and reduces downstream parsing overhead.
-- System prompt injection:
- - Ensures consistent initial context without recomputation.
+`tools_condition` is the router. It inspects the last message and returns `"tools"` when it carries tool calls, otherwise the end sentinel. The graph adds the edge `tool_execution -> agent`, so the loop is explicit rather than recursive.
 
-Recommendations:
-- Keep the tool list stable across invocations to maximize cache hits.
-- Prefer streaming responses at the API boundary if needed, while retaining synchronous graph execution semantics.
-- Monitor tool latency and consider batching where appropriate.
+## How it fits together
 
-## Troubleshooting guide
-Common issues and mitigations:
-- Missing system message:
- - Symptom: Unexpected behavior at start.
- - Resolution: The agent node automatically prepends the default system message if the first message is not a SystemMessage.
-- Tool call parsing failures:
- - Symptom: Tool execution not triggered or malformed ToolMessage.
- - Resolution: Ensure tool_calls are properly serialized and tool_call_id is preserved during normalization.
-- Tool execution errors:
- - Symptom: Exceptions raised inside tools.
- - Resolution: Tools already wrap exceptions and return error strings; ensure upstream handlers surface these .
-- LLM initialization problems:
- - Symptom: Runtime errors when constructing the LLM client.
- - Resolution: Verify provider configuration, API keys, and base URLs.
+```mermaid
+sequenceDiagram
+  participant S as ReactAgentService
+  participant R as run_react_agent
+  participant G as compiled graph
+  participant A as agent node
+  participant T as tool_execution
+  participant M as model
+  S->>R: messages, context, emit
+  R->>G: ainvoke messages, recursion_limit 2000
+  G->>A: START
+  A->>M: bind_tools messages
+  M-->>A: AIMessage with tool_calls
+  A-->>G: append message
+  G->>T: tools_condition routes to tools
+  T->>T: run each StructuredTool
+  T-->>G: ToolMessage entries
+  G->>A: tool_execution to agent
+  A->>M: messages with tool results
+  M-->>A: AIMessage without tool_calls
+  A-->>G: append final message
+  G-->>R: final state
+  R-->>S: payload list
+```
 
-Operational tips:
-- Log intermediate states and messages to diagnose routing loops or missing tool calls.
-- Validate request payloads against the request/response models to prevent runtime mismatches.
+## The agent node
 
-## Conclusion
-`StateGraph` holds messages, normalization keeps formats aligned, and cached compiled graphs avoid rebuild cost. Conditional edges move between reasoning and tools.
+`_create_agent_node` builds two clients. `bound_llm` is `client.bind_tools(tools).with_config(tags=["agent_turn"])`, used for normal turns. `final_llm` is `client.with_config(tags=["agent_turn"])` with no tools, used when the loop guard stops the run. When `stream_thoughts` is true and the client is a `ChatGoogleGenerativeAI`, the node copies it with `include_thoughts=True`. The copy is local, so other callers still receive plain content.
 
+```mermaid
+flowchart TD
+  A["agent node"] --> B{"first message is SystemMessage?"}
+  B -->|no| C["prepend _system_message"]
+  B -->|yes| D["use messages as-is"]
+  C --> E["tool_loop_verdict(messages)"]
+  D --> E
+  E --> F{"verdict.status not ok?"}
+  F -->|yes| G["adispatch_custom_event loop_guard"]
+  F -->|no| H{"verdict.stop?"}
+  G --> H
+  H -->|yes| I["final_llm with stop instruction"]
+  H -->|no| J{"verdict.warn?"}
+  J -->|yes| K["append verdict.hint as HumanMessage"]
+  J -->|no| L["keep messages"]
+  K --> M["trim_tool_outputs against budget_tokens()"]
+  L --> M
+  M --> N["bound_llm.ainvoke"]
+  I --> O["return messages list"]
+  N --> O
+```
+
+On a stop, the model is told: `Loop check: <reason> Stop calling tools. Answer now with what you have found, and say plainly what you could not find.` The answer is returned like any other assistant message, so the run ends with a usable reply instead of an exception.
+
+`trim_tool_outputs` comes from `services/compaction.py` and is called with `await budget_tokens()`. It cuts old tool results to fit the model window before every normal turn, keeping the most recent context intact.
+
+## Loop guard replay
+
+`tool_loop_verdict(messages)` reconstructs a guard from the message list. It maps each `AIMessage.tool_calls` id to `(name, args)`, then walks `ToolMessage` entries and records `{"tool": name, "args": args}` against the normalised content. A tool message counts as a failure when its `status` attribute equals `"error"`. The guard is `LoopGuard(kind="tool call", patience=4, max_steps=env_max_steps("AGENT_MAX_TOOL_CALLS"))`.
+
+Replaying instead of storing the guard on state means the verdict is deterministic for a given history and survives graph restarts. It also means the guard sees exactly what the model sees, including trimmed or restored messages.
+
+```mermaid
+flowchart LR
+  H["message history"] --> M["map tool_call id to name and args"]
+  M --> W["walk ToolMessage entries"]
+  W --> R["record call, outcome, ok"]
+  R --> G["LoopGuard verdict"]
+  G --> S{"stop, warn or ok"}
+  S -->|stop| F["plain client with stop instruction"]
+  S -->|warn| N["append hint"]
+  S -->|ok| C["normal model call"]
+```
+
+## Message conversion
+
+`_payload_to_langchain` accepts dictionaries with `role`, `content`, optional `name`, `tool_calls` and `tool_call_id`. A user message whose content is a list containing any non-text block is passed through untouched, which keeps images as image blocks. Everything else is flattened to text. String parts and `{"type": "text"}` parts survive, thinking and reasoning blocks are dropped.
+
+`_langchain_to_payload` performs the reverse mapping for the API. It sets `role` from the message class, normalises content, copies `name`, serialises `tool_calls` through `model_dump`, `dict` or JSON, and preserves `tool_call_id` for tool messages.
+
+## Streaming
+
+`astream_react_agent` always constructs a fresh graph with `stream_thoughts=True`. It does not use the cache. It calls `graph.astream_events(..., version="v2", config={"recursion_limit": RECURSION_LIMIT})` and filters model events with `_is_agent_turn`, which requires the `agent_turn` tag and `metadata.langgraph_node == "agent"`. Tools that make nested model calls, such as the memory reconcile judge, therefore stay out of the answer stream.
+
+`_split_chunk` separates a chunk into answer text and reasoning text. It understands plain strings, `{"type": "text"}`, `{"type": "thinking"}`, `{"type": "reasoning"}` and Anthropic-style `summary` lists. Reasoning is emitted live and again as one `thinking` block capped at 6000 characters at model end. Answer text is emitted live, and the service joins per-step text with blank lines.
+
+Tool arguments and results are shortened by `_short`: 600 characters for arguments, 1500 by default for results, 300 for errors. A tool result with `status == "error"` becomes `subagent_tool_error` and includes the `error` key.
+
+## Dependencies
+
+```mermaid
+graph TB
+  subgraph GraphCode
+    React["agents/react_agent.py"]
+    Eventing["agents/tool_eventing.py"]
+    Tools["agents/react_tools.py"]
+    Prompt["DEFAULT_SYSTEM_PROMPT"]
+  end
+  subgraph Libraries
+    LG["langgraph>=1.0.1"]
+    LC["langchain>=0.3.27"]
+    Google["langchain-google-genai>=2.1.12"]
+  end
+  subgraph App
+    LLM["core/llm.py"]
+    Guard["core/loop_guard.py"]
+    Comp["services/compaction.py"]
+    Config["core/config.py"]
+  end
+  React --> LG
+  React --> LC
+  React --> LLM
+  React --> Guard
+  React --> Comp
+  React --> Tools
+  React --> Eventing
+  React --> Prompt
+  React --> Config
+  React --> Google
+  Eventing --> LC
+```
+
+`langgraph>=1.0.1` supplies `StateGraph`, `START`, `END`, `ToolNode` and `tools_condition`. `langchain_core` supplies messages, `StructuredTool` and `adispatch_custom_event`.
+
+## Performance
+
+The shared graph is cached in `_GRAPH_CACHE` by `(provider, model_name, temperature)`. A signature change clears the dictionary and stores the new graph, so the cache holds one entry. Every normal turn trims tool outputs against the model budget. `RECURSION_LIMIT` is 2000 graph steps. The loop guard is rebuilt per `agent` node, which costs one pass over the message list. Streaming uses `astream_events` v2 and builds a per-call graph because `stream_thoughts` is a graph-wide setting.
+
+## Troubleshooting
+
+- `GraphRecursionError`: the run reached 2000 graph steps. The loop guard should stop it first, so check that tool messages carry a usable `status`.
+- The final answer refuses to use tools: the loop guard returned `stop`. Read the `loop_guard` event for the signal and reason.
+- Reasoning text is missing: the provider is not Google, or the client is not a `ChatGoogleGenerativeAI`. Other providers send reasoning under different block types, or none.
+- Duplicate or nested model output appears in the answer: a tool made its own model call without the `agent_turn` tag.
+- Tool calls run against the wrong tool set: `GraphBuilder` fell back to `AGENT_TOOLS` because no context or explicit list was supplied. Pass context from the service.
+- `Tool ... does not define a callable`: an instrumented tool had neither `coroutine` nor `func`. Build tools as `StructuredTool` with a coroutine.
+- An image is dropped from a user message: the content list had only text parts after normalisation. Non-text blocks must stay at the top level of the message content.
+
+## Appendix
+
+### Implementation examples
+
+- `run_react_agent(messages, context=None, emit=None, subagent_name="react")`: returns payloads, not LangChain objects.
+- `astream_react_agent(messages, context=None, subagent_name="react")`: async generator of event dictionaries.
+- `GraphBuilder(context=..., emit=..., subagent_name=...)()`: compiles or returns the cached graph.
+- `tool_loop_verdict(messages)`: replays tool calls and results through `LoopGuard`.
+- `instrument_tools(tools, subagent_name, emit)`: wraps each tool for call and result events.
+
+### Source files
+
+- `agents/react_agent.py`
+- `agents/tool_eventing.py`
+- `agents/react_tools.py`

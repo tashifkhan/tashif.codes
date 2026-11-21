@@ -1,254 +1,215 @@
 # Custom tool development guide
 
-## Introduction
-Add a tool: define the schema, implement the function, register it, test bad inputs, document it. Naming, errors, security, and packaging.
+A tool in this project is a LangChain `StructuredTool` with a Pydantic input model and an async coroutine. The registry in `agents/react_tools.py` decides which tools exist for a request, and `build_agent_tools(context)` injects credentials so the model never has to pass a token by hand.
 
-## Project structure
-The framework organizes tools under a dedicated tools/ namespace, integrates them into an agent tool registry, and exposes them through structured LangChain tools. Services, prompts, and sanitization utilities sit beside the tools at runtime.
+This guide follows the path a new tool takes: input model, coroutine, registration, context wiring, and the checks that catch bad input before a service call. The design rationale behind the registry is in [Tool architecture and design](Tool%20Architecture%20and%20Design).
+
+Key capabilities:
+- Typed inputs with `Field` bounds and descriptions the model can read.
+- Async coroutines that keep blocking work off the event loop.
+- Context injection for tokens, session payloads, and client-specific variants.
+- Stable tool names shared by the ReAct agent and supervisor partitions.
+- Plain-text errors instead of exceptions that break a turn.
+- Conditional registration so unavailable integrations stay out of the tool list.
+
+## Repository layout
+
+Tool code lives under `tools/<domain>/`. The registry imports it, wraps it, and adds it to the list for one request. Services under `services/` hold shared logic, and prompts under `prompts/` compose model input.
 
 ```mermaid
 graph TB
-subgraph "Tools"
-T1["tools/browser_use/tool.py"]
-T2["tools/google_search/seach_agent.py"]
-T3["tools/website_context/super_scraper.py"]
-T4["tools/youtube_utils/get_info.py"]
-T5["tools/gmail/send_email.py"]
-T6["tools/calendar/create_calender_events.py"]
-end
-subgraph "Agent Integration"
-A1["agents/react_tools.py"]
-end
-subgraph "Services"
-S1["services/browser_use_service.py"]
-end
-subgraph "Prompts"
-P1["prompts/website.py"]
-end
-subgraph "Utilities"
-U1["utils/agent_sanitizer.py"]
-end
-subgraph "Extension"
-E1["clients/browser-extension/.output/chrome-mv3-dev/background.js"]
-end
-T1 --> A1
-T2 --> A1
-T3 --> A1
-T4 --> A1
-T5 --> A1
-T6 --> A1
-A1 --> S1
-A1 --> P1
-A1 --> U1
-S1 --> U1
-A1 --> E1
+  subgraph Registry["agents/react_tools.py"]
+    Build["build_agent_tools(context)"]
+    List["AGENT_TOOLS"]
+    Helper["_ensure_text, _format_chat_history"]
+  end
+  subgraph Tools
+    Mem["tools/memory.py"]
+    Profile["tools/composio_profile.py"]
+    Remote["tools/remote_actions.py"]
+    Browser["tools/browser_use/tool.py"]
+    Bash["tools/bash_tools/bash.py"]
+    Python["tools/python_tools/python.py"]
+  end
+  subgraph Services
+    Svc["services/*"]
+    LLM["core/llm.py"]
+  end
+  Build --> List
+  Build --> Mem
+  Build --> Profile
+  Build --> Remote
+  Build --> Browser
+  Build --> Bash
+  Build --> Python
+  Mem --> Svc
+  Profile --> Svc
+  Remote --> Svc
+  Browser --> Svc
+  Svc --> LLM
 ```
 
-## Core components
-- StructuredTool wrappers: Tools are defined as LangChain StructuredTool instances with typed Pydantic schemas and coroutine implementations.
-- Tool schemas: Pydantic models define input fields, constraints, and descriptions for validation and documentation.
-- Tool implementations: Async coroutines orchestrate service calls, external APIs, or scraping utilities.
-- Tool registry: A builder function composes tools dynamically, optionally injecting credentials or context.
-- Service layer: Dedicated services encapsulate LLM prompting, sanitization, and domain-specific logic.
-- Validation and sanitization: Utilities enforce safe JSON action plans and guardrails for scripts.
+## Building blocks
 
-## Architecture overview
-Where a new tool plugs in:
-- Tool layer: Defines inputs and async logic.
-- Agent layer: Composes tools and injects context.
-- Service layer: Encapsulates LLM prompts, sanitization, and domain operations.
-- Extension layer: Executes browser actions and interacts with the page.
+- `StructuredTool`: name, description, coroutine, and `args_schema`. This is the only interface the model sees.
+- Pydantic input classes: `GitHubToolInput`, `WebSearchToolInput`, `WebsiteToolInput`, `YouTubeToolInput`, `GmailToolInput`, `GmailSendEmailInput`, `GmailListUnreadInput`, `GmailMarkReadInput`, `CalendarToolInput`, `CalendarCreateEventInput`, `PyjiitAttendanceInput`, and `BrowserActionInput`.
+- `_ensure_text(value)`: returns strings as-is, reads `.content`, and JSON-dumps anything else.
+- `_format_chat_history(history)`: flattens `{role, content}` maps into prompt lines.
+- `build_agent_tools(context)`: reads the request context and returns the ordered tool list.
+- `AGENT_TOOLS = build_agent_tools()`: the no-context default used by `GraphBuilder`.
 
-```mermaid
-sequenceDiagram
-participant User as "User"
-participant Agent as "Agent Tools"
-participant Tool as "StructuredTool"
-participant Service as "Service Layer"
-participant Ext as "Extension"
-User->>Agent : "Invoke tool with parameters"
-Agent->>Tool : "Call coroutine with validated inputs"
-Tool->>Service : "Perform operation (LLM, API, scrape)"
-Service->>Ext : "Execute browser action (optional)"
-Ext-->>Service : "Result or error"
-Service-->>Tool : "Processed result"
-Tool-->>Agent : "Formatted response"
-Agent-->>User : "Final output"
-```
+## Define the input model
 
-## Detailed component analysis
+Start with a `BaseModel`. Use `Field` descriptions as documentation for the model, and constraints for values that would otherwise reach a service unchecked. Existing bounds are deliberate: `WebSearchToolInput.max_results` is 1 to 10, `GmailToolInput.max_results` is 1 to 25, `GmailListUnreadInput.max_results` is 1 to 50, `CalendarToolInput.max_results` is 1 to 25, `RecallMemoryInput.top_k` is 1 to 20, and `WriteMemoryInput.importance` and `confidence` are 0 to 1.
 
-### Tool creation pattern
-Follow this repeatable pattern to implement a new tool:
-1. Define a Pydantic input schema with Field constraints and descriptions.
-2. Implement an async coroutine that validates inputs, orchestrates work, and returns a normalized result.
-3. Wrap the coroutine in a StructuredTool with a descriptive name and schema.
-4. Register the tool in the agent builder function.
+URLs use `HttpUrl`, which requires a scheme. Emails use `EmailStr`, which requires the `pydantic[email]` extra already pinned in `pyproject.toml`. Optional fields should have a default that makes the common call short. A token field can stay optional and be filled from context.
 
 ```mermaid
 flowchart TD
-Start(["Define Schema"]) --> Impl["Implement Coroutine"]
-Impl --> Validate["Validate Inputs"]
-Validate --> Orchestrate["Orchestrate Work<br/>Service/API/Scraper"]
-Orchestrate --> Return["Return Normalized Result"]
-Return --> Wrap["Wrap in StructuredTool"]
-Wrap --> Register["Register in Agent Builder"]
-Register --> End(["Ready"])
+  A["new input need"] --> B{"URL?"}
+  B -->|yes| C["HttpUrl"]
+  B -->|no| D{"email?"}
+  D -->|yes| E["EmailStr"]
+  D -->|no| F{"count?"}
+  F -->|yes| G["int plus ge and le"]
+  F -->|no| H{"secret?"}
+  H -->|yes| I["Optional str, injected from context"]
+  H -->|no| J["plain typed field with a description"]
+  C --> K["BaseModel"]
+  E --> K
+  G --> K
+  I --> K
+  J --> K
 ```
 
-### Schema definition
-- Use Pydantic Field constraints (min_length, ge, le, HttpUrl, EmailStr) to enforce input validity early.
-- Provide clear descriptions for each field to aid LLM reasoning.
-- Prefer optional fields with sensible defaults when appropriate.
-- Reuse shared schemas across related tools to maintain consistency.
+## Implement the coroutine
 
-Examples of schema patterns:
-- URL and question-based tools: `WebsiteToolInput`, `YouTubeToolInput`
-- OAuth-enabled tools: `GmailToolInput`, `CalendarToolInput`
-- Action-focused tools: `BrowserActionInput`
+The coroutine does three things: validate what Pydantic cannot, call the service or provider, and return text or JSON. `_ensure_text` normalises LangChain response objects. Blocking HTTP clients and provider SDKs go through `asyncio.to_thread`, which is the pattern used by `_websearch_tool`, `_website_tool`, `_youtube_tool`, and the Gmail and Calendar wrappers.
 
-### Function implementation patterns
-- Use asyncio.to_thread for blocking operations to avoid blocking the event loop.
-- Normalize outputs to strings or structured JSON for downstream consumers.
-- Handle missing credentials and return actionable error messages.
-- Apply bounds checking for numeric parameters.
-
-Examples:
-- Web search pipeline: `web_search_pipeline`
-- Website markdown fetcher: `clean_response`
-- YouTube info extraction: `get_video_info`
-- Gmail send: `send_email`
-- Calendar event creation: `create_calendar_event`
-
-### Registration and dynamic composition
-- Tools are registered via a builder that accepts context (e.g., tokens, session payloads).
-- Partial functions inject default credentials to avoid requiring users to pass tokens every time.
-- Conditional tools are added only when credentials are present.
-
-Key references:
-- `build_agent_tools`
-- `AGENT_TOOLS`
-
-### Browser action tool flow
-The browser action tool demonstrates the full lifecycle: schema, service invocation, sanitization, and structured output.
+Errors should come back as sentences the model can act on. `_gmail_tool` returns a message when no token and no Composio account are available. `_browser_task` catches `BridgeError` and returns `Couldn't run the browser task: ...`. Memory writes return JSON with the new claim id, tier, segment, and class. The turn continues in every case.
 
 ```mermaid
 sequenceDiagram
-participant Tool as "browser_action_agent"
-participant Service as "AgentService"
-participant LLM as "LLM"
-participant Sanitizer as "agent_sanitizer"
-Tool->>Service : "generate_script(goal, target_url, dom_structure, constraints)"
-Service->>LLM : "Prompt with DOM info"
-LLM-->>Service : "Raw action plan"
-Service->>Sanitizer : "sanitize_json_actions"
-Sanitizer-->>Service : "Validated plan or problems"
-Service-->>Tool : "Result {ok, action_plan or error}"
-Tool-->>Caller : "StructuredTool result"
+  participant M as model
+  participant T as StructuredTool
+  participant V as Pydantic
+  participant C as coroutine
+  participant S as service or provider
+  M->>T: tool call with arguments
+  T->>V: validate args_schema
+  alt invalid
+    V-->>M: validation error
+  else valid
+    V->>C: typed arguments
+    C->>S: await or to_thread
+    S-->>C: result or exception
+    C->>C: _ensure_text or error sentence
+    C-->>M: ToolMessage content
+  end
 ```
 
-### Extension integration for browser actions
-The extension executes browser actions based on tool commands. It logs and routes tool types to specific handlers, returning structured results or errors.
+## Register the tool
+
+Module-level tools are created at import and reused: `github_agent`, `websearch_agent`, `website_agent`, `youtube_agent`, `gmail_agent`, `gmail_send_email`, `gmail_list_unread`, `gmail_mark_read`, `calendar_agent`, `calendar_create_event`, and `pyjiit_agent`. Add a new static tool next to them when it needs no request data.
+
+Request-built tools belong inside `build_agent_tools`. There are three patterns in the current code:
+
+- Append an imported collection, as with `MEMORY_TOOLS` and `COMPOSIO_PROFILE_TOOLS`.
+- Build a wrapper that closes over context, as with the Gmail, Calendar, PyJIIT, and browser wrappers.
+- Append conditionally, as with `REMOTE_TOOLS` and `browser_action_agent`.
+
+Keep the tool name stable once it ships. The supervisor partitions tools by name, and prompts refer to names directly.
 
 ```mermaid
-sequenceDiagram
-participant Agent as "Agent"
-participant Ext as "Extension background.js"
-Agent->>Ext : "executeAgentTool(actionType, params)"
-Ext->>Ext : "Route to handler (e.g., OPEN_TAB, CLICK)"
-Ext-->>Agent : "{success, result or error}"
+flowchart TD
+  A["build_agent_tools(context)"] --> B["ctx = dict(context or {})"]
+  B --> C["read token, pyjiit payload, client_markdown"]
+  C --> D["base list: memory, profile, research, code"]
+  D --> E{"google token?"}
+  E -->|yes| F["append six bound Gmail and Calendar tools"]
+  E -->|no| G["append the plain six"]
+  F --> H{"remote_actions is false?"}
+  G --> H
+  H -->|no| I["append REMOTE_TOOLS, minus browser_task in side panel"]
+  H -->|yes| J["skip remote tools"]
+  I --> K{"pyjiit payload?"}
+  J --> K
+  K -->|yes| L["append pyjiit_agent wrapper"]
+  K -->|no| M["return list"]
+  L --> M
 ```
 
-## Dependency analysis
-- Tool schemas depend on Pydantic for validation.
-- Tools depend on LangChain StructuredTool for registration.
-- Agent builder composes tools and injects context.
-- Services depend on prompts and sanitization utilities.
-- Extension depends on browser APIs for action execution.
+## Context and credentials
+
+The context dict is the only place request-scoped credentials belong. The builder reads `google_access_token` or `google_acces_token`, `pyjiit_login_response` or `pyjiit_login_responce`, `client_markdown`, `client_id`, and `remote_actions`. The two spellings are historical compatibility, not a typo to clean up without checking callers.
+
+When a Google token is present, the Gmail and Calendar wrappers pass it as `_default_token`, and the tool schema still exposes `access_token` as a legacy direct option. Follow that pattern for a new provider: close over the request credential, keep the schema field optional, and never log the value.
+
+## Testing a new tool
+
+Test the schema, the coroutine, and the assembled list separately. Pydantic gives cheap tests for missing fields and bad URLs. Mock the service for the coroutine test and assert the returned text. Build the list with and without context to prove the conditional branches.
+
+A useful checklist:
+- The input model rejects a bare hostname and accepts `https://`.
+- The coroutine returns a sentence, not an exception, when the provider fails.
+- The tool appears in `build_agent_tools()` without context.
+- The tool disappears when its credential is absent and the contract says it should.
+- The description names the action, not the implementation.
+- The result is bounded in size.
+
+## Dependencies
+
+The registry imports service and tool modules at module load, so a broken optional import can fail the whole tool list. Keep heavy provider SDK imports inside the coroutine when the tool is conditional. `langchain-core` supplies `StructuredTool`; `pydantic` supplies the schemas.
 
 ```mermaid
-graph LR
-Pydantic["Pydantic Schemas"] --> Tools["StructuredTool Wrappers"]
-LangChain["LangChain Tools"] --> Tools
-Tools --> Agent["Agent Builder"]
-Agent --> Services["Services"]
-Services --> Prompts["Prompts"]
-Services --> Sanitizer["agent_sanitizer"]
-Agent --> Extension["Extension"]
+graph TB
+  subgraph BuildTime
+    Lang["langchain_core.tools"]
+    Pyd["pydantic"]
+    Imports["tool and service imports"]
+  end
+  subgraph Runtime
+    Args["validated arguments"]
+    Thread["asyncio.to_thread"]
+    Service["service call"]
+  end
+  Lang --> Tool["StructuredTool"]
+  Pyd --> Schema["args_schema"]
+  Imports --> Tool
+  Schema --> Args
+  Args --> Thread
+  Thread --> Service
 ```
 
-## Performance considerations
-- Use asyncio.to_thread for blocking I/O to prevent event loop stalls.
-- Bound numeric inputs (e.g., max_results) to reasonable ranges.
-- Limit DOM previews and interactive element listings to avoid token overhead.
-- Cache or reuse expensive computations when feasible.
-- Prefer lightweight scrapers and minimize network calls.
+## Performance
 
-## Troubleshooting guide
-Common issues and resolutions:
-- Invalid JSON action plans: The sanitizer enforces required fields and safe patterns. Review validation messages and adjust tool outputs accordingly.
-- Missing credentials: Tools return explicit error messages when tokens are absent; ensure context injection via the agent builder.
-- Unexpected API responses: Wrap external calls in try/except blocks and normalize error messages.
-- Extension errors: The extension logs tool types and errors; check the console for actionable diagnostics.
+Bounds belong in the schema, not in prompt advice. A search tool that accepts 1 to 10 results cannot return 50 by accident. Offload every blocking call, especially `requests` clients with 8 to 10 second timeouts, so one slow provider does not stall the event loop. Trim result text close to the source, as `_websearch_tool` does at 320 characters per summary and `_composio_action` does at 12000 characters.
 
-References:
-- `sanitize_json_actions`
-- `_gmail_tool`
-- `executeAgentTool`
+## Troubleshooting
 
-## Conclusion
-Schema first, service behind it, sanitizer if it touches the browser. Register through the agent builder and keep names stable.
+- The model never calls the tool: the description is vague or the name collides. Describe the action and the object, not the module.
+- `HttpUrl` rejects a URL: the model sent a bare hostname. Make the field description say `https://...`.
+- The tool takes the wrong credential path: context injection did not run, so the wrapper fell back to the plain module-level tool. Check the context key spelling.
+- Importing `agents.react_tools` fails: a module-level import of an optional integration broke. Move the import inside the coroutine or guard it.
+- The tool appears in the wrong client: check `client_id` and `remote_actions` in `build_agent_tools`.
+- Errors crash the turn: the coroutine raised instead of returning text. Catch provider exceptions and return a sentence.
+- Output floods the context: add a cap in the coroutine and mention the cap in the field description.
 
-## Appendices
+## Appendix
 
-### Implementing a new tool
-1. Define a Pydantic input schema with Field constraints.
-2. Implement an async coroutine that validates inputs, performs work, and normalizes output.
-3. Wrap the coroutine in a StructuredTool with a descriptive name and schema.
-4. Add the tool to the agent builder and inject defaults via context when applicable.
-5. Test with representative inputs and edge cases.
-6. Validate outputs with the sanitizer and extension integration.
+### Implementation examples
 
-### Testing strategies
-- Unit tests for blocking operations: Mock external APIs and assert normalized outputs.
-- Integration tests: Use the agent builder with mock context to exercise tool composition.
-- Sanitization tests: Provide malformed JSON and invalid action types to verify reliability.
-- Full-path tests: run browser actions through the extension and check results.
+- `build_agent_tools(context=None)`: returns the ordered tool list for one request.
+- `_websearch_tool(query, max_results=5)`: bounds and formats search output.
+- `_website_tool(url, question, chat_history)`: fetch and chain in threads.
+- `_gmail_tool(...)`: Composio first, direct API when a token exists.
+- `_browser_task(goal, url=None)`: bridge call with a 900 second timeout.
+- `_write_memory(...)`: coerces labels, stores a claim, returns JSON.
 
-### Validation approaches
-- Pydantic schema validation for inputs.
-- JSON action plan validation and safety checks.
-- Error wrapping and plain messages.
+### Source files
 
-### Debugging techniques
-- Log inputs and outputs at each stage.
-- Use try/except around external calls and return structured error payloads.
-- Inspect extension logs for tool routing and execution outcomes.
-
-### Practical notes
-- Naming: Use descriptive, consistent names (e.g., verb_noun).
-- Error handling: Fail fast with clear messages; avoid leaking secrets.
-- Documentation: Include field descriptions and constraints in schemas.
-- Security: Avoid unsafe script patterns; sanitize inputs and limit permissions.
-- Performance: Minimize blocking calls; bound resource usage.
-
-### Templates and examples
-- Browser action tool: `browser_action_agent`
-- Web search tool: `websearch_agent`
-- Website tool: `website_agent`
-- YouTube tool: `youtube_agent`
-- Gmail tools: `gmail_agent`, `gmail_send_agent`, `gmail_list_unread_agent`, `gmail_mark_read_agent`
-- Calendar tools: `calendar_agent`, `calendar_create_event_agent`
-- PyJIIT tool: `pyjiit_agent`
-
-### Security considerations
-- Avoid dangerous script patterns in EXECUTE_SCRIPT actions.
-- Validate and constrain inputs to prevent injection.
-- Limit tool capabilities to least privilege.
-- Sanitize and log only non-sensitive information.
-
-### Distribution and maintenance
-- Package tools under tools/<category>/ with clear module boundaries.
-- Keep schemas and tool names stable; deprecate gradually.
-- Provide CLI entry points for manual testing where applicable.
-- Maintain changelogs and update agent builder when adding/removing tools.
+- `agents/react_tools.py`
+- `tools/memory.py`
+- `tools/remote_actions.py`
+- `tools/composio_profile.py`
+- `tools/browser_use/tool.py`

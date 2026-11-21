@@ -1,231 +1,222 @@
 # Side panel UI components
 
-## Introduction
-Side panel UI: `App.tsx`, `UnifiedSettingsMenu`, `ProfileSidebar`, `ResponseSection`, `LoadingScreen`, and the hooks for auth, tabs, and WebSocket.
+The side panel is a React tree mounted at `entrypoints/sidepanel/index.html`. `App.tsx` owns theme and the auth gate, `AgentExecutor.tsx` owns providers and the chat shell, and the files under `chat/` and `components/` render every control the user touches. This page walks the component tree and the interactions each piece owns.
 
-## Project structure
-The Side Panel UI resides under the extension entrypoint sidepanel and follows a feature-based organization:
-- App.tsx orchestrates authentication, tab management, WebSocket integration, and renders the primary UI.
-- Components are grouped under components/ with reusable UI primitives under components/ui/.
-- Hooks encapsulate cross-cutting concerns: authentication, tab management, and WebSocket connectivity.
-- Styling is centralized in App.css with global fonts loaded via index.html.
+Key capabilities:
+- One chat per session, with a history drawer, new chat action and delete.
+- A composer with model picker, attachments, dictation, slash and mention menus.
+- A settings sheet that stays partly usable offline: theme and the MCP bridge do not need the backend.
+- Shared primitives from `@agentic-browser/ui` so the panel matches the console.
+
+## Repository layout
 
 ```mermaid
 graph TB
-subgraph "Side Panel Entry"
-HTML["index.html"]
-MAIN["main.tsx"]
-APP["App.tsx"]
-end
-subgraph "Components"
-SETTINGS["UnifiedSettingsMenu.tsx"]
-PROFILE["ProfileSidebar.tsx"]
-RESPONSE["ResponseSection.tsx"]
-LOADING["LoadingScreen.tsx"]
-SIGNIN["SignInScreen.tsx"]
-INPUT["CuteTextInput.tsx"]
-APIKEY["ApiKeySection.tsx"]
-SETTINGSSHORT["SettingsSection.tsx"]
-WSSTATUS["WebSocketStatus.tsx"]
-SELECT["ui/select.tsx"]
-end
-subgraph "Hooks"
-AUTH["useAuth.ts"]
-TABS["useTabManagement.ts"]
-WS["useWebSocket.ts"]
-end
-subgraph "Styling"
-CSS["App.css"]
-end
-HTML --> MAIN --> APP
-APP --> AUTH
-APP --> TABS
-APP --> WS
-APP --> SETTINGS
-APP --> PROFILE
-APP --> RESPONSE
-APP --> LOADING
-APP --> SIGNIN
-SETTINGS --> INPUT
-SETTINGS --> APIKEY
-SETTINGS --> SETTINGSSHORT
-SETTINGS --> WSSTATUS
-SETTINGS --> SELECT
-PROFILE --> INPUT
-RESPONSE --> INPUT
-SIGNIN --> INPUT
-APP --> CSS
+  subgraph Entry
+    MAIN["sidepanel/main.tsx"]
+    APP["App.tsx<br/>theme, auth gate"]
+  end
+  subgraph Chat["sidepanel/chat"]
+    EXEC["AgentExecutor.tsx"]
+    HEAD["ChatHeader.tsx"]
+    COMP["Composer.tsx"]
+    LIST["MessageList.tsx"]
+    TRACE["AgentTrace.tsx"]
+    DRAWER["HistoryDrawer.tsx"]
+    MENUS["SlashMenu.tsx<br/>MentionMenu.tsx"]
+    HOOKS["hooks/useAgentRun.ts<br/>hooks/useSessions.ts"]
+  end
+  subgraph Panel["sidepanel/components"]
+    SET["UnifiedSettingsMenu.tsx"]
+    BRIDGE["BridgeSection.tsx"]
+    SIGN["SignInScreen.tsx"]
+    LOAD["LoadingScreen.tsx"]
+  end
+  subgraph Shared
+    API["@agentic-browser/query"]
+    UI["@agentic-browser/ui"]
+    SETUI["@agentic-browser/settings-ui"]
+  end
+  MAIN --> APP
+  APP --> EXEC
+  APP --> SIGN
+  APP --> LOAD
+  APP --> SET
+  EXEC --> HEAD
+  EXEC --> COMP
+  EXEC --> LIST
+  EXEC --> DRAWER
+  EXEC --> MENUS
+  EXEC --> HOOKS
+  LIST --> TRACE
+  EXEC --> API
+  COMP --> UI
+  LIST --> UI
+  SET --> SETUI
+  SET --> BRIDGE
 ```
 
-## Core components
-This section outlines the primary UI components and their responsibilities:
-- UnifiedSettingsMenu: Centralized configuration hub supporting profile, credentials, API keys, base URL, WebSocket preferences, and connection status.
-- ProfileSidebar: Displays user profile details, token information, and actions for manual refresh/logout.
-- ResponseSection: Renders agent responses in a scrollable container.
-- LoadingScreen: Minimal loading interface while authentication resolves.
-- SignInScreen: Onboarding screen with OAuth options and animated branding.
-- CuteTextInput: Styled input with focus animations and Enter submission support.
-- SettingsSection and WebSocketStatus: Compact settings and connection toggles.
-- select.tsx: Reusable Radix UI-based Select primitive set.
+## Building blocks
 
-Key integration points:
-- App.tsx manages global state (authentication, tab info, API key, WebSocket connection, conversation stats) and passes props to child components.
-- Hooks encapsulate browser APIs and external services (OAuth, tabs, WebSocket client).
-- Styling uses CSS modules and global styles for consistent theming.
+- `App.tsx`: resolves the theme, renders `LoadingScreen` while `useAuth` loads, `SignInScreen` when there is no user, and `AgentExecutor` plus `UnifiedSettingsMenu` when signed in.
+- `AgentExecutor.tsx`: builds `ApiProvider` from `localStorage.baseUrl || VITE_API_URL || "http://localhost:5454"`, then renders `Chat`.
+- `Chat` in `AgentExecutor.tsx`: owns the goal text, model choice, history drawer, mention menu and composer focus signal.
+- `Composer.tsx`: textarea that grows from 24px to 200px, file chips, a model picker, browser action button, attach button, dictation toggle and send or stop control.
+- `MessageList.tsx`: scrolls to the bottom on new messages, marks the reply currently being produced, and shows an empty `AgentTrace` while waiting for the first event.
+- `UnifiedSettingsMenu.tsx`: modal sheet with account, theme, bridge and backend sections.
 
-## Architecture overview
-The Side Panel UI follows a unidirectional data flow:
-- App.tsx initializes hooks and state, then conditionally renders either LoadingScreen, SignInScreen, or the main UI with AgentExecutor and settings/profile panels.
-- Hooks manage browser-specific integrations (storage, tabs, identity, WebSocket).
-- Components receive props and trigger updates via callbacks.
+## How it fits together
+
+`Chat` wires six hooks. `useSessions` owns the session list and message history. `useAgentRun` sends the command. `useSlashCommands` drives the `/` menu, `useTabs` feeds `@` mentions, `useAttachment` uploads a file, and `useSpeech` speaks replies. Submitting clears the composer, closes the menus and calls `run.execute(text, attachment.take())`.
 
 ```mermaid
 sequenceDiagram
-participant User as "User"
-participant App as "App.tsx"
-participant Auth as "useAuth.ts"
-participant Tabs as "useTabManagement.ts"
-participant WS as "useWebSocket.ts"
-User->>App : Launch Side Panel
-App->>Auth : Initialize authentication
-Auth-->>App : user, authLoading, tokenStatus
-App->>Tabs : Initialize tab management
-Tabs-->>App : activeTab
-App->>WS : Setup WebSocket
-WS-->>App : wsConnected, useWebSocket
-App->>App : Render UI based on auth state
-App-->>User : UnifiedSettingsMenu / ProfileSidebar / ResponseSection
+  participant User
+  participant Composer
+  participant Chat as "AgentExecutor Chat"
+  participant Run as "useAgentRun"
+  participant Sessions as "useSessions"
+  participant API as "executeAgent"
+
+  User->>Composer: type and press Enter
+  Composer->>Chat: onSubmit
+  Chat->>Chat: submit trims goal
+  Chat->>Sessions: addMessage user
+  Chat->>Run: execute text and attachment
+  Run->>API: POST stream with history
+  API-->>Run: answer_delta events
+  Run->>Sessions: updateMessage reply
+  Run->>Sessions: pushAgentEvent tool events
+  Sessions-->>Composer: messages re-render
 ```
 
-## Detailed component analysis
+## Chat shell
 
-### App.tsx: orchestrator and state hub
-Responsibilities:
-- Authentication lifecycle: initialize, refresh tokens, handle login/logout.
-- Tab management: track active tab and update on changes.
-- WebSocket integration: connect/disconnect, listen to events, update response state.
-- Conversation statistics: fetch via WebSocket client or HTTP fallback.
-- UI routing: render LoadingScreen, SignInScreen, or main app with settings/profile panels.
+`ChatHeader` receives the session title, `busy`, the history drawer state and three callbacks: toggle history, new chat, open settings. A session titled `New Chat` is displayed as `New chat`. `HistoryDrawer` lists sessions sorted by `updatedAt`, selects one, deletes one, or starts a new chat. `EmptyState` renders quick actions when the thread is empty. A quick action whose command ends in a space fills the composer, otherwise it submits immediately.
 
-State and effects:
-- Manages local state for API key, response, token visibility, conversation stats, and settings panel open state.
-- Subscribes to browser storage changes for API key updates.
-- Sends messages to background script to activate/deactivate AI frame.
+The model picker stores its choice through `loadModelChoice` and `saveModelChoice` in `entrypoints/utils/modelChoice.ts`, so the chosen provider and model survive a panel reload. `Composer` passes the choice up through `onModelChange`.
 
-Propagation pattern:
-- Passes authentication and token helpers to UnifiedSettingsMenu and ProfileSidebar.
-- Provides WebSocket connection status and response handler to UnifiedSettingsMenu.
+## Composer behaviour
 
-Customization and responsiveness:
-- Uses fixed positioning for settings panel with smooth transitions.
-- Applies backdrop filters and glass-morphism styling via CSS.
+The textarea auto-sizes on every value change: `height = clamp(scrollHeight, 24, 200)` in pixels. Enter submits and Shift+Enter inserts a newline, but the `onMenuKey` callback runs first so slash and mention navigation can consume arrow keys, Tab, Escape and Enter. While a run is active the textarea is disabled and shows `Working on it...`, and the send button becomes a stop button that calls `run.stop`.
 
-Accessibility and cross-browser compatibility:
-- Relies on browser APIs (storage, identity, tabs) and applies minimal DOM manipulation.
-- Global CSS keeps styling aligned across browsers.
+```mermaid
+flowchart TD
+  K["keydown in textarea"] --> M{"onMenuKey handled?"}
+  M -->|yes| X["stop"]
+  M -->|no| E{"Enter without Shift?"}
+  E -->|yes| S["onSubmit"]
+  E -->|no| N["insert newline"]
+  S --> T{"value trimmed?"}
+  T -->|empty| ERR["setError Please enter a goal"]
+  T -->|text| GO["execute text"]
+  SUB["Send button"] --> T
+  STOP["Stop button when busy"] --> R["run.stop"]
+```
 
-### UnifiedSettingsMenu: configuration management
-Responsibilities:
-- Hosts two tabs: Settings and Profile.
-- Settings tab: model selection, API key management, base URL, Google/JIIT connections, WebSocket auto-connect toggle.
-- Profile tab: displays user info, token age/expiry, and advanced details.
+The file input accepts images, PDFs, text, markdown, CSV, JSON, XML, Python, JavaScript, TypeScript, HTML and CSS (`ACCEPT` in `Composer.tsx`). A selected file shows a chip with a thumbnail for images, its name and size in KB. Upload state adds a spinner chip. The browser action button wraps the current text as `/browser-action <goal>`. The command parser only knows the agents in `AGENT_MAP`, so a command it does not map to `stage: "complete"` goes over the legacy socket path.
 
-State management:
-- Maintains active tab, selected LLM, auto-connect preference, and JIIT portal credentials.
-- Persists preferences to browser storage and localStorage.
+Dictation replaces the textarea with a listening strip: a dot, the word `Listening`, and 18 animated bars with staggered delays. `useVoiceInput` receives `onTranscript`, sets the goal, focuses the composer, and submits after 300ms when auto submit is on.
 
-Integration:
-- Receives authentication props from App.tsx and exposes callbacks for logout/manual refresh.
-- Uses CuteTextInput for secure input and handles Enter key submission.
+## Message rendering
 
-Styling and UX:
-- Fixed-position panel with smooth slide-in/out transitions.
-- Glass-morphism design with backdrop blur and gradient backgrounds.
-- Interactive elements include hover/focus states and subtle animations.
+`MessageList` finds the last assistant message and the index of the last user message. The reply being produced is that assistant message only when it comes after the last question. Otherwise, while `busy`, the list renders a waiting article with the agent mark and an `AgentTrace` with no events, which gives the work log its "Thinking" or "Working" header before any event arrives.
 
-### ProfileSidebar: user information display
-Responsibilities:
-- Displays user avatar, name, email, and browser info.
-- Shows token age/expiry and optional token visibility toggles.
-- Provides manual refresh and logout actions.
+The list scrolls to `scrollHeight` whenever the message count, busy flag or session id changes. `AssistantMessage` receives `live`, `playingId` and `onSpeak`. `AgentTrace` converts stored `AgentLoopEvent` items into `AgentEvent` objects and renders the shared `WorkLog` in compact mode.
 
-Props and behavior:
-- Controlled visibility via boolean prop; toggles via callback.
-- Uses helper functions from App.tsx to compute token age/expiry.
+## Settings sheet
 
-Styling:
-- Absolute positioning with shadow and gradient borders.
-- Collapsible advanced details section using native details/summary.
+`UnifiedSettingsMenu` returns `null` when closed. When open it renders a modal `role="dialog"` with `aria-modal`, and Escape closes it unless a nested dialog with `aria-modal="true"` is open. The sheet has three groups: account, "This browser" and "Backend".
 
-### ResponseSection: agent response display
-Responsibilities:
-- Renders agent responses in a scrollable container with monospace-friendly styling.
+```mermaid
+graph TB
+  SHEET["sheet dialog"]
+  SHEET --> ACC["AccountCard<br/>name, picture, sign out"]
+  SHEET --> BROWSER["This browser"]
+  BROWSER --> THEME["ThemeCard<br/>Segmented light, dark, system"]
+  BROWSER --> BRIDGE["BridgeSection<br/>local MCP status"]
+  SHEET --> BACK["Backend"]
+  BACK --> PROV["ApiProvider baseUrl"]
+  PROV --> SETTINGS["BackendSettings"]
+  SETTINGS --> SEC1["model"]
+  SETTINGS --> SEC2["subscriptions, apps, voice"]
+  SETTINGS --> SEC3["search, memory, telegram"]
+  SETTINGS --> SEC4["jiit, services, tools, agents"]
+```
 
-Usage:
-- Receives response string from App.tsx and conditionally renders when present.
+The section order is the `SECTIONS` array in the component: `model`, `subscriptions`, `apps`, `voice`, `search`, `memory`, `telegram`, `jiit`, `services`, `tools`, `agents`. `mcp` exists in `SettingsSectionId` and `SETTINGS_SECTION_LABELS`, but the `SECTIONS` array has no `mcp` entry. The local bridge card covers the status that matters in the panel. The `errorHint` tells the user that model, keys and connected apps need the backend, while theme and bridge do not.
 
-### LoadingScreen and SignInScreen: authentication flow
-- LoadingScreen: Minimal header and loading message while auth resolves.
-- SignInScreen: Animated onboarding with OAuth options and feature highlights.
+The backend base URL in the sheet is `localStorage.baseUrl || "http://localhost:5454"`, without the `VITE_API_URL` fallback used by `AgentExecutor`. If the backend is down, `BackendSettings` shows a retryable error instead of breaking the theme and bridge controls.
 
-Both screens integrate with useAuth hooks to trigger login flows and update state.
+## Legacy panel components
 
-### CuteTextInput: reusable input component
-Features:
-- Focus state with animated underline.
-- Enter key submission support.
-- Password/text modes with placeholder and controlled value.
+A few older panel components are still exported from `components/index.ts` and used by the legacy key path or by `App`. They are not part of `BackendSettings` and do not read the integrations query.
 
-Integration:
-- Used within UnifiedSettingsMenu for API key/base URL inputs.
+- `CuteTextInput`: an input with a focus border, an optional password type and an Enter handler. It is reused by the legacy settings form.
+- `ApiKeySection`: a Gemini key field with Save, tied to the `GEMINI_REQUEST` path in `background.ts`.
+- `SettingsSection`: a collapsible legacy settings block with the API key field and a `wsClient` status dot.
+- `WebSocketStatus`: a connected or disconnected indicator with a Disconnect or Reconnect button that calls `wsClient.connect()` or `wsClient.disconnect()`.
+- `MemoryInitModal`: a modal that posts profile text, a LinkedIn URL or an uploaded file to `/api/memory`, one endpoint per source.
 
-### SettingsSection and WebSocketStatus: compact controls
-- SettingsSection: Collapsible settings with API key input and WebSocket connection toggle.
-- WebSocketStatus: Simple indicator and reconnect button.
+`UnifiedSettingsMenu` is the current surface for new work. The legacy pieces stay because the `geminiApiKey` path still exists in `App.tsx`. When a legacy component needs a style shared with the console, move the style into `shared/ui` rather than copying it.
 
-### select.tsx: UI primitive
-- Provides a styled Select component set built on Radix UI with consistent theming and accessibility.
+## Auth screens
 
-## Dependency analysis
-Component and hook dependencies:
-- App.tsx depends on useAuth, useTabManagement, and useWebSocket.
-- UnifiedSettingsMenu depends on browser storage/localStorage and the WebSocket client.
-- ProfileSidebar consumes authentication props and helper functions.
-- ResponseSection consumes response state from App.tsx.
-- SignInScreen triggers authentication flows via useAuth.
+`SignInScreen` is the first run surface. It renders Google and GitHub buttons, the app mark, and a theme control. `handleLogin` in `useAuth` launches `browser.identity.launchWebAuthFlow`, posts the code to `/api/auth/exchange-code`, and stores `googleUser` in `browser.storage.local`. `LoadingScreen` is a minimal centered mark shown while the stored profile is read.
+
+If the backend has no credentials for the profile, the panel still opens. The sheet shows a "Server credentials missing" state, and the model tools fail with a clear message rather than blocking the chat.
+
+## Theme handling
+
+`App.tsx` stores the preference under the `theme` key and writes `data-theme="dark"` or `data-theme="light"` on the document element. The preference can be `system`, in which case a `matchMedia("(prefers-color-scheme: light)")` listener updates the attribute when the OS changes. `cycleTheme` rotates dark, light, system in that order. The settings sheet's `ThemeCard` offers the same three values directly.
+
+## Dependencies
 
 ```mermaid
 graph LR
-App["App.tsx"] --> Auth["useAuth.ts"]
-App --> Tabs["useTabManagement.ts"]
-App --> WS["useWebSocket.ts"]
-App --> Settings["UnifiedSettingsMenu.tsx"]
-App --> Profile["ProfileSidebar.tsx"]
-App --> Response["ResponseSection.tsx"]
-Settings --> Input["CuteTextInput.tsx"]
-Settings --> API["ApiKeySection.tsx"]
-Settings --> WSShort["SettingsSection.tsx"]
-Settings --> WSStatus["WebSocketStatus.tsx"]
-Settings --> Select["ui/select.tsx"]
-Profile --> Input
-Response --> CSS["App.css"]
+  EXEC["AgentExecutor"] --> RQ["@tanstack/react-query"]
+  EXEC --> SHQ["@agentic-browser/query"]
+  EXEC --> SHUI["@agentic-browser/ui"]
+  EXEC --> SHAG["@agentic-browser/agent"]
+  EXEC --> LOCAL["utils/modelChoice<br/>utils/executeAgent"]
+  COMP["Composer"] --> SHUI
+  COMP --> ICONS["@agentic-browser/icons"]
+  LIST["MessageList"] --> SHUI
+  SET["UnifiedSettingsMenu"] --> SHSET["@agentic-browser/settings-ui"]
+  SET --> SHPROV["@agentic-browser/query"]
 ```
 
-## Performance considerations
-- Minimize re-renders by lifting state to App.tsx and passing only necessary props down.
-- Debounce or throttle frequent updates (e.g., storage change listeners).
-- Use lazy initialization for heavy resources (e.g., WebSocket client setup).
-- Keep component trees shallow; avoid deep nesting of styled containers.
-- Prefer CSS transitions for animations rather than JavaScript-driven ones.
-- Use browser storage efficiently; batch writes and avoid excessive reads.
+React 19.3.1 and TanStack Query 5.108.1 come from the extension package. `@agentic-browser/shared` is a `workspace:*` dependency, and its exports `./ui`, `./query`, `./icons`, `./settings-ui` and `./agent` are the only shared surfaces this folder imports.
 
-## Troubleshooting guide
-Common issues and resolutions:
-- Authentication failures: Verify backend service availability and OAuth configuration. Check alerts emitted during login flows.
-- WebSocket disconnections: Confirm auto-connect preference and network connectivity; use the reconnect button in settings.
-- Tab updates not reflected: Ensure tab listeners are registered and cleaned up properly.
-- Styling inconsistencies: Confirm global fonts are loaded and CSS selectors match component classes.
+## Performance
 
-## Conclusion
-Props down, callbacks up. Shared CSS keeps the panel consistent. Hooks own auth, tabs, and socket state so presentational pieces stay dull.
+- `MessageList` scrolls on a small dependency list (`messages.length`, `busy`, `sessionId`), not on every render.
+- The composer auto-size writes one style property per change and does not measure when the value is unchanged.
+- `AgentTrace` renders a compact `WorkLog`, and `WorkLog` re-renders once per second only while a run is live (`useNow`).
+- Menus are mounted only when open: `HistoryDrawer`, `SlashMenu` and `MentionMenu` each have a conditional guard in `Chat`.
+- Attachments are uploaded by `useAttachment` before submit, so the chat turn carries a path rather than file bytes.
 
+## Troubleshooting
+
+- Symptom: the composer does nothing on Enter. Cause: `submit` trims an empty goal and sets "Please enter a goal for the agent". Fix: type text first.
+- Symptom: slash menu swallows Enter. Cause: `onMenuKey` returns true when a suggestion is selected. Fix: press Escape to close the menu, then Enter.
+- Symptom: the panel shows the settings sheet and not the chat. Cause: `useAuth` set `shouldRedirectToSettings` on first run. Fix: close the sheet; `setupCompleted` is stored so it does not repeat.
+- Symptom: theme does not follow the OS. Cause: the stored preference is not `system`. Fix: cycle to system in the settings sheet or the sign in screen.
+- Symptom: model choice resets. Cause: the panel is running with a different origin or storage was cleared. Fix: pick the model again; the choice is saved under the extension storage used by `modelChoice.ts`.
+
+## Appendix
+
+### Implementation examples
+- Provider and base URL, `AgentExecutor` and `backendBase`.
+- Submit path, `submit` in `Chat`.
+- Menu keyboard handling, `onMenuKey` in `Chat`.
+- Composer growth, `MIN_HEIGHT` and `MAX_HEIGHT` effects.
+- Waiting state, `liveId` and `waitingForReply` in `MessageList`.
+- Settings sections, `SECTIONS` in `UnifiedSettingsMenu`.
+
+### Source files
+- `clients/browser-extension/entrypoints/sidepanel/App.tsx`
+- `clients/browser-extension/entrypoints/sidepanel/AgentExecutor.tsx`
+- `clients/browser-extension/entrypoints/sidepanel/chat/Composer.tsx`
+- `clients/browser-extension/entrypoints/sidepanel/chat/MessageList.tsx`
+- `clients/browser-extension/entrypoints/sidepanel/components/UnifiedSettingsMenu.tsx`

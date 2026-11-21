@@ -1,307 +1,240 @@
 # Website analysis integration
 
-## Introduction
-Fetch page Markdown, optional client HTML, prompt chain for Q&A, and the validation endpoint for injection checks.
+The website integration answers a question about a page using two views of the same content: a server-side markdown fetch and an optional client-rendered DOM. `routers/website.py` exposes `POST /api/genai/website/`, while `routers/website_validator.py` exposes `POST /api/validator/validate-website` for prompt injection checks.
 
-## Project structure
-The website analysis pipeline spans several layers:
-- Routers define HTTP endpoints for website analysis and validation.
-- Services orchestrate content fetching, conversion, and LLM-driven answer generation.
-- Tools implement HTML-to-markdown conversion, server-side markdown fetching, and a super scraper for advanced content extraction.
-- Prompts define the instruction templates and chains used to synthesize answers.
-- Configuration manages environment variables and logging.
+The two sources are deliberately kept separate in the prompt. The server fetch is usually cleaner but can miss JavaScript-rendered content. The client HTML reflects what the user actually sees, including authenticated views, so the prompt tells the model to prefer it when the two disagree.
+
+Key capabilities:
+- Server-side markdown fetch through the Jina reader endpoint.
+- Client HTML to markdown conversion with BeautifulSoup and html2text.
+- A prompt that takes both contexts and cites the client view on conflict.
+- Optional file attachments through the shared attachment service.
+- A prompt injection validator over converted page text.
+- No authentication. Any reachable URL or supplied HTML can be analysed.
+
+## Repository layout
+
+The route module is thin. The service fetches, converts, and renders the prompt. The tools package exports two functions and keeps a third scraper that the service does not use.
 
 ```mermaid
 graph TB
-subgraph "Routers"
-R1["website.py<br/>POST /"]
-R2["website_validator.py<br/>POST /validate-website"]
-end
-subgraph "Services"
-S1["website_service.py<br/>WebsiteService"]
-S2["website_validator_service.py<br/>validate_website"]
-end
-subgraph "Tools"
-T1["website_context/__init__.py<br/>Exports"]
-T2["html_md.py<br/>return_html_md"]
-T3["request_md.py<br/>return_markdown"]
-T4["super_scraper.py<br/>clean_response"]
-end
-subgraph "Prompts"
-P1["website.py<br/>Prompt + Chain"]
-P2["prompt_injection_validator.py<br/>Validation Template"]
-end
-subgraph "Models"
-M1["requests/website.py<br/>WebsiteRequest"]
-M2["response/website.py<br/>WebsiteResponse"]
-end
-subgraph "Config"
-C1["core/config.py<br/>Environment & Logging"]
-end
-R1 --> S1
-R2 --> S2
-S1 --> T1
-T1 --> T2
-T1 --> T3
-S1 --> P1
-S2 --> P2
-S1 --> M1
-S1 --> M2
-S2 --> M1
-S2 --> M2
-S1 --> C1
-S2 --> C1
+  subgraph Routes
+    Web["routers/website.py<br/>POST /"]
+    Val["routers/website_validator.py<br/>POST /validate-website"]
+  end
+  subgraph Service
+    Svc["services/website_service.py<br/>WebsiteService"]
+    VSvc["services/website_validator_service.py"]
+  end
+  subgraph Tools
+    Fetch["tools/website_context/request_md.py<br/>markdown_fetcher"]
+    Html["tools/website_context/html_md.py<br/>html_md_convertor"]
+    Scraper["tools/website_context/super_scraper.py<br/>WebBaseLoader"]
+  end
+  subgraph Prompts
+    WP["prompts/website.py<br/>get_chain, get_answer"]
+    VP["prompts/prompt_injection_validator.py"]
+  end
+  Web --> Svc
+  Val --> VSvc
+  Svc --> Fetch
+  Svc --> Html
+  Svc --> WP
+  VSvc --> Html
+  VSvc --> VP
+  VSvc --> LLM["core/llm.py llm"]
+  Scraper -. "not imported by service" .-> Scraper
 ```
 
-## Core components
-- WebsiteService runs website analysis:
- - Fetches server-side markdown via a Jina AI proxy.
- - Converts client-provided HTML to markdown.
- - Builds a prompt chain with server and client contexts plus optional chat history.
- - Optionally integrates an attached file via the Google GenAI SDK.
- - Returns a synthesized answer from the LLM.
-- WebsiteValidatorService validates HTML content by converting it to markdown and checking for prompt injection risks using a dedicated prompt and LLM.
-- Routers expose endpoints for website analysis and validation with request/response models.
-- Tools implement:
- - HTML-to-markdown conversion.
- - Server-side markdown fetching via Jina AI.
- - Super scraper for advanced content extraction with DOM filtering and asynchronous loading.
-- Prompts define the instruction templates and chains for answer synthesis and validation.
-- Configuration manages environment variables and logging.
+## Building blocks
 
-## Architecture overview
-Stack from the outside in:
-- HTTP layer: FastAPI routers accept requests and delegate to services.
-- Service layer: WebsiteService and WebsiteValidatorService encapsulate business logic.
-- Tool layer: Utilities for HTML/markdown conversion and content fetching.
-- Prompt layer: Instruction templates and chains for LLM interactions.
-- Configuration layer: Environment and logging setup.
+- `WebsiteRequest`: `url`, `question`, `chat_history`, `client_html`, and `attached_file_path`.
+- `WebsiteService.__init__`: builds a chain with `get_chain()`.
+- `WebsiteService.generate_answer`: fetches server markdown, converts client HTML, flattens chat history, and calls either `get_answer` or `answer_with_attachment`.
+- `markdown_fetcher`: `requests.get("https://r.jina.ai/" + url)` and returns response text.
+- `html_md_convertor`: parses the HTML, takes `soup.body` when present, prettifies it, and runs `html2text`.
+- `prompt`: `PromptTemplate` with `server_context`, `client_context`, `question`, and `chat_history`.
+- `get_chain`: `RunnableParallel | prompt | _current_client() | StrOutputParser`.
+- `get_answer`: builds `prompt | _current_client() | parser` and invokes it.
+- `WebsiteValidatorRequest`: `html` string.
+- `WebsiteValidatorResponse`: `is_safe` boolean.
+- `validate_website`: converts HTML, runs the injection prompt, and compares the stripped result to `"true"`.
+
+## How it fits together
+
+The website route validates the two required fields, then awaits the service. The service catches every exception and returns an apology string. An HTTP 500 from this route therefore means the router raised before the service call, for example on a missing field.
 
 ```mermaid
 sequenceDiagram
-participant Client as "Client"
-participant Router as "website.py"
-participant Service as "WebsiteService"
-participant Tools as "Tools"
-participant Prompt as "Prompts"
-participant LLM as "LLM"
-Client->>Router : POST "/" with WebsiteRequest
-Router->>Service : generate_answer(url, question, chat_history, client_html)
-Service->>Tools : markdown_fetcher(url)
-Tools-->>Service : server_markdown
-Service->>Tools : html_md_convertor(client_html)
-Tools-->>Service : client_markdown
-Service->>Prompt : get_answer(chain, question, server_markdown, chat_history, client_markdown)
-Prompt->>LLM : invoke(prompt + inputs)
-LLM-->>Prompt : answer
-Prompt-->>Service : answer
-Service-->>Router : answer
-Router-->>Client : WebsiteResponse
+  participant C as Client
+  participant R as website router
+  participant S as WebsiteService
+  participant J as markdown_fetcher
+  participant H as html_md_convertor
+  participant P as prompt chain
+  participant L as LLM
+  C->>R: POST /api/genai/website/
+  R->>R: require url and question
+  R->>S: generate_answer(url, question, history, client_html)
+  S->>J: r.jina.ai/url
+  J-->>S: server markdown or error text
+  alt client_html present
+    S->>H: convert DOM to markdown
+    H-->>S: client markdown
+  end
+  alt attached_file_path set
+    S->>P: render prompt with both contexts
+    S->>L: answer_with_attachment(rendered, path)
+  else no attachment
+    S->>P: get_answer(chain, question, server, history, client)
+    P->>L: prompt plus contexts
+  end
+  L-->>S: answer text
+  S-->>R: answer
+  R-->>C: answer field
 ```
 
-## Detailed component analysis
+The initial `self.chain` is not actually used by `get_answer`. That helper rebuilds the pipeline from the module-level `prompt` and the current default client, which is how a model change made after service construction still applies.
 
-### WebsiteService
-WebsiteService coordinates:
-- Server-side markdown retrieval via Jina AI.
-- Client-side HTML-to-markdown conversion.
-- Chat history formatting.
-- Optional attached file processing via Google GenAI SDK.
-- LLM answer synthesis using a composed prompt chain.
+## Fetching and converting
 
-Key processing logic:
-- Validates presence of required fields.
-- Fetches server markdown and logs length.
-- Converts client HTML to markdown when provided.
-- Formats chat history into a string.
-- Handles attached file upload and generation via Google GenAI if present.
-- Falls back to LLM-based answer synthesis otherwise.
+`markdown_fetcher` prefixes the URL with `https://r.jina.ai/` and returns the response body as text. It has no timeout argument, so a slow reader service can hold the request open. On an exception it returns `Error fetching content from <url>: ...` rather than raising, and that error string becomes server context.
+
+`html_md_convertor` is local and deterministic. It parses with `html.parser`, prefers the `body` element, prettifies the subtree, and converts the result with `html2text`. It does not run scripts, follow links, or fetch subresources.
 
 ```mermaid
 flowchart TD
-Start(["generate_answer Entry"]) --> Validate["Validate url and question"]
-Validate --> FetchServer["Fetch server markdown via Jina AI"]
-FetchServer --> ConvertClient{"client_html provided?"}
-ConvertClient --> |Yes| ToMarkdown["Convert client HTML to markdown"]
-ConvertClient --> |No| SkipClient["Skip client markdown"]
-ToMarkdown --> BuildHistory["Format chat history"]
-SkipClient --> BuildHistory
-BuildHistory --> Attached{"attached_file_path provided?"}
-Attached --> |Yes| UploadFile["Upload file via Google GenAI SDK"]
-UploadFile --> GenerateAnswer["Generate content with LLM"]
-Attached --> |No| UseChain["Use prompt chain to get answer"]
-GenerateAnswer --> Return["Return answer"]
-UseChain --> Return
-Return --> End(["Exit"])
+  A["generate_answer"] --> B["markdown_fetcher(url)"]
+  B --> C{"requests error?"}
+  C -- yes --> D["return error string as server context"]
+  C -- no --> E["Jina markdown text"]
+  A --> F{"client_html?"}
+  F -- yes --> G["BeautifulSoup html.parser"]
+  G --> H{"body element?"}
+  H -- yes --> I["use body"]
+  H -- no --> J["use whole soup"]
+  I --> K["prettify"]
+  J --> K
+  K --> L["html2text"]
+  L --> M["client markdown"]
+  F -- no --> N["Not available, no client HTML provided"]
+  D --> O["prompt inputs"]
+  E --> O
+  M --> O
+  N --> O
 ```
 
-### WebsiteValidatorService
-WebsiteValidatorService performs:
-  - HTML-to-markdown conversion.
-- Prompt injection risk assessment using a dedicated prompt template and LLM.
-- Boolean safety determination based on model output.
+`super_scraper.py` contains a separate `clean_response` function built on `langchain_community.document_loaders.WebBaseLoader` with a `SoupStrainer` class filter. The package `__init__.py` does not export it and `WebsiteService` does not import it. Treat it as an alternate scraper kept in the tree, not part of the live path.
+
+## The prompt
+
+The prompt names the model `MDPageChat` and gives it explicit rules. It must not invent details, must reply `Data not available.` when the two contexts do not cover the question, and must prefer the client context on conflict. It asks for headings in hierarchical order, exact code blocks, links with text and URL, images with alt text and source, and tables that preserve headers.
+
+Summaries are capped at 150 words unless the user asks for more. Formatting is plain markdown with bullets, tables, and LaTeX where useful. Chat history is flattened by the service into `role: content` lines before it reaches the prompt.
+
+The service passes `Not available (no client HTML provided).` when `client_html` is empty. The model is told that this is an absent source, not a page that literally says that.
+
+## Attachments
+
+When `attached_file_path` is set, the service does not invoke the chain. It renders the same prompt, then calls `services.attachments.answer_with_attachment(rendered, path)`. That function adds the file as a message part and makes one model call. The difference matters for debugging: a chain failure inside `get_answer` raises into the service catch, while an attachment failure is raised by the attachment helper and caught the same way.
+
+```mermaid
+flowchart LR
+  A["attached_file_path set?"] --> B["render prompt with server and client context"]
+  B --> C["answer_with_attachment(rendered, path)"]
+  C --> D["Attachment image or text block"]
+  D --> E["one model call"]
+  E --> F["answer string"]
+  A -- no --> G["get_answer chain"]
+  G --> F
+```
+
+The attachment path must already be under `uploads/`. A path from the client's local disk is refused by the attachment service, and the service turns the refusal into its apology string.
+
+## The validator
+
+The validator route is a plain `def`, so FastAPI runs it in the threadpool. It takes raw HTML, converts it with `return_html_md`, and sends the markdown through the injection prompt. The result is stripped of backticks and lowercased, then compared to `"true"`. Anything else is `is_safe: false`.
 
 ```mermaid
 sequenceDiagram
-participant Client as "Client"
-participant Router as "website_validator.py"
-participant Service as "validate_website"
-participant Tools as "html_md.py"
-participant Prompt as "prompt_injection_validator.py"
-participant LLM as "LLM"
-Client->>Router : POST "/validate-website" with WebsiteValidatorRequest
-Router->>Service : validate_website(request)
-Service->>Tools : return_html_md(html)
-Tools-->>Service : markdown
-Service->>Prompt : create PromptTemplate + LLM chain
-Service->>LLM : invoke({markdown_text})
-LLM-->>Service : result
-Service->>Service : parse result to is_safe
-Service-->>Router : WebsiteValidatorResponse
-Router-->>Client : WebsiteValidatorResponse
+  participant C as Client
+  participant R as validate_website_endpoint
+  participant S as validate_website
+  participant H as return_html_md
+  participant P as injection prompt
+  participant L as llm
+  C->>R: POST /api/validator/validate-website
+  R->>S: WebsiteValidatorRequest
+  S->>H: html to markdown
+  H-->>S: markdown text
+  S->>P: PromptTemplate
+  P->>L: invoke markdown
+  L-->>P: content
+  P-->>S: content
+  S->>S: strip backticks, lowercase, compare true
+  S-->>R: is_safe boolean
+  R-->>C: is_safe
 ```
 
-### Tools: HTML to Markdown and server-side fetching
-- HTML-to-Markdown converter uses BeautifulSoup and html2text to normalize and convert HTML bodies to markdown.
-- Server-side markdown fetcher uses a Jina AI proxy to retrieve clean markdown from URLs.
-- Super scraper uses WebBaseLoader with BeautifulSoup filters and asynchronous loading to extract structured content.
+There is no try/except in the service or the route, so an LLM error becomes a 500 from FastAPI. The validator also has no size limit. A very large HTML payload is converted in full before the model call.
 
-```mermaid
-graph LR
-A["HTML Input"] --> B["BeautifulSoup Parser"]
-B --> C["Normalize Body"]
-C --> D["html2text Conversion"]
-D --> E["Markdown Output"]
-F["URL Input"] --> G["Jina AI Proxy"]
-G --> H["Clean Markdown Output"]
-I["URL Input"] --> J["WebBaseLoader"]
-J --> K["SoupStrainer Filter"]
-K --> L["Async Load Documents"]
-L --> M["Structured Document Output"]
-```
-
-### Prompts and chains
-- The website prompt defines a two-context synthesis strategy: server-fetched markdown and client-rendered markdown, with guidelines for summaries, structure, links/media, code, metadata, data analysis, and formatting.
-- A runnable chain composes the prompt with the LLM client and an output parser.
-- The validator prompt checks for prompt injection attempts and returns a boolean safety signal.
-
-```mermaid
-classDiagram
-class PromptTemplate {
-+template : string
-+input_variables : list
-}
-class RunnableLambda {
-+invoke(data) any
-}
-class RunnableParallel {
-+invoke(inputs) dict
-}
-class StrOutputParser {
-+parse(output) string
-}
-PromptTemplate <.. RunnableLambda : "used by"
-RunnableParallel --> PromptTemplate : "feeds"
-PromptTemplate --> StrOutputParser : "outputs"
-```
-
-### Request/Response models
-- WebsiteRequest includes URL, question, optional chat history, optional client HTML, and optional attached file path.
-- WebsiteResponse wraps the generated answer.
-
-```mermaid
-classDiagram
-class WebsiteRequest {
-+string url
-+string question
-+dict[] chat_history
-+string client_html
-+string attached_file_path
-}
-class WebsiteResponse {
-+string answer
-}
-```
-
-### MCP server integration
-The MCP server exposes tools for website analysis:
-- website.fetch_markdown: Fetches markdown content for a given URL via a Jina proxy.
-- website.html_to_md: Converts raw HTML to markdown.
-
-```mermaid
-sequenceDiagram
-participant Client as "MCP Client"
-participant MCP as "MCP Server"
-Client->>MCP : website.fetch_markdown({url})
-MCP-->>Client : markdown content
-Client->>MCP : website.html_to_md({html})
-MCP-->>Client : markdown content
-```
-
-## Dependency analysis
-- WebsiteService depends on:
- - Tools for markdown fetching and HTML conversion.
- - Prompts for constructing the answer chain.
- - Configuration for logging.
-- WebsiteValidatorService depends on:
- - Tools for HTML-to-markdown conversion.
- - Validator prompt and LLM for safety assessment.
-- Routers depend on:
- - Models for request/response validation.
- - Services for business logic.
+## Dependencies
 
 ```mermaid
 graph TB
-WS["WebsiteService"] --> TMF["markdown_fetcher"]
-WS --> HMC["html_md_convertor"]
-WS --> PROMPT["website.py Prompt Chain"]
-WS --> CFG["config.py Logger"]
-WV["WebsiteValidatorService"] --> HMC
-WV --> VPROMPT["prompt_injection_validator.py"]
-WR["website.py Router"] --> WS
-WVR["website_validator.py Router"] --> WV
-WR --> WM["WebsiteRequest/Response Models"]
-WVR --> WM
+  Web["routers/website.py"] --> Svc["services/website_service.py"]
+  Val["routers/website_validator.py"] --> VSvc["services/website_validator_service.py"]
+  Svc --> Fetch["request_md.py"]
+  Svc --> Html["html_md.py"]
+  Svc --> Prompt["prompts/website.py"]
+  Svc --> Attach["services/attachments.py"]
+  Fetch --> Requests["requests"]
+  Fetch --> Jina["r.jina.ai"]
+  Html --> BS["beautifulsoup4"]
+  Html --> H2T["html2text"]
+  Prompt --> LLM["core/llm.py"]
+  VSvc --> Html
+  VSvc --> VPrompt["prompts/prompt_injection_validator.py"]
+  VSvc --> LLM
 ```
 
-## Performance considerations
-- Asynchronous loading: The super scraper uses asynchronous document loading to improve throughput when fetching multiple pages.
-- Selective parsing: BeautifulSoup filters limit parsing to relevant DOM sections, reducing overhead.
-- Caching and reuse: Reuse server-fetched markdown and client-provided markdown to avoid redundant conversions.
-- Rate limiting and retries: Integrate retry logic and backoff when calling external services like Jina AI and Google GenAI.
-- Timeout configuration: Set explicit timeouts for network requests to prevent long blocking operations.
-- Chunking and pagination: For very large pages, consider chunking content before passing to the LLM to manage token limits.
-- Environment tuning: Adjust logging levels and environment variables for production deployments to minimize overhead.
+## Performance and limits
 
-## Troubleshooting guide
-Common issues and resolutions:
-- HTTP 400/500 errors from website router:
- - Ensure URL and question are provided in the request payload.
- - Check service logs for detailed error messages.
-- Empty or malformed markdown:
- - Verify the URL resolves correctly and returns HTML.
- - Confirm client HTML is well-formed when passed for conversion.
-- Prompt injection validation failures:
- - Review the validator response and sanitize HTML accordingly.
- - Consider additional sanitization steps before conversion.
-- Google GenAI file processing errors:
- - Confirm API keys are configured and accessible.
- - Validate the file path and permissions.
-- Network timeouts or rate limits:
- - Add retry logic with exponential backoff.
- - Monitor external service availability and adjust timeouts.
+- The server fetch has no explicit timeout and runs synchronously inside an async service method.
+- `html_md_convertor` runs on the event loop thread and holds the whole DOM string in memory.
+- The validator makes one model call per request after converting the whole document.
 
-## Conclusion
-POST a URL and question for answers; use the validator before trusting page text in a prompt. Client HTML helps when the server fetch is a shell.
+## Troubleshooting
 
-## Appendices
+- The answer ignores the live page: `client_html` was not sent. The server fetch can see a different page than the logged-in browser.
+- Server context starts with `Error fetching content from`: the Jina request failed and the error string was passed to the model as context.
+- The model replies `Data not available.`: neither context covered the question, or both were mostly navigation text.
+- 400 `url and question are required`: one field was empty or missing.
+- Attachment refused: the path was outside `uploads/`. Send the `path` returned by `/api/upload/`.
+- Validator always returns false: the model did not answer exactly `true`, or the page was flagged.
 
-### Example workflows
-- Basic website analysis:
- - Client posts WebsiteRequest to the website router.
- - Service fetches server markdown, optionally converts client HTML, builds the prompt chain, and returns an answer.
-- Website validation:
- - Client posts WebsiteValidatorRequest to the validator router.
- - Service converts HTML to markdown and runs the validator prompt; returns a safety decision.
-- Super scraper usage:
- - Invoke the super scraper to asynchronously load and filter content from a URL, returning a structured document for downstream processing.
+## Appendix
+
+### API endpoints
+
+| Method | Path | Body | Response |
+| --- | --- | --- | --- |
+| POST | `/api/genai/website/` | `WebsiteRequest` | `{"answer": str}` |
+| POST | `/api/validator/validate-website` | `{"html": str}` | `{"is_safe": bool}` |
+
+### Implementation examples
+
+- `markdown_fetcher("https://example.com")` fetches `https://r.jina.ai/https://example.com`.
+- `html_md_convertor("<html><body><h1>Hi</h1></body></html>")` returns markdown with `# Hi`.
+- `prompt.format(server_context, client_context, question, chat_history)` builds the model input.
+
+### Source files
+
+- `routers/website.py`
+- `services/website_service.py`
+- `tools/website_context/request_md.py`
+- `tools/website_context/html_md.py`
+- `prompts/website.py`
+- `routers/website_validator.py`
+- `services/website_validator_service.py`
+- `tools/website_context/super_scraper.py`

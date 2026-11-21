@@ -1,244 +1,239 @@
 # Calendar integration
 
-## Introduction
-Google Calendar path from extension OAuth through FastAPI to the Calendar API. List and create flows, token lifecycle, timezones.
+The calendar integration lists upcoming events and creates new ones on the user's primary Google Calendar. `routers/calendar.py` exposes `/api/calendar/events` and `/api/calendar/create`. The create route resolves a Google access token from the credential store. The list route does not take a token and goes through Composio.
 
-## Project structure
-The calendar integration spans three layers:
-- Frontend extension: handles OAuth2 login, token storage, and token refresh.
-- Backend API: exposes endpoints to list and create calendar events using an access token.
-- Tools layer: wraps Google Calendar API calls (HTTP requests) for listing and creating events.
+The list route and the create route do not share a service path. `/events` calls the `calendar_agent` tool with no access token, so the route goes through Composio's `googlecalendar` toolkit. `/create` calls `CalendarService`, which always uses the Google Calendar REST API with the stored OAuth token.
+
+Key capabilities:
+- Upcoming event listing through Composio, ordered by start time and single events expanded.
+- Event creation with summary, start, end, and description.
+- ISO 8601 validation on both timestamps before any network call.
+- One Google credential shared with Gmail, YouTube, and Google Search.
+- A 401 `needs_reauth` response when the stored token cannot be refreshed.
+- Agent tools for reading and creating events.
+
+## Repository layout
+
+The route module owns validation. The service owns the Google tool call. The `calendar_agent` tool is shared with the agent and has a Composio fallback.
 
 ```mermaid
 graph TB
-subgraph "Extension (Browser)"
-UA["useAuth.ts<br/>OAuth2 flow, token refresh"]
-end
-subgraph "Backend API"
-API["FastAPI app<br/>main.py"]
-R["Calendar router<br/>routers/calendar.py"]
-S["CalendarService<br/>services/calendar_service.py"]
-end
-subgraph "Tools Layer"
-T1["get_calendar_events<br/>tools/calendar/get_calender_events.py"]
-T2["create_calendar_event<br/>tools/calendar/create_calender_events.py"]
-end
-UA --> API
-API --> R
-R --> S
-S --> T1
-S --> T2
+  subgraph Routes
+    Events["POST /api/calendar/events"]
+    Create["POST /api/calendar/create"]
+  end
+  subgraph Service
+    Svc["services/calendar_service.py<br/>CalendarService"]
+  end
+  subgraph Tools
+    List["tools/calendar/get_calender_events.py"]
+    Make["tools/calendar/create_calender_events.py"]
+    Agent["agents/react_tools.py<br/>calendar_agent"]
+    CreateAgent["calendar_create_event_agent"]
+  end
+  subgraph Auth
+    Token["_token()"]
+    Creds["OAuthCredentialsService"]
+    Google["google credential row"]
+  end
+  Events --> Agent
+  Create --> Token
+  Create --> Svc
+  Svc --> Make
+  Token --> Creds
+  Creds --> Google
+  Agent --> List
+  Agent --> Composio["Composio googlecalendar"]
+  CreateAgent --> Composio
+  CreateAgent --> Make
 ```
 
-## Core components
-- CalendarService: orchestrates calendar operations by delegating to tools that call Google Calendar API.
-- Routers: FastAPI endpoints validating inputs and invoking CalendarService.
-- Tools: HTTP clients to Google Calendar API for listing and creating events.
-- Extension auth hook: manages OAuth2 login, token refresh, and storage.
+## Building blocks
 
-Key responsibilities:
-- Event listing: fetches upcoming primary calendar events with pagination and ordering.
-- Event creation: posts a new event to the primary calendar with ISO 8601 timestamps and UTC timezone.
-- Authentication: obtains and refreshes access tokens via browser identity APIs and backend token exchange endpoints.
+- `EventsRequest`: `max_results` defaults to 10.
+- `CreateEventRequest`: `summary`, `start_time`, `end_time`, and `description` with a default of `Created via API`.
+- `_token`: resolves `get_access_token("calendar")` and maps `NeedsReauth` to HTTP 401 with `{"code": "needs_reauth", "provider": "google", "reason": ...}`.
+- `_is_isoformat`: accepts anything `datetime.fromisoformat` can parse.
+- `CalendarService.list_events`: calls `get_calendar_events` with a max result count.
+- `CalendarService.create_event`: calls `create_calendar_event` with the summary, times, and description.
+- `get_calendar_events`: GETs `https://www.googleapis.com/calendar/v3/calendars/primary/events`.
+- `create_calendar_event`: POSTs to the same collection with a UTC event body.
+- `calendar_agent`: `StructuredTool` named `calendar_agent`, bounded to 1 through 25 results.
+- `calendar_create_event_agent`: `StructuredTool` named `calendar_create_event`.
 
-## Architecture overview
-Call path:
-- Extension frontend authenticates the user and stores tokens.
-- Backend routes accept validated requests and delegate to the service layer.
-- Service layer invokes tools that call Google Calendar API.
-- Tools encapsulate HTTP calls and error handling.
+## How it fits together
+
+The two routes take different paths, and that difference matters when debugging. The list route invokes `calendar_agent` without a token, so it only has the Composio branch. The create route resolves the Google token and calls `CalendarService`.
 
 ```mermaid
 sequenceDiagram
-participant Ext as "Extension UI"
-participant Auth as "useAuth.ts"
-participant BE as "FastAPI Router"
-participant SVC as "CalendarService"
-participant Tool as "Tools (HTTP)"
-participant GCAL as "Google Calendar API"
-Ext->>Auth : "Initiate login"
-Auth->>BE : "Exchange authorization code for tokens"
-BE-->>Auth : "Access/Refresh tokens"
-Ext->>BE : "POST /api/calendar/events {access_token, max_results}"
-BE->>SVC : "list_events()"
-SVC->>Tool : "get_calendar_events()"
-Tool->>GCAL : "GET /calendar/v3/calendars/primary/events"
-GCAL-->>Tool : "200 + events"
-Tool-->>SVC : "events"
-SVC-->>BE : "events"
-BE-->>Ext : "{events}"
-Ext->>BE : "POST /api/calendar/create {access_token, summary, start_time, end_time}"
-BE->>SVC : "create_event()"
-SVC->>Tool : "create_calendar_event()"
-Tool->>GCAL : "POST /calendar/v3/calendars/primary/events"
-GCAL-->>Tool : "200 + event"
-Tool-->>SVC : "event"
-SVC-->>BE : "event"
-BE-->>Ext : "{result : created, event}"
+  participant C as Client
+  participant R as routers/calendar.py
+  participant T as calendar_agent
+  participant X as Composio
+  participant S as CalendarService
+  participant G as Google Calendar API
+  C->>R: POST /events with max_results
+  R->>T: ainvoke max_results, no token
+  T->>X: execute googlecalendar events list
+  X-->>T: events or error
+  T-->>R: formatted event text
+  R-->>C: answer
+  C->>R: POST /create with summary and times
+  R->>R: validate ISO strings
+  R->>S: create_event(token, summary, start, end)
+  S->>G: POST primary events
+  G-->>S: event JSON
+  S-->>R: event
+  R-->>C: result created and event
 ```
 
-## Detailed component analysis
+The `description` field defaults at the model layer and again in `CalendarService.create_event`. An omitted description becomes `Created via API` before it reaches the tool.
 
-### CalendarService
-- Responsibilities:
- - List events: delegates to the listing tool with access token and max results.
- - Create event: delegates to the creation tool with access token, summary, start/end times, and optional description.
-- Error handling: logs exceptions and re-raises to the caller.
+## Listing events
 
-```mermaid
-classDiagram
-class CalendarService {
-+list_events(access_token, max_results) list
-+create_event(access_token, summary, start_time, end_time, description) dict
-}
-class GetCalendarEvents {
-+get_calendar_events(access_token, max_results) list
-}
-class CreateCalendarEvent {
-+create_calendar_event(access_token, summary, start_time, end_time, description) dict
-}
-CalendarService --> GetCalendarEvents : "delegates"
-CalendarService --> CreateCalendarEvent : "delegates"
-```
-
-### Routers: calendar endpoints
-- GET-style endpoints (POST with request bodies) for:
- - Listing events: validates presence of access token and max results; forwards to service.
- - Creating events: validates presence of access token, summary, and ISO 8601 start/end times; forwards to service.
-- Request validation:
- - Enforces ISO 8601 format for start_time and end_time.
- - Returns HTTP 400 for invalid or missing fields.
-- Response:
- - Listing returns a list of events.
- - Creation returns a result and the created event object.
+The list tool asks for `maxResults`, `orderBy=startTime`, `singleEvents=true`, and `timeMin` set to the current UTC time with a trailing `Z`. It returns `response.json()["items"]` and raises on any non-200 response. The request timeout is 8 seconds.
 
 ```mermaid
 flowchart TD
-Start(["POST /api/calendar/events"]) --> CheckAT["Validate access_token present"]
-CheckAT --> ATOK{"access_token OK?"}
-ATOK --> |No| E400["HTTP 400"]
-ATOK --> |Yes| CallSvc["Call CalendarService.list_events()"]
-CallSvc --> Done(["Return {events}"])
-Start2(["POST /api/calendar/create"]) --> Vars["Validate access_token, summary, start_time, end_time"]
-Vars --> VOK{"All required fields?"}
-VOK --> |No| E400_2["HTTP 400"]
-VOK --> |Yes| ISO["Validate ISO 8601 for start_time and end_time"]
-ISO --> ISOOK{"ISO valid?"}
-ISOOK --> |No| E400_3["HTTP 400"]
-ISOOK --> |Yes| CallSvc2["Call CalendarService.create_event()"]
-CallSvc2 --> Done2(["Return {result: created, event}"])
+  A["POST /api/calendar/events"] --> B["max_results default 10"]
+  B --> C["calendar_agent.ainvoke with no token"]
+  C --> D["Composio googlecalendar"]
+  D --> E{"tool call ok?"}
+  E -- no --> F["text: Failed to fetch calendar events via Composio"]
+  E -- yes --> G["_format_calendar_result"]
+  G --> H["event rows"]
+  H --> I["answer field"]
+  F --> I
 ```
 
-### Tools: Google calendar API wrappers
-- Listing events:
- - Endpoint: primary calendar events.
- - Query parameters: max results, order by start time, single events, minimum time from now.
- - Timeout: short-lived GET.
-- Creating events:
- - Endpoint: primary calendar events.
- - Payload: summary, description, start/end with dateTime and timezone set to UTC.
- - Timeout: moderate POST.
-- Error handling: raises exceptions on non-200 responses.
+The route wraps the tool result in `{"answer": ...}`. It does not return the raw Google event objects, unlike `/create`. The Google tool `get_calendar_events` is only used when the same `calendar_agent` runs inside an agent turn with `google_access_token` in context.
+
+## Creating events
+
+The create route validates presence of `summary`, `start_time`, and `end_time`, then checks both timestamps with `datetime.fromisoformat`. A value such as `2026-11-21T10:00:00Z` or `2026-11-21T10:00:00+05:30` passes. A date-only string also passes Python's parser, so the validator is looser than the Google API.
 
 ```mermaid
 sequenceDiagram
-participant Svc as "CalendarService"
-participant ToolGet as "get_calendar_events"
-participant ToolPost as "create_calendar_event"
-participant GCAL as "Google Calendar API"
-Svc->>ToolGet : "GET /calendar/v3/calendars/primary/events"
-ToolGet->>GCAL : "GET with params"
-GCAL-->>ToolGet : "200 + items"
-Svc->>ToolPost : "POST /calendar/v3/calendars/primary/events"
-ToolPost->>GCAL : "POST with event body"
-GCAL-->>ToolPost : "200 + event"
+  participant R as create_event
+  participant T as _token
+  participant C as OAuthCredentialsService
+  participant S as CalendarService
+  participant G as Google
+  R->>R: require summary and both times
+  R->>R: _is_isoformat start and end
+  R->>T: await _token()
+  T->>C: get_access_token("calendar")
+  C->>C: canonicalize to google
+  C-->>T: decrypted token or refresh
+  T-->>R: access token
+  R->>S: create_event(token, summary, start, end, description)
+  S->>G: POST calendars/primary/events
+  G-->>S: event JSON with htmlLink
+  S-->>R: event
+  R-->>R: result created
 ```
 
-### Authentication flow (OAuth2)
-- Extension login:
- - Uses browser identity APIs to launch web auth flow with configured client ID and scopes.
- - Scopes include Google Calendar and Gmail scopes.
- - Exchanges authorization code for tokens via backend endpoints.
- - Stores access and refresh tokens, along with metadata.
-- Token refresh:
- - Automatically refreshes access tokens when nearing expiration if a refresh token exists.
- - Provides manual refresh capability in UI.
+The request body is:
+
+```json
+{
+  "summary": "Standup",
+  "start_time": "2026-11-21T10:00:00Z",
+  "end_time": "2026-11-21T10:30:00Z",
+  "description": "Created via API"
+}
+```
+
+The route passes those strings to `CalendarService`, which passes them to `create_calendar_event`. That tool wraps each one in a `dateTime` field and always sets `timeZone` to `UTC`. A timestamp with no offset is interpreted as UTC, which is the most common cause of an event landing at the wrong local hour. The POST timeout is 10 seconds, and anything other than status 200 raises with the status and body.
+
+## Token resolution
+
+The calendar provider name is an alias. `OAuthCredentialsService._canon("calendar")` returns `google`, so the route reads the same row as Gmail and YouTube. That row is encrypted with AES-GCM in `browser_credentials`. The shared rules for token masking, key resolution, and rotation are in [Secret Storage](Secret%20Storage).
 
 ```mermaid
-sequenceDiagram
-participant UI as "Extension UI"
-participant ExtAuth as "useAuth.ts"
-participant BE as "Backend"
-participant Google as "Google OAuth"
-UI->>ExtAuth : "handleLogin()"
-ExtAuth->>Google : "Launch auth flow with client_id + scopes"
-Google-->>ExtAuth : "Authorization code"
-ExtAuth->>BE : "POST /exchange-code {code, redirect_uri}"
-BE-->>ExtAuth : "access_token, refresh_token, expires_in"
-ExtAuth->>Google : "GET /oauth2/v2/userinfo?access_token"
-Google-->>ExtAuth : "User info"
-ExtAuth-->>UI : "Store tokens and status"
+flowchart TD
+  A["_token()"] --> B["get_access_token('calendar')"]
+  B --> C["canonical provider = google"]
+  C --> D{"row exists?"}
+  D -- no --> E["NeedsReauth not_connected"]
+  D -- yes --> F{"status needs_reauth?"}
+  F -- yes --> G["NeedsReauth"]
+  F -- no --> H{"expires within 60 s?"}
+  H -- no --> I["decrypt access_token"]
+  H -- yes --> J["_refresh_google"]
+  J --> K{"refresh ok?"}
+  K -- yes --> I
+  K -- no --> L["mark needs_reauth, raise"]
+  I --> M["bearer token"]
+  E --> N["401 needs_reauth"]
+  G --> N
+  L --> N
 ```
 
-### Agent tool integration
-- React agent tools define Pydantic models for calendar operations:
- - CalendarToolInput: access token and max results.
- - CalendarCreateEventInput: summary, start_time, end_time, description, optional access token.
-- Tools:
- - _calendar_tool: fetches events via get_calendar_events.
- - _calendar_create_event_tool: creates events via create_calendar_event.
-- Behavior:
- - Bounds max_results to a safe range.
- - Uses provided token or a default token when available.
+Agent turns use a different resolver. `resolve_google_token_optional` returns `None` instead of raising, so a missing Google connection does not fail the turn. It is placed in `context["google_access_token"]` and bound into the Gmail and Calendar tools.
 
-## Dependency analysis
-- API wiring:
- - FastAPI app registers the calendar router under /api/calendar.
-- Router-to-service:
- - Routers depend on CalendarService instances.
-- Service-to-tools:
- - CalendarService depends on tools for listing and creating events.
-- Frontend-to-backend:
- - Extension uses backend endpoints to exchange code and manage tokens.
+## Agent integration
+
+`build_agent_tools` always adds the calendar tools. When a Google token is present it binds the token as the default for both tools. Without one, `calendar_agent` calls `execute_toolkit_action("googlecalendar", ...)` with preferred terms `calendar`, `upcoming`, `get`, and `search`, and `calendar_create_event_agent` uses required terms `event` and `create`.
+
+`calendar_create_event_agent` accepts summary, start, end, description, and optional account id. Its Composio payloads use `summary`, `start_time`, `end_time`, and `description`, with `title`, `start`, and `end` as the alternate shape. It returns a plain text result, so the agent does not see the raw event object.
+
+## Dependencies
 
 ```mermaid
-graph LR
-Main["main.py"] --> CalR["routers/calendar.py"]
-CalR --> Svc["services/calendar_service.py"]
-Svc --> TGet["tools/calendar/get_calender_events.py"]
-Svc --> TPost["tools/calendar/create_calender_events.py"]
-Ext["clients/browser-extension/entrypoints/sidepanel/hooks/useAuth.ts"] --> Main
+graph TB
+  Router["routers/calendar.py"] --> Service["services/calendar_service.py"]
+  Router --> Agent["agents/react_tools.py"]
+  Router --> OAuth["services/oauth_credentials_service.py"]
+  Service --> Create["tools/calendar/create_calender_events.py"]
+  Service --> Get["tools/calendar/get_calender_events.py"]
+  Agent --> Get
+  Agent --> Create
+  Agent --> Composio["services/composio_service.py"]
+  Create --> Requests["requests"]
+  Get --> Requests
+  OAuth --> Crypto["core/crypto.py"]
+  OAuth --> DB["browser_credentials"]
 ```
 
-## Performance considerations
-- Timeouts:
- - Listing events uses a short timeout for responsiveness.
- - Creating events uses a slightly longer timeout to accommodate network variability.
-- Pagination and ordering:
- - Listing events orders by start time and returns single events only, reducing payload size.
-- Rate limits:
- - No explicit quota handling is implemented in the code. When interacting with Google Calendar API, observe per-user and per-project quotas. Consider batching operations and adding retry/backoff logic if needed.
-- Timezone handling:
- - Event creation sets timezone to UTC in the request payload. Ensure callers supply ISO 8601 timestamps in the intended local time; the API will interpret them accordingly.
+## Performance and limits
 
-## Troubleshooting guide
-Common issues and resolutions:
-- Missing or invalid access token:
- - Ensure the access token is present and not expired. Use the extension's token display and refresh controls.
-- Invalid ISO 8601 timestamps:
- - Verify start_time and end_time conform to ISO 8601. The router enforces this and returns HTTP 400 otherwise.
-- Network timeouts:
- - Listing and creation endpoints specify timeouts. Retry after verifying connectivity and token validity.
-- Token refresh failures:
- - If automatic refresh fails, use the manual refresh button in the extension UI to obtain a new access token.
-- Backend endpoint errors:
- - The router catches exceptions and returns HTTP 500 with the error message. Check backend logs for details.
+- List calls cap at 25 results through the agent tool and default to 10 at the route.
+- Google list calls use an 8 second timeout, create calls use 10 seconds.
+- The Google tools use synchronous `requests`, so the handler thread waits for Google.
+- `/events` makes a Composio round trip only. It has no Google token to fall back to.
+- The OAuth token is decrypted on every call and refreshed inside the request when it expires within 60 seconds.
 
-Operational checks:
-- Confirm backend is running and reachable.
-- Verify the calendar router is registered under /api/calendar.
-- Ensure the extension has stored a valid access token and refresh token when available.
+## Troubleshooting
 
-## Conclusion
-Extension manages tokens. Backend validates and calls Google. Tools expose the same operations to the agent. Keep those three layers in sync.
+- 401 with `needs_reauth`: the Google row is missing or a refresh failed. Reconnect Google in settings.
+- `start_time and end_time must be valid ISO 8601 strings`: `datetime.fromisoformat` rejected the value. Use an offset or `Z`.
+- Event lands at the wrong hour: the tool sends `timeZone: "UTC"`. Send an aware timestamp or pre-convert.
+- `/events` returns a "Failed to fetch calendar events via Composio" string: the route passes no Google token, so there is no REST fallback. Connect the Composio Google Calendar account or ask through the agent with Google connected.
+- `Failed to create event: 403`: the `calendar` scope was not granted. Reconnect and check consent.
+- Event created but no `htmlLink` in the agent reply: the agent tool formats text. Use `/create` for the raw JSON.
 
+## Appendix
+
+### API endpoints
+
+| Method | Path | Body | Response |
+| --- | --- | --- | --- |
+| POST | `/api/calendar/events` | `{"max_results": 10}` | `{"answer": str}` |
+| POST | `/api/calendar/create` | `{"summary", "start_time", "end_time", "description"}` | `{"result": "created", "event": {...}}` |
+
+### Implementation examples
+
+- `_token()` returns a decrypted token and raises HTTP 401 on `NeedsReauth`.
+- `create_calendar_event(token, "Standup", start, end)` returns the Google event JSON with `htmlLink`.
+- `calendar_agent.ainvoke({"max_results": 10})` returns formatted event text.
+
+### Source files
+
+- `routers/calendar.py`
+- `services/calendar_service.py`
+- `tools/calendar/get_calender_events.py`
+- `tools/calendar/create_calender_events.py`
+- `agents/react_tools.py`
+- `services/oauth_credentials_service.py`
