@@ -63,11 +63,11 @@ every project page is its github readme by default. to replace one, add `src/lan
 
 the header, tabs and sticky bar stay the same on every project. the part below them is yours. `src/components/landing` has the pieces most pages want (hero, framed screenshots, lazy videos, pinned feature chapters, a clip switcher, rows, a sideways rail, faq), and plain markup works wherever those run out. they read the `--ld-*` tokens in `landing.css`, which come from the site theme, so a landing follows the accent and light or dark mode on its own.
 
-a landing can also `export const landing` to set a tagline and the header button. colours always come from the visitor's theme and accent. [`src/landings/paisa.astro`](src/landings/paisa.astro) is the one to copy. its media lives in `public/landings/paisa`.
+a landing can also `export const landing` to set a tagline and the header button. colours always come from the visitor's theme and accent. [`src/landings/billi.astro`](src/landings/billi.astro) is the one to copy. it's the landing for billi, at `/projects/billi` because the route follows the github repo. its media lives in `public/landings/billi`. the old `/projects/paisa` paths redirect there.
 
 ## f-droid, for the curious
 
-paste `https://tashif.codes/fdroid/repo?fingerprint=568557c435bdf555725de95de596a90d6fa964d4bf0b71874f254cd0be7e94c9` into f-droid (the fingerprint makes f-droid check the repo is really mine) and you get [Paisa](https://github.com/tashifkhan/Paisa), [Patchwork](https://github.com/tashifkhan/Patchwork) and [Delhi Metro](https://github.com/tashifkhan/delhi-metro). each app's release workflow pokes `publish-fdroid.yml` here, which grabs the apk, signs the index and commits it.
+paste `https://tashif.codes/fdroid/repo?fingerprint=568557c435bdf555725de95de596a90d6fa964d4bf0b71874f254cd0be7e94c9` into f-droid. it checks the repo's signing key against the fingerprint. install [patchwork](https://github.com/tashifkhan/Patchwork), [delhi metro](https://github.com/tashifkhan/delhi-metro) or [namma metro](https://github.com/tashifkhan/blr-metro). [billi](https://tashif.codes/projects/billi) will show up after its first release. paisa stays in the repo for existing installs. each app's release workflow pokes `publish-fdroid.yml` here, which grabs the apk, signs the index and commits it.
 
 secrets, keystore setup and manual re-imports live in [`public/fdroid/README.md`](public/fdroid/README.md). don't lose the keystore. i will cry.
 
