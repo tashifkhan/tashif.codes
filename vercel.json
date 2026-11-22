@@ -87,6 +87,11 @@
 			"permanent": true
 		},
 		{
+			"source": "/fdroid/Paisa.apk",
+			"destination": "/fdroid/Billi.apk",
+			"permanent": false
+		},
+		{
 			"source": "/landings/paisa/:path*",
 			"destination": "/landings/billi/:path*",
 			"permanent": true
