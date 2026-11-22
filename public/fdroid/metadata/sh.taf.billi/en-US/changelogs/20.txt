@@ -1,0 +1,5 @@
+Paisa is now Billi: Budgeting and Expense Manager. It has a new name, a new icon, and a mascot. Billi is a ginger cat who is also a wallet. Everything Paisa did still works the same way: local-first, SMS parsing on the phone, and local AI when the phone has it.
+
+* The source moved to github.com/tashifkhan/Billi.
+* The web version is at billi.taf.sh.
+* The app is called Billi and its package is sh.taf.billi.

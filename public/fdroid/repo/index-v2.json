@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/repo",
-    "timestamp": 1795294967000,
+    "timestamp": 1795378942000,
     "categories": {
       "Development": {
         "name": {
@@ -910,147 +910,152 @@
         }
       }
     },
-    "codes.tashif.paisa": {
+    "sh.taf.billi": {
       "metadata": {
-        "added": 1785006084000,
+        "added": 1795378908000,
         "categories": [
           "Money",
           "Offline"
         ],
-        "changelog": "https://github.com/tashifkhan/Paisa/releases",
-        "issueTracker": "https://github.com/tashifkhan/Paisa/issues",
-        "lastUpdated": 1795294937000,
+        "changelog": "https://github.com/tashifkhan/Billi/releases",
+        "issueTracker": "https://github.com/tashifkhan/Billi/issues",
+        "lastUpdated": 1795378908000,
         "license": "AGPL-3.0-or-later",
-        "sourceCode": "https://github.com/tashifkhan/Paisa",
-        "webSite": "https://tashif.codes/projects/paisa",
+        "sourceCode": "https://github.com/tashifkhan/Billi",
+        "webSite": "https://tashif.codes/projects/billi",
         "featureGraphic": {
           "en-US": {
-            "name": "/codes.tashif.paisa/en-US/featureGraphic_8ePi8WVYyc8Bn95Uh9Lz9Jyky54FqRxesCs4ho_pmHU=.jpg",
-            "sha256": "f1e3e2f16558c9cf019fde5487d2f3f49ca4cb9e05a91c5eb02b38868fe99875",
-            "size": 45037
+            "name": "/sh.taf.billi/en-US/featureGraphic_Fw7tTFu5V3Kcy_VSSY9DD4y1jThMJbv9TxWioXStZJA=.jpg",
+            "sha256": "170eed4c5bb957729ccbf552498f430f8cb58d384c25bbfd4f15a2a174ad6490",
+            "size": 17893
           }
         },
         "screenshots": {
           "phone": {
             "en-US": [
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/01.jpg",
-                "sha256": "0cc42071116c211264238cb52bd51a3b387ab3e837f52dd7c898653b375ffcf0",
-                "size": 121864
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/01.png",
+                "sha256": "5063babed066c1bd207dfa1b80b976c5a05ec30c76e2d2278e9e6b393409132b",
+                "size": 470255
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/02.jpg",
-                "sha256": "521ccf5d257aa5143f282cd8b92f626acef853975a1dcca75fc0539f5627feff",
-                "size": 105886
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/02.png",
+                "sha256": "e554247078bc5aef059413cbc94a009fffc858c0f24984c507dbe874e790b6b9",
+                "size": 367198
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/03.jpg",
-                "sha256": "852241437fb90dca65485d0e04cfc23ce76e5237891ce58343c67ae50193ce5a",
-                "size": 110805
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/03.png",
+                "sha256": "6247ade412c6c91ae331fcac09d4fb25e236a5726b17e8013368609d10ce8f76",
+                "size": 265888
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/04.jpg",
-                "sha256": "e8a23314bdcf853fa650bbb2e5a101034cdbba4296e22fa188fd892bd32d1700",
-                "size": 103052
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/04.png",
+                "sha256": "96f6a522c8118df008debb551f135d1ad7ee9cd563f0d5b61f23aea456fdea5f",
+                "size": 262151
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/05.jpg",
-                "sha256": "ec07db230639eba6d8f1c9cfca92a384878aa820c763e9006c8845be548e963a",
-                "size": 111441
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/05.png",
+                "sha256": "c99e99b789c942d9657229a778e35c9bcbf8372366ee51e40ae6e8799b3ca19b",
+                "size": 319582
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/06.jpg",
-                "sha256": "426e39cf2ac13471106f7e31b9dd3183438d85bbbd586b31bd642ef1d80944b0",
-                "size": 96073
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/06.png",
+                "sha256": "017b0b7bfc5032042f3e44a106c7e4671358998c8da87d540d6d955b53c66312",
+                "size": 354590
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/07.jpg",
-                "sha256": "0af3145d06f646735ba069446f6acaf0d97791b8868fca4d76a2455a4225f4a3",
-                "size": 100991
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/07.png",
+                "sha256": "f5f80d85ebbfa5d46f2d5377ad10c5d3739b99b5de5b346bf2002af833030686",
+                "size": 241841
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/08.jpg",
-                "sha256": "e2768ea33debeafe58421e5c3e4095bf512058e41d6ad336e20238004b8d3df7",
-                "size": 97076
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/08.png",
+                "sha256": "788e2d2ac38851f2e04e136a62c18f1aa1617bddd70bc683fac7bb248bbf2c2a",
+                "size": 243401
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/09.jpg",
-                "sha256": "e85f40e948cde99e2ce97fadd74d411ca216419465b701ce839531f00409a216",
-                "size": 96254
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/09.png",
+                "sha256": "947a955ae49234123da2035015159f7a9f9731520e742ebdb98b31fb3b401e3f",
+                "size": 213122
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/10.jpg",
-                "sha256": "b894d059006aefe54e0ca1df22e842ddf8ad9fb56beb4cfd454feb0917742163",
-                "size": 111526
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/10.png",
+                "sha256": "8304e2506fd81d38ffb8e47d945ec1a2f565576f98c7317309b0de92a0603407",
+                "size": 253146
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/11.jpg",
-                "sha256": "8e88edab6cbb7a930e7de1613c5ea61f6d257ff67ac4adee99a2cda8d019f4ef",
-                "size": 109033
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/11.png",
+                "sha256": "7c6b0b4969dc1dc3de63ff67575b197285a72eff3aee348cc939b79457be650b",
+                "size": 286309
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/12.jpg",
-                "sha256": "2e7ccbfa53bc46575bbdea0d977698dc048bf6b3b5a7baa187cdf9ad241ac6ed",
-                "size": 112789
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/12.png",
+                "sha256": "bb7ea9bf45d16c9ba55a14b3ee9164992d68fc5560b1145e0e86a8d614b901f1",
+                "size": 372782
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/13.jpg",
-                "sha256": "9d72e6ccaefe52c0ce9595801b6988236a3079bf99a0f4c76fd29a7eeddae195",
-                "size": 109666
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/13.png",
+                "sha256": "12d1abdd5f6cda685f7c3b8c63be7dc92d76dfae757f5183ade5b03d93b1d469",
+                "size": 264547
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/14.jpg",
-                "sha256": "158c0d3e17b09505ff2044b0cf58f7b76856f2131dafe78cb7721dbd24f31731",
-                "size": 73204
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/14.png",
+                "sha256": "df406fb06cd5d0539e62d9d2c6488c1eb8444544daa37010c1eee0ae2c980acb",
+                "size": 257857
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/15.jpg",
-                "sha256": "8770660f424bd96f39375e5fb6c927217458b22f8868f9bfbb1e3aa4fb1022fe",
-                "size": 115310
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/15.png",
+                "sha256": "ca869e913e1d2a1265671d366a40d619f87d976b17b82c2bbf022c4abe98991f",
+                "size": 172067
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/16.jpg",
-                "sha256": "0167e09b44945b83e036507c7d69f525140f5f4ae93b80d5d5b0395e3806b270",
-                "size": 91530
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/16.png",
+                "sha256": "e92e827bdf143939d6873346c096378099015195f243c443ef20cc864df1ac13",
+                "size": 402757
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/17.jpg",
-                "sha256": "bfc4a971cea5b35988ffa19cb8c70aa6236056f0672b543f248a74f3ba496882",
-                "size": 93324
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/17.png",
+                "sha256": "995b3bc6a0d1c48db6fe48d8ffea89651c522d188e30dcb871788eb2afb18f66",
+                "size": 408294
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/18.jpg",
-                "sha256": "028a19e1c8ca9b31dbb55265ae3290d67d92dab587d8b89fd099447ca49039c9",
-                "size": 108650
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/18.png",
+                "sha256": "5dffb927d1f71e42ec0850162d6d5c58f5704614e1128924a63b468b54a55641",
+                "size": 240540
               },
               {
-                "name": "/codes.tashif.paisa/en-US/phoneScreenshots/19.jpg",
-                "sha256": "fd3c35d41044815848632e1d71013110a16e811ee63ea3d173a3d5a00b68d3de",
-                "size": 137060
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/19.png",
+                "sha256": "2e9915e0b3b1f3d044dc2a9caa5be9f7e5f4dee8a0e7075ba237a488da43940c",
+                "size": 279786
+              },
+              {
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/20.png",
+                "sha256": "1503e927b3dfc3a08378c87f7dc48fcc3bda27de9f831d72955a8df99a95d042",
+                "size": 250089
+              },
+              {
+                "name": "/sh.taf.billi/en-US/phoneScreenshots/21.png",
+                "sha256": "4096abe281ac44d6f441c7dba0aae32454ffda066b1895187af7bd9e851c1d98",
+                "size": 505401
               }
             ]
           },
           "tenInch": {
             "en-US": [
               {
-                "name": "/codes.tashif.paisa/en-US/tenInchScreenshots/01.jpg",
-                "sha256": "57bff90f89dbc46aaccc960e5729819de109a6a536545204deb3d483dd987ad0",
-                "size": 112419
+                "name": "/sh.taf.billi/en-US/tenInchScreenshots/01.png",
+                "sha256": "81c6cd43eb89841c72e06c41c91ae6968c13fe643acad21749fd9a149f241a8c",
+                "size": 291159
               },
               {
-                "name": "/codes.tashif.paisa/en-US/tenInchScreenshots/02.jpg",
-                "sha256": "5bcbc227a6296d2f71e4395f5581ba772c89e85848d14554c58c41502cb323e4",
-                "size": 92362
+                "name": "/sh.taf.billi/en-US/tenInchScreenshots/02.png",
+                "sha256": "9a9ef406f0c30db81b79dcea6e89db765017f814e179490e6996fe386a207696",
+                "size": 291375
               },
               {
-                "name": "/codes.tashif.paisa/en-US/tenInchScreenshots/03.jpg",
-                "sha256": "7ba06dd891331a201b2e5de9c92c5f1abc5aa3774aee6343d98dbcfa8d283ab2",
-                "size": 94205
-              },
-              {
-                "name": "/codes.tashif.paisa/en-US/tenInchScreenshots/04.jpg",
-                "sha256": "116f786e82b390fc55a2116874a77e0db31b9c2f399b9e7fb1990336f7fa4665",
-                "size": 118396
+                "name": "/sh.taf.billi/en-US/tenInchScreenshots/03.png",
+                "sha256": "19540a660b435a0b53ef01a99ea8e6d7ea23b8f183224060d93b3cf6fe8c4dbb",
+                "size": 241077
               }
             ]
           }
@@ -1058,33 +1063,33 @@
         "authorEmail": "me@taf.sh",
         "authorName": "Tashif Ahmad Khan",
         "name": {
-          "en-US": "Paisa"
+          "en-US": "Billi"
         },
         "summary": {
-          "en-US": "Expense manager that reads bank SMS on your phone and keeps the ledger there"
+          "en-US": "Budget and track expenses with on-device bank SMS import"
         },
         "description": {
-          "en-US": "Paisa is an expense manager that keeps your ledger on your phone. There is no account, no ads and no Paisa server.\n\nCapture\n\n* Bank SMS import. Parsers for about 140 Indian banks turn an alert into a transaction on the device. A bulk scan reads the inbox once and a live receiver catches new alerts\n* The original SMS stays attached to the transaction it made\n* Add with AI. Type or say what you spent, or attach a receipt, a screenshot or a PDF, then review the drafts before anything is saved\n* Statement import for PDF, CSV and image statements, several at once\n* Manual entry with Markdown descriptions\n\nReview\n\n* Merchant search, filters, and analytics by category and date range\n* Monthly budgets per category\n* Bank, cash, card and wallet accounts\n* Bill splitting equally, by percentage, by amount or by item, with debts tracked per person\n\nMake it yours\n\n* Material You wallpaper colours or 31 fixed palettes, dark mode and AMOLED black\n* High contrast, calmer motion and a floating navigation bar\n* Home screen widgets for your balance and quick add\n* Layouts for phones, foldables and tablets\n\nPrivacy\n\n* SMS never leave the phone\n* AI features stay off until you add your own key for an OpenAI compatible endpoint, Gemini or Anthropic\n* App lock with a fingerprint, your face or the screen lock, and one tap to hide amounts\n* Backups go to Google Drive, Nextcloud or a .paisa file, encrypted with AES-256-GCM when you set a password\n* Export to CSV or PDF\n\nWhy it asks for permissions\n\n* SMS, to read and receive bank alerts. SMS import is optional\n* Microphone, for voice notes in Add with AI\n* Network, for backup, sync and the AI endpoint you configure\n* Biometrics, for app lock\n\nThe same app runs in a browser at https://paisa.tashif.codes\n"
+          "en-US": "Billi is a budgeting and expense manager. It keeps your ledger on your phone and works without an account.\n\nBilli was called Paisa. Android installs Billi alongside Paisa because it uses a new package, sh.taf.billi. Make a backup in Paisa and choose I have a backup on Billi's first screen. Billi restores .paisa files and lists Paisa's Google Drive and Nextcloud backups. New backups use .billi files.\n\nAdd transactions\n\n* Turn alerts from about 140 Indian banks into transactions on your phone. Billi keeps the original SMS with each imported transaction.\n* Type or say what you spent, or attach a receipt. Review the drafts before you save.\n* Import PDF, CSV and image statements. Billi filters out duplicates across files.\n* Add a transaction by hand. Long-press the launcher icon for Add transaction, Add with AI, Budgets and Spending.\n\nReview your spending\n\n* Search by merchant, and narrow the list with a chip for each filter: date, type, category, account, amount and source.\n* See spending by category and date range, with the change against the last period.\n* Set monthly category budgets and track bank, cash, card and wallet balances.\n* Split bills and track who owes what.\n\nChoose how it looks\n\n* Start with Billi orange, choose from 32 fixed palettes or use your Android wallpaper colours.\n* Switch on dark mode, AMOLED black, high contrast or reduced motion. Hide credit cards and debts from Home.\n* Meet Billi, a ginger cat who is also a wallet. The cat appears during setup, on empty screens, while AI reads and on the lock screen.\n* Use home screen widgets for balances and quick entry. The layout adapts to phones, foldables and tablets.\n\nPrivacy and backups\n\n* Billi processes bank SMS on your phone.\n* On supported phones, Gemini Nano can read notes and images on the device. You can also use your own key for a compatible AI provider.\n* On Android 16, Android AppFunctions lets assistants the system allows add transactions and read balances, spending, budgets and recent transactions. Turn it off under Privacy & security. Gemini can't use these yet: Billi first has to be registered with Google as a connected app.\n* Lock the app with biometrics or your screen lock. Hide amounts with one tap.\n* Back up to Google Drive, Nextcloud or a file. Set a password to encrypt the backup with AES-256-GCM. Export transactions to CSV or PDF.\n\nWhy it asks for permissions\n\n* SMS, to import bank alerts if you enable SMS import.\n* Microphone, to record voice notes in Add with AI.\n* Network, for backup, sync and an AI provider you configure.\n* Biometrics, for app lock.\n\nThe same app runs in a browser at https://billi.taf.sh, with its data stored in that browser.\n"
         },
         "video": {
-          "en-US": "https://taf.sh/media/paisa/demo.mp4"
+          "en-US": "https://taf.sh/media/billi/demo.mp4"
         },
         "icon": {
           "en-US": {
-            "name": "/codes.tashif.paisa/en-US/icon_86WgtVl8BQsv0XcPf48yMfMNgROT8F8fQuiYLLYKzxQ=.png",
-            "sha256": "f3a5a0b5597c050b2fd1770f7f8f3231f30d811393f05f1f42e8982cb60acf14",
-            "size": 16041
+            "name": "/sh.taf.billi/en-US/icon_XKltaXczp3_kbUY2Qlba_g6PoSZ9rIdnWYWE8ki5Mgw=.png",
+            "sha256": "5ca96d697733a77fe46d46364256dafe0e8fa1267dac8767598584f248b9320c",
+            "size": 12259
           }
         },
         "preferredSigner": "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be"
       },
       "versions": {
-        "cbfce99da5a850c81da0371c0e4a4711017b9b954d1a29e2ca9141dde3511554": {
-          "added": 1795294937000,
+        "2f8c2f5f22cd1a79e878c76f615cdf3c8579b2046aad8d6abda4240d29d5c600": {
+          "added": 1795378908000,
           "file": {
-            "name": "/codes.tashif.paisa_19.apk",
-            "sha256": "cbfce99da5a850c81da0371c0e4a4711017b9b954d1a29e2ca9141dde3511554",
-            "size": 33477785
+            "name": "/sh.taf.billi_20.apk",
+            "sha256": "2f8c2f5f22cd1a79e878c76f615cdf3c8579b2046aad8d6abda4240d29d5c600",
+            "size": 34936608
           },
           "manifest": {
             "nativecode": [
@@ -1093,11 +1098,11 @@
               "x86",
               "x86_64"
             ],
-            "versionName": "1.8.0",
-            "versionCode": 19,
+            "versionName": "2.0.0",
+            "versionCode": 20,
             "usesSdk": {
               "minSdkVersion": 24,
-              "targetSdkVersion": 35
+              "targetSdkVersion": 36
             },
             "signer": {
               "sha256": [
@@ -1148,149 +1153,7 @@
                 "name": "android.permission.RECEIVE_BOOT_COMPLETED"
               },
               {
-                "name": "codes.tashif.paisa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-              }
-            ]
-          }
-        },
-        "c95427308f89eaf96e3d8e7c0dca2dd765584d54d03769e3a60158071c50a3da": {
-          "added": 1795239797000,
-          "file": {
-            "name": "/codes.tashif.paisa_18.apk",
-            "sha256": "c95427308f89eaf96e3d8e7c0dca2dd765584d54d03769e3a60158071c50a3da",
-            "size": 32824885
-          },
-          "manifest": {
-            "nativecode": [
-              "arm64-v8a",
-              "armeabi-v7a",
-              "x86",
-              "x86_64"
-            ],
-            "versionName": "1.7.7",
-            "versionCode": 18,
-            "usesSdk": {
-              "minSdkVersion": 24,
-              "targetSdkVersion": 35
-            },
-            "signer": {
-              "sha256": [
-                "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be"
-              ]
-            },
-            "usesPermission": [
-              {
-                "name": "android.permission.READ_SMS"
-              },
-              {
-                "name": "android.permission.RECEIVE_SMS"
-              },
-              {
-                "name": "android.permission.INTERNET"
-              },
-              {
-                "name": "android.permission.POST_NOTIFICATIONS"
-              },
-              {
-                "name": "android.permission.FOREGROUND_SERVICE"
-              },
-              {
-                "name": "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
-              },
-              {
-                "name": "android.permission.USE_BIOMETRIC"
-              },
-              {
-                "name": "android.permission.RECORD_AUDIO"
-              },
-              {
-                "name": "android.permission.CAMERA"
-              },
-              {
-                "name": "android.permission.USE_FINGERPRINT"
-              },
-              {
-                "name": "android.permission.WAKE_LOCK"
-              },
-              {
-                "name": "android.permission.ACCESS_NETWORK_STATE"
-              },
-              {
-                "name": "android.permission.RECEIVE_BOOT_COMPLETED"
-              },
-              {
-                "name": "codes.tashif.paisa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-              }
-            ]
-          }
-        },
-        "0f0879e69ca1b45e2b8cc9f1e7b8820a2d99e97e9429f5b5705183ebca72a1e2": {
-          "added": 1794953410000,
-          "file": {
-            "name": "/codes.tashif.paisa_17.apk",
-            "sha256": "0f0879e69ca1b45e2b8cc9f1e7b8820a2d99e97e9429f5b5705183ebca72a1e2",
-            "size": 32824889
-          },
-          "manifest": {
-            "nativecode": [
-              "arm64-v8a",
-              "armeabi-v7a",
-              "x86",
-              "x86_64"
-            ],
-            "versionName": "1.7.6",
-            "versionCode": 17,
-            "usesSdk": {
-              "minSdkVersion": 24,
-              "targetSdkVersion": 35
-            },
-            "signer": {
-              "sha256": [
-                "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be"
-              ]
-            },
-            "usesPermission": [
-              {
-                "name": "android.permission.READ_SMS"
-              },
-              {
-                "name": "android.permission.RECEIVE_SMS"
-              },
-              {
-                "name": "android.permission.INTERNET"
-              },
-              {
-                "name": "android.permission.POST_NOTIFICATIONS"
-              },
-              {
-                "name": "android.permission.FOREGROUND_SERVICE"
-              },
-              {
-                "name": "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
-              },
-              {
-                "name": "android.permission.USE_BIOMETRIC"
-              },
-              {
-                "name": "android.permission.RECORD_AUDIO"
-              },
-              {
-                "name": "android.permission.CAMERA"
-              },
-              {
-                "name": "android.permission.USE_FINGERPRINT"
-              },
-              {
-                "name": "android.permission.WAKE_LOCK"
-              },
-              {
-                "name": "android.permission.ACCESS_NETWORK_STATE"
-              },
-              {
-                "name": "android.permission.RECEIVE_BOOT_COMPLETED"
-              },
-              {
-                "name": "codes.tashif.paisa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+                "name": "sh.taf.billi.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
               }
             ]
           }
