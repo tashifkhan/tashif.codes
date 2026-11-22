@@ -19,6 +19,7 @@ import { fileURLToPath } from "node:url";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { Resvg } from "@resvg/resvg-js";
 import sharp from "sharp";
+import { projectOverrides } from "../src/data/projectOverrides.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OG_DIR = join(ROOT, "public", "og");
@@ -744,7 +745,7 @@ async function generateProjectCards(fontFiles) {
 
 		const svg = generateSiteOgSvg({
 			badge: "Projects",
-			title: formatTitle(p.title),
+			title: projectOverrides[slug]?.title ?? formatTitle(p.title),
 			description:
 				landingTagline(slug) ||
 				p.description ||

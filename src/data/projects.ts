@@ -8,6 +8,7 @@ import {
 } from "../lib/fetchCached";
 import type { Project, RepoRelease } from "@/types";
 import downloadsData from "./downloads.json";
+import { projectOverrides } from "./projectOverrides";
 import { starLists } from "./starLists";
 import { FEATURED_TOPIC, HIDE_TOPICS, WIP_TOPICS, hasTopic, starListSlugs } from "./projectGroups";
 
@@ -773,7 +774,12 @@ function fixInternalLiveLinks(projects: Project[]): Project[] {
 	return projects;
 }
 
-export const allProjects: Project[] = fixInternalLiveLinks(await fetchAllProjects());
+export const allProjects: Project[] = fixInternalLiveLinks(
+	(await fetchAllProjects()).map((project) => ({
+		...project,
+		...projectOverrides[project.slug],
+	})),
+);
 
 /** ISO timestamp when projects data was last fetched (build / server). */
 export const projectsFetchedAt: string = new Date().toISOString();

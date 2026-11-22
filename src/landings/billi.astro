@@ -1,0 +1,561 @@
+---
+/**
+ * Billi. The file name follows the GitHub repo, so the route is /projects/billi.
+ * Media lives in public/landings/billi. /projects/paisa redirects here.
+ */
+import { Download, Globe, Copy } from "lucide-react";
+import {
+	Landing,
+	LandingHero,
+	Section,
+	Shot,
+	LandingVideo,
+	Pinned,
+	MediaSwitcher,
+	Rows,
+	Rail,
+	Faq,
+} from "@/components/landing";
+import { formatBytes, releaseHref } from "@/lib/releases";
+import { playStoreRoute } from "@/data/profile";
+import type { LandingMeta } from "@/lib/landings";
+import type { Project } from "@/types";
+
+export const landing: LandingMeta = {
+	tagline:
+		"Billi turns bank SMS into transactions on your phone and helps you track spending and budgets.",
+	cta: { label: "Get Billi", href: "#get" },
+};
+
+interface Props {
+	project: Project;
+}
+
+const { project } = Astro.props;
+const play = playStoreRoute("billi");
+
+const media = "/landings/billi";
+const webApp = "https://billi.taf.sh";
+const fdroidRepo =
+	"https://tashif.codes/fdroid/repo?fingerprint=568557c435bdf555725de95de596a90d6fa964d4bf0b71874f254cd0be7e94c9";
+
+// The GitHub repo also has older Paisa releases.
+const isBilliApk = (name: string) => /^Billi-v.+\.apk$/i.test(name);
+const release = project.releases?.find(
+	(r) => !r.draft && !r.prerelease && r.assets.some((asset) => isBilliApk(asset.name)),
+);
+const apk = release?.assets.find((asset) => isBilliApk(asset.name));
+const releasesHref = `${project.github_link}/releases`;
+const apkSize = apk ? formatBytes(apk.size).replace(" ", " ") : null;
+
+// Every app screen is cropped to the same size.
+const screen = { width: 650, height: 1444 };
+
+const shot = (name: string, alt: string) => ({
+	src: `${media}/screens/${name}.webp`,
+	alt,
+});
+
+// The same chapters the walkthrough follows.
+const chapters = [
+	{
+		title: "Capture",
+		features: [
+			{
+				title: "Bank SMS import",
+				body: "Parsers for about 140 Indian banks turn an alert into a transaction on the phone. A bulk scan reads the inbox once, and a live receiver catches new alerts.",
+			},
+			{ title: "The source stays attached", body: "Open any imported transaction to read the original message under it." },
+			{
+				title: "Add with AI",
+				body: 'Type "lunch 240 at Chaayos yesterday, Uber 180 today" or attach a receipt. Review and edit the drafts before you save. Use Gemini Nano on supported phones or add your own API key.',
+			},
+			{ title: "Manual entry", body: "A cash expense takes an amount, a title and a category." },
+		],
+		shots: [
+			shot("sms", "A ₹460 Swiggy Instamart payment, parsed from an HDFC Bank SMS"),
+			shot("source", "The same transaction with the original bank SMS shown under it"),
+			shot("ai", "Two AI drafts, Chaayos and Uber, ready to save"),
+		],
+	},
+	{
+		title: "Review",
+		features: [
+			{ title: "Merchant search", body: "Type a merchant and get every payment to it, with the total." },
+			{ title: "Analytics", body: "Spending by category for a month or a range you pick." },
+			{ title: "Budgets", body: "A monthly cap per category, with progress beside each one." },
+			{ title: "Accounts", body: "Bank, cash, card and wallet balances, as cards or a list." },
+		],
+		shots: [
+			shot("search", "Search results for Swiggy"),
+			shot("analytics", "Analytics by category with a ring chart"),
+			shot("budgets", "Monthly budgets for food, groceries, shopping and transport"),
+		],
+	},
+	{
+		title: "Make it yours",
+		features: [
+			{ title: "Palettes", body: "Billi orange by default, wallpaper colours on Android 12 and up, or one of 32 fixed palettes." },
+			{ title: "AMOLED black", body: "Pure black surfaces in dark mode." },
+			{
+				title: "Contrast, motion and navigation",
+				body: "Switch on high contrast, reduced motion or a floating navigation bar. You can also hide credit cards and debts from Home.",
+			},
+		],
+		shots: [
+			shot("appearance", "Appearance settings with the palette grid open"),
+			shot("customize", "Dark appearance settings with AMOLED black and a floating navbar on"),
+			shot("amoled", "The home screen in AMOLED black with the Billi palette"),
+		],
+	},
+	{
+		title: "Keep it yours",
+		features: [
+			{ title: "Hide amounts", body: "One tap swaps every amount for dots." },
+			{ title: "App lock", body: "A fingerprint, your face or the screen lock, each time you come back." },
+			{
+				title: "Backup and sync",
+				body: "Google Drive, Nextcloud or a .billi file, encrypted with AES-256-GCM when you set a password. The phone app and the browser can sync through the same backup destination.",
+			},
+		],
+		shots: [
+			shot("hide", "Home screen with every balance replaced by dots"),
+			shot("lock", "Billi is locked, with Billi the cat guarding the wallet"),
+			shot("backup", "Backup settings with Google Drive and Nextcloud"),
+		],
+	},
+	{
+		title: "Shortcuts and assistants",
+		features: [
+			{ title: "App shortcuts", body: "Long-press the icon for Add transaction, Add with AI, Budgets and Spending." },
+			{
+				title: "Actions for assistants",
+				body: "On Android 16, AppFunctions lets supported assistants add a transaction and read balances, spending, budgets and recent transactions. Gemini cannot call Billi yet.",
+			},
+			{ title: "Assistant access", body: "Turn off Gemini and assistants under Privacy & security to block calls to Billi." },
+		],
+		shots: [
+			shot("shortcuts", "The shortcuts on Billi's launcher icon"),
+			shot("assistant", "Privacy and security with the Gemini and assistants switch"),
+			shot("welcome", "Billi's welcome screen with the mascot"),
+		],
+	},
+];
+
+const stays = [
+	{ title: "Your SMS", body: "Billi reads and parses bank alerts on the phone." },
+	{ title: "The ledger", body: "Room and SQLite, on the phone." },
+	{ title: "On-device AI", body: "Gemini Nano runs notes and photos on the phone, where the phone has it." },
+	{ title: "AI keys", body: "Billi stores them in EncryptedSharedPreferences." },
+];
+const leaves = [
+	{ title: "A note, receipt or statement", body: "Billi sends it to the AI provider you set up when you ask it to read one." },
+	{ title: "A backup", body: "To the Drive, Nextcloud or file you picked." },
+];
+
+// The main walkthrough and the four platform cuts rendered from it.
+const walkthroughMedia = "https://taf.sh/media/billi";
+const clips = [
+	{
+		id: "walkthrough",
+		label: "Walkthrough",
+		note: "The full tour lasts about three minutes and 22 seconds, with sound.",
+		src: `${walkthroughMedia}/demo.mp4`,
+		poster: `${walkthroughMedia}/poster.jpg`,
+		width: 1920,
+		height: 1200,
+		controls: true,
+	},
+	{
+		id: "phone",
+		label: "Phone",
+		note: "A tour of the phone app in portrait.",
+		src: `${media}/cuts/phone.mp4`,
+		poster: `${media}/cuts/phone.jpg`,
+		width: 1080,
+		height: 1920,
+		controls: true,
+	},
+	{
+		id: "foldable",
+		label: "Foldable",
+		note: "Unfolded, a transaction opens beside the list.",
+		src: `${media}/cuts/foldable.mp4`,
+		poster: `${media}/cuts/foldable.jpg`,
+		width: 1920,
+		height: 1200,
+		controls: true,
+	},
+	{
+		id: "tablet",
+		label: "Tablet",
+		note: "Analytics uses two columns at widths of 840dp and up.",
+		src: `${media}/cuts/tablet.mp4`,
+		poster: `${media}/cuts/tablet.jpg`,
+		width: 1920,
+		height: 1200,
+		controls: true,
+	},
+	{
+		id: "web",
+		label: "Browser",
+		note: "The browser runs the same Kotlin code through WebAssembly.",
+		src: `${media}/cuts/web.mp4`,
+		poster: `${media}/cuts/web.jpg`,
+		width: 1920,
+		height: 1200,
+		controls: true,
+	},
+];
+
+const more = [
+	{
+		title: "Billi the cat",
+		body: "A ginger cat who is also a wallet. It welcomes you, naps on empty lists, thinks while AI reads, and guards the lock screen.",
+	},
+	{
+		title: "Statement import",
+		body: "Import several PDF, CSV or image statements at once. Billi removes duplicates across files.",
+	},
+	{
+		title: "Model fallbacks",
+		body: "Choose a model for each provider and set the order Billi tries them in. Use your own API keys.",
+	},
+	{ title: "Categories that learn", body: "Your merchant rules run first. Fix a merchant once and the fix sticks." },
+	{
+		title: "Payment notifications",
+		body: "Google Pay, PhonePe and bank app alerts become transactions, saved once even when the SMS arrives too.",
+	},
+	{ title: "Split with others", body: "A split adds each person's share to what they owe you in Debts." },
+	{ title: "Credit cards", body: "Available credit and what you owe, on the home screen, if you want it there." },
+	{ title: "Export", body: "CSV for a spreadsheet, PDF for a person." },
+	{ title: "Widgets", body: "Your balance and quick add on the home screen." },
+	{ title: "Keyboard in the browser", body: "n adds, / searches, 1 to 6 switch tabs." },
+];
+
+// The store art, in the order of the screenshot pack.
+const storeAlt = [
+	"Billi overview. Your money, your business.",
+	"Meet Billi, a cat who is a wallet",
+	"A bank SMS recorded as a transaction",
+	"The original bank message beside the parsed transaction",
+	"Add with AI turns a sentence into two drafts",
+	"Manual entry for a coffee",
+	"Analytics by category",
+	"Monthly budgets per category",
+	"All account balances in one list",
+	"Merchant search results",
+	"Palettes in the appearance settings",
+	"Appearance controls in dark mode",
+	"Dark mode with AMOLED black",
+	"Amounts hidden behind dots",
+	"App lock screen",
+	"Shortcuts on the app icon",
+	"Unfolded foldable with list and detail",
+	"Tablet layout",
+	"Web app on a wide screen",
+	"Backup destinations",
+	"Billi on phone, foldable, tablet and web",
+];
+const panels = storeAlt.map((alt, i) => ({
+	src: `${media}/panels/${String(i + 1).padStart(2, "0")}.webp`,
+	alt,
+}));
+
+const faq = [
+	{
+		q: "Wasn't this called Paisa?",
+		a: "Yes. Billi 2.0.0 uses the package sh.taf.billi, so Android installs it alongside Paisa. Save a backup in Paisa, then pick it from <em>I have a backup</em> on Billi's first screen. Billi reads .paisa files and lists Paisa's old Drive and Nextcloud backups.",
+	},
+	{ q: "Do I need an account?", a: "No. There is no sign up and no Billi server. Setup asks for a currency and a theme." },
+	{
+		q: "Which banks does SMS import cover?",
+		a: 'About 140 Indian banks. The parsers come from <a href="https://github.com/sarim2000/pennywiseai-tracker" target="_blank" rel="noopener noreferrer">PennyWise</a>. Billi lists financial messages it could not parse under Unrecognized.',
+	},
+	{
+		q: "Is the AI required?",
+		a: "No. SMS parsing uses on-device parsers and no model. Add with AI and statement import stay off until you turn on Gemini Nano, on phones that have it, or add your own key for an OpenAI compatible endpoint, Gemini or Anthropic.",
+	},
+	{
+		q: "Can Gemini use Billi?",
+		a: "Gemini cannot call Billi yet because Google has not registered it as a connected app. Billi's Android 16 AppFunctions work with Android's test tool. You can turn these actions off under Privacy &amp; security.",
+	},
+	{
+		q: "Is there an iPhone app?",
+		a: `Not yet. Billi runs on Android 7.0 and up, and in a recent Chrome, Edge, Firefox or Safari at <a href="${webApp}" target="_blank" rel="noopener noreferrer">billi.taf.sh</a>. SMS import is available on Android.`,
+	},
+	{
+		q: "What does it cost?",
+		a: `Nothing. Billi is free under AGPL-3.0, and the source is on <a href="${project.github_link}" target="_blank" rel="noopener noreferrer">GitHub</a>.`,
+	},
+];
+---
+
+<Landing name="billi">
+	<LandingHero
+		title="Your money stays on your phone."
+		lead="Billi is a budgeting and expense manager. It turns bank SMS into transactions on your phone. There's no account to set up."
+	>
+		<Fragment slot="actions">
+			{apk && (
+				<a href={apk.download_url} data-haptic-external class="ld-btn ld-btn-primary">
+					<Download aria-hidden="true" />
+					Download APK
+				</a>
+			)}
+			<a
+				href={`${webApp}/?demo`}
+				target="_blank"
+				rel="noopener noreferrer"
+				data-haptic-external
+				class="ld-btn"
+			>
+				<Globe aria-hidden="true" />
+				Open the web demo
+			</a>
+		</Fragment>
+		<Fragment slot="terms">
+			{apkSize ? `${apkSize}, for` : "For"} Android 7.0 and up. Free under AGPL-3.0. Formerly Paisa.
+			{
+				release && (
+					<a class="text-link" href={releaseHref(project.slug, release.tag_name)}>
+						Release notes
+					</a>
+				)
+			}
+		</Fragment>
+		<Shot slot="media" width={720} height={1280}>
+			<LandingVideo
+				src={`${media}/phone.mp4`}
+				poster={`${media}/phone-poster.webp`}
+				label="Billi on a phone, from setup and SMS import to AI drafts, budgets and themes"
+				autoplay
+			/>
+		</Shot>
+	</LandingHero>
+
+	<Section
+		id="features"
+		title="What you can do in Billi"
+		gap="s"
+	>
+		<Pinned chapters={chapters} {...screen} />
+	</Section>
+
+	<Section
+		id="privacy"
+		title="How Billi handles your data"
+		layout="side"
+	>
+		<div class="ld-rows-group">
+			<h3>Stays on the phone</h3>
+			<Rows rows={stays} />
+		</div>
+		<div class="ld-rows-group">
+			<h3>Where Billi sends data on request</h3>
+			<Rows rows={leaves} />
+		</div>
+	</Section>
+
+	<Section
+		id="screens"
+		title="Billi on phone, foldable, tablet and web"
+		lead="The layout adapts to the size of the window."
+		gap="l"
+	>
+		<MediaSwitcher clips={clips} label="Billi on different screens" name="Billi" />
+	</Section>
+
+	<Section id="more" title="More features" layout="side">
+		<Rows rows={more} dense />
+	</Section>
+
+	<Section id="gallery" title="Twenty-one store screens" gap="s">
+		<Rail panels={panels} label="Billi store screenshots" width={640} height={1385} />
+	</Section>
+
+	<Section id="faq" title="Before you install" layout="side">
+		<Faq items={faq} />
+	</Section>
+
+	<section id="get" class="ld-section" data-gap="l">
+		<div class="ld-split" data-ratio="7-5">
+			<div class="ld-split-text">
+				<h2>Get Billi</h2>
+				<dl class="get">
+					<div class="get-route">
+						<dt>Android APK</dt>
+						<dd>
+							{apk ? (
+								<>
+									<p>
+										Find the .sha256 checksum on <a class="text-link" href={releasesHref} target="_blank" rel="noopener noreferrer">GitHub releases</a>.
+									</p>
+									<a href={apk.download_url} data-haptic-external class="ld-btn ld-btn-primary">
+										<Download aria-hidden="true" />
+										Download APK
+									</a>
+								</>
+							) : (
+								<p>
+									Billi 2.0.0 is pending release.
+									<a class="text-link" href={releasesHref} target="_blank" rel="noopener noreferrer">GitHub releases</a>
+								</p>
+							)}
+						</dd>
+					</div>
+					<div class="get-route">
+						<dt>F-Droid</dt>
+						<dd>
+							<p>
+								Add this repo under Settings, Repositories. Check the repo page for Billi release status.
+								<a class="text-link" href="/fdroid" data-haptic-nav>Setup steps</a>
+							</p>
+							<div class="get-repo">
+								<code>{fdroidRepo}</code>
+								<button
+									type="button"
+									class="ld-btn"
+									data-copy={fdroidRepo}
+									data-haptic-nav
+									aria-label="Copy the F-Droid repo address"
+								>
+									<Copy aria-hidden="true" />
+									<span data-copy-label>Copy</span>
+								</button>
+							</div>
+						</dd>
+					</div>
+					<div class="get-route">
+						<dt>Browser</dt>
+						<dd>
+							<p>
+								Nothing to install. Add <code>?demo</code> for three months of
+								sample data.
+							</p>
+							<a
+								href={`${webApp}/?demo`}
+								target="_blank"
+								rel="noopener noreferrer"
+								data-haptic-external
+								class="ld-btn"
+							>
+								<Globe aria-hidden="true" />
+								Open the web demo
+							</a>
+						</dd>
+					</div>
+					<div class="get-route">
+						<dt>{play.title}</dt>
+						<dd>
+							<p>{play.body}</p>
+							{
+								play.action && (
+									<a
+										href={play.action.href}
+										target="_blank"
+										rel="noopener noreferrer"
+										data-haptic-external
+										class="ld-btn"
+									>
+										{play.action.label}
+									</a>
+								)
+							}
+						</dd>
+					</div>
+				</dl>
+			</div>
+			<Shot
+				src={`${media}/screens/welcome.webp`}
+				alt="Billi welcomes you to the app beside the option to restore a backup"
+				{...screen}
+			/>
+		</div>
+	</section>
+</Landing>
+
+<style>
+	/* Only the install routes are specific to this landing. The kit covers the rest. */
+	.get {
+		margin: 0;
+		border-top: 1px solid var(--ld-rule);
+	}
+	.get-route {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--ld-space-sm);
+		padding-block: var(--ld-space-lg);
+		border-bottom: 1px solid var(--ld-rule);
+	}
+	.get-route dt {
+		font-family: var(--ld-font-display);
+		font-size: var(--ld-text-title);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1.2;
+	}
+	.get-route dd {
+		display: grid;
+		gap: var(--ld-space-md);
+		justify-items: start;
+		margin: 0;
+		min-width: 0;
+		color: var(--ld-muted);
+	}
+	.get-repo {
+		display: grid;
+		gap: var(--ld-space-sm);
+		justify-items: start;
+		min-width: 0;
+	}
+	.get-repo code {
+		overflow-wrap: anywhere;
+	}
+	@media (min-width: 40rem) {
+		.get-route {
+			grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+			column-gap: var(--ld-gap-columns);
+		}
+	}
+	.text-link {
+		color: var(--ld-ink);
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 0.16em;
+	}
+	.text-link:hover {
+		color: var(--ld-accent);
+	}
+	.text-link:active {
+		color: var(--ld-press);
+	}
+	#get :global(.ld-shot) {
+		justify-self: center;
+	}
+</style>
+
+<script>
+	function initCopy() {
+		document
+			.querySelectorAll<HTMLButtonElement>("[data-copy]:not([data-wired])")
+			.forEach((button) => {
+				button.dataset.wired = "true";
+				button.addEventListener("click", async () => {
+					const label = button.querySelector("[data-copy-label]");
+					try {
+						await navigator.clipboard.writeText(button.dataset.copy ?? "");
+						if (label) label.textContent = "Copied";
+					} catch {
+						if (label) label.textContent = "Copy failed";
+					}
+					setTimeout(() => {
+						if (label) label.textContent = "Copy";
+					}, 1600);
+				});
+			});
+	}
+
+	initCopy();
+	document.addEventListener("astro:page-load", initCopy);
+</script>

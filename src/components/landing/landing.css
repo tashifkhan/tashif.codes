@@ -1,10 +1,8 @@
 /* Hallmark · shape: Marquee Hero · genre: modern-minimal · theme: brand · redesign: full
  * paper: oklch(96% 0.012 85) · accent: oklch(47% 0.1 165) · display: Inter Tight · body: IBM Plex Sans · hero: Stage · nav: kept · footer: kept · signature: app screens that swap in a pinned frame as their captions scroll past
  * axes: light/grotesk-sans/chromatic-green · posture: Restrained · contrast: pass · fold: pass · draw: d7d000 · job: try · v2.0.0 */
-/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 · weakest: S, the hero could open any finance app; led it with the claim only Paisa makes, that the ledger never leaves the phone */
 /* Hallmark · dropped #capture · the three feature rows became the first chapter of the pinned screens in #features */
 /* Hallmark · dismissed 28a · the first pinned screen sits two screens below the fold, the hero clip's poster is the LCP */
-/* Hallmark · waive 83 · the pictures are Paisa's own store screens and captures, a gallery of the owner's work · the app is the subject, so its screens carry the page */
 /* Hallmark · waive 44c · the measured hero is the site shell's project header in PageShell.astro, 175px by design · the landing's own hero fills the screen under it */
 /* Hallmark · waive 80 · the flagged figure is StudioField.astro, the site-wide background grid drawn by the shell · nothing in the landing draws an illustration */
 /* Hallmark · waive 39b · the 36px controls are the shell's header buttons and settings dock in the shared layout · every control the landing adds stands 40 to 48px */

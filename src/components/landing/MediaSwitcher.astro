@@ -21,11 +21,12 @@ export interface Clip {
 
 interface Props {
 	clips: Clip[];
+	name: string;
 	/** Accessible name for the control. */
 	label: string;
 }
 
-const { clips, label } = Astro.props;
+const { clips, label, name } = Astro.props;
 ---
 
 <div data-ld-switcher>
@@ -69,7 +70,7 @@ const { clips, label } = Astro.props;
 					<LandingVideo
 						src={clip.src}
 						poster={clip.poster}
-						label={`Paisa, ${clip.label.toLowerCase()}`}
+						label={`${name}, ${clip.label.toLowerCase()}`}
 						autoplay={!clip.controls}
 						controls={clip.controls}
 					/>
