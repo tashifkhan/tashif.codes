@@ -13,6 +13,7 @@ import {
 } from "@/lib/fdroid";
 
 const { apps, updatedAt } = fdroidRepo;
+const hasBilli = apps.some((app) => app.packageName === "sh.taf.billi" && app.latest);
 
 const steps = [
 	{
@@ -40,7 +41,7 @@ const pipeline = [
 	},
 	{
 		title: "Import",
-		body: "That release starts a workflow here, which downloads the APK and writes its “What's new” from the release notes.",
+		body: 'That release starts a workflow here. It downloads the APK and writes "What\'s new" from the release notes.',
 	},
 	{
 		title: "Sign",
@@ -59,7 +60,7 @@ const countWord =
 
 <PageShell
 	title="F-Droid repo | Tashif Ahmad Khan"
-	description="A signed F-Droid repo for Paisa, Patchwork and Delhi NCR Metro. Add it once and F-Droid keeps the apps updated."
+	description="My signed F-Droid repo for Billi, Patchwork, Delhi NCR Metro and Namma Metro."
 	image="/og/fdroid.jpg"
 	tint="orange"
 	compact
@@ -104,8 +105,12 @@ const countWord =
 		<Section
 			id="apps"
 			title={`${countWord} ${apps.length === 1 ? "app" : "apps"} in the repo.`}
-			lead="Each one links to its project page, with the full story and every release."
 		>
+			<p>
+				<a href="/projects/billi" data-haptic-nav class="underline">Billi</a> is the new name for Paisa.
+				It installs separately. Restore a Paisa backup to move your data.
+				{!hasBilli && " Billi will appear here after its first release reaches the repo."}
+			</p>
 			{
 				apps.length > 0 ? (
 					<ul class="fd-apps">
@@ -126,6 +131,7 @@ const countWord =
 										<h3>
 											<a href={app.links.project ?? app.links.sourceCode} data-haptic-nav>
 												{app.name}
+															{app.packageName === "codes.tashif.paisa" && " (legacy)"}
 											</a>
 										</h3>
 									</div>

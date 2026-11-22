@@ -22,7 +22,7 @@ on:
   workflow_dispatch:
     inputs:
       source_repository:
-        description: 'GitHub repository that owns the release (owner/repo), e.g. tashifkhan/Patchwork or tashifkhan/Paisa'
+        description: 'GitHub repository that owns the release (owner/repo), e.g. tashifkhan/Patchwork or tashifkhan/Billi'
         required: false
         default: 'tashifkhan/Patchwork'
         type: string
@@ -31,7 +31,7 @@ on:
         required: false
         type: string
       apk_pattern:
-        description: 'APK asset pattern (e.g. *.apk or Paisa-v*.apk)'
+        description: 'APK asset pattern (e.g. *.apk or Billi-v*.apk)'
         required: false
         default: '*.apk'
         type: string

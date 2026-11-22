@@ -4,16 +4,18 @@ Categories:
 License: AGPL-3.0-or-later
 AuthorName: Tashif Ahmad Khan
 AuthorEmail: me@taf.sh
-WebSite: https://tashif.codes/projects/paisa
-SourceCode: https://github.com/tashifkhan/Paisa
-IssueTracker: https://github.com/tashifkhan/Paisa/issues
-Changelog: https://github.com/tashifkhan/Paisa/releases
+WebSite: https://tashif.codes/projects/billi
+SourceCode: https://github.com/tashifkhan/Billi
+IssueTracker: https://github.com/tashifkhan/Billi/issues
+Changelog: https://github.com/tashifkhan/Billi/releases
 
 AutoName: Paisa
 Name: Paisa
 
 Summary: Expense manager that reads bank SMS on your phone and keeps the ledger there
 Description: |
+  Paisa continues as Billi under the package sh.taf.billi. To move your data, make a backup in Paisa and restore it in Billi.
+
   Paisa is an expense manager that keeps your ledger on your phone. There is no account, no ads and no Paisa server.
 
   Capture
@@ -56,4 +58,4 @@ Description: |
   The same app runs in a browser at https://paisa.tashif.codes
 
 RepoType: git
-Repo: https://github.com/tashifkhan/Paisa.git
+Repo: https://github.com/tashifkhan/Billi.git

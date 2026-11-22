@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Extract launcher icons from APKs and save as 512x512 PNGs.
+Extract bitmap launcher icons for listings without an icon.
 Uses `aapt dump badging` (available in CI) to find the icon resource path.
 """
 import io
@@ -15,30 +15,24 @@ from PIL import Image
 METADATA_BASE = "public/fdroid/metadata"
 
 
-def get_icon_path(apk_path):
-    """Use aapt to get the launcher icon resource path."""
+def get_apk_badging(apk_path):
+    """Find the manifest package and highest-density launcher icon."""
     try:
         out = subprocess.check_output(
             ["aapt", "dump", "badging", apk_path],
             stderr=subprocess.DEVNULL, text=True, timeout=30
         )
-        # application-icon-640:'res/mipmap-xxxhdpi-v11/ic_launcher.png'
-        best = None
-        best_size = 0
-        for line in out.splitlines():
-            m = re.match(r"application-icon-(\d+):'([^']+)'", line)
-            if m:
-                size = int(m.group(1))
-                if size > best_size:
-                    best_size = size
-                    best = m.group(2)
-            elif not best:
-                m = re.match(r"application-icon:'([^']+)'", line)
-                if m:
-                    best = m.group(1)
-        return best
-    except Exception:
-        return None
+    except (OSError, subprocess.SubprocessError):
+        return None, None
+
+    package = re.search(r"^package: name='([^']+)'", out, re.M)
+    icons = re.findall(r"^application-icon-(\d+):'([^']+)'", out, re.M)
+    if icons:
+        _, icon_path = max(icons, key=lambda icon: int(icon[0]))
+    else:
+        fallback = re.search(r"^application-icon:'([^']+)'", out, re.M)
+        icon_path = fallback.group(1) if fallback else None
+    return package.group(1) if package else None, icon_path
 
 
 def extract_png(zf, resource_path):
@@ -52,16 +46,20 @@ def extract_png(zf, resource_path):
 
 
 def process_apk(apk_path):
-    pkg = os.path.basename(apk_path).rsplit("_", 1)[0]
-    print(f"--- {pkg}")
-
-    if not os.path.exists(apk_path):
-        print(f"  SKIP: not found")
+    print(f"--- {os.path.basename(apk_path)}")
+    pkg, icon_path = get_apk_badging(apk_path)
+    if not pkg:
+        print("  SKIP: aapt could not determine package")
         return False
 
-    icon_path = get_icon_path(apk_path)
-    if not icon_path:
-        print("  SKIP: aapt could not determine icon")
+    meta_dir = os.path.join(METADATA_BASE, pkg, "en-US")
+    out_path = os.path.join(meta_dir, "icon.png")
+    if os.path.isfile(out_path):
+        print(f"  kept: {out_path}")
+        return True
+
+    if not icon_path or icon_path.endswith(".xml"):
+        print("  SKIP: no bitmap launcher icon in APK badging")
         return False
 
     print(f"  icon resource: {icon_path}")
@@ -78,9 +76,7 @@ def process_apk(apk_path):
         final = img.resize((512, 512), Image.LANCZOS)
 
         # Save to metadata
-        meta_dir = os.path.join(METADATA_BASE, pkg, "en-US")
         os.makedirs(meta_dir, exist_ok=True)
-        out_path = os.path.join(meta_dir, "icon.png")
         final.save(out_path, "PNG")
         print(f"  saved: {out_path}")
         return True

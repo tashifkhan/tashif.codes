@@ -18,7 +18,8 @@ Install / instructions page: `https://tashif.codes/fdroid`
 
 | App | Source repo | Package | Release asset pattern |
 | --- | --- | --- | --- |
-| **Paisa** | [tashifkhan/Paisa](https://github.com/tashifkhan/Paisa) | `codes.tashif.paisa` | `Paisa-v*.apk` |
+| **Billi** | [tashifkhan/Billi](https://github.com/tashifkhan/Billi) | `sh.taf.billi` | `Billi-v*.apk` |
+| **Paisa (legacy)** | [tashifkhan/Billi](https://github.com/tashifkhan/Billi) | `codes.tashif.paisa` | `Paisa-v*.apk` |
 | **Patchwork** | [tashifkhan/Patchwork](https://github.com/tashifkhan/Patchwork) | `codes.tashhif.patchwork` | `*.apk` |
 | **Delhi Metro** | [tashifkhan/delhi-metro](https://github.com/tashifkhan/delhi-metro) | `codes.tashif.delhimetro` | `DelhiMetro-v*.apk` |
 | **Namma Metro** | [tashifkhan/blr-metro](https://github.com/tashifkhan/blr-metro) | `codes.tashif.blrmetro` | `NammaMetro-v*.apk` |
@@ -26,22 +27,23 @@ Install / instructions page: `https://tashif.codes/fdroid`
 ## How publishing works
 
 1. An app repo builds a release APK and attaches it to a GitHub Release
-   (Paisa: `Release`; Patchwork / Delhi Metro / Namma Metro: EAS `github-release` + tag push).
+   (Billi: `Release`; Patchwork / Delhi Metro / Namma Metro: EAS `github-release` + tag push).
 2. That workflow dispatches `.github/workflows/publish-fdroid.yml` in this repo
    (or you run it manually).
 3. The workflow downloads the APK, copies it into `public/fdroid/repo`, runs
-   `fdroid update`, and commits the signed index.
+   `fdroid update`, and commits the signed index. fdroidserver uses the APK's
+   package ID to find `metadata/<package>.yml` and its listing assets.
 4. Vercel deploys the static files under `/fdroid/repo`.
 
-Manual import examples:
+Use the manual import examples below. Billi's first import needs the published 2.0.0 APK.
 
 ```bash
-# Paisa
+# Billi
 gh workflow run publish-fdroid.yml \
   --repo tashifkhan/tashif.codes \
-  --field source_repository=tashifkhan/Paisa \
-  --field release_tag=v1.0.0 \
-  --field apk_pattern='Paisa-v*.apk'
+  --field source_repository=tashifkhan/Billi \
+  --field release_tag=v2.0.0 \
+  --field apk_pattern='Billi-v*.apk'
 
 # Patchwork
 gh workflow run publish-fdroid.yml \
@@ -72,7 +74,7 @@ public/fdroid/
   metadata/
     <package>.yml                 # name, summary, description, links, licence
     <package>/en-US/
-      icon.png                    # taken from the APK by CI
+      icon.png                    # listing icon, extracted from the APK if missing
       featureGraphic.jpg          # 1024x500 banner
       phoneScreenshots/           # shown in the F-Droid client and on the site
       tenInchScreenshots/         # tablet screens, optional
@@ -88,8 +90,8 @@ public/fdroid/
 
 The listing text, screenshots and video live in `metadata/` and are edited by
 hand. The page at `/fdroid` reads those files at build time, so a merged edit
-shows on the site straight away. `/fdroid/<app>` redirects to the app's project
-page.
+shows on the site for apps already in the signed index. `/fdroid/<app>` redirects
+to the app's project page. Billi and legacy Paisa share `/projects/paisa`.
 
 The F-Droid client reads the signed index instead. After merging a listing
 edit, re-sign the index without importing an APK:
@@ -122,7 +124,7 @@ In **`tashifkhan/tashif.codes`**:
 | `FDROID_KEY_PASS` | key password |
 | `FDROID_SOURCE_TOKEN` | optional; only if the APK release repo is private |
 
-In **`tashifkhan/Paisa`**:
+In **`tashifkhan/Billi`**:
 
 | Secret | Purpose |
 |---|---|

@@ -6,7 +6,7 @@ F-Droid shows metadata/<package>/en-US/changelogs/<versionCode>.txt under each
 version, capped at 500 characters. Release notes are longer and written in
 Markdown, so this keeps the opening summary and as many bullets as fit.
 
-    write-fdroid-changelog.py --package codes.tashif.paisa --version-code 14 \
+    write-fdroid-changelog.py --package sh.taf.billi --version-code 20 \
         --body notes.md [--force]
 
 With --apk it reads the package and version code from the APK through
