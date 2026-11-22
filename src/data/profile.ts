@@ -24,7 +24,7 @@ export const sponsorUrl = "";
  */
 export const playStoreDeveloperUrl = "";
 export const playStoreApps: Record<string, string> = {
-	// paisa: "https://play.google.com/store/apps/details?id=codes.tashif.paisa",
+	// billi: "https://play.google.com/store/apps/details?id=sh.taf.billi",
 };
 
 /** The install row a landing shows for Google Play. */
