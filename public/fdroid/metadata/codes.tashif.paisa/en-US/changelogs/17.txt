@@ -1,6 +1,0 @@
-Share files to Paisa, read Excel statements, and switch AI off entirely.
-
-* Share images, PDFs, CSVs, Excel files or text from another app to "Add with AI".
-* Long statements are read in parts instead of being cut off after the first 24k characters, so every row makes it in.
-* Excel .xlsx workbooks work in statement import and Add with AI.
-* Use AI, at the top of the AI page, turns off every AI feature.

@@ -234,8 +234,7 @@ function loadRepo(): FdroidRepo {
 			const sourceCode: string | undefined = meta.SourceCode ?? app.sourceCode;
 			const repoName = sourceCode?.split("/").filter(Boolean).pop() ?? "";
 			const project = allProjects.find((p) => p.slug === slugify(repoName));
-			// Billi and legacy Paisa use the same GitHub repo and project page.
-			const slug = pkg === "sh.taf.billi" ? "billi" : project?.slug ?? slugify(meta.Name ?? app.name ?? pkg);
+			const slug = project?.slug ?? slugify(meta.Name ?? app.name ?? pkg);
 
 			const videoUrl = readText(path.join(localDir, "video.txt"));
 			// Listings point at the production host. On the site, use the same

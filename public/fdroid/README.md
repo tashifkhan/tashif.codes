@@ -19,7 +19,6 @@ Install / instructions page: `https://tashif.codes/fdroid`
 | App | Source repo | Package | Release asset pattern |
 | --- | --- | --- | --- |
 | **Billi** | [tashifkhan/Billi](https://github.com/tashifkhan/Billi) | `sh.taf.billi` | `Billi-v*.apk` |
-| **Paisa (legacy)** | [tashifkhan/Billi](https://github.com/tashifkhan/Billi) | `codes.tashif.paisa` | `Paisa-v*.apk` |
 | **Patchwork** | [tashifkhan/Patchwork](https://github.com/tashifkhan/Patchwork) | `codes.tashhif.patchwork` | `*.apk` |
 | **Delhi Metro** | [tashifkhan/delhi-metro](https://github.com/tashifkhan/delhi-metro) | `codes.tashif.delhimetro` | `DelhiMetro-v*.apk` |
 | **Namma Metro** | [tashifkhan/blr-metro](https://github.com/tashifkhan/blr-metro) | `codes.tashif.blrmetro` | `NammaMetro-v*.apk` |
@@ -91,7 +90,7 @@ public/fdroid/
 The listing text, screenshots and video live in `metadata/` and are edited by
 hand. The page at `/fdroid` reads those files at build time, so a merged edit
 shows on the site for apps already in the signed index. `/fdroid/<app>` redirects
-to the app's project page. Billi and legacy Paisa share `/projects/paisa`.
+to the app's project page.
 
 The F-Droid client reads the signed index instead. After merging a listing
 edit, re-sign the index without importing an APK:

@@ -107,8 +107,8 @@ const countWord =
 			title={`${countWord} ${apps.length === 1 ? "app" : "apps"} in the repo.`}
 		>
 			<p>
-				<a href="/projects/billi" data-haptic-nav class="underline">Billi</a> is the new name for Paisa.
-				It installs separately. Restore a Paisa backup to move your data.
+				<a href="/projects/billi" data-haptic-nav class="underline">Billi</a> was called Paisa.
+				Coming from Paisa? Install Billi and restore a Paisa backup to move your data.
 				{!hasBilli && " Billi will appear here after its first release reaches the repo."}
 			</p>
 			{
@@ -131,7 +131,6 @@ const countWord =
 										<h3>
 											<a href={app.links.project ?? app.links.sourceCode} data-haptic-nav>
 												{app.name}
-															{app.packageName === "codes.tashif.paisa" && " (legacy)"}
 											</a>
 										</h3>
 									</div>

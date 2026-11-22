@@ -1,7 +1,0 @@
-Markdown descriptions, more ways to split a bill, category fixes, and support for more bank messages.
-
-* Write descriptions with Markdown when adding or editing a transaction.
-* Editable fields come first on the transaction page.
-* Formatting a description now moves typing into that field, so the transaction title stays unchanged.
-* Split by percentage as well as equally or by custom amounts.
-* Split by item and assign each line to one person or several.

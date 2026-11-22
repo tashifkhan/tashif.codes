@@ -1,3 +1,0 @@
-A fix for the review step in Add with AI.
-
-* After the AI drafts transactions, each row's note is the Markdown description field from the add sheet, not a one-line text box.
