@@ -67,7 +67,7 @@ a landing can also `export const landing` to set a tagline and the header button
 
 ## f-droid, for the curious
 
-paste `https://tashif.codes/fdroid/repo?fingerprint=568557c435bdf555725de95de596a90d6fa964d4bf0b71874f254cd0be7e94c9` into f-droid. it checks the repo's signing key against the fingerprint. install [patchwork](https://github.com/tashifkhan/Patchwork), [delhi metro](https://github.com/tashifkhan/delhi-metro) or [namma metro](https://github.com/tashifkhan/blr-metro). [billi](https://tashif.codes/projects/billi) (formerly paisa) is there too. paisa itself was taken out of the repo; its old apks are still on the [github releases](https://github.com/tashifkhan/Billi/releases). each app's release workflow pokes `publish-fdroid.yml` here, which grabs the apk, signs the index and commits it.
+paste `https://tashif.codes/fdroid/repo?fingerprint=568557c435bdf555725de95de596a90d6fa964d4bf0b71874f254cd0be7e94c9` into f-droid. it checks the repo's signing key against the fingerprint. install [patchwork](https://github.com/tashifkhan/Patchwork), [delhi metro](https://github.com/tashifkhan/delhi-metro) or [namma metro](https://github.com/tashifkhan/blr-metro). [billi](https://tashif.codes/projects/billi) (formerly paisa) is there too. paisa itself was taken out of the repo; its old apks are still on the [github releases](https://github.com/tashifkhan/Billi/releases). each app's release workflow pokes `publish-fdroid.yml` here, which grabs the apk, signs the index, uploads the apk to Cloudflare R2, and commits only the index and metadata.
 
 secrets, keystore setup and manual re-imports live in [`public/fdroid/README.md`](public/fdroid/README.md). don't lose the keystore. i will cry.
 

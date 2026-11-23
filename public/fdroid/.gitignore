@@ -13,7 +13,8 @@ tmp/
 unsigned/
 .cache/
 
-# Keep the repo/ tree (APKs + indexes) tracked so Vercel can serve them.
+# APKs are served from Cloudflare R2 (tashif-codes-fdroid), not from git or Vercel.
+*.apk
+
 # archive/ is disabled (archive_older: 0) and must not be committed.
-!repo/
 archive/

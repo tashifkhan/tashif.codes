@@ -1,8 +1,10 @@
 name: Publish F-Droid Repo
 
 # Imports a release APK into the static F-Droid binary repository under
-# public/fdroid, regenerates the signed index, and commits the result so
-# Vercel can serve https://tashif.codes/fdroid/repo
+# public/fdroid, regenerates the signed index, uploads APKs to the
+# tashif-codes-fdroid R2 bucket, and commits only the index and metadata.
+# A Cloudflare Worker serves the APKs at https://tashif.codes/fdroid/repo/<apk>
+# (HTTP 200). Vercel continues to serve the signed index.
 #
 # Triggers:
 #   - workflow_dispatch (from UI or from Patchwork's release-apk.yml)
@@ -17,6 +19,9 @@ name: Publish F-Droid Repo
 #   FDROID_KEYSTORE_PASS    — keystore password
 #   FDROID_KEY_ALIAS        — key alias (e.g. fdroid)
 #   FDROID_KEY_PASS         — key password
+#   CLOUDFLARE_API_TOKEN    — R2 Storage Edit, Workers Scripts Edit,
+#                             Zone Workers Routes Edit on tashif.codes
+#   CLOUDFLARE_ACCOUNT_ID   — Cloudflare account ID
 
 on:
   workflow_dispatch:
@@ -54,7 +59,7 @@ jobs:
   publish:
     name: Import APK and update F-Droid index
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       REPO_URL: https://tashif.codes/fdroid/repo
       REPO_NAME: Tashif Codes
@@ -63,6 +68,9 @@ jobs:
       FDROID_KEYSTORE_PASS: ${{ secrets.FDROID_KEYSTORE_PASS }}
       FDROID_KEY_ALIAS: ${{ secrets.FDROID_KEY_ALIAS }}
       FDROID_KEY_PASS: ${{ secrets.FDROID_KEY_PASS }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      FDROID_R2_BUCKET: tashif-codes-fdroid
       # Public releases work with github.token. For private source repos, set
       # FDROID_SOURCE_TOKEN (contents:read on the source).
       GH_TOKEN: ${{ secrets.FDROID_SOURCE_TOKEN || github.token }}
@@ -97,7 +105,7 @@ jobs:
               fi
             done
           fi
-          for var in FDROID_KEYSTORE_BASE64 FDROID_KEYSTORE_PASS FDROID_KEY_ALIAS FDROID_KEY_PASS; do
+          for var in FDROID_KEYSTORE_BASE64 FDROID_KEYSTORE_PASS FDROID_KEY_ALIAS FDROID_KEY_PASS CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID; do
             if [[ -z "${!var:-}" ]]; then
               echo "::error::Missing required secret: $var"
               exit 1
@@ -147,6 +155,14 @@ jobs:
           python -c "import androguard; print('androguard', androguard.__version__ if hasattr(androguard,'__version__') else 'ok')"
           which aapt || true
           which apksigner || true
+
+      - name: Install wrangler
+        run: npm install -g wrangler@4
+
+      - name: Sync existing APKs from R2
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/fdroid-r2-sync.py download
 
       - name: Download APK from GitHub Release
         id: download
@@ -313,16 +329,22 @@ jobs:
               print("WARNING: index has zero apps", file=sys.stderr)
           PY
 
-      - name: Commit F-Droid repo files
+      - name: Upload APKs to R2
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/fdroid-r2-sync.py upload
+
+      - name: Commit F-Droid index and metadata
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: ${{ env.COMMIT_MESSAGE }}
           skip_dirty_check: false
           disable_globbing: true
+          # *.apk is gitignored; only the signed index and metadata are committed.
           file_pattern: public/fdroid/**
-          commit_user_name: github-actions[bot]
-          commit_user_email: github-actions[bot]@users.noreply.github.com
-          commit_author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          commit_user_name: Tashif Ahmad Khan
+          commit_user_email: tashifkhan010@gmail.com
+          commit_author: Tashif Ahmad Khan <tashifkhan010@gmail.com>
 
       - name: Summary
         run: |
@@ -336,5 +358,6 @@ jobs:
               echo "- APKs imported: ${{ steps.download.outputs.apk_count }} (\`${{ steps.download.outputs.apk_name }}\`)"
             fi
             echo "- Repo URL: ${REPO_URL}"
+            echo "- APKs uploaded to R2 bucket \`${FDROID_R2_BUCKET}\`"
             echo "- Install page: https://tashif.codes/fdroid"
           } >> "$GITHUB_STEP_SUMMARY"
