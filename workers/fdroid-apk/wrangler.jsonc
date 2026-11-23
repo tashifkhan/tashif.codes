@@ -1,0 +1,21 @@
+{
+  "name": "tashif-codes-fdroid",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-23",
+  "account_id": "4a27904b6db1ee6d5197cd3f8289efd3",
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "ORIGIN_HOST": "dashboard-tashifkhans-projects.vercel.app"
+  },
+  "r2_buckets": [
+    {
+      "binding": "FDROID_BUCKET",
+      "bucket_name": "tashif-codes-fdroid"
+    }
+  ],
+  "routes": [
+    { "pattern": "tashif.codes/fdroid/*", "zone_name": "tashif.codes" },
+    { "pattern": "www.tashif.codes/fdroid/*", "zone_name": "tashif.codes" }
+  ]
+}

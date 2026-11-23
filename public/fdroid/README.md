@@ -29,10 +29,14 @@ Install / instructions page: `https://tashif.codes/fdroid`
    (Billi: `Release`; Patchwork / Delhi Metro / Namma Metro: EAS `github-release` + tag push).
 2. That workflow dispatches `.github/workflows/publish-fdroid.yml` in this repo
    (or you run it manually).
-3. The workflow downloads the APK, copies it into `public/fdroid/repo`, runs
-   `fdroid update`, and commits the signed index. fdroidserver uses the APK's
-   package ID to find `metadata/<package>.yml` and its listing assets.
-4. Vercel deploys the static files under `/fdroid/repo`.
+3. The workflow syncs existing APKs from the `tashif-codes-fdroid` R2 bucket,
+   downloads the new GitHub Release asset, copies it into `public/fdroid/repo`,
+   and runs `fdroid update`. fdroidserver uses the APK's package ID to find
+   `metadata/<package>.yml` and its listing assets.
+4. APKs are uploaded back to R2. The signed index and metadata are committed
+   so Vercel can serve the index; APKs themselves are not in git. A Cloudflare
+   Worker serves `https://tashif.codes/fdroid/repo/<apkName>` (and the current
+   version aliases under `/fdroid/*.apk`) with HTTP 200 from R2.
 
 The repo keeps recent versions in `repo/` only (`archive_older: 0`). There is no
 `/fdroid/archive` tree, so versions older than those kept in `repo/` are not served.
@@ -82,7 +86,7 @@ public/fdroid/
       tenInchScreenshots/         # tablet screens, optional
       video.txt                   # one URL to a walkthrough video
       changelogs/<versionCode>.txt  # "What's new" per version, 500 chars max
-  repo/                           # APKs + signed indexes (committed by CI)
+  repo/                           # signed indexes (committed); APKs live in R2
   config.yml.example              # non-secret reference config
   .gitignore                      # blocks keystores / live config.yml
 ```
@@ -124,6 +128,8 @@ In **`tashifkhan/tashif.codes`**:
 | `FDROID_KEY_ALIAS` | key alias (usually `fdroid`) |
 | `FDROID_KEY_PASS` | key password |
 | `FDROID_SOURCE_TOKEN` | optional; only if the APK release repo is private |
+| `CLOUDFLARE_API_TOKEN` | Wrangler / R2 (R2 Storage Edit, Workers Scripts Edit, Zone Workers Routes Edit on `tashif.codes`) |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account that owns the R2 bucket and Worker |
 
 In **`tashifkhan/Billi`**:
 
