@@ -10,7 +10,6 @@ import vercel from '@astrojs/vercel';
 const EXCLUDED_FROM_SITEMAP = [
   /^\/download\//,
   /^\/fdroid\/[^/]+\/?$/,
-  /^\/projects\/[^/]+\/releases\//,
   /^\/404\/?$/,
 ];
 
@@ -54,9 +53,8 @@ export default defineConfig({
   integrations: [
     react(),
     sitemap({
-      // Only list pages that are meant to rank. These are left out:
-      // - /download/* and /fdroid/<app> only redirect elsewhere (noindex)
-      // - per-release pages are noindexed copies of GitHub release notes
+      // Only list real pages. These are left out:
+      // - /download/* and /fdroid/<app> only redirect elsewhere
       // - /404 is not a real page
       filter: (page) => !EXCLUDED_FROM_SITEMAP.some((re) => re.test(new URL(page).pathname)),
       serialize: (item) => ({ ...item, url: item.url.replace(/(?<=[^/])\/+$/, '').replace(/^(https:\/\/[^/]+)$/, '$1/') }),
