@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/repo",
-    "timestamp": 1795378942000,
+    "timestamp": 1795392149000,
     "categories": {
       "Development": {
         "name": {
@@ -919,7 +919,7 @@
         ],
         "changelog": "https://github.com/tashifkhan/Billi/releases",
         "issueTracker": "https://github.com/tashifkhan/Billi/issues",
-        "lastUpdated": 1795378908000,
+        "lastUpdated": 1795392134000,
         "license": "AGPL-3.0-or-later",
         "sourceCode": "https://github.com/tashifkhan/Billi",
         "webSite": "https://tashif.codes/projects/billi",
@@ -1084,6 +1084,80 @@
         "preferredSigner": "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be"
       },
       "versions": {
+        "b8b792f3b3c6ccc047b8ecb32e3f4262f2fc36bc1cee291ff6a995675091b612": {
+          "added": 1795392134000,
+          "file": {
+            "name": "/sh.taf.billi_21.apk",
+            "sha256": "b8b792f3b3c6ccc047b8ecb32e3f4262f2fc36bc1cee291ff6a995675091b612",
+            "size": 34936640
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a",
+              "armeabi-v7a",
+              "x86",
+              "x86_64"
+            ],
+            "versionName": "2.0.1",
+            "versionCode": 21,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.READ_SMS"
+              },
+              {
+                "name": "android.permission.RECEIVE_SMS"
+              },
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.POST_NOTIFICATIONS"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+              },
+              {
+                "name": "android.permission.USE_BIOMETRIC"
+              },
+              {
+                "name": "android.permission.RECORD_AUDIO"
+              },
+              {
+                "name": "android.permission.CAMERA"
+              },
+              {
+                "name": "android.permission.USE_FINGERPRINT"
+              },
+              {
+                "name": "com.google.android.apps.aicore.service.BIND_SERVICE"
+              },
+              {
+                "name": "android.permission.WAKE_LOCK"
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "android.permission.RECEIVE_BOOT_COMPLETED"
+              },
+              {
+                "name": "sh.taf.billi.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              }
+            ]
+          }
+        },
         "2f8c2f5f22cd1a79e878c76f615cdf3c8579b2046aad8d6abda4240d29d5c600": {
           "added": 1795378908000,
           "file": {

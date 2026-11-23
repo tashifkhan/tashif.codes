@@ -1,0 +1,4 @@
+* Predictive back is back.
+* The web version only shows what works in a browser.
+* Google Drive backup is hidden on the web until the site has a Google sign-in client ID.
+* Text that said "this phone" says "this browser" on the web, and statement import asks you to keep the tab open instead of promising a notification.
