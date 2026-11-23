@@ -12,6 +12,7 @@ const EXCLUDED_FROM_SITEMAP = [
   /^\/fdroid\/[^/]+\/?$/,
   /^\/projects\/[^/]+\/releases\//,
   /^\/404\/?$/,
+  /^\/blog(\/|$)/,
 ];
 
 // https://astro.build/config
@@ -57,6 +58,7 @@ export default defineConfig({
       // Only list pages that are meant to rank. These are left out:
       // - /download/* and /fdroid/<app> only redirect elsewhere (noindex)
       // - per-release pages are noindexed copies of GitHub release notes
+      // - /blog and /blog/* are noindexed, so they are not listed here either
       // - /404 is not a real page
       filter: (page) => !EXCLUDED_FROM_SITEMAP.some((re) => re.test(new URL(page).pathname)),
       serialize: (item) => ({ ...item, url: item.url.replace(/(?<=[^/])\/+$/, '').replace(/^(https:\/\/[^/]+)$/, '$1/') }),

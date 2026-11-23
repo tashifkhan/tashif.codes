@@ -24,10 +24,14 @@ import { DEFAULT_DESCRIPTION, DEFAULT_OG_IMAGE } from "../lib/seo";
 interface Props {
 	activeTab?: TabId;
 	description?: string;
+	noindex?: boolean;
 }
 
-const { activeTab = "projects", description = DEFAULT_DESCRIPTION } =
-	Astro.props;
+const {
+	activeTab = "projects",
+	description = DEFAULT_DESCRIPTION,
+	noindex = false,
+} = Astro.props;
 
 const { titleLabel } = getTab(activeTab);
 const title = titleLabel
@@ -50,6 +54,7 @@ const tabImage = tabImageMap[activeTab] ?? DEFAULT_OG_IMAGE;
 	description={description}
 	image={tabImage}
 	url={Astro.url.pathname}
+	noindex={noindex}
 >
 	<div
 		data-page-surface
