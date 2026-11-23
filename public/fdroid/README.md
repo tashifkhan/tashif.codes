@@ -34,6 +34,9 @@ Install / instructions page: `https://tashif.codes/fdroid`
    package ID to find `metadata/<package>.yml` and its listing assets.
 4. Vercel deploys the static files under `/fdroid/repo`.
 
+The repo keeps recent versions in `repo/` only (`archive_older: 0`). There is no
+`/fdroid/archive` tree, so versions older than those kept in `repo/` are not served.
+
 Use the manual import examples below. Billi's first import needs the published 2.0.0 APK.
 
 ```bash
@@ -80,7 +83,6 @@ public/fdroid/
       video.txt                   # one URL to a walkthrough video
       changelogs/<versionCode>.txt  # "What's new" per version, 500 chars max
   repo/                           # APKs + signed indexes (committed by CI)
-  archive/                        # older APKs (created by fdroidserver)
   config.yml.example              # non-secret reference config
   .gitignore                      # blocks keystores / live config.yml
 ```

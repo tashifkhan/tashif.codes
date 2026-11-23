@@ -13,7 +13,7 @@ tmp/
 unsigned/
 .cache/
 
-# Keep the repo/ and archive/ trees (APKs + indexes) tracked so Vercel
-# can serve them as static files from this repository.
+# Keep the repo/ tree (APKs + indexes) tracked so Vercel can serve them.
+# archive/ is disabled (archive_older: 0) and must not be committed.
 !repo/
-!archive/
+archive/
