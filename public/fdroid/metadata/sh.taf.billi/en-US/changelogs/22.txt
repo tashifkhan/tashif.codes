@@ -1,0 +1,5 @@
+* billi.taf.sh is now a landing page with screenshots, the walkthrough video and the download links.
+* The address bar follows the app: /app/analytics, /app/settings/backup, /app/transactions/42.
+* Google Drive shows in Backup again.
+* The drawer's add button runs the drawer's full width, and Backup, AI, Categories, Merchant rules, Appearance and About sit under the tabs when the window is tall enough.
+* The side rail shows every tab, Debts included, when the window is tall enough.
