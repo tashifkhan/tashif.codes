@@ -194,8 +194,8 @@ jobs:
           find public/fdroid/repo -type f -size 0 -print -delete || true
           find public/fdroid/repo -name '.gitkeep' -print -delete || true
 
-          # Copy into the binary repo. Keep prior versions; fdroid archive_older
-          # will move stale APKs into archive/ automatically.
+          # Copy into the binary repo. Keep prior versions in repo/.
+          # archive_older is 0, so fdroidserver will not move APKs into archive/.
           for apk in "${APKS[@]}"; do
             base="$(basename "$apk")"
             # Skip checksum-only faux matches
@@ -250,7 +250,7 @@ jobs:
           cfg = f"""repo_url: {lit(os.environ["REPO_URL"])}
           repo_name: {lit(os.environ["REPO_NAME"])}
           repo_description: {lit(os.environ["REPO_DESCRIPTION"])}
-          archive_older: 3
+          archive_older: 0
           make_current_version_link: true
           keystore: fdroid-repo.p12
           keystorepass: {lit(os.environ["FDROID_KEYSTORE_PASS"])}
@@ -271,9 +271,16 @@ jobs:
           fdroid update --create-metadata --rename-apks --pretty --verbose
 
           # make_current_version_link leaves root *.apk symlinks. When an APK is
-          # archived or the app label changes, old links go dangling and Vite's
+          # removed or the app label changes, old links go dangling and Vite's
           # public-dir copy fails with ENOENT on Vercel.
           find . -maxdepth 1 -type l ! -exec test -e {} \; -print -delete
+
+          # archive_older is 0: do not publish an archive repo. Remove any leftover
+          # or newly generated archive/ so it cannot regrow in git or on Vercel.
+          if [[ -d archive ]]; then
+            echo "Removing archive/ (archive_older=0)"
+            rm -rf archive
+          fi
 
           # Never commit secrets
           rm -f config.yml fdroid-repo.p12
@@ -281,7 +288,7 @@ jobs:
           rm -rf tmp .fdroidcache 2>/dev/null || true
 
           echo "Repo contents after update:"
-          find repo archive -type f 2>/dev/null | sort || find repo -type f | sort
+          find repo -type f | sort
 
       - name: Sanity-check index
         run: |

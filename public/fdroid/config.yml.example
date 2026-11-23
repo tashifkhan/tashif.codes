@@ -7,8 +7,9 @@ repo_url: https://tashif.codes/fdroid/repo
 repo_name: Tashif Codes
 repo_description: Android apps published by Tashif Khan.
 
-# Keep the latest N versions in repo/; older ones move to archive/
-archive_older: 3
+# 0 = no archive repo. Older APKs used to live in archive/ and inflated
+# every Vercel deployment; leave them off this site. Remaining versions stay in repo/.
+archive_older: 0
 make_current_version_link: true
 
 # Local-only paths (gitignored). CI writes these from GitHub secrets.
