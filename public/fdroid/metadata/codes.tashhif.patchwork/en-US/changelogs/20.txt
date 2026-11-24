@@ -1,0 +1,5 @@
+Brain dumps keep their raw text, sync problems read in plain words, and the navbar takes Paisa's options.
+
+* Sorting a brain dump also saves the text word for word as a dated to-do in a Brain dump list, created the first time you sort.
+* Sorting shows its steps while it works: a Material 3 card on Android, and a glass button with status capsules and an Apple Intelligence glow on iOS.
+* Voice brain dumps have a live waveform, a large timer, and pause and resume.
