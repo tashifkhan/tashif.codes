@@ -1,0 +1,7 @@
+Offline gets out of the way, the calendar keeps its header in place, and Android boards stack like your lists.
+
+* The offline banner on Tasks has a close button.
+* Patchwork checks the connection in the background while offline.
+* The Android calendar keeps the day, month and week fixed, and only the hours scroll.
+* Android Boards shows boards as a stack of cards like My lists, with starred and recently opened boards first.
+* Labels, section headers and chips no longer use all caps.
