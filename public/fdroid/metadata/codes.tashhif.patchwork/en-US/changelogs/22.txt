@@ -1,0 +1,6 @@
+Meet Patch. A first-run intro, an About page, and one toolbar style everywhere.
+
+* Patch, the quilted mascot from the icon, in eleven moods.
+* A first-run intro: a welcome, a short tour, the look (theme, colors, pure black), then where your tasks live.
+* An About page with where your data goes, help, source code, the changelog and third-party notices.
+* Every floating to-do toolbar uses the to-do page's style: a dark pill with round buttons and the main action on the right.
