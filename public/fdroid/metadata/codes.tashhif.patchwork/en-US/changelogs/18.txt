@@ -1,0 +1,6 @@
+Patchwork adds Nextcloud task attachments, a daily planner, and on-device AI on supported phones.
+
+* Attach photos, camera captures, or documents to Nextcloud tasks in the mobile app.
+* Files picked offline stay on the device across restarts and upload when sync resumes.
+* Plan your day on a calendar timeline, give tasks start and end times, and run a focus timer or stopwatch on any to-do.
+* Pin tasks, set repeats, edit lists as text, and turn a typed or dictated brain dump into to-dos.
