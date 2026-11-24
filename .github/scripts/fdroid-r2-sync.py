@@ -122,8 +122,12 @@ def download() -> None:
     FDROID.mkdir(parents=True, exist_ok=True)
     (FDROID / "repo").mkdir(parents=True, exist_ok=True)
     entries = api_list_objects()
-    apks = [object_name(item) for item in entries if object_name(item).endswith(".apk")]
-    print(f"R2 objects ending in .apk: {len(apks)}")
+    # fdroid update regenerates root APK aliases as symlinks to versioned APKs.
+    apks = [
+        key for key in map(object_name, entries)
+        if key.startswith("repo/") and key.count("/") == 1 and key.endswith(".apk")
+    ]
+    print(f"Versioned APKs in R2: {len(apks)}")
     if not apks:
         print("No APKs in R2 yet; continuing with an empty local repo/")
         return
