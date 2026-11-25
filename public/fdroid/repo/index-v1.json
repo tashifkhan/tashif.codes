@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1795558746000,
+    "timestamp": 1795588909000,
     "version": 20002,
     "name": "Tashif Codes",
     "icon": "icon.png",
@@ -20,7 +20,7 @@
         "Offline"
       ],
       "changelog": "https://github.com/tashifkhan/Billi/releases",
-      "suggestedVersionCode": "22",
+      "suggestedVersionCode": "23",
       "description": "Billi is a budgeting and expense manager. It keeps your ledger on your phone and works without an account.\n\nBilli was called Paisa. Android installs Billi alongside Paisa because it uses a new package, sh.taf.billi. Make a backup in Paisa and choose I have a backup on Billi's first screen. Billi restores .paisa files and lists Paisa's Google Drive and Nextcloud backups. New backups use .billi files.\n\nAdd transactions\n\n* Turn alerts from about 140 Indian banks into transactions on your phone. Billi keeps the original SMS with each imported transaction.\n* Type or say what you spent, or attach a receipt. Review the drafts before you save.\n* Import PDF, CSV and image statements. Billi filters out duplicates across files.\n* Add a transaction by hand. Long-press the launcher icon for Add transaction, Add with AI, Budgets and Spending.\n\nReview your spending\n\n* Search by merchant, and narrow the list with a chip for each filter: date, type, category, account, amount and source.\n* See spending by category and date range, with the change against the last period.\n* Set monthly category budgets and track bank, cash, card and wallet balances.\n* Split bills and track who owes what.\n\nChoose how it looks\n\n* Start with Billi orange, choose from 32 fixed palettes or use your Android wallpaper colours.\n* Switch on dark mode, AMOLED black, high contrast or reduced motion. Hide credit cards and debts from Home.\n* Meet Billi, a ginger cat who is also a wallet. The cat appears during setup, on empty screens, while AI reads and on the lock screen.\n* Use home screen widgets for balances and quick entry. The layout adapts to phones, foldables and tablets.\n\nPrivacy and backups\n\n* Billi processes bank SMS on your phone.\n* On supported phones, Gemini Nano can read notes and images on the device. You can also use your own key for a compatible AI provider.\n* On Android 16, Android AppFunctions lets assistants the system allows add transactions and read balances, spending, budgets and recent transactions. Turn it off under Privacy & security. Gemini can't use these yet: Billi first has to be registered with Google as a connected app.\n* Lock the app with biometrics or your screen lock. Hide amounts with one tap.\n* Back up to Google Drive, Nextcloud or a file. Set a password to encrypt the backup with AES-256-GCM. Export transactions to CSV or PDF.\n\nWhy it asks for permissions\n\n* SMS, to import bank alerts if you enable SMS import.\n* Microphone, to record voice notes in Add with AI.\n* Network, for backup, sync and an AI provider you configure.\n* Biometrics, for app lock.\n\nThe same app runs in a browser at https://billi.taf.sh, with its data stored in that browser.\n",
       "issueTracker": "https://github.com/tashifkhan/Billi/issues",
       "license": "AGPL-3.0-or-later",
@@ -30,7 +30,7 @@
       "webSite": "https://tashif.codes/projects/billi",
       "added": 1795378908000,
       "packageName": "sh.taf.billi",
-      "lastUpdated": 1795423587000,
+      "lastUpdated": 1795588899000,
       "localized": {
         "en-US": {
           "featureGraphic": "featureGraphic_Fw7tTFu5V3Kcy_VSSY9DD4y1jThMJbv9TxWioXStZJA=.jpg",
@@ -64,7 +64,7 @@
             "03.png"
           ],
           "video": "https://taf.sh/media/billi/demo.mp4",
-          "whatsNew": "* billi.taf.sh is now a landing page with screenshots, the walkthrough video and the download links.\n* The address bar follows the app: /app/analytics, /app/settings/backup, /app/transactions/42.\n* Google Drive shows in Backup again.\n* The drawer's add button runs the drawer's full width, and Backup, AI, Categories, Merchant rules, Appearance and About sit under the tabs when the window is tall enough.\n* The side rail shows every tab, Debts included, when the window is tall enough.\n"
+          "whatsNew": "* Save separate merchant rename and category rules above Save, including on manually entered transactions.\n* Billi catches duplicate bank texts that share a long transaction reference.\n* Home shows a fuller account breakdown with balances and credit card usage.\n* Debts shows net and separate totals, and groups people by who owes whom.\n* Account and category breakdowns in Analytics can switch between Month, Year, Custom and All.\n"
         }
       }
     },
@@ -1599,6 +1599,88 @@
       }
     ],
     "sh.taf.billi": [
+      {
+        "added": 1795588899000,
+        "apkName": "sh.taf.billi_23.apk",
+        "hash": "9725c1470b9c196a52d38aa012be75e71956cc824b14369c6fff259e43845654",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "packageName": "sh.taf.billi",
+        "sig": "acb86eb55a28f6e0e08dad36111ce604",
+        "signer": "229f88c55e3af815c4474a1d117c59c8033db83f2f9556b5b32a17347e95b8be",
+        "size": 34953024,
+        "targetSdkVersion": 36,
+        "uses-permission": [
+          [
+            "android.permission.READ_SMS",
+            null
+          ],
+          [
+            "android.permission.RECEIVE_SMS",
+            null
+          ],
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.POST_NOTIFICATIONS",
+            null
+          ],
+          [
+            "android.permission.FOREGROUND_SERVICE",
+            null
+          ],
+          [
+            "android.permission.FOREGROUND_SERVICE_DATA_SYNC",
+            null
+          ],
+          [
+            "android.permission.USE_BIOMETRIC",
+            null
+          ],
+          [
+            "android.permission.RECORD_AUDIO",
+            null
+          ],
+          [
+            "android.permission.CAMERA",
+            null
+          ],
+          [
+            "android.permission.USE_FINGERPRINT",
+            null
+          ],
+          [
+            "com.google.android.apps.aicore.service.BIND_SERVICE",
+            null
+          ],
+          [
+            "android.permission.WAKE_LOCK",
+            null
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "android.permission.RECEIVE_BOOT_COMPLETED",
+            null
+          ],
+          [
+            "sh.taf.billi.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 23,
+        "versionName": "2.0.3"
+      },
       {
         "added": 1795423587000,
         "apkName": "sh.taf.billi_22.apk",

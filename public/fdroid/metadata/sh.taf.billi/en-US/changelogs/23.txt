@@ -1,0 +1,5 @@
+* Save separate merchant rename and category rules above Save, including on manually entered transactions.
+* Billi catches duplicate bank texts that share a long transaction reference.
+* Home shows a fuller account breakdown with balances and credit card usage.
+* Debts shows net and separate totals, and groups people by who owes whom.
+* Account and category breakdowns in Analytics can switch between Month, Year, Custom and All.
