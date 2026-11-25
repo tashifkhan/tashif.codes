@@ -1,0 +1,5 @@
+Patchwork can show your calendar events alongside your tasks. On iPhone, you can also manage your Apple Reminders lists in Patchwork.
+
+* Turn on Show calendar events in Settings → Calendars and reminders.
+* On iPhone, turn on Apple Reminders in the same settings page to see your Reminders lists in Tasks.
+* CalDAV account setup can discover to-do lists on servers that use different paths from Nextcloud.
