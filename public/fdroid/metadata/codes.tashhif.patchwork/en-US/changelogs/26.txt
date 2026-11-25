@@ -1,0 +1,6 @@
+Calendar has its own tab. Tap the floating plus to add a task on the selected day.
+
+* The calendar leaves more room for the timeline, and opening a task from Calendar keeps you in that tab.
+* CalDAV account setup uses one service picker.
+* Deleting an on-device task moves its checklist to Recently Deleted with it.
+* If a CalDAV list fails to refresh, Patchwork keeps its last known tasks and reminders.

@@ -11,7 +11,7 @@
     "--verbose"
   ],
   "disabled": [],
-  "endTimestamp": 1795589207574,
+  "endTimestamp": 1795634187012,
   "failedBuilds": {},
   "jarsigner": "/usr/bin/jarsigner",
   "keytool": "/usr/bin/keytool",
@@ -34,14 +34,14 @@
     "sh.taf.billi"
   ],
   "stages": {
-    "delete_disabled_builds": 1795589194230,
-    "index.make repo": 1795589204512,
-    "prepare_apps repo": 1795589204491,
-    "process_apks": 1795589194231,
-    "read_added_date_from_all_apks": 1795589204487,
-    "remove_apks": 1795589204485,
-    "scan_repo_files": 1795589204373
+    "delete_disabled_builds": 1795634170290,
+    "index.make repo": 1795634183636,
+    "prepare_apps repo": 1795634183609,
+    "process_apks": 1795634170290,
+    "read_added_date_from_all_apks": 1795634183609,
+    "remove_apks": 1795634183607,
+    "scan_repo_files": 1795634183606
   },
-  "startTimestamp": 1795589194000,
+  "startTimestamp": 1795634170000,
   "subcommand": "update"
 }
