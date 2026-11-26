@@ -1,0 +1,5 @@
+* Wide windows, tablets and foldables use one navigation rail instead of swapping to a separate desktop layout.
+* Settings sits in that rail, so it opens from Plan, Map, Network, Saved and Alerts.
+* The app rotates with the device.
+* Most Android phones, 15 MB.
+* Older 32-bit ARM phones, 14 MB.
