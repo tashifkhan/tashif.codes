@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1795685879000,
+    "timestamp": 1795686099000,
     "version": 20002,
     "name": "Tashif Codes",
     "icon": "icon.png",
@@ -116,7 +116,7 @@
         "Internet"
       ],
       "changelog": "https://github.com/tashifkhan/blr-metro/releases",
-      "suggestedVersionCode": "2",
+      "suggestedVersionCode": "3",
       "description": "Namma Metro is a journey planner for the Bengaluru metro. Station names\nand fares come from the public BMRCL service.\n\nPlan a trip by least distance or fewest changes and see the token, smart\ncard peak, smart card off-peak and group ticket fares. Search stations in\nEnglish or Kannada, browse each line in order, follow BMRCL notices, and\npan around the network map. Stations and planned journeys stay available\noffline.\n\nBMRCL publishes no travel times, first or last trains, gates or platforms,\nso the app leaves those out.\n\nReleases are built with Expo EAS, published on GitHub Releases, and\nmirrored into this F-Droid repository.\n\nPackage ID: codes.tashif.blrmetro\n",
       "issueTracker": "https://github.com/tashifkhan/blr-metro/issues",
       "license": "MIT",
@@ -126,11 +126,11 @@
       "webSite": "https://blr-metro.tashif.codes",
       "added": 1795128343000,
       "packageName": "codes.tashif.blrmetro",
-      "lastUpdated": 1795128343000,
+      "lastUpdated": 1795686090000,
       "localized": {
         "en-US": {
           "icon": "icon_cMJtmGDYOwTnoGkuU2ZWBO2w4FxPAnoxPBHHYPM1KBM=.png",
-          "whatsNew": "The first Android release. The same app has run at blr-metro.tashif.codes since November. This version ships it as a signed APK on GitHub Releases and in the F-Droid repo at tashif.codes/fdroid/repo.\n\n* Journey planning between any two Namma Metro stations, with least distance and minimum interchange routes.\n* Fares from BMRCL for each trip: token, smart card at peak and off-peak, and group ticket.\n"
+          "whatsNew": "* Plan, Map, Network, Saved and Alerts replace the old Search and Lines tabs.\n* Save a place or a trip and start it again from Plan.\n* Settings is its own page, with Appearance and About behind it.\n* The network map draws terrain and water, with more detail as you zoom in.\n* The app rotates with the device.\n* NammaMetro-v1.1.0.apk\n"
         }
       }
     },
@@ -1904,6 +1904,58 @@
       }
     ],
     "codes.tashif.blrmetro": [
+      {
+        "added": 1795686090000,
+        "apkName": "codes.tashif.blrmetro_3.apk",
+        "hash": "31571082041f5663e9df7bde8e62697b7778e1b0cdb4ecf1c706e202344c619e",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a",
+          "armeabi-v7a"
+        ],
+        "packageName": "codes.tashif.blrmetro",
+        "sig": "da52fe91f6485a13a321e87443ade53a",
+        "signer": "d1225e4c010df5bb7fa288262aa210c591d24c02bbbdb664e9f2a69664aa7b20",
+        "size": 23201632,
+        "targetSdkVersion": 36,
+        "uses-permission": [
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.READ_EXTERNAL_STORAGE",
+            32
+          ],
+          [
+            "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+            null
+          ],
+          [
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            null
+          ],
+          [
+            "android.permission.VIBRATE",
+            null
+          ],
+          [
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            null
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "codes.tashif.blrmetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 3,
+        "versionName": "1.1.0"
+      },
       {
         "added": 1795128343000,
         "apkName": "codes.tashif.blrmetro_2.apk",

@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/repo",
-    "timestamp": 1795685879000,
+    "timestamp": 1795686099000,
     "categories": {
       "Development": {
         "name": {
@@ -1589,7 +1589,7 @@
         ],
         "changelog": "https://github.com/tashifkhan/blr-metro/releases",
         "issueTracker": "https://github.com/tashifkhan/blr-metro/issues",
-        "lastUpdated": 1795128343000,
+        "lastUpdated": 1795686090000,
         "license": "MIT",
         "sourceCode": "https://github.com/tashifkhan/blr-metro",
         "webSite": "https://blr-metro.tashif.codes",
@@ -1614,6 +1614,58 @@
         "preferredSigner": "d1225e4c010df5bb7fa288262aa210c591d24c02bbbdb664e9f2a69664aa7b20"
       },
       "versions": {
+        "31571082041f5663e9df7bde8e62697b7778e1b0cdb4ecf1c706e202344c619e": {
+          "added": 1795686090000,
+          "file": {
+            "name": "/codes.tashif.blrmetro_3.apk",
+            "sha256": "31571082041f5663e9df7bde8e62697b7778e1b0cdb4ecf1c706e202344c619e",
+            "size": 23201632
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a",
+              "armeabi-v7a"
+            ],
+            "versionName": "1.1.0",
+            "versionCode": 3,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "d1225e4c010df5bb7fa288262aa210c591d24c02bbbdb664e9f2a69664aa7b20"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+              },
+              {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW"
+              },
+              {
+                "name": "android.permission.VIBRATE"
+              },
+              {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE"
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "codes.tashif.blrmetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              }
+            ]
+          }
+        },
         "1fb7427fbdfa36060dd73b71cae90e289874768579193d0048b0ff426349d849": {
           "added": 1795128343000,
           "file": {

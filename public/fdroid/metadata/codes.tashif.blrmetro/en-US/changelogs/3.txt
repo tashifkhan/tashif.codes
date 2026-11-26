@@ -1,0 +1,6 @@
+* Plan, Map, Network, Saved and Alerts replace the old Search and Lines tabs.
+* Save a place or a trip and start it again from Plan.
+* Settings is its own page, with Appearance and About behind it.
+* The network map draws terrain and water, with more detail as you zoom in.
+* The app rotates with the device.
+* NammaMetro-v1.1.0.apk
