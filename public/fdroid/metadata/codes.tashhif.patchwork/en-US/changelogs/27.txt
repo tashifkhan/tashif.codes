@@ -1,0 +1,6 @@
+A new icon, shortcuts from the home screen, Siri and Gemini, and Jira issues that show everything Jira shows.
+
+* Long-press the app icon for New to-do, Dictate, Brain dump and Search.
+* On Android, pin a list or a board to the home screen.
+* On iPhone, Siri and the Shortcuts app can add a to-do, start a brain dump, dictate, or open Today.
+* On Android 16, Gemini can add a to-do, read today's tasks and your lists, and open the brain dump or dictation.
