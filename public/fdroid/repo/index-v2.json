@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/repo",
-    "timestamp": 1795741253000,
+    "timestamp": 1795746728000,
     "categories": {
       "Development": {
         "name": {
@@ -64,59 +64,59 @@
         ],
         "changelog": "https://github.com/tashifkhan/Patchwork/releases",
         "issueTracker": "https://github.com/tashifkhan/Patchwork/issues",
-        "lastUpdated": 1795739999000,
+        "lastUpdated": 1795746703000,
         "license": "MIT",
         "sourceCode": "https://github.com/tashifkhan/Patchwork",
         "webSite": "https://tashif.codes/projects/patchwork",
         "featureGraphic": {
           "en-US": {
-            "name": "/codes.tashhif.patchwork/en-US/featureGraphic_LaojnDBYzEj7uSobielK47fUadzDlh3_w_1o1PezqY0=.jpg",
-            "sha256": "2daa239c3058cc48fbb92a1b89e94ae3b7d469dcc3961dffc3fd68d4f7b3a98d",
-            "size": 52467
+            "name": "/codes.tashhif.patchwork/en-US/featureGraphic_zirO87Sd4iMOpxMrlN41BCRRYxbAXzfs8ZiZLg5vANE=.jpg",
+            "sha256": "ce2acef3b49de2230ea7132b94de350424516316c05f37ecf198992e0e6f00d1",
+            "size": 51386
           }
         },
         "screenshots": {
           "phone": {
             "en-US": [
               {
-                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/01-tasks.jpg",
-                "sha256": "feaa484e2e440442e1c54f768ded4f24242b0a8e0d3ab6adaf30ea7fa8ffd376",
-                "size": 128721
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/1141-01-tasks.jpg",
+                "sha256": "8e49039685e18d1a83a428f5fa09c2724132d57c5f8f225ed139b1e5e3925642",
+                "size": 127596
               },
               {
-                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/02-detail.jpg",
-                "sha256": "16885e7c453f3f398e50b81aac1e70bf280b71af2d2a1a31dd844c293fc5e534",
-                "size": 118818
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/1141-02-detail.jpg",
+                "sha256": "c89320b70685de83fd033bc8f8bc5f50bd4dc3db4734eff63ecc5a529e46d527",
+                "size": 118931
               },
               {
-                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/03-boards.jpg",
-                "sha256": "751fd66dd8a60f2922474f941e0e0fa578cf17b1a16150f9799acf14bb01648e",
-                "size": 125408
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/1141-03-boards.jpg",
+                "sha256": "256cac674be060830c409ec4b430f15647fb674099284bcddf343059d54d2921",
+                "size": 131279
               },
               {
-                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/04-search.jpg",
-                "sha256": "43ad0074cf8716eacbc0399b4875e0aaac09703fc1f0fc535ae8c92ea7ad77e5",
-                "size": 136513
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/1141-04-search.jpg",
+                "sha256": "10aee0b6566d6f76bb0190970c55606414cb307f0ca943f5820124f2b3352f34",
+                "size": 142533
               },
               {
-                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/05-appearance.jpg",
-                "sha256": "47834ca898b6cce24d1a71ed1396c0f84dc155a8ba232c23c5e7aee64b3282a0",
-                "size": 109739
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/1141-05-appearance.jpg",
+                "sha256": "78d452a29a19fbf1dd69232344446efdb23ce1d830129ce817f3acd926429f0e",
+                "size": 114742
               },
               {
-                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/06-ai.jpg",
-                "sha256": "edc6857bb5e19f4efdacdeb3dc88c00689fcc38d164f3808607f025911403f48",
-                "size": 123473
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/1141-06-ai.jpg",
+                "sha256": "584ec6d54e18583851b985354e93ada0dca9ab749047d6bec9151e1123476fa3",
+                "size": 127295
               },
               {
-                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/07-filters.jpg",
-                "sha256": "9c247df7ffe791a92f706f0100b970aebcab9d972dee55da85667785a2a7e3d1",
-                "size": 118276
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/1141-07-filters.jpg",
+                "sha256": "e31f0eb294fc28d32218eb5a0ba1aa5b2e7f902ecdeb77581a2b6b63f5b55b16",
+                "size": 121123
               },
               {
-                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/08-drag.jpg",
-                "sha256": "cacf97534e923a24fed93700ebedd095c6cec10de671ce0f9d1be24caf19a5a8",
-                "size": 127958
+                "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/1141-08-drag.jpg",
+                "sha256": "404ea68d1300b6d640a08bf41ac39c75eaf842eecc002efa861fc01941e1abcb",
+                "size": 128216
               }
             ]
           }
@@ -137,14 +137,159 @@
         },
         "icon": {
           "en-US": {
-            "name": "/codes.tashhif.patchwork/en-US/icon_8w865-OQufo4UODdFoV4CdK05QiytkOtkxUP6qqoZe0=.png",
-            "sha256": "f30f3ae7e390b9fa3850e0dd16857809d2b4e508b2b643ad93150feaaaa865ed",
-            "size": 43514
+            "name": "/codes.tashhif.patchwork/en-US/icon_ThEECA4OnGR9WbuBwuK4brqsDpClYDcc1U4njydE4Bc=.png",
+            "sha256": "4e1104080e0e9c647d59bb81c2e2b86ebaac0e90a560371cd54e278f2744e017",
+            "size": 51863
           }
         },
         "preferredSigner": "40d44ae28eb4751de2f3195185677ba128d767941e0776cdeac109e34bae769b"
       },
       "versions": {
+        "7ca0202179ee64b5a0439c0e1b1a0d921b7477440defa0b09968b415a0d06a6d": {
+          "added": 1795746703000,
+          "file": {
+            "name": "/codes.tashhif.patchwork_30.apk",
+            "sha256": "7ca0202179ee64b5a0439c0e1b1a0d921b7477440defa0b09968b415a0d06a6d",
+            "size": 54496028
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a"
+            ],
+            "versionName": "1.14.1",
+            "versionCode": 30,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "40d44ae28eb4751de2f3195185677ba128d767941e0776cdeac109e34bae769b"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.CAMERA"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+              },
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.MODIFY_AUDIO_SETTINGS"
+              },
+              {
+                "name": "android.permission.POST_NOTIFICATIONS"
+              },
+              {
+                "name": "android.permission.POST_PROMOTED_NOTIFICATIONS"
+              },
+              {
+                "name": "android.permission.READ_CALENDAR"
+              },
+              {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.RECORD_AUDIO"
+              },
+              {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW"
+              },
+              {
+                "name": "android.permission.USE_BIOMETRIC"
+              },
+              {
+                "name": "android.permission.USE_FINGERPRINT"
+              },
+              {
+                "name": "android.permission.VIBRATE"
+              },
+              {
+                "name": "android.permission.WRITE_CALENDAR"
+              },
+              {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "android.permission.RECEIVE_BOOT_COMPLETED"
+              },
+              {
+                "name": "com.google.android.apps.aicore.service.BIND_SERVICE"
+              },
+              {
+                "name": "android.permission.WAKE_LOCK"
+              },
+              {
+                "name": "com.google.android.c2dm.permission.RECEIVE"
+              },
+              {
+                "name": "codes.tashhif.patchwork.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              },
+              {
+                "name": "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE"
+              },
+              {
+                "name": "com.sec.android.provider.badge.permission.READ"
+              },
+              {
+                "name": "com.sec.android.provider.badge.permission.WRITE"
+              },
+              {
+                "name": "com.htc.launcher.permission.READ_SETTINGS"
+              },
+              {
+                "name": "com.htc.launcher.permission.UPDATE_SHORTCUT"
+              },
+              {
+                "name": "com.sonyericsson.home.permission.BROADCAST_BADGE"
+              },
+              {
+                "name": "com.sonymobile.home.permission.PROVIDER_INSERT_BADGE"
+              },
+              {
+                "name": "com.anddoes.launcher.permission.UPDATE_COUNT"
+              },
+              {
+                "name": "com.majeur.launcher.permission.UPDATE_BADGE"
+              },
+              {
+                "name": "com.huawei.android.launcher.permission.CHANGE_BADGE"
+              },
+              {
+                "name": "com.huawei.android.launcher.permission.READ_SETTINGS"
+              },
+              {
+                "name": "com.huawei.android.launcher.permission.WRITE_SETTINGS"
+              },
+              {
+                "name": "android.permission.READ_APP_BADGE"
+              },
+              {
+                "name": "com.oppo.launcher.permission.READ_SETTINGS"
+              },
+              {
+                "name": "com.oppo.launcher.permission.WRITE_SETTINGS"
+              },
+              {
+                "name": "me.everything.badger.permission.BADGE_COUNT_READ"
+              },
+              {
+                "name": "me.everything.badger.permission.BADGE_COUNT_WRITE"
+              }
+            ]
+          }
+        },
         "0f1a3fab3646310d1931cd2c41d12d64211c5c51a411b0e73fd047ee48c60980": {
           "added": 1795739999000,
           "file": {
@@ -1742,42 +1887,42 @@
           "phone": {
             "en-US": [
               {
-                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/01.jpg",
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/2611-01.jpg",
                 "sha256": "9c86c57feeb2daff1bf5f9f3acb6a052d3688474887d8aefd7ab34546598f2c3",
                 "size": 131609
               },
               {
-                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/02.jpg",
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/2611-02.jpg",
                 "sha256": "c8c657d8003d956a0d1a8251de298bcab4354cfdb249e609d211a545e49fe234",
                 "size": 121654
               },
               {
-                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/03.jpg",
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/2611-03.jpg",
                 "sha256": "8af6b1010b8bf7910a7f02b56eb0024ea4e93621ef8b4ed9466b8c3029418484",
                 "size": 165141
               },
               {
-                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/04.jpg",
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/2611-04.jpg",
                 "sha256": "9a74297e2e866a93a2451d8e2abd3ee15277c154750c61e0a4c82dbbece8ac56",
                 "size": 108731
               },
               {
-                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/05.jpg",
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/2611-05.jpg",
                 "sha256": "0e46dcf2eb11ddf2fb571127031c02a2513e78c771c7787f5b0498baed372e15",
                 "size": 121852
               },
               {
-                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/06.jpg",
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/2611-06.jpg",
                 "sha256": "140523dae9fa55ecad5c09d42b6d6aac8d437f8efd70a372f08dd68f64bab18a",
                 "size": 108344
               },
               {
-                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/07.jpg",
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/2611-07.jpg",
                 "sha256": "b2b4587f55e934681e478f4f05fb95a48f8123910bdc3719938cfffadb3808a5",
                 "size": 138879
               },
               {
-                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/08.jpg",
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/2611-08.jpg",
                 "sha256": "4cfc2322026044864cf0c9ac3bf335af32f19f6c305f923f5d8ee677a5402918",
                 "size": 116632
               }
@@ -1990,42 +2135,42 @@
           "phone": {
             "en-US": [
               {
-                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/01.jpg",
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/2611-01.jpg",
                 "sha256": "2c448a9eac73abb8898968336342f26f6bd74b9b06fe4f08bba0e0da4e6cae70",
                 "size": 139927
               },
               {
-                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/02.jpg",
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/2611-02.jpg",
                 "sha256": "bda53503af28906635ab1357009d9b808599f7777b36d63caec9ebbe5fe1a4d7",
                 "size": 140436
               },
               {
-                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/03.jpg",
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/2611-03.jpg",
                 "sha256": "efa24a9450a2c7d79991681e8e71160d6f7f4d8d0d788136d5d6efa0d454352c",
                 "size": 132731
               },
               {
-                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/04.jpg",
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/2611-04.jpg",
                 "sha256": "a6ce55c4c5ce93548d9517290623ff801184a4c1000eca51fb0511dd261fd9a3",
                 "size": 142668
               },
               {
-                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/05.jpg",
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/2611-05.jpg",
                 "sha256": "409a346db113256fb68697917abf4aeb3c04e5758dec984ef088ac98d6aea4d6",
                 "size": 128494
               },
               {
-                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/06.jpg",
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/2611-06.jpg",
                 "sha256": "38651970c927553bd5c15305c2059275e572dc9d7979c5ff2ca1959560f0762c",
                 "size": 125140
               },
               {
-                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/07.jpg",
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/2611-07.jpg",
                 "sha256": "8bc3a6f8984da30e0366880177b8f67af98ab2a854d5937f7889a8dedf54deee",
                 "size": 158938
               },
               {
-                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/08.jpg",
+                "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/2611-08.jpg",
                 "sha256": "a9791e7b7f8d30ff176d1c6dbf56eda0c2f65deeacff08359c4cc917a5632e1f",
                 "size": 122217
               }

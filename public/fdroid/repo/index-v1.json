@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1795741253000,
+    "timestamp": 1795746728000,
     "version": 20002,
     "name": "Tashif Codes",
     "icon": "icon.png",
@@ -93,14 +93,14 @@
           "featureGraphic": "featureGraphic_FLIOFS4CVVL_IZVKPAo-CNFfyRw9dNLXTAkoqiy108k=.jpg",
           "icon": "icon_f3E2hNNAdFWLTWvHUL96eSA1H3Eva34jM1fARZVvkCI=.png",
           "phoneScreenshots": [
-            "01.jpg",
-            "02.jpg",
-            "03.jpg",
-            "04.jpg",
-            "05.jpg",
-            "06.jpg",
-            "07.jpg",
-            "08.jpg"
+            "2611-01.jpg",
+            "2611-02.jpg",
+            "2611-03.jpg",
+            "2611-04.jpg",
+            "2611-05.jpg",
+            "2611-06.jpg",
+            "2611-07.jpg",
+            "2611-08.jpg"
           ],
           "video": "https://taf.sh/media/delhi-metro/cuts/phone.mp4",
           "whatsNew": "* Panning and pinching the network map no longer lags.\n* The official map zooms a smaller preview, so pinching stays smooth.\n* On the website, pinching or Ctrl+scrolling over a map zooms the map, not the page.\n* About shows the API address, ncr-metro.tashif.codes/api, and tapping it opens the docs.\n* Most Android phones, 15 MB.\n* Older 32-bit ARM phones, 14 MB.\n"
@@ -131,14 +131,14 @@
         "en-US": {
           "icon": "icon_cMJtmGDYOwTnoGkuU2ZWBO2w4FxPAnoxPBHHYPM1KBM=.png",
           "phoneScreenshots": [
-            "01.jpg",
-            "02.jpg",
-            "03.jpg",
-            "04.jpg",
-            "05.jpg",
-            "06.jpg",
-            "07.jpg",
-            "08.jpg"
+            "2611-01.jpg",
+            "2611-02.jpg",
+            "2611-03.jpg",
+            "2611-04.jpg",
+            "2611-05.jpg",
+            "2611-06.jpg",
+            "2611-07.jpg",
+            "2611-08.jpg"
           ],
           "whatsNew": "* Panning and pinching the network map no longer lags.\n* The official schematic and the Phase map zoom a smaller preview, so pinching stays smooth.\n* On the website, pinching or Ctrl+scrolling over a map zooms the map, not the page.\n* About shows the API address, blr-metro.tashif.codes/docs, and tapping it opens the docs.\n* NammaMetro-v1.1.1.apk\n"
         }
@@ -153,7 +153,7 @@
         "Internet"
       ],
       "changelog": "https://github.com/tashifkhan/Patchwork/releases",
-      "suggestedVersionCode": "29",
+      "suggestedVersionCode": "30",
       "description": "Patchwork pulls your tasks out of the places they are scattered across and puts them in one app. It signs in to each service and edits your work where it already lives.\n\nWhat it connects to\n\n* CalDAV tasks from Nextcloud or any CalDAV server, with subtasks, tags, priorities, due dates, reminders and Markdown notes. Edits use ETags, so two devices do not overwrite each other\n* Nextcloud Deck boards. Drag cards, reorder columns, and create or edit everything from the app\n* Jira boards with sprints, a backlog, drag and drop that updates the rank, and a full issue editor\n* GitHub issues across repositories. Sign in with device flow or a token, then create, close and reopen issues\n* More than one GitHub or Jira account at a time\n\nOther features\n\n* AI import that drafts tasks from a photo of handwritten notes or a description. You review every task before it is saved\n* Bring your own model. OpenAI, Anthropic, Google, DeepSeek, OpenRouter, NVIDIA, OpenCode Zen, RelayRoom or any OpenAI compatible endpoint\n* Voice dictation\n* Add a task to a calendar on the device\n* Home screen widgets for today and upcoming tasks\n* Material You colours, fixed palettes, high contrast and a pure black AMOLED mode\n* Layouts for tablets and foldables\n\nPrivacy\n\nCredentials and API keys stay on the device in secure storage, and the app talks to your servers directly. There is no Patchwork server in between.\n\nWhy it asks for permissions\n\n* Camera and photos, to import tasks from a photo of your notes\n* Microphone, for voice dictation\n* Calendar, to add a task to a calendar you pick\n* Notifications, for task reminders\n\nSlack and Linear integrations are planned.\n",
       "issueTracker": "https://github.com/tashifkhan/Patchwork/issues",
       "license": "MIT",
@@ -163,29 +163,204 @@
       "webSite": "https://tashif.codes/projects/patchwork",
       "added": 1794087336000,
       "packageName": "codes.tashhif.patchwork",
-      "lastUpdated": 1795739999000,
+      "lastUpdated": 1795746703000,
       "localized": {
         "en-US": {
-          "featureGraphic": "featureGraphic_LaojnDBYzEj7uSobielK47fUadzDlh3_w_1o1PezqY0=.jpg",
-          "icon": "icon_8w865-OQufo4UODdFoV4CdK05QiytkOtkxUP6qqoZe0=.png",
+          "featureGraphic": "featureGraphic_zirO87Sd4iMOpxMrlN41BCRRYxbAXzfs8ZiZLg5vANE=.jpg",
+          "icon": "icon_ThEECA4OnGR9WbuBwuK4brqsDpClYDcc1U4njydE4Bc=.png",
           "phoneScreenshots": [
-            "01-tasks.jpg",
-            "02-detail.jpg",
-            "03-boards.jpg",
-            "04-search.jpg",
-            "05-appearance.jpg",
-            "06-ai.jpg",
-            "07-filters.jpg",
-            "08-drag.jpg"
+            "1141-01-tasks.jpg",
+            "1141-02-detail.jpg",
+            "1141-03-boards.jpg",
+            "1141-04-search.jpg",
+            "1141-05-appearance.jpg",
+            "1141-06-ai.jpg",
+            "1141-07-filters.jpg",
+            "1141-08-drag.jpg"
           ],
           "video": "https://taf.sh/media/patchwork/demo.mp4",
-          "whatsNew": "Calendar events from the + button, a week view on tablets, and Jira fields you can actually change.\n\n* The + on the Calendar tab opens a menu with Task and Event.\n* Create a list wherever you pick one.\n* Tablets and unfolded foldables get a week view: seven day columns with to-dos and events on the hours, and the month beside it when there's room.\n* Change the assignee and reporter on a Jira issue by searching for people.\n"
+          "whatsNew": "* Dark mode colours on Android are calmer.\n"
         }
       }
     }
   ],
   "packages": {
     "codes.tashhif.patchwork": [
+      {
+        "added": 1795746703000,
+        "apkName": "codes.tashhif.patchwork_30.apk",
+        "hash": "7ca0202179ee64b5a0439c0e1b1a0d921b7477440defa0b09968b415a0d06a6d",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a"
+        ],
+        "packageName": "codes.tashhif.patchwork",
+        "sig": "76f6a3560d2758446bd90127a81ea7de",
+        "signer": "40d44ae28eb4751de2f3195185677ba128d767941e0776cdeac109e34bae769b",
+        "size": 54496028,
+        "targetSdkVersion": 36,
+        "uses-permission": [
+          [
+            "android.permission.CAMERA",
+            null
+          ],
+          [
+            "android.permission.FOREGROUND_SERVICE",
+            null
+          ],
+          [
+            "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+            null
+          ],
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.MODIFY_AUDIO_SETTINGS",
+            null
+          ],
+          [
+            "android.permission.POST_NOTIFICATIONS",
+            null
+          ],
+          [
+            "android.permission.POST_PROMOTED_NOTIFICATIONS",
+            null
+          ],
+          [
+            "android.permission.READ_CALENDAR",
+            null
+          ],
+          [
+            "android.permission.READ_EXTERNAL_STORAGE",
+            32
+          ],
+          [
+            "android.permission.RECORD_AUDIO",
+            null
+          ],
+          [
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            null
+          ],
+          [
+            "android.permission.USE_BIOMETRIC",
+            null
+          ],
+          [
+            "android.permission.USE_FINGERPRINT",
+            null
+          ],
+          [
+            "android.permission.VIBRATE",
+            null
+          ],
+          [
+            "android.permission.WRITE_CALENDAR",
+            null
+          ],
+          [
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            32
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "android.permission.RECEIVE_BOOT_COMPLETED",
+            null
+          ],
+          [
+            "com.google.android.apps.aicore.service.BIND_SERVICE",
+            null
+          ],
+          [
+            "android.permission.WAKE_LOCK",
+            null
+          ],
+          [
+            "com.google.android.c2dm.permission.RECEIVE",
+            null
+          ],
+          [
+            "codes.tashhif.patchwork.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ],
+          [
+            "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE",
+            null
+          ],
+          [
+            "com.sec.android.provider.badge.permission.READ",
+            null
+          ],
+          [
+            "com.sec.android.provider.badge.permission.WRITE",
+            null
+          ],
+          [
+            "com.htc.launcher.permission.READ_SETTINGS",
+            null
+          ],
+          [
+            "com.htc.launcher.permission.UPDATE_SHORTCUT",
+            null
+          ],
+          [
+            "com.sonyericsson.home.permission.BROADCAST_BADGE",
+            null
+          ],
+          [
+            "com.sonymobile.home.permission.PROVIDER_INSERT_BADGE",
+            null
+          ],
+          [
+            "com.anddoes.launcher.permission.UPDATE_COUNT",
+            null
+          ],
+          [
+            "com.majeur.launcher.permission.UPDATE_BADGE",
+            null
+          ],
+          [
+            "com.huawei.android.launcher.permission.CHANGE_BADGE",
+            null
+          ],
+          [
+            "com.huawei.android.launcher.permission.READ_SETTINGS",
+            null
+          ],
+          [
+            "com.huawei.android.launcher.permission.WRITE_SETTINGS",
+            null
+          ],
+          [
+            "android.permission.READ_APP_BADGE",
+            null
+          ],
+          [
+            "com.oppo.launcher.permission.READ_SETTINGS",
+            null
+          ],
+          [
+            "com.oppo.launcher.permission.WRITE_SETTINGS",
+            null
+          ],
+          [
+            "me.everything.badger.permission.BADGE_COUNT_READ",
+            null
+          ],
+          [
+            "me.everything.badger.permission.BADGE_COUNT_WRITE",
+            null
+          ]
+        ],
+        "versionCode": 30,
+        "versionName": "1.14.1"
+      },
       {
         "added": 1795739999000,
         "apkName": "codes.tashhif.patchwork_29.apk",

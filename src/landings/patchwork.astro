@@ -37,10 +37,17 @@ const release = (project.releases ?? []).find((r) => !r.draft && !r.prerelease);
 const apk = release?.assets.find((a) => a.name.toLowerCase().endsWith(".apk"));
 const apkHref = apk?.download_url ?? `${project.github_link}/releases/latest`;
 
-const screen = { width: 600, height: 1333 };
+const screen = { width: 600, height: 1347 };
 const shot = (name: string, alt: string) => ({
 	src: `${media}/screens/${name}.webp`,
 	alt,
+});
+// An iPhone screen in the middle of each row, at its own proportions.
+const iosShot = (name: string, alt: string) => ({
+	src: `${media}/screens/ios-${name}.webp`,
+	alt: `${alt}, on iPhone`,
+	width: 600,
+	height: 1304,
 });
 
 const chapters = [
@@ -62,7 +69,7 @@ const chapters = [
 		],
 		shots: [
 			shot("tasks", "Task list grouped by today, tomorrow and upcoming"),
-			shot("detail", "A task with Markdown notes and a checklist"),
+			iosShot("detail", "A task with Markdown notes and a checklist"),
 			shot("editor", "The task editor"),
 		],
 	},
@@ -88,7 +95,7 @@ const chapters = [
 		],
 		shots: [
 			shot("boards", "Boards from Jira and Nextcloud Deck"),
-			shot("jira-board", "A Jira sprint board"),
+			iosShot("jira-board", "A Jira sprint board"),
 			shot("jira-drag", "Dragging a card between Jira columns"),
 		],
 	},
@@ -106,7 +113,7 @@ const chapters = [
 		],
 		shots: [
 			shot("search", "Search with lists and tags"),
-			shot("jira-filter", "Jira filters by sprint and type"),
+			iosShot("jira-filter", "Jira filters by assignee, sprint and type"),
 			shot("jira-assigned", "Jira issues assigned to me"),
 		],
 	},
@@ -128,7 +135,7 @@ const chapters = [
 		],
 		shots: [
 			shot("ai", "AI import provider with a model list"),
-			shot("appearance", "Theme and colour palette settings"),
+			iosShot("appearance", "Accent, contrast and pure black settings"),
 			shot("settings", "Settings with integrations"),
 		],
 	},

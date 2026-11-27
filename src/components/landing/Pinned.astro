@@ -10,13 +10,16 @@ import Shot from "./Shot.astro";
 export interface Chapter {
 	title: string;
 	features: { title: string; body: string }[];
-	/** Two or three screens, in the order the features mention them. */
-	shots: { src: string; alt: string }[];
+	/**
+	 * Two or three screens, in the order the features mention them. A screen
+	 * from another device (an iPhone beside Android shots) gives its own size.
+	 */
+	shots: { src: string; alt: string; width?: number; height?: number }[];
 }
 
 interface Props {
 	chapters: Chapter[];
-	/** Intrinsic size shared by every screen. */
+	/** Intrinsic size of a screen that doesn't give its own. */
 	width: number;
 	height: number;
 }
@@ -40,7 +43,7 @@ const { chapters, width, height } = Astro.props;
 					</dl>
 					<div class="ld-pinned-strip">
 						{chapter.shots.map((shot) => (
-							<Shot src={shot.src} alt={shot.alt} width={width} height={height} />
+							<Shot src={shot.src} alt={shot.alt} width={shot.width ?? width} height={shot.height ?? height} />
 						))}
 					</div>
 				</li>
