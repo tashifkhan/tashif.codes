@@ -1,0 +1,3 @@
+* Pinching to zoom keeps the spot between your fingers in place.
+* Most Android phones, 15 MB.
+* Older 32-bit ARM phones, 14 MB.
