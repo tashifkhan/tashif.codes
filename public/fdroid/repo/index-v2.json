@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/repo",
-    "timestamp": 1795746728000,
+    "timestamp": 1795749727000,
     "categories": {
       "Development": {
         "name": {
@@ -2120,7 +2120,7 @@
         ],
         "changelog": "https://github.com/tashifkhan/delhi-metro/releases",
         "issueTracker": "https://github.com/tashifkhan/delhi-metro/issues",
-        "lastUpdated": 1795740950000,
+        "lastUpdated": 1795749708000,
         "license": "MIT",
         "sourceCode": "https://github.com/tashifkhan/delhi-metro",
         "webSite": "https://tashif.codes/projects/delhi-metro",
@@ -2201,6 +2201,114 @@
         "preferredSigner": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
       },
       "versions": {
+        "97730da953b75ba216b8128bbb4bfe37438351f69caf454d3774b33fc7b0a43d": {
+          "added": 1795749708000,
+          "file": {
+            "name": "/codes.tashif.delhimetro_342.apk",
+            "sha256": "97730da953b75ba216b8128bbb4bfe37438351f69caf454d3774b33fc7b0a43d",
+            "size": 15551929
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a"
+            ],
+            "versionName": "1.10.2",
+            "versionCode": 342,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+              },
+              {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW"
+              },
+              {
+                "name": "android.permission.VIBRATE"
+              },
+              {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE"
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "android.permission.ACCESS_WIFI_STATE"
+              },
+              {
+                "name": "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              }
+            ]
+          }
+        },
+        "c60a60862761b86efb554b5f17c9e7beb9ad8b1e44b692815bcfe32cef111706": {
+          "added": 1795749708000,
+          "file": {
+            "name": "/codes.tashif.delhimetro_341.apk",
+            "sha256": "c60a60862761b86efb554b5f17c9e7beb9ad8b1e44b692815bcfe32cef111706",
+            "size": 14664541
+          },
+          "manifest": {
+            "nativecode": [
+              "armeabi-v7a"
+            ],
+            "versionName": "1.10.2",
+            "versionCode": 341,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+              },
+              {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW"
+              },
+              {
+                "name": "android.permission.VIBRATE"
+              },
+              {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE"
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "android.permission.ACCESS_WIFI_STATE"
+              },
+              {
+                "name": "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              }
+            ]
+          }
+        },
         "2ef760858e0e4cebb753a6e67f9816902cad0e7f9219b8d31edf16ec4643467c": {
           "added": 1795740950000,
           "file": {

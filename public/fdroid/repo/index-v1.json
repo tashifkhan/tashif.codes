@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1795746728000,
+    "timestamp": 1795749727000,
     "version": 20002,
     "name": "Tashif Codes",
     "icon": "icon.png",
@@ -77,7 +77,7 @@
         "Internet"
       ],
       "changelog": "https://github.com/tashifkhan/delhi-metro/releases",
-      "suggestedVersionCode": "332",
+      "suggestedVersionCode": "342",
       "description": "Delhi NCR Metro plans trips across the Delhi Metro and the Noida Metro Aqua Line in one app. The two operators do not share tickets, so a trip that crosses between them shows the walk at Sector 52 and 51 and a separate fare for each.\n\nPlan a trip\n\n* Shortest route and fewest changes, side by side, with time, fare, every station and where to change\n* Weekday and weekend fares, and first and last train times\n* Cross-network trips with a walk leg and split fares\n* Book tickets on WhatsApp from a journey, one step per operator\n* Your planned journeys stay available offline\n\nStations and lines\n\n* Station search by name or code\n* Station pages with gates, lifts, platforms, facilities, parking and nearby places\n* Lines with ordered stations and interchange badges\n\nMap and alerts\n\n* A network map drawn from station coordinates, with pan, pinch zoom and station search\n* The official DMRC and NMRC maps, with save to gallery\n* Service alerts from both operators\n* Lines, stations and alerts stay readable when the network drops\n\nAppearance\n\n* Material You colours, fixed palettes, dark mode and AMOLED black\n* High contrast, haptics, and slide, fade or no page animations\n\nWhy it asks for permissions\n\n* Network, to fetch routes, fares and alerts\n* Photos, to save a network map to your gallery\n\nThe same app runs in a browser at https://ncr-metro.tashif.codes. It is not an official DMRC or NMRC app.\n",
       "issueTracker": "https://github.com/tashifkhan/delhi-metro/issues",
       "license": "MIT",
@@ -87,7 +87,7 @@
       "webSite": "https://tashif.codes/projects/delhi-metro",
       "added": 1794159405000,
       "packageName": "codes.tashif.delhimetro",
-      "lastUpdated": 1795740950000,
+      "lastUpdated": 1795749708000,
       "localized": {
         "en-US": {
           "featureGraphic": "featureGraphic_FLIOFS4CVVL_IZVKPAo-CNFfyRw9dNLXTAkoqiy108k=.jpg",
@@ -103,7 +103,7 @@
             "2611-08.jpg"
           ],
           "video": "https://taf.sh/media/delhi-metro/cuts/phone.mp4",
-          "whatsNew": "* Panning and pinching the network map no longer lags.\n* The official map zooms a smaller preview, so pinching stays smooth.\n* On the website, pinching or Ctrl+scrolling over a map zooms the map, not the page.\n* About shows the API address, ncr-metro.tashif.codes/api, and tapping it opens the docs.\n* Most Android phones, 15 MB.\n* Older 32-bit ARM phones, 14 MB.\n"
+          "whatsNew": "* Panning and pinching the map stays smooth on 120 Hz phones.\n* A quick swipe keeps the map gliding and slowing down.\n* Dragging or pinching past the edge of the detailed map shows the whole network's lines, rivers and stations instead of blank space.\n* Most Android phones, 15 MB.\n* Older 32-bit ARM phones, 14 MB.\n"
         }
       }
     },
@@ -2424,6 +2424,116 @@
       }
     ],
     "codes.tashif.delhimetro": [
+      {
+        "added": 1795749708000,
+        "apkName": "codes.tashif.delhimetro_342.apk",
+        "hash": "97730da953b75ba216b8128bbb4bfe37438351f69caf454d3774b33fc7b0a43d",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a"
+        ],
+        "packageName": "codes.tashif.delhimetro",
+        "sig": "e279fc012c64a59157be7ad09db800a1",
+        "signer": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933",
+        "size": 15551929,
+        "targetSdkVersion": 36,
+        "uses-permission": [
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.READ_EXTERNAL_STORAGE",
+            32
+          ],
+          [
+            "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+            null
+          ],
+          [
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            null
+          ],
+          [
+            "android.permission.VIBRATE",
+            null
+          ],
+          [
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            null
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "android.permission.ACCESS_WIFI_STATE",
+            null
+          ],
+          [
+            "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 342,
+        "versionName": "1.10.2"
+      },
+      {
+        "added": 1795749708000,
+        "apkName": "codes.tashif.delhimetro_341.apk",
+        "hash": "c60a60862761b86efb554b5f17c9e7beb9ad8b1e44b692815bcfe32cef111706",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "armeabi-v7a"
+        ],
+        "packageName": "codes.tashif.delhimetro",
+        "sig": "e279fc012c64a59157be7ad09db800a1",
+        "signer": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933",
+        "size": 14664541,
+        "targetSdkVersion": 36,
+        "uses-permission": [
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.READ_EXTERNAL_STORAGE",
+            32
+          ],
+          [
+            "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+            null
+          ],
+          [
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            null
+          ],
+          [
+            "android.permission.VIBRATE",
+            null
+          ],
+          [
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            null
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "android.permission.ACCESS_WIFI_STATE",
+            null
+          ],
+          [
+            "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 341,
+        "versionName": "1.10.2"
+      },
       {
         "added": 1795740950000,
         "apkName": "codes.tashif.delhimetro_332.apk",
