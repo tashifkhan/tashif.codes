@@ -14,7 +14,7 @@
       }
     },
     "address": "https://tashif.codes/fdroid/repo",
-    "timestamp": 1795686099000,
+    "timestamp": 1795741253000,
     "categories": {
       "Development": {
         "name": {
@@ -64,15 +64,15 @@
         ],
         "changelog": "https://github.com/tashifkhan/Patchwork/releases",
         "issueTracker": "https://github.com/tashifkhan/Patchwork/issues",
-        "lastUpdated": 1795685663000,
+        "lastUpdated": 1795739999000,
         "license": "MIT",
         "sourceCode": "https://github.com/tashifkhan/Patchwork",
         "webSite": "https://tashif.codes/projects/patchwork",
         "featureGraphic": {
           "en-US": {
-            "name": "/codes.tashhif.patchwork/en-US/featureGraphic_qpPKUN22XLZ7iblX26NOQYefeD5PeNZ2D3jKlstiCC0=.jpg",
-            "sha256": "aa93ca50ddb65cb67b89b957dba34e41879f783e4f78d6760f78ca96cb62082d",
-            "size": 49347
+            "name": "/codes.tashhif.patchwork/en-US/featureGraphic_LaojnDBYzEj7uSobielK47fUadzDlh3_w_1o1PezqY0=.jpg",
+            "sha256": "2daa239c3058cc48fbb92a1b89e94ae3b7d469dcc3961dffc3fd68d4f7b3a98d",
+            "size": 52467
           }
         },
         "screenshots": {
@@ -80,43 +80,43 @@
             "en-US": [
               {
                 "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/01-tasks.jpg",
-                "sha256": "a878457890d0db09291451d9ecbec85aa2cd24a20184e1084db5924f1c4f40e1",
-                "size": 140337
+                "sha256": "feaa484e2e440442e1c54f768ded4f24242b0a8e0d3ab6adaf30ea7fa8ffd376",
+                "size": 128721
               },
               {
                 "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/02-detail.jpg",
-                "sha256": "733c8730a7c38c676c00315ea293cdfcecdac7a500288857739638f94900049d",
-                "size": 114952
+                "sha256": "16885e7c453f3f398e50b81aac1e70bf280b71af2d2a1a31dd844c293fc5e534",
+                "size": 118818
               },
               {
                 "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/03-boards.jpg",
-                "sha256": "2519ad7fa6bcaf7fd9d274d341da3fa78c51c235f1bd5a0334d5d1d3ecb8f850",
-                "size": 131557
+                "sha256": "751fd66dd8a60f2922474f941e0e0fa578cf17b1a16150f9799acf14bb01648e",
+                "size": 125408
               },
               {
                 "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/04-search.jpg",
-                "sha256": "a984d756cf4b5360632ca9a875725e5a6362fb67107b32767860b41178c731e9",
-                "size": 125692
+                "sha256": "43ad0074cf8716eacbc0399b4875e0aaac09703fc1f0fc535ae8c92ea7ad77e5",
+                "size": 136513
               },
               {
                 "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/05-appearance.jpg",
-                "sha256": "cbc44ff522f13bf8f8d1454a9c6c850cf4589ccc12e7a66d20317055c85ca74f",
-                "size": 109441
+                "sha256": "47834ca898b6cce24d1a71ed1396c0f84dc155a8ba232c23c5e7aee64b3282a0",
+                "size": 109739
               },
               {
                 "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/06-ai.jpg",
-                "sha256": "b7431f46148e4c044329fdbe6187860745ad4bb39856d27f7b5f98c60bac4c53",
-                "size": 115074
+                "sha256": "edc6857bb5e19f4efdacdeb3dc88c00689fcc38d164f3808607f025911403f48",
+                "size": 123473
               },
               {
                 "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/07-filters.jpg",
-                "sha256": "3c96db2c5db688466652b2fdedf673be663b22cfdcef101ba09581e7b7ba0df6",
-                "size": 114299
+                "sha256": "9c247df7ffe791a92f706f0100b970aebcab9d972dee55da85667785a2a7e3d1",
+                "size": 118276
               },
               {
                 "name": "/codes.tashhif.patchwork/en-US/phoneScreenshots/08-drag.jpg",
-                "sha256": "5f787b95070f1bbaf25627e4fbe0e45e5f00d86245afc4a72e3b8375fe6c882d",
-                "size": 109267
+                "sha256": "cacf97534e923a24fed93700ebedd095c6cec10de671ce0f9d1be24caf19a5a8",
+                "size": 127958
               }
             ]
           }
@@ -137,14 +137,159 @@
         },
         "icon": {
           "en-US": {
-            "name": "/codes.tashhif.patchwork/en-US/icon_JG4D_DwTtAryO9u-XuswkxlhYf-56yvsdZBcqou9cDI=.png",
-            "sha256": "246e03fc3c13b40af23bdbbe5eeb3093196161ffb9eb2bec75905caa8bbd7032",
-            "size": 15118
+            "name": "/codes.tashhif.patchwork/en-US/icon_8w865-OQufo4UODdFoV4CdK05QiytkOtkxUP6qqoZe0=.png",
+            "sha256": "f30f3ae7e390b9fa3850e0dd16857809d2b4e508b2b643ad93150feaaaa865ed",
+            "size": 43514
           }
         },
         "preferredSigner": "40d44ae28eb4751de2f3195185677ba128d767941e0776cdeac109e34bae769b"
       },
       "versions": {
+        "0f1a3fab3646310d1931cd2c41d12d64211c5c51a411b0e73fd047ee48c60980": {
+          "added": 1795739999000,
+          "file": {
+            "name": "/codes.tashhif.patchwork_29.apk",
+            "sha256": "0f1a3fab3646310d1931cd2c41d12d64211c5c51a411b0e73fd047ee48c60980",
+            "size": 54495888
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a"
+            ],
+            "versionName": "1.14.0",
+            "versionCode": 29,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "40d44ae28eb4751de2f3195185677ba128d767941e0776cdeac109e34bae769b"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.CAMERA"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE"
+              },
+              {
+                "name": "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+              },
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.MODIFY_AUDIO_SETTINGS"
+              },
+              {
+                "name": "android.permission.POST_NOTIFICATIONS"
+              },
+              {
+                "name": "android.permission.POST_PROMOTED_NOTIFICATIONS"
+              },
+              {
+                "name": "android.permission.READ_CALENDAR"
+              },
+              {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.RECORD_AUDIO"
+              },
+              {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW"
+              },
+              {
+                "name": "android.permission.USE_BIOMETRIC"
+              },
+              {
+                "name": "android.permission.USE_FINGERPRINT"
+              },
+              {
+                "name": "android.permission.VIBRATE"
+              },
+              {
+                "name": "android.permission.WRITE_CALENDAR"
+              },
+              {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "android.permission.RECEIVE_BOOT_COMPLETED"
+              },
+              {
+                "name": "com.google.android.apps.aicore.service.BIND_SERVICE"
+              },
+              {
+                "name": "android.permission.WAKE_LOCK"
+              },
+              {
+                "name": "com.google.android.c2dm.permission.RECEIVE"
+              },
+              {
+                "name": "codes.tashhif.patchwork.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              },
+              {
+                "name": "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE"
+              },
+              {
+                "name": "com.sec.android.provider.badge.permission.READ"
+              },
+              {
+                "name": "com.sec.android.provider.badge.permission.WRITE"
+              },
+              {
+                "name": "com.htc.launcher.permission.READ_SETTINGS"
+              },
+              {
+                "name": "com.htc.launcher.permission.UPDATE_SHORTCUT"
+              },
+              {
+                "name": "com.sonyericsson.home.permission.BROADCAST_BADGE"
+              },
+              {
+                "name": "com.sonymobile.home.permission.PROVIDER_INSERT_BADGE"
+              },
+              {
+                "name": "com.anddoes.launcher.permission.UPDATE_COUNT"
+              },
+              {
+                "name": "com.majeur.launcher.permission.UPDATE_BADGE"
+              },
+              {
+                "name": "com.huawei.android.launcher.permission.CHANGE_BADGE"
+              },
+              {
+                "name": "com.huawei.android.launcher.permission.READ_SETTINGS"
+              },
+              {
+                "name": "com.huawei.android.launcher.permission.WRITE_SETTINGS"
+              },
+              {
+                "name": "android.permission.READ_APP_BADGE"
+              },
+              {
+                "name": "com.oppo.launcher.permission.READ_SETTINGS"
+              },
+              {
+                "name": "com.oppo.launcher.permission.WRITE_SETTINGS"
+              },
+              {
+                "name": "me.everything.badger.permission.BADGE_COUNT_READ"
+              },
+              {
+                "name": "me.everything.badger.permission.BADGE_COUNT_WRITE"
+              }
+            ]
+          }
+        },
         "6619506ed43097c052931ac287b8810954f250083bc621a42d453950b7dda0a2": {
           "added": 1795685663000,
           "file": {
@@ -1589,10 +1734,56 @@
         ],
         "changelog": "https://github.com/tashifkhan/blr-metro/releases",
         "issueTracker": "https://github.com/tashifkhan/blr-metro/issues",
-        "lastUpdated": 1795686090000,
+        "lastUpdated": 1795740937000,
         "license": "MIT",
         "sourceCode": "https://github.com/tashifkhan/blr-metro",
         "webSite": "https://blr-metro.tashif.codes",
+        "screenshots": {
+          "phone": {
+            "en-US": [
+              {
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/01.jpg",
+                "sha256": "9c86c57feeb2daff1bf5f9f3acb6a052d3688474887d8aefd7ab34546598f2c3",
+                "size": 131609
+              },
+              {
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/02.jpg",
+                "sha256": "c8c657d8003d956a0d1a8251de298bcab4354cfdb249e609d211a545e49fe234",
+                "size": 121654
+              },
+              {
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/03.jpg",
+                "sha256": "8af6b1010b8bf7910a7f02b56eb0024ea4e93621ef8b4ed9466b8c3029418484",
+                "size": 165141
+              },
+              {
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/04.jpg",
+                "sha256": "9a74297e2e866a93a2451d8e2abd3ee15277c154750c61e0a4c82dbbece8ac56",
+                "size": 108731
+              },
+              {
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/05.jpg",
+                "sha256": "0e46dcf2eb11ddf2fb571127031c02a2513e78c771c7787f5b0498baed372e15",
+                "size": 121852
+              },
+              {
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/06.jpg",
+                "sha256": "140523dae9fa55ecad5c09d42b6d6aac8d437f8efd70a372f08dd68f64bab18a",
+                "size": 108344
+              },
+              {
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/07.jpg",
+                "sha256": "b2b4587f55e934681e478f4f05fb95a48f8123910bdc3719938cfffadb3808a5",
+                "size": 138879
+              },
+              {
+                "name": "/codes.tashif.blrmetro/en-US/phoneScreenshots/08.jpg",
+                "sha256": "4cfc2322026044864cf0c9ac3bf335af32f19f6c305f923f5d8ee677a5402918",
+                "size": 116632
+              }
+            ]
+          }
+        },
         "authorEmail": "tashifkhan010@gmail.com",
         "authorName": "Tashif Ahmad Khan",
         "name": {
@@ -1614,6 +1805,58 @@
         "preferredSigner": "d1225e4c010df5bb7fa288262aa210c591d24c02bbbdb664e9f2a69664aa7b20"
       },
       "versions": {
+        "d97b3371fd1e43af153ce1bdc2fe414da3becd9ecc026a3f01e81ff83adb7c70": {
+          "added": 1795740937000,
+          "file": {
+            "name": "/codes.tashif.blrmetro_7.apk",
+            "sha256": "d97b3371fd1e43af153ce1bdc2fe414da3becd9ecc026a3f01e81ff83adb7c70",
+            "size": 23688556
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a",
+              "armeabi-v7a"
+            ],
+            "versionName": "1.1.1",
+            "versionCode": 7,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "d1225e4c010df5bb7fa288262aa210c591d24c02bbbdb664e9f2a69664aa7b20"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+              },
+              {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW"
+              },
+              {
+                "name": "android.permission.VIBRATE"
+              },
+              {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE"
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "codes.tashif.blrmetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              }
+            ]
+          }
+        },
         "31571082041f5663e9df7bde8e62697b7778e1b0cdb4ecf1c706e202344c619e": {
           "added": 1795686090000,
           "file": {
@@ -1732,15 +1975,15 @@
         ],
         "changelog": "https://github.com/tashifkhan/delhi-metro/releases",
         "issueTracker": "https://github.com/tashifkhan/delhi-metro/issues",
-        "lastUpdated": 1795685871000,
+        "lastUpdated": 1795740950000,
         "license": "MIT",
         "sourceCode": "https://github.com/tashifkhan/delhi-metro",
         "webSite": "https://tashif.codes/projects/delhi-metro",
         "featureGraphic": {
           "en-US": {
-            "name": "/codes.tashif.delhimetro/en-US/featureGraphic_Usax61-EewSI7eG5RsRdqqM3q-P56rsw-HTf_4QixyA=.jpg",
-            "sha256": "52c6b1eb5f847b0488ede1b946c45daaa337abe3f9eabb30f874dfff8422c720",
-            "size": 30579
+            "name": "/codes.tashif.delhimetro/en-US/featureGraphic_FLIOFS4CVVL_IZVKPAo-CNFfyRw9dNLXTAkoqiy108k=.jpg",
+            "sha256": "14b20e152e025552ff21954a3c0a3e08d15fc91c3d74d2d74c0928aa2cb5d3c9",
+            "size": 58177
           }
         },
         "screenshots": {
@@ -1748,43 +1991,43 @@
             "en-US": [
               {
                 "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/01.jpg",
-                "sha256": "9acec16254ce339c5cc0e7235cbd958629eeebb8273d315d3451c527ed9e3a2a",
-                "size": 140258
+                "sha256": "2c448a9eac73abb8898968336342f26f6bd74b9b06fe4f08bba0e0da4e6cae70",
+                "size": 139927
               },
               {
                 "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/02.jpg",
-                "sha256": "6eb091c817e32f85732b3b0a1c14ab49385f48da125538b084f070cb9a8215f0",
-                "size": 138397
+                "sha256": "bda53503af28906635ab1357009d9b808599f7777b36d63caec9ebbe5fe1a4d7",
+                "size": 140436
               },
               {
                 "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/03.jpg",
-                "sha256": "62b369a5cbedb61edd12cbf80f938f7e5177be8f14d762a20181ad6f5137478b",
-                "size": 129212
+                "sha256": "efa24a9450a2c7d79991681e8e71160d6f7f4d8d0d788136d5d6efa0d454352c",
+                "size": 132731
               },
               {
                 "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/04.jpg",
-                "sha256": "f7678828dfbc34f54901688862872ecab3b0e7bcfb447b97eb062578f7325429",
-                "size": 132826
+                "sha256": "a6ce55c4c5ce93548d9517290623ff801184a4c1000eca51fb0511dd261fd9a3",
+                "size": 142668
               },
               {
                 "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/05.jpg",
-                "sha256": "66e9b503df53791e25fcbf63edd32099cedecddc05b3e76626b97eb5d4bdb1ea",
-                "size": 125346
+                "sha256": "409a346db113256fb68697917abf4aeb3c04e5758dec984ef088ac98d6aea4d6",
+                "size": 128494
               },
               {
                 "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/06.jpg",
-                "sha256": "2d040060af43b0e83bbfaed6a4ccab0cbf40a40bc95fb419b2530cf295fe3905",
-                "size": 131290
+                "sha256": "38651970c927553bd5c15305c2059275e572dc9d7979c5ff2ca1959560f0762c",
+                "size": 125140
               },
               {
                 "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/07.jpg",
-                "sha256": "1240bd2a0ce2b619452e906a74aecdc6cc9f69590aa8d5fe199c6e96e6e53d22",
-                "size": 148115
+                "sha256": "8bc3a6f8984da30e0366880177b8f67af98ab2a854d5937f7889a8dedf54deee",
+                "size": 158938
               },
               {
                 "name": "/codes.tashif.delhimetro/en-US/phoneScreenshots/08.jpg",
-                "sha256": "bea63350ab4ac3d9d7ad4014e9fcc901f4b0eb2174d56f90a626dde8e18bd1eb",
-                "size": 126877
+                "sha256": "a9791e7b7f8d30ff176d1c6dbf56eda0c2f65deeacff08359c4cc917a5632e1f",
+                "size": 122217
               }
             ]
           }
@@ -1805,14 +2048,122 @@
         },
         "icon": {
           "en-US": {
-            "name": "/codes.tashif.delhimetro/en-US/icon_IiA6vEuYZC_2reV-Bh2xkz8i-4TS8Sk9Va30U7iPyG0=.png",
-            "sha256": "22203abc4b98642ff6ade57e061db1933f22fb84d2f1293d55adf453b88fc86d",
-            "size": 15106
+            "name": "/codes.tashif.delhimetro/en-US/icon_f3E2hNNAdFWLTWvHUL96eSA1H3Eva34jM1fARZVvkCI=.png",
+            "sha256": "7f713684d34074558b4d6bc750bf7a7920351f712f6b7e233357c045956f9022",
+            "size": 84127
           }
         },
         "preferredSigner": "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
       },
       "versions": {
+        "2ef760858e0e4cebb753a6e67f9816902cad0e7f9219b8d31edf16ec4643467c": {
+          "added": 1795740950000,
+          "file": {
+            "name": "/codes.tashif.delhimetro_332.apk",
+            "sha256": "2ef760858e0e4cebb753a6e67f9816902cad0e7f9219b8d31edf16ec4643467c",
+            "size": 15541897
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a"
+            ],
+            "versionName": "1.10.1",
+            "versionCode": 332,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+              },
+              {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW"
+              },
+              {
+                "name": "android.permission.VIBRATE"
+              },
+              {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE"
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "android.permission.ACCESS_WIFI_STATE"
+              },
+              {
+                "name": "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              }
+            ]
+          }
+        },
+        "1ef1d3b22507aaca45c9c1de37b426c28f4ed14f0b7f3cb64587b81d8c427a64": {
+          "added": 1795740950000,
+          "file": {
+            "name": "/codes.tashif.delhimetro_331.apk",
+            "sha256": "1ef1d3b22507aaca45c9c1de37b426c28f4ed14f0b7f3cb64587b81d8c427a64",
+            "size": 14654529
+          },
+          "manifest": {
+            "nativecode": [
+              "armeabi-v7a"
+            ],
+            "versionName": "1.10.1",
+            "versionCode": 331,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "signer": {
+              "sha256": [
+                "9533c97fae5bc77cdcc412b23957e12669d5515c6181e4f04fbc5e78a2f22933"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "maxSdkVersion": 32
+              },
+              {
+                "name": "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+              },
+              {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW"
+              },
+              {
+                "name": "android.permission.VIBRATE"
+              },
+              {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE"
+              },
+              {
+                "name": "android.permission.ACCESS_NETWORK_STATE"
+              },
+              {
+                "name": "android.permission.ACCESS_WIFI_STATE"
+              },
+              {
+                "name": "codes.tashif.delhimetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              }
+            ]
+          }
+        },
         "9d5f9cbc9d14d2611bb21300ce53cdc31605aafd57515c88d3c1d902a3123c52": {
           "added": 1795685870000,
           "file": {

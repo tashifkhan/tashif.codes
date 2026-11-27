@@ -1,0 +1,6 @@
+* Panning and pinching the network map no longer lags.
+* The official map zooms a smaller preview, so pinching stays smooth.
+* On the website, pinching or Ctrl+scrolling over a map zooms the map, not the page.
+* About shows the API address, ncr-metro.tashif.codes/api, and tapping it opens the docs.
+* Most Android phones, 15 MB.
+* Older 32-bit ARM phones, 14 MB.

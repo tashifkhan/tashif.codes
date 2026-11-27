@@ -1,0 +1,6 @@
+Calendar events from the + button, a week view on tablets, and Jira fields you can actually change.
+
+* The + on the Calendar tab opens a menu with Task and Event.
+* Create a list wherever you pick one.
+* Tablets and unfolded foldables get a week view: seven day columns with to-dos and events on the hours, and the month beside it when there's room.
+* Change the assignee and reporter on a Jira issue by searching for people.
