@@ -1,0 +1,5 @@
+* Panning and pinching the map stays smooth on 120 Hz phones.
+* A quick swipe keeps the map gliding and slowing down.
+* Dragging or pinching past the edge of the detailed map shows the whole network's lines, lakes and stations instead of blank space.
+* Pinching to zoom keeps the spot between your fingers in place.
+* NammaMetro-v1.1.2.apk

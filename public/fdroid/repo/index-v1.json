@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1795761054000,
+    "timestamp": 1795761782000,
     "version": 20002,
     "name": "Tashif Codes",
     "icon": "icon.png",
@@ -116,7 +116,7 @@
         "Internet"
       ],
       "changelog": "https://github.com/tashifkhan/blr-metro/releases",
-      "suggestedVersionCode": "7",
+      "suggestedVersionCode": "11",
       "description": "Namma Metro is a journey planner for the Bengaluru metro. Station names\nand fares come from the public BMRCL service.\n\nPlan a trip by least distance or fewest changes and see the token, smart\ncard peak, smart card off-peak and group ticket fares. Search stations in\nEnglish or Kannada, browse each line in order, follow BMRCL notices, and\npan around the network map. Stations and planned journeys stay available\noffline.\n\nBMRCL publishes no travel times, first or last trains, gates or platforms,\nso the app leaves those out.\n\nReleases are built with Expo EAS, published on GitHub Releases, and\nmirrored into this F-Droid repository.\n\nPackage ID: codes.tashif.blrmetro\n",
       "issueTracker": "https://github.com/tashifkhan/blr-metro/issues",
       "license": "MIT",
@@ -126,7 +126,7 @@
       "webSite": "https://blr-metro.tashif.codes",
       "added": 1795128343000,
       "packageName": "codes.tashif.blrmetro",
-      "lastUpdated": 1795740937000,
+      "lastUpdated": 1795761762000,
       "localized": {
         "en-US": {
           "icon": "icon_cMJtmGDYOwTnoGkuU2ZWBO2w4FxPAnoxPBHHYPM1KBM=.png",
@@ -140,7 +140,7 @@
             "2611-07.jpg",
             "2611-08.jpg"
           ],
-          "whatsNew": "* Panning and pinching the network map no longer lags.\n* The official schematic and the Phase map zoom a smaller preview, so pinching stays smooth.\n* On the website, pinching or Ctrl+scrolling over a map zooms the map, not the page.\n* About shows the API address, blr-metro.tashif.codes/docs, and tapping it opens the docs.\n* NammaMetro-v1.1.1.apk\n"
+          "whatsNew": "* Panning and pinching the map stays smooth on 120 Hz phones.\n* A quick swipe keeps the map gliding and slowing down.\n* Dragging or pinching past the edge of the detailed map shows the whole network's lines, lakes and stations instead of blank space.\n* Pinching to zoom keeps the spot between your fingers in place.\n* NammaMetro-v1.1.2.apk\n"
         }
       }
     },
@@ -2264,6 +2264,58 @@
       }
     ],
     "codes.tashif.blrmetro": [
+      {
+        "added": 1795761762000,
+        "apkName": "codes.tashif.blrmetro_11.apk",
+        "hash": "33a962e388fc465bfca01acd406771fb3e11e46a49610720d5255f8a93457779",
+        "hashType": "sha256",
+        "minSdkVersion": 24,
+        "nativecode": [
+          "arm64-v8a",
+          "armeabi-v7a"
+        ],
+        "packageName": "codes.tashif.blrmetro",
+        "sig": "da52fe91f6485a13a321e87443ade53a",
+        "signer": "d1225e4c010df5bb7fa288262aa210c591d24c02bbbdb664e9f2a69664aa7b20",
+        "size": 23700084,
+        "targetSdkVersion": 36,
+        "uses-permission": [
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.READ_EXTERNAL_STORAGE",
+            32
+          ],
+          [
+            "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+            null
+          ],
+          [
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            null
+          ],
+          [
+            "android.permission.VIBRATE",
+            null
+          ],
+          [
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            null
+          ],
+          [
+            "android.permission.ACCESS_NETWORK_STATE",
+            null
+          ],
+          [
+            "codes.tashif.blrmetro.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 11,
+        "versionName": "1.1.2"
+      },
       {
         "added": 1795740937000,
         "apkName": "codes.tashif.blrmetro_7.apk",
